@@ -87,10 +87,10 @@ export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({ userId }
             <div className="text-sm font-semibold text-[#cb8954]">{latestVO2Max} ml/kg/min</div>
             {calculatePercentageChange() !== null && (
               <span className={`text-[10px] font-semibold ${
-                calculatePercentageChange()! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                calculatePercentageChange()! > 0 ? 'text-green-700' : 'text-red-500'
               }`}>
                 {calculatePercentageChange()! > 0 ? '+' : ''}
-                {calculatePercentageChange()!.toFixed(1)}%
+                {Math.round(calculatePercentageChange()!)}%
               </span>
             )}
           </div>

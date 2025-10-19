@@ -103,10 +103,10 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
                 <span className="font-semibold text-[#cb8954]">{latestMaxHr} bpm</span>
                 {calculatePercentageChange('max_hr') !== null && (
                   <span className={`text-[10px] font-semibold ${
-                    calculatePercentageChange('max_hr')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                    calculatePercentageChange('max_hr')! > 0 ? 'text-green-700' : 'text-red-500'
                   }`}>
                     {calculatePercentageChange('max_hr')! > 0 ? '+' : ''}
-                    {calculatePercentageChange('max_hr')!.toFixed(1)}%
+                    {Math.round(calculatePercentageChange('max_hr')!)}%
                   </span>
                 )}
               </div>
@@ -119,10 +119,10 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
                 <span className="font-semibold text-[#cb8954]">{latestRestingHr} bpm</span>
                 {calculatePercentageChange('resting_hr_1min') !== null && (
                   <span className={`text-[10px] font-semibold ${
-                    calculatePercentageChange('resting_hr_1min')! < 0 ? 'text-[#00ffba]' : 'text-red-500'
+                    calculatePercentageChange('resting_hr_1min')! < 0 ? 'text-green-700' : 'text-red-500'
                   }`}>
                     {calculatePercentageChange('resting_hr_1min')! > 0 ? '+' : ''}
-                    {calculatePercentageChange('resting_hr_1min')!.toFixed(1)}%
+                    {Math.round(calculatePercentageChange('resting_hr_1min')!)}%
                   </span>
                 )}
               </div>
