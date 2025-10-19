@@ -181,7 +181,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
             <div className="text-[9px] text-gray-400">
               Ιστορικό (1 προηγούμενες)
             </div>
-            <div className="text-[9px] text-gray-400 underline decoration-red-500">
+            <div className="text-[9px] text-gray-400">
               {format(new Date(previousData.test_date), 'dd/MM/yy')}
               {previousData.height && ` Ύψος:${previousData.height}cm`}
               {previousData.weight && ` Βάρος:${previousData.weight}kg`}
