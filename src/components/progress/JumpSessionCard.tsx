@@ -180,11 +180,9 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
             const rValue = rMatch ? rMatch[1] : '';
             
             return (
-              <div key={idx} className="text-[10px] text-gray-400">
-                <div className="flex items-center justify-between">
-                  <span>{format(new Date(historySession.test_date), 'dd/MM/yy')}</span>
-                </div>
-                <div className="flex flex-col gap-0.5 ml-2">
+              <div key={idx} className="flex items-center justify-between text-[10px] text-gray-400">
+                <span>{format(new Date(historySession.test_date), 'dd/MM/yy')}</span>
+                <div className="flex flex-col gap-0.5 text-right">
                   <div>L: {lValue}cm</div>
                   <div>R: {rValue}cm</div>
                 </div>
