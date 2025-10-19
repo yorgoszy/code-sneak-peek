@@ -55,6 +55,9 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
         }))
       );
 
+      console.log('Bodyweight - Total sessions:', allData.length);
+      console.log('Bodyweight - Sessions:', allData);
+
       setSessions(allData);
     } catch (error) {
       console.error('Error fetching bodyweight data:', error);
