@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BookOpen, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -39,6 +40,8 @@ export const AdminSchoolNotes = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedNote, setSelectedNote] = useState<SchoolNote | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchNotes();
@@ -99,6 +102,11 @@ export const AdminSchoolNotes = () => {
 
   const handleToday = () => {
     setSelectedWeek(new Date());
+  };
+
+  const handleNoteClick = (note: SchoolNote) => {
+    setSelectedNote(note);
+    setIsDialogOpen(true);
   };
 
   if (isLoading) {
@@ -208,7 +216,11 @@ export const AdminSchoolNotes = () => {
                           </p>
                         ) : (
                           day.notes.map((note) => (
-                            <Card key={note.id} className="rounded-none bg-blue-50 border-blue-200">
+                            <Card 
+                              key={note.id} 
+                              className="rounded-none bg-blue-50 border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
+                              onClick={() => handleNoteClick(note)}
+                            >
                               <CardContent className="p-2 space-y-1">
                                 <p className="text-xs text-gray-600 font-medium">
                                   {note.app_users?.name || "Άγνωστος"}
@@ -216,7 +228,7 @@ export const AdminSchoolNotes = () => {
                                 <p className="text-xs text-gray-500">
                                   {CATEGORIES.find(c => c.value === note.category)?.label}
                                 </p>
-                                <p className="text-xs text-gray-700 mt-2 whitespace-pre-wrap">
+                                <p className="text-xs text-gray-700 mt-2 line-clamp-2">
                                   {note.content}
                                 </p>
                               </CardContent>
@@ -232,6 +244,53 @@ export const AdminSchoolNotes = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Dialog για προβολή σημείωσης */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="rounded-none max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Σχολική Σημείωση
+            </DialogTitle>
+          </DialogHeader>
+          {selectedNote && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      Γονέας: {selectedNote.app_users?.name || "Άγνωστος"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Μάθημα: {CATEGORIES.find(c => c.value === selectedNote.category)?.label}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    {format(new Date(selectedNote.created_at), "d MMM yyyy, HH:mm", { locale: el })}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Κείμενο Σημείωσης</h4>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  {selectedNote.content}
+                </p>
+              </div>
+
+              {selectedNote.ai_summary && (
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-semibold text-blue-900 mb-2">AI Περίληψη</h4>
+                  <p className="text-sm text-blue-800">
+                    {selectedNote.ai_summary}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
