@@ -56,12 +56,15 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
       const allSessions = data || [];
       
-      // Χωρίζω τα sessions ανά τύπο
-      const nonCmjSessions = allSessions.filter(s => s.notes?.includes('Non-CMJ Test'));
-      const cmjSessions = allSessions.filter(s => s.notes?.includes('CMJ Test'));
-      const depthJumpSessions = allSessions.filter(s => s.notes?.includes('Depth Jump Test'));
-      const broadJumpSessions = allSessions.filter(s => s.notes?.includes('Broad Jump Test'));
-      const tripleJumpSessions = allSessions.filter(s => s.notes?.includes('Triple Jump Test'));
+      // Χωρίζω τα sessions ανά τύπο με βάση τα αριθμητικά πεδία (όχι τα notes)
+      const nonCmjSessions = allSessions.filter(s => (s.jump_test_data?.[0]?.non_counter_movement_jump ?? null) !== null);
+      const cmjSessions = allSessions.filter(s => (s.jump_test_data?.[0]?.counter_movement_jump ?? null) !== null);
+      const depthJumpSessions = allSessions.filter(s => (s.jump_test_data?.[0]?.depth_jump ?? null) !== null);
+      const broadJumpSessions = allSessions.filter(s => (s.jump_test_data?.[0]?.broad_jump ?? null) !== null);
+      const tripleJumpSessions = allSessions.filter(s => (
+        (s.jump_test_data?.[0]?.triple_jump_left ?? null) !== null ||
+        (s.jump_test_data?.[0]?.triple_jump_right ?? null) !== null
+      ));
 
       // Βρίσκω την τελευταία καταγραφή για κάθε τύπο
       const latestNonCmj = nonCmjSessions[0] || null;
@@ -87,7 +90,7 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
         const currentValue = currentJump?.non_counter_movement_jump;
         const previousValue = previousJump?.non_counter_movement_jump;
 
-        if (currentValue && previousValue) {
+        if (typeof currentValue === 'number' && typeof previousValue === 'number' && previousValue !== 0) {
           nonCmjChange = ((currentValue - previousValue) / previousValue) * 100;
         }
       }
@@ -101,7 +104,7 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
         const currentValue = currentJump?.counter_movement_jump;
         const previousValue = previousJump?.counter_movement_jump;
 
-        if (currentValue && previousValue) {
+        if (typeof currentValue === 'number' && typeof previousValue === 'number' && previousValue !== 0) {
           cmjChange = ((currentValue - previousValue) / previousValue) * 100;
         }
       }
@@ -115,7 +118,7 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
         const currentValue = currentJump?.depth_jump;
         const previousValue = previousJump?.depth_jump;
 
-        if (currentValue && previousValue) {
+        if (typeof currentValue === 'number' && typeof previousValue === 'number' && previousValue !== 0) {
           depthJumpChange = ((currentValue - previousValue) / previousValue) * 100;
         }
       }
@@ -129,7 +132,7 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
         const currentValue = currentJump?.broad_jump;
         const previousValue = previousJump?.broad_jump;
 
-        if (currentValue && previousValue) {
+        if (typeof currentValue === 'number' && typeof previousValue === 'number' && previousValue !== 0) {
           broadJumpChange = ((currentValue - previousValue) / previousValue) * 100;
         }
       }
@@ -148,7 +151,7 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
         const currentAvg = (currentLeft + currentRight) / 2;
         const previousAvg = (previousLeft + previousRight) / 2;
 
-        if (currentAvg && previousAvg) {
+        if (!Number.isNaN(currentAvg) && !Number.isNaN(previousAvg) && previousAvg !== 0) {
           tripleJumpChange = ((currentAvg - previousAvg) / previousAvg) * 100;
         }
       }
