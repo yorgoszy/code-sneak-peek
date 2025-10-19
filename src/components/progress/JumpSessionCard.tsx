@@ -89,7 +89,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
             {jumpData.non_counter_movement_jump !== null && (
               <div className="flex justify-between items-center text-[9px]">
                 <span className="text-gray-500">Non-CMJ:</span>
-                <span className="font-semibold text-[hsl(var(--metric-green))]">
+                <span className="font-semibold text-blue-600">
                   {jumpData.non_counter_movement_jump}
                   <span className="text-[8px] ml-0.5">cm</span>
                 </span>
@@ -98,7 +98,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
             {jumpData.counter_movement_jump !== null && (
               <div className="flex justify-between items-center text-[9px]">
                 <span className="text-gray-500">CMJ:</span>
-                <span className="font-semibold text-[hsl(var(--metric-green))]">
+                <span className="font-semibold text-blue-600">
                   {jumpData.counter_movement_jump}
                   <span className="text-[8px] ml-0.5">cm</span>
                 </span>
@@ -107,7 +107,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
             {jumpData.depth_jump !== null && (
               <div className="flex justify-between items-center text-[9px]">
                 <span className="text-gray-500">Depth:</span>
-                <span className="font-semibold text-[hsl(var(--metric-green))]">
+                <span className="font-semibold text-blue-600">
                   {jumpData.depth_jump}
                   <span className="text-[8px] ml-0.5">cm</span>
                 </span>
@@ -116,7 +116,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
             {jumpData.broad_jump !== null && (
               <div className="flex justify-between items-center text-[9px]">
                 <span className="text-gray-500">Broad:</span>
-                <span className="font-semibold text-[hsl(var(--metric-green))]">
+                <span className="font-semibold text-blue-600">
                   {jumpData.broad_jump}
                   <span className="text-[8px] ml-0.5">cm</span>
                 </span>
@@ -127,7 +127,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
                 {jumpData.triple_jump_left !== null && (
                 <div className="flex justify-between items-center text-[9px]">
                   <span className="text-gray-500">L:</span>
-                  <span className="font-semibold text-[hsl(var(--metric-green))]">
+                  <span className="font-semibold text-blue-600">
                     {jumpData.triple_jump_left}
                     <span className="text-[8px] ml-0.5">cm</span>
                   </span>
@@ -136,7 +136,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
                 {jumpData.triple_jump_right !== null && (
                 <div className="flex justify-between items-center text-[9px]">
                   <span className="text-gray-500">R:</span>
-                  <span className="font-semibold text-[hsl(var(--metric-green))]">
+                  <span className="font-semibold text-blue-600">
                     {jumpData.triple_jump_right}
                     <span className="text-[8px] ml-0.5">cm</span>
                   </span>
