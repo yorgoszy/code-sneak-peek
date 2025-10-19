@@ -32,7 +32,8 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
           )
         `)
         .eq('user_id', userId)
-        .order('test_date', { ascending: false });
+        .order('test_date', { ascending: false })
+        .limit(10);
 
       if (error) throw error;
       
@@ -49,15 +50,12 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
       const allData = bodyweightSessions.flatMap(session => 
         session.endurance_test_data.map(ed => ({
           ...ed,
-          test_date: session.test_date
+          test_date: session.test_date,
+          session_id: session.id
         }))
       );
 
-      // Get all recent entries
-      const allSessions = allData.slice(0, 2);
-      
-      // Store both current and previous
-      setSessions(allSessions);
+      setSessions(allData);
     } catch (error) {
       console.error('Error fetching bodyweight data:', error);
     } finally {
@@ -83,9 +81,11 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
   }
 
   const currentSession = sessions[0];
-  const previousSession = sessions[1];
 
-  const calculateChange = (current: number | null, previous: number | null) => {
+  const calculateChange = (field: 'push_ups' | 'pull_ups' | 't2b') => {
+    if (sessions.length < 2) return null;
+    const current = sessions[0][field];
+    const previous = sessions[1][field];
     if (!current || !previous || previous === 0) return null;
     return ((current - previous) / previous) * 100;
   };
@@ -99,63 +99,54 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
         <div className="space-y-1">
           {/* Push Ups */}
           {currentSession.push_ups !== null && (
-            <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-gray-500">Push Ups:</span>
-              <span className="font-semibold text-[#cb8954] text-right">{currentSession.push_ups}</span>
-              <div className="text-right">
-                {(() => {
-                  const change = calculateChange(currentSession.push_ups, previousSession?.push_ups);
-                  return change !== null ? (
-                    <span className={`text-[10px] font-semibold ${
-                      change > 0 ? 'text-green-700' : 'text-red-500'
-                    }`}>
-                      {change > 0 ? '+' : ''}
-                      {Math.round(change)}%
-                    </span>
-                  ) : null;
-                })()}
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-[#cb8954]">{currentSession.push_ups}</span>
+                {calculateChange('push_ups') !== null && (
+                  <span className={`text-[10px] font-semibold ${
+                    calculateChange('push_ups')! > 0 ? 'text-green-700' : 'text-red-500'
+                  }`}>
+                    {calculateChange('push_ups')! > 0 ? '+' : ''}
+                    {Math.round(calculateChange('push_ups')!)}%
+                  </span>
+                )}
               </div>
             </div>
           )}
           
           {/* Pull Ups */}
           {currentSession.pull_ups !== null && (
-            <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-gray-500">Pull Ups:</span>
-              <span className="font-semibold text-[#cb8954] text-right">{currentSession.pull_ups}</span>
-              <div className="text-right">
-                {(() => {
-                  const change = calculateChange(currentSession.pull_ups, previousSession?.pull_ups);
-                  return change !== null ? (
-                    <span className={`text-[10px] font-semibold ${
-                      change > 0 ? 'text-green-700' : 'text-red-500'
-                    }`}>
-                      {change > 0 ? '+' : ''}
-                      {Math.round(change)}%
-                    </span>
-                  ) : null;
-                })()}
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-[#cb8954]">{currentSession.pull_ups}</span>
+                {calculateChange('pull_ups') !== null && (
+                  <span className={`text-[10px] font-semibold ${
+                    calculateChange('pull_ups')! > 0 ? 'text-green-700' : 'text-red-500'
+                  }`}>
+                    {calculateChange('pull_ups')! > 0 ? '+' : ''}
+                    {Math.round(calculateChange('pull_ups')!)}%
+                  </span>
+                )}
               </div>
             </div>
           )}
           
           {/* T2B */}
           {currentSession.t2b !== null && (
-            <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-gray-500">T2B:</span>
-              <span className="font-semibold text-[#cb8954] text-right">{currentSession.t2b}</span>
-              <div className="text-right">
-                {(() => {
-                  const change = calculateChange(currentSession.t2b, previousSession?.t2b);
-                  return change !== null ? (
-                    <span className={`text-[10px] font-semibold ${
-                      change > 0 ? 'text-green-700' : 'text-red-500'
-                    }`}>
-                      {change > 0 ? '+' : ''}
-                      {Math.round(change)}%
-                    </span>
-                  ) : null;
-                })()}
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-[#cb8954]">{currentSession.t2b}</span>
+                {calculateChange('t2b') !== null && (
+                  <span className={`text-[10px] font-semibold ${
+                    calculateChange('t2b')! > 0 ? 'text-green-700' : 'text-red-500'
+                  }`}>
+                    {calculateChange('t2b')! > 0 ? '+' : ''}
+                    {Math.round(calculateChange('t2b')!)}%
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -167,17 +158,21 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
           </div>
         </div>
 
-        {previousSession && (
-          <div className="pt-1 border-t border-gray-200">
-            <div className="text-[9px] text-gray-400">
-              Ιστορικό (1 προηγούμενες)
-            </div>
-            <div className="text-[9px] text-gray-400 underline decoration-red-500">
-              {format(new Date(previousSession.test_date), 'dd/MM/yy')}
-              {previousSession.push_ups !== null && ` Push:${previousSession.push_ups}`}
-              {previousSession.pull_ups !== null && ` Pull:${previousSession.pull_ups}`}
-              {previousSession.t2b !== null && ` T2B:${previousSession.t2b}`}
-            </div>
+        {sessions.length > 1 && (
+          <div className="space-y-1 pt-1 border-t border-gray-200">
+            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό ({sessions.length - 1} προηγούμενες)</div>
+            {sessions.slice(1, 4).map((session) => (
+              <div key={session.id} className="flex flex-col gap-0.5 text-[10px] text-gray-400">
+                <div className="flex items-center justify-between">
+                  <span>{format(new Date(session.test_date), 'dd/MM/yy')}</span>
+                </div>
+                <span className="text-right">
+                  {session.push_ups !== null && `Push:${session.push_ups} `}
+                  {session.pull_ups !== null && `Pull:${session.pull_ups} `}
+                  {session.t2b !== null && `T2B:${session.t2b}`}
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>

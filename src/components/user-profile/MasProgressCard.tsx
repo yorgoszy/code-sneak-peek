@@ -113,58 +113,64 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
         <CardTitle className="text-sm">MAS Tests</CardTitle>
       </CardHeader>
       <CardContent className="flex gap-2 overflow-x-auto pb-2 p-[5px]">
-        {sessions.map((exerciseData) => (
-          <Card key={exerciseData.id} className="rounded-none min-w-[130px] shrink-0">
-            <CardContent className="p-[3px]">
-              <div className="space-y-1">
-                {/* Header με άσκηση και μέτρα/λεπτά */}
-                <div className="flex items-start justify-between">
-                  {exerciseData.exercises?.name && (
-                    <div className="text-sm font-semibold text-gray-900">
-                      {exerciseData.exercises.name}
+        {sessions.map((exerciseData) => {
+          // Get all sessions for this exercise for history
+          const allExerciseSessions = sessions.filter(s => s.exercise_id === exerciseData.exercise_id);
+          
+          return (
+            <Card key={exerciseData.id} className="rounded-none min-w-[130px] shrink-0">
+              <CardContent className="p-[3px]">
+                <div className="space-y-1">
+                  {/* Header με άσκηση και μέτρα/λεπτά */}
+                  <div className="flex items-start justify-between">
+                    {exerciseData.exercises?.name && (
+                      <div className="text-sm font-semibold text-gray-900">
+                        {exerciseData.exercises.name}
+                      </div>
+                    )}
+                    <div className="flex flex-col text-xs text-gray-500 text-right">
+                      <span>{exerciseData.mas_meters}m</span>
+                      <span>{Math.floor(exerciseData.mas_minutes)}:{String(Math.round((exerciseData.mas_minutes % 1) * 60)).padStart(2, '0')}</span>
                     </div>
-                  )}
-                  <div className="flex flex-col text-xs text-gray-500 text-right">
-                    <span>{exerciseData.mas_meters}m</span>
-                    <span>{Math.floor(exerciseData.mas_minutes)}:{String(Math.round((exerciseData.mas_minutes % 1) * 60)).padStart(2, '0')}</span>
                   </div>
-                </div>
-                
-                {/* MAS με ποσοστό αλλαγής */}
-                <div className="flex items-center gap-1">
-                  <div className="font-bold text-[#cb8954]">
-                    {exerciseData.mas_ms?.toFixed(2)} m/s
-                  </div>
-                  {exerciseData.percentageChange !== null && (
-                    <div className={`text-xs font-semibold ${
-                      exerciseData.percentageChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
-                    }`}>
-                      {exerciseData.percentageChange > 0 ? '+' : ''}
-                      {exerciseData.percentageChange.toFixed(1)}%
+                  
+                  {/* MAS με ποσοστό αλλαγής */}
+                  <div className="flex items-center gap-1">
+                    <div className="font-bold text-[#cb8954]">
+                      {exerciseData.mas_ms?.toFixed(2)} m/s
                     </div>
-                  )}
-                </div>
-                
-                {/* Ημερομηνία κάτω αριστερά */}
-                <div className="text-xs text-gray-500">
-                  {format(new Date(exerciseData.test_date), 'dd/MM/yy')}
-                </div>
+                    {exerciseData.percentageChange !== null && (
+                      <div className={`text-xs font-semibold ${
+                        exerciseData.percentageChange > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                      }`}>
+                        {exerciseData.percentageChange > 0 ? '+' : ''}
+                        {exerciseData.percentageChange.toFixed(1)}%
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Ημερομηνία */}
+                  <div className="text-xs text-gray-500">
+                    {format(new Date(exerciseData.test_date), 'dd/MM/yy')}
+                  </div>
 
-                {/* Ιστορικό */}
-                {exerciseData.previousData && (
-                  <div className="pt-1 border-t border-gray-200">
-                    <div className="text-[9px] text-gray-400">
-                      Ιστορικό (1 προηγούμενες)
+                  {/* Ιστορικό */}
+                  {exerciseData.previousData && (
+                    <div className="space-y-1 pt-1 border-t border-gray-200">
+                      <div className="text-[10px] text-gray-500 font-medium">Ιστορικό (1 προηγούμενες)</div>
+                      <div className="flex flex-col gap-0.5 text-[10px] text-gray-400">
+                        <div className="flex items-center justify-between">
+                          <span>{format(new Date(exerciseData.previousData.test_date), 'dd/MM/yy')}</span>
+                        </div>
+                        <span className="text-right">{exerciseData.previousData.mas_ms?.toFixed(2)} m/s</span>
+                      </div>
                     </div>
-                    <div className="text-[9px] text-gray-400 underline decoration-red-500">
-                      {format(new Date(exerciseData.previousData.test_date), 'dd/MM/yy')} {exerciseData.previousData.mas_ms?.toFixed(2)} m/s
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </CardContent>
     </Card>
   );

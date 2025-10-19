@@ -186,14 +186,20 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
   if (latestSessions.nonCmj) {
     jumpCards.push(
-      <div key={latestSessions.nonCmj.id} className="space-y-1">
+      <div key={latestSessions.nonCmj.id} className="space-y-0">
         <JumpSessionCard 
           session={latestSessions.nonCmj} 
           percentageChange={percentageChanges.nonCmj} 
         />
         {previousSessions.nonCmj && (
-          <div className="text-[9px] text-gray-400 px-2">
-            Ιστορικό: {format(new Date(previousSessions.nonCmj.test_date), 'dd/MM/yy')} - {previousSessions.nonCmj.notes?.split(' - ')[1] || ''}
+          <div className="space-y-1 pt-1 px-1.5 pb-1.5">
+            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό (1 προηγούμενες)</div>
+            <div className="flex flex-col gap-0.5 text-[10px] text-gray-400">
+              <div className="flex items-center justify-between">
+                <span>{format(new Date(previousSessions.nonCmj.test_date), 'dd/MM/yy')}</span>
+              </div>
+              <span className="text-right">{previousSessions.nonCmj.notes?.split(' - ')[1] || ''}</span>
+            </div>
           </div>
         )}
       </div>
@@ -202,14 +208,20 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
   if (latestSessions.cmj) {
     jumpCards.push(
-      <div key={latestSessions.cmj.id} className="space-y-1">
+      <div key={latestSessions.cmj.id} className="space-y-0">
         <JumpSessionCard 
           session={latestSessions.cmj} 
           percentageChange={percentageChanges.cmj} 
         />
         {previousSessions.cmj && (
-          <div className="text-[9px] text-gray-400 px-2">
-            Ιστορικό: {format(new Date(previousSessions.cmj.test_date), 'dd/MM/yy')} - {previousSessions.cmj.notes?.split(' - ')[1] || ''}
+          <div className="space-y-1 pt-1 px-1.5 pb-1.5">
+            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό (1 προηγούμενες)</div>
+            <div className="flex flex-col gap-0.5 text-[10px] text-gray-400">
+              <div className="flex items-center justify-between">
+                <span>{format(new Date(previousSessions.cmj.test_date), 'dd/MM/yy')}</span>
+              </div>
+              <span className="text-right">{previousSessions.cmj.notes?.split(' - ')[1] || ''}</span>
+            </div>
           </div>
         )}
       </div>
@@ -218,14 +230,20 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
   if (latestSessions.depthJump) {
     jumpCards.push(
-      <div key={latestSessions.depthJump.id} className="space-y-1">
+      <div key={latestSessions.depthJump.id} className="space-y-0">
         <JumpSessionCard 
           session={latestSessions.depthJump} 
           percentageChange={percentageChanges.depthJump} 
         />
         {previousSessions.depthJump && (
-          <div className="text-[9px] text-gray-400 px-2">
-            Ιστορικό: {format(new Date(previousSessions.depthJump.test_date), 'dd/MM/yy')} - {previousSessions.depthJump.notes?.split(' - ')[1] || ''}
+          <div className="space-y-1 pt-1 px-1.5 pb-1.5">
+            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό (1 προηγούμενες)</div>
+            <div className="flex flex-col gap-0.5 text-[10px] text-gray-400">
+              <div className="flex items-center justify-between">
+                <span>{format(new Date(previousSessions.depthJump.test_date), 'dd/MM/yy')}</span>
+              </div>
+              <span className="text-right">{previousSessions.depthJump.notes?.split(' - ')[1] || ''}</span>
+            </div>
           </div>
         )}
       </div>
@@ -234,14 +252,20 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
   if (latestSessions.broadJump) {
     jumpCards.push(
-      <div key={latestSessions.broadJump.id} className="space-y-1">
+      <div key={latestSessions.broadJump.id} className="space-y-0">
         <JumpSessionCard 
           session={latestSessions.broadJump} 
           percentageChange={percentageChanges.broadJump} 
         />
         {previousSessions.broadJump && (
-          <div className="text-[9px] text-gray-400 px-2">
-            Ιστορικό: {format(new Date(previousSessions.broadJump.test_date), 'dd/MM/yy')} - {previousSessions.broadJump.notes?.split(' - ')[1] || ''}
+          <div className="space-y-1 pt-1 px-1.5 pb-1.5">
+            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό (1 προηγούμενες)</div>
+            <div className="flex flex-col gap-0.5 text-[10px] text-gray-400">
+              <div className="flex items-center justify-between">
+                <span>{format(new Date(previousSessions.broadJump.test_date), 'dd/MM/yy')}</span>
+              </div>
+              <span className="text-right">{previousSessions.broadJump.notes?.split(' - ')[1] || ''}</span>
+            </div>
           </div>
         )}
       </div>
@@ -250,14 +274,20 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
   if (latestSessions.tripleJump) {
     jumpCards.push(
-      <div key={latestSessions.tripleJump.id} className="space-y-1">
+      <div key={latestSessions.tripleJump.id} className="space-y-0">
         <JumpSessionCard 
           session={latestSessions.tripleJump} 
           percentageChange={percentageChanges.tripleJump} 
         />
         {previousSessions.tripleJump && (
-          <div className="text-[9px] text-gray-400 px-2">
-            Ιστορικό: {format(new Date(previousSessions.tripleJump.test_date), 'dd/MM/yy')} - {previousSessions.tripleJump.notes?.split(' - ')[1] || ''}
+          <div className="space-y-1 pt-1 px-1.5 pb-1.5">
+            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό (1 προηγούμενες)</div>
+            <div className="flex flex-col gap-0.5 text-[10px] text-gray-400">
+              <div className="flex items-center justify-between">
+                <span>{format(new Date(previousSessions.tripleJump.test_date), 'dd/MM/yy')}</span>
+              </div>
+              <span className="text-right">{previousSessions.tripleJump.notes?.split(' - ')[1] || ''}</span>
+            </div>
           </div>
         )}
       </div>
