@@ -28,9 +28,10 @@ interface JumpSessionCardProps {
   showDelete?: boolean;
   onDelete?: () => void;
   percentageChange?: number | null;
+  previousSession?: JumpSessionCardSession | null;
 }
 
-export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userName, showDelete = false, onDelete, percentageChange }) => {
+export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userName, showDelete = false, onDelete, percentageChange, previousSession }) => {
   const jumpData = session.jump_test_data?.[0];
 
   return (
@@ -160,6 +161,17 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
         Τελευταία μέτρηση: {format(new Date(session.test_date), 'dd/MM/yy')}
       </div>
     </div>
+
+    {previousSession && (
+      <div className="pt-1 border-t border-gray-200">
+        <div className="text-[9px] text-gray-400">
+          Ιστορικό
+        </div>
+        <div className="text-[9px] text-gray-400">
+          {format(new Date(previousSession.test_date), 'dd/MM/yy')} - {previousSession.notes?.split(' - ')[1] || ''}
+        </div>
+      </div>
+    )}
   </CardContent>
     </Card>
   );

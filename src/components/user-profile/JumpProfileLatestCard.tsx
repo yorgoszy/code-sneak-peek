@@ -186,81 +186,56 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
   if (latestSessions.nonCmj) {
     jumpCards.push(
-      <div key={latestSessions.nonCmj.id} className="space-y-1">
-        <JumpSessionCard 
-          session={latestSessions.nonCmj} 
-          percentageChange={percentageChanges.nonCmj} 
-        />
-        {previousSessions.nonCmj && (
-          <div className="text-[9px] text-gray-400 px-2">
-            Ιστορικό: {format(new Date(previousSessions.nonCmj.test_date), 'dd/MM/yy')} - {previousSessions.nonCmj.notes?.split(' - ')[1] || ''}
-          </div>
-        )}
-      </div>
+      <JumpSessionCard 
+        key={latestSessions.nonCmj.id}
+        session={latestSessions.nonCmj} 
+        percentageChange={percentageChanges.nonCmj}
+        previousSession={previousSessions.nonCmj}
+      />
     );
   }
 
   if (latestSessions.cmj) {
     jumpCards.push(
-      <div key={latestSessions.cmj.id} className="space-y-1">
-        <JumpSessionCard 
-          session={latestSessions.cmj} 
-          percentageChange={percentageChanges.cmj} 
-        />
-        {previousSessions.cmj && (
-          <div className="text-[9px] text-gray-400 px-2">
-            Ιστορικό: {format(new Date(previousSessions.cmj.test_date), 'dd/MM/yy')} - {previousSessions.cmj.notes?.split(' - ')[1] || ''}
-          </div>
-        )}
-      </div>
+      <JumpSessionCard 
+        key={latestSessions.cmj.id}
+        session={latestSessions.cmj} 
+        percentageChange={percentageChanges.cmj}
+        previousSession={previousSessions.cmj}
+      />
     );
   }
 
   if (latestSessions.depthJump) {
     jumpCards.push(
-      <div key={latestSessions.depthJump.id} className="space-y-1">
-        <JumpSessionCard 
-          session={latestSessions.depthJump} 
-          percentageChange={percentageChanges.depthJump} 
-        />
-        {previousSessions.depthJump && (
-          <div className="text-[9px] text-gray-400 px-2">
-            Ιστορικό: {format(new Date(previousSessions.depthJump.test_date), 'dd/MM/yy')} - {previousSessions.depthJump.notes?.split(' - ')[1] || ''}
-          </div>
-        )}
-      </div>
+      <JumpSessionCard 
+        key={latestSessions.depthJump.id}
+        session={latestSessions.depthJump} 
+        percentageChange={percentageChanges.depthJump}
+        previousSession={previousSessions.depthJump}
+      />
     );
   }
 
   if (latestSessions.broadJump) {
     jumpCards.push(
-      <div key={latestSessions.broadJump.id} className="space-y-1">
-        <JumpSessionCard 
-          session={latestSessions.broadJump} 
-          percentageChange={percentageChanges.broadJump} 
-        />
-        {previousSessions.broadJump && (
-          <div className="text-[9px] text-gray-400 px-2">
-            Ιστορικό: {format(new Date(previousSessions.broadJump.test_date), 'dd/MM/yy')} - {previousSessions.broadJump.notes?.split(' - ')[1] || ''}
-          </div>
-        )}
-      </div>
+      <JumpSessionCard 
+        key={latestSessions.broadJump.id}
+        session={latestSessions.broadJump} 
+        percentageChange={percentageChanges.broadJump}
+        previousSession={previousSessions.broadJump}
+      />
     );
   }
 
   if (latestSessions.tripleJump) {
     jumpCards.push(
-      <div key={latestSessions.tripleJump.id} className="space-y-1">
-        <JumpSessionCard 
-          session={latestSessions.tripleJump} 
-          percentageChange={percentageChanges.tripleJump} 
-        />
-        {previousSessions.tripleJump && (
-          <div className="text-[9px] text-gray-400 px-2">
-            Ιστορικό: {format(new Date(previousSessions.tripleJump.test_date), 'dd/MM/yy')} - {previousSessions.tripleJump.notes?.split(' - ')[1] || ''}
-          </div>
-        )}
-      </div>
+      <JumpSessionCard 
+        key={latestSessions.tripleJump.id}
+        session={latestSessions.tripleJump} 
+        percentageChange={percentageChanges.tripleJump}
+        previousSession={previousSessions.tripleJump}
+      />
     );
   }
 
