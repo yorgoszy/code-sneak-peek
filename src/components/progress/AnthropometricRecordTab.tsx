@@ -38,7 +38,8 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
 
   const userOptions = users.map(user => ({
     value: user.id,
-    label: user.name
+    label: user.name,
+    searchTerms: `${user.name} ${user.email || ''}`
   }));
 
   const updateForm = (formId: string, updates: Partial<AnthropometricForm>) => {
