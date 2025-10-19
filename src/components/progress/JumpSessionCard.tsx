@@ -29,9 +29,10 @@ interface JumpSessionCardProps {
   onDelete?: () => void;
   percentageChange?: number | null;
   previousSession?: JumpSessionCardSession | null;
+  historySessions?: JumpSessionCardSession[];
 }
 
-export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userName, showDelete = false, onDelete, percentageChange, previousSession }) => {
+export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userName, showDelete = false, onDelete, percentageChange, previousSession, historySessions }) => {
   const jumpData = session.jump_test_data?.[0];
 
   return (
@@ -162,14 +163,16 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
       </div>
     </div>
 
-    {previousSession && (
-      <div className="pt-1 border-t border-gray-200">
-        <div className="text-[9px] text-gray-400">
-          Ιστορικό
-        </div>
-        <div className="text-[9px] text-gray-400">
-          {format(new Date(previousSession.test_date), 'dd/MM/yy')} - {previousSession.notes?.split(' - ')[1] || ''}
-        </div>
+    {/* History section - similar to Cardiac Data card */}
+    {historySessions && historySessions.length > 0 && (
+      <div className="space-y-1 pt-1 border-t border-gray-200">
+        <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
+        {historySessions.map((historySession, idx) => (
+          <div key={idx} className="flex items-center justify-between text-[10px] text-gray-400">
+            <span>{format(new Date(historySession.test_date), 'dd/MM/yy')}</span>
+            <span>{historySession.notes?.split(' - ')[1] || ''}</span>
+          </div>
+        ))}
       </div>
     )}
   </CardContent>

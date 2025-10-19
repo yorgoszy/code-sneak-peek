@@ -185,56 +185,61 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
   const jumpCards = [];
 
   if (latestSessions.nonCmj) {
+    const history = [previousSessions.nonCmj].filter(Boolean) as JumpSessionCardSession[];
     jumpCards.push(
       <JumpSessionCard 
         key={latestSessions.nonCmj.id}
         session={latestSessions.nonCmj} 
         percentageChange={percentageChanges.nonCmj}
-        previousSession={previousSessions.nonCmj}
+        historySessions={history}
       />
     );
   }
 
   if (latestSessions.cmj) {
+    const history = [previousSessions.cmj].filter(Boolean) as JumpSessionCardSession[];
     jumpCards.push(
       <JumpSessionCard 
         key={latestSessions.cmj.id}
         session={latestSessions.cmj} 
         percentageChange={percentageChanges.cmj}
-        previousSession={previousSessions.cmj}
+        historySessions={history}
       />
     );
   }
 
   if (latestSessions.depthJump) {
+    const history = [previousSessions.depthJump].filter(Boolean) as JumpSessionCardSession[];
     jumpCards.push(
       <JumpSessionCard 
         key={latestSessions.depthJump.id}
         session={latestSessions.depthJump} 
         percentageChange={percentageChanges.depthJump}
-        previousSession={previousSessions.depthJump}
+        historySessions={history}
       />
     );
   }
 
   if (latestSessions.broadJump) {
+    const history = [previousSessions.broadJump].filter(Boolean) as JumpSessionCardSession[];
     jumpCards.push(
       <JumpSessionCard 
         key={latestSessions.broadJump.id}
         session={latestSessions.broadJump} 
         percentageChange={percentageChanges.broadJump}
-        previousSession={previousSessions.broadJump}
+        historySessions={history}
       />
     );
   }
 
   if (latestSessions.tripleJump) {
+    const history = [previousSessions.tripleJump].filter(Boolean) as JumpSessionCardSession[];
     jumpCards.push(
       <JumpSessionCard 
         key={latestSessions.tripleJump.id}
         session={latestSessions.tripleJump} 
         percentageChange={percentageChanges.tripleJump}
-        previousSession={previousSessions.tripleJump}
+        historySessions={history}
       />
     );
   }
