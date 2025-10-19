@@ -75,11 +75,11 @@ export default function ProgressTracking() {
 
         <TabsContent value="force-velocity" className="mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
-            <TabsList className="rounded-none w-full bg-gray-100">
-              <TabsTrigger value="new" className="rounded-none flex-1 text-sm md:text-base">
+            <TabsList className="rounded-none w-full bg-gray-100 h-8">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-xs py-1 px-2">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1 text-sm md:text-base">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-xs py-1 px-2">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
@@ -100,11 +100,11 @@ export default function ProgressTracking() {
 
         <TabsContent value="endurance" className="mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
-            <TabsList className="rounded-none w-full bg-gray-100">
-              <TabsTrigger value="new" className="rounded-none flex-1 text-sm md:text-base">
+            <TabsList className="rounded-none w-full bg-gray-100 h-8">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-xs py-1 px-2">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1 text-sm md:text-base">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-xs py-1 px-2">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
@@ -125,11 +125,11 @@ export default function ProgressTracking() {
 
         <TabsContent value="jump-profile" className="mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
-            <TabsList className="rounded-none w-full bg-gray-100">
-              <TabsTrigger value="new" className="rounded-none flex-1 text-sm md:text-base">
+            <TabsList className="rounded-none w-full bg-gray-100 h-8">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-xs py-1 px-2">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1 text-sm md:text-base">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-xs py-1 px-2">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
@@ -149,11 +149,11 @@ export default function ProgressTracking() {
 
         <TabsContent value="anthropometric" className="mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
-            <TabsList className="rounded-none w-full bg-gray-100">
-              <TabsTrigger value="new" className="rounded-none flex-1 text-sm md:text-base">
+            <TabsList className="rounded-none w-full bg-gray-100 h-8">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-xs py-1 px-2">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1 text-sm md:text-base">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-xs py-1 px-2">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
