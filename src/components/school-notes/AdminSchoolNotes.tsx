@@ -210,34 +210,12 @@ export const AdminSchoolNotes = () => {
                           day.notes.map((note) => (
                             <Card key={note.id} className="rounded-none bg-blue-50 border-blue-200">
                               <CardContent className="p-2 space-y-1">
-                                <div className="flex items-start justify-between gap-1">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-xs text-gray-600 font-medium truncate">
-                                      {note.app_users?.name || "Άγνωστος"}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      {CATEGORIES.find(c => c.value === note.category)?.label}
-                                    </p>
-                                  </div>
-                                </div>
-                                
-                                {note.ai_summary && (
-                                  <div className="mt-2">
-                                    <p className="text-xs font-medium text-blue-900 mb-1">AI:</p>
-                                    <p className="text-xs text-blue-800 line-clamp-3">
-                                      {note.ai_summary}
-                                    </p>
-                                  </div>
-                                )}
-                                
-                                <details className="mt-2">
-                                  <summary className="text-xs text-blue-600 cursor-pointer hover:underline">
-                                    Πλήρες κείμενο
-                                  </summary>
-                                  <p className="text-xs text-gray-700 mt-1 whitespace-pre-wrap">
-                                    {note.content}
-                                  </p>
-                                </details>
+                                <p className="text-xs text-gray-600 font-medium">
+                                  {note.app_users?.name || "Άγνωστος"}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {CATEGORIES.find(c => c.value === note.category)?.label}
+                                </p>
                               </CardContent>
                             </Card>
                           ))
