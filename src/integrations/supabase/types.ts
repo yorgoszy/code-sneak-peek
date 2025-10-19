@@ -2747,6 +2747,57 @@ export type Database = {
         }
         Relationships: []
       }
+      school_notes: {
+        Row: {
+          ai_processed: boolean | null
+          ai_summary: string | null
+          category: string
+          content: string
+          created_at: string
+          id: string
+          parent_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_processed?: boolean | null
+          ai_summary?: string | null
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          parent_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_processed?: boolean | null
+          ai_summary?: string | null
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          parent_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_notes_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_notes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_images: {
         Row: {
           created_at: string

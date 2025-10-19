@@ -1,96 +1,89 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
-import { Button } from "@/components/ui/button";
-import { LogOut, Menu } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useDashboard } from "@/hooks/useDashboard";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { SchoolNotes } from "@/pages/SchoolNotes";
+import { Menu } from "lucide-react";
+import { AdminSchoolNotes } from "@/components/school-notes/AdminSchoolNotes";
 
-const SchoolNotesWithSidebar = () => {
-  const { user, signOut } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+export const SchoolNotesWithSidebar = () => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const { signOut } = useAuth();
+  const { refreshSidebar } = useDashboard();
   const isMobile = useIsMobile();
-  const { userProfile: dashboardUserProfile } = useDashboard();
   const { isAdmin } = useRoleCheck();
 
-  // Check for tablet size
   useEffect(() => {
-    const handleResize = () => {
+    const checkTablet = () => {
       setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
     };
     
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    checkTablet();
+    window.addEventListener('resize', checkTablet);
+    return () => window.removeEventListener('resize', checkTablet);
   }, []);
 
   const handleSignOut = async () => {
     await signOut();
   };
 
-  if (!isAdmin()) {
+  if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Δεν έχετε πρόσβαση σε αυτή τη σελίδα</p>
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-xl text-gray-600">Access Denied. Admin only.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex w-full">
-      <div className={`${isMobile || isTablet ? 'hidden' : 'block'}`}>
+    <div className="flex h-screen overflow-hidden">
+      {/* Desktop/Tablet Sidebar */}
+      {!isMobile && !isTablet && (
         <Sidebar 
-          isCollapsed={isCollapsed} 
-          setIsCollapsed={setIsCollapsed}
+          isCollapsed={isSidebarCollapsed}
+          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
-      </div>
+      )}
 
       {/* Mobile/Tablet Sidebar Overlay */}
-      {(isMobile || isTablet) && (
-        <div className={`fixed inset-0 z-50 ${showMobileSidebar ? 'block' : 'hidden'}`}>
+      {(isMobile || isTablet) && showMobileSidebar && (
+        <>
           <div 
-            className="absolute inset-0 bg-black/50" 
+            className="fixed inset-0 bg-black/50 z-40"
             onClick={() => setShowMobileSidebar(false)}
           />
-          <div className="absolute left-0 top-0 h-full bg-white shadow-xl">
-            <Sidebar
+          <div className="fixed left-0 top-0 h-full z-50 w-64">
+            <Sidebar 
               isCollapsed={false}
-              setIsCollapsed={() => {}}
+              onToggle={() => setShowMobileSidebar(false)}
             />
           </div>
-        </div>
+        </>
       )}
-      
-      {/* School Notes Content */}
-      <div className="flex-1 overflow-auto">
-        {/* Mobile/Tablet header with menu button */}
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Mobile/Tablet Header */}
         {(isMobile || isTablet) && (
-          <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-3 py-4 shadow-sm lg:hidden">
-            <div className="flex items-center justify-between">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setShowMobileSidebar(true)}
-                className="rounded-none"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              <h1 className="text-lg font-semibold">Σχολικές Σημειώσεις</h1>
-              <div className="w-8" /> {/* Spacer for centering */}
-            </div>
-          </nav>
+          <div className="sticky top-0 z-30 flex items-center gap-4 p-4 bg-white border-b">
+            <button
+              onClick={() => setShowMobileSidebar(true)}
+              className="p-2 hover:bg-gray-100 rounded-none"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <h1 className="text-lg font-semibold">Σχολικές Σημειώσεις</h1>
+          </div>
         )}
-        
-        <div className={`${isMobile ? 'p-3' : 'p-6'}`}>
-          <SchoolNotes />
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6">
+          <AdminSchoolNotes />
         </div>
       </div>
     </div>
   );
 };
-
-export default SchoolNotesWithSidebar;
