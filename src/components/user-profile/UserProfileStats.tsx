@@ -751,30 +751,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </button>
 
-          {/* Σχολικές Σημειώσεις - Για parents μόνο */}
-          {user.role === 'parent' && (
-            <button 
-              onClick={() => {
-                if (setActiveTab) {
-                  setActiveTab('school-notes');
-                } else {
-                  navigate(`/dashboard/user-profile/${user.id}?tab=school-notes`);
-                }
-              }}
-              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
-            >
-              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-                <BookOpen className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
-              </div>
-              <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-                <span className="text-[#00ffba]"> </span>
-              </div>
-              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-                Σχολικές Σημειώσεις
-              </div>
-            </button>
-          )}
-
           {/* Επισκέψεις - Ένατο */}
           <button
             onClick={() => {
@@ -950,6 +926,30 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               RidAi Προπονητής
             </div>
           </button>
+
+          {/* Σχολικές Σημειώσεις - Για parents μόνο */}
+          {user.role === 'parent' && (
+            <button 
+              onClick={() => {
+                if (setActiveTab) {
+                  setActiveTab('school-notes');
+                } else {
+                  navigate(`/dashboard/user-profile/${user.id}?tab=school-notes`);
+                }
+              }}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            >
+              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+                <BookOpen className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              </div>
+              <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
+                <span className="text-[#00ffba]"> </span>
+              </div>
+              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+                Σχολικές Σημειώσεις
+              </div>
+            </button>
+          )}
 
           {user.role === 'trainer' && (
             <button 
