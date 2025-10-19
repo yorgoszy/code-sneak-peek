@@ -46,10 +46,14 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
           if (!latestSessionWithData) {
             latestSessionWithData = {
               ...anthroData,
-              test_date: session.test_date
+              test_date: session.test_date,
+              session_id: session.id
             };
           } else if (!previousSessionWithData) {
-            previousSessionWithData = anthroData;
+            previousSessionWithData = {
+              ...anthroData,
+              test_date: session.test_date
+            };
             break; // We found both, no need to continue
           }
         }
@@ -171,6 +175,21 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
             </div>
           )}
         </div>
+
+        {previousData && (
+          <div className="pt-2 border-t border-gray-200 mt-2">
+            <div className="text-[9px] text-gray-400">
+              Ιστορικό (1 προηγούμενες)
+            </div>
+            <div className="text-[9px] text-gray-400 underline decoration-red-500">
+              {format(new Date(previousData.test_date), 'dd/MM/yy')}
+              {previousData.height && ` Ύψος:${previousData.height}cm`}
+              {previousData.weight && ` Βάρος:${previousData.weight}kg`}
+              {previousData.body_fat_percentage && ` Λίπος:${previousData.body_fat_percentage}%`}
+              {previousData.muscle_mass_percentage && ` Μυϊκή:${previousData.muscle_mass_percentage}%`}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

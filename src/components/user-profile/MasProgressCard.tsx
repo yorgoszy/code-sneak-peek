@@ -61,7 +61,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
         exerciseMap.get(item.exercise_id).push(item);
       });
       
-      // For each exercise, sort by date and keep only the 2 most recent
+      // For each exercise, sort by date and keep the 2 most recent
       const processedSessions = Array.from(exerciseMap.values()).map(items => {
         const sorted = items.sort((a, b) => 
           new Date(b.test_date).getTime() - new Date(a.test_date).getTime()
@@ -77,7 +77,8 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
         
         return {
           ...latest,
-          percentageChange
+          percentageChange,
+          previousData: previous
         };
       });
       
@@ -148,6 +149,18 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
                 <div className="text-xs text-gray-500">
                   {format(new Date(exerciseData.test_date), 'dd/MM/yy')}
                 </div>
+
+                {/* Ιστορικό */}
+                {exerciseData.previousData && (
+                  <div className="pt-1 border-t border-gray-200">
+                    <div className="text-[9px] text-gray-400">
+                      Ιστορικό (1 προηγούμενες)
+                    </div>
+                    <div className="text-[9px] text-gray-400 underline decoration-red-500">
+                      {format(new Date(exerciseData.previousData.test_date), 'dd/MM/yy')} {exerciseData.previousData.mas_ms?.toFixed(2)} m/s
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
