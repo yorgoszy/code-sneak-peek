@@ -20,6 +20,7 @@ import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog"
 import { UserProfileEdit } from "./UserProfileEdit";
 import { UserProgressSection } from "./UserProgressSection";
 import { UserProfileHistory } from "./UserProfileHistory";
+import { SchoolNotes } from "@/pages/SchoolNotes";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -181,6 +182,14 @@ export const UserProfileContent = ({
                 window.location.reload();
               }}
             />
+          </div>
+        );
+      case "school-notes":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <h2 className="text-xl font-semibold">Σχολικές Σημειώσεις</h2>
+            <SchoolNotes />
           </div>
         );
       default:

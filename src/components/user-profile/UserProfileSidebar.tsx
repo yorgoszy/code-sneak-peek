@@ -12,7 +12,8 @@ import {
   CalendarDays,
   Tag,
   TrendingUp,
-  History
+  History,
+  BookOpen
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -189,62 +190,81 @@ export const UserProfileSidebar = forwardRef<
     }
   };
   
+  // Έλεγχος αν ο χρήστης είναι parent
+  const isParentUser = userProfile?.role === 'parent';
+
   const menuItems = [
     { 
       icon: BarChart3, 
       label: "Επισκόπηση", 
       key: "overview",
-      badge: null
+      badge: null,
+      visible: true
     },
     { 
       icon: Activity, 
       label: "Προγράμματα", 
       key: "programs",
-      badge: activePrograms > 0 ? activePrograms : null
+      badge: activePrograms > 0 ? activePrograms : null,
+      visible: true
     },
     { 
       icon: TrendingUp, 
       label: "Πρόοδος", 
       key: "progress",
-      badge: null
+      badge: null,
+      visible: true
     },
     { 
       icon: History, 
       label: "Ιστορικό", 
       key: "history",
-      badge: null
+      badge: null,
+      visible: true
     },
     { 
       icon: CreditCard, 
       label: "Πληρωμές", 
       key: "payments",
-      badge: stats.paymentsCount > 0 ? stats.paymentsCount : null
+      badge: stats.paymentsCount > 0 ? stats.paymentsCount : null,
+      visible: true
     },
     {
       icon: ShoppingCart,
       label: "Αγορές",
       key: "shop",
-      badge: null
+      badge: null,
+      visible: true
     },
     {
       icon: Tag,
       label: "Προσφορές",
       key: "offers",
-      badge: availableOffers > 0 ? availableOffers : null
+      badge: availableOffers > 0 ? availableOffers : null,
+      visible: true
     },
     {
       icon: Video,
       label: "Online Coaching",
       key: "online-coaching",
-      badge: null
+      badge: null,
+      visible: true
     },
     {
       icon: CalendarDays,
       label: "Online Booking",
       key: "online-booking",
-      badge: null
+      badge: null,
+      visible: true
     },
-  ];
+    {
+      icon: BookOpen,
+      label: "Σχολικές Σημειώσεις",
+      key: "school-notes",
+      badge: null,
+      visible: isParentUser
+    },
+  ].filter(item => item.visible);
 
   const handleAIChatClick = () => {
     setIsAIChatOpen(true);
