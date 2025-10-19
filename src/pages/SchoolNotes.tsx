@@ -7,6 +7,7 @@ import { BookOpen, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
   { value: "math", label: "Μαθηματικά" },
@@ -30,7 +31,7 @@ export const SchoolNotes = () => {
   const [content, setContent] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [children, setChildren] = useState<Child[]>([]);
-  const [selectedChild, setSelectedChild] = useState<string>("");
+  const [selectedChildren, setSelectedChildren] = useState<string[]>([]);
 
   useEffect(() => {
     fetchChildren();
@@ -72,9 +73,17 @@ export const SchoolNotes = () => {
     return age;
   };
 
+  const toggleChild = (childId: string) => {
+    setSelectedChildren(prev => 
+      prev.includes(childId) 
+        ? prev.filter(id => id !== childId)
+        : [...prev, childId]
+    );
+  };
+
   const handleSubmit = async () => {
-    if (!content.trim() || !category || !selectedChild) {
-      toast.error("Παρακαλώ συμπληρώστε όλα τα πεδία και επιλέξτε παιδί");
+    if (!content.trim() || !category || selectedChildren.length === 0) {
+      toast.error("Παρακαλώ συμπληρώστε όλα τα πεδία και επιλέξτε τουλάχιστον ένα παιδί");
       return;
     }
 
@@ -92,45 +101,48 @@ export const SchoolNotes = () => {
         throw new Error("Δεν βρέθηκε ο χρήστης");
       }
 
-      // Get child info
-      const selectedChildData = children.find(c => c.id === selectedChild);
-      if (!selectedChildData) {
-        throw new Error("Δεν βρέθηκε το παιδί");
-      }
+      // Create a note for each selected child
+      const notePromises = selectedChildren.map(async (childId) => {
+        const selectedChildData = children.find(c => c.id === childId);
+        if (!selectedChildData) {
+          throw new Error("Δεν βρέθηκε το παιδί");
+        }
 
-      const childAge = calculateAge(selectedChildData.birth_date);
+        const childAge = calculateAge(selectedChildData.birth_date);
 
-      // For now, we'll use the same user_id for both parent and child
-      // In a real scenario, you'd select the child from a list
-      const { data, error } = await supabase
-        .from('school_notes')
-        .insert({
-          user_id: appUser.id,
-          parent_id: appUser.id,
-          child_id: selectedChild,
-          child_age: childAge,
-          category,
-          content,
-        })
-        .select()
-        .single();
+        const { data, error } = await supabase
+          .from('school_notes')
+          .insert({
+            user_id: appUser.id,
+            parent_id: appUser.id,
+            child_id: childId,
+            child_age: childAge,
+            category,
+            content,
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // Call AI edge function to process the note
-      const { error: aiError } = await supabase.functions.invoke('process-school-note', {
-        body: { noteId: data.id, content, category }
+        // Call AI edge function to process the note
+        const { error: aiError } = await supabase.functions.invoke('process-school-note', {
+          body: { noteId: data.id, content, category }
+        });
+
+        if (aiError) {
+          console.error('AI processing error:', aiError);
+        }
+
+        return data;
       });
 
-      if (aiError) {
-        console.error('AI processing error:', aiError);
-        // Don't block the user if AI fails
-      }
+      await Promise.all(notePromises);
 
-      toast.success("Η σημείωση αποθηκεύτηκε επιτυχώς!");
+      toast.success(`${selectedChildren.length === 1 ? 'Η σημείωση' : 'Οι σημειώσεις'} αποθηκεύτηκαν επιτυχώς!`);
       setContent("");
       setCategory("");
-      setSelectedChild("");
+      setSelectedChildren([]);
     } catch (error: any) {
       console.error('Error submitting note:', error);
       toast.error(error.message || "Σφάλμα κατά την αποθήκευση");
@@ -151,19 +163,30 @@ export const SchoolNotes = () => {
         <CardContent className="space-y-4 p-4 sm:p-6">
           {children.length > 0 && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">Επιλογή Παιδιού</label>
-              <Select value={selectedChild} onValueChange={setSelectedChild}>
-                <SelectTrigger className="rounded-none w-full">
-                  <SelectValue placeholder="Επιλέξτε παιδί..." />
-                </SelectTrigger>
-                <SelectContent className="z-50 bg-white">
-                  {children.map((child) => (
-                    <SelectItem key={child.id} value={child.id}>
+              <label className="text-sm font-medium">Επιλογή Παιδιού/Παιδιών</label>
+              <div className="flex flex-wrap gap-2">
+                {children.map((child) => {
+                  const isSelected = selectedChildren.includes(child.id);
+                  return (
+                    <button
+                      key={child.id}
+                      type="button"
+                      onClick={() => toggleChild(child.id)}
+                      className={cn(
+                        "px-4 py-2 rounded-none border-2 transition-all text-sm font-medium",
+                        isSelected
+                          ? "bg-[#00ffba] border-[#00ffba] text-black"
+                          : "bg-white border-gray-300 text-gray-700 hover:border-[#00ffba]"
+                      )}
+                    >
                       {child.name} ({calculateAge(child.birth_date)} ετών)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Μπορείτε να επιλέξετε ένα ή περισσότερα παιδιά
+              </p>
             </div>
           )}
 
@@ -205,7 +228,7 @@ export const SchoolNotes = () => {
 
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !content.trim() || !category || !selectedChild}
+            disabled={isSubmitting || !content.trim() || !category || selectedChildren.length === 0}
             className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black w-full h-10 sm:h-11 text-sm sm:text-base"
           >
             {isSubmitting ? (
