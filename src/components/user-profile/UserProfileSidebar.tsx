@@ -11,7 +11,8 @@ import {
   Video,
   CalendarDays,
   Tag,
-  TrendingUp
+  TrendingUp,
+  History
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -217,6 +218,12 @@ export const UserProfileSidebar = forwardRef<
       icon: TrendingUp, 
       label: "Πρόοδος", 
       key: "progress",
+      badge: null
+    },
+    { 
+      icon: History, 
+      label: "Ιστορικό", 
+      key: "history",
       badge: null
     },
     { 

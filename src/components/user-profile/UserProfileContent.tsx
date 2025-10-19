@@ -19,6 +19,7 @@ import { InlineAIChat } from "@/components/ai-chat/InlineAIChat";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { UserProfileEdit } from "./UserProfileEdit";
 import { UserProgressSection } from "./UserProgressSection";
+import { UserProfileHistory } from "./UserProfileHistory";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -107,6 +108,14 @@ export const UserProfileContent = ({
             <BackButton />
             <h2 className="text-xl font-semibold">Πρόοδος</h2>
             <UserProgressSection userId={userProfile?.id} />
+          </div>
+        );
+      case "history":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <h2 className="text-xl font-semibold">Ιστορικό</h2>
+            <UserProfileHistory userId={userProfile?.id} />
           </div>
         );
       case "payments":
