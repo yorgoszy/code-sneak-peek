@@ -20,6 +20,7 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
 
   const fetchSprintHistory = async () => {
     try {
+      // Φέρνω περισσότερα sessions για να έχω αρκετά και για τα δύο exercises
       const { data, error } = await supabase
         .from('endurance_test_sessions')
         .select(`
@@ -39,7 +40,7 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
         .eq('user_id', userId)
         .not('endurance_test_data.sprint_seconds', 'is', null)
         .order('test_date', { ascending: false })
-        .limit(10);
+        .limit(50);
 
       if (error) throw error;
 
