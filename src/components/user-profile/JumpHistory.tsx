@@ -5,5 +5,5 @@ interface JumpHistoryProps {
 }
 
 export const JumpHistory: React.FC<JumpHistoryProps> = ({ userId }) => {
-  return <JumpHistoryTab selectedUserId={userId} />;
+  return <JumpHistoryTab selectedUserId={userId} readOnly={true} />;
 };

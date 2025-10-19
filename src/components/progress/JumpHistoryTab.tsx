@@ -1,14 +1,15 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X, Trash2 } from "lucide-react";
+import { X, Trash2, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { JumpSessionCard } from "@/components/progress/JumpSessionCard";
 import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
+import { normalizeGreekText } from "@/lib/utils";
 
 interface JumpSession {
   id: string;
@@ -29,18 +30,21 @@ interface JumpSession {
 
 interface JumpHistoryTabProps {
   selectedUserId?: string;
+  readOnly?: boolean;
 }
 
-export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }) => {
+export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
   const { toast } = useToast();
   const [sessions, setSessions] = useState<JumpSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string }>>(new Map());
-  const [userSearch, setUserSearch] = useState<string>("");
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>("all");
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [typeSearch, setTypeSearch] = useState("");
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionIdToDelete, setSessionIdToDelete] = useState<string | null>(null);
+  const typeDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchSessions();
@@ -97,10 +101,42 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target as Node)) {
+        setIsTypeDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleClearFilters = () => {
-    setUserSearch("");
+    setSelectedTypes([]);
     setSelectedYear("all");
+    setTypeSearch("");
   };
+
+  // Get unique jump types from notes
+  const availableTypes = useMemo(() => {
+    const types = new Set<string>();
+    sessions.forEach(s => {
+      if (s.notes?.startsWith('Non-CMJ Test')) types.add('Non-CMJ');
+      else if (s.notes?.startsWith('CMJ Test')) types.add('CMJ');
+      else if (s.notes?.startsWith('Depth Jump Test')) types.add('Depth Jump');
+      else if (s.notes?.startsWith('Broad Jump Test')) types.add('Broad Jump');
+      else if (s.notes?.startsWith('Triple Jump Test')) types.add('Triple Jump');
+    });
+    return Array.from(types).sort();
+  }, [sessions]);
+
+  const filteredTypeOptions = useMemo(() => {
+    if (!typeSearch.trim()) return availableTypes;
+    const normalizedSearch = normalizeGreekText(typeSearch);
+    return availableTypes.filter(type => 
+      normalizeGreekText(type).includes(normalizedSearch)
+    );
+  }, [availableTypes, typeSearch]);
 
   // Get unique years
   const availableYears = useMemo(() => {
@@ -108,37 +144,23 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
     return Array.from(new Set(years)).sort((a, b) => b - a);
   }, [sessions]);
 
-  const userSuggestions = useMemo(() => {
-    if (!userSearch.trim()) return [];
-    
-    const searchLower = userSearch.toLowerCase();
-    return Array.from(usersMap.entries())
-      .map(([id, user]) => ({ id, ...user }))
-      .filter(user => 
-        user.name?.toLowerCase().includes(searchLower) || 
-        user.email?.toLowerCase().includes(searchLower)
-      )
-      .slice(0, 10);
-  }, [userSearch, usersMap]);
-
   const filteredSessions = useMemo(() => {
     return sessions.filter(session => {
-      // Filter by user search (name or email)
-      if (userSearch.trim()) {
-        const user = usersMap.get(session.user_id);
-        if (!user) return false;
-        
-        const searchLower = userSearch.toLowerCase();
-        const nameMatch = user.name?.toLowerCase().includes(searchLower);
-        const emailMatch = user.email?.toLowerCase().includes(searchLower);
-        
-        if (!nameMatch && !emailMatch) return false;
+      // Filter by jump types
+      if (selectedTypes.length > 0) {
+        let matchesType = false;
+        if (selectedTypes.includes('Non-CMJ') && session.notes?.startsWith('Non-CMJ Test')) matchesType = true;
+        if (selectedTypes.includes('CMJ') && session.notes?.startsWith('CMJ Test') && !session.notes?.startsWith('Non-CMJ')) matchesType = true;
+        if (selectedTypes.includes('Depth Jump') && session.notes?.startsWith('Depth Jump Test')) matchesType = true;
+        if (selectedTypes.includes('Broad Jump') && session.notes?.startsWith('Broad Jump Test')) matchesType = true;
+        if (selectedTypes.includes('Triple Jump') && session.notes?.startsWith('Triple Jump Test')) matchesType = true;
+        if (!matchesType) return false;
       }
       
       if (selectedYear !== "all" && new Date(session.test_date).getFullYear().toString() !== selectedYear) return false;
       return true;
     });
-  }, [sessions, userSearch, selectedYear, usersMap]);
+  }, [sessions, selectedTypes, selectedYear]);
 
   const sessionsByType = useMemo(() => {
     const nonCmj = filteredSessions.filter(s => s.notes?.startsWith('Non-CMJ Test'));
@@ -202,42 +224,59 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex gap-3 flex-wrap items-start">
-        <div className="relative w-[250px]">
-          <Input
-            type="text"
-            placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
-            value={userSearch}
-            onChange={(e) => setUserSearch(e.target.value)}
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            className="rounded-none pr-8"
-          />
-          {userSearch && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
-              onClick={() => setUserSearch("")}
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          )}
-          
-          {showSuggestions && userSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-[300px] overflow-y-auto z-50">
-              {userSuggestions.map((user) => (
-                <div
-                  key={user.id}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => {
-                    setUserSearch(user.name);
-                    setShowSuggestions(false);
-                  }}
-                >
-                  <div className="font-medium text-sm">{user.name}</div>
-                  <div className="text-xs text-gray-500">{user.email}</div>
-                </div>
-              ))}
+        {/* Jump Types Multi-Select */}
+        <div className="relative w-[250px]" ref={typeDropdownRef}>
+          <div
+            onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+            className="w-full h-10 px-3 py-2 rounded-none border border-input bg-background flex items-center justify-between cursor-pointer hover:bg-accent hover:text-accent-foreground"
+          >
+            <span className="text-sm">
+              {selectedTypes.length === 0 
+                ? "Επιλογή τύπου άλματος..." 
+                : `${selectedTypes.length} τύποι επιλεγμένοι`}
+            </span>
+            <ChevronDown className="h-4 w-4 opacity-50" />
+          </div>
+
+          {isTypeDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-input rounded-none shadow-lg z-50 max-h-[300px] overflow-hidden flex flex-col">
+              <div className="p-2 border-b border-input">
+                <Input
+                  type="text"
+                  placeholder="Αναζήτηση τύπου..."
+                  value={typeSearch}
+                  onChange={(e) => setTypeSearch(e.target.value)}
+                  className="rounded-none h-8"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              
+              <div className="overflow-y-auto">
+                {filteredTypeOptions.length === 0 ? (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">
+                    Δεν βρέθηκαν τύποι
+                  </div>
+                ) : (
+                  filteredTypeOptions.map((type) => (
+                    <div
+                      key={type}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTypes(prev => 
+                          prev.includes(type)
+                            ? prev.filter(t => t !== type)
+                            : [...prev, type]
+                        );
+                      }}
+                      className={`px-3 py-2 cursor-pointer hover:bg-accent transition-colors ${
+                        selectedTypes.includes(type) ? 'bg-[#00ffba] hover:bg-[#00ffba]/90' : ''
+                      }`}
+                    >
+                      <span className="text-sm">{type}</span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -287,7 +326,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
                       key={session.id}
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
-                      showDelete
+                      showDelete={!readOnly}
                       onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
@@ -309,7 +348,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
                       key={session.id}
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
-                      showDelete
+                      showDelete={!readOnly}
                       onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
@@ -331,7 +370,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
                       key={session.id}
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
-                      showDelete
+                      showDelete={!readOnly}
                       onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
@@ -353,7 +392,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
                       key={session.id}
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
-                      showDelete
+                      showDelete={!readOnly}
                       onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
@@ -375,7 +414,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
                       key={session.id}
                       session={session}
                       userName={user?.name || 'Άγνωστος Χρήστης'}
-                      showDelete
+                      showDelete={!readOnly}
                       onDelete={() => handleDeleteClick(session.id)}
                     />
                   );
