@@ -2,14 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { Pencil, Trash2, ChevronDown, Filter } from "lucide-react";
+import { Pencil, Trash2, ChevronDown, Filter, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
@@ -25,15 +25,14 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
   const [editingAttempt, setEditingAttempt] = useState<any>(null);
   const [editWeight, setEditWeight] = useState('');
   const [editVelocity, setEditVelocity] = useState('');
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   
   // Filter states
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
-  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
-  const [selectedYears, setSelectedYears] = useState<string[]>([]);
+  const [userSearch, setUserSearch] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>("all");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [usersMap, setUsersMap] = useState<Map<string, any>>(new Map());
 
   useEffect(() => {
     fetchSessions();
@@ -51,7 +50,8 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
           user_id,
           app_users!strength_test_sessions_user_id_fkey (
             id,
-            name
+            name,
+            email
           ),
           strength_test_attempts (
             id,
@@ -71,11 +71,19 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
         query = query.eq('user_id', selectedUserId);
       }
 
-      const { data, error } = await query;
+      const [sessionsRes, usersRes] = await Promise.all([
+        query,
+        supabase.from('app_users').select('id, name, email')
+      ]);
 
-      if (error) throw error;
+      if (sessionsRes.error) throw sessionsRes.error;
+      if (usersRes.error) throw usersRes.error;
 
-      setSessions(data || []);
+      const map = new Map<string, any>();
+      (usersRes.data || []).forEach(u => map.set(u.id, { name: u.name, email: u.email }));
+      setUsersMap(map);
+
+      setSessions(sessionsRes.data || []);
     } catch (error) {
       console.error('Error fetching sessions:', error);
     } finally {
@@ -176,73 +184,50 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
     }
   };
 
-  // Extract unique values for filters
-  const uniqueUsers = useMemo(() => {
-    const users = sessions.map(s => ({ id: s.app_users?.id, name: s.app_users?.name || 'Άγνωστος' }));
-    return Array.from(new Map(users.map(u => [u.id, u])).values());
+  const handleClearFilters = () => {
+    setUserSearch("");
+    setSelectedYear("all");
+  };
+
+  // Get unique years
+  const availableYears = useMemo(() => {
+    const years = sessions.map(s => new Date(s.test_date).getFullYear());
+    return Array.from(new Set(years)).sort((a, b) => b - a);
   }, [sessions]);
 
-  const uniqueExercises = useMemo(() => {
-    const exercises = new Map<string, string>();
-    sessions.forEach(s => {
-      s.strength_test_attempts.forEach((a: any) => {
-        if (a.exercises?.id && a.exercises?.name) {
-          exercises.set(a.exercises.id, a.exercises.name);
-        }
-      });
-    });
-    return Array.from(exercises.entries()).map(([id, name]) => ({ id, name }));
-  }, [sessions]);
-
-  const uniqueMonths = useMemo(() => {
-    const months = new Set(sessions.map(s => format(new Date(s.test_date), 'yyyy-MM')));
-    return Array.from(months).sort().reverse();
-  }, [sessions]);
-
-  const uniqueYears = useMemo(() => {
-    const years = new Set(sessions.map(s => format(new Date(s.test_date), 'yyyy')));
-    return Array.from(years).sort().reverse();
-  }, [sessions]);
+  // Get filtered user suggestions
+  const userSuggestions = useMemo(() => {
+    if (!userSearch.trim()) return [];
+    
+    const searchLower = userSearch.toLowerCase();
+    return Array.from(usersMap.entries())
+      .map(([id, user]) => ({ id, ...user }))
+      .filter(user => 
+        user.name?.toLowerCase().includes(searchLower) || 
+        user.email?.toLowerCase().includes(searchLower)
+      )
+      .slice(0, 10);
+  }, [userSearch, usersMap]);
 
   // Filtered sessions
   const filteredSessions = useMemo(() => {
-    return sessions.filter(session => {
-      // User filter
-      if (selectedUsers.length > 0 && !selectedUsers.includes(session.app_users?.id)) {
-        return false;
+    return sessions.filter(s => {
+      // Filter by user search (name or email)
+      if (userSearch.trim()) {
+        const user = usersMap.get(s.user_id);
+        if (!user) return false;
+        
+        const searchLower = userSearch.toLowerCase();
+        const nameMatch = user.name?.toLowerCase().includes(searchLower);
+        const emailMatch = user.email?.toLowerCase().includes(searchLower);
+        
+        if (!nameMatch && !emailMatch) return false;
       }
-
-      // Exercise filter
-      if (selectedExercises.length > 0) {
-        const hasSelectedExercise = session.strength_test_attempts.some((a: any) => 
-          selectedExercises.includes(a.exercises?.id)
-        );
-        if (!hasSelectedExercise) return false;
-      }
-
-      // Month filter
-      if (selectedMonths.length > 0) {
-        const sessionMonth = format(new Date(session.test_date), 'yyyy-MM');
-        if (!selectedMonths.includes(sessionMonth)) return false;
-      }
-
-      // Year filter
-      if (selectedYears.length > 0) {
-        const sessionYear = format(new Date(session.test_date), 'yyyy');
-        if (!selectedYears.includes(sessionYear)) return false;
-      }
-
+      
+      if (selectedYear !== "all" && new Date(s.test_date).getFullYear().toString() !== selectedYear) return false;
       return true;
     });
-  }, [sessions, selectedUsers, selectedExercises, selectedMonths, selectedYears]);
-
-  const toggleFilter = (value: string, selected: string[], setSelected: (values: string[]) => void) => {
-    if (selected.includes(value)) {
-      setSelected(selected.filter(v => v !== value));
-    } else {
-      setSelected([...selected, value]);
-    }
-  };
+  }, [sessions, userSearch, selectedYear, usersMap]);
 
   if (loading) {
     return <div className="text-center py-8 text-gray-500">Φόρτωση...</div>;
@@ -254,137 +239,71 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
 
   return (
     <>
-      {/* Filters Section */}
-      <Card className="rounded-none mb-4">
-        <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-          <CollapsibleTrigger className="w-full">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4" />
-                  <CardTitle className="text-base">Φίλτρα</CardTitle>
-                  {(selectedUsers.length + selectedExercises.length + selectedMonths.length + selectedYears.length) > 0 && (
-                    <span className="text-xs bg-[#00ffba] text-black px-2 py-0.5 rounded-full">
-                      {selectedUsers.length + selectedExercises.length + selectedMonths.length + selectedYears.length}
-                    </span>
-                  )}
-                </div>
-                <ChevronDown className={`w-4 h-4 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
-              </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Users Filter */}
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">Χρήστες</Label>
-                <div className="space-y-1 max-h-40 overflow-y-auto border rounded-none p-2">
-                  {uniqueUsers.map(user => (
-                    <div key={user.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`user-${user.id}`}
-                        checked={selectedUsers.includes(user.id)}
-                        onCheckedChange={() => toggleFilter(user.id, selectedUsers, setSelectedUsers)}
-                      />
-                      <label
-                        htmlFor={`user-${user.id}`}
-                        className="text-sm cursor-pointer flex-1"
-                      >
-                        {user.name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Exercises Filter */}
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">Ασκήσεις</Label>
-                <div className="space-y-1 max-h-40 overflow-y-auto border rounded-none p-2">
-                  {uniqueExercises.map(exercise => (
-                    <div key={exercise.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`exercise-${exercise.id}`}
-                        checked={selectedExercises.includes(exercise.id)}
-                        onCheckedChange={() => toggleFilter(exercise.id, selectedExercises, setSelectedExercises)}
-                      />
-                      <label
-                        htmlFor={`exercise-${exercise.id}`}
-                        className="text-sm cursor-pointer flex-1"
-                      >
-                        {exercise.name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Months Filter */}
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">Μήνες</Label>
-                <div className="space-y-1 max-h-40 overflow-y-auto border rounded-none p-2">
-                  {uniqueMonths.map(month => (
-                    <div key={month} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`month-${month}`}
-                        checked={selectedMonths.includes(month)}
-                        onCheckedChange={() => toggleFilter(month, selectedMonths, setSelectedMonths)}
-                      />
-                      <label
-                        htmlFor={`month-${month}`}
-                        className="text-sm cursor-pointer flex-1"
-                      >
-                        {format(new Date(month + '-01'), 'MMMM yyyy', { locale: el })}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Years Filter */}
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">Έτη</Label>
-                <div className="space-y-1 max-h-40 overflow-y-auto border rounded-none p-2">
-                  {uniqueYears.map(year => (
-                    <div key={year} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`year-${year}`}
-                        checked={selectedYears.includes(year)}
-                        onCheckedChange={() => toggleFilter(year, selectedYears, setSelectedYears)}
-                      />
-                      <label
-                        htmlFor={`year-${year}`}
-                        className="text-sm cursor-pointer flex-1"
-                      >
-                        {year}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-
-            {/* Clear Filters Button */}
-            {(selectedUsers.length + selectedExercises.length + selectedMonths.length + selectedYears.length) > 0 && (
-              <CardContent className="pt-0">
-                <Button
-                  variant="outline"
-                  size="sm"
+      {/* Filters */}
+      <div className="flex gap-3 flex-wrap items-start mb-4">
+        <div className="relative w-[250px]">
+          <Input
+            type="text"
+            placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
+            value={userSearch}
+            onChange={(e) => setUserSearch(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            className="rounded-none pr-8"
+          />
+          {userSearch && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setUserSearch("")}
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 rounded-none"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+          
+          {/* Suggestions dropdown */}
+          {showSuggestions && userSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-[300px] overflow-y-auto z-50">
+              {userSuggestions.map((user) => (
+                <div
+                  key={user.id}
+                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
                   onClick={() => {
-                    setSelectedUsers([]);
-                    setSelectedExercises([]);
-                    setSelectedMonths([]);
-                    setSelectedYears([]);
+                    setUserSearch(user.name);
+                    setShowSuggestions(false);
                   }}
-                  className="rounded-none"
                 >
-                  Καθαρισμός Φίλτρων
-                </Button>
-              </CardContent>
-            )}
-          </CollapsibleContent>
-        </Collapsible>
-      </Card>
+                  <div className="font-medium text-sm">{user.name}</div>
+                  <div className="text-xs text-gray-500">{user.email}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <SelectTrigger className="w-[150px] rounded-none">
+            <SelectValue placeholder="Όλα τα έτη" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="all">Όλα τα έτη</SelectItem>
+            {availableYears.map(year => (
+              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleClearFilters}
+          className="rounded-none h-10"
+        >
+          <X className="w-4 h-4 mr-2" />
+          Καθαρισμός
+        </Button>
+      </div>
 
       <div className="space-y-4">
         {filteredSessions.map((session) => {
@@ -437,7 +356,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
                     <div key={idx} className="grid grid-cols-1 lg:grid-cols-[230px_1fr] gap-6">
                       {/* Left side - Attempts list */}
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold">{exerciseData.exerciseName}</Label>
+                        <div className="text-sm font-semibold mb-2">{exerciseData.exerciseName}</div>
                         <div className="space-y-1">
                           {/* Header */}
                           <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 p-1 text-xs font-medium text-gray-600">
@@ -494,7 +413,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Βάρος (kg)</Label>
+              <label className="text-sm font-medium">Βάρος (kg)</label>
               <Input
                 type="number"
                 step="0.5"
@@ -504,7 +423,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
               />
             </div>
             <div>
-              <Label>Ταχύτητα (m/s)</Label>
+              <label className="text-sm font-medium">Ταχύτητα (m/s)</label>
               <Input
                 type="number"
                 step="0.01"

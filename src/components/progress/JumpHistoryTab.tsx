@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { X, Trash2 } from "lucide-react";
 import { format } from "date-fns";
@@ -36,6 +37,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
   const [loading, setLoading] = useState(true);
   const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string }>>(new Map());
   const [userSearch, setUserSearch] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>("all");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionIdToDelete, setSessionIdToDelete] = useState<string | null>(null);
@@ -97,7 +99,14 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
 
   const handleClearFilters = () => {
     setUserSearch("");
+    setSelectedYear("all");
   };
+
+  // Get unique years
+  const availableYears = useMemo(() => {
+    const years = sessions.map(s => new Date(s.test_date).getFullYear());
+    return Array.from(new Set(years)).sort((a, b) => b - a);
+  }, [sessions]);
 
   const userSuggestions = useMemo(() => {
     if (!userSearch.trim()) return [];
@@ -113,15 +122,23 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
   }, [userSearch, usersMap]);
 
   const filteredSessions = useMemo(() => {
-    if (!userSearch.trim()) return sessions;
-
-    const searchLower = userSearch.toLowerCase();
     return sessions.filter(session => {
-      const user = usersMap.get(session.user_id);
-      return user?.name?.toLowerCase().includes(searchLower) || 
-             user?.email?.toLowerCase().includes(searchLower);
+      // Filter by user search (name or email)
+      if (userSearch.trim()) {
+        const user = usersMap.get(session.user_id);
+        if (!user) return false;
+        
+        const searchLower = userSearch.toLowerCase();
+        const nameMatch = user.name?.toLowerCase().includes(searchLower);
+        const emailMatch = user.email?.toLowerCase().includes(searchLower);
+        
+        if (!nameMatch && !emailMatch) return false;
+      }
+      
+      if (selectedYear !== "all" && new Date(session.test_date).getFullYear().toString() !== selectedYear) return false;
+      return true;
     });
-  }, [sessions, userSearch, usersMap]);
+  }, [sessions, userSearch, selectedYear, usersMap]);
 
   const sessionsByType = useMemo(() => {
     const nonCmj = filteredSessions.filter(s => s.notes?.startsWith('Non-CMJ Test'));
@@ -224,6 +241,18 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }
             </div>
           )}
         </div>
+
+        <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <SelectTrigger className="w-[150px] rounded-none">
+            <SelectValue placeholder="Όλα τα έτη" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="all">Όλα τα έτη</SelectItem>
+            {availableYears.map(year => (
+              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <Button
           variant="outline"

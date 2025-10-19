@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useUserNamesMap } from "@/components/results/hooks/useUserNamesMap";
@@ -16,6 +18,9 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
   const usersMap = useUserNamesMap();
   const { results, loading, refetch } = useAnthropometricTestResults(usersMap, selectedUserId);
   const [anthropometricData, setAnthropometricData] = useState<Record<string, any>>({});
+  const [userSearch, setUserSearch] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>("all");
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Refetch when component mounts or key changes
   useEffect(() => {
@@ -76,6 +81,49 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
     }
   };
 
+  const handleClearFilters = () => {
+    setUserSearch("");
+    setSelectedYear("all");
+  };
+
+  // Get unique years
+  const availableYears = useMemo(() => {
+    const years = results.map(r => new Date(r.test_date).getFullYear());
+    return Array.from(new Set(years)).sort((a, b) => b - a);
+  }, [results]);
+
+  // Get filtered user suggestions
+  const userSuggestions = useMemo(() => {
+    if (!userSearch.trim()) return [];
+    
+    const searchLower = userSearch.toLowerCase();
+    return Array.from(usersMap.entries())
+      .map(([id, name]) => ({ id, name }))
+      .filter(user => 
+        user.name?.toLowerCase().includes(searchLower)
+      )
+      .slice(0, 10);
+  }, [userSearch, usersMap]);
+
+  // Filtered results
+  const filteredResults = useMemo(() => {
+    return results.filter(r => {
+      // Filter by user search
+      if (userSearch.trim()) {
+        const userName = usersMap.get(r.user_id);
+        if (!userName) return false;
+        
+        const searchLower = userSearch.toLowerCase();
+        const nameMatch = userName.toLowerCase().includes(searchLower);
+        
+        if (!nameMatch) return false;
+      }
+      
+      if (selectedYear !== "all" && new Date(r.test_date).getFullYear().toString() !== selectedYear) return false;
+      return true;
+    });
+  }, [results, userSearch, selectedYear, usersMap]);
+
   if (loading) {
     return (
       <Card className="rounded-none">
@@ -97,8 +145,73 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
   }
 
   return (
-    <div className="space-y-2">
-      {results.map((result) => {
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="flex gap-3 flex-wrap items-start">
+        <div className="relative w-[250px]">
+          <Input
+            type="text"
+            placeholder="Αναζήτηση χρήστη..."
+            value={userSearch}
+            onChange={(e) => setUserSearch(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            className="rounded-none pr-8"
+          />
+          {userSearch && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setUserSearch("")}
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 rounded-none"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+          
+          {/* Suggestions dropdown */}
+          {showSuggestions && userSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-[300px] overflow-y-auto z-50">
+              {userSuggestions.map((user) => (
+                <div
+                  key={user.id}
+                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => {
+                    setUserSearch(user.name);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  <div className="font-medium text-sm">{user.name}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <SelectTrigger className="w-[150px] rounded-none">
+            <SelectValue placeholder="Όλα τα έτη" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="all">Όλα τα έτη</SelectItem>
+            {availableYears.map(year => (
+              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleClearFilters}
+          className="rounded-none h-10"
+        >
+          <X className="w-4 h-4 mr-2" />
+          Καθαρισμός
+        </Button>
+      </div>
+
+      {filteredResults.map((result) => {
         const data = anthropometricData[result.id];
         
         return (
