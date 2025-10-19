@@ -58,17 +58,17 @@ export default function ProgressTracking() {
       <h1 className="text-xl md:text-2xl font-bold">Καταγραφή Προόδου</h1>
 
       <Tabs defaultValue="force-velocity" className="w-full">
-        <TabsList className="rounded-none w-full grid grid-cols-2 md:grid-cols-4 gap-1">
-          <TabsTrigger value="force-velocity" className="rounded-none text-xs md:text-sm">
+        <TabsList className="rounded-none w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1">
+          <TabsTrigger value="force-velocity" className="rounded-none text-xs sm:text-sm">
             Force/Velocity
           </TabsTrigger>
-          <TabsTrigger value="endurance" className="rounded-none text-xs md:text-sm">
+          <TabsTrigger value="endurance" className="rounded-none text-xs sm:text-sm">
             Endurance
           </TabsTrigger>
-          <TabsTrigger value="jump-profile" className="rounded-none text-xs md:text-sm">
+          <TabsTrigger value="jump-profile" className="rounded-none text-xs sm:text-sm">
             Jump Profile
           </TabsTrigger>
-          <TabsTrigger value="anthropometric" className="rounded-none text-xs md:text-sm">
+          <TabsTrigger value="anthropometric" className="rounded-none text-xs sm:text-sm">
             Σωματομετρικά
           </TabsTrigger>
         </TabsList>
