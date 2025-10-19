@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserProgressSection } from "./UserProgressSection";
+import { ForceVelocityHistory } from "./ForceVelocityHistory";
 
 interface UserProfileHistoryProps {
   userId: string;
@@ -28,11 +29,7 @@ export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId }
         </TabsList>
 
         <TabsContent value="force-velocity" className="mt-4">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Force/Velocity Ιστορικό</h3>
-            {/* Force/Velocity content - Load Velocity Chart & 1RM Cards */}
-            <UserProgressSection userId={userId} />
-          </div>
+          <ForceVelocityHistory userId={userId} />
         </TabsContent>
 
         <TabsContent value="endurance" className="mt-4">
