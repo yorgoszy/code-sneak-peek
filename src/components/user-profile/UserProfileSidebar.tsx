@@ -12,7 +12,8 @@ import {
   CalendarDays,
   Tag,
   TrendingUp,
-  History
+  History,
+  Users
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -190,6 +191,14 @@ export const UserProfileSidebar = forwardRef<
   };
   
   const menuItems = [
+    ...(userProfile.role === 'parent' ? [
+      { 
+        icon: Users, 
+        label: "Πίνακας Γονέα", 
+        key: "parent-dashboard",
+        badge: null
+      }
+    ] : []),
     { 
       icon: BarChart3, 
       label: "Επισκόπηση", 

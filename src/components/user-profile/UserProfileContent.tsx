@@ -20,6 +20,7 @@ import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog"
 import { UserProfileEdit } from "./UserProfileEdit";
 import { UserProgressSection } from "./UserProgressSection";
 import { UserProfileHistory } from "./UserProfileHistory";
+import ParentDashboard from "@/pages/ParentDashboard";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -67,6 +68,13 @@ export const UserProfileContent = ({
 
   const renderContent = () => {
     switch (activeTab) {
+      case "parent-dashboard":
+        return (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Πίνακας Γονέα</h2>
+            <ParentDashboard />
+          </div>
+        );
       case "overview":
         return (
           <div className="space-y-4">

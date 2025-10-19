@@ -38,6 +38,7 @@ import BookingSectionsWithSidebar from "@/pages/Dashboard/BookingSectionsWithSid
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Offers from "@/pages/Offers";
 import ProfileEdit from "@/pages/ProfileEdit";
+import ParentDashboard from "@/pages/ParentDashboard";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,7 @@ function App() {
                 <Route path="/dashboard/user-profile/:userId" element={<UserProfile />} />
                 <Route path="/dashboard/user-profile/:userId/edit" element={<ProfileEdit />} />
                 <Route path="/dashboard/user-profile/:userId/shop" element={<ShopWithSidebar />} />
+                <Route path="/dashboard/user-profile/:userId/parent-dashboard" element={<ParentDashboard />} />
                 <Route path="/program-builder" element={<ProgramBuilder />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

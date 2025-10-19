@@ -100,7 +100,11 @@ export const useRoleCheck = () => {
     return userRoles.includes('general');
   };
 
-  console.log('🔄 useRoleCheck: Current state:', { 
+  const isParent = (): boolean => {
+    return userRoles.includes('parent');
+  };
+
+  console.log('🔄 useRoleCheck: Current state:', {
     userRoles, 
     loading: loading || authLoading, 
     userProfile: userProfile?.id,
@@ -117,6 +121,7 @@ export const useRoleCheck = () => {
     isTrainer,
     isAthlete,
     isGeneral,
+    isParent,
     loading: loading || authLoading
   };
 };
