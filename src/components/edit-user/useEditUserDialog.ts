@@ -51,13 +51,20 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
       };
 
       console.log('📝 Updates to send:', updates);
+      console.log('📝 Updating user with ID:', user.id);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("app_users")
         .update(updates)
-        .eq("id", user.id);
+        .eq("id", user.id)
+        .select();
 
-      if (error) throw error;
+      console.log('📝 Update result:', { data, error });
+
+      if (error) {
+        console.error('❌ Update error details:', error);
+        throw error;
+      }
 
       toast.success("Ο χρήστης ενημερώθηκε επιτυχώς!");
       onUserUpdated();
