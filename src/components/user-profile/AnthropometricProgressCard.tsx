@@ -180,17 +180,15 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
         {sessions.length > 1 && (
           <div className="space-y-1 pt-2 border-t border-gray-200 mt-2">
             <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
-            {sessions.slice(1, 4).map((session, idx) => (
-              <div key={idx} className="flex items-center justify-between text-[10px] text-gray-400">
-                <span>{format(new Date(session.test_date), 'dd/MM/yy')}</span>
-                <div className="flex gap-2 text-right">
-                  {session.height && <span>Ύψος: {session.height}cm</span>}
-                  {session.weight && <span>Βάρος: {session.weight}kg</span>}
-                  {session.body_fat_percentage && <span>Λίπος: {session.body_fat_percentage}%</span>}
-                  {session.muscle_mass_percentage && <span>Μυϊκή: {session.muscle_mass_percentage}%</span>}
-                </div>
+            <div className="flex items-center justify-between text-[10px] text-gray-400">
+              <span>{format(new Date(sessions[1].test_date), 'dd/MM/yy')}</span>
+              <div className="flex gap-2 text-right">
+                {sessions[1].height && <span>Ύψος: {sessions[1].height}cm</span>}
+                {sessions[1].weight && <span>Βάρος: {sessions[1].weight}kg</span>}
+                {sessions[1].body_fat_percentage && <span>Λίπος: {sessions[1].body_fat_percentage}%</span>}
+                {sessions[1].muscle_mass_percentage && <span>Μυϊκή: {sessions[1].muscle_mass_percentage}%</span>}
               </div>
-            ))}
+            </div>
           </div>
         )}
       </CardContent>

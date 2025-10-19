@@ -397,12 +397,10 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                         {oneRM.history && oneRM.history.length > 0 && (
                           <div className="space-y-0.5 pt-1.5 sm:pt-1 border-t border-gray-200 mt-1.5 sm:mt-1">
                             <div className="text-xs sm:text-[9px] text-gray-500 font-medium">Ιστορικό</div>
-                            {oneRM.history.map((historyItem, idx) => (
-                              <div key={idx} className="flex items-center justify-between text-xs sm:text-[9px] text-gray-400">
-                                <span>{new Date(historyItem.date).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
-                                <span>{historyItem.weight}kg @ {historyItem.velocity.toFixed(2)}m/s</span>
-                              </div>
-                            ))}
+                            <div className="flex items-center justify-between text-xs sm:text-[9px] text-gray-400">
+                              <span>{new Date(oneRM.history[0].date).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
+                              <span>{oneRM.history[0].weight}kg @ {oneRM.history[0].velocity.toFixed(2)}m/s</span>
+                            </div>
                           </div>
                         )}
                       </div>
