@@ -171,16 +171,14 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
         {sessions.length > 1 && (
           <div className="space-y-1 pt-1 border-t border-gray-200">
             <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
-            {sessions.slice(1, 4).map((session, idx) => (
-              <div key={idx} className="flex items-center justify-between text-[10px] text-gray-400">
-                <span>{format(new Date(session.test_date), 'dd/MM/yy')}</span>
-                <div className="flex gap-2">
-                  {session.push_ups !== null && <span>Push: {session.push_ups}</span>}
-                  {session.pull_ups !== null && <span>Pull: {session.pull_ups}</span>}
-                  {session.t2b !== null && <span>T2B: {session.t2b}</span>}
-                </div>
+            <div className="flex items-center justify-between text-[10px] text-gray-400">
+              <span>{format(new Date(sessions[1].test_date), 'dd/MM/yy')}</span>
+              <div className="flex gap-2">
+                {sessions[1].push_ups !== null && <span>Push: {sessions[1].push_ups}</span>}
+                {sessions[1].pull_ups !== null && <span>Pull: {sessions[1].pull_ups}</span>}
+                {sessions[1].t2b !== null && <span>T2B: {sessions[1].t2b}</span>}
               </div>
-            ))}
+            </div>
           </div>
         )}
       </CardContent>

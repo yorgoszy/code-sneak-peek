@@ -130,15 +130,10 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
         {sessions.length > 1 && (
           <div className="space-y-1 pt-1 border-t border-gray-200">
             <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
-            {sessions.slice(1, 4).map((session, idx) => {
-              const data = session.endurance_test_data?.[0];
-              return (
-                <div key={session.id} className="flex items-center justify-between text-[10px] text-gray-400">
-                  <span>{format(new Date(session.test_date), 'dd/MM/yy')}</span>
-                  <span>{data.farmer_kg}kg × {data.farmer_meters}m × {data.farmer_seconds}s</span>
-                </div>
-              );
-            })}
+            <div className="flex items-center justify-between text-[10px] text-gray-400">
+              <span>{format(new Date(sessions[1].test_date), 'dd/MM/yy')}</span>
+              <span>{sessions[1].endurance_test_data?.[0].farmer_kg}kg × {sessions[1].endurance_test_data?.[0].farmer_meters}m × {sessions[1].endurance_test_data?.[0].farmer_seconds}s</span>
+            </div>
           </div>
         )}
       </CardContent>
