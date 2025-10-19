@@ -50,6 +50,9 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
         return sessionExerciseName === exerciseName;
       });
 
+      console.log(`Sprint ${exerciseName} - Total sessions:`, filteredData.length);
+      console.log(`Sprint ${exerciseName} - Sessions:`, filteredData);
+
       setSessions(filteredData);
     } catch (error) {
       console.error('Error fetching sprint history:', error);
@@ -64,9 +67,13 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
   };
 
   const calculatePercentageChange = (field: 'sprint_seconds' | 'sprint_meters' | 'sprint_watt') => {
-    if (sessions.length < 2) return null;
+    if (sessions.length < 2) {
+      console.log(`Sprint ${exerciseName} - Not enough sessions for ${field}. Total: ${sessions.length}`);
+      return null;
+    }
     const current = sessions[0]?.endurance_test_data?.[0]?.[field];
     const previous = sessions[1]?.endurance_test_data?.[0]?.[field];
+    console.log(`Sprint ${exerciseName} - ${field}: current=${current}, previous=${previous}`);
     if (!current || !previous) return null;
     return ((current - previous) / previous) * 100;
   };
