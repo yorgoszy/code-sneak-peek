@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, MessageCircle, Gift, Hand, MousePointer, MousePointer2, Pointer, Fingerprint } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, MessageCircle, Gift, Hand, MousePointer, MousePointer2, Pointer, Fingerprint, TrendingUp, History } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -621,6 +621,50 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               Μέρες Συνδρομής
+            </div>
+          </button>
+
+          {/* Πρόοδος - Μετά από Μέρες Συνδρομής */}
+          <button 
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('progress');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=progress`);
+              }
+            }}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+          >
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <TrendingUp className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+            </div>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
+              <span className="text-[#00ffba]"> </span>
+            </div>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+              Πρόοδος
+            </div>
+          </button>
+
+          {/* Ιστορικό - Μετά από Πρόοδος */}
+          <button 
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('history');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=history`);
+              }
+            }}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+          >
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <History className={`text-[#cb8954] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+            </div>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
+              <span className="text-[#cb8954]"> </span>
+            </div>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+              Ιστορικό
             </div>
           </button>
 
