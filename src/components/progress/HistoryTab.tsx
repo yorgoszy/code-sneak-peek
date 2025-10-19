@@ -326,14 +326,6 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
                   <span className="text-sm text-gray-500">
                     {format(new Date(session.test_date), 'dd MMM yyyy', { locale: el })}
                   </span>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDeleteSessionClick(session.id)}
-                    className="rounded-none ml-auto"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
