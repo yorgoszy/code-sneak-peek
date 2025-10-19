@@ -149,7 +149,7 @@ export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userN
     
     {percentageChange !== null && percentageChange !== undefined && (
       <div className="mt-1 flex justify-end">
-        <span className={`text-xs font-semibold ${percentageChange >= 0 ? 'text-green-700' : 'text-red-600'}`}>
+        <span className={`text-xs font-semibold ${percentageChange >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
           {percentageChange >= 0 ? '+' : ''}{Math.round(percentageChange)}%
         </span>
       </div>
