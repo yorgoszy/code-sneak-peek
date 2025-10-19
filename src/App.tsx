@@ -35,7 +35,7 @@ import ShopWithSidebar from "@/pages/Dashboard/ShopWithSidebar";
 import OnlineCoachingWithSidebar from "@/pages/OnlineCoachingWithSidebar";
 import OnlineBookingWithSidebar from "@/pages/Dashboard/OnlineBookingWithSidebar";
 import BookingSectionsWithSidebar from "@/pages/Dashboard/BookingSectionsWithSidebar";
-import SchoolNotesWithSidebar from "@/pages/Dashboard/SchoolNotesWithSidebar";
+import { SchoolNotesWithSidebar } from "@/pages/Dashboard/SchoolNotesWithSidebar";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Offers from "@/pages/Offers";
 import ProfileEdit from "@/pages/ProfileEdit";

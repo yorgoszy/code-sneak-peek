@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/Sidebar";
-import { useAuth } from "@/contexts/AuthContext";
-import { useDashboard } from "@/contexts/DashboardContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useDashboard } from "@/hooks/useDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Menu } from "lucide-react";
@@ -12,7 +12,6 @@ export const SchoolNotesWithSidebar = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   const { signOut } = useAuth();
-  const { refreshSidebar } = useDashboard();
   const isMobile = useIsMobile();
   const { isAdmin } = useRoleCheck();
 
@@ -44,7 +43,7 @@ export const SchoolNotesWithSidebar = () => {
       {!isMobile && !isTablet && (
         <Sidebar 
           isCollapsed={isSidebarCollapsed}
-          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          setIsCollapsed={setIsSidebarCollapsed}
         />
       )}
 
@@ -58,7 +57,7 @@ export const SchoolNotesWithSidebar = () => {
           <div className="fixed left-0 top-0 h-full z-50 w-64">
             <Sidebar 
               isCollapsed={false}
-              onToggle={() => setShowMobileSidebar(false)}
+              setIsCollapsed={() => setShowMobileSidebar(false)}
             />
           </div>
         </>
