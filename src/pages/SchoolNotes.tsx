@@ -190,7 +190,7 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
                       type="button"
                       onClick={() => toggleChild(child.id)}
                       className={cn(
-                        "px-4 py-2 rounded-none border-2 transition-all text-sm font-medium",
+                        "px-3 py-1.5 rounded-none border-2 transition-all text-xs font-medium",
                         isSelected
                           ? "bg-[#00ffba] border-[#00ffba] text-black"
                           : "bg-white border-gray-300 text-gray-700 hover:border-[#00ffba]"
