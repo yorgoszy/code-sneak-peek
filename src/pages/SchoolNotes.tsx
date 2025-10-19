@@ -41,6 +41,13 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
     fetchChildren();
   }, [user, userId]);
 
+  // Auto-select if only one child
+  useEffect(() => {
+    if (children.length === 1 && selectedChildren.length === 0) {
+      setSelectedChildren([children[0].id]);
+    }
+  }, [children]);
+
   const fetchChildren = async () => {
     if (!user?.id && !userId) return;
 
