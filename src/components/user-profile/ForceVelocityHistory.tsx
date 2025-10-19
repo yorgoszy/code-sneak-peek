@@ -5,5 +5,5 @@ interface ForceVelocityHistoryProps {
 }
 
 export const ForceVelocityHistory: React.FC<ForceVelocityHistoryProps> = ({ userId }) => {
-  return <HistoryTab selectedUserId={userId} />;
+  return <HistoryTab selectedUserId={userId} readOnly={true} />;
 };

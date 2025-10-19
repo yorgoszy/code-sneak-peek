@@ -16,9 +16,10 @@ import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
 
 interface HistoryTabProps {
   selectedUserId?: string;
+  readOnly?: boolean;
 }
 
-export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
+export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -319,13 +320,25 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
           return (
             <Card key={session.id} className="rounded-none">
               <CardHeader className="pb-3">
-                <div className="flex items-center gap-4">
-                  <CardTitle className="text-base whitespace-nowrap">
-                    {session.app_users?.name || 'Άγνωστος Χρήστης'}
-                  </CardTitle>
-                  <span className="text-sm text-gray-500">
-                    {format(new Date(session.test_date), 'dd MMM yyyy', { locale: el })}
-                  </span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <CardTitle className="text-base whitespace-nowrap">
+                      {session.app_users?.name || 'Άγνωστος Χρήστης'}
+                    </CardTitle>
+                    <span className="text-sm text-gray-500">
+                      {format(new Date(session.test_date), 'dd MMM yyyy', { locale: el })}
+                    </span>
+                  </div>
+                  {!readOnly && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteSessionClick(session.id)}
+                      className="rounded-none text-destructive hover:text-destructive h-7 w-7"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
