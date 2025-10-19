@@ -153,11 +153,10 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
                 {/* Ιστορικό */}
                 {exerciseData.previousData && (
                   <div className="pt-1 border-t border-gray-200">
-                    <div className="text-[9px] text-gray-400">
-                      Ιστορικό
-                    </div>
-                    <div className="text-[9px] text-gray-400">
-                      {format(new Date(exerciseData.previousData.test_date), 'dd/MM/yy')} {exerciseData.previousData.mas_ms?.toFixed(2)} m/s
+                    <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
+                    <div className="flex items-center justify-between text-[10px] text-gray-400">
+                      <span>{format(new Date(exerciseData.previousData.test_date), 'dd/MM/yy')}</span>
+                      <span>{exerciseData.previousData.mas_ms?.toFixed(2)} m/s</span>
                     </div>
                   </div>
                 )}
