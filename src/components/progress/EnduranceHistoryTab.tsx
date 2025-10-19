@@ -10,7 +10,11 @@ import { Trash2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
 
-export const EnduranceHistoryTab: React.FC = () => {
+interface EnduranceHistoryTabProps {
+  selectedUserId?: string;
+}
+
+export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ selectedUserId }) => {
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,49 +28,54 @@ export const EnduranceHistoryTab: React.FC = () => {
 
   useEffect(() => {
     fetchSessions();
-  }, []);
+  }, [selectedUserId]);
 
   const fetchSessions = async () => {
     try {
-      const [sessionsRes, usersRes] = await Promise.all([
-        supabase
-          .from('endurance_test_sessions')
-          .select(`
+      let sessionsQuery = supabase
+        .from('endurance_test_sessions')
+        .select(`
+          id,
+          user_id,
+          test_date,
+          notes,
+          created_at,
+          endurance_test_data!endurance_test_data_test_session_id_fkey (
             id,
-            user_id,
-            test_date,
-            notes,
-            created_at,
-            endurance_test_data!endurance_test_data_test_session_id_fkey (
+            exercise_id,
+            mas_meters,
+            mas_minutes,
+            mas_ms,
+            mas_kmh,
+            push_ups,
+            pull_ups,
+            t2b,
+            farmer_kg,
+            farmer_meters,
+            farmer_seconds,
+            sprint_seconds,
+            sprint_meters,
+            sprint_resistance,
+            sprint_watt,
+            vo2_max,
+            max_hr,
+            resting_hr_1min,
+            exercises (
               id,
-              exercise_id,
-              mas_meters,
-              mas_minutes,
-              mas_ms,
-              mas_kmh,
-              push_ups,
-              pull_ups,
-              t2b,
-              farmer_kg,
-              farmer_meters,
-              farmer_seconds,
-              sprint_seconds,
-              sprint_meters,
-              sprint_resistance,
-              sprint_watt,
-              vo2_max,
-              max_hr,
-              resting_hr_1min,
-              exercises (
-                id,
-                name
-              )
+              name
             )
-          `)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('app_users')
-          .select('id, name, email')
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      // Filter by specific user if selectedUserId is provided
+      if (selectedUserId) {
+        sessionsQuery = sessionsQuery.eq('user_id', selectedUserId);
+      }
+
+      const [sessionsRes, usersRes] = await Promise.all([
+        sessionsQuery,
+        supabase.from('app_users').select('id, name, email')
       ]);
 
       if (sessionsRes.error) throw sessionsRes.error;
