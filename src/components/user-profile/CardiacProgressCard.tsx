@@ -139,7 +139,7 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
         {/* History */}
         {sessions.length > 1 && (
           <div className="space-y-1 pt-1 border-t border-gray-200">
-            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό ({sessions.length - 1} προηγούμενες)</div>
+            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
             {sessions.slice(1, 4).map((session, idx) => {
               const data = session.endurance_test_data?.[0];
               return (
