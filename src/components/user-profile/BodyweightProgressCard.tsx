@@ -53,11 +53,8 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
         }))
       );
 
-      // Get all recent entries
-      const allSessions = allData.slice(0, 2);
-      
-      // Store both current and previous
-      setSessions(allSessions);
+      // Store all sessions (limit to 10 for history)
+      setSessions(allData.slice(0, 10));
     } catch (error) {
       console.error('Error fetching bodyweight data:', error);
     } finally {
@@ -83,11 +80,15 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
   }
 
   const currentSession = sessions[0];
-  const previousSession = sessions[1];
 
   const calculateChange = (current: number | null, previous: number | null) => {
     if (!current || !previous || previous === 0) return null;
     return ((current - previous) / previous) * 100;
+  };
+
+  const getPreviousValue = (field: 'push_ups' | 'pull_ups' | 't2b') => {
+    if (sessions.length < 2) return null;
+    return sessions[1]?.[field];
   };
 
   return (
@@ -104,7 +105,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
               <span className="font-semibold text-[#cb8954] text-right">{currentSession.push_ups}</span>
               <div className="text-right">
                 {(() => {
-                  const change = calculateChange(currentSession.push_ups, previousSession?.push_ups);
+                  const change = calculateChange(currentSession.push_ups, getPreviousValue('push_ups'));
                   return change !== null ? (
                     <span className={`text-[10px] font-semibold ${
                       change > 0 ? 'text-green-700' : 'text-red-500'
@@ -125,7 +126,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
               <span className="font-semibold text-[#cb8954] text-right">{currentSession.pull_ups}</span>
               <div className="text-right">
                 {(() => {
-                  const change = calculateChange(currentSession.pull_ups, previousSession?.pull_ups);
+                  const change = calculateChange(currentSession.pull_ups, getPreviousValue('pull_ups'));
                   return change !== null ? (
                     <span className={`text-[10px] font-semibold ${
                       change > 0 ? 'text-green-700' : 'text-red-500'
@@ -146,7 +147,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
               <span className="font-semibold text-[#cb8954] text-right">{currentSession.t2b}</span>
               <div className="text-right">
                 {(() => {
-                  const change = calculateChange(currentSession.t2b, previousSession?.t2b);
+                  const change = calculateChange(currentSession.t2b, getPreviousValue('t2b'));
                   return change !== null ? (
                     <span className={`text-[10px] font-semibold ${
                       change > 0 ? 'text-green-700' : 'text-red-500'
@@ -167,17 +168,19 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
           </div>
         </div>
 
-        {previousSession && (
-          <div className="pt-1 border-t border-gray-200">
-            <div className="text-[9px] text-gray-400">
-              Ιστορικό
-            </div>
-            <div className="text-[9px] text-gray-400">
-              {format(new Date(previousSession.test_date), 'dd/MM/yy')}
-              {previousSession.push_ups !== null && ` Push:${previousSession.push_ups}`}
-              {previousSession.pull_ups !== null && ` Pull:${previousSession.pull_ups}`}
-              {previousSession.t2b !== null && ` T2B:${previousSession.t2b}`}
-            </div>
+        {sessions.length > 1 && (
+          <div className="space-y-1 pt-1 border-t border-gray-200">
+            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
+            {sessions.slice(1, 4).map((session, idx) => (
+              <div key={idx} className="flex items-center justify-between text-[10px] text-gray-400">
+                <span>{format(new Date(session.test_date), 'dd/MM/yy')}</span>
+                <div className="flex gap-2">
+                  {session.push_ups !== null && <span>Push: {session.push_ups}</span>}
+                  {session.pull_ups !== null && <span>Pull: {session.pull_ups}</span>}
+                  {session.t2b !== null && <span>T2B: {session.t2b}</span>}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
