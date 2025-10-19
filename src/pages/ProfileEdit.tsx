@@ -5,11 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Upload, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Upload, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+
+interface Child {
+  id?: string;
+  name: string;
+  birth_date: string;
+}
+
 
 interface UserProfile {
   id: string;
@@ -18,6 +25,8 @@ interface UserProfile {
   birth_date?: string;
   phone?: string;
   avatar_url?: string;
+  role?: string;
+  category?: string;
 }
 
 export default function ProfileEdit() {
@@ -31,6 +40,7 @@ export default function ProfileEdit() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [children, setChildren] = useState<Child[]>([]);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -56,7 +66,7 @@ export default function ProfileEdit() {
     try {
       const { data, error } = await supabase
         .from('app_users')
-        .select('id, name, email, birth_date, phone, avatar_url')
+        .select('id, name, email, birth_date, phone, avatar_url, role, category')
         .eq('id', userId)
         .single();
 
@@ -73,6 +83,19 @@ export default function ProfileEdit() {
           newPassword: '',
           confirmPassword: ''
         });
+
+        // Fetch children if user is parent
+        if (data.role === 'parent') {
+          const { data: childrenData, error: childrenError } = await supabase
+            .from('children')
+            .select('id, name, birth_date')
+            .eq('parent_id', userId)
+            .order('birth_date', { ascending: false });
+
+          if (!childrenError && childrenData) {
+            setChildren(childrenData);
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -180,6 +203,49 @@ export default function ProfileEdit() {
 
       if (profileError) throw profileError;
 
+      // Save children if user is parent
+      if (userProfile?.role === 'parent' && userId) {
+        // Delete removed children
+        const existingIds = children.filter(c => c.id).map(c => c.id);
+        const { data: dbChildren } = await supabase
+          .from('children')
+          .select('id')
+          .eq('parent_id', userId);
+        
+        const dbIds = (dbChildren || []).map(c => c.id);
+        const toDelete = dbIds.filter(id => !existingIds.includes(id));
+        
+        if (toDelete.length > 0) {
+          await supabase.from('children').delete().in('id', toDelete);
+        }
+
+        // Insert or update children
+        for (const child of children) {
+          if (!child.name || !child.birth_date) continue;
+
+          if (child.id) {
+            // Update existing
+            await supabase
+              .from('children')
+              .update({
+                name: child.name,
+                birth_date: child.birth_date,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', child.id);
+          } else {
+            // Insert new
+            await supabase
+              .from('children')
+              .insert({
+                parent_id: userId,
+                name: child.name,
+                birth_date: child.birth_date
+              });
+          }
+        }
+      }
+
       // Handle password change if requested
       if (formData.newPassword) {
         if (formData.newPassword !== formData.confirmPassword) {
@@ -254,6 +320,20 @@ export default function ProfileEdit() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const addChild = () => {
+    setChildren([...children, { name: '', birth_date: '' }]);
+  };
+
+  const removeChild = (index: number) => {
+    setChildren(children.filter((_, i) => i !== index));
+  };
+
+  const updateChild = (index: number, field: 'name' | 'birth_date', value: string) => {
+    const updatedChildren = [...children];
+    updatedChildren[index] = { ...updatedChildren[index], [field]: value };
+    setChildren(updatedChildren);
   };
 
   if (loading) {
@@ -392,6 +472,74 @@ export default function ProfileEdit() {
                 />
               </div>
             </div>
+
+            {/* Children Section - Only for Parents */}
+            {userProfile?.role === 'parent' && (
+              <div className="border-t pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Παιδιά</h3>
+                  <Button
+                    variant="outline"
+                    className="rounded-none"
+                    onClick={addChild}
+                    type="button"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Προσθήκη Παιδιού
+                  </Button>
+                </div>
+
+                {children.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    Δεν έχετε προσθέσει παιδιά ακόμα. Κάντε κλικ στο "Προσθήκη Παιδιού" για να προσθέσετε.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {children.map((child, index) => (
+                      <Card key={index} className="rounded-none bg-gray-50">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor={`child-name-${index}`}>Όνομα Παιδιού *</Label>
+                                <Input
+                                  id={`child-name-${index}`}
+                                  value={child.name}
+                                  onChange={(e) => updateChild(index, 'name', e.target.value)}
+                                  className="rounded-none"
+                                  placeholder="π.χ. Μαρία Παπαδοπούλου"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor={`child-birth-${index}`}>Ημερομηνία Γέννησης Παιδιού *</Label>
+                                <Input
+                                  id={`child-birth-${index}`}
+                                  type="date"
+                                  value={child.birth_date}
+                                  onChange={(e) => updateChild(index, 'birth_date', e.target.value)}
+                                  className="rounded-none"
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="rounded-none mt-6"
+                              onClick={() => removeChild(index)}
+                              type="button"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Password Section */}
             <div className="border-t pt-6">

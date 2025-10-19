@@ -71,14 +71,21 @@ export const AdminSchoolNotes = () => {
       // Process notes to generate AI summaries if needed
       const notesWithAI = await Promise.all(
         (data || []).map(async (note) => {
-          if (!note.ai_summary && note.content) {
+          if (!note.ai_summary && note.content && note.parent_id) {
             try {
-              const childBirthDate = note.app_users?.child_birth_date;
+              // Get children of parent
+              const { data: childrenData } = await supabase
+                .from('children')
+                .select('birth_date')
+                .eq('parent_id', note.parent_id)
+                .order('birth_date', { ascending: false });
+
               let childAge = null;
               
-              if (childBirthDate) {
+              // Use first child's age (or could use average, or ask which child)
+              if (childrenData && childrenData.length > 0) {
+                const birthDate = new Date(childrenData[0].birth_date);
                 const today = new Date();
-                const birthDate = new Date(childBirthDate);
                 childAge = today.getFullYear() - birthDate.getFullYear();
                 const monthDiff = today.getMonth() - birthDate.getMonth();
                 if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
