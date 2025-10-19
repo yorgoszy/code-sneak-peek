@@ -16,22 +16,20 @@ export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId }
   return (
     <div className="space-y-4">
       <Tabs value={activeHistoryTab} onValueChange={setActiveHistoryTab} className="w-full">
-        <div className="overflow-x-auto">
-          <TabsList className="grid w-full min-w-max grid-cols-4 rounded-none md:min-w-0">
-            <TabsTrigger value="force-velocity" className="rounded-none text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4">
-              Force/Velocity
-            </TabsTrigger>
-            <TabsTrigger value="endurance" className="rounded-none text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4">
-              Endurance
-            </TabsTrigger>
-            <TabsTrigger value="jump-profile" className="rounded-none text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4">
-              Jump Profile
-            </TabsTrigger>
-            <TabsTrigger value="anthropometric" className="rounded-none text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4">
-              Σωματομετρικά
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 rounded-none h-auto">
+          <TabsTrigger value="force-velocity" className="rounded-none text-xs sm:text-sm px-2 py-2.5">
+            Force/Velocity
+          </TabsTrigger>
+          <TabsTrigger value="endurance" className="rounded-none text-xs sm:text-sm px-2 py-2.5">
+            Endurance
+          </TabsTrigger>
+          <TabsTrigger value="jump-profile" className="rounded-none text-xs sm:text-sm px-2 py-2.5">
+            Jump Profile
+          </TabsTrigger>
+          <TabsTrigger value="anthropometric" className="rounded-none text-xs sm:text-sm px-2 py-2.5">
+            Σωματομετρικά
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="force-velocity" className="mt-4">
           <ForceVelocityHistory userId={userId} />
