@@ -149,19 +149,13 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
         {sessions.length > 1 && (
           <div className="space-y-1 pt-1 border-t border-gray-200">
             <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
-            {sessions.slice(1, 4).map((session, idx) => {
-              const data = session.endurance_test_data?.[0];
-              const exerciseName = data?.exercises?.name || 'Track';
-              return (
-                <div key={session.id} className="flex flex-col gap-0.5 text-[10px] text-gray-400">
-                  <div className="flex items-center justify-between">
-                    <span>{format(new Date(session.test_date), 'dd/MM/yy')}</span>
-                    <span className="font-medium text-[#cb8954]">{exerciseName}</span>
-                  </div>
-                  <span className="text-right">{data.sprint_seconds}s × {data.sprint_meters}m {data.sprint_watt ? `× ${parseFloat(data.sprint_watt).toFixed(2)}km/h` : ''}</span>
-                </div>
-              );
-            })}
+            <div className="flex flex-col gap-0.5 text-[10px] text-gray-400">
+              <div className="flex items-center justify-between">
+                <span>{format(new Date(sessions[1].test_date), 'dd/MM/yy')}</span>
+                <span className="font-medium text-[#cb8954]">{sessions[1].endurance_test_data?.[0]?.exercises?.name || 'Track'}</span>
+              </div>
+              <span className="text-right">{sessions[1].endurance_test_data?.[0].sprint_seconds}s × {sessions[1].endurance_test_data?.[0].sprint_meters}m {sessions[1].endurance_test_data?.[0].sprint_watt ? `× ${parseFloat(sessions[1].endurance_test_data?.[0].sprint_watt).toFixed(2)}km/h` : ''}</span>
+            </div>
           </div>
         )}
       </CardContent>
