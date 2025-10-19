@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { BookOpen, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval, isSameDay } from "date-fns";
@@ -18,8 +20,13 @@ interface SchoolNote {
   content: string;
   ai_summary: string | null;
   created_at: string;
+  child_age: number | null;
   app_users: {
     name: string;
+  } | null;
+  children: {
+    name: string;
+    birth_date: string;
   } | null;
 }
 
@@ -42,6 +49,8 @@ export const AdminSchoolNotes = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedNote, setSelectedNote] = useState<SchoolNote | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [ageFrom, setAgeFrom] = useState<string>("");
+  const [ageTo, setAgeTo] = useState<string>("");
 
   useEffect(() => {
     fetchNotes();
@@ -59,9 +68,14 @@ export const AdminSchoolNotes = () => {
           ai_summary,
           created_at,
           parent_id,
+          child_id,
+          child_age,
           app_users!school_notes_parent_id_fkey (
+            name
+          ),
+          children (
             name,
-            child_birth_date
+            birth_date
           )
         `)
         .order('created_at', { ascending: false });
@@ -137,9 +151,22 @@ export const AdminSchoolNotes = () => {
     }
   };
 
-  const filteredNotes = selectedCategory === "all" 
-    ? notes 
-    : notes.filter(note => note.category === selectedCategory);
+  const filteredNotes = notes.filter(note => {
+    // Category filter
+    if (selectedCategory !== "all" && note.category !== selectedCategory) {
+      return false;
+    }
+    
+    // Age filter
+    if (ageFrom && note.child_age !== null && note.child_age < parseInt(ageFrom)) {
+      return false;
+    }
+    if (ageTo && note.child_age !== null && note.child_age > parseInt(ageTo)) {
+      return false;
+    }
+    
+    return true;
+  });
 
   // Get week days
   const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Monday
@@ -183,63 +210,116 @@ export const AdminSchoolNotes = () => {
     <div className="space-y-4">
       <Card className="rounded-none">
         <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Σχολικές Σημειώσεις - Εβδομαδιαία Προβολή
-            </CardTitle>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePreviousWeek}
-                className="rounded-none"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Σχολικές Σημειώσεις - Εβδομαδιαία Προβολή
+              </CardTitle>
               
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="rounded-none min-w-[240px]">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(weekStart, "d MMM", { locale: el })} - {format(weekEnd, "d MMM yyyy", { locale: el })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => {
-                      if (date) {
-                        setSelectedDate(date);
-                        setSelectedWeek(date);
-                      }
-                    }}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousWeek}
+                  className="rounded-none"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="rounded-none min-w-[240px]">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {format(weekStart, "d MMM", { locale: el })} - {format(weekEnd, "d MMM yyyy", { locale: el })}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        if (date) {
+                          setSelectedDate(date);
+                          setSelectedWeek(date);
+                        }
+                      }}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextWeek}
-                className="rounded-none"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextWeek}
+                  className="rounded-none"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
 
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleToday}
-                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-              >
-                Σήμερα
-              </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleToday}
+                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                >
+                  Σήμερα
+                </Button>
+              </div>
             </div>
+
+            {/* Age Filter */}
+            <Card className="rounded-none bg-gray-50">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-gray-600" />
+                    <Label className="text-sm font-medium">Φίλτρο Ηλικίας:</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="age-from" className="text-sm">Από:</Label>
+                    <Input
+                      id="age-from"
+                      type="number"
+                      min="0"
+                      max="18"
+                      value={ageFrom}
+                      onChange={(e) => setAgeFrom(e.target.value)}
+                      placeholder="0"
+                      className="w-20 rounded-none"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="age-to" className="text-sm">Έως:</Label>
+                    <Input
+                      id="age-to"
+                      type="number"
+                      min="0"
+                      max="18"
+                      value={ageTo}
+                      onChange={(e) => setAgeTo(e.target.value)}
+                      placeholder="18"
+                      className="w-20 rounded-none"
+                    />
+                  </div>
+                  {(ageFrom || ageTo) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setAgeFrom("");
+                        setAgeTo("");
+                      }}
+                      className="text-xs"
+                    >
+                      Καθαρισμός
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </CardHeader>
         <CardContent>
@@ -287,6 +367,11 @@ export const AdminSchoolNotes = () => {
                                 <p className="text-xs text-gray-600 font-medium">
                                   {note.app_users?.name || "Άγνωστος"}
                                 </p>
+                                {note.children && (
+                                  <p className="text-xs text-gray-500">
+                                    Παιδί: {note.children.name} ({note.child_age} ετών)
+                                  </p>
+                                )}
                                 <p className="text-xs text-gray-500">
                                   {CATEGORIES.find(c => c.value === note.category)?.label}
                                 </p>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,15 +18,63 @@ const CATEGORIES = [
   { value: "other", label: "Άλλο" },
 ];
 
+interface Child {
+  id: string;
+  name: string;
+  birth_date: string;
+}
+
 export const SchoolNotes = () => {
   const { user } = useAuth();
   const [category, setCategory] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [children, setChildren] = useState<Child[]>([]);
+  const [selectedChild, setSelectedChild] = useState<string>("");
+
+  useEffect(() => {
+    fetchChildren();
+  }, [user]);
+
+  const fetchChildren = async () => {
+    if (!user?.id) return;
+
+    try {
+      const { data: appUser } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!appUser) return;
+
+      const { data, error } = await supabase
+        .from('children')
+        .select('*')
+        .eq('parent_id', appUser.id)
+        .order('birth_date', { ascending: false });
+
+      if (error) throw error;
+      setChildren(data || []);
+    } catch (error) {
+      console.error('Error fetching children:', error);
+    }
+  };
+
+  const calculateAge = (birthDate: string) => {
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
 
   const handleSubmit = async () => {
-    if (!content.trim() || !category) {
-      toast.error("Παρακαλώ συμπληρώστε όλα τα πεδία");
+    if (!content.trim() || !category || !selectedChild) {
+      toast.error("Παρακαλώ συμπληρώστε όλα τα πεδία και επιλέξτε παιδί");
       return;
     }
 
@@ -44,6 +92,14 @@ export const SchoolNotes = () => {
         throw new Error("Δεν βρέθηκε ο χρήστης");
       }
 
+      // Get child info
+      const selectedChildData = children.find(c => c.id === selectedChild);
+      if (!selectedChildData) {
+        throw new Error("Δεν βρέθηκε το παιδί");
+      }
+
+      const childAge = calculateAge(selectedChildData.birth_date);
+
       // For now, we'll use the same user_id for both parent and child
       // In a real scenario, you'd select the child from a list
       const { data, error } = await supabase
@@ -51,6 +107,8 @@ export const SchoolNotes = () => {
         .insert({
           user_id: appUser.id,
           parent_id: appUser.id,
+          child_id: selectedChild,
+          child_age: childAge,
           category,
           content,
         })
@@ -72,6 +130,7 @@ export const SchoolNotes = () => {
       toast.success("Η σημείωση αποθηκεύτηκε επιτυχώς!");
       setContent("");
       setCategory("");
+      setSelectedChild("");
     } catch (error: any) {
       console.error('Error submitting note:', error);
       toast.error(error.message || "Σφάλμα κατά την αποθήκευση");
@@ -90,6 +149,24 @@ export const SchoolNotes = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {children.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Επιλογή Παιδιού</label>
+              <Select value={selectedChild} onValueChange={setSelectedChild}>
+                <SelectTrigger className="rounded-none">
+                  <SelectValue placeholder="Επιλέξτε παιδί..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {children.map((child) => (
+                    <SelectItem key={child.id} value={child.id}>
+                      {child.name} ({calculateAge(child.birth_date)} ετών)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Κατηγορία</label>
             <Select value={category} onValueChange={setCategory}>
@@ -128,7 +205,7 @@ export const SchoolNotes = () => {
 
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !content.trim() || !category}
+            disabled={isSubmitting || !content.trim() || !category || !selectedChild}
             className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black w-full"
           >
             {isSubmitting ? (

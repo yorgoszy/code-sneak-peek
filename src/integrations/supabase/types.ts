@@ -2790,6 +2790,8 @@ export type Database = {
           ai_processed: boolean | null
           ai_summary: string | null
           category: string
+          child_age: number | null
+          child_id: string | null
           content: string
           created_at: string
           id: string
@@ -2801,6 +2803,8 @@ export type Database = {
           ai_processed?: boolean | null
           ai_summary?: string | null
           category: string
+          child_age?: number | null
+          child_id?: string | null
           content: string
           created_at?: string
           id?: string
@@ -2812,6 +2816,8 @@ export type Database = {
           ai_processed?: boolean | null
           ai_summary?: string | null
           category?: string
+          child_age?: number | null
+          child_id?: string | null
           content?: string
           created_at?: string
           id?: string
@@ -2820,6 +2826,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "school_notes_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "school_notes_parent_id_fkey"
             columns: ["parent_id"]
