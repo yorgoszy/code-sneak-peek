@@ -216,6 +216,9 @@ export const AdminSchoolNotes = () => {
                                 <p className="text-xs text-gray-500">
                                   {CATEGORIES.find(c => c.value === note.category)?.label}
                                 </p>
+                                <p className="text-xs text-gray-700 mt-2 whitespace-pre-wrap">
+                                  {note.content}
+                                </p>
                               </CardContent>
                             </Card>
                           ))
