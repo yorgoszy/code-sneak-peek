@@ -1,8 +1,19 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Map UI/localized values to DB-allowed values
+const normalizeSubscriptionStatus = (value: string | null | undefined): "active" | "inactive" => {
+  const v = (value || "").toLowerCase().trim();
+  // Accept already-normalized values
+  if (v === "active" || v === "inactive") return v as any;
+  // Greek UI labels mapping
+  if (v === "ενεργή") return "active";
+  if (v === "ανενεργή") return "inactive";
+  if (v === "παύση" || v === "paused") return "inactive"; // app_users only stores active/inactive
+  // Fallback safe default
+  return "inactive";
+};
 export const useEditUserDialog = (user: any, isOpen: boolean) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,7 +34,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
       setRole(user.role || "");
       setCategory(user.category || "");
       setUserStatus(user.user_status || "");
-      setSubscriptionStatus(user.subscription_status || "");
+      setSubscriptionStatus(normalizeSubscriptionStatus(user.subscription_status));
       setBirthDate(user.birth_date || "");
       setPhotoUrl(user.photo_url || "");
     }
@@ -44,7 +55,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         role,
         category,
         user_status: userStatus,
-        subscription_status: subscriptionStatus || 'inactive', // Προεπιλογή αν είναι κενό
+        subscription_status: normalizeSubscriptionStatus(subscriptionStatus),
         birth_date: birthDate || null,
         photo_url: photoUrl || null,
         updated_at: new Date().toISOString(),

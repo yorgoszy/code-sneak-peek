@@ -65,8 +65,6 @@ export const RoleStatusFields = ({
           <SelectContent>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="trial">Trial</SelectItem>
-            <SelectItem value="expired">Expired</SelectItem>
           </SelectContent>
         </Select>
       </div>
