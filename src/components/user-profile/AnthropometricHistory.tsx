@@ -5,5 +5,5 @@ interface AnthropometricHistoryProps {
 }
 
 export const AnthropometricHistory: React.FC<AnthropometricHistoryProps> = ({ userId }) => {
-  return <AnthropometricHistoryTab selectedUserId={userId} />;
+  return <AnthropometricHistoryTab selectedUserId={userId} readOnly={true} />;
 };

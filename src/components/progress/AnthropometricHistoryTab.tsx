@@ -12,15 +12,14 @@ import { format } from "date-fns";
 
 interface AnthropometricHistoryTabProps {
   selectedUserId?: string;
+  readOnly?: boolean;
 }
 
-export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId }) => {
+export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
   const usersMap = useUserNamesMap();
   const { results, loading, refetch } = useAnthropometricTestResults(usersMap, selectedUserId);
   const [anthropometricData, setAnthropometricData] = useState<Record<string, any>>({});
-  const [userSearch, setUserSearch] = useState<string>("");
   const [selectedYear, setSelectedYear] = useState<string>("all");
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Refetch when component mounts or key changes
   useEffect(() => {
@@ -82,7 +81,6 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
   };
 
   const handleClearFilters = () => {
-    setUserSearch("");
     setSelectedYear("all");
   };
 
@@ -92,37 +90,13 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
     return Array.from(new Set(years)).sort((a, b) => b - a);
   }, [results]);
 
-  // Get filtered user suggestions
-  const userSuggestions = useMemo(() => {
-    if (!userSearch.trim()) return [];
-    
-    const searchLower = userSearch.toLowerCase();
-    return Array.from(usersMap.entries())
-      .map(([id, name]) => ({ id, name }))
-      .filter(user => 
-        user.name?.toLowerCase().includes(searchLower)
-      )
-      .slice(0, 10);
-  }, [userSearch, usersMap]);
-
   // Filtered results
   const filteredResults = useMemo(() => {
     return results.filter(r => {
-      // Filter by user search
-      if (userSearch.trim()) {
-        const userName = usersMap.get(r.user_id);
-        if (!userName) return false;
-        
-        const searchLower = userSearch.toLowerCase();
-        const nameMatch = userName.toLowerCase().includes(searchLower);
-        
-        if (!nameMatch) return false;
-      }
-      
       if (selectedYear !== "all" && new Date(r.test_date).getFullYear().toString() !== selectedYear) return false;
       return true;
     });
-  }, [results, userSearch, selectedYear, usersMap]);
+  }, [results, selectedYear]);
 
   if (loading) {
     return (
@@ -148,46 +122,6 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex gap-3 flex-wrap items-start">
-        <div className="relative w-[250px]">
-          <Input
-            type="text"
-            placeholder="Αναζήτηση χρήστη..."
-            value={userSearch}
-            onChange={(e) => setUserSearch(e.target.value)}
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            className="rounded-none pr-8"
-          />
-          {userSearch && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setUserSearch("")}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 rounded-none"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          )}
-          
-          {/* Suggestions dropdown */}
-          {showSuggestions && userSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-[300px] overflow-y-auto z-50">
-              {userSuggestions.map((user) => (
-                <div
-                  key={user.id}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => {
-                    setUserSearch(user.name);
-                    setShowSuggestions(false);
-                  }}
-                >
-                  <div className="font-medium text-sm">{user.name}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
         <Select value={selectedYear} onValueChange={setSelectedYear}>
           <SelectTrigger className="w-[150px] rounded-none">
             <SelectValue placeholder="Όλα τα έτη" />
@@ -224,14 +158,16 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
                     {format(new Date(result.test_date), 'dd/MM/yyyy')}
                   </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDelete(result.id)}
-                  className="rounded-none text-destructive hover:text-destructive h-7 w-7"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
+                {!readOnly && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(result.id)}
+                    className="rounded-none text-destructive hover:text-destructive h-7 w-7"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
             </CardHeader>
             
