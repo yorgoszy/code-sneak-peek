@@ -112,7 +112,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
       <CardHeader className="p-[5px]">
         <CardTitle className="text-sm">MAS Tests</CardTitle>
       </CardHeader>
-      <CardContent className="flex gap-2 overflow-x-auto pb-2 p-[5px]">
+      <CardContent className="flex overflow-x-auto pb-2 p-[5px]">
         {sessions.map((exerciseData) => (
           <Card key={exerciseData.id} className="rounded-none min-w-[130px] shrink-0">
             <CardContent className="p-[3px]">
