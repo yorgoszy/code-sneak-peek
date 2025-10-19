@@ -14,7 +14,11 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
 import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
 
-export const HistoryTab: React.FC = () => {
+interface HistoryTabProps {
+  selectedUserId?: string;
+}
+
+export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId }) => {
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,17 +37,18 @@ export const HistoryTab: React.FC = () => {
 
   useEffect(() => {
     fetchSessions();
-  }, []);
+  }, [selectedUserId]);
 
   const fetchSessions = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('strength_test_sessions')
         .select(`
           id,
           test_date,
           notes,
           created_at,
+          user_id,
           app_users!strength_test_sessions_user_id_fkey (
             id,
             name
@@ -60,6 +65,13 @@ export const HistoryTab: React.FC = () => {
           )
         `)
         .order('created_at', { ascending: false });
+
+      // Filter by specific user if selectedUserId is provided
+      if (selectedUserId) {
+        query = query.eq('user_id', selectedUserId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
