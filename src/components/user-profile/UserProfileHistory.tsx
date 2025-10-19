@@ -4,6 +4,7 @@ import { UserProgressSection } from "./UserProgressSection";
 import { ForceVelocityHistory } from "./ForceVelocityHistory";
 import { EnduranceHistory } from "./EnduranceHistory";
 import { JumpHistory } from "./JumpHistory";
+import { AnthropometricHistory } from "./AnthropometricHistory";
 
 interface UserProfileHistoryProps {
   userId: string;
@@ -43,11 +44,7 @@ export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId }
         </TabsContent>
 
         <TabsContent value="anthropometric" className="mt-4">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Σωματομετρικά Ιστορικό</h3>
-            {/* Anthropometric content */}
-            <UserProgressSection userId={userId} />
-          </div>
+          <AnthropometricHistory userId={userId} />
         </TabsContent>
       </Tabs>
     </div>

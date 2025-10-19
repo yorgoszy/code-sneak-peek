@@ -8,9 +8,13 @@ import { useUserNamesMap } from "@/components/results/hooks/useUserNamesMap";
 import { useAnthropometricTestResults } from "@/components/results/hooks/useAnthropometricTestResults";
 import { format } from "date-fns";
 
-export const AnthropometricHistoryTab = () => {
+interface AnthropometricHistoryTabProps {
+  selectedUserId?: string;
+}
+
+export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId }) => {
   const usersMap = useUserNamesMap();
-  const { results, loading, refetch } = useAnthropometricTestResults(usersMap);
+  const { results, loading, refetch } = useAnthropometricTestResults(usersMap, selectedUserId);
   const [anthropometricData, setAnthropometricData] = useState<Record<string, any>>({});
 
   // Refetch when component mounts or key changes
