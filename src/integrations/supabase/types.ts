@@ -435,6 +435,7 @@ export type Database = {
           avatar_url: string | null
           birth_date: string | null
           category: string | null
+          child_birth_date: string | null
           created_at: string | null
           email: string
           id: string
@@ -452,6 +453,7 @@ export type Database = {
           avatar_url?: string | null
           birth_date?: string | null
           category?: string | null
+          child_birth_date?: string | null
           created_at?: string | null
           email: string
           id?: string
@@ -469,6 +471,7 @@ export type Database = {
           avatar_url?: string | null
           birth_date?: string | null
           category?: string | null
+          child_birth_date?: string | null
           created_at?: string | null
           email?: string
           id?: string

@@ -12,7 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { noteContent, category } = await req.json();
+    const { noteContent, category, childAge } = await req.json();
+    
+    console.log('Received request:', { noteContent, category, childAge });
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -31,20 +33,22 @@ serve(async (req) => {
 
     const categoryLabel = categoryLabels[category] || category;
 
+    const ageInfo = childAge ? `\nΗλικία παιδιού: ${childAge} χρονών` : '';
+
     const systemPrompt = `Είσαι ειδικός παιδαγωγός και προπονητής φυσικής αγωγής. 
-Αναλύεις σημειώσεις γονέων για τα παιδιά τους από το σχολείο και προτείνεις στοχευμένες ασκήσεις φυσικής αγωγής.
+Αναλύεις σημειώσεις γονέων για τα παιδιά τους από το σχολείο και προτείνεις στοχευμένες ασκήσεις φυσικής αγωγής.${ageInfo}
 
 Για κάθε σημείωση, πρέπει να:
 1. Δημιουργήσεις μια σύντομη περίληψη (2-3 γραμμές)
 2. Προτείνεις 3-4 συγκεκριμένες ασκήσεις φυσικής αγωγής που θα βοηθήσουν στην ανάπτυξη των δεξιοτήτων που αναφέρονται
 
 Οι ασκήσεις πρέπει να είναι:
-- Κατάλληλες για παιδιά σχολικής ηλικίας
+- Κατάλληλες για την ηλικία του παιδιού${ageInfo ? ` (${childAge} χρονών)` : ''}
 - Εύκολα εφαρμόσιμες
 - Διασκεδαστικές και ελκυστικές
 - Σχετικές με τις δεξιότητες που χρειάζονται ανάπτυξη
 
-Απάντησε σε μορφή JSON με την εξής δομή:
+Απάντησε ΠΑΝΤΑ σε μορφή JSON με την εξής δομή:
 {
   "summary": "Η περίληψη της σημείωσης",
   "exercises": [
@@ -55,7 +59,9 @@ serve(async (req) => {
       "skill": "Η δεξιότητα που αναπτύσσει"
     }
   ]
-}`;
+}
+
+ΣΗΜΑΝΤΙΚΟ: Πρέπει οπωσδήποτε να προτείνεις τουλάχιστον 3 ασκήσεις.`;
 
     const userPrompt = `Μάθημα: ${categoryLabel}
 
@@ -146,10 +152,23 @@ ${noteContent}
 
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) {
+      console.error("No tool call found in response:", JSON.stringify(data, null, 2));
       throw new Error("No tool call in AI response");
     }
 
     const result = JSON.parse(toolCall.function.arguments);
+    console.log('Parsed result:', result);
+
+    // Validation
+    if (!result.summary || !result.exercises || !Array.isArray(result.exercises)) {
+      console.error("Invalid result structure:", result);
+      throw new Error("Invalid AI response structure");
+    }
+
+    if (result.exercises.length === 0) {
+      console.error("No exercises returned by AI");
+      throw new Error("AI did not return any exercises");
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

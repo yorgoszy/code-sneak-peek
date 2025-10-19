@@ -58,15 +58,70 @@ export const AdminSchoolNotes = () => {
           content,
           ai_summary,
           created_at,
+          parent_id,
           app_users!school_notes_parent_id_fkey (
-            name
+            name,
+            child_birth_date
           )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setNotes(data || []);
+      // Process notes to generate AI summaries if needed
+      const notesWithAI = await Promise.all(
+        (data || []).map(async (note) => {
+          if (!note.ai_summary && note.content) {
+            try {
+              const childBirthDate = note.app_users?.child_birth_date;
+              let childAge = null;
+              
+              if (childBirthDate) {
+                const today = new Date();
+                const birthDate = new Date(childBirthDate);
+                childAge = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                  childAge--;
+                }
+              }
+
+              const { data: aiData, error: aiError } = await supabase.functions.invoke('analyze-school-note', {
+                body: { 
+                  noteContent: note.content,
+                  category: note.category,
+                  childAge
+                }
+              });
+
+              if (aiError) {
+                console.error('AI analysis error:', aiError);
+                return note;
+              }
+
+              if (aiData) {
+                // Update the note with AI summary
+                const { error: updateError } = await supabase
+                  .from('school_notes')
+                  .update({ ai_summary: JSON.stringify(aiData) })
+                  .eq('id', note.id);
+
+                if (updateError) {
+                  console.error('Error updating AI summary:', updateError);
+                  return note;
+                }
+
+                return { ...note, ai_summary: JSON.stringify(aiData) };
+              }
+            } catch (aiError) {
+              console.error('Error processing AI for note:', aiError);
+            }
+          }
+          return note;
+        })
+      );
+
+      setNotes(notesWithAI);
     } catch (error: any) {
       console.error('Error fetching notes:', error);
       toast.error("Σφάλμα κατά τη φόρτωση των σημειώσεων");
