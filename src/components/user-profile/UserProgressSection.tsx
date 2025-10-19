@@ -215,9 +215,15 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
     selectedSessions[d.exerciseId]?.includes(d.sessionId)
   );
 
-  // Υπολογισμός 1RM για κάθε επιλεγμένη άσκηση (τελευταία προσπάθεια από την τελευταία session)
+  // Υπολογισμός 1RM για κάθε επιλεγμένη άσκηση με ιστορικό
   const exerciseOneRMs = useMemo(() => {
-    const oneRMs: Record<string, { weight: number; velocity: number; date: string; percentageChange: number | null }> = {};
+    const oneRMs: Record<string, { 
+      weight: number; 
+      velocity: number; 
+      date: string; 
+      percentageChange: number | null;
+      history: Array<{ weight: number; velocity: number; date: string }>;
+    }> = {};
     
     selectedExercises.forEach(exerciseId => {
       const exerciseData = historicalData.filter(d => d.exerciseId === exerciseId);
@@ -254,11 +260,27 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         }
       }
       
+      // Ιστορικό (μέχρι 3 προηγούμενες sessions)
+      const history: Array<{ weight: number; velocity: number; date: string }> = [];
+      for (let i = 1; i < Math.min(uniqueSessions.length, 4); i++) {
+        const sessionId = uniqueSessions[i].sessionId;
+        const sessionAttempts = exerciseData.filter(d => d.sessionId === sessionId);
+        const sessionOneRM = sessionAttempts.reduce((max, current) => {
+          return current.weight > max.weight ? current : max;
+        });
+        history.push({
+          weight: sessionOneRM.weight,
+          velocity: sessionOneRM.velocity,
+          date: sessionOneRM.date
+        });
+      }
+      
       oneRMs[exerciseId] = {
         weight: latestOneRM.weight,
         velocity: latestOneRM.velocity,
         date: latestOneRM.date,
-        percentageChange
+        percentageChange,
+        history
       };
     });
     
@@ -362,7 +384,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                         </div>
                         <div className="flex items-center justify-between mt-1.5 sm:mt-1">
                           <div className="text-xs sm:text-[9px] text-gray-400">
-                            {new Date(oneRM.date).toLocaleDateString('el-GR')}
+                            Τελ. μέτρηση: {new Date(oneRM.date).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                           </div>
                           {oneRM.percentageChange !== null && (
                             <div className={`text-xs sm:text-[10px] font-medium ${oneRM.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -370,6 +392,19 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                             </div>
                           )}
                         </div>
+                        
+                        {/* History section - similar to Cardiac Data card */}
+                        {oneRM.history && oneRM.history.length > 0 && (
+                          <div className="space-y-0.5 pt-1.5 sm:pt-1 border-t border-gray-200 mt-1.5 sm:mt-1">
+                            <div className="text-xs sm:text-[9px] text-gray-500 font-medium">Ιστορικό</div>
+                            {oneRM.history.map((historyItem, idx) => (
+                              <div key={idx} className="flex items-center justify-between text-xs sm:text-[9px] text-gray-400">
+                                <span>{new Date(historyItem.date).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
+                                <span>{historyItem.weight}kg @ {historyItem.velocity.toFixed(2)}m/s</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
