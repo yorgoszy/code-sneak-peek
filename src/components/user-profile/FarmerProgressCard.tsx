@@ -83,10 +83,10 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
               <span className="font-semibold text-[#cb8954]">{getLatestValue('farmer_kg')} kg</span>
               {calculatePercentageChange('farmer_kg') !== null && (
                 <span className={`text-[10px] font-semibold ${
-                  calculatePercentageChange('farmer_kg')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                  calculatePercentageChange('farmer_kg')! > 0 ? 'text-green-700' : 'text-red-500'
                 }`}>
                   {calculatePercentageChange('farmer_kg')! > 0 ? '+' : ''}
-                  {calculatePercentageChange('farmer_kg')!.toFixed(1)}%
+                  {Math.round(calculatePercentageChange('farmer_kg')!)}%
                 </span>
               )}
             </div>
@@ -97,10 +97,10 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
               <span className="font-semibold text-[#cb8954]">{getLatestValue('farmer_meters')} m</span>
               {calculatePercentageChange('farmer_meters') !== null && (
                 <span className={`text-[10px] font-semibold ${
-                  calculatePercentageChange('farmer_meters')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                  calculatePercentageChange('farmer_meters')! > 0 ? 'text-green-700' : 'text-red-500'
                 }`}>
                   {calculatePercentageChange('farmer_meters')! > 0 ? '+' : ''}
-                  {calculatePercentageChange('farmer_meters')!.toFixed(1)}%
+                  {Math.round(calculatePercentageChange('farmer_meters')!)}%
                 </span>
               )}
             </div>
@@ -111,10 +111,10 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
               <span className="font-semibold text-[#cb8954]">{getLatestValue('farmer_seconds')} δευτ.</span>
               {calculatePercentageChange('farmer_seconds') !== null && (
                 <span className={`text-[10px] font-semibold ${
-                  calculatePercentageChange('farmer_seconds')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                  calculatePercentageChange('farmer_seconds')! > 0 ? 'text-green-700' : 'text-red-500'
                 }`}>
                   {calculatePercentageChange('farmer_seconds')! > 0 ? '+' : ''}
-                  {calculatePercentageChange('farmer_seconds')!.toFixed(1)}%
+                  {Math.round(calculatePercentageChange('farmer_seconds')!)}%
                 </span>
               )}
             </div>
