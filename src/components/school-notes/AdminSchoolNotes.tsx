@@ -110,9 +110,12 @@ export const AdminSchoolNotes = () => {
                     <Card key={note.id} className="rounded-none">
                       <CardHeader>
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-base">
-                            {note.app_users?.name || "Άγνωστος Γονέας"}
-                          </CardTitle>
+                          <div>
+                            <p className="text-xs text-gray-500 mb-1">Γονέας</p>
+                            <CardTitle className="text-base">
+                              {note.app_users?.name || "Άγνωστος Γονέας"}
+                            </CardTitle>
+                          </div>
                           <span className="text-sm text-gray-500">
                             {new Date(note.created_at).toLocaleDateString('el-GR')}
                           </span>
