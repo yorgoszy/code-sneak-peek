@@ -92,10 +92,10 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
               <span className="font-semibold text-[#cb8954]">{getLatestValue('sprint_seconds')} δευτ.</span>
               {calculatePercentageChange('sprint_seconds') !== null && (
                 <span className={`text-[10px] font-semibold ${
-                  calculatePercentageChange('sprint_seconds')! < 0 ? 'text-[#00ffba]' : 'text-red-500'
+                  calculatePercentageChange('sprint_seconds')! < 0 ? 'text-green-700' : 'text-red-500'
                 }`}>
                   {calculatePercentageChange('sprint_seconds')! > 0 ? '+' : ''}
-                  {calculatePercentageChange('sprint_seconds')!.toFixed(1)}%
+                  {Math.round(calculatePercentageChange('sprint_seconds')!)}%
                 </span>
               )}
             </div>
@@ -106,10 +106,10 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
               <span className="font-semibold text-[#cb8954]">{getLatestValue('sprint_meters')} m</span>
               {calculatePercentageChange('sprint_meters') !== null && (
                 <span className={`text-[10px] font-semibold ${
-                  calculatePercentageChange('sprint_meters')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                  calculatePercentageChange('sprint_meters')! > 0 ? 'text-green-700' : 'text-red-500'
                 }`}>
                   {calculatePercentageChange('sprint_meters')! > 0 ? '+' : ''}
-                  {calculatePercentageChange('sprint_meters')!.toFixed(1)}%
+                  {Math.round(calculatePercentageChange('sprint_meters')!)}%
                 </span>
               )}
             </div>
@@ -121,10 +121,10 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
                 <span className="font-semibold text-[#cb8954]">{parseFloat(getLatestValue('sprint_watt') as string).toFixed(2)} km/h</span>
                 {calculatePercentageChange('sprint_watt') !== null && (
                   <span className={`text-[10px] font-semibold ${
-                    calculatePercentageChange('sprint_watt')! > 0 ? 'text-[#00ffba]' : 'text-red-500'
+                    calculatePercentageChange('sprint_watt')! > 0 ? 'text-green-700' : 'text-red-500'
                   }`}>
                     {calculatePercentageChange('sprint_watt')! > 0 ? '+' : ''}
-                    {calculatePercentageChange('sprint_watt')!.toFixed(1)}%
+                    {Math.round(calculatePercentageChange('sprint_watt')!)}%
                   </span>
                 )}
               </div>
