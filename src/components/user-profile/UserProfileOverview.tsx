@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { UserProfileStats } from "./UserProfileStats";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
+import { UserProfileHeader } from "./UserProfileHeader";
 
 interface UserProfileOverviewProps {
   userProfile: any;
@@ -18,6 +19,9 @@ export const UserProfileOverview = ({
   
   return (
     <div className="space-y-4 md:space-y-6">
+      {/* User Profile Header with Action Buttons */}
+      <UserProfileHeader user={userProfile} setActiveTab={setActiveTab} />
+      
       {/* General Stats Overview */}
       <UserProfileStats user={userProfile} stats={stats} setActiveTab={setActiveTab} />
 

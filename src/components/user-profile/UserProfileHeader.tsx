@@ -7,13 +7,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
 import { useState } from "react";
-import { Key } from "lucide-react";
+import { Key, TrendingUp, History } from "lucide-react";
 
 interface UserProfileHeaderProps {
   user: any;
+  setActiveTab?: (tab: string) => void;
 }
 
-export const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
+export const UserProfileHeader = ({ user, setActiveTab }: UserProfileHeaderProps) => {
   const isMobile = useIsMobile();
   const { user: currentUser } = useAuth();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
@@ -68,18 +69,46 @@ export const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
               </div>
             </div>
             
-            {/* Κουμπί αλλαγής κωδικού - μόνο για το δικό του προφίλ */}
-            {isOwnProfile && (
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                onClick={() => setIsPasswordDialogOpen(true)}
-                className="rounded-none flex items-center gap-2"
-              >
-                <Key className="w-4 h-4" />
-                {!isMobile && "Αλλαγή Κωδικού"}
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {/* Κουμπί Πρόοδος */}
+              {setActiveTab && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setActiveTab('progress')}
+                  className="rounded-none hover:bg-gray-100"
+                  title="Πρόοδος"
+                >
+                  <TrendingUp className="w-5 h-5 text-[#cb8954]" />
+                </Button>
+              )}
+              
+              {/* Κουμπί Ιστορικό */}
+              {setActiveTab && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setActiveTab('history')}
+                  className="rounded-none hover:bg-gray-100"
+                  title="Ιστορικό"
+                >
+                  <History className="w-5 h-5 text-[#cb8954]" />
+                </Button>
+              )}
+              
+              {/* Κουμπί αλλαγής κωδικού - μόνο για το δικό του προφίλ */}
+              {isOwnProfile && (
+                <Button
+                  variant="outline"
+                  size={isMobile ? "sm" : "default"}
+                  onClick={() => setIsPasswordDialogOpen(true)}
+                  className="rounded-none flex items-center gap-2"
+                >
+                  <Key className="w-4 h-4" />
+                  {!isMobile && "Αλλαγή Κωδικού"}
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
       </Card>
