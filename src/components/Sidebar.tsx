@@ -519,6 +519,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: BookOpen,
+      label: "Σχολικές Σημειώσεις",
+      path: "/dashboard/school-notes",
+      badge: null
+    },
+    {
       icon: Mail,
       label: "Webmail",
       path: "https://webmail.hyperkids.gr/",
