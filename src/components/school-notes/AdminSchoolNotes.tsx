@@ -211,27 +211,35 @@ export const AdminSchoolNotes = () => {
       <Card className="rounded-none">
         <CardHeader>
           <div className="space-y-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Σχολικές Σημειώσεις - Εβδομαδιαία Προβολή
+            {/* Title and Week Navigation */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="hidden sm:inline">Σχολικές Σημειώσεις - Εβδομαδιαία Προβολή</span>
+                <span className="sm:hidden">Σχολικές Σημειώσεις</span>
               </CardTitle>
               
-              <div className="flex items-center gap-2">
+              {/* Week Navigation - Compact on mobile */}
+              <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handlePreviousWeek}
-                  className="rounded-none"
+                  className="rounded-none h-8 w-8 sm:h-9 sm:w-9 p-0"
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
                 
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="rounded-none min-w-[240px]">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(weekStart, "d MMM", { locale: el })} - {format(weekEnd, "d MMM yyyy", { locale: el })}
+                    <Button variant="outline" className="rounded-none text-xs sm:text-sm flex-1 sm:min-w-[240px] h-8 sm:h-9">
+                      <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">
+                        {format(weekStart, "d MMM", { locale: el })} - {format(weekEnd, "d MMM yyyy", { locale: el })}
+                      </span>
+                      <span className="sm:hidden">
+                        {format(weekStart, "d/M", { locale: el })} - {format(weekEnd, "d/M", { locale: el })}
+                      </span>
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="end">
@@ -254,82 +262,84 @@ export const AdminSchoolNotes = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleNextWeek}
-                  className="rounded-none"
+                  className="rounded-none h-8 w-8 sm:h-9 sm:w-9 p-0"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
 
                 <Button
                   variant="default"
                   size="sm"
                   onClick={handleToday}
-                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-4"
                 >
                   Σήμερα
                 </Button>
               </div>
             </div>
 
-            {/* Age Filter */}
+            {/* Age Filter - Stack on mobile */}
             <Card className="rounded-none bg-gray-50">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4 flex-wrap">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-gray-600" />
                     <Label className="text-sm font-medium">Φίλτρο Ηλικίας:</Label>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="age-from" className="text-sm">Από:</Label>
-                    <Input
-                      id="age-from"
-                      type="number"
-                      min="0"
-                      max="18"
-                      value={ageFrom}
-                      onChange={(e) => setAgeFrom(e.target.value)}
-                      placeholder="0"
-                      className="w-20 rounded-none"
-                    />
+                  <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="age-from" className="text-sm whitespace-nowrap">Από:</Label>
+                      <Input
+                        id="age-from"
+                        type="number"
+                        min="0"
+                        max="18"
+                        value={ageFrom}
+                        onChange={(e) => setAgeFrom(e.target.value)}
+                        placeholder="0"
+                        className="w-16 sm:w-20 rounded-none text-sm"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="age-to" className="text-sm whitespace-nowrap">Έως:</Label>
+                      <Input
+                        id="age-to"
+                        type="number"
+                        min="0"
+                        max="18"
+                        value={ageTo}
+                        onChange={(e) => setAgeTo(e.target.value)}
+                        placeholder="18"
+                        className="w-16 sm:w-20 rounded-none text-sm"
+                      />
+                    </div>
+                    {(ageFrom || ageTo) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setAgeFrom("");
+                          setAgeTo("");
+                        }}
+                        className="text-xs h-8"
+                      >
+                        Καθαρισμός
+                      </Button>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="age-to" className="text-sm">Έως:</Label>
-                    <Input
-                      id="age-to"
-                      type="number"
-                      min="0"
-                      max="18"
-                      value={ageTo}
-                      onChange={(e) => setAgeTo(e.target.value)}
-                      placeholder="18"
-                      className="w-20 rounded-none"
-                    />
-                  </div>
-                  {(ageFrom || ageTo) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setAgeFrom("");
-                        setAgeTo("");
-                      }}
-                      className="text-xs"
-                    >
-                      Καθαρισμός
-                    </Button>
-                  )}
                 </div>
               </CardContent>
             </Card>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-2 sm:p-6">
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-            <TabsList className="rounded-none flex-wrap h-auto">
+            <TabsList className="rounded-none flex-wrap h-auto gap-1 p-1">
               {CATEGORIES.map((cat) => (
                 <TabsTrigger 
                   key={cat.value} 
                   value={cat.value}
-                  className="rounded-none"
+                  className="rounded-none text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
                 >
                   {cat.label}
                 </TabsTrigger>
@@ -337,21 +347,26 @@ export const AdminSchoolNotes = () => {
             </TabsList>
 
             {CATEGORIES.map((cat) => (
-              <TabsContent key={cat.value} value={cat.value} className="space-y-4 mt-4">
-                {/* Calendar Week View */}
-                <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+              <TabsContent key={cat.value} value={cat.value} className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                {/* Calendar Week View - Single column on mobile, 2 cols on tablet, 7 cols on desktop */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2 sm:gap-3">
                   {notesByDay.map((day, index) => (
                     <Card key={index} className="rounded-none">
-                      <CardHeader className="p-3 bg-gray-50 border-b">
-                        <CardTitle className="text-sm font-semibold text-center">
-                          {format(day.date, "EEEE", { locale: el })}
+                      <CardHeader className="p-2 sm:p-3 bg-gray-50 border-b">
+                        <CardTitle className="text-xs sm:text-sm font-semibold text-center">
+                          <span className="hidden lg:block">
+                            {format(day.date, "EEEE", { locale: el })}
+                          </span>
+                          <span className="lg:hidden">
+                            {format(day.date, "EEE", { locale: el })}
+                          </span>
                           <br />
                           <span className="text-xs text-gray-500">
                             {format(day.date, "d MMM", { locale: el })}
                           </span>
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="p-2 space-y-2 min-h-[200px]">
+                      <CardContent className="p-2 space-y-2 min-h-[150px] sm:min-h-[200px]">
                         {day.notes.length === 0 ? (
                           <p className="text-xs text-gray-400 text-center py-4">
                             Δεν υπάρχουν σημειώσεις
@@ -364,11 +379,11 @@ export const AdminSchoolNotes = () => {
                               onClick={() => handleNoteClick(note)}
                             >
                               <CardContent className="p-2 space-y-1">
-                                <p className="text-xs text-gray-600 font-medium">
+                                <p className="text-xs text-gray-600 font-medium truncate">
                                   {note.app_users?.name || "Άγνωστος"}
                                 </p>
                                 {note.children && (
-                                  <p className="text-xs text-gray-500">
+                                  <p className="text-xs text-gray-500 truncate">
                                     Παιδί: {note.children.name} ({note.child_age} ετών)
                                   </p>
                                 )}

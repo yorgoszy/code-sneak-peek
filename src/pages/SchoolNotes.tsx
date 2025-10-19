@@ -140,23 +140,23 @@ export const SchoolNotes = () => {
   };
 
   return (
-    <div className="space-y-4 max-w-4xl mx-auto">
+    <div className="space-y-4 w-full px-2 sm:px-0">
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
             Σχολικές Σημειώσεις
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-4 sm:p-6">
           {children.length > 0 && (
             <div className="space-y-2">
               <label className="text-sm font-medium">Επιλογή Παιδιού</label>
               <Select value={selectedChild} onValueChange={setSelectedChild}>
-                <SelectTrigger className="rounded-none">
+                <SelectTrigger className="rounded-none w-full">
                   <SelectValue placeholder="Επιλέξτε παιδί..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-50 bg-white">
                   {children.map((child) => (
                     <SelectItem key={child.id} value={child.id}>
                       {child.name} ({calculateAge(child.birth_date)} ετών)
@@ -170,10 +170,10 @@ export const SchoolNotes = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium">Κατηγορία</label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="rounded-none">
+              <SelectTrigger className="rounded-none w-full">
                 <SelectValue placeholder="Επιλέξτε κατηγορία..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-50 bg-white">
                 {CATEGORIES.map((cat) => (
                   <SelectItem key={cat.value} value={cat.value}>
                     {cat.label}
@@ -191,14 +191,14 @@ export const SchoolNotes = () => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Γράψτε εδώ το πρόγραμμα ή τις σημειώσεις από το σχολείο του παιδιού σας..."
-              className="rounded-none min-h-[200px]"
+              className="rounded-none min-h-[150px] sm:min-h-[200px] text-sm sm:text-base"
               disabled={isSubmitting}
             />
           </div>
 
-          <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-none">
-            <BookOpen className="h-4 w-4 text-blue-600" />
-            <p className="text-sm text-blue-800">
+          <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-none">
+            <BookOpen className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs sm:text-sm text-blue-800">
               Ο AI βοηθός θα επεξεργαστεί τη σημείωσή σας και θα τη διαθέσει στον διαχειριστή
             </p>
           </div>
@@ -206,7 +206,7 @@ export const SchoolNotes = () => {
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || !content.trim() || !category || !selectedChild}
-            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black w-full"
+            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black w-full h-10 sm:h-11 text-sm sm:text-base"
           >
             {isSubmitting ? (
               <>
