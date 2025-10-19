@@ -219,11 +219,11 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
         
         return (
           <Card key={result.id} className="rounded-none">
-            <CardHeader className="p-3">
+            <CardHeader className="p-2 sm:p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-sm">{result.user_name}</CardTitle>
-                  <p className="text-xs text-muted-foreground">
+                  <CardTitle className="text-xs sm:text-sm">{result.user_name}</CardTitle>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
                     {format(new Date(result.test_date), 'dd/MM/yyyy')}
                   </p>
                 </div>
@@ -232,69 +232,69 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(result.id)}
-                    className="rounded-none text-destructive hover:text-destructive h-7 w-7"
+                    className="rounded-none text-destructive hover:text-destructive h-6 w-6 sm:h-7 sm:w-7"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   </Button>
                 )}
               </div>
             </CardHeader>
             
             {data && (
-              <CardContent className="p-3 pt-0">
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+              <CardContent className="p-2 sm:p-3 pt-0">
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2">
                   {data.height && (
-                    <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">Ύψος</p>
-                      <p className="text-sm font-medium">{data.height} cm</p>
+                    <div className="space-y-0">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground">Ύψος</p>
+                      <p className="text-[10px] sm:text-sm font-medium">{data.height} cm</p>
                     </div>
                   )}
                   {data.weight && (
-                    <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">Βάρος</p>
-                      <p className="text-sm font-medium">{data.weight} kg</p>
+                    <div className="space-y-0">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground">Βάρος</p>
+                      <p className="text-[10px] sm:text-sm font-medium">{data.weight} kg</p>
                     </div>
                   )}
                   {data.body_fat_percentage && (
-                    <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">Λίπος</p>
-                      <p className="text-sm font-medium">{data.body_fat_percentage}%</p>
+                    <div className="space-y-0">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground">Λίπος</p>
+                      <p className="text-[10px] sm:text-sm font-medium">{data.body_fat_percentage}%</p>
                     </div>
                   )}
                   {data.muscle_mass_percentage && (
-                    <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">Μυϊκή Μάζα</p>
-                      <p className="text-sm font-medium">{data.muscle_mass_percentage}%</p>
+                    <div className="space-y-0">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground">Μυϊκή Μάζα</p>
+                      <p className="text-[10px] sm:text-sm font-medium">{data.muscle_mass_percentage}%</p>
                     </div>
                   )}
                   {data.chest_circumference && (
-                    <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">Στήθος</p>
-                      <p className="text-sm font-medium">{data.chest_circumference} cm</p>
+                    <div className="space-y-0">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground">Στήθος</p>
+                      <p className="text-[10px] sm:text-sm font-medium">{data.chest_circumference} cm</p>
                     </div>
                   )}
                   {data.waist_circumference && (
-                    <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">Μέση</p>
-                      <p className="text-sm font-medium">{data.waist_circumference} cm</p>
+                    <div className="space-y-0">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground">Μέση</p>
+                      <p className="text-[10px] sm:text-sm font-medium">{data.waist_circumference} cm</p>
                     </div>
                   )}
                   {data.hip_circumference && (
-                    <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">Ισχία</p>
-                      <p className="text-sm font-medium">{data.hip_circumference} cm</p>
+                    <div className="space-y-0">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground">Ισχία</p>
+                      <p className="text-[10px] sm:text-sm font-medium">{data.hip_circumference} cm</p>
                     </div>
                   )}
                   {data.thigh_circumference && (
-                    <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">Μηρός</p>
-                      <p className="text-sm font-medium">{data.thigh_circumference} cm</p>
+                    <div className="space-y-0">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground">Μηρός</p>
+                      <p className="text-[10px] sm:text-sm font-medium">{data.thigh_circumference} cm</p>
                     </div>
                   )}
                   {data.arm_circumference && (
-                    <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">Βραχίονας</p>
-                      <p className="text-sm font-medium">{data.arm_circumference} cm</p>
+                    <div className="space-y-0">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground">Βραχίονας</p>
+                      <p className="text-[10px] sm:text-sm font-medium">{data.arm_circumference} cm</p>
                     </div>
                   )}
                 </div>
