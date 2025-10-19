@@ -179,7 +179,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
         {previousData && (
           <div className="pt-2 border-t border-gray-200 mt-2">
             <div className="text-[9px] text-gray-400">
-              Ιστορικό (1 προηγούμενες)
+              Ιστορικό
             </div>
             <div className="text-[9px] text-gray-400">
               {format(new Date(previousData.test_date), 'dd/MM/yy')}

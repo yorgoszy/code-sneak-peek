@@ -154,7 +154,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
                 {exerciseData.previousData && (
                   <div className="pt-1 border-t border-gray-200">
                     <div className="text-[9px] text-gray-400">
-                      Ιστορικό (1 προηγούμενες)
+                      Ιστορικό
                     </div>
                     <div className="text-[9px] text-gray-400">
                       {format(new Date(exerciseData.previousData.test_date), 'dd/MM/yy')} {exerciseData.previousData.mas_ms?.toFixed(2)} m/s

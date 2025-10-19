@@ -170,7 +170,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
         {previousSession && (
           <div className="pt-1 border-t border-gray-200">
             <div className="text-[9px] text-gray-400">
-              Ιστορικό (1 προηγούμενες)
+              Ιστορικό
             </div>
             <div className="text-[9px] text-gray-400">
               {format(new Date(previousSession.test_date), 'dd/MM/yy')}
