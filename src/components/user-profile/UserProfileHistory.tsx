@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserProgressSection } from "./UserProgressSection";
 import { ForceVelocityHistory } from "./ForceVelocityHistory";
 import { EnduranceHistory } from "./EnduranceHistory";
+import { JumpHistory } from "./JumpHistory";
 
 interface UserProfileHistoryProps {
   userId: string;
@@ -38,11 +39,7 @@ export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId }
         </TabsContent>
 
         <TabsContent value="jump-profile" className="mt-4">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Jump Profile Ιστορικό</h3>
-            {/* Jump Profile content */}
-            <UserProgressSection userId={userId} />
-          </div>
+          <JumpHistory userId={userId} />
         </TabsContent>
 
         <TabsContent value="anthropometric" className="mt-4">

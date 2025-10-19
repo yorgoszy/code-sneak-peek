@@ -26,7 +26,11 @@ interface JumpSession {
   }> | any;
 }
 
-export const JumpHistoryTab: React.FC = () => {
+interface JumpHistoryTabProps {
+  selectedUserId?: string;
+}
+
+export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId }) => {
   const { toast } = useToast();
   const [sessions, setSessions] = useState<JumpSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +42,7 @@ export const JumpHistoryTab: React.FC = () => {
 
   useEffect(() => {
     fetchSessions();
-  }, []);
+  }, [selectedUserId]);
 
   const fetchSessions = async () => {
     try {
@@ -55,7 +59,7 @@ export const JumpHistoryTab: React.FC = () => {
       setUsersMap(userMap);
 
       // Fetch jump test sessions
-      const { data, error } = await supabase
+      let sessionsQuery = supabase
         .from('jump_test_sessions')
         .select(`
           id,
@@ -74,6 +78,13 @@ export const JumpHistoryTab: React.FC = () => {
         `)
         .order('test_date', { ascending: false })
         .order('created_at', { ascending: false });
+
+      // Filter by specific user if selectedUserId is provided
+      if (selectedUserId) {
+        sessionsQuery = sessionsQuery.eq('user_id', selectedUserId);
+      }
+
+      const { data, error } = await sessionsQuery;
 
       if (error) throw error;
       setSessions(data as any || []);
