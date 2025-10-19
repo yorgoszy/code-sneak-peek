@@ -274,9 +274,9 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
   return (
     <>
       {/* Filters */}
-      <div className="flex gap-3 flex-wrap items-start mb-4">
+      <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-stretch sm:items-start mb-4">
         {!readOnly && (
-          <div className="relative w-[250px]">
+          <div className="relative w-full sm:w-[250px]">
             <Input
               type="text"
               placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
@@ -317,7 +317,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
           </div>
         )}
 
-        <div className="relative w-[300px]">
+        <div className="relative w-full sm:w-[300px]">
           <Select 
             value={selectedExercises.length === 1 ? selectedExercises[0] : "multiple"}
             onValueChange={() => {}}
@@ -351,7 +351,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
         </div>
 
         <Select value={selectedYear} onValueChange={setSelectedYear}>
-          <SelectTrigger className="w-[150px] rounded-none">
+          <SelectTrigger className="w-full sm:w-[150px] rounded-none">
             <SelectValue placeholder="Όλα τα έτη" />
           </SelectTrigger>
           <SelectContent className="rounded-none">
@@ -366,7 +366,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
           variant="outline"
           size="sm"
           onClick={handleClearFilters}
-          className="rounded-none h-10"
+          className="rounded-none h-10 w-full sm:w-auto"
         >
           <X className="w-4 h-4 mr-2" />
           Καθαρισμός
@@ -425,13 +425,13 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                   }));
 
                   return (
-                    <div key={idx} className="grid grid-cols-1 lg:grid-cols-[230px_1fr] gap-6">
+                    <div key={idx} className="grid grid-cols-1 lg:grid-cols-[230px_1fr] gap-4 md:gap-6">
                       {/* Left side - Attempts list */}
                       <div className="space-y-2">
                         <div className="text-sm font-semibold mb-2">{exerciseData.exerciseName}</div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 overflow-x-auto">
                           {/* Header */}
-                          <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 p-1 text-xs font-medium text-gray-600">
+                          <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 p-1 text-xs font-medium text-gray-600 min-w-[200px]">
                             <span className="w-4">#</span>
                             <span>Κιλά</span>
                             <span>m/s</span>
@@ -441,7 +441,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                           {exerciseData.attempts
                             .sort((a: any, b: any) => a.attempt_number - b.attempt_number)
                             .map((attempt: any) => (
-                              <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 p-1 border rounded-none bg-white">
+                              <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 p-1 border rounded-none bg-white min-w-[200px]">
                                 <span className="text-xs font-medium w-4">#{attempt.attempt_number}</span>
                                 <span className="text-xs border rounded-none p-1 bg-gray-50">{attempt.weight_kg} kg</span>
                                 <span className="text-xs border rounded-none p-1 bg-gray-50">{attempt.velocity_ms} m/s</span>
@@ -459,7 +459,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                       </div>
 
                       {/* Right side - Chart */}
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-center min-h-[200px] md:min-h-[300px]">
                         {chartData.length > 0 && (
                           <div className="w-full">
                             <LoadVelocityChart 
