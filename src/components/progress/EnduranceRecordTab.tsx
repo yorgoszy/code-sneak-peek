@@ -1000,71 +1000,6 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       })}
         </div>
 
-        {/* VO2 Max Card */}
-        <div className="space-y-3">
-          {vo2MaxForms.map((form, formIndex) => (
-            <Card key={form.id} className="rounded-none w-fit">
-              <CardHeader className="pb-1 pt-2 px-3">
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-xs">VO2 Max {vo2MaxForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
-                  <Button onClick={addNewVo2MaxForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
-                    <Plus className="w-3 h-3" />
-                  </Button>
-                  {vo2MaxForms.length > 1 && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => removeVo2MaxForm(form.id)}
-                      className="rounded-none h-5 w-5 p-0"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="p-3 pt-2 space-y-2">
-                {/* User Selection */}
-                <div className="w-40">
-                  <Label className="text-xs">Ασκούμενος</Label>
-                  <Combobox
-                    options={userOptions}
-                    value={form.selectedUserId}
-                    onValueChange={(val) => updateVo2MaxForm(form.id, { selectedUserId: val })}
-                    placeholder="Χρήστης"
-                    emptyMessage="Δεν βρέθηκε."
-                    className="h-7 text-xs"
-                  />
-                </div>
-
-                {/* VO2 Max Field */}
-                <div className="flex gap-2">
-                  <div className="w-24">
-                    <Label className="text-xs">VO2 Max</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      placeholder="ml/kg/min"
-                      value={form.vo2Max}
-                      onChange={(e) => updateVo2MaxForm(form.id, { vo2Max: e.target.value })}
-                      className="rounded-none no-spinners h-7 text-xs"
-                    />
-                  </div>
-
-                  <div className="flex items-end">
-                    <Button 
-                      onClick={() => handleVo2MaxSave(form.id)} 
-                      className="rounded-none h-7 w-7 p-0"
-                      disabled={form.loading}
-                    >
-                      <Save className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
         {/* Cardiac Data Card */}
         <div className="space-y-3">
           {cardiacForms.map((form, formIndex) => (
@@ -1140,6 +1075,70 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
           ))}
         </div>
 
+        {/* VO2 Max Card */}
+        <div className="space-y-3">
+          {vo2MaxForms.map((form, formIndex) => (
+            <Card key={form.id} className="rounded-none w-fit">
+              <CardHeader className="pb-1 pt-2 px-3">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-xs">VO2 Max {vo2MaxForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                  <Button onClick={addNewVo2MaxForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                    <Plus className="w-3 h-3" />
+                  </Button>
+                  {vo2MaxForms.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeVo2MaxForm(form.id)}
+                      className="rounded-none h-5 w-5 p-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-3 pt-2 space-y-2">
+                {/* User Selection */}
+                <div className="w-40">
+                  <Label className="text-xs">Ασκούμενος</Label>
+                  <Combobox
+                    options={userOptions}
+                    value={form.selectedUserId}
+                    onValueChange={(val) => updateVo2MaxForm(form.id, { selectedUserId: val })}
+                    placeholder="Χρήστης"
+                    emptyMessage="Δεν βρέθηκε."
+                    className="h-7 text-xs"
+                  />
+                </div>
+
+                {/* VO2 Max Field */}
+                <div className="flex gap-2">
+                  <div className="w-24">
+                    <Label className="text-xs">VO2 Max</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="ml/kg/min"
+                      value={form.vo2Max}
+                      onChange={(e) => updateVo2MaxForm(form.id, { vo2Max: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button 
+                      onClick={() => handleVo2MaxSave(form.id)} 
+                      className="rounded-none h-7 w-7 p-0"
+                      disabled={form.loading}
+                    >
+                      <Save className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         {/* Bodyweight Forms */}
         <div className="space-y-3">
