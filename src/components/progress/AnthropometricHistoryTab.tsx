@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useUserNamesMap } from "@/components/results/hooks/useUserNamesMap";
 import { useAnthropometricTestResults } from "@/components/results/hooks/useAnthropometricTestResults";
 import { format } from "date-fns";
+import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 
 interface AnthropometricHistoryTabProps {
   selectedUserId?: string;
@@ -22,6 +23,8 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [userSearch, setUserSearch] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
   // Refetch when component mounts or key changes
   useEffect(() => {
@@ -52,17 +55,20 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
     setAnthropometricData(data);
   };
 
-  const handleDelete = async (sessionId: string) => {
-    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την καταγραφή;')) {
-      return;
-    }
+  const handleDeleteClick = (sessionId: string) => {
+    setSessionToDelete(sessionId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!sessionToDelete) return;
 
     try {
       // Delete anthropometric data first (foreign key)
       const { error: dataError } = await supabase
         .from('anthropometric_test_data')
         .delete()
-        .eq('test_session_id', sessionId);
+        .eq('test_session_id', sessionToDelete);
 
       if (dataError) throw dataError;
 
@@ -70,16 +76,20 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
       const { error: sessionError } = await supabase
         .from('anthropometric_test_sessions')
         .delete()
-        .eq('id', sessionId);
+        .eq('id', sessionToDelete);
 
       if (sessionError) throw sessionError;
 
       toast.success('Η καταγραφή διαγράφηκε επιτυχώς');
+      setIsDeleteDialogOpen(false);
+      setSessionToDelete(null);
       await refetch();
       fetchAnthropometricData();
     } catch (error) {
       console.error('Error deleting record:', error);
       toast.error('Σφάλμα κατά τη διαγραφή');
+      setIsDeleteDialogOpen(false);
+      setSessionToDelete(null);
     }
   };
 
@@ -232,7 +242,7 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDelete(result.id)}
+                    onClick={() => handleDeleteClick(result.id)}
                     className="rounded-none text-destructive hover:text-destructive h-6 w-6 sm:h-7 sm:w-7"
                   >
                     <Trash2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -304,6 +314,15 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
           </Card>
         );
       })}
+
+      <DeleteConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setSessionToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 };
