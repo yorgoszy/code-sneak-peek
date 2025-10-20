@@ -99,16 +99,13 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
             <XAxis 
               dataKey="velocity"
               type="number"
-              domain={['dataMin', 'dataMax']}
+              domain={[0, 'dataMax']}
               label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -5, fontSize: 11 }}
               tick={{ fontSize: 10 }}
             />
             <YAxis 
               type="number"
-              domain={[
-                (dataMin: any) => Math.floor((typeof dataMin === 'number' ? dataMin : 0) - 5),
-                (dataMax: any) => Math.ceil((typeof dataMax === 'number' ? dataMax : 0) + 5)
-              ]}
+              domain={[0, (dataMax: any) => Math.ceil((typeof dataMax === 'number' ? dataMax : 0) + 5)]}
               label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft', fontSize: 11 }}
               tick={{ fontSize: 10 }}
               tickCount={5}
