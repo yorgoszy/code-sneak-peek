@@ -318,6 +318,7 @@ export type Database = {
         Row: {
           arm_circumference: number | null
           body_fat_percentage: number | null
+          bone_density: number | null
           chest_circumference: number | null
           created_at: string | null
           height: number | null
@@ -327,12 +328,14 @@ export type Database = {
           test_session_id: string | null
           thigh_circumference: number | null
           updated_at: string | null
+          visceral_fat_percentage: number | null
           waist_circumference: number | null
           weight: number | null
         }
         Insert: {
           arm_circumference?: number | null
           body_fat_percentage?: number | null
+          bone_density?: number | null
           chest_circumference?: number | null
           created_at?: string | null
           height?: number | null
@@ -342,12 +345,14 @@ export type Database = {
           test_session_id?: string | null
           thigh_circumference?: number | null
           updated_at?: string | null
+          visceral_fat_percentage?: number | null
           waist_circumference?: number | null
           weight?: number | null
         }
         Update: {
           arm_circumference?: number | null
           body_fat_percentage?: number | null
+          bone_density?: number | null
           chest_circumference?: number | null
           created_at?: string | null
           height?: number | null
@@ -357,6 +362,7 @@ export type Database = {
           test_session_id?: string | null
           thigh_circumference?: number | null
           updated_at?: string | null
+          visceral_fat_percentage?: number | null
           waist_circumference?: number | null
           weight?: number | null
         }

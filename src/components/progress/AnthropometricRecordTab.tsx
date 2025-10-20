@@ -18,8 +18,10 @@ interface AnthropometricForm {
   selectedUserId: string;
   height: string;
   weight: string;
-  bodyFatPercentage: string;
   muscleMassPercentage: string;
+  boneDensity: string;
+  bodyFatPercentage: string;
+  visceralFatPercentage: string;
   loading: boolean;
 }
 
@@ -30,8 +32,10 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
       selectedUserId: '',
       height: '',
       weight: '',
-      bodyFatPercentage: '',
       muscleMassPercentage: '',
+      boneDensity: '',
+      bodyFatPercentage: '',
+      visceralFatPercentage: '',
       loading: false
     }
   ]);
@@ -53,8 +57,10 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
       selectedUserId: '',
       height: '',
       weight: '',
-      bodyFatPercentage: '',
       muscleMassPercentage: '',
+      boneDensity: '',
+      bodyFatPercentage: '',
+      visceralFatPercentage: '',
       loading: false
     }]);
   };
@@ -73,7 +79,7 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
     }
 
     // Validate at least one field is filled
-    if (!form.height && !form.weight && !form.bodyFatPercentage && !form.muscleMassPercentage) {
+    if (!form.height && !form.weight && !form.muscleMassPercentage && !form.boneDensity && !form.bodyFatPercentage && !form.visceralFatPercentage) {
       toast.error("Παρακαλώ συμπληρώστε τουλάχιστον ένα πεδίο");
       return;
     }
@@ -101,8 +107,10 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
 
       if (form.height) dataToInsert.height = parseFloat(form.height);
       if (form.weight) dataToInsert.weight = parseFloat(form.weight);
-      if (form.bodyFatPercentage) dataToInsert.body_fat_percentage = parseFloat(form.bodyFatPercentage);
       if (form.muscleMassPercentage) dataToInsert.muscle_mass_percentage = parseFloat(form.muscleMassPercentage);
+      if (form.boneDensity) dataToInsert.bone_density = parseFloat(form.boneDensity);
+      if (form.bodyFatPercentage) dataToInsert.body_fat_percentage = parseFloat(form.bodyFatPercentage);
+      if (form.visceralFatPercentage) dataToInsert.visceral_fat_percentage = parseFloat(form.visceralFatPercentage);
 
       const { error: dataError } = await supabase
         .from('anthropometric_test_data')
@@ -117,8 +125,10 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
         selectedUserId: '',
         height: '',
         weight: '',
-        bodyFatPercentage: '',
         muscleMassPercentage: '',
+        boneDensity: '',
+        bodyFatPercentage: '',
+        visceralFatPercentage: '',
         loading: false
       });
 
@@ -203,6 +213,30 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
                   </div>
 
                   <div className="flex-1">
+                    <Label className="text-[11px]">Μυϊκή Μάζα (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="%"
+                      value={form.muscleMassPercentage}
+                      onChange={(e) => updateForm(form.id, { muscleMassPercentage: e.target.value })}
+                      className="rounded-none no-spinners h-6 text-[11px]"
+                    />
+                  </div>
+
+                  <div className="flex-1">
+                    <Label className="text-[11px]">Οστική Πυκνότητα (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="kg"
+                      value={form.boneDensity}
+                      onChange={(e) => updateForm(form.id, { boneDensity: e.target.value })}
+                      className="rounded-none no-spinners h-6 text-[11px]"
+                    />
+                  </div>
+
+                  <div className="flex-1">
                     <Label className="text-[11px]">Λίπους (%)</Label>
                     <Input
                       type="number"
@@ -215,13 +249,13 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
                   </div>
 
                   <div className="flex-1">
-                    <Label className="text-[11px]">Μυϊκή Μάζα (%)</Label>
+                    <Label className="text-[11px]">Σπλαχνικό Λίπος (%)</Label>
                     <Input
                       type="number"
                       step="0.1"
                       placeholder="%"
-                      value={form.muscleMassPercentage}
-                      onChange={(e) => updateForm(form.id, { muscleMassPercentage: e.target.value })}
+                      value={form.visceralFatPercentage}
+                      onChange={(e) => updateForm(form.id, { visceralFatPercentage: e.target.value })}
                       className="rounded-none no-spinners h-6 text-[11px]"
                     />
                   </div>
