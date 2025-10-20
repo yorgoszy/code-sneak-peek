@@ -54,37 +54,37 @@ export default function ProgressTracking() {
   };
 
   return (
-    <div className="p-3 md:p-6 space-y-4 md:space-y-6">
-      <h1 className="text-xl md:text-2xl font-bold">Καταγραφή Προόδου</h1>
+    <div className="p-2 sm:p-3 md:p-4 lg:p-6 space-y-3 sm:space-y-4 md:space-y-6 max-w-full overflow-x-hidden">
+      <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Καταγραφή Προόδου</h1>
 
       <Tabs defaultValue="force-velocity" className="w-full">
-        <TabsList className="rounded-none w-full grid grid-cols-2 md:grid-cols-4 gap-1">
-          <TabsTrigger value="force-velocity" className="rounded-none text-xs md:text-sm">
+        <TabsList className="rounded-none w-full grid grid-cols-2 lg:grid-cols-4 gap-0.5 sm:gap-1 p-0.5 sm:p-1">
+          <TabsTrigger value="force-velocity" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
             Force/Velocity
           </TabsTrigger>
-          <TabsTrigger value="endurance" className="rounded-none text-xs md:text-sm">
+          <TabsTrigger value="endurance" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
             Endurance
           </TabsTrigger>
-          <TabsTrigger value="jump-profile" className="rounded-none text-xs md:text-sm">
+          <TabsTrigger value="jump-profile" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
             Jump Profile
           </TabsTrigger>
-          <TabsTrigger value="anthropometric" className="rounded-none text-xs md:text-sm">
+          <TabsTrigger value="anthropometric" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
             Σωματομετρικά
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="force-velocity" className="mt-4 md:mt-6">
+        <TabsContent value="force-velocity" className="mt-3 sm:mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
-            <TabsList className="rounded-none w-full bg-gray-100 h-8">
-              <TabsTrigger value="new" className="rounded-none flex-1 text-xs py-1 px-2">
+            <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1 text-xs py-1 px-2">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="new" className="mt-4 md:mt-6">
+            <TabsContent value="new" className="mt-3 sm:mt-4 md:mt-6">
               <NewRecordTab 
                 users={users} 
                 exercises={exercises} 
@@ -92,24 +92,24 @@ export default function ProgressTracking() {
               />
             </TabsContent>
 
-            <TabsContent value="history" className="mt-4 md:mt-6">
+            <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
               <HistoryTab key={refreshKey} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
-        <TabsContent value="endurance" className="mt-4 md:mt-6">
+        <TabsContent value="endurance" className="mt-3 sm:mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
-            <TabsList className="rounded-none w-full bg-gray-100 h-8">
-              <TabsTrigger value="new" className="rounded-none flex-1 text-xs py-1 px-2">
+            <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1 text-xs py-1 px-2">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="new" className="mt-4 md:mt-6">
+            <TabsContent value="new" className="mt-3 sm:mt-4 md:mt-6">
               <EnduranceRecordTab 
                 users={users} 
                 exercises={exercises}
@@ -117,55 +117,55 @@ export default function ProgressTracking() {
               />
             </TabsContent>
 
-            <TabsContent value="history" className="mt-4 md:mt-6">
+            <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
               <EnduranceHistoryTab key={refreshKey} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
-        <TabsContent value="jump-profile" className="mt-4 md:mt-6">
+        <TabsContent value="jump-profile" className="mt-3 sm:mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
-            <TabsList className="rounded-none w-full bg-gray-100 h-8">
-              <TabsTrigger value="new" className="rounded-none flex-1 text-xs py-1 px-2">
+            <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1 text-xs py-1 px-2">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="new" className="mt-4 md:mt-6">
+            <TabsContent value="new" className="mt-3 sm:mt-4 md:mt-6">
               <JumpRecordTab 
                 users={users} 
                 onRecordSaved={handleRecordSaved}
               />
             </TabsContent>
 
-            <TabsContent value="history" className="mt-4 md:mt-6">
+            <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
               <JumpHistoryTab key={refreshKey} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
-        <TabsContent value="anthropometric" className="mt-4 md:mt-6">
+        <TabsContent value="anthropometric" className="mt-3 sm:mt-4 md:mt-6">
           <Tabs defaultValue="new" className="w-full">
-            <TabsList className="rounded-none w-full bg-gray-100 h-8">
-              <TabsTrigger value="new" className="rounded-none flex-1 text-xs py-1 px-2">
+            <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
                 Νέα Καταγραφή
               </TabsTrigger>
-              <TabsTrigger value="history" className="rounded-none flex-1 text-xs py-1 px-2">
+              <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
                 Ιστορικό
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="new" className="mt-4 md:mt-6">
+            <TabsContent value="new" className="mt-3 sm:mt-4 md:mt-6">
               <AnthropometricRecordTab 
                 users={users} 
                 onRecordSaved={handleRecordSaved}
               />
             </TabsContent>
 
-            <TabsContent value="history" className="mt-4 md:mt-6">
+            <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
               <AnthropometricHistoryTab key={refreshKey} />
             </TabsContent>
           </Tabs>
