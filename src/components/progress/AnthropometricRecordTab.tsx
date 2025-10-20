@@ -203,7 +203,7 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
                   </div>
 
                   <div className="flex-1">
-                    <Label className="text-[11px]">Ποσοστό Λίπους (%)</Label>
+                    <Label className="text-[11px]">Λίπους (%)</Label>
                     <Input
                       type="number"
                       step="0.1"
@@ -215,7 +215,7 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
                   </div>
 
                   <div className="flex-1">
-                    <Label className="text-[11px]">Ποσοστό Μυϊκής Μάζας (%)</Label>
+                    <Label className="text-[11px]">Μυϊκή Μάζα (%)</Label>
                     <Input
                       type="number"
                       step="0.1"
