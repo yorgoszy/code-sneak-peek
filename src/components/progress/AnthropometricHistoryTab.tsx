@@ -75,6 +75,7 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
       if (sessionError) throw sessionError;
 
       toast.success('Η καταγραφή διαγράφηκε επιτυχώς');
+      await refetch();
       fetchAnthropometricData();
     } catch (error) {
       console.error('Error deleting record:', error);
