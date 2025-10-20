@@ -531,47 +531,27 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
 
       {/* Results */}
       <div className="flex gap-4 overflow-x-auto pb-2">
-      {/* MAS Tests */}
+      {/* MAS Test */}
       {masSessions.length > 0 && (
         <div className="min-w-[240px]">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">MAS Tests</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">MAS Test</h3>
           <div className="flex flex-col gap-2">
             {masSessions.map(renderSessionCard)}
           </div>
         </div>
       )}
 
-      {/* Bodyweight Tests */}
-      {bodyweightSessions.length > 0 && (
+      {/* Cardiac Data */}
+      {cardiacSessions.length > 0 && (
         <div className="min-w-[240px]">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">Push Ups, Pull Ups & T2B</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Cardiac Data</h3>
           <div className="flex flex-col gap-2">
-            {bodyweightSessions.map(renderSessionCard)}
+            {cardiacSessions.map(renderSessionCard)}
           </div>
         </div>
       )}
 
-      {/* Farmer Tests */}
-      {farmerSessions.length > 0 && (
-        <div className="min-w-[240px]">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">Farmer Walk</h3>
-          <div className="flex flex-col gap-2">
-            {farmerSessions.map(renderSessionCard)}
-          </div>
-        </div>
-      )}
-
-      {/* Sprint Tests */}
-      {sprintSessions.length > 0 && (
-        <div className="min-w-[240px]">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">Sprint</h3>
-          <div className="flex flex-col gap-2">
-            {sprintSessions.map(renderSessionCard)}
-          </div>
-        </div>
-      )}
-
-      {/* VO2 Max Tests */}
+      {/* VO2 Max */}
       {vo2MaxSessions.length > 0 && (
         <div className="min-w-[240px]">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">VO2 Max</h3>
@@ -581,12 +561,32 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
         </div>
       )}
 
-      {/* Cardiac Tests */}
-      {cardiacSessions.length > 0 && (
+      {/* Push Ups, Pull Ups & T2B */}
+      {bodyweightSessions.length > 0 && (
         <div className="min-w-[240px]">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">Cardiac Data</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Push Ups, Pull Ups & T2B</h3>
           <div className="flex flex-col gap-2">
-            {cardiacSessions.map(renderSessionCard)}
+            {bodyweightSessions.map(renderSessionCard)}
+          </div>
+        </div>
+      )}
+
+      {/* Farmer */}
+      {farmerSessions.length > 0 && (
+        <div className="min-w-[240px]">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Farmer</h3>
+          <div className="flex flex-col gap-2">
+            {farmerSessions.map(renderSessionCard)}
+          </div>
+        </div>
+      )}
+
+      {/* Sprint */}
+      {sprintSessions.length > 0 && (
+        <div className="min-w-[240px]">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Sprint</h3>
+          <div className="flex flex-col gap-2">
+            {sprintSessions.map(renderSessionCard)}
           </div>
         </div>
       )}
