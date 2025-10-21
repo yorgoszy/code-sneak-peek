@@ -155,12 +155,22 @@ export const assignmentService = {
         
         // 🚨 ΚΡΙΤΙΚΟΣ ΕΛΕΓΧΟΣ: Έλεγχος σειράς ασκήσεων στη βάση
         console.log('🚨 [ASSIGNMENT CHECK] Verifying exercise order in database:');
+        
+        // ΝΕΟ: Ετοιμάζουμε map από τη δομή του builder για γρήγορη αντιστοίχιση
+        const builderWeeks = (program.weeks || []) as any[];
+        const updates: any[] = [];
+        
         existingWeeks.forEach((week, wIndex) => {
           console.log(`🚨 [ASSIGNMENT] Week ${wIndex + 1}: ${week.name}`);
+
+          const builderWeek = builderWeeks.find(w => Number(w.week_number) === Number(week.week_number));
           week.program_days?.forEach((day, dIndex) => {
             console.log(`🚨 [ASSIGNMENT] Day ${dIndex + 1}: ${day.name}`);
+            const builderDay = builderWeek?.program_days?.find((bd: any) => Number(bd.day_number) === Number(day.day_number));
+
             day.program_blocks?.forEach((block, bIndex) => {
               console.log(`🚨 [ASSIGNMENT] Block ${bIndex + 1}: ${block.name} - ${block.program_exercises?.length || 0} exercises`);
+              const builderBlock = builderDay?.program_blocks?.find((bb: any) => Number(bb.block_order) === Number(block.block_order));
               const exercises = block.program_exercises || [];
               
               // Έλεγχος αν οι ασκήσεις είναι σε σωστή σειρά στη βάση
@@ -193,9 +203,49 @@ export const assignmentService = {
               } else {
                 console.log(`✅ [ASSIGNMENT OK] Exercise order is correct in block: ${block.name}`);
               }
+
+              // ΝΕΟ: Ενημέρωση τιμών από τον Builder (μόνο velocity_ms για τώρα)
+              exercises.forEach((dbEx: any) => {
+                const builderExercise = builderBlock?.program_exercises?.find((be: any) => Number(be.exercise_order) === Number(dbEx.exercise_order));
+                if (!builderExercise) return;
+
+                // Υποστήριξη ελληνικού δεκαδικού
+                const velocityValue = (builderExercise.velocity_ms !== undefined && builderExercise.velocity_ms !== null && builderExercise.velocity_ms !== '')
+                  ? parseNumberWithComma(builderExercise.velocity_ms)
+                  : null;
+
+                // Αν στη βάση είναι διαφορετικό, ενημέρωσέ το
+                const currentDbVelocity = dbEx.velocity_ms as number | null;
+                const normalizedNew = Number.isFinite(velocityValue as number) ? (velocityValue as number) : null;
+
+                const isDifferent = (currentDbVelocity ?? null) !== (normalizedNew ?? null);
+                if (isDifferent) {
+                  console.log('📝 [ASSIGNMENT UPDATE] Updating velocity_ms', {
+                    exercise_name: dbEx.exercises?.name,
+                    order: dbEx.exercise_order,
+                    from: currentDbVelocity,
+                    to: normalizedNew
+                  });
+                  updates.push(
+                    supabase.from('program_exercises')
+                      .update({ velocity_ms: normalizedNew })
+                      .eq('id', dbEx.id)
+                      .select()
+                  );
+                }
+              });
             });
           });
         });
+
+        // Εκτέλεση όλων των ενημερώσεων μαζί
+        if (updates.length > 0) {
+          console.log(`💾 [ASSIGNMENT UPDATE] Applying ${updates.length} updates for velocity_ms...`);
+          await Promise.all(updates as any);
+          console.log('✅ [ASSIGNMENT UPDATE] Velocity values updated successfully');
+        } else {
+          console.log('ℹ️ [ASSIGNMENT UPDATE] No velocity updates needed');
+        }
       }
     } catch (error) {
       console.error('❌ [AssignmentService] Error in ensureProgramStructureExists:', error);
