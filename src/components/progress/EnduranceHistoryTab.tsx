@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ interface EnduranceHistoryTabProps {
 }
 
 export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -256,11 +258,11 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
   }, [filteredSessions, selectedCategory]);
 
   if (loading) {
-    return <div className="text-center py-8 text-gray-500">Φόρτωση...</div>;
+    return <div className="text-center py-8 text-gray-500">{t('history.loading')}</div>;
   }
 
   if (sessions.length === 0) {
-    return <div className="text-center py-8 text-gray-500">Δεν υπάρχουν καταγραφές</div>;
+    return <div className="text-center py-8 text-gray-500">{t('history.noRecords')}</div>;
   }
 
   const toggleExercise = (exerciseId: string) => {

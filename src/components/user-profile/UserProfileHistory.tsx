@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserProgressSection } from "./UserProgressSection";
 import { ForceVelocityHistory } from "./ForceVelocityHistory";
@@ -11,6 +12,7 @@ interface UserProfileHistoryProps {
 }
 
 export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId }) => {
+  const { t } = useTranslation();
   const [activeHistoryTab, setActiveHistoryTab] = useState("force-velocity");
 
   return (
@@ -18,16 +20,16 @@ export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId }
       <Tabs value={activeHistoryTab} onValueChange={setActiveHistoryTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 rounded-none h-auto">
           <TabsTrigger value="force-velocity" className="rounded-none text-xs sm:text-sm px-2 py-2.5">
-            Force/Velocity
+            {t('history.forceVelocity')}
           </TabsTrigger>
           <TabsTrigger value="endurance" className="rounded-none text-xs sm:text-sm px-2 py-2.5">
-            Endurance
+            {t('history.endurance')}
           </TabsTrigger>
           <TabsTrigger value="jump-profile" className="rounded-none text-xs sm:text-sm px-2 py-2.5">
-            Jump Profile
+            {t('history.jumpProfile')}
           </TabsTrigger>
           <TabsTrigger value="anthropometric" className="rounded-none text-xs sm:text-sm px-2 py-2.5">
-            Σωματομετρικά
+            {t('history.anthropometric')}
           </TabsTrigger>
         </TabsList>
 

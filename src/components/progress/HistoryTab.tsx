@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ interface HistoryTabProps {
 }
 
 export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,8 +109,8 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
 
     if (isNaN(weight) || isNaN(velocity) || weight <= 0 || velocity <= 0) {
       toast({
-        title: "Σφάλμα",
-        description: "Παρακαλώ εισάγετε έγκυρες τιμές",
+        title: t('history.error'),
+        description: t('history.validValues'),
         variant: "destructive"
       });
       return;
@@ -126,8 +128,8 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
       if (error) throw error;
 
       toast({
-        title: "Επιτυχία",
-        description: "Η προσπάθεια ενημερώθηκε"
+        title: t('history.success'),
+        description: t('history.attemptUpdated')
       });
 
       setEditingAttempt(null);
@@ -135,8 +137,8 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
     } catch (error) {
       console.error('Error updating attempt:', error);
       toast({
-        title: "Σφάλμα",
-        description: "Αποτυχία ενημέρωσης",
+        title: t('history.error'),
+        description: t('history.updateFailed'),
         variant: "destructive"
       });
     }
@@ -168,16 +170,16 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
       if (sessionError) throw sessionError;
 
       toast({
-        title: "Επιτυχία",
-        description: "Η καταγραφή διαγράφηκε"
+        title: t('history.success'),
+        description: t('history.recordDeleted')
       });
 
       fetchSessions();
     } catch (error) {
       console.error('Error deleting session:', error);
       toast({
-        title: "Σφάλμα",
-        description: "Αποτυχία διαγραφής",
+        title: t('history.error'),
+        description: t('history.deleteFailed'),
         variant: "destructive"
       });
     } finally {
@@ -256,11 +258,11 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
   }, [sessions]);
 
   if (loading) {
-    return <div className="text-center py-8 text-gray-500">Φόρτωση...</div>;
+    return <div className="text-center py-8 text-gray-500">{t('history.loading')}</div>;
   }
 
   if (sessions.length === 0) {
-    return <div className="text-center py-8 text-gray-500">Δεν υπάρχουν καταγραφές</div>;
+    return <div className="text-center py-8 text-gray-500">{t('history.noRecords')}</div>;
   }
 
   const toggleExercise = (exerciseId: string) => {
@@ -279,7 +281,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
           <div className="relative w-full sm:w-[250px]">
             <Input
               type="text"
-              placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
+              placeholder={t('history.searchUser')}
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
@@ -325,10 +327,10 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
             <SelectTrigger className="rounded-none">
               <SelectValue>
                 {selectedExercises.length === 0 
-                  ? "Όλες οι ασκήσεις" 
+                  ? t('history.allExercises')
                   : selectedExercises.length === 1
                     ? availableExercises.find(e => e.id === selectedExercises[0])?.name
-                    : `${selectedExercises.length} ασκήσεις επιλεγμένες`
+                    : `${selectedExercises.length} ${t('history.exercisesSelected')}`
                 }
               </SelectValue>
             </SelectTrigger>
@@ -352,10 +354,10 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
 
         <Select value={selectedYear} onValueChange={setSelectedYear}>
           <SelectTrigger className="w-full sm:w-[150px] rounded-none">
-            <SelectValue placeholder="Όλα τα έτη" />
+            <SelectValue placeholder={t('history.allYears')} />
           </SelectTrigger>
           <SelectContent className="rounded-none">
-            <SelectItem value="all">Όλα τα έτη</SelectItem>
+            <SelectItem value="all">{t('history.allYears')}</SelectItem>
             {availableYears.map(year => (
               <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
             ))}
@@ -369,7 +371,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
           className="rounded-none h-10 w-full sm:w-auto"
         >
           <X className="w-4 h-4 mr-2" />
-          Καθαρισμός
+          {t('history.clear')}
         </Button>
       </div>
 
@@ -380,7 +382,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
             const exerciseId = attempt.exercises?.id;
             if (!acc[exerciseId]) {
               acc[exerciseId] = {
-                exerciseName: attempt.exercises?.name || 'Άγνωστη Άσκηση',
+                exerciseName: attempt.exercises?.name || t('history.unknownExercise'),
                 attempts: []
               };
             }
@@ -394,7 +396,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <CardTitle className="text-base whitespace-nowrap">
-                      {session.app_users?.name || 'Άγνωστος Χρήστης'}
+                      {session.app_users?.name || t('history.unknownUser')}
                     </CardTitle>
                     <span className="text-sm text-gray-500">
                       {format(new Date(session.test_date), 'dd MMM yyyy', { locale: el })}
@@ -433,7 +435,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                           {/* Header */}
                           <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 p-1 text-xs font-medium text-gray-600 min-w-[200px]">
                             <span className="w-4">#</span>
-                            <span>Κιλά</span>
+                            <span>{t('history.kg')}</span>
                             <span>m/s</span>
                             <span className="w-6"></span>
                           </div>
@@ -481,11 +483,11 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
       <Dialog open={!!editingAttempt} onOpenChange={() => setEditingAttempt(null)}>
         <DialogContent className="rounded-none">
           <DialogHeader>
-            <DialogTitle>Επεξεργασία Προσπάθειας</DialogTitle>
+            <DialogTitle>{t('common.edit')} {t('history.kg')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Βάρος (kg)</label>
+              <label className="text-sm font-medium">{t('history.weight')} (kg)</label>
               <Input
                 type="number"
                 step="0.5"
@@ -495,7 +497,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Ταχύτητα (m/s)</label>
+              <label className="text-sm font-medium">{t('history.velocity')} (m/s)</label>
               <Input
                 type="number"
                 step="0.01"
@@ -509,14 +511,14 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                 onClick={handleSaveEdit}
                 className="rounded-none flex-1"
               >
-                Αποθήκευση
+                {t('common.save')}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setEditingAttempt(null)}
                 className="rounded-none flex-1"
               >
-                Ακύρωση
+                {t('common.cancel')}
               </Button>
             </div>
           </div>

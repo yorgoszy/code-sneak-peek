@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ interface AnthropometricHistoryTabProps {
 }
 
 export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
+  const { t } = useTranslation();
   const usersMap = useUserNamesMap();
   const { results, loading, refetch } = useAnthropometricTestResults(usersMap, selectedUserId);
   const [anthropometricData, setAnthropometricData] = useState<Record<string, any>>({});
@@ -140,7 +142,7 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
     return (
       <Card className="rounded-none">
         <CardContent className="p-6">
-          <p className="text-center text-muted-foreground">Φόρτωση...</p>
+          <p className="text-center text-muted-foreground">{t('history.loading')}</p>
         </CardContent>
       </Card>
     );
@@ -150,7 +152,7 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
     return (
       <Card className="rounded-none">
         <CardContent className="p-6">
-          <p className="text-center text-muted-foreground">Δεν υπάρχουν καταγραφές</p>
+          <p className="text-center text-muted-foreground">{t('history.noRecords')}</p>
         </CardContent>
       </Card>
     );

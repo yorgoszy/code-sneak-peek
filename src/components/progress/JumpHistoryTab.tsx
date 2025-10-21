@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ interface JumpHistoryTabProps {
 }
 
 export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<JumpSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,7 +248,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
   };
 
   if (loading) {
-    return <div className="text-center py-8">Φόρτωση...</div>;
+    return <div className="text-center py-8">{t('history.loading')}</div>;
   }
 
   return (
