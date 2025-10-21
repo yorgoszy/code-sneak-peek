@@ -120,5 +120,33 @@
     "viewProgram": "عرض البرنامج",
     "startWorkout": "بدء التمرين",
     "delete": "حذف"
+  },
+  "progress": {
+    "selectExercises": "اختر التمارين",
+    "unknownExercise": "تمرين غير معروف",
+    "selectAtLeastOne": "اختر تمريناً واحداً على الأقل",
+    "noProgressData": "لا توجد بيانات تقدم",
+    "loading": "جاري التحميل...",
+    "noData": "لا توجد بيانات",
+    "lastMeasurement": "آخر قياس",
+    "history": "السجل",
+    "anthropometric": "القياسات الجسمية",
+    "height": "الطول",
+    "weight": "الوزن",
+    "bodyFat": "الدهون",
+    "muscleMass": "الكتلة العضلية",
+    "masTests": "اختبارات MAS",
+    "pushUpsPullUps": "الضغط، السحب & T2B",
+    "pushUps": "الضغط",
+    "pullUps": "السحب",
+    "farmer": "المزارع",
+    "farmerWeight": "الوزن",
+    "farmerMeters": "الأمتار",
+    "farmerTime": "الوقت",
+    "sprint": "السباق",
+    "sprintTime": "الوقت",
+    "sprintMeters": "الأمتار",
+    "cardiacData": "البيانات القلبية",
+    "seconds": "ثانية"
   }
 }

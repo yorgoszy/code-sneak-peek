@@ -120,5 +120,33 @@
     "viewProgram": "View Program",
     "startWorkout": "Start Workout",
     "delete": "Delete"
+  },
+  "progress": {
+    "selectExercises": "Select Exercises",
+    "unknownExercise": "Unknown exercise",
+    "selectAtLeastOne": "Select at least one exercise",
+    "noProgressData": "No progress data",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "lastMeasurement": "Last measurement",
+    "history": "History",
+    "anthropometric": "Anthropometric",
+    "height": "Height",
+    "weight": "Weight",
+    "bodyFat": "Body Fat",
+    "muscleMass": "Muscle Mass",
+    "masTests": "MAS Tests",
+    "pushUpsPullUps": "Push Ups, Pull Ups & T2B",
+    "pushUps": "Push Ups",
+    "pullUps": "Pull Ups",
+    "farmer": "Farmer",
+    "farmerWeight": "Weight",
+    "farmerMeters": "Meters",
+    "farmerTime": "Time",
+    "sprint": "Sprint",
+    "sprintTime": "Time",
+    "sprintMeters": "Meters",
+    "cardiacData": "Cardiac Data",
+    "seconds": "sec."
   }
 }

@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Activity } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 interface CardiacProgressCardProps {
   userId: string;
 }
 
 export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId }) => {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -72,11 +74,11 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-1">
             <Activity className="w-3 h-3" />
-            Cardiac Data
+            {t('progress.cardiacData')}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-2 text-gray-400 text-xs">Δεν υπάρχουν δεδομένα</div>
+          <div className="text-center py-2 text-gray-400 text-xs">{t('progress.noData')}</div>
         </CardContent>
       </Card>
     );
@@ -90,7 +92,7 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
       <CardHeader className="pb-2 pt-3 px-3">
         <CardTitle className="text-xs flex items-center gap-1">
           <Activity className="w-3 h-3" />
-          Cardiac Data
+          {t('progress.cardiacData')}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 pt-0 space-y-2">
@@ -132,14 +134,14 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
 
         <div className="pt-1 border-t border-gray-200">
           <div className="text-[10px] text-gray-400 text-center">
-            Τελευταία μέτρηση: {format(new Date(sessions[0].test_date), 'dd/MM/yy')}
+            {t('progress.lastMeasurement')}: {format(new Date(sessions[0].test_date), 'dd/MM/yy')}
           </div>
         </div>
 
         {/* History */}
         {sessions.length > 1 && (
           <div className="space-y-1 pt-1 border-t border-gray-200">
-            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
+            <div className="text-[10px] text-gray-500 font-medium">{t('progress.history')}</div>
             <div className="flex items-center justify-between text-[10px] text-gray-400">
               <span>{format(new Date(sessions[1].test_date), 'dd/MM/yy')}</span>
               <div className="flex gap-2">

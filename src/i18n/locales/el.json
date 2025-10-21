@@ -120,5 +120,33 @@
     "viewProgram": "Προβολή Προγράμματος",
     "startWorkout": "Έναρξη Προπόνησης",
     "delete": "Διαγραφή"
+  },
+  "progress": {
+    "selectExercises": "Επιλογή Ασκήσεων",
+    "unknownExercise": "Άγνωστη άσκηση",
+    "selectAtLeastOne": "Επιλέξτε τουλάχιστον μία άσκηση",
+    "noProgressData": "Δεν υπάρχουν δεδομένα προόδου",
+    "loading": "Φόρτωση...",
+    "noData": "Δεν υπάρχουν δεδομένα",
+    "lastMeasurement": "Τελευταία μέτρηση",
+    "history": "Ιστορικό",
+    "anthropometric": "Σωματομετρικά",
+    "height": "Ύψος",
+    "weight": "Βάρος",
+    "bodyFat": "Λίπος",
+    "muscleMass": "Μυϊκή Μάζα",
+    "masTests": "MAS Tests",
+    "pushUpsPullUps": "Push Ups, Pull Ups & T2B",
+    "pushUps": "Push Ups",
+    "pullUps": "Pull Ups",
+    "farmer": "Farmer",
+    "farmerWeight": "Βάρος",
+    "farmerMeters": "Μέτρα",
+    "farmerTime": "Χρόνος",
+    "sprint": "Sprint",
+    "sprintTime": "Χρόνος",
+    "sprintMeters": "Μέτρα",
+    "cardiacData": "Cardiac Data",
+    "seconds": "δευτ."
   }
 }

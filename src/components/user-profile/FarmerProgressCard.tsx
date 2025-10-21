@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useTranslation } from 'react-i18next';
 
 interface FarmerProgressCardProps {
   userId: string;
 }
 
 export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }) => {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -73,12 +75,12 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
   return (
     <Card className="rounded-none">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">Farmer</CardTitle>
+        <CardTitle className="text-sm">{t('progress.farmer')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-500">Βάρος:</span>
+            <span className="text-gray-500">{t('progress.farmerWeight')}:</span>
             <div className="flex items-center gap-1">
               <span className="font-semibold text-[#cb8954]">{getLatestValue('farmer_kg')} kg</span>
               {calculatePercentageChange('farmer_kg') !== null && (
@@ -92,7 +94,7 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
             </div>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-500">Μέτρα:</span>
+            <span className="text-gray-500">{t('progress.farmerMeters')}:</span>
             <div className="flex items-center gap-1">
               <span className="font-semibold text-[#cb8954]">{getLatestValue('farmer_meters')} m</span>
               {calculatePercentageChange('farmer_meters') !== null && (
@@ -106,9 +108,9 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
             </div>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-500">Χρόνος:</span>
+            <span className="text-gray-500">{t('progress.farmerTime')}:</span>
             <div className="flex items-center gap-1">
-              <span className="font-semibold text-[#cb8954]">{getLatestValue('farmer_seconds')} δευτ.</span>
+              <span className="font-semibold text-[#cb8954]">{getLatestValue('farmer_seconds')} {t('progress.seconds')}</span>
               {calculatePercentageChange('farmer_seconds') !== null && (
                 <span className={`text-[10px] font-semibold ${
                   calculatePercentageChange('farmer_seconds')! > 0 ? 'text-green-700' : 'text-red-500'
@@ -123,13 +125,13 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
 
         <div className="pt-1 border-t border-gray-200">
           <div className="text-[10px] text-gray-400 text-center">
-            Τελευταία μέτρηση: {format(new Date(sessions[0].test_date), 'dd/MM/yy')}
+            {t('progress.lastMeasurement')}: {format(new Date(sessions[0].test_date), 'dd/MM/yy')}
           </div>
         </div>
 
         {sessions.length > 1 && (
           <div className="space-y-1 pt-1 border-t border-gray-200">
-            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
+            <div className="text-[10px] text-gray-500 font-medium">{t('progress.history')}</div>
             <div className="flex items-center justify-between text-[10px] text-gray-400">
               <span>{format(new Date(sessions[1].test_date), 'dd/MM/yy')}</span>
               <span>{sessions[1].endurance_test_data?.[0].farmer_kg}kg × {sessions[1].endurance_test_data?.[0].farmer_meters}m × {sessions[1].endurance_test_data?.[0].farmer_seconds}s</span>

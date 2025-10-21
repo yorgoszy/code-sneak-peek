@@ -13,12 +13,14 @@ import { CardiacProgressCard } from "./CardiacProgressCard";
 import { VO2MaxProgressCard } from "./VO2MaxProgressCard";
 import { JumpProfileLatestCard } from "./JumpProfileLatestCard";
 import { AnthropometricProgressCard } from "./AnthropometricProgressCard";
+import { useTranslation } from 'react-i18next';
 
 interface UserProgressSectionProps {
   userId: string;
 }
 
 export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId }) => {
+  const { t } = useTranslation();
   const [exercises, setExercises] = useState<any[]>([]);
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [rawHistoricalData, setRawHistoricalData] = useState<any[]>([]);
@@ -299,7 +301,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
           {/* Φίλτρα Ασκήσεων - Responsive */}
           <div className="bg-white border border-gray-200 rounded-none p-3 sm:p-2 w-full sm:max-w-2xl">
             <div className="mb-2 sm:mb-1.5">
-              <span className="text-xs sm:text-[10px] font-medium text-gray-700">Επιλογή Ασκήσεων</span>
+              <span className="text-xs sm:text-[10px] font-medium text-gray-700">{t('progress.selectExercises')}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-2">
               {availableExercises.map((exerciseId, index) => {
@@ -319,7 +321,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                       }`}
                       style={isSelected ? { backgroundColor: exerciseColor } : {}}
                     >
-                      {exercise?.name || 'Άγνωστη άσκηση'}
+                      {exercise?.name || t('progress.unknownExercise')}
                     </button>
                     
                     {isSelected && sessions.length > 0 && (
@@ -384,7 +386,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                         </div>
                         <div className="flex items-center justify-between mt-1.5 sm:mt-1">
                           <div className="text-xs sm:text-[9px] text-gray-400">
-                            Τελ. μέτρηση: {new Date(oneRM.date).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                            {t('progress.lastMeasurement')}: {new Date(oneRM.date).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                           </div>
                           {oneRM.percentageChange !== null && (
                             <div className={`text-xs sm:text-[10px] font-medium ${oneRM.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -396,7 +398,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                         {/* History section - similar to Cardiac Data card */}
                         {oneRM.history && oneRM.history.length > 0 && (
                           <div className="space-y-0.5 pt-1.5 sm:pt-1 border-t border-gray-200 mt-1.5 sm:mt-1">
-                            <div className="text-xs sm:text-[9px] text-gray-500 font-medium">Ιστορικό</div>
+                            <div className="text-xs sm:text-[9px] text-gray-500 font-medium">{t('progress.history')}</div>
                             <div className="flex items-center justify-between text-xs sm:text-[9px] text-gray-400">
                               <span>{new Date(oneRM.history[0].date).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
                               <span>{oneRM.history[0].weight}kg @ {oneRM.history[0].velocity.toFixed(2)}m/s</span>
@@ -423,7 +425,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
             </div>
           ) : (
             <div className="text-center py-8 text-sm sm:text-base text-gray-500">
-              Επιλέξτε τουλάχιστον μία άσκηση
+              {t('progress.selectAtLeastOne')}
             </div>
           )}
 
@@ -452,7 +454,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         </>
       ) : (
         <div className="text-center py-8 text-sm sm:text-base text-gray-500">
-          Δεν υπάρχουν δεδομένα προόδου
+          {t('progress.noProgressData')}
         </div>
       )}
 

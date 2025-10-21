@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Wind } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 interface VO2MaxProgressCardProps {
   userId: string;
 }
 
 export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({ userId }) => {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -98,14 +100,14 @@ export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({ userId }
 
         <div className="pt-1 border-t border-gray-200">
           <div className="text-[10px] text-gray-400 text-center">
-            Τελευταία μέτρηση: {format(new Date(sessions[0].test_date), 'dd/MM/yy')}
+            {t('progress.lastMeasurement')}: {format(new Date(sessions[0].test_date), 'dd/MM/yy')}
           </div>
         </div>
 
         {/* History */}
         {sessions.length > 1 && (
           <div className="space-y-1 pt-1 border-t border-gray-200">
-            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
+            <div className="text-[10px] text-gray-500 font-medium">{t('progress.history')}</div>
             <div className="flex items-center justify-between text-[10px] text-gray-400">
               <span>{format(new Date(sessions[1].test_date), 'dd/MM/yy')}</span>
               <span className="font-medium text-[#cb8954]">{sessions[1].endurance_test_data?.[0]?.vo2_max} ml/kg/min</span>

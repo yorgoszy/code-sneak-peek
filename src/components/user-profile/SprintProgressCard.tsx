@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useTranslation } from 'react-i18next';
 
 interface SprintProgressCardProps {
   userId: string;
@@ -9,6 +10,7 @@ interface SprintProgressCardProps {
 }
 
 export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, exerciseName }) => {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -90,14 +92,14 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
   return (
     <Card className="rounded-none">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">Sprint - {exerciseName}</CardTitle>
+        <CardTitle className="text-sm">{t('progress.sprint')} - {exerciseName}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-500">Χρόνος:</span>
+            <span className="text-gray-500">{t('progress.sprintTime')}:</span>
             <div className="flex items-center gap-1">
-              <span className="font-semibold text-[#cb8954]">{getLatestValue('sprint_seconds')} δευτ.</span>
+              <span className="font-semibold text-[#cb8954]">{getLatestValue('sprint_seconds')} {t('progress.seconds')}</span>
               {calculatePercentageChange('sprint_seconds') !== null && (
                 <span className={`text-[10px] font-semibold ${
                   calculatePercentageChange('sprint_seconds')! < 0 ? 'text-green-700' : 'text-red-500'
@@ -109,7 +111,7 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
             </div>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-500">Μέτρα:</span>
+            <span className="text-gray-500">{t('progress.sprintMeters')}:</span>
             <div className="flex items-center gap-1">
               <span className="font-semibold text-[#cb8954]">{getLatestValue('sprint_meters')} m</span>
               {calculatePercentageChange('sprint_meters') !== null && (
@@ -142,13 +144,13 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({ userId, 
 
         <div className="pt-1 border-t border-gray-200">
           <div className="text-[10px] text-gray-400 text-center">
-            Τελευταία μέτρηση: {format(new Date(sessions[0].test_date), 'dd/MM/yy')}
+            {t('progress.lastMeasurement')}: {format(new Date(sessions[0].test_date), 'dd/MM/yy')}
           </div>
         </div>
 
         {sessions.length > 1 && (
           <div className="space-y-1 pt-1 border-t border-gray-200">
-            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
+            <div className="text-[10px] text-gray-500 font-medium">{t('progress.history')}</div>
             <div className="flex flex-col gap-0.5 text-[10px] text-gray-400">
               <div className="flex items-center justify-between">
                 <span>{format(new Date(sessions[1].test_date), 'dd/MM/yy')}</span>

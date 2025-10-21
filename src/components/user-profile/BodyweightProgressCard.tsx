@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useTranslation } from 'react-i18next';
 
 interface BodyweightProgressCardProps {
   userId: string;
 }
 
 export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ userId }) => {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -66,10 +68,10 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
     return (
       <Card className="rounded-none">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Push Ups & Pull Ups</CardTitle>
+          <CardTitle className="text-sm">{t('progress.pushUpsPullUps')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4 text-gray-500 text-xs">Φόρτωση...</div>
+          <div className="text-center py-4 text-gray-500 text-xs">{t('progress.loading')}</div>
         </CardContent>
       </Card>
     );
@@ -94,14 +96,14 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
   return (
     <Card className="rounded-none">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">Push Ups, Pull Ups & T2B</CardTitle>
+        <CardTitle className="text-sm">{t('progress.pushUpsPullUps')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="space-y-1">
           {/* Push Ups */}
           {currentSession.push_ups !== null && (
             <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
-              <span className="text-gray-500">Push Ups:</span>
+              <span className="text-gray-500">{t('progress.pushUps')}:</span>
               <span className="font-semibold text-[#cb8954] text-right">{currentSession.push_ups}</span>
               <div className="text-right">
                 {(() => {
@@ -122,7 +124,7 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
           {/* Pull Ups */}
           {currentSession.pull_ups !== null && (
             <div className="grid grid-cols-[1fr_40px_50px] gap-2 items-center text-xs">
-              <span className="text-gray-500">Pull Ups:</span>
+              <span className="text-gray-500">{t('progress.pullUps')}:</span>
               <span className="font-semibold text-[#cb8954] text-right">{currentSession.pull_ups}</span>
               <div className="text-right">
                 {(() => {
@@ -164,13 +166,13 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
 
         <div className="pt-1 border-t border-gray-200">
           <div className="text-[10px] text-gray-400 text-center">
-            Τελευταία μέτρηση: {format(new Date(currentSession.test_date), 'dd/MM/yy')}
+            {t('progress.lastMeasurement')}: {format(new Date(currentSession.test_date), 'dd/MM/yy')}
           </div>
         </div>
 
         {sessions.length > 1 && (
           <div className="space-y-1 pt-1 border-t border-gray-200">
-            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
+            <div className="text-[10px] text-gray-500 font-medium">{t('progress.history')}</div>
             <div className="flex items-center justify-between text-[10px] text-gray-400">
               <span>{format(new Date(sessions[1].test_date), 'dd/MM/yy')}</span>
               <div className="flex gap-2">

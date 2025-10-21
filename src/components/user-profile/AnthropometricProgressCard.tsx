@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useTranslation } from 'react-i18next';
 
 interface AnthropometricProgressCardProps {
   userId: string;
 }
 
 export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProps> = ({ userId }) => {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -76,7 +78,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
     return (
       <Card className="rounded-none border border-gray-200 w-full max-w-2xl">
         <CardContent className="p-4">
-          <div className="text-center text-muted-foreground text-sm">Φόρτωση...</div>
+          <div className="text-center text-muted-foreground text-sm">{t('progress.loading')}</div>
         </CardContent>
       </Card>
     );
@@ -92,7 +94,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
     <Card className="rounded-none border border-gray-200 w-full max-w-2xl">
       <CardHeader className="pb-2 pt-3 px-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xs font-medium">Σωματομετρικά</CardTitle>
+          <CardTitle className="text-xs font-medium">{t('progress.anthropometric')}</CardTitle>
           <div className="text-[9px] text-gray-400">
             {format(new Date(latestData.test_date), 'dd/MM/yyyy')}
           </div>
@@ -102,7 +104,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
           {latestData.height && (
             <div className="space-y-0.5">
-              <div className="text-[10px] text-gray-500">Ύψος</div>
+              <div className="text-[10px] text-gray-500">{t('progress.height')}</div>
               <div className="text-sm font-bold text-gray-900 flex items-center gap-1 flex-wrap">
                 {latestData.height}<span className="text-[9px] text-gray-400 ml-0.5">cm</span>
                 {getPreviousValue('height') && calculatePercentageChange(latestData.height, getPreviousValue('height')!) !== null && (
@@ -121,7 +123,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
           
           {latestData.weight && (
             <div className="space-y-0.5">
-              <div className="text-[10px] text-gray-500">Βάρος</div>
+              <div className="text-[10px] text-gray-500">{t('progress.weight')}</div>
               <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
                 {latestData.weight}<span className="text-[9px] text-gray-400 ml-0.5">kg</span>
                 {getPreviousValue('weight') && calculatePercentageChange(latestData.weight, getPreviousValue('weight')!) !== null && (
@@ -140,7 +142,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
           
           {latestData.body_fat_percentage && (
             <div className="space-y-0.5">
-              <div className="text-[10px] text-gray-500">Λίπος</div>
+              <div className="text-[10px] text-gray-500">{t('progress.bodyFat')}</div>
               <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
                 {latestData.body_fat_percentage}<span className="text-[9px] text-gray-400 ml-0.5">%</span>
                 {getPreviousValue('body_fat_percentage') && calculatePercentageChange(latestData.body_fat_percentage, getPreviousValue('body_fat_percentage')!) !== null && (
@@ -159,7 +161,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
           
           {latestData.muscle_mass_percentage && (
             <div className="space-y-0.5">
-              <div className="text-[10px] text-gray-500">Μυϊκή Μάζα</div>
+              <div className="text-[10px] text-gray-500">{t('progress.muscleMass')}</div>
               <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
                 {latestData.muscle_mass_percentage}<span className="text-[9px] text-gray-400 ml-0.5">%</span>
                 {getPreviousValue('muscle_mass_percentage') && calculatePercentageChange(latestData.muscle_mass_percentage, getPreviousValue('muscle_mass_percentage')!) !== null && (
@@ -179,14 +181,14 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
 
         {sessions.length > 1 && (
           <div className="space-y-1 pt-2 border-t border-gray-200 mt-2">
-            <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
+            <div className="text-[10px] text-gray-500 font-medium">{t('progress.history')}</div>
             <div className="flex items-center justify-between text-[10px] text-gray-400">
               <span>{format(new Date(sessions[1].test_date), 'dd/MM/yy')}</span>
               <div className="flex gap-2 text-right">
-                {sessions[1].height && <span>Ύψος: {sessions[1].height}cm</span>}
-                {sessions[1].weight && <span>Βάρος: {sessions[1].weight}kg</span>}
-                {sessions[1].body_fat_percentage && <span>Λίπος: {sessions[1].body_fat_percentage}%</span>}
-                {sessions[1].muscle_mass_percentage && <span>Μυϊκή: {sessions[1].muscle_mass_percentage}%</span>}
+                {sessions[1].height && <span>{t('progress.height')}: {sessions[1].height}cm</span>}
+                {sessions[1].weight && <span>{t('progress.weight')}: {sessions[1].weight}kg</span>}
+                {sessions[1].body_fat_percentage && <span>{t('progress.bodyFat')}: {sessions[1].body_fat_percentage}%</span>}
+                {sessions[1].muscle_mass_percentage && <span>{t('progress.muscleMass')}: {sessions[1].muscle_mass_percentage}%</span>}
               </div>
             </div>
           </div>

@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useTranslation } from 'react-i18next';
 
 interface MasProgressCardProps {
   userId: string;
 }
 
 export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -94,10 +96,10 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
     return (
       <Card className="rounded-none">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">MAS Tests</CardTitle>
+          <CardTitle className="text-sm">{t('progress.masTests')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4 text-gray-500 text-xs">Φόρτωση...</div>
+          <div className="text-center py-4 text-gray-500 text-xs">{t('progress.loading')}</div>
         </CardContent>
       </Card>
     );
@@ -110,7 +112,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
   return (
     <Card className="rounded-none max-w-2xl" style={{ width: 'calc(100% + 10px)' }}>
       <CardHeader className="p-[5px]">
-        <CardTitle className="text-sm">MAS Tests</CardTitle>
+        <CardTitle className="text-sm">{t('progress.masTests')}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col md:flex-row md:overflow-x-auto pb-2 p-[5px] gap-2">
         {sessions.map((exerciseData) => (
@@ -153,7 +155,7 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
                 {/* Ιστορικό */}
                 {exerciseData.previousData && (
                   <div className="pt-1 border-t border-gray-200">
-                    <div className="text-[10px] text-gray-500 font-medium">Ιστορικό</div>
+                    <div className="text-[10px] text-gray-500 font-medium">{t('progress.history')}</div>
                     <div className="flex items-center gap-4 text-[10px] text-gray-400">
                       <span>{format(new Date(exerciseData.previousData.test_date), 'dd/MM/yy')}</span>
                       <span>{exerciseData.previousData.mas_meters}m | {Math.floor(exerciseData.previousData.mas_minutes)}:{String(Math.round((exerciseData.previousData.mas_minutes % 1) * 60)).padStart(2, '0')} | {exerciseData.previousData.mas_ms?.toFixed(2)} m/s</span>
