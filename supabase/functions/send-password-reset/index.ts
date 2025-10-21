@@ -58,12 +58,13 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if user exists in app_users table first
-    console.log("👤 Checking if user exists in app_users...");
+    // Check if user exists in app_users table first (case-insensitive)
+    console.log("👤 Checking if user exists in app_users (case-insensitive)...");
+    const normalizedEmail = email.trim().toLowerCase();
     const { data: appUser, error: appUserError } = await supabase
       .from('app_users')
       .select('id, email, auth_user_id')
-      .eq('email', email)
+      .ilike('email', normalizedEmail)
       .single();
     
     if (appUserError) {
@@ -84,7 +85,7 @@ serve(async (req) => {
       console.log("🔄 Creating auth user for existing app_user...");
       // Create auth user for this app_user
       const { data: authUser, error: createError } = await supabase.auth.admin.createUser({
-        email: email,
+        email: normalizedEmail,
         email_confirm: true, // Skip email confirmation
         user_metadata: {
           app_user_id: appUser.id
@@ -117,7 +118,7 @@ serve(async (req) => {
       console.log("🔄 Syncing email in auth.users with app_users...");
       const { error: updateError } = await supabase.auth.admin.updateUserById(
         authUserId,
-        { email: email }
+        { email: normalizedEmail }
       );
       
       if (updateError) {
@@ -129,22 +130,55 @@ serve(async (req) => {
 
     console.log("✅ User found, generating reset link...");
 
-    // Generate password reset link using Supabase
-    const { data, error } = await supabase.auth.admin.generateLink({
-      type: 'recovery',
-      email: email,
-      options: {
-        redirectTo: redirectTo || `${new URL(req.url).origin}/auth/reset-password`,
-      }
-    });
+    // Generate password reset link using Supabase with fallbacks
+    const redirect = redirectTo || `${new URL(req.url).origin}/auth/reset-password`;
+    let linkData: any = null;
+    let genError: any = null;
 
-    if (error) {
-      console.log("❌ Error generating link:", error);
-      throw error;
+    const tryGenerate = async (target: string) => {
+      const { data, error } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: target,
+        options: { redirectTo: redirect }
+      });
+      return { data, error };
+    };
+
+    // Primary attempt with normalized email
+    let result = await tryGenerate(normalizedEmail);
+    linkData = result.data;
+    genError = result.error;
+
+    if (genError) {
+      console.log("❌ Error generating link (primary):", genError);
+      if ((genError as any).code === 'user_not_found' || (genError as any).status === 404) {
+        if (authUserId) {
+          console.log("🔎 Fetching auth user by id for fallback...");
+          const { data: authUserInfo, error: fetchErr } = await supabase.auth.admin.getUserById(authUserId);
+          if (!fetchErr && authUserInfo?.user?.email) {
+            console.log("🔁 Retrying generateLink with auth user's email:", authUserInfo.user.email);
+            const retry = await tryGenerate(authUserInfo.user.email);
+            linkData = retry.data;
+            genError = retry.error as any;
+          }
+        }
+      }
     }
 
-    if (!data.properties?.action_link) {
-      throw new Error("No action link generated");
+    if (genError) {
+      console.log("⚠️ Falling back to safe success without email. Reason:", genError);
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!linkData?.properties?.action_link) {
+      console.log("⚠️ No action link generated (unexpected). Returning safe success.");
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     console.log("🔗 Reset link generated successfully");
@@ -190,7 +224,7 @@ serve(async (req) => {
             
             <p>Κάντε κλικ στο παρακάτω κουμπί για να επαναφέρετε τον κωδικό σας:</p>
             
-            <a href="${data.properties.action_link}" class="button">Επαναφορά Κωδικού</a>
+            <a href="${linkData.properties.action_link}" class="button">Επαναφορά Κωδικού</a>
             
             <div class="warning">
               <strong>⚠️ Σημαντικό:</strong>
@@ -203,7 +237,7 @@ serve(async (req) => {
             
             <p style="margin-top: 30px; color: #666; font-size: 14px;">
               Αν το κουμπί δεν λειτουργεί, αντιγράψτε και επικολλήστε αυτό το link στον browser σας:<br>
-              <a href="${data.properties.action_link}" style="word-break: break-all; color: #007cba;">${data.properties.action_link}</a>
+              <a href="${linkData.properties.action_link}" style="word-break: break-all; color: #007cba;">${linkData.properties.action_link}</a>
             </p>
           </div>
 
