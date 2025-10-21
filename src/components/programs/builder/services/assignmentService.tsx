@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateToLocalString } from '@/utils/dateUtils';
+import { parseNumberWithComma } from '@/utils/timeCalculations';
 
 export const assignmentService = {
   async saveAssignment(assignmentData: any) {
@@ -296,14 +297,25 @@ export const assignmentService = {
 
                     console.log('💪 Creating exercise:', exercise.exercises?.name || 'Unknown', 'with order:', exercise.exercise_order);
 
+                    // Parse percentage_1rm και velocity_ms σωστά, υποστηρίζοντας κόμμα ως δεκαδικό διαχωριστή
+                    let percentage1rmValue = null;
+                    if (exercise.percentage_1rm !== undefined && exercise.percentage_1rm !== null && exercise.percentage_1rm !== '') {
+                      percentage1rmValue = parseNumberWithComma(exercise.percentage_1rm);
+                    }
+
+                    let velocityValue = null;
+                    if (exercise.velocity_ms !== undefined && exercise.velocity_ms !== null && exercise.velocity_ms !== '') {
+                      velocityValue = parseNumberWithComma(exercise.velocity_ms);
+                    }
+
                     const insertData = {
                       block_id: blockData.id,
                       exercise_id: exercise.exercise_id,
                       sets: exercise.sets || 1,
                       reps: exercise.reps || '',
                       kg: exercise.kg || '',
-                      percentage_1rm: exercise.percentage_1rm ? parseFloat(exercise.percentage_1rm.toString()) : null,
-                      velocity_ms: exercise.velocity_ms ? parseFloat(exercise.velocity_ms.toString()) : null,
+                      percentage_1rm: percentage1rmValue,
+                      velocity_ms: velocityValue,
                       tempo: exercise.tempo || '',
                       rest: exercise.rest || '',
                       notes: exercise.notes || '',
