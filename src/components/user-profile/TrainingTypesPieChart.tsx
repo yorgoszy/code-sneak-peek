@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -36,91 +34,98 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({
   userId, 
   assignmentId 
 }) => {
-  const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month' | 'all'>('week');
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchTrainingTypes();
-  }, [userId, assignmentId, timeFilter]);
+  }, [userId, assignmentId]);
 
   const fetchTrainingTypes = async () => {
     try {
       setLoading(true);
       
+      // Fetch program assignments for the user
       let query = supabase
-        .from('workout_training_types')
+        .from('program_assignments')
         .select(`
           *,
-          workout_completions!inner(
-            user_id,
-            assignment_id,
-            scheduled_date,
-            status
+          programs!program_assignments_program_id_fkey(
+            *,
+            program_weeks(
+              *,
+              program_days(
+                *,
+                program_blocks(
+                  *,
+                  program_exercises(
+                    *,
+                    exercises(name),
+                    sets,
+                    reps,
+                    percentage_1rm,
+                    velocity_ms,
+                    tempo,
+                    rest
+                  )
+                )
+              )
+            )
           )
         `)
-        .eq('workout_completions.user_id', userId)
-        .eq('workout_completions.status', 'completed');
+        .eq('user_id', userId);
 
       // Filter by assignment if specified
       if (assignmentId) {
-        query = query.eq('workout_completions.assignment_id', assignmentId);
+        query = query.eq('id', assignmentId);
+      } else {
+        query = query.eq('status', 'active');
       }
 
-      // Apply time filter
-      const now = new Date();
-      let startDate: Date;
-      let endDate: Date = now;
-
-      switch (timeFilter) {
-        case 'day':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-          break;
-        case 'week':
-          startDate = startOfWeek(now, { weekStartsOn: 1 });
-          endDate = endOfWeek(now, { weekStartsOn: 1 });
-          break;
-        case 'month':
-          startDate = startOfMonth(now);
-          endDate = endOfMonth(now);
-          break;
-        case 'all':
-          // No date filter for 'all'
-          startDate = new Date(0);
-          break;
-      }
-
-      if (timeFilter !== 'all') {
-        query = query
-          .gte('workout_completions.scheduled_date', format(startDate, 'yyyy-MM-dd'))
-          .lte('workout_completions.scheduled_date', format(endDate, 'yyyy-MM-dd'));
-      }
-
-      const { data: trainingTypes, error } = await query;
+      const { data: assignments, error } = await query;
 
       if (error) throw error;
 
-      // Aggregate by training type
-      const aggregated = trainingTypes.reduce((acc: any, item: any) => {
-        const type = item.training_type;
-        if (!acc[type]) {
-          acc[type] = {
-            name: TRAINING_TYPE_LABELS[type] || type,
-            value: 0,
-            color: COLORS[type as keyof typeof COLORS] || '#aca097'
-          };
-        }
-        acc[type].value += parseFloat(item.duration_minutes) || 0;
-        return acc;
-      }, {});
+      if (!assignments || assignments.length === 0) {
+        setData([]);
+        return;
+      }
 
-      // Convert to array and filter out zero values
-      const chartData = Object.values(aggregated)
-        .filter((item: any) => item.value > 0)
-        .map((item: any) => ({
-          ...item,
-          value: Math.round(item.value) // Round to whole minutes
+      // Analyze training types from program structure
+      const typeAnalysis: Record<string, number> = {
+        hypertrophy: 0,
+        strength: 0,
+        endurance: 0,
+        power: 0,
+        speed: 0,
+        speed_endurance: 0,
+        speed_strength: 0,
+        strength_speed: 0
+      };
+
+      assignments.forEach(assignment => {
+        if (assignment.programs?.program_weeks) {
+          assignment.programs.program_weeks.forEach((week: any) => {
+            week.program_days?.forEach((day: any) => {
+              day.program_blocks?.forEach((block: any) => {
+                block.program_exercises?.forEach((exercise: any) => {
+                  const type = categorizeExerciseType(exercise);
+                  const duration = calculateExerciseDurationMinutes(exercise);
+                  typeAnalysis[type] += duration;
+                });
+              });
+            });
+          });
+        }
+      });
+
+      // Convert to chart data format
+      const chartData = Object.entries(typeAnalysis)
+        .filter(([_, value]) => value > 0)
+        .map(([type, value]) => ({
+          name: TRAINING_TYPE_LABELS[type] || type,
+          value: Math.round(value),
+          color: COLORS[type as keyof typeof COLORS] || '#aca097'
         }));
 
       setData(chartData);
@@ -130,6 +135,57 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const categorizeExerciseType = (exercise: any): string => {
+    const reps = parseFloat(exercise.reps) || 0;
+    const percentage = parseFloat(exercise.percentage_1rm) || 0;
+    const velocity = parseFloat(exercise.velocity_ms) || 0;
+
+    // Strength: >85% 1RM or ≤5 reps
+    if (percentage > 85 || (reps <= 5 && reps > 0)) return 'strength';
+    
+    // Hypertrophy: 65-85% 1RM or 6-12 reps
+    if ((percentage >= 65 && percentage <= 85) || (reps >= 6 && reps <= 12)) return 'hypertrophy';
+    
+    // Endurance: <65% 1RM or >12 reps
+    if (percentage < 65 || reps > 12) return 'endurance';
+    
+    // Speed: High velocity with low load
+    if (velocity > 0.8 && percentage < 60) return 'speed';
+    
+    // Power: 30-60% 1RM range
+    if (percentage >= 30 && percentage < 65) return 'power';
+    
+    // Default to hypertrophy
+    return 'hypertrophy';
+  };
+
+  const calculateExerciseDurationMinutes = (exercise: any): number => {
+    const sets = parseInt(exercise.sets) || 1;
+    const reps = parseRepsToTotal(exercise.reps || '1');
+    const tempo = exercise.tempo || '2.1.2';
+    const rest = parseInt(exercise.rest) || 60;
+
+    // Calculate tempo seconds
+    const tempoPhases = tempo.split('.').map((phase: string) => parseInt(phase) || 2);
+    const tempoSeconds = tempoPhases.reduce((sum: number, phase: number) => sum + phase, 0);
+    
+    // Total time: (sets * reps * tempo) + (sets * rest)
+    const totalSeconds = (sets * reps * tempoSeconds) + (sets * rest);
+    return totalSeconds / 60; // Convert to minutes
+  };
+
+  const parseRepsToTotal = (reps: string): number => {
+    if (!reps) return 1;
+    
+    // If contains dots, it's a pattern like "1.1.1"
+    if (reps.includes('.')) {
+      const parts = reps.split('.').map(r => parseInt(r) || 0);
+      return parts.reduce((sum, r) => sum + r, 0);
+    }
+    
+    return parseInt(reps) || 1;
   };
 
   const formatMinutes = (minutes: number) => {
@@ -161,25 +217,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({
   if (data.length === 0) {
     return (
       <Card className="rounded-none">
-        <CardHeader className="space-y-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
-            <Select value={timeFilter} onValueChange={(value: any) => setTimeFilter(value)}>
-              <SelectTrigger className="w-[180px] rounded-none">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="rounded-none">
-                <SelectItem value="day">Σήμερα</SelectItem>
-                <SelectItem value="week">Αυτή την Εβδομάδα</SelectItem>
-                <SelectItem value="month">Αυτόν τον Μήνα</SelectItem>
-                <SelectItem value="all">Όλες οι Προπονήσεις</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <CardHeader>
+          <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
-            Δεν υπάρχουν δεδομένα για την επιλεγμένη περίοδο
+            Δεν υπάρχουν δεδομένα προπόνησης
           </div>
         </CardContent>
       </Card>
@@ -188,23 +231,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="space-y-4">
+      <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
-          <Select value={timeFilter} onValueChange={(value: any) => setTimeFilter(value)}>
-            <SelectTrigger className="w-[180px] rounded-none">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="rounded-none">
-              <SelectItem value="day">Σήμερα</SelectItem>
-              <SelectItem value="week">Αυτή την Εβδομάδα</SelectItem>
-              <SelectItem value="month">Αυτόν τον Μήνα</SelectItem>
-              <SelectItem value="all">Όλες οι Προπονήσεις</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="text-sm text-gray-600">
-          Σύνολο: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
+          <div className="text-sm text-gray-600">
+            Σύνολο: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
