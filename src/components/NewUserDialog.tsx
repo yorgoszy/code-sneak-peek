@@ -20,6 +20,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { PhotoUpload } from "./PhotoUpload";
+import { ChildrenFields } from "./edit-user/ChildrenFields";
+
+interface Child {
+  name: string;
+  birth_date: string;
+}
 
 interface NewUserDialogProps {
   isOpen: boolean;
@@ -34,6 +40,7 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
   const [role, setRole] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -62,9 +69,11 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
       if (birthDate) userData.birth_date = birthDate;
       if (photoUrl) userData.photo_url = photoUrl;
 
-      const { error } = await supabase
+      const { data: newUser, error } = await supabase
         .from('app_users')
-        .insert([userData]);
+        .insert([userData])
+        .select()
+        .single();
 
       if (error) {
         toast({
@@ -72,23 +81,40 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
           title: "Σφάλμα",
           description: "Δεν ήταν δυνατή η δημιουργία του χρήστη",
         });
-      } else {
-        toast({
-          title: "Επιτυχία",
-          description: "Ο χρήστης δημιουργήθηκε επιτυχώς",
-        });
-        
-        // Reset form
-        setName("");
-        setEmail("");
-        setPhone("");
-        setRole("");
-        setBirthDate("");
-        setPhotoUrl(null);
-        
-        onUserCreated();
-        onClose();
+        return;
       }
+
+      // Insert children if role is parent
+      if (role === 'parent' && children.length > 0 && newUser) {
+        for (const child of children) {
+          if (child.name.trim()) {
+            await supabase
+              .from('children')
+              .insert({
+                parent_id: newUser.id,
+                name: child.name.trim(),
+                birth_date: child.birth_date
+              });
+          }
+        }
+      }
+
+      toast({
+        title: "Επιτυχία",
+        description: "Ο χρήστης δημιουργήθηκε επιτυχώς",
+      });
+      
+      // Reset form
+      setName("");
+      setEmail("");
+      setPhone("");
+      setRole("");
+      setBirthDate("");
+      setPhotoUrl(null);
+      setChildren([]);
+      
+      onUserCreated();
+      onClose();
     } catch (error) {
       console.error('Error creating user:', error);
       toast({
@@ -99,6 +125,20 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
     } finally {
       setLoading(false);
     }
+  };
+
+  const addChild = () => {
+    setChildren([...children, { name: '', birth_date: '' }]);
+  };
+
+  const removeChild = (index: number) => {
+    setChildren(children.filter((_, i) => i !== index));
+  };
+
+  const updateChild = (index: number, field: keyof Child, value: string) => {
+    const newChildren = [...children];
+    newChildren[index] = { ...newChildren[index], [field]: value };
+    setChildren(newChildren);
   };
 
   return (
@@ -176,6 +216,16 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
               onChange={(e) => setBirthDate(e.target.value)}
             />
           </div>
+
+          {role === 'parent' && (
+            <ChildrenFields
+              children={children}
+              addChild={addChild}
+              removeChild={removeChild}
+              updateChild={updateChild}
+              loading={loading}
+            />
+          )}
           
           <div className="flex justify-end space-x-2 pt-4">
             <Button 
