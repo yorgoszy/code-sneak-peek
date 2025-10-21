@@ -53,7 +53,7 @@ export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
         
         <div className="flex-1 text-center">
           <div className="font-medium text-gray-600 mb-1">%1RM</div>
-          <div className="text-gray-900">{exercise.percentage_1rm ? `${exercise.percentage_1rm}%` : '-'}</div>
+          <div className="text-gray-900">{exercise.percentage_1rm ?? '-'}</div>
         </div>
         
         <Separator orientation="vertical" className="h-10 mx-1" />
@@ -70,7 +70,7 @@ export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
         
         <div className="flex-1 text-center">
           <div className="font-medium text-gray-600 mb-1">m/s</div>
-          <div className="text-gray-900">{exercise.velocity_ms || '-'}</div>
+          <div className="text-gray-900">{exercise.velocity_ms ?? '-'}</div>
           {actualValues?.velocity && (
             <div className="text-xs text-green-600 font-medium">{actualValues.velocity}</div>
           )}

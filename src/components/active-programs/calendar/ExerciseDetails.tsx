@@ -102,7 +102,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
           <div className="flex flex-col items-center">
             <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">%1RM</div>
             <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
-              {exercise.percentage_1rm || '-'}%
+              {exercise.percentage_1rm ?? '-'}%
             </div>
           </div>
           <div className="flex flex-col items-center">
@@ -114,7 +114,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
           <div className="flex flex-col items-center">
             <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">m/s</div>
             <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
-              {exercise.velocity_ms || '-'}
+              {exercise.velocity_ms ?? '-'}
             </div>
           </div>
           <div className="flex flex-col items-center">
@@ -157,7 +157,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
             <div className="flex flex-col items-center">
               <Input
                 type="text"
-                placeholder={exercise.velocity_ms?.toString() || ''}
+                placeholder={exercise.velocity_ms?.toString() ?? ''}
                 value={savedData.velocity || ''}
                 onChange={(e) => handleVelocityChange(e.target.value)}
                 className="h-4 text-[8px] md:text-[9px] rounded-none w-full text-center p-0.5"
