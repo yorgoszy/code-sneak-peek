@@ -20,7 +20,7 @@ export const LanguageSwitcher = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="rounded-none">
           <Globe className="h-4 w-4 mr-2" />
-          {i18n.language === 'el' ? 'ΕΛ' : 'EN'}
+          {i18n.language === 'el' ? 'ΕΛ' : i18n.language === 'ar' ? 'AR' : 'EN'}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="rounded-none">
@@ -35,6 +35,12 @@ export const LanguageSwitcher = () => {
           className={i18n.language === 'en' ? 'bg-gray-100' : ''}
         >
           🇬🇧 English
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={() => changeLanguage('ar')}
+          className={i18n.language === 'ar' ? 'bg-gray-100' : ''}
+        >
+          🇹🇳 العربية
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

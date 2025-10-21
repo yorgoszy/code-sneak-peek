@@ -1,0 +1,63 @@
+{
+  "common": {
+    "back": "رجوع",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "loading": "جاري التحميل...",
+    "success": "نجح",
+    "error": "خطأ"
+  },
+  "userProfile": {
+    "title": "الملف الشخصي",
+    "personalInfo": "المعلومات الشخصية",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "birthDate": "تاريخ الميلاد",
+    "role": "الدور",
+    "status": "الحالة",
+    "category": "الفئة",
+    "subscriptions": "الاشتراكات",
+    "activeSubscription": "الاشتراك النشط",
+    "noActiveSubscription": "لا يوجد اشتراك نشط",
+    "endDate": "تاريخ الانتهاء",
+    "paused": "متوقف مؤقتاً",
+    "programs": "البرامج",
+    "activePrograms": "البرامج النشطة",
+    "noActivePrograms": "لا توجد برامج نشطة",
+    "startDate": "تاريخ البدء",
+    "payments": "المدفوعات",
+    "recentPayments": "المدفوعات الأخيرة",
+    "noPayments": "لا توجد مدفوعات",
+    "amount": "المبلغ",
+    "date": "التاريخ",
+    "method": "الطريقة",
+    "sessions": "الجلسات",
+    "bookingSessions": "حجوزات الجلسات",
+    "noSessions": "لا توجد جلسات",
+    "sessionDate": "تاريخ الجلسة",
+    "type": "النوع",
+    "videocall": "مكالمة فيديو",
+    "gym": "صالة الرياضة",
+    "changePassword": "تغيير كلمة المرور",
+    "children": "الأطفال",
+    "noChildren": "لا يوجد أطفال مسجلين",
+    "measurements": "القياسات",
+    "viewMeasurements": "عرض القياسات"
+  },
+  "roles": {
+    "admin": "مسؤول",
+    "trainer": "مدرب",
+    "athlete": "رياضي",
+    "general": "عام",
+    "parent": "ولي الأمر"
+  },
+  "status": {
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "pending": "قيد الانتظار",
+    "completed": "مكتمل"
+  }
+}
