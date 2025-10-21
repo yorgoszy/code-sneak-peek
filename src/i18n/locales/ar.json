@@ -278,5 +278,26 @@
     "totalPurchases": "إجمالي المشتريات",
     "totalAmount": "المبلغ الإجمالي",
     "activeSubscriptions": "الاشتراكات النشطة"
+  },
+  "offers": {
+    "loadingOffers": "جاري تحميل العروض...",
+    "noOffers": "لا توجد عروض متاحة",
+    "noOffersDescription": "لا توجد حالياً عروض نشطة لك.",
+    "viewShop": "عرض المتجر",
+    "specialOffer": "عرض خاص",
+    "free": "مجاني",
+    "validUntil": "صالح حتى",
+    "freeOffer": "عرض مجاني",
+    "savings": "التوفير",
+    "accept": "قبول",
+    "activate": "تفعيل",
+    "reject": "رفض",
+    "errorLoadingData": "بيانات عرض غير صالحة",
+    "mustBeLoggedIn": "يجب أن تكون مسجلاً دخولك",
+    "errorProcessing": "خطأ في معالجة العرض",
+    "offerRejected": "تم رفض العرض",
+    "errorRejecting": "خطأ في رفض العرض",
+    "freeOfferActivated": "تم تفعيل العرض المجاني \"{name}\"!",
+    "noCheckoutUrl": "لم يتم استلام رابط الدفع"
   }
 }

@@ -278,5 +278,26 @@
     "totalPurchases": "Total Purchases",
     "totalAmount": "Total Amount",
     "activeSubscriptions": "Active Subscriptions"
+  },
+  "offers": {
+    "loadingOffers": "Loading offers...",
+    "noOffers": "No offers available",
+    "noOffersDescription": "There are currently no active offers for you.",
+    "viewShop": "View Shop",
+    "specialOffer": "Special Offer",
+    "free": "FREE",
+    "validUntil": "Valid until",
+    "freeOffer": "Free offer",
+    "savings": "Savings",
+    "accept": "Accept",
+    "activate": "Activate",
+    "reject": "Reject",
+    "errorLoadingData": "Invalid offer data",
+    "mustBeLoggedIn": "You must be logged in",
+    "errorProcessing": "Error processing offer",
+    "offerRejected": "Offer rejected",
+    "errorRejecting": "Error rejecting offer",
+    "freeOfferActivated": "Free offer \"{name}\" activated!",
+    "noCheckoutUrl": "No checkout URL received"
   }
 }

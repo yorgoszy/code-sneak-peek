@@ -278,5 +278,26 @@
     "totalPurchases": "Συνολικές Αγορές",
     "totalAmount": "Συνολικό Ποσό",
     "activeSubscriptions": "Ενεργές Συνδρομές"
+  },
+  "offers": {
+    "loadingOffers": "Φόρτωση προσφορών...",
+    "noOffers": "Δεν υπάρχουν διαθέσιμες προσφορές",
+    "noOffersDescription": "Προς το παρόν δεν υπάρχουν ενεργές προσφορές για εσάς.",
+    "viewShop": "Δείτε το Κατάστημα",
+    "specialOffer": "Ειδική Προσφορά",
+    "free": "ΔΩΡΕΑΝ",
+    "validUntil": "Ισχύει έως",
+    "freeOffer": "Δωρεάν προσφορά",
+    "savings": "Εξοικονόμηση",
+    "accept": "Αποδοχή",
+    "activate": "Ενεργοποίηση",
+    "reject": "Απόρριψη",
+    "errorLoadingData": "Λάθος δεδομένα προσφοράς",
+    "mustBeLoggedIn": "Πρέπει να είστε συνδεδεμένοι",
+    "errorProcessing": "Σφάλμα κατά την επεξεργασία της προσφοράς",
+    "offerRejected": "Η προσφορά απορρίφθηκε",
+    "errorRejecting": "Σφάλμα κατά την απόρριψη της προσφοράς",
+    "freeOfferActivated": "Η δωρεάν προσφορά \"{name}\" ενεργοποιήθηκε!",
+    "noCheckoutUrl": "Δεν ελήφθη URL checkout"
   }
 }
