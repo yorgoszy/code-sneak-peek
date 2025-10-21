@@ -219,5 +219,25 @@
     "cm": "cm",
     "kgUnit": "kg",
     "percentage": "%"
+  },
+  "payments": {
+    "purchases": "Purchases",
+    "receipts": "Receipts",
+    "loadingPurchases": "Loading purchases...",
+    "loadingReceipts": "Loading receipts...",
+    "noPurchases": "No purchases found for this user",
+    "noReceipts": "No receipts found for this user",
+    "offer": "Offer",
+    "visits": "visits",
+    "months": "mo.",
+    "completed": "Completed",
+    "unknownPackage": "Unknown package",
+    "sent": "Sent",
+    "pending": "Pending",
+    "error": "Error",
+    "mark": "MARK",
+    "date": "Date",
+    "errorLoadingReceipts": "Error loading receipts",
+    "errorLoadingPurchases": "Error loading purchases"
   }
 }

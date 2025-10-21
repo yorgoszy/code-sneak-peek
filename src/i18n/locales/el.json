@@ -219,5 +219,25 @@
     "cm": "cm",
     "kgUnit": "kg",
     "percentage": "%"
+  },
+  "payments": {
+    "purchases": "Αγορές",
+    "receipts": "Αποδείξεις",
+    "loadingPurchases": "Φόρτωση αγορών...",
+    "loadingReceipts": "Φόρτωση αποδείξεων...",
+    "noPurchases": "Δεν υπάρχουν αγορές για αυτόν τον χρήστη",
+    "noReceipts": "Δεν υπάρχουν αποδείξεις για αυτόν τον χρήστη",
+    "offer": "Προσφορά",
+    "visits": "επισκ.",
+    "months": "μήν.",
+    "completed": "Ολοκληρ.",
+    "unknownPackage": "Άγνωστο πακέτο",
+    "sent": "Εστάλη",
+    "pending": "Εκκρεμεί",
+    "error": "Σφάλμα",
+    "mark": "ΜΑΡΚ",
+    "date": "Ημερομηνία",
+    "errorLoadingReceipts": "Σφάλμα κατά τη φόρτωση των αποδείξεων",
+    "errorLoadingPurchases": "Σφάλμα κατά τη φόρτωση των αγορών"
   }
 }

@@ -219,5 +219,25 @@
     "cm": "سم",
     "kgUnit": "كغ",
     "percentage": "%"
+  },
+  "payments": {
+    "purchases": "المشتريات",
+    "receipts": "الإيصالات",
+    "loadingPurchases": "جاري تحميل المشتريات...",
+    "loadingReceipts": "جاري تحميل الإيصالات...",
+    "noPurchases": "لا توجد مشتريات لهذا المستخدم",
+    "noReceipts": "لا توجد إيصالات لهذا المستخدم",
+    "offer": "عرض",
+    "visits": "زيارات",
+    "months": "شهر",
+    "completed": "مكتمل",
+    "unknownPackage": "باقة غير معروفة",
+    "sent": "تم الإرسال",
+    "pending": "قيد الانتظار",
+    "error": "خطأ",
+    "mark": "علامة",
+    "date": "التاريخ",
+    "errorLoadingReceipts": "خطأ في تحميل الإيصالات",
+    "errorLoadingPurchases": "خطأ في تحميل المشتريات"
   }
 }

@@ -259,7 +259,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
           <div className="relative w-[250px]">
             <Input
               type="text"
-              placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
+              placeholder={t('history.searchUser')}
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
@@ -305,8 +305,8 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
           >
             <span className="text-sm">
               {selectedTypes.length === 0 
-                ? "Επιλογή τύπου άλματος..." 
-                : `${selectedTypes.length} τύποι επιλεγμένοι`}
+                ? t('history.selectJumpType')
+                : `${selectedTypes.length} ${t('history.typesSelected')}`}
             </span>
             <ChevronDown className="h-4 w-4 opacity-50" />
           </div>
@@ -316,7 +316,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
               <div className="p-2 border-b border-input">
                 <Input
                   type="text"
-                  placeholder="Αναζήτηση τύπου..."
+                  placeholder={t('history.searchType')}
                   value={typeSearch}
                   onChange={(e) => setTypeSearch(e.target.value)}
                   className="rounded-none h-8"
@@ -327,7 +327,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
               <div className="overflow-y-auto">
                 {filteredTypeOptions.length === 0 ? (
                   <div className="px-3 py-2 text-sm text-muted-foreground">
-                    Δεν βρέθηκαν τύποι
+                    {t('history.noTypesFound')}
                   </div>
                 ) : (
                   filteredTypeOptions.map((type) => (
@@ -356,10 +356,10 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
 
         <Select value={selectedYear} onValueChange={setSelectedYear}>
           <SelectTrigger className="w-[150px] rounded-none">
-            <SelectValue placeholder="Όλα τα έτη" />
+            <SelectValue placeholder={t('history.allYears')} />
           </SelectTrigger>
           <SelectContent className="rounded-none">
-            <SelectItem value="all">Όλα τα έτη</SelectItem>
+            <SelectItem value="all">{t('history.allYears')}</SelectItem>
             {availableYears.map(year => (
               <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
             ))}
@@ -373,7 +373,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
           className="rounded-none h-10"
         >
           <X className="w-4 h-4 mr-2" />
-          Καθαρισμός
+          {t('history.clear')}
         </Button>
       </div>
 
@@ -381,7 +381,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
       <div className="flex gap-2 overflow-x-auto pb-2">
         {filteredSessions.length === 0 ? (
           <div className="text-center py-8 text-gray-500 w-full">
-            Δεν βρέθηκαν καταγραφές
+            {t('history.noRecordsFound')}
           </div>
         ) : (
           <>
@@ -389,7 +389,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
             {sessionsByType.nonCmj.length > 0 && (
               <div className="space-y-[1px]">
                 <div className="bg-gray-100 px-2 py-1 rounded-none">
-                  <h3 className="text-xs font-semibold">Non-CMJ</h3>
+                  <h3 className="text-xs font-semibold">{t('history.nonCmj')}</h3>
                 </div>
                 {sessionsByType.nonCmj.map((session) => {
                   const user = usersMap.get(session.user_id);
@@ -398,7 +398,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
                     <JumpSessionCard
                       key={session.id}
                       session={session}
-                      userName={user?.name || 'Άγνωστος Χρήστης'}
+                      userName={user?.name || t('history.unknownUser')}
                       showDelete={!readOnly}
                       onDelete={() => handleDeleteClick(session.id)}
                     />
@@ -411,7 +411,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
             {sessionsByType.cmj.length > 0 && (
               <div className="space-y-[1px]">
                 <div className="bg-gray-100 px-2 py-1 rounded-none">
-                  <h3 className="text-xs font-semibold">CMJ</h3>
+                  <h3 className="text-xs font-semibold">{t('history.cmj')}</h3>
                 </div>
                 {sessionsByType.cmj.map((session) => {
                   const user = usersMap.get(session.user_id);
@@ -420,7 +420,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
                     <JumpSessionCard
                       key={session.id}
                       session={session}
-                      userName={user?.name || 'Άγνωστος Χρήστης'}
+                      userName={user?.name || t('history.unknownUser')}
                       showDelete={!readOnly}
                       onDelete={() => handleDeleteClick(session.id)}
                     />
@@ -433,7 +433,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
             {sessionsByType.depthJump.length > 0 && (
               <div className="space-y-[1px]">
                 <div className="bg-gray-100 px-2 py-1 rounded-none">
-                  <h3 className="text-xs font-semibold">Depth Jump</h3>
+                  <h3 className="text-xs font-semibold">{t('history.depthJump')}</h3>
                 </div>
                 {sessionsByType.depthJump.map((session) => {
                   const user = usersMap.get(session.user_id);
@@ -442,7 +442,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
                     <JumpSessionCard
                       key={session.id}
                       session={session}
-                      userName={user?.name || 'Άγνωστος Χρήστης'}
+                      userName={user?.name || t('history.unknownUser')}
                       showDelete={!readOnly}
                       onDelete={() => handleDeleteClick(session.id)}
                     />
@@ -455,7 +455,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
             {sessionsByType.broadJump.length > 0 && (
               <div className="space-y-[1px]">
                 <div className="bg-gray-100 px-2 py-1 rounded-none">
-                  <h3 className="text-xs font-semibold">Broad Jump</h3>
+                  <h3 className="text-xs font-semibold">{t('history.broadJump')}</h3>
                 </div>
                 {sessionsByType.broadJump.map((session) => {
                   const user = usersMap.get(session.user_id);
@@ -464,7 +464,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
                     <JumpSessionCard
                       key={session.id}
                       session={session}
-                      userName={user?.name || 'Άγνωστος Χρήστης'}
+                      userName={user?.name || t('history.unknownUser')}
                       showDelete={!readOnly}
                       onDelete={() => handleDeleteClick(session.id)}
                     />
@@ -477,7 +477,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
             {sessionsByType.tripleJump.length > 0 && (
               <div className="space-y-[1px]">
                 <div className="bg-gray-100 px-2 py-1 rounded-none">
-                  <h3 className="text-xs font-semibold">Triple Jump</h3>
+                  <h3 className="text-xs font-semibold">{t('history.tripleJump')}</h3>
                 </div>
                 {sessionsByType.tripleJump.map((session) => {
                   const user = usersMap.get(session.user_id);
@@ -486,7 +486,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
                     <JumpSessionCard
                       key={session.id}
                       session={session}
-                      userName={user?.name || 'Άγνωστος Χρήστης'}
+                      userName={user?.name || t('history.unknownUser')}
                       showDelete={!readOnly}
                       onDelete={() => handleDeleteClick(session.id)}
                     />

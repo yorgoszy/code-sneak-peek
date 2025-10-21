@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ interface Purchase {
 }
 
 export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymentsProps) => {
+  const { t } = useTranslation();
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +80,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
 
       if (error) {
         console.error('Error loading receipts:', error);
-        toast.error('Σφάλμα κατά τη φόρτωση των αποδείξεων');
+        toast.error(t('payments.errorLoadingReceipts'));
         return;
       }
 
@@ -102,7 +104,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
       setReceipts(transformedReceipts);
     } catch (error) {
       console.error('Error loading receipts:', error);
-      toast.error('Σφάλμα κατά τη φόρτωση των αποδείξεων');
+      toast.error(t('payments.errorLoadingReceipts'));
     } finally {
       setLoading(false);
     }
@@ -143,7 +145,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
         offer_id: item.offer_id,
         subscription_type: {
           id: item.subscription_types?.id || '',
-          name: item.subscription_types?.name || 'Άγνωστο πακέτο',
+          name: item.subscription_types?.name || t('payments.unknownPackage'),
           description: item.subscription_types?.description || '',
           price: item.subscription_types?.price || 0,
           duration_months: item.subscription_types?.duration_months || 0,
@@ -155,7 +157,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
       setPurchases(formattedPurchases);
     } catch (error) {
       console.error('Error loading purchases:', error);
-      toast.error('Σφάλμα κατά τη φόρτωση των αγορών');
+      toast.error(t('payments.errorLoadingPurchases'));
     }
   };
 
@@ -184,11 +186,11 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   const getStatusText = (status: string) => {
     switch (status) {
       case 'sent':
-        return 'Εστάλη';
+        return t('payments.sent');
       case 'pending':
-        return 'Εκκρεμεί';
+        return t('payments.pending');
       case 'error':
-        return 'Σφάλμα';
+        return t('payments.error');
       default:
         return status;
     }
@@ -207,13 +209,13 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
             <div className="min-w-0">
               <h4 className="font-medium text-sm truncate">{purchase.subscription_type.name}</h4>
               {purchase.offer_id && (
-                <span className="text-xs text-[#00ffba] font-medium">Προσφορά</span>
+                <span className="text-xs text-[#00ffba] font-medium">{t('payments.offer')}</span>
               )}
             </div>
           </div>
 
           {/* Κεντρικό μέρος - Στοιχεία */}
-          <div className="flex items-center space-x-4 text-xs text-gray-600 flex-shrink-0">
+            <div className="flex items-center space-x-4 text-xs text-gray-600 flex-shrink-0">
             <div className="flex items-center space-x-1">
               <CreditCard className="w-3 h-3" />
               <span>{purchase.payment_method || 'Stripe'}</span>
@@ -222,13 +224,13 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
               <Calendar className="w-3 h-3" />
               <span>
                 {purchase.subscription_type.subscription_mode === 'visit_based' 
-                  ? `${purchase.subscription_type.visit_count} επισκ.`
-                  : `${purchase.subscription_type.duration_months} μήν.`
+                  ? `${purchase.subscription_type.visit_count} ${t('payments.visits')}`
+                  : `${purchase.subscription_type.duration_months} ${t('payments.months')}`
                 }
               </span>
             </div>
             <Badge variant="secondary" className="rounded-none text-xs">
-              {purchase.status === 'completed' ? 'Ολοκληρ.' : purchase.status}
+              {purchase.status === 'completed' ? t('payments.completed') : purchase.status}
             </Badge>
           </div>
 
@@ -251,7 +253,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
             <div className="min-w-0">
               <h4 className="font-medium text-sm truncate">{purchase.subscription_type.name}</h4>
               {purchase.offer_id && (
-                <span className="text-xs text-[#00ffba] font-medium">Προσφορά</span>
+                <span className="text-xs text-[#00ffba] font-medium">{t('payments.offer')}</span>
               )}
             </div>
           </div>
@@ -262,8 +264,8 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
               <Calendar className="w-3 h-3" />
               <span>
                 {purchase.subscription_type.subscription_mode === 'visit_based' 
-                  ? `${purchase.subscription_type.visit_count}επ`
-                  : `${purchase.subscription_type.duration_months}μ`
+                  ? `${purchase.subscription_type.visit_count}${t('payments.visits')}`
+                  : `${purchase.subscription_type.duration_months}${t('payments.months')}`
                 }
               </span>
             </div>
@@ -289,20 +291,20 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
               <div className="bg-[#00ffba]/10 p-1.5 rounded-full flex-shrink-0">
                 <Package className="w-3 h-3 text-[#00ffba]" />
               </div>
-              <div className="min-w-0">
-                <h4 className="font-medium text-sm truncate">{purchase.subscription_type.name}</h4>
-                <div className="flex items-center space-x-2 text-xs text-gray-600">
-                  {purchase.offer_id && (
-                    <span className="text-[#00ffba] font-medium">Προσφορά</span>
-                  )}
-                  <span>
-                    {purchase.subscription_type.subscription_mode === 'visit_based' 
-                      ? `${purchase.subscription_type.visit_count} επισκ.`
-                      : `${purchase.subscription_type.duration_months} μήν.`
-                    }
-                  </span>
-                </div>
+            <div className="min-w-0">
+              <h4 className="font-medium text-sm truncate">{purchase.subscription_type.name}</h4>
+              <div className="flex items-center space-x-2 text-xs text-gray-600">
+                {purchase.offer_id && (
+                  <span className="text-[#00ffba] font-medium">{t('payments.offer')}</span>
+                )}
+                <span>
+                  {purchase.subscription_type.subscription_mode === 'visit_based' 
+                    ? `${purchase.subscription_type.visit_count} ${t('payments.visits')}`
+                    : `${purchase.subscription_type.duration_months} ${t('payments.months')}`
+                  }
+                </span>
               </div>
+            </div>
             </div>
 
             {/* Δεξιό μέρος */}
@@ -323,34 +325,34 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
               <div className="bg-[#00ffba]/10 p-1.5 rounded-full flex-shrink-0">
                 <Package className="w-3 h-3 text-[#00ffba]" />
               </div>
-              <div className="min-w-0">
-                <h4 className="font-medium text-sm truncate">{purchase.subscription_type.name}</h4>
-                {purchase.offer_id && (
-                  <span className="text-xs text-[#00ffba] font-medium">Προσφορά</span>
-                )}
-              </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-lg font-bold text-[#00ffba]">€{purchase.amount}</p>
+            <div className="min-w-0">
+              <h4 className="font-medium text-sm truncate">{purchase.subscription_type.name}</h4>
+              {purchase.offer_id && (
+                <span className="text-xs text-[#00ffba] font-medium">{t('payments.offer')}</span>
+              )}
             </div>
           </div>
+          <div className="text-right flex-shrink-0">
+            <p className="text-lg font-bold text-[#00ffba]">€{purchase.amount}</p>
+          </div>
+        </div>
 
-          {/* Δεύτερη γραμμή - Λεπτομέρειες */}
-          <div className="flex items-center justify-between text-xs text-gray-600">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-1">
-                <Calendar className="w-3 h-3" />
-                <span>
-                  {purchase.subscription_type.subscription_mode === 'visit_based' 
-                    ? `${purchase.subscription_type.visit_count} επισκ.`
-                    : `${purchase.subscription_type.duration_months} μήν.`
-                  }
-                </span>
-              </div>
-              <Badge variant="secondary" className="rounded-none text-xs">
-                ✓
-              </Badge>
+        {/* Δεύτερη γραμμή - Λεπτομέρειες */}
+        <div className="flex items-center justify-between text-xs text-gray-600">
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1">
+              <Calendar className="w-3 h-3" />
+              <span>
+                {purchase.subscription_type.subscription_mode === 'visit_based' 
+                  ? `${purchase.subscription_type.visit_count} ${t('payments.visits')}`
+                  : `${purchase.subscription_type.duration_months} ${t('payments.months')}`
+                }
+              </span>
             </div>
+            <Badge variant="secondary" className="rounded-none text-xs">
+              ✓
+            </Badge>
+          </div>
             <div className="text-xs text-gray-500">
               {format(new Date(purchase.payment_date), 'dd/MM/yy')}
             </div>
@@ -366,11 +368,11 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
         <TabsList className="grid w-full grid-cols-2 rounded-none">
           <TabsTrigger value="purchases" className="rounded-none">
             <Package className="w-4 h-4 mr-2" />
-            Αγορές ({purchases.length})
+            {t('payments.purchases')} ({purchases.length})
           </TabsTrigger>
           <TabsTrigger value="receipts" className="rounded-none">
             <Receipt className="w-4 h-4 mr-2" />
-            Αποδείξεις ({receipts.length})
+            {t('payments.receipts')} ({receipts.length})
           </TabsTrigger>
         </TabsList>
 
@@ -379,12 +381,12 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
             <CardContent className="p-6">
               {loading ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">Φόρτωση αγορών...</p>
+                  <p className="text-gray-500">{t('payments.loadingPurchases')}</p>
                 </div>
               ) : purchases.length === 0 ? (
                 <div className="text-center py-8">
                   <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500">Δεν υπάρχουν αγορές για αυτόν τον χρήστη</p>
+                  <p className="text-gray-500">{t('payments.noPurchases')}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -400,12 +402,12 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
             <CardContent className="p-6">
               {loading ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">Φόρτωση αποδείξεων...</p>
+                  <p className="text-gray-500">{t('payments.loadingReceipts')}</p>
                 </div>
               ) : receipts.length === 0 ? (
                 <div className="text-center py-8">
                   <Receipt className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500">Δεν υπάρχουν αποδείξεις για αυτόν τον χρήστη</p>
+                  <p className="text-gray-500">{t('payments.noReceipts')}</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -417,13 +419,13 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
                              <h4 className="font-medium text-sm">{receipt.receipt_number}</h4>
                              {receipt.invoice_mark && (
                                <Badge className="text-xs bg-green-100 text-green-800 px-1 py-0.5">
-                                 ΜΑΡΚ: {receipt.invoice_mark}
+                                 {t('payments.mark')}: {receipt.invoice_mark}
                                </Badge>
                              )}
                            </div>
                           <p className="text-xs text-gray-600">{receipt.customer_name}</p>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            Ημερομηνία: {formatDate(receipt.issue_date)}
+                            {t('payments.date')}: {formatDate(receipt.issue_date)}
                           </p>
                           <p className="text-base font-bold text-[#00ffba] mt-1">
                             €{receipt.total.toFixed(2)}
