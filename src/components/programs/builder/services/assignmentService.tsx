@@ -302,12 +302,8 @@ export const assignmentService = {
                       sets: exercise.sets || 1,
                       reps: exercise.reps || '',
                       kg: exercise.kg || '',
-                      percentage_1rm: (exercise.percentage_1rm !== undefined && exercise.percentage_1rm !== null && exercise.percentage_1rm !== '') 
-                        ? parseFloat(exercise.percentage_1rm.toString()) 
-                        : null,
-                      velocity_ms: (exercise.velocity_ms !== undefined && exercise.velocity_ms !== null && exercise.velocity_ms !== '') 
-                        ? parseFloat(exercise.velocity_ms.toString()) 
-                        : null,
+                      percentage_1rm: exercise.percentage_1rm ? parseFloat(exercise.percentage_1rm.toString()) : null,
+                      velocity_ms: exercise.velocity_ms ? parseFloat(exercise.velocity_ms.toString()) : null,
                       tempo: exercise.tempo || '',
                       rest: exercise.rest || '',
                       notes: exercise.notes || '',
