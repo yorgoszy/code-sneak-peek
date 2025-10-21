@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useExerciseInputHandlers } from '@/components/programs/builder/hooks/useExerciseInputHandlers';
 import { Trash2, GripVertical } from "lucide-react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -32,6 +33,11 @@ export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
     transition,
   };
 
+  const { handleVelocityChange } = useExerciseInputHandlers({ onUpdate });
+  const velocityDisplay = typeof exercise.velocity_ms === 'number'
+    ? exercise.velocity_ms.toString().replace('.', ',')
+    : (exercise.velocity_ms || '');
+
   return (
     <div
       ref={setNodeRef}
@@ -59,7 +65,7 @@ export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
         </Button>
       </div>
       
-      <div className="grid grid-cols-6 gap-0" style={{ fontSize: '10px' }}>
+      <div className="grid grid-cols-7 gap-0" style={{ fontSize: '10px' }}>
         <div className="flex-1">
           <label className="block text-gray-600 mb-1" style={{ fontSize: '9px' }}>Sets</label>
           <Input
@@ -85,6 +91,15 @@ export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
           <Input
             value={exercise.kg || ''}
             onChange={(e) => onUpdate('kg', e.target.value)}
+            className="h-6 rounded-none border-r-0 px-2"
+            style={{ fontSize: '10px' }}
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-gray-600 mb-1" style={{ fontSize: '9px' }}>m/s</label>
+          <Input
+            value={velocityDisplay}
+            onChange={handleVelocityChange}
             className="h-6 rounded-none border-r-0 px-2"
             style={{ fontSize: '10px' }}
           />
