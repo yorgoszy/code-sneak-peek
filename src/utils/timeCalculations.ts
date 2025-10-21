@@ -90,11 +90,11 @@ export const parseRestTime = (rest: string): number => {
 // Helper function to parse strings with comma as decimal separator
 export const parseNumberWithComma = (value: string | number): number => {
   if (typeof value === 'number') return value;
-  if (!value || value === '') return 0;
   
   // Replace comma with dot for proper parsing
-  const normalizedValue = value.toString().replace(',', '.');
-  return parseFloat(normalizedValue) || 0;
+  const normalizedValue = value.toString().replace(',', '.').trim();
+  const parsed = parseFloat(normalizedValue);
+  return Number.isFinite(parsed) ? parsed : NaN;
 };
 
 // Formatter: always show two decimals for m/s (e.g., 0.33)
