@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ interface UserProfileShopProps {
 }
 
 export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile }) => {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<SubscriptionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
@@ -54,7 +56,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
       setProducts(typedData);
     } catch (error) {
       console.error('Error fetching products:', error);
-      toast.error('Σφάλμα κατά τη φόρτωση των προϊόντων');
+      toast.error(t('shop.errorLoadingProducts'));
     } finally {
       setLoading(false);
     }
@@ -78,7 +80,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
       window.open(data.url, '_blank');
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error('Σφάλμα κατά τη δημιουργία πληρωμής');
+      toast.error(t('shop.errorCreatingPayment'));
     } finally {
       setPurchasing(null);
     }
@@ -90,7 +92,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
         <CardContent className="p-6">
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ffba] mx-auto"></div>
-            <p className="mt-2 text-gray-600">Φορτώνω τα προϊόντα...</p>
+            <p className="mt-2 text-gray-600">{t('shop.loadingProducts')}</p>
           </div>
         </CardContent>
       </Card>
@@ -102,26 +104,26 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
       <TabsList className="grid w-full grid-cols-2 rounded-none mb-6">
         <TabsTrigger value="shop" className="rounded-none flex items-center gap-2">
           <ShoppingCart className="w-4 h-4" />
-          Αγορές
+          {t('shop.shop')}
         </TabsTrigger>
         <TabsTrigger value="history" className="rounded-none flex items-center gap-2">
           <History className="w-4 h-4" />
-          Ιστορικό Αγορών
+          {t('shop.purchaseHistory')}
         </TabsTrigger>
       </TabsList>
 
       <TabsContent value="shop" className="space-y-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Διαθέσιμα Πακέτα</h2>
-          <p className="text-gray-600">Επιλέξτε το πακέτο που σας ταιριάζει καλύτερα</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('shop.availablePackages')}</h2>
+          <p className="text-gray-600">{t('shop.selectPackage')}</p>
         </div>
 
         {products.length === 0 ? (
           <Card className="rounded-none">
             <CardContent className="p-8 text-center text-gray-500">
               <ShoppingCart className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Δεν υπάρχουν διαθέσιμα προϊόντα</h3>
-              <p>Δεν υπάρχουν προς το παρόν διαθέσιμα πακέτα για αγορά.</p>
+              <h3 className="text-lg font-medium mb-2">{t('shop.noProducts')}</h3>
+              <p>{t('shop.noProductsAvailable')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -148,7 +150,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                   <div className="text-3xl font-bold text-[#cb8954]">
                     €{product.price}
                     {product.subscription_mode === 'time_based' && (
-                      <span className="text-sm text-gray-500 font-normal">/μήνα</span>
+                      <span className="text-sm text-gray-500 font-normal">{t('shop.perMonth')}</span>
                     )}
                   </div>
                 </CardHeader>
@@ -160,7 +162,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                         <div className="flex items-center justify-between py-2 border-b border-gray-100">
                           <span className="flex items-center text-sm">
                             <Dumbbell className="w-4 h-4 mr-2 text-blue-500" />
-                            Επισκέψεις
+                            {t('shop.visits')}
                           </span>
                           <Badge variant="secondary" className="rounded-none">
                             {product.visit_count}
@@ -170,10 +172,10 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                           <div className="flex items-center justify-between py-2 border-b border-gray-100">
                             <span className="flex items-center text-sm">
                               <Clock className="w-4 h-4 mr-2 text-blue-500" />
-                              Λήξη σε
+                              {t('shop.expiresIn')}
                             </span>
                             <Badge variant="secondary" className="rounded-none">
-                              {product.visit_expiry_months} μήνες
+                              {product.visit_expiry_months} {t('shop.months')}
                             </Badge>
                           </div>
                         )}
@@ -183,7 +185,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                         <div className="flex items-center justify-between py-2 border-b border-gray-100">
                           <span className="flex items-center text-sm">
                             <Video className="w-4 h-4 mr-2 text-purple-500" />
-                            Κλήσεις
+                            {t('shop.calls')}
                           </span>
                           <Badge variant="secondary" className="rounded-none">
                             {product.visit_count}
@@ -193,10 +195,10 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                           <div className="flex items-center justify-between py-2 border-b border-gray-100">
                             <span className="flex items-center text-sm">
                               <Clock className="w-4 h-4 mr-2 text-purple-500" />
-                              Λήξη σε
+                              {t('shop.expiresIn')}
                             </span>
                             <Badge variant="secondary" className="rounded-none">
-                              {product.visit_expiry_months} μήνες
+                              {product.visit_expiry_months} {t('shop.months')}
                             </Badge>
                           </div>
                         )}
@@ -205,10 +207,10 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                       <div className="flex items-center justify-between py-2 border-b border-gray-100">
                         <span className="flex items-center text-sm">
                           <Calendar className="w-4 h-4 mr-2 text-green-500" />
-                          Διάρκεια
+                          {t('shop.duration')}
                         </span>
                         <Badge variant="secondary" className="rounded-none">
-                          {product.duration_months} μήνες
+                          {product.duration_months} {t('shop.months')}
                         </Badge>
                       </div>
                     )}
@@ -221,7 +223,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                       className="w-full bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
-                      {purchasing === product.id ? 'Επεξεργασία...' : 'Αγορά Τώρα'}
+                      {purchasing === product.id ? t('shop.processing') : t('shop.buyNow')}
                     </Button>
                   </div>
                 </CardContent>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,7 @@ interface UserProfileShopHistoryProps {
 }
 
 export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ userProfile }) => {
+  const { t } = useTranslation();
   const [history, setHistory] = useState<PurchaseHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [groupedHistory, setGroupedHistory] = useState<{[key: string]: PurchaseHistory[]}>({});
@@ -99,11 +101,11 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
   };
 
   const getStatusText = (status: string, isPaid: boolean) => {
-    if (!isPaid) return 'Μη Πληρωμένο';
+    if (!isPaid) return t('shop.unpaid');
     switch (status) {
-      case 'active': return 'Ενεργή';
-      case 'expired': return 'Ληγμένη';
-      case 'paused': return 'Σε Παύση';
+      case 'active': return t('shop.active');
+      case 'expired': return t('shop.expired');
+      case 'paused': return t('shop.paused');
       default: return status;
     }
   };
@@ -118,9 +120,9 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
 
   const getModeText = (mode: string) => {
     switch (mode) {
-      case 'visit_based': return 'Επισκέψεις';
-      case 'videocall': return 'Video Call';
-      default: return 'Χρονική';
+      case 'visit_based': return t('shop.visitBased');
+      case 'videocall': return t('shop.videocall');
+      default: return t('shop.timeBased');
     }
   };
 
@@ -130,7 +132,7 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
         <CardContent className="p-6">
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ffba] mx-auto"></div>
-            <p className="mt-2 text-gray-600">Φορτώνω το ιστορικό...</p>
+            <p className="mt-2 text-gray-600">{t('shop.loadingHistory')}</p>
           </div>
         </CardContent>
       </Card>
@@ -142,8 +144,8 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
       <Card className="rounded-none">
         <CardContent className="p-8 text-center text-gray-500">
           <ShoppingBag className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium mb-2">Δεν υπάρχει ιστορικό αγορών</h3>
-          <p>Δεν έχετε κάνει ακόμη καμία αγορά.</p>
+          <h3 className="text-lg font-medium mb-2">{t('shop.noPurchaseHistory')}</h3>
+          <p>{t('shop.noPurchasesYet')}</p>
         </CardContent>
       </Card>
     );
@@ -152,8 +154,8 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">Ιστορικό Αγορών</h2>
-        <p className="text-sm sm:text-base text-gray-600">Όλες οι αγορές σας ανά μήνα και έτος</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">{t('shop.purchaseHistoryTitle')}</h2>
+        <p className="text-sm sm:text-base text-gray-600">{t('shop.allPurchases')}</p>
       </div>
 
       {Object.entries(groupedHistory).map(([monthYear, purchases]) => (
@@ -165,7 +167,7 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
                 <span className="text-sm sm:text-base">{monthYear}</span>
               </div>
               <Badge variant="secondary" className="rounded-none self-start sm:ml-auto text-xs">
-                {purchases.length} αγορές
+                {purchases.length} {t('shop.purchasesCount')}
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -187,7 +189,7 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
                           </h4>
                         </div>
                         <p className="text-xs text-gray-600">
-                          Τύπος: {getModeText(purchase.subscription_type.subscription_mode)}
+                          {t('shop.type')}: {getModeText(purchase.subscription_type.subscription_mode)}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
@@ -206,22 +208,22 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
                     
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div>
-                        <p className="text-gray-500">Ημερομηνία</p>
+                        <p className="text-gray-500">{t('shop.purchaseDate')}</p>
                         <p className="font-medium">
                           {format(parseISO(purchase.created_at), 'dd/MM/yyyy', { locale: el })}
                         </p>
                       </div>
                       {purchase.subscription_type.subscription_mode === 'time_based' && (
                         <div>
-                          <p className="text-gray-500">Διάρκεια</p>
+                          <p className="text-gray-500">{t('shop.duration')}</p>
                           <p className="font-medium">
-                            {purchase.subscription_type.duration_months} μήνες
+                            {purchase.subscription_type.duration_months} {t('shop.months')}
                           </p>
                         </div>
                       )}
                       {purchase.subscription_type.subscription_mode === 'visit_based' && (
                         <div>
-                          <p className="text-gray-500">Επισκέψεις</p>
+                          <p className="text-gray-500">{t('shop.visits')}</p>
                           <p className="font-medium">
                             {purchase.subscription_type.visit_count}
                           </p>
@@ -232,13 +234,13 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
                     {purchase.subscription_type.subscription_mode === 'time_based' && (
                       <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-gray-100">
                         <div>
-                          <p className="text-gray-500">Έναρξη</p>
+                          <p className="text-gray-500">{t('shop.startDate')}</p>
                           <p className="font-medium">
                             {format(parseISO(purchase.start_date), 'dd/MM/yyyy', { locale: el })}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-500">Λήξη</p>
+                          <p className="text-gray-500">{t('shop.endDate')}</p>
                           <p className="font-medium">
                             {format(parseISO(purchase.end_date), 'dd/MM/yyyy', { locale: el })}
                           </p>
@@ -264,7 +266,7 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
                           </Badge>
                         </div>
                         <p className="text-sm text-gray-600 mb-2">
-                          Τύπος: {getModeText(purchase.subscription_type.subscription_mode)}
+                          {t('shop.type')}: {getModeText(purchase.subscription_type.subscription_mode)}
                         </p>
                       </div>
                       <div className="text-right">
@@ -280,7 +282,7 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
                   <div className="hidden sm:block">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <p className="text-gray-500">Ημερομηνία Αγοράς</p>
+                        <p className="text-gray-500">{t('shop.purchaseDate')}</p>
                         <p className="font-medium">
                           {format(parseISO(purchase.created_at), 'dd/MM/yyyy', { locale: el })}
                         </p>
@@ -288,28 +290,28 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
                       {purchase.subscription_type.subscription_mode === 'time_based' && (
                         <>
                           <div>
-                            <p className="text-gray-500">Έναρξη</p>
+                            <p className="text-gray-500">{t('shop.startDate')}</p>
                             <p className="font-medium">
                               {format(parseISO(purchase.start_date), 'dd/MM/yyyy', { locale: el })}
                             </p>
                           </div>
                           <div>
-                            <p className="text-gray-500">Λήξη</p>
+                            <p className="text-gray-500">{t('shop.endDate')}</p>
                             <p className="font-medium">
                               {format(parseISO(purchase.end_date), 'dd/MM/yyyy', { locale: el })}
                             </p>
                           </div>
                           <div>
-                            <p className="text-gray-500">Διάρκεια</p>
+                            <p className="text-gray-500">{t('shop.duration')}</p>
                             <p className="font-medium">
-                              {purchase.subscription_type.duration_months} μήνες
+                              {purchase.subscription_type.duration_months} {t('shop.months')}
                             </p>
                           </div>
                         </>
                       )}
                       {purchase.subscription_type.subscription_mode === 'visit_based' && (
                         <div>
-                          <p className="text-gray-500">Επισκέψεις</p>
+                          <p className="text-gray-500">{t('shop.visits')}</p>
                           <p className="font-medium">
                             {purchase.subscription_type.visit_count}
                           </p>
@@ -330,19 +332,19 @@ export const UserProfileShopHistory: React.FC<UserProfileShopHistoryProps> = ({ 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 text-center">
             <div>
               <p className="text-xl sm:text-2xl font-bold text-[#00ffba]">{history.length}</p>
-              <p className="text-xs sm:text-sm text-gray-600">Συνολικές Αγορές</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t('shop.totalPurchases')}</p>
             </div>
             <div>
               <p className="text-xl sm:text-2xl font-bold text-green-600">
                 €{history.reduce((sum, p) => sum + p.subscription_type.price, 0)}
               </p>
-              <p className="text-xs sm:text-sm text-gray-600">Συνολικό Ποσό</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t('shop.totalAmount')}</p>
             </div>
             <div className="sm:col-span-2 lg:col-span-1">
               <p className="text-xl sm:text-2xl font-bold text-blue-600">
                 {history.filter(p => p.status === 'active').length}
               </p>
-              <p className="text-xs sm:text-sm text-gray-600">Ενεργές Συνδρομές</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t('shop.activeSubscriptions')}</p>
             </div>
           </div>
         </CardContent>
