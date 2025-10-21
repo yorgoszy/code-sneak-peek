@@ -10,11 +10,14 @@ import { UserProfileSidebar } from "@/components/user-profile/UserProfileSidebar
 import { UserProfileContent } from "@/components/user-profile/UserProfileContent";
 import { useUserProfileData } from "@/components/user-profile/hooks/useUserProfileData";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from 'react-i18next';
 
 const UserProfile = () => {
   const { userId } = useParams();
   const location = useLocation();
   const { user: currentUser, loading, signOut, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
@@ -81,7 +84,7 @@ const UserProfile = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Φόρτωση προφίλ χρήστη...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -95,11 +98,11 @@ const UserProfile = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Δεν βρέθηκε το προφίλ χρήστη</p>
+          <p className="text-gray-600">{t('userProfile.title')}</p>
           <Link to="/dashboard/users">
             <Button variant="outline" className="mt-4 rounded-none">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Επιστροφή στους Χρήστες
+              {t('common.back')}
             </Button>
           </Link>
         </div>
@@ -172,7 +175,7 @@ const UserProfile = () => {
               <Link to="/dashboard/users">
                 <Button variant="outline" size="sm" className="rounded-none">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Επιστροφή</span>
+                  <span className="hidden sm:inline">{t('common.back')}</span>
                 </Button>
               </Link>
               
@@ -181,7 +184,7 @@ const UserProfile = () => {
                   {userProfile.name}
                 </h1>
                 <p className="text-xs md:text-sm text-gray-600 truncate">
-                  {userProfile.email} - {userProfile.role}
+                  {userProfile.email} - {t(`roles.${userProfile.role}`)}
                 </p>
               </div>
             </div>
@@ -190,6 +193,7 @@ const UserProfile = () => {
               <span className="text-xs md:text-sm text-gray-600 hidden sm:block truncate">
                 {currentUser?.email}
               </span>
+              <LanguageSwitcher />
               <Button 
                 variant="outline" 
                 className="rounded-none"

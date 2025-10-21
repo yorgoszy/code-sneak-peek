@@ -1,0 +1,63 @@
+{
+  "common": {
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error"
+  },
+  "userProfile": {
+    "title": "User Profile",
+    "personalInfo": "Personal Information",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "birthDate": "Birth Date",
+    "role": "Role",
+    "status": "Status",
+    "category": "Category",
+    "subscriptions": "Subscriptions",
+    "activeSubscription": "Active Subscription",
+    "noActiveSubscription": "No active subscription",
+    "endDate": "End Date",
+    "paused": "Paused",
+    "programs": "Programs",
+    "activePrograms": "Active Programs",
+    "noActivePrograms": "No active programs",
+    "startDate": "Start Date",
+    "payments": "Payments",
+    "recentPayments": "Recent Payments",
+    "noPayments": "No payments found",
+    "amount": "Amount",
+    "date": "Date",
+    "method": "Method",
+    "sessions": "Sessions",
+    "bookingSessions": "Booking Sessions",
+    "noSessions": "No sessions found",
+    "sessionDate": "Session Date",
+    "type": "Type",
+    "videocall": "Video Call",
+    "gym": "Gym",
+    "changePassword": "Change Password",
+    "children": "Children",
+    "noChildren": "No children registered",
+    "measurements": "Measurements",
+    "viewMeasurements": "View Measurements"
+  },
+  "roles": {
+    "admin": "Administrator",
+    "trainer": "Trainer",
+    "athlete": "Athlete",
+    "general": "General",
+    "parent": "Parent"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "common": {
+    "back": "Επιστροφή",
+    "save": "Αποθήκευση",
+    "cancel": "Ακύρωση",
+    "edit": "Επεξεργασία",
+    "delete": "Διαγραφή",
+    "loading": "Φόρτωση...",
+    "success": "Επιτυχία",
+    "error": "Σφάλμα"
+  },
+  "userProfile": {
+    "title": "Προφίλ Χρήστη",
+    "personalInfo": "Προσωπικές Πληροφορίες",
+    "name": "Όνομα",
+    "email": "Email",
+    "phone": "Τηλέφωνο",
+    "birthDate": "Ημερομηνία Γέννησης",
+    "role": "Ρόλος",
+    "status": "Κατάσταση",
+    "category": "Κατηγορία",
+    "subscriptions": "Συνδρομές",
+    "activeSubscription": "Ενεργή Συνδρομή",
+    "noActiveSubscription": "Δεν υπάρχει ενεργή συνδρομή",
+    "endDate": "Λήξη",
+    "paused": "Παύση",
+    "programs": "Προγράμματα",
+    "activePrograms": "Ενεργά Προγράμματα",
+    "noActivePrograms": "Δεν υπάρχουν ενεργά προγράμματα",
+    "startDate": "Έναρξη",
+    "payments": "Πληρωμές",
+    "recentPayments": "Πρόσφατες Πληρωμές",
+    "noPayments": "Δεν υπάρχουν πληρωμές",
+    "amount": "Ποσό",
+    "date": "Ημερομηνία",
+    "method": "Μέθοδος",
+    "sessions": "Συνεδρίες",
+    "bookingSessions": "Κρατήσεις Συνεδριών",
+    "noSessions": "Δεν υπάρχουν συνεδρίες",
+    "sessionDate": "Ημερομηνία Συνεδρίας",
+    "type": "Τύπος",
+    "videocall": "Βιντεοκλήση",
+    "gym": "Γυμναστήριο",
+    "changePassword": "Αλλαγή Κωδικού",
+    "children": "Παιδιά",
+    "noChildren": "Δεν υπάρχουν καταχωρημένα παιδιά",
+    "measurements": "Μετρήσεις",
+    "viewMeasurements": "Προβολή Μετρήσεων"
+  },
+  "roles": {
+    "admin": "Διαχειριστής",
+    "trainer": "Προπονητής",
+    "athlete": "Αθλητής",
+    "general": "Γενικός",
+    "parent": "Γονέας"
+  },
+  "status": {
+    "active": "Ενεργός",
+    "inactive": "Ανενεργός",
+    "pending": "Σε αναμονή",
+    "completed": "Ολοκληρωμένο"
+  }
+}
