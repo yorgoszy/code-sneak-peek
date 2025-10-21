@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 import { UserProfileHeader } from "./UserProfileHeader";
 import { UserProfileStats } from "./UserProfileStats";
 import { UserProfileDailyProgram } from "./UserProfileDailyProgram";
@@ -45,6 +46,7 @@ export const UserProfileContent = ({
   onOfferRejected,
   setActiveTab
 }: UserProfileContentProps) => {
+  const { t } = useTranslation();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   // Άνοιγμα του AI chat dialog όταν το tab είναι "ai-trainer" - χρησιμοποιείται μόνο για άλλα components
@@ -61,7 +63,7 @@ export const UserProfileContent = ({
         className="flex items-center space-x-2 text-gray-700 hover:text-black transition-colors mb-4 font-medium"
       >
         <ArrowLeft className="h-5 w-5 font-bold stroke-2" />
-        <span className="text-sm font-medium">Επιστροφή στην επισκόπηση</span>
+        <span className="text-sm font-medium">{t('overview.backToOverview')}</span>
       </button>
     )
   );
@@ -71,7 +73,7 @@ export const UserProfileContent = ({
       case "overview":
         return (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Επισκόπηση Προφίλ</h2>
+            <h2 className="text-xl font-semibold">{t('overview.title')}</h2>
             <UserProfileOverview 
               userProfile={userProfile} 
               stats={stats} 
@@ -83,7 +85,7 @@ export const UserProfileContent = ({
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">Προγράμματα</h2>
+            <h2 className="text-xl font-semibold">{t('overview.programs')}</h2>
             <UserProfileProgramCards userProfile={userProfile} />
           </div>
         );
@@ -91,7 +93,7 @@ export const UserProfileContent = ({
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">Ημερολόγιο</h2>
+            <h2 className="text-xl font-semibold">{t('overview.calendar')}</h2>
             <UserProfileCalendar user={userProfile} />
           </div>
         );
@@ -99,7 +101,7 @@ export const UserProfileContent = ({
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">Τεστ & Αξιολογήσεις</h2>
+            <h2 className="text-xl font-semibold">{t('overview.testsEvaluations')}</h2>
             <UserProfileTests tests={tests} />
           </div>
         );
@@ -107,7 +109,7 @@ export const UserProfileContent = ({
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">Πρόοδος</h2>
+            <h2 className="text-xl font-semibold">{t('overview.progress')}</h2>
             <UserProgressSection userId={userProfile?.id} />
           </div>
         );
@@ -115,7 +117,7 @@ export const UserProfileContent = ({
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">Ιστορικό</h2>
+            <h2 className="text-xl font-semibold">{t('overview.history')}</h2>
             <UserProfileHistory userId={userProfile?.id} />
           </div>
         );
@@ -123,7 +125,7 @@ export const UserProfileContent = ({
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">Πληρωμές & Συνδρομές</h2>
+            <h2 className="text-xl font-semibold">{t('overview.paymentsSubscriptions')}</h2>
             <UserProfilePayments payments={payments} userProfile={userProfile} />
           </div>
         );
@@ -131,7 +133,7 @@ export const UserProfileContent = ({
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">Αγορές</h2>
+            <h2 className="text-xl font-semibold">{t('overview.shop')}</h2>
             <UserProfileShop userProfile={userProfile} />
           </div>
         );
@@ -139,7 +141,7 @@ export const UserProfileContent = ({
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">Προσφορές</h2>
+            <h2 className="text-xl font-semibold">{t('overview.activeOffers')}</h2>
             <UserProfileOffers userProfile={userProfile} onOfferRejected={onOfferRejected} />
           </div>
         );
@@ -163,7 +165,7 @@ export const UserProfileContent = ({
         return (
           <div className="space-y-4">
             <BackButton />
-            <h2 className="text-xl font-semibold">RidAI Προπονητής</h2>
+            <h2 className="text-xl font-semibold">{t('overview.aiCoach')}</h2>
             <InlineAIChat
               athleteId={userProfile?.id}
               athleteName={userProfile?.name}
@@ -192,7 +194,7 @@ export const UserProfileContent = ({
           </div>
         );
       default:
-        return <div>Άγνωστη καρτέλα</div>;
+        return <div>{t('overview.unknownTab')}</div>;
     }
   };
 

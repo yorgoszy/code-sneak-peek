@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
+import { useTranslation } from 'react-i18next';
 
 interface UserProfileStatsProps {
   user: any;
@@ -20,6 +21,7 @@ interface UserProfileStatsProps {
 }
 
 export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStatsProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [subscriptionDays, setSubscriptionDays] = useState<number | null>(null);
@@ -512,7 +514,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               <MousePointer className={`text-[#00ffba] ${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Αγορές
+              {t('overview.shop')}
             </div>
           </button>
 
@@ -548,7 +550,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               )}
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Ενεργές Προσφορές
+              {t('overview.activeOffers')}
             </div>
           </button>
 
@@ -578,7 +580,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               )}
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Πληρωμές
+              {t('overview.payments')}
             </div>
           </button>
 
@@ -607,9 +609,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 isPaused ? (
                   <span className="text-orange-600">{subscriptionDays}</span>
                 ) : subscriptionDays < 0 ? (
-                  <span className="text-red-600">Έληξε</span>
+                  <span className="text-red-600">{t('overview.expired')}</span>
                 ) : subscriptionDays === 0 ? (
-                  <span className="text-orange-600">Σήμερα</span>
+                  <span className="text-orange-600">{t('overview.today')}</span>
                 ) : subscriptionDays <= 7 ? (
                   <span className="text-orange-600">{subscriptionDays}</span>
                 ) : (
@@ -620,7 +622,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               )}
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Μέρες Συνδρομής
+              {t('overview.subscriptionDays')}
             </div>
           </button>
 
@@ -669,7 +671,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               )}
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {(user.role === 'trainer' || user.role === 'admin') ? 'Προγράμματα' : 'Ημέρες Προπόνησης'}
+              {(user.role === 'trainer' || user.role === 'admin') ? t('overview.programs') : t('overview.trainingDays')}
             </div>
           </button>
 
@@ -692,7 +694,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} min-w-12`}>
               {upcomingTests ? (
                 upcomingTests.daysLeft === 0 ? (
-                  <span className="text-red-600">Σήμερα!</span>
+                  <span className="text-red-600">{t('overview.today')}!</span>
                 ) : upcomingTests.daysLeft <= 3 ? (
                   <span className="text-orange-600">{upcomingTests.daysLeft}η</span>
                 ) : (
@@ -703,7 +705,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               )}
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Επερχόμενα Τεστ
+              {t('overview.upcomingTests')}
             </div>
           </button>
 
@@ -725,7 +727,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               <span className="text-[#00ffba]"> </span>
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Πρόοδος
+              {t('overview.progress')}
             </div>
           </button>
 
@@ -747,7 +749,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               <span className="text-[#cb8954]"> </span>
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Ιστορικό
+              {t('overview.history')}
             </div>
           </button>
 
@@ -777,7 +779,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               )}
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Επισκέψεις
+              {t('overview.visits')}
             </div>
           </button>
 
@@ -811,7 +813,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                )}
              </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Επερχόμενη Επίσκεψη
+              {t('overview.upcomingVisit')}
             </div>
           </button>
 
@@ -842,7 +844,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               )}
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Βιντεοκλήσεις
+              {t('overview.videocalls')}
             </div>
           </button>
           
@@ -879,7 +881,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                )}
              </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Επερχόμενη Βιντεοκλήση
+              {t('overview.upcomingVideocall')}
             </div>
           </button>
 
@@ -901,7 +903,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               <span className="text-blue-600"> </span>
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Προφίλ
+              {t('overview.profile')}
             </div>
           </button>
 
@@ -923,7 +925,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               <span className="text-purple-600"> </span>
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              RidAi Προπονητής
+              {t('overview.aiCoach')}
             </div>
           </button>
 
@@ -946,7 +948,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 <span className="text-[#00ffba]"> </span>
               </div>
               <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-                Σχολικές Σημειώσεις
+                {t('overview.schoolNotes')}
               </div>
             </button>
           )}
@@ -969,7 +971,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 {stats.athletesCount}
               </div>
               <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-                Αθλητές
+                {t('overview.athletes')}
               </div>
             </button>
           )}

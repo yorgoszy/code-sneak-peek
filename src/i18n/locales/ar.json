@@ -74,5 +74,35 @@
     "aiCoach": "مدرب RidAI",
     "poweredBy": "مدعوم من hyperteam",
     "quickOverview": "نظرة سريعة"
+  },
+  "overview": {
+    "title": "نظرة عامة على الملف الشخصي",
+    "backToOverview": "العودة إلى النظرة العامة",
+    "shop": "المتجر",
+    "activeOffers": "العروض النشطة",
+    "payments": "المدفوعات",
+    "subscriptionDays": "أيام الاشتراك",
+    "expired": "منتهي الصلاحية",
+    "today": "اليوم",
+    "trainingDays": "أيام التدريب",
+    "programs": "البرامج",
+    "upcomingTests": "الاختبارات القادمة",
+    "progress": "التقدم",
+    "history": "السجل",
+    "visits": "الزيارات",
+    "upcomingVisit": "الزيارة القادمة",
+    "videocalls": "مكالمات الفيديو",
+    "upcomingVideocall": "مكالمة الفيديو القادمة",
+    "profile": "الملف الشخصي",
+    "aiCoach": "مدرب RidAi",
+    "schoolNotes": "الملاحظات المدرسية",
+    "athletes": "الرياضيون",
+    "calendar": "التقويم",
+    "testsEvaluations": "الاختبارات والتقييمات",
+    "paymentsSubscriptions": "المدفوعات والاشتراكات",
+    "unknownTab": "علامة تبويب غير معروفة"
+  },
+  "auth": {
+    "signOut": "تسجيل الخروج"
   }
 }

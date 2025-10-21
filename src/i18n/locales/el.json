@@ -74,5 +74,35 @@
     "aiCoach": "RidAI Προπονητής",
     "poweredBy": "powered by hyperteam",
     "quickOverview": "Γρήγορη Επισκόπηση"
+  },
+  "overview": {
+    "title": "Επισκόπηση Προφίλ",
+    "backToOverview": "Επιστροφή στην επισκόπηση",
+    "shop": "Αγορές",
+    "activeOffers": "Ενεργές Προσφορές",
+    "payments": "Πληρωμές",
+    "subscriptionDays": "Μέρες Συνδρομής",
+    "expired": "Έληξε",
+    "today": "Σήμερα",
+    "trainingDays": "Ημέρες Προπόνησης",
+    "programs": "Προγράμματα",
+    "upcomingTests": "Επερχόμενα Τεστ",
+    "progress": "Πρόοδος",
+    "history": "Ιστορικό",
+    "visits": "Επισκέψεις",
+    "upcomingVisit": "Επερχόμενη Επίσκεψη",
+    "videocalls": "Βιντεοκλήσεις",
+    "upcomingVideocall": "Επερχόμενη Βιντεοκλήση",
+    "profile": "Προφίλ",
+    "aiCoach": "RidAi Προπονητής",
+    "schoolNotes": "Σχολικές Σημειώσεις",
+    "athletes": "Αθλητές",
+    "calendar": "Ημερολόγιο",
+    "testsEvaluations": "Τεστ & Αξιολογήσεις",
+    "paymentsSubscriptions": "Πληρωμές & Συνδρομές",
+    "unknownTab": "Άγνωστη καρτέλα"
+  },
+  "auth": {
+    "signOut": "Αποσύνδεση"
   }
 }

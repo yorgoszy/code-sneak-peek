@@ -201,7 +201,7 @@ const UserProfile = () => {
                 onClick={handleSignOut}
               >
                 <LogOut className="h-4 w-4 mr-0 md:mr-2" />
-                <span className="hidden md:inline">Αποσύνδεση</span>
+                <span className="hidden md:inline">{t('auth.signOut')}</span>
               </Button>
             </div>
           </div>

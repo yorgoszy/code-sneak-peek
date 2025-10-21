@@ -74,5 +74,35 @@
     "aiCoach": "RidAI Coach",
     "poweredBy": "powered by hyperteam",
     "quickOverview": "Quick Overview"
+  },
+  "overview": {
+    "title": "Profile Overview",
+    "backToOverview": "Back to overview",
+    "shop": "Shop",
+    "activeOffers": "Active Offers",
+    "payments": "Payments",
+    "subscriptionDays": "Subscription Days",
+    "expired": "Expired",
+    "today": "Today",
+    "trainingDays": "Training Days",
+    "programs": "Programs",
+    "upcomingTests": "Upcoming Tests",
+    "progress": "Progress",
+    "history": "History",
+    "visits": "Visits",
+    "upcomingVisit": "Upcoming Visit",
+    "videocalls": "Videocalls",
+    "upcomingVideocall": "Upcoming Videocall",
+    "profile": "Profile",
+    "aiCoach": "RidAi Coach",
+    "schoolNotes": "School Notes",
+    "athletes": "Athletes",
+    "calendar": "Calendar",
+    "testsEvaluations": "Tests & Evaluations",
+    "paymentsSubscriptions": "Payments & Subscriptions",
+    "unknownTab": "Unknown tab"
+  },
+  "auth": {
+    "signOut": "Sign Out"
   }
 }
