@@ -104,5 +104,21 @@
   },
   "auth": {
     "signOut": "Sign Out"
+  },
+  "programs": {
+    "loading": "Loading programs...",
+    "error": "Error loading programs",
+    "noActivePrograms": "You don't have active programs",
+    "contactTrainer": "Contact your trainer for program assignment",
+    "active": "Active",
+    "completed": "Completed",
+    "noActiveProgramsFound": "No active programs",
+    "successfullyCompleted": "Successfully Completed",
+    "failedAllMissed": "Failed - All Workouts Missed",
+    "noCompletedPrograms": "No completed programs",
+    "editProgram": "Edit Program",
+    "viewProgram": "View Program",
+    "startWorkout": "Start Workout",
+    "delete": "Delete"
   }
 }

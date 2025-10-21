@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
@@ -29,6 +30,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   userMode = false,
   workoutStats
 }) => {
+  const { t } = useTranslation();
   const [isProgramViewOpen, setIsProgramViewOpen] = useState(false);
   const [isDayProgramOpen, setIsDayProgramOpen] = useState(false);
 
@@ -72,7 +74,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
               size="sm"
               className="h-6 w-6 p-0 hover:bg-gray-100"
               onClick={() => setIsProgramViewOpen(true)}
-              title="Επεξεργασία Προγράμματος"
+              title={t('programs.editProgram')}
             >
               <Edit className="h-3 w-3" />
             </Button>
@@ -88,7 +90,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
               console.log('👁️ Program weeks:', assignment?.programs?.program_weeks);
               setIsProgramViewOpen(true);
             }}
-            title="Προβολή Προγράμματος"
+            title={t('programs.viewProgram')}
           >
             <Eye className="h-3 w-3" />
           </Button>
@@ -99,7 +101,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
               size="sm"
               className="h-6 w-6 p-0 hover:bg-blue-100"
               onClick={() => setIsDayProgramOpen(true)}
-              title="Έναρξη Προπόνησης"
+              title={t('programs.startWorkout')}
             >
               <Play className="h-3 w-3 text-blue-600" />
             </Button>
@@ -111,7 +113,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
               size="sm"
               className="h-6 w-6 p-0 hover:bg-red-100"
               onClick={handleDeleteClick}
-              title="Διαγραφή"
+              title={t('programs.delete')}
             >
               <Trash2 className="h-3 w-3 text-red-600" />
             </Button>

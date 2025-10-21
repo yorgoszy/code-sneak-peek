@@ -104,5 +104,21 @@
   },
   "auth": {
     "signOut": "تسجيل الخروج"
+  },
+  "programs": {
+    "loading": "جاري تحميل البرامج...",
+    "error": "خطأ في تحميل البرامج",
+    "noActivePrograms": "ليس لديك برامج نشطة",
+    "contactTrainer": "اتصل بمدربك لتعيين برنامج",
+    "active": "نشط",
+    "completed": "مكتمل",
+    "noActiveProgramsFound": "لا توجد برامج نشطة",
+    "successfullyCompleted": "مكتمل بنجاح",
+    "failedAllMissed": "فشل - جميع التمارين فائتة",
+    "noCompletedPrograms": "لا توجد برامج مكتملة",
+    "editProgram": "تعديل البرنامج",
+    "viewProgram": "عرض البرنامج",
+    "startWorkout": "بدء التمرين",
+    "delete": "حذف"
   }
 }

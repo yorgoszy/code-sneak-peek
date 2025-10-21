@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, CheckCircle, Clock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from 'react-i18next';
 import { useAllPrograms } from "@/hooks/useAllPrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
@@ -13,6 +14,7 @@ interface UserProfileProgramCardsProps {
 }
 
 export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = ({ userProfile }) => {
+  const { t } = useTranslation();
   const { data: allActivePrograms = [], isLoading, error, refetch } = useAllPrograms();
   const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
@@ -114,7 +116,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
       <Card className="rounded-none">
         <CardContent>
           <div className="text-center py-8 text-gray-500">
-            Φόρτωση προγραμμάτων...
+            {t('programs.loading')}
           </div>
         </CardContent>
       </Card>
@@ -126,7 +128,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
       <Card className="rounded-none">
         <CardContent>
           <div className="text-center py-8 text-red-500">
-            Σφάλμα κατά τη φόρτωση των προγραμμάτων
+            {t('programs.error')}
           </div>
         </CardContent>
       </Card>
@@ -139,8 +141,8 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
         <CardContent>
           <div className="text-center py-8 text-gray-500">
             <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Δεν έχετε ενεργά προγράμματα</p>
-            <p className="text-sm">Επικοινωνήστε με τον προπονητή σας για ανάθεση προγράμματος</p>
+            <p>{t('programs.noActivePrograms')}</p>
+            <p className="text-sm">{t('programs.contactTrainer')}</p>
           </div>
         </CardContent>
       </Card>
@@ -158,11 +160,11 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
             <TabsList className="grid w-full grid-cols-2 rounded-none">
               <TabsTrigger value="active" className="rounded-none flex items-center gap-2 text-sm">
                 <Clock className="h-3 w-3" />
-                Ενεργά ({activeIncompletePrograms.length})
+                {t('programs.active')} ({activeIncompletePrograms.length})
               </TabsTrigger>
               <TabsTrigger value="completed" className="rounded-none flex items-center gap-2 text-sm">
                 <CheckCircle className="h-3 w-3" />
-                Ολοκληρωμένα ({allCompletedPrograms.length})
+                {t('programs.completed')} ({allCompletedPrograms.length})
               </TabsTrigger>
             </TabsList>
 
@@ -184,7 +186,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
             ) : (
               <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
                 <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-sm">Δεν υπάρχουν ενεργά προγράμματα</p>
+                <p className="text-sm">{t('programs.noActiveProgramsFound')}</p>
               </div>
             )}
           </TabsContent>
@@ -197,7 +199,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-green-700 flex items-center gap-2">
                       <CheckCircle className="h-4 w-4" />
-                      Επιτυχώς Ολοκληρωμένα ({successfullyCompletedPrograms.length})
+                      {t('programs.successfullyCompleted')} ({successfullyCompletedPrograms.length})
                     </h4>
                     {successfullyCompletedPrograms.map((item) => (
                       <div key={item.assignment.id} className="flex justify-center">
@@ -218,7 +220,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-red-700 flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-red-500" />
-                      Αποτυχημένα - Όλες οι Προπονήσεις Χάθηκαν ({missedPrograms.length})
+                      {t('programs.failedAllMissed')} ({missedPrograms.length})
                     </h4>
                     {missedPrograms.map((item) => (
                       <div key={item.assignment.id} className="flex justify-center opacity-75">
@@ -237,7 +239,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
             ) : (
               <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
                 <CheckCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-sm">Δεν υπάρχουν ολοκληρωμένα προγράμματα</p>
+                <p className="text-sm">{t('programs.noCompletedPrograms')}</p>
               </div>
             )}
           </TabsContent>
