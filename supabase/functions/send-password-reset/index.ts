@@ -112,6 +112,19 @@ serve(async (req) => {
       }
     } else {
       console.log("✅ User already has auth account");
+      
+      // Sync email in auth.users with app_users if they differ
+      console.log("🔄 Syncing email in auth.users with app_users...");
+      const { error: updateError } = await supabase.auth.admin.updateUserById(
+        authUserId,
+        { email: email }
+      );
+      
+      if (updateError) {
+        console.log("⚠️ Could not sync email:", updateError);
+      } else {
+        console.log("✅ Email synced successfully");
+      }
     }
 
     console.log("✅ User found, generating reset link...");
