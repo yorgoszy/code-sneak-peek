@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { Exercise, Block } from './types';
+import { formatVelocityMs } from '@/utils/timeCalculations';
 
 interface ProgramBlockProps {
   block: Block;
@@ -46,7 +47,7 @@ export const ProgramBlock: React.FC<ProgramBlockProps> = ({
                     {exercise.sets} sets × {exercise.reps} reps
                     {exercise.kg && ` @ ${exercise.kg}kg`}
                     {exercise.percentage_1rm && ` (${exercise.percentage_1rm}%1RM)`}
-                    {(exercise.velocity_ms !== undefined && exercise.velocity_ms !== null) && ` @ ${exercise.velocity_ms}m/s`}
+                    {(exercise.velocity_ms !== undefined && exercise.velocity_ms !== null) && ` @ ${formatVelocityMs(exercise.velocity_ms)}m/s`}
                   </div>
                   {exercise.tempo && (
                     <div className="text-gray-500">Tempo: {exercise.tempo}</div>

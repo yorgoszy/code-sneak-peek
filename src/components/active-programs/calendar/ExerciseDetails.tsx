@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { VideoThumbnail } from '@/components/user-profile/daily-program/VideoThumbnail';
 import { getWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
+import { formatVelocityMs } from '@/utils/timeCalculations';
 
 interface ExerciseDetailsProps {
   exercise: any;
@@ -114,7 +115,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
           <div className="flex flex-col items-center">
             <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">m/s</div>
             <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
-              {exercise.velocity_ms ?? '-'}
+              {formatVelocityMs(exercise.velocity_ms)}
             </div>
           </div>
           <div className="flex flex-col items-center">

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Exercise, Week } from '../types';
+import { formatVelocityMs } from '@/utils/timeCalculations';
 
 interface CompactWeekCardProps {
   week: Week;
@@ -42,7 +43,7 @@ export const CompactWeekCard: React.FC<CompactWeekCardProps> = ({
                             <div>REPS: {exercise.reps}</div>
                             {exercise.percentage_1rm && <div>%1RM: {exercise.percentage_1rm}%</div>}
                             {exercise.kg && <div>KG: {exercise.kg}</div>}
-                            {(exercise.velocity_ms !== undefined && exercise.velocity_ms !== null) && <div>M/S: {exercise.velocity_ms}</div>}
+                            {(exercise.velocity_ms !== undefined && exercise.velocity_ms !== null) && <div>M/S: {formatVelocityMs(exercise.velocity_ms)}</div>}
                             {exercise.tempo && <div>TEMPO: {exercise.tempo}</div>}
                             {exercise.rest && <div>REST: {exercise.rest}</div>}
                             {exercise.notes && <div>NOTES: {exercise.notes}</div>}

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Separator } from "@/components/ui/separator";
+import { formatVelocityMs } from "@/utils/timeCalculations";
 
 interface ExerciseDetailsGridProps {
   exercise: {
@@ -70,7 +71,7 @@ export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
         
         <div className="flex-1 text-center">
           <div className="font-medium text-gray-600 mb-1">m/s</div>
-          <div className="text-gray-900">{exercise.velocity_ms ?? '-'}</div>
+          <div className="text-gray-900">{formatVelocityMs(exercise.velocity_ms)}</div>
           {actualValues?.velocity && (
             <div className="text-xs text-green-600 font-medium">{actualValues.velocity}</div>
           )}

@@ -97,6 +97,14 @@ export const parseNumberWithComma = (value: string | number): number => {
   return parseFloat(normalizedValue) || 0;
 };
 
+// Formatter: always show two decimals for m/s (e.g., 0.33)
+export const formatVelocityMs = (value: string | number | null | undefined): string => {
+  if (value === null || value === undefined || value === '') return '-';
+  const num = parseNumberWithComma(value as any);
+  if (Number.isNaN(num)) return '-';
+  return num.toFixed(2);
+};
+
 // ΔΙΟΡΘΩΣΗ: Νέες functions για σωστή διαχείριση ημερομηνιών χωρίς timezone issues
 export const formatDateToYMD = (date: Date): string => {
   // Χρησιμοποιούμε την τοπική ημερομηνία του χρήστη ΧΩΡΙΣ timezone conversion

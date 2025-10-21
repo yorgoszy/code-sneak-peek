@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { getWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
+import { formatVelocityMs } from '@/utils/timeCalculations';
 
 interface ExerciseActualValuesProps {
   exercise: any;
@@ -94,7 +95,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
         <label className="text-xs text-gray-600 block mb-1">Velocity (m/s)</label>
         <Input
           type="text"
-          placeholder={exercise.velocity_ms?.toString() ?? ''}
+          placeholder={formatVelocityMs(exercise.velocity_ms) === '-' ? '' : formatVelocityMs(exercise.velocity_ms)}
           value={savedData.velocity || ''}
           onChange={(e) => handleVelocityChange(e.target.value)}
           className="h-8 text-xs rounded-none"
