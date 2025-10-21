@@ -59,5 +59,20 @@
     "inactive": "Ανενεργός",
     "pending": "Σε αναμονή",
     "completed": "Ολοκληρωμένο"
+  },
+  "sidebar": {
+    "overview": "Επισκόπηση",
+    "programs": "Προγράμματα",
+    "progress": "Πρόοδος",
+    "history": "Ιστορικό",
+    "payments": "Πληρωμές",
+    "shop": "Αγορές",
+    "offers": "Προσφορές",
+    "onlineCoaching": "Online Coaching",
+    "onlineBooking": "Online Booking",
+    "schoolNotes": "Σχολικές Σημειώσεις",
+    "aiCoach": "RidAI Προπονητής",
+    "poweredBy": "powered by hyperteam",
+    "quickOverview": "Γρήγορη Επισκόπηση"
   }
 }

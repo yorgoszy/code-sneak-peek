@@ -59,5 +59,20 @@
     "inactive": "غير نشط",
     "pending": "قيد الانتظار",
     "completed": "مكتمل"
+  },
+  "sidebar": {
+    "overview": "نظرة عامة",
+    "programs": "البرامج",
+    "progress": "التقدم",
+    "history": "السجل",
+    "payments": "المدفوعات",
+    "shop": "المتجر",
+    "offers": "العروض",
+    "onlineCoaching": "التدريب عبر الإنترنت",
+    "onlineBooking": "الحجز عبر الإنترنت",
+    "schoolNotes": "الملاحظات المدرسية",
+    "aiCoach": "مدرب RidAI",
+    "poweredBy": "مدعوم من hyperteam",
+    "quickOverview": "نظرة سريعة"
   }
 }

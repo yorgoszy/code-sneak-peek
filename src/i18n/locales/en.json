@@ -59,5 +59,20 @@
     "inactive": "Inactive",
     "pending": "Pending",
     "completed": "Completed"
+  },
+  "sidebar": {
+    "overview": "Overview",
+    "programs": "Programs",
+    "progress": "Progress",
+    "history": "History",
+    "payments": "Payments",
+    "shop": "Shop",
+    "offers": "Offers",
+    "onlineCoaching": "Online Coaching",
+    "onlineBooking": "Online Booking",
+    "schoolNotes": "School Notes",
+    "aiCoach": "RidAI Coach",
+    "poweredBy": "powered by hyperteam",
+    "quickOverview": "Quick Overview"
   }
 }

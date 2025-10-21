@@ -22,6 +22,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAllPrograms } from "@/hooks/useAllPrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
+import { useTranslation } from 'react-i18next';
 
 interface UserProfileSidebarProps {
   isCollapsed: boolean;
@@ -43,6 +44,7 @@ export const UserProfileSidebar = forwardRef<
   userProfile,
   stats
 }, ref) => {
+  const { t } = useTranslation();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
   const [activePrograms, setActivePrograms] = useState(0);
@@ -196,70 +198,70 @@ export const UserProfileSidebar = forwardRef<
   const menuItems = [
     { 
       icon: BarChart3, 
-      label: "Επισκόπηση", 
+      label: t('sidebar.overview'), 
       key: "overview",
       badge: null,
       visible: true
     },
     { 
       icon: Activity, 
-      label: "Προγράμματα", 
+      label: t('sidebar.programs'), 
       key: "programs",
       badge: activePrograms > 0 ? activePrograms : null,
       visible: true
     },
     { 
       icon: TrendingUp, 
-      label: "Πρόοδος", 
+      label: t('sidebar.progress'), 
       key: "progress",
       badge: null,
       visible: true
     },
     { 
       icon: History, 
-      label: "Ιστορικό", 
+      label: t('sidebar.history'), 
       key: "history",
       badge: null,
       visible: true
     },
     { 
       icon: CreditCard, 
-      label: "Πληρωμές", 
+      label: t('sidebar.payments'), 
       key: "payments",
       badge: stats.paymentsCount > 0 ? stats.paymentsCount : null,
       visible: true
     },
     {
       icon: ShoppingCart,
-      label: "Αγορές",
+      label: t('sidebar.shop'),
       key: "shop",
       badge: null,
       visible: true
     },
     {
       icon: Tag,
-      label: "Προσφορές",
+      label: t('sidebar.offers'),
       key: "offers",
       badge: availableOffers > 0 ? availableOffers : null,
       visible: true
     },
     {
       icon: Video,
-      label: "Online Coaching",
+      label: t('sidebar.onlineCoaching'),
       key: "online-coaching",
       badge: null,
       visible: true
     },
     {
       icon: CalendarDays,
-      label: "Online Booking",
+      label: t('sidebar.onlineBooking'),
       key: "online-booking",
       badge: null,
       visible: true
     },
     {
       icon: BookOpen,
-      label: "Σχολικές Σημειώσεις",
+      label: t('sidebar.schoolNotes'),
       key: "school-notes",
       badge: null,
       visible: isParentUser
@@ -320,8 +322,8 @@ export const UserProfileSidebar = forwardRef<
         <Brain className="h-5 w-5 flex-shrink-0 text-[#cb8954]" />
         {(!isCollapsed || isMobile) && (
           <div className="flex flex-col items-start min-w-0">
-            <span className="text-sm font-medium truncate">RidAI Προπονητής</span>
-            <span className="text-xs text-gray-500 truncate">powered by hyperteam</span>
+            <span className="text-sm font-medium truncate">{t('sidebar.aiCoach')}</span>
+            <span className="text-xs text-gray-500 truncate">{t('sidebar.poweredBy')}</span>
           </div>
         )}
       </button>
@@ -331,12 +333,12 @@ export const UserProfileSidebar = forwardRef<
   const bottomContent = (!isCollapsed || isMobile) ? (
     <div className="space-y-2 px-1">
       <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-        Γρήγορη Επισκόπηση
+        {t('sidebar.quickOverview')}
       </h3>
       <div className="grid grid-cols-1 gap-2 text-xs">
         <div className="bg-gray-50 p-2 rounded-none">
           <div className="font-semibold text-gray-800">{stats.programsCount}</div>
-          <div className="text-gray-600 text-xs">Προγράμματα</div>
+          <div className="text-gray-600 text-xs">{t('sidebar.programs')}</div>
         </div>
       </div>
     </div>
