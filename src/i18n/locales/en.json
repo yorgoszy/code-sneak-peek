@@ -299,5 +299,55 @@
     "errorRejecting": "Error rejecting offer",
     "freeOfferActivated": "Free offer \"{name}\" activated!",
     "noCheckoutUrl": "No checkout URL received"
+  },
+  "schoolNotes": {
+    "title": "School Notes",
+    "weeklyView": "School Notes - Weekly View",
+    "selectChildren": "Select Child/Children",
+    "yearsOld": "years old",
+    "canSelectMultiple": "You can select one or more children",
+    "category": "Category",
+    "selectCategory": "Select category...",
+    "scheduleNotes": "Schedule/Notes from School",
+    "placeholder": "Write here the schedule or notes from your child's school...",
+    "aiHelper": "The AI assistant will process your note and make it available to the administrator",
+    "saving": "Saving...",
+    "saveNote": "Save Note",
+    "today": "Today",
+    "ageFilter": "Age Filter:",
+    "from": "From:",
+    "to": "To:",
+    "clear": "Clear",
+    "noNotes": "No notes",
+    "unknown": "Unknown",
+    "child": "Child:",
+    "noteDetails": "School Note",
+    "parent": "Parent:",
+    "subject": "Subject:",
+    "noteContent": "Note Content",
+    "aiSummary": "AI Summary",
+    "suggestedExercises": "Suggested Physical Education Exercises",
+    "skill": "Skill:",
+    "categories": {
+      "all": "All",
+      "math": "Math",
+      "science": "Science",
+      "language": "Language",
+      "history": "History",
+      "arts": "Arts",
+      "sports": "Physical Education",
+      "other": "Other"
+    },
+    "errors": {
+      "fillAllFields": "Please fill in all fields and select at least one child",
+      "userNotFound": "User not found",
+      "childNotFound": "Child not found",
+      "saveFailed": "Error saving",
+      "loadFailed": "Error loading notes"
+    },
+    "success": {
+      "noteSaved": "Note saved successfully!",
+      "notesSaved": "Notes saved successfully!"
+    }
   }
 }

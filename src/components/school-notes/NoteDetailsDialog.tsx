@@ -4,6 +4,7 @@ import { BookOpen, Dumbbell } from "lucide-react";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 interface SchoolNote {
   id: string;
@@ -36,6 +37,8 @@ export const NoteDetailsDialog: React.FC<NoteDetailsDialogProps> = ({
   note,
   categoryLabel
 }) => {
+  const { t } = useTranslation();
+  
   if (!note) return null;
 
   let aiData: { summary?: string; exercises?: Exercise[] } = {};
@@ -54,7 +57,7 @@ export const NoteDetailsDialog: React.FC<NoteDetailsDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            Σχολική Σημείωση
+            {t("schoolNotes.noteDetails")}
           </DialogTitle>
         </DialogHeader>
         
@@ -63,10 +66,10 @@ export const NoteDetailsDialog: React.FC<NoteDetailsDialogProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-900">
-                  Γονέας: {note.app_users?.name || "Άγνωστος"}
+                  {t("schoolNotes.parent")} {note.app_users?.name || t("schoolNotes.unknown")}
                 </p>
                 <p className="text-sm text-gray-500">
-                  Μάθημα: {categoryLabel}
+                  {t("schoolNotes.subject")} {categoryLabel}
                 </p>
               </div>
               <p className="text-xs text-gray-400">
@@ -76,7 +79,7 @@ export const NoteDetailsDialog: React.FC<NoteDetailsDialogProps> = ({
           </div>
           
           <div className="border-t pt-4">
-            <h4 className="text-sm font-semibold text-gray-900 mb-2">Κείμενο Σημείωσης</h4>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">{t("schoolNotes.noteContent")}</h4>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">
               {note.content}
             </p>
@@ -84,7 +87,7 @@ export const NoteDetailsDialog: React.FC<NoteDetailsDialogProps> = ({
 
           {aiData.summary && (
             <div className="border-t pt-4">
-              <h4 className="text-sm font-semibold text-blue-900 mb-2">AI Περίληψη</h4>
+              <h4 className="text-sm font-semibold text-blue-900 mb-2">{t("schoolNotes.aiSummary")}</h4>
               <p className="text-sm text-blue-800">
                 {aiData.summary}
               </p>
@@ -95,7 +98,7 @@ export const NoteDetailsDialog: React.FC<NoteDetailsDialogProps> = ({
             <div className="border-t pt-4">
               <h4 className="text-sm font-semibold text-[#00ffba] mb-3 flex items-center gap-2">
                 <Dumbbell className="h-4 w-4" />
-                Προτεινόμενες Ασκήσεις Φυσικής Αγωγής
+                {t("schoolNotes.suggestedExercises")}
               </h4>
               <div className="space-y-3">
                 {aiData.exercises.map((exercise, index) => (
@@ -113,7 +116,7 @@ export const NoteDetailsDialog: React.FC<NoteDetailsDialogProps> = ({
                         {exercise.description}
                       </p>
                       <div className="flex items-center gap-2 text-xs">
-                        <span className="text-[#00ffba] font-medium">Δεξιότητα:</span>
+                        <span className="text-[#00ffba] font-medium">{t("schoolNotes.skill")}</span>
                         <span className="text-gray-600">{exercise.skill}</span>
                       </div>
                     </CardContent>

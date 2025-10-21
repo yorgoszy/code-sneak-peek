@@ -299,5 +299,55 @@
     "errorRejecting": "خطأ في رفض العرض",
     "freeOfferActivated": "تم تفعيل العرض المجاني \"{name}\"!",
     "noCheckoutUrl": "لم يتم استلام رابط الدفع"
+  },
+  "schoolNotes": {
+    "title": "الملاحظات المدرسية",
+    "weeklyView": "الملاحظات المدرسية - عرض أسبوعي",
+    "selectChildren": "اختيار الطفل/الأطفال",
+    "yearsOld": "سنوات",
+    "canSelectMultiple": "يمكنك اختيار طفل واحد أو أكثر",
+    "category": "الفئة",
+    "selectCategory": "اختر الفئة...",
+    "scheduleNotes": "الجدول/الملاحظات من المدرسة",
+    "placeholder": "اكتب هنا الجدول أو الملاحظات من مدرسة طفلك...",
+    "aiHelper": "سيقوم مساعد الذكاء الاصطناعي بمعالجة ملاحظتك وإتاحتها للمسؤول",
+    "saving": "جاري الحفظ...",
+    "saveNote": "حفظ الملاحظة",
+    "today": "اليوم",
+    "ageFilter": "تصفية العمر:",
+    "from": "من:",
+    "to": "إلى:",
+    "clear": "مسح",
+    "noNotes": "لا توجد ملاحظات",
+    "unknown": "غير معروف",
+    "child": "الطفل:",
+    "noteDetails": "ملاحظة مدرسية",
+    "parent": "ولي الأمر:",
+    "subject": "المادة:",
+    "noteContent": "محتوى الملاحظة",
+    "aiSummary": "ملخص الذكاء الاصطناعي",
+    "suggestedExercises": "تمارين التربية البدنية المقترحة",
+    "skill": "المهارة:",
+    "categories": {
+      "all": "الكل",
+      "math": "الرياضيات",
+      "science": "العلوم",
+      "language": "اللغة",
+      "history": "التاريخ",
+      "arts": "الفنون",
+      "sports": "التربية البدنية",
+      "other": "أخرى"
+    },
+    "errors": {
+      "fillAllFields": "يرجى ملء جميع الحقول واختيار طفل واحد على الأقل",
+      "userNotFound": "لم يتم العثور على المستخدم",
+      "childNotFound": "لم يتم العثور على الطفل",
+      "saveFailed": "خطأ في الحفظ",
+      "loadFailed": "خطأ في تحميل الملاحظات"
+    },
+    "success": {
+      "noteSaved": "تم حفظ الملاحظة بنجاح!",
+      "notesSaved": "تم حفظ الملاحظات بنجاح!"
+    }
   }
 }

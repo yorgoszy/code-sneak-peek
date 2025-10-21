@@ -8,16 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-
-const CATEGORIES = [
-  { value: "math", label: "Μαθηματικά" },
-  { value: "science", label: "Φυσική/Χημεία" },
-  { value: "language", label: "Γλώσσα" },
-  { value: "history", label: "Ιστορία" },
-  { value: "arts", label: "Καλές Τέχνες" },
-  { value: "sports", label: "Φυσική Αγωγή" },
-  { value: "other", label: "Άλλο" },
-];
+import { useTranslation } from "react-i18next";
 
 interface Child {
   id: string;
@@ -30,12 +21,23 @@ interface SchoolNotesProps {
 }
 
 export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [category, setCategory] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChildren, setSelectedChildren] = useState<string[]>([]);
+
+  const CATEGORIES = [
+    { value: "math", label: t("schoolNotes.categories.math") },
+    { value: "science", label: t("schoolNotes.categories.science") },
+    { value: "language", label: t("schoolNotes.categories.language") },
+    { value: "history", label: t("schoolNotes.categories.history") },
+    { value: "arts", label: t("schoolNotes.categories.arts") },
+    { value: "sports", label: t("schoolNotes.categories.sports") },
+    { value: "other", label: t("schoolNotes.categories.other") },
+  ];
 
   useEffect(() => {
     fetchChildren();
@@ -102,7 +104,7 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
 
   const handleSubmit = async () => {
     if (!content.trim() || !category || selectedChildren.length === 0) {
-      toast.error("Παρακαλώ συμπληρώστε όλα τα πεδία και επιλέξτε τουλάχιστον ένα παιδί");
+      toast.error(t("schoolNotes.errors.fillAllFields"));
       return;
     }
 
@@ -120,7 +122,7 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
           .single();
 
         if (userError || !appUser) {
-          throw new Error("Δεν βρέθηκε ο χρήστης");
+          throw new Error(t("schoolNotes.errors.userNotFound"));
         }
         appUserId = appUser.id;
       }
@@ -129,7 +131,7 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
       const notePromises = selectedChildren.map(async (childId) => {
         const selectedChildData = children.find(c => c.id === childId);
         if (!selectedChildData) {
-          throw new Error("Δεν βρέθηκε το παιδί");
+          throw new Error(t("schoolNotes.errors.childNotFound"));
         }
 
         const childAge = calculateAge(selectedChildData.birth_date);
@@ -163,13 +165,16 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
 
       await Promise.all(notePromises);
 
-      toast.success(`${selectedChildren.length === 1 ? 'Η σημείωση' : 'Οι σημειώσεις'} αποθηκεύτηκαν επιτυχώς!`);
+      toast.success(selectedChildren.length === 1 
+        ? t("schoolNotes.success.noteSaved")
+        : t("schoolNotes.success.notesSaved")
+      );
       setContent("");
       setCategory("");
       setSelectedChildren([]);
     } catch (error: any) {
       console.error('Error submitting note:', error);
-      toast.error(error.message || "Σφάλμα κατά την αποθήκευση");
+      toast.error(error.message || t("schoolNotes.errors.saveFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -181,13 +186,13 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
         <CardHeader className="p-4 sm:p-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
-            Σχολικές Σημειώσεις
+            {t("schoolNotes.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 p-4 sm:p-6">
           {children.length > 0 && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">Επιλογή Παιδιού/Παιδιών</label>
+              <label className="text-sm font-medium">{t("schoolNotes.selectChildren")}</label>
               <div className="flex flex-wrap gap-2">
                 {children.map((child) => {
                   const isSelected = selectedChildren.includes(child.id);
@@ -203,22 +208,22 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
                           : "bg-white border-gray-300 text-gray-700 hover:border-[#00ffba]"
                       )}
                     >
-                      {child.name} ({calculateAge(child.birth_date)} ετών)
+                      {child.name} ({calculateAge(child.birth_date)} {t("schoolNotes.yearsOld")})
                     </button>
                   );
                 })}
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Μπορείτε να επιλέξετε ένα ή περισσότερα παιδιά
+                {t("schoolNotes.canSelectMultiple")}
               </p>
             </div>
           )}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Κατηγορία</label>
+            <label className="text-sm font-medium">{t("schoolNotes.category")}</label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger className="rounded-none w-full">
-                <SelectValue placeholder="Επιλέξτε κατηγορία..." />
+                <SelectValue placeholder={t("schoolNotes.selectCategory")} />
               </SelectTrigger>
               <SelectContent className="z-50 bg-white">
                 {CATEGORIES.map((cat) => (
@@ -232,12 +237,12 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              Πρόγραμμα/Σημειώσεις από το Σχολείο
+              {t("schoolNotes.scheduleNotes")}
             </label>
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Γράψτε εδώ το πρόγραμμα ή τις σημειώσεις από το σχολείο του παιδιού σας..."
+              placeholder={t("schoolNotes.placeholder")}
               className="rounded-none min-h-[150px] sm:min-h-[200px] text-sm sm:text-base"
               disabled={isSubmitting}
             />
@@ -246,7 +251,7 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
           <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-none">
             <BookOpen className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
             <p className="text-xs sm:text-sm text-blue-800">
-              Ο AI βοηθός θα επεξεργαστεί τη σημείωσή σας και θα τη διαθέσει στον διαχειριστή
+              {t("schoolNotes.aiHelper")}
             </p>
           </div>
 
@@ -258,12 +263,12 @@ export const SchoolNotes = ({ userId }: SchoolNotesProps) => {
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Αποθήκευση...
+                {t("schoolNotes.saving")}
               </>
             ) : (
               <>
                 <Send className="w-4 h-4 mr-2" />
-                Αποθήκευση Σημείωσης
+                {t("schoolNotes.saveNote")}
               </>
             )}
           </Button>

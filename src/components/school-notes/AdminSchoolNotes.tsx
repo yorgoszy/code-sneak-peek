@@ -13,6 +13,7 @@ import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval, 
 import { el } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { NoteDetailsDialog } from "./NoteDetailsDialog";
+import { useTranslation } from "react-i18next";
 
 interface SchoolNote {
   id: string;
@@ -30,18 +31,19 @@ interface SchoolNote {
   } | null;
 }
 
-const CATEGORIES = [
-  { value: "all", label: "Όλες" },
-  { value: "math", label: "Μαθηματικά" },
-  { value: "science", label: "Φυσική/Χημεία" },
-  { value: "language", label: "Γλώσσα" },
-  { value: "history", label: "Ιστορία" },
-  { value: "arts", label: "Καλές Τέχνες" },
-  { value: "sports", label: "Φυσική Αγωγή" },
-  { value: "other", label: "Άλλο" },
-];
-
 export const AdminSchoolNotes = () => {
+  const { t } = useTranslation();
+
+  const CATEGORIES = [
+    { value: "all", label: t("schoolNotes.categories.all") },
+    { value: "math", label: t("schoolNotes.categories.math") },
+    { value: "science", label: t("schoolNotes.categories.science") },
+    { value: "language", label: t("schoolNotes.categories.language") },
+    { value: "history", label: t("schoolNotes.categories.history") },
+    { value: "arts", label: t("schoolNotes.categories.arts") },
+    { value: "sports", label: t("schoolNotes.categories.sports") },
+    { value: "other", label: t("schoolNotes.categories.other") },
+  ];
   const [notes, setNotes] = useState<SchoolNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -145,7 +147,7 @@ export const AdminSchoolNotes = () => {
       setNotes(notesWithAI);
     } catch (error: any) {
       console.error('Error fetching notes:', error);
-      toast.error("Σφάλμα κατά τη φόρτωση των σημειώσεων");
+      toast.error(t("schoolNotes.errors.loadFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -215,8 +217,8 @@ export const AdminSchoolNotes = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="hidden sm:inline">Σχολικές Σημειώσεις - Εβδομαδιαία Προβολή</span>
-                <span className="sm:hidden">Σχολικές Σημειώσεις</span>
+                <span className="hidden sm:inline">{t("schoolNotes.weeklyView")}</span>
+                <span className="sm:hidden">{t("schoolNotes.title")}</span>
               </CardTitle>
               
               {/* Week Navigation - Compact on mobile */}
@@ -273,7 +275,7 @@ export const AdminSchoolNotes = () => {
                   onClick={handleToday}
                   className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-4"
                 >
-                  Σήμερα
+                  {t("schoolNotes.today")}
                 </Button>
               </div>
             </div>
@@ -284,11 +286,11 @@ export const AdminSchoolNotes = () => {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-gray-600" />
-                    <Label className="text-sm font-medium">Φίλτρο Ηλικίας:</Label>
+                    <Label className="text-sm font-medium">{t("schoolNotes.ageFilter")}</Label>
                   </div>
                   <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="age-from" className="text-sm whitespace-nowrap">Από:</Label>
+                      <Label htmlFor="age-from" className="text-sm whitespace-nowrap">{t("schoolNotes.from")}</Label>
                       <Input
                         id="age-from"
                         type="number"
@@ -301,7 +303,7 @@ export const AdminSchoolNotes = () => {
                       />
                     </div>
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="age-to" className="text-sm whitespace-nowrap">Έως:</Label>
+                      <Label htmlFor="age-to" className="text-sm whitespace-nowrap">{t("schoolNotes.to")}</Label>
                       <Input
                         id="age-to"
                         type="number"
@@ -323,7 +325,7 @@ export const AdminSchoolNotes = () => {
                         }}
                         className="text-xs h-8"
                       >
-                        Καθαρισμός
+                        {t("schoolNotes.clear")}
                       </Button>
                     )}
                   </div>
@@ -369,7 +371,7 @@ export const AdminSchoolNotes = () => {
                       <CardContent className="p-2 space-y-2 min-h-[150px] sm:min-h-[200px]">
                         {day.notes.length === 0 ? (
                           <p className="text-xs text-gray-400 text-center py-4">
-                            Δεν υπάρχουν σημειώσεις
+                            {t("schoolNotes.noNotes")}
                           </p>
                         ) : (
                           day.notes.map((note) => (
@@ -380,11 +382,11 @@ export const AdminSchoolNotes = () => {
                             >
                               <CardContent className="p-2 space-y-1">
                                 <p className="text-xs text-gray-600 font-medium truncate">
-                                  {note.app_users?.name || "Άγνωστος"}
+                                  {note.app_users?.name || t("schoolNotes.unknown")}
                                 </p>
                                 {note.children && (
                                   <p className="text-xs text-gray-500 truncate">
-                                    Παιδί: {note.children.name} ({note.child_age} ετών)
+                                    {t("schoolNotes.child")} {note.children.name} ({note.child_age} {t("schoolNotes.yearsOld")})
                                   </p>
                                 )}
                                 <p className="text-xs text-gray-500">
