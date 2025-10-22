@@ -349,5 +349,36 @@
       "noteSaved": "Note saved successfully!",
       "notesSaved": "Notes saved successfully!"
     }
+  },
+  "onlineBooking": {
+    "loading": "Loading...",
+    "mainGym": "Main Gym",
+    "requiresPurchase": "Package purchase required for bookings",
+    "bookYourSession": "Book your training session",
+    "noVisitsAvailable": "No visits available",
+    "needToPurchase": "To book an appointment, you need to purchase visits from the shop",
+    "buyVisit": "Buy Visit",
+    "close": "Close",
+    "bookOnlineDescription": "Book your training sessions and appointments online",
+    "visitsMonthly": "Visits: {{available}}/{{total}} available this month",
+    "visitsAvailable": "Visits: {{available}} available",
+    "availableHours": "Available Hours",
+    "mondayFriday": "Monday - Friday: 08:00 - 20:00",
+    "weekends": "Weekends: closed",
+    "emergencyContact": "For urgent changes contact us by phone",
+    "cancellationPolicy": "You can cancel or reschedule your appointment up to 12 hours before",
+    "visitHistory": "Visit History",
+    "automatic": "Automatic",
+    "manual": "Manual",
+    "createdAt": "Created:",
+    "noVisits": "No visits",
+    "visitPackages": "Visit Packages",
+    "comingSoon": "Visit packages will be displayed here soon",
+    "bookingCreated": "Appointment created successfully!",
+    "bookingError": "Error creating appointment",
+    "bookingCancelled": "Appointment cancelled successfully",
+    "cannotCancel": "Cannot cancel appointment (less than 12 hours)",
+    "days": "days",
+    "hours": "hours"
   }
 }

@@ -13,6 +13,7 @@ import { WeeklyBookingCalendar } from "./bookings/WeeklyBookingCalendar";
 import { SectionBookingCalendar } from "./bookings/SectionBookingCalendar";
 import { useBookingSections } from "@/hooks/useBookingSections";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface UserProfileOnlineBookingProps {
   userProfile: any;
@@ -23,6 +24,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   userProfile,
   visits = []
 }) => {
+  const { t } = useTranslation();
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedBookingType, setSelectedBookingType] = useState<string>('');
   const [showNoVisitsDialog, setShowNoVisitsDialog] = useState(false);
@@ -50,18 +52,18 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const handleCreateBooking = async (sectionId: string, date: string, time: string, type: string) => {
     try {
       const bookingData = await createBooking(sectionId, date, time, type);
-      toast.success('Το ραντεβού δημιουργήθηκε επιτυχώς!');
+      toast.success(t('onlineBooking.bookingCreated'));
     } catch (error: any) {
-      toast.error(error.message || 'Σφάλμα κατά τη δημιουργία του ραντεβού');
+      toast.error(error.message || t('onlineBooking.bookingError'));
     }
   };
 
   const handleCancelBooking = async (bookingId: string) => {
     try {
       await cancelBooking(bookingId);
-      toast.success('Το ραντεβού ακυρώθηκε επιτυχώς');
+      toast.success(t('onlineBooking.bookingCancelled'));
     } catch (error: any) {
-      toast.error(error.message || 'Δεν μπορείς να ακυρώσεις το ραντεβού (λιγότερο από 12 ώρες)');
+      toast.error(error.message || t('onlineBooking.cannotCancel'));
     }
   };
 
@@ -80,14 +82,14 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     
     if (days > 0) {
-      return `${days} μέρες, ${hours} ώρες`;
+      return `${days} ${t('onlineBooking.days')}, ${hours} ${t('onlineBooking.hours')}`;
     } else {
-      return `${hours} ώρες`;
+      return `${hours} ${t('onlineBooking.hours')}`;
     }
   };
 
   if (loading) {
-    return <div className="text-center py-8">Φόρτωση...</div>;
+    return <div className="text-center py-8">{t('onlineBooking.loading')}</div>;
   }
 
   if (showCalendar) {
@@ -105,10 +107,10 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const bookingOptions = [
     {
       id: 'gym_visit',
-      title: 'Κύριο Γυμναστήριο',
+      title: t('onlineBooking.mainGym'),
       description: availability?.type === 'none' 
-        ? 'Χρειάζεται αγορά πακέτου για κρατήσεις'
-        : 'Κλείσε το ραντεβού σου για προπόνηση',
+        ? t('onlineBooking.requiresPurchase')
+        : t('onlineBooking.bookYourSession'),
       icon: MapPin,
       color: 'bg-blue-100 text-blue-600',
       available: availability && (
@@ -131,11 +133,11 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
               <X className="h-6 w-6 text-red-500 mx-auto mb-4" />
               
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Δεν έχεις διαθέσιμες επισκέψεις
+                {t('onlineBooking.noVisitsAvailable')}
               </h3>
               
               <p className="text-sm text-gray-600 mb-6">
-                Για να κλείσεις ραντεβού, χρειάζεται να αγοράσεις επισκέψεις από τις αγορές
+                {t('onlineBooking.needToPurchase')}
               </p>
               
               <div className="space-y-3">
@@ -147,7 +149,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                   className="w-full bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  Αγόρασε επίσκεψη
+                  {t('onlineBooking.buyVisit')}
                 </Button>
                 
                 <Button 
@@ -155,7 +157,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                   variant="outline"
                   className="w-full rounded-none"
                 >
-                  Κλείσε
+                  {t('onlineBooking.close')}
                 </Button>
               </div>
             </div>
@@ -164,18 +166,18 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       </Dialog>
       
       <div className="px-4 md:px-0">
-        <p className="text-sm md:text-base text-gray-600 text-left">Κλείσε online τα ραντεβού σου για προπονήσεις και συνεδρίες</p>
+        <p className="text-sm md:text-base text-gray-600 text-left">{t('onlineBooking.bookOnlineDescription')}</p>
         
         {availability && availability.type !== 'none' && (
           <div className="mt-4 flex justify-center">
             {availability.type === 'hypergym' && (
               <Badge variant="outline" className="rounded-none text-xs md:text-sm">
-                Επισκέψεις: {availability.available_monthly}/{availability.total_monthly} διαθέσιμες αυτό το μήνα
+                {t('onlineBooking.visitsMonthly', { available: availability.available_monthly, total: availability.total_monthly })}
               </Badge>
             )}
             {availability.type === 'visit_packages' && (
               <Badge variant="outline" className="rounded-none text-xs md:text-sm">
-                Επισκέψεις: {availability.available_visits} διαθέσιμες
+                {t('onlineBooking.visitsAvailable', { available: availability.available_visits })}
               </Badge>
             )}
           </div>
@@ -221,15 +223,15 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
           <CardHeader className="p-4 md:p-6">
             <CardTitle className="flex items-center text-base md:text-lg">
               <Clock className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-              Διαθέσιμες Ώρες
+              {t('onlineBooking.availableHours')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:p-6 pt-0">
             <div className="space-y-2 text-gray-600 text-sm md:text-base">
-              <p>• Δευτέρα - Παρασκευή: 08:00 - 20:00</p>
-              <p>• Σαββατοκύριακα: κλειστά</p>
-              <p>• Για επείγουσες αλλαγές επικοινώνησε τηλεφωνικά</p>
-              <p className="text-red-600">• Μπορείς να ακυρώσεις ή να αναβάλεις το ραντεβού σου έως 12 ώρες πριν</p>
+              <p>• {t('onlineBooking.mondayFriday')}</p>
+              <p>• {t('onlineBooking.weekends')}</p>
+              <p>• {t('onlineBooking.emergencyContact')}</p>
+              <p className="text-red-600">• {t('onlineBooking.cancellationPolicy')}</p>
             </div>
           </CardContent>
         </Card>
@@ -241,7 +243,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Calendar className="h-5 w-5" />
-              <span>Ιστορικό Επισκέψεων</span>
+              <span>{t('onlineBooking.visitHistory')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -265,7 +267,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                           ? 'bg-blue-100 text-blue-800' 
                           : 'bg-gray-100 text-gray-800'
                       }`}>
-                        {visit.visit_type === 'auto' ? 'Αυτόματη' : 'Χειροκίνητη'}
+                        {visit.visit_type === 'auto' ? t('onlineBooking.automatic') : t('onlineBooking.manual')}
                       </span>
                     </div>
                     
@@ -283,7 +285,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
                     )}
                     
                     <div className="mt-2 text-xs text-gray-500">
-                      Δημιουργήθηκε: {new Date(visit.created_at).toLocaleString('el-GR')}
+                      {t('onlineBooking.createdAt')} {new Date(visit.created_at).toLocaleString('el-GR')}
                     </div>
                   </div>
                 ))}
@@ -291,7 +293,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>Δεν υπάρχουν επισκέψεις</p>
+                <p>{t('onlineBooking.noVisits')}</p>
               </div>
             )}
           </CardContent>
@@ -304,12 +306,12 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Users className="h-5 w-5" />
-              <span>Πακέτα Επισκέψεων</span>
+              <span>{t('onlineBooking.visitPackages')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center py-4 text-gray-500">
-              <p>Σύντομα θα εμφανίζονται εδώ τα πακέτα επισκέψεων</p>
+              <p>{t('onlineBooking.comingSoon')}</p>
             </div>
           </CardContent>
         </Card>
