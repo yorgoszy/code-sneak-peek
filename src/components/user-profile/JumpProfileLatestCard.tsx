@@ -7,6 +7,43 @@ interface JumpProfileLatestCardProps {
   userId: string;
 }
 
+// Extract a numeric metric from a jump session for a specific type
+const extractMetric = (
+  session: any,
+  type: 'nonCmj' | 'cmj' | 'depth' | 'broad' | 'triple'
+): number | null => {
+  const d = session?.jump_test_data?.[0];
+  if (d) {
+    switch (type) {
+      case 'nonCmj':
+        return typeof d.non_counter_movement_jump === 'number' ? d.non_counter_movement_jump : null;
+      case 'cmj':
+        return typeof d.counter_movement_jump === 'number' ? d.counter_movement_jump : null;
+      case 'depth':
+        return typeof d.depth_jump === 'number' ? d.depth_jump : null;
+      case 'broad':
+        return typeof d.broad_jump === 'number' ? d.broad_jump : null;
+      case 'triple': {
+        const L = typeof d.triple_jump_left === 'number' ? d.triple_jump_left : 0;
+        const R = typeof d.triple_jump_right === 'number' ? d.triple_jump_right : 0;
+        return (L || R) ? (L + R) / 2 : null;
+      }
+    }
+  }
+  // Fallback from notes (e.g., "47cm" or Triple: "L: 560cm R: 660cm")
+  const notes: string = session?.notes || '';
+  if (type === 'triple') {
+    const lMatch = notes.match(/L:\s*(\d+(?:\.\d+)?)/i);
+    const rMatch = notes.match(/R:\s*(\d+(?:\.\d+)?)/i);
+    const L = lMatch ? parseFloat(lMatch[1]) : 0;
+    const R = rMatch ? parseFloat(rMatch[1]) : 0;
+    return (L || R) ? (L + R) / 2 : null;
+  } else {
+    const cmMatch = notes.match(/(\d+(?:\.\d+)?)\s*cm/i) || notes.match(/(\d+(?:\.\d+)?)/);
+    return cmMatch ? parseFloat(cmMatch[1]) : null;
+  }
+};
+
 export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ userId }) => {
   const [latestSessions, setLatestSessions] = useState<{
     nonCmj: JumpSessionCardSession | null;
@@ -66,40 +103,7 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
       const allSessions = data || [];
       
-      // Βοηθητικές συναρτήσεις για εξαγωγή τιμών και ποσοστού
-      const extractValue = (session: any, type: 'nonCmj' | 'cmj' | 'depth' | 'broad' | 'triple'): number | null => {
-        const d = session?.jump_test_data?.[0];
-        if (d) {
-          switch (type) {
-            case 'nonCmj':
-              return typeof d.non_counter_movement_jump === 'number' ? d.non_counter_movement_jump : null;
-            case 'cmj':
-              return typeof d.counter_movement_jump === 'number' ? d.counter_movement_jump : null;
-            case 'depth':
-              return typeof d.depth_jump === 'number' ? d.depth_jump : null;
-            case 'broad':
-              return typeof d.broad_jump === 'number' ? d.broad_jump : null;
-            case 'triple': {
-              const L = typeof d.triple_jump_left === 'number' ? d.triple_jump_left : 0;
-              const R = typeof d.triple_jump_right === 'number' ? d.triple_jump_right : 0;
-              return (L || R) ? (L + R) / 2 : null;
-            }
-          }
-        }
-        // Fallback από τα notes (π.χ. "47cm" ή Triple: "L: 560cm R: 660cm")
-        const notes: string = session?.notes || '';
-        if (type === 'triple') {
-          const lMatch = notes.match(/L:\s*(\d+(?:\.\d+)?)/i);
-          const rMatch = notes.match(/R:\s*(\d+(?:\.\d+)?)/i);
-          const L = lMatch ? parseFloat(lMatch[1]) : 0;
-          const R = rMatch ? parseFloat(rMatch[1]) : 0;
-          return (L || R) ? (L + R) / 2 : null;
-        } else {
-          const cmMatch = notes.match(/(\d+(?:\.\d+)?)\s*cm/i) || notes.match(/(\d+(?:\.\d+)?)/);
-          return cmMatch ? parseFloat(cmMatch[1]) : null;
-        }
-      };
-
+      // Υπολογισμός ποσοστού αλλαγής (χρησιμοποιούμε extractMetric για τις τιμές)
       const computeChange = (values: number[]): number | null => {
         if (!values || values.length < 2) return null;
         const current = values[0];
@@ -109,12 +113,13 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
         return Number.isFinite(change) ? change : null;
       };
 
-      // Χωρίζω τα sessions ανά τύπο
-      const nonCmjSessions = allSessions.filter(s => s.notes?.includes('Non-CMJ Test'));
-      const cmjSessions = allSessions.filter(s => s.notes?.includes('CMJ Test'));
-      const depthJumpSessions = allSessions.filter(s => s.notes?.includes('Depth Jump Test'));
-      const broadJumpSessions = allSessions.filter(s => s.notes?.includes('Broad Jump Test'));
-      const tripleJumpSessions = allSessions.filter(s => s.notes?.includes('Triple Jump Test'));
+
+      // Χωρίζω τα sessions ανά τύπο (ίδια λογική με το JumpHistoryTab)
+      const nonCmjSessions = allSessions.filter(s => s.notes?.startsWith('Non-CMJ Test'));
+      const cmjSessions = allSessions.filter(s => s.notes?.startsWith('CMJ Test') && !s.notes?.startsWith('Non-CMJ'));
+      const depthJumpSessions = allSessions.filter(s => s.notes?.startsWith('Depth Jump Test'));
+      const broadJumpSessions = allSessions.filter(s => s.notes?.startsWith('Broad Jump Test'));
+      const tripleJumpSessions = allSessions.filter(s => s.notes?.startsWith('Triple Jump Test'));
 
       // Βρίσκω την τελευταία και προηγούμενη καταγραφή για κάθε τύπο
       const latestNonCmj = nonCmjSessions[0] || null;
@@ -147,19 +152,19 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
 
       // Υπολογισμός ποσοστών από τις 2 τελευταίες έγκυρες μετρήσεις (data ή notes)
       const nonValues = nonCmjSessions
-        .map((s: any) => extractValue(s, 'nonCmj'))
+        .map((s: any) => extractMetric(s, 'nonCmj'))
         .filter((v: number | null): v is number => typeof v === 'number');
       const cmjValues = cmjSessions
-        .map((s: any) => extractValue(s, 'cmj'))
+        .map((s: any) => extractMetric(s, 'cmj'))
         .filter((v: number | null): v is number => typeof v === 'number');
       const depthValues = depthJumpSessions
-        .map((s: any) => extractValue(s, 'depth'))
+        .map((s: any) => extractMetric(s, 'depth'))
         .filter((v: number | null): v is number => typeof v === 'number');
       const broadValues = broadJumpSessions
-        .map((s: any) => extractValue(s, 'broad'))
+        .map((s: any) => extractMetric(s, 'broad'))
         .filter((v: number | null): v is number => typeof v === 'number');
       const tripleValues = tripleJumpSessions
-        .map((s: any) => extractValue(s, 'triple'))
+        .map((s: any) => extractMetric(s, 'triple'))
         .filter((v: number | null): v is number => typeof v === 'number');
 
       const nonCmjChange = computeChange(nonValues);
@@ -185,7 +190,9 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
   const jumpCards = [];
 
   if (latestSessions.nonCmj) {
-    const history = [previousSessions.nonCmj].filter(Boolean) as JumpSessionCardSession[];
+    const history = previousSessions.nonCmj && extractMetric(previousSessions.nonCmj, 'nonCmj') !== null 
+      ? [previousSessions.nonCmj] as JumpSessionCardSession[] 
+      : [];
     jumpCards.push(
       <JumpSessionCard 
         key={latestSessions.nonCmj.id}
@@ -197,7 +204,9 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
   }
 
   if (latestSessions.cmj) {
-    const history = [previousSessions.cmj].filter(Boolean) as JumpSessionCardSession[];
+    const history = previousSessions.cmj && extractMetric(previousSessions.cmj, 'cmj') !== null 
+      ? [previousSessions.cmj] as JumpSessionCardSession[] 
+      : [];
     jumpCards.push(
       <JumpSessionCard 
         key={latestSessions.cmj.id}
@@ -209,7 +218,9 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
   }
 
   if (latestSessions.depthJump) {
-    const history = [previousSessions.depthJump].filter(Boolean) as JumpSessionCardSession[];
+    const history = previousSessions.depthJump && extractMetric(previousSessions.depthJump, 'depth') !== null 
+      ? [previousSessions.depthJump] as JumpSessionCardSession[] 
+      : [];
     jumpCards.push(
       <JumpSessionCard 
         key={latestSessions.depthJump.id}
@@ -221,7 +232,9 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
   }
 
   if (latestSessions.broadJump) {
-    const history = [previousSessions.broadJump].filter(Boolean) as JumpSessionCardSession[];
+    const history = previousSessions.broadJump && extractMetric(previousSessions.broadJump, 'broad') !== null 
+      ? [previousSessions.broadJump] as JumpSessionCardSession[] 
+      : [];
     jumpCards.push(
       <JumpSessionCard 
         key={latestSessions.broadJump.id}
@@ -233,7 +246,9 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
   }
 
   if (latestSessions.tripleJump) {
-    const history = [previousSessions.tripleJump].filter(Boolean) as JumpSessionCardSession[];
+    const history = previousSessions.tripleJump && extractMetric(previousSessions.tripleJump, 'triple') !== null 
+      ? [previousSessions.tripleJump] as JumpSessionCardSession[] 
+      : [];
     jumpCards.push(
       <JumpSessionCard 
         key={latestSessions.tripleJump.id}
