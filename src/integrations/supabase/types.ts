@@ -4092,50 +4092,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_delete_athlete: {
-        Args: { athlete_id: string }
-        Returns: undefined
-      }
+      admin_delete_athlete: { Args: { athlete_id: string }; Returns: undefined }
       admin_delete_athlete_memberships: {
         Args: { athlete_id: string }
         Returns: undefined
       }
-      can_cancel_booking: {
-        Args: { booking_id: string }
-        Returns: boolean
-      }
+      can_cancel_booking: { Args: { booking_id: string }; Returns: boolean }
       check_and_update_expired_subscriptions: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: undefined
       }
-      cleanup_expired_ai_chat_files: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_expired_waiting_list: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      create_exercise_tables: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      exec_sql: {
-        Args: { query: string }
-        Returns: Json
-      }
-      force_delete_athlete: {
-        Args: { athlete_id: string }
-        Returns: undefined
-      }
-      generate_coupon_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      cleanup_expired_ai_chat_files: { Args: never; Returns: undefined }
+      cleanup_expired_waiting_list: { Args: never; Returns: undefined }
+      create_exercise_tables: { Args: never; Returns: undefined }
+      exec_sql: { Args: { query: string }; Returns: Json }
+      force_delete_athlete: { Args: { athlete_id: string }; Returns: undefined }
+      generate_coupon_code: { Args: never; Returns: string }
+      get_current_user_role: { Args: never; Returns: string }
       get_latest_1rm: {
         Args: { athlete_id: string; exercise_id: string }
         Returns: number
@@ -4152,10 +4125,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
       }
-      has_active_subscription: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
+      has_active_subscription: { Args: { user_uuid: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]
@@ -4163,67 +4133,70 @@ export type Database = {
         }
         Returns: boolean
       }
-      join_waiting_list: {
-        Args:
-          | {
+      join_waiting_list:
+        | {
+            Args: {
+              p_booking_date: string
+              p_booking_time: string
+              p_section_id: string
+              p_user_id: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
               p_booking_date: string
               p_booking_time: string
               p_booking_type?: string
               p_section_id: string
               p_user_id: string
             }
-          | {
+            Returns: string
+          }
+      leave_waiting_list:
+        | {
+            Args: {
               p_booking_date: string
               p_booking_time: string
               p_section_id: string
               p_user_id: string
             }
-        Returns: string
-      }
-      leave_waiting_list: {
-        Args:
-          | {
+            Returns: boolean
+          }
+        | {
+            Args: {
               p_booking_date: string
               p_booking_time: string
               p_booking_type?: string
               p_section_id: string
               p_user_id: string
             }
-          | {
-              p_booking_date: string
-              p_booking_time: string
-              p_section_id: string
-              p_user_id: string
-            }
-        Returns: boolean
-      }
+            Returns: boolean
+          }
       mark_booking_completed: {
         Args: { booking_id: string }
         Returns: undefined
       }
-      mark_booking_missed: {
-        Args: { booking_id: string }
-        Returns: undefined
-      }
-      mark_past_bookings_as_missed: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      notify_next_in_waiting_list: {
-        Args:
-          | {
+      mark_booking_missed: { Args: { booking_id: string }; Returns: undefined }
+      mark_past_bookings_as_missed: { Args: never; Returns: number }
+      notify_next_in_waiting_list:
+        | {
+            Args: {
+              p_booking_date: string
+              p_booking_time: string
+              p_section_id: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
               p_booking_date: string
               p_booking_time: string
               p_booking_type?: string
               p_section_id: string
             }
-          | {
-              p_booking_date: string
-              p_booking_time: string
-              p_section_id: string
-            }
-        Returns: string
-      }
+            Returns: string
+          }
       pause_subscription: {
         Args: { subscription_id: string }
         Returns: undefined
