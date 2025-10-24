@@ -126,7 +126,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           });
           
           const timeMinutes = Math.round(blockTime / 60);
-          const typeLabel = TRAINING_TYPE_LABELS[block.training_type] || block.training_type;
+          const typeLabel = block.training_type;
           
           console.log(`✅ Block "${block.name}": ${block.training_type} -> ${typeLabel}, ${timeMinutes}min`);
           
@@ -361,7 +361,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                           fill="#8884d8"
                           dataKey="value"
                         >
-...
+                          {dayChartData.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                            />
+                          ))}
                         </Pie>
                         <Tooltip 
                           formatter={(value: any) => formatMinutes(value)}
@@ -393,7 +398,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 fill="#8884d8"
                 dataKey="value"
               >
-...
+                {chartData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                  />
+                ))}
               </Pie>
               <Tooltip 
                 formatter={(value: any) => formatMinutes(value)}
