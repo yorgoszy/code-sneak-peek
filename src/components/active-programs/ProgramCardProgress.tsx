@@ -23,14 +23,20 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
 
     const dayInitials = ['Κ', 'Δ', 'Τ', 'Τ', 'Π', 'Π', 'Σ']; // Κυριακή, Δευτέρα, Τρίτη, Τετάρτη, Πέμπτη, Παρασκευή, Σάββατο
     
-    const uniqueDays = new Set();
-    assignment.training_dates.forEach(dateStr => {
-      const date = new Date(dateStr);
+    // Βρίσκουμε πόσες ημέρες έχει μια εβδομάδα του προγράμματος
+    const daysPerWeek = assignment.programs?.program_weeks?.[0]?.program_days?.length || assignment.training_dates.length;
+    
+    // Παίρνουμε τις πρώτες ημέρες του προγράμματος (ένας κύκλος)
+    const firstCycleDates = assignment.training_dates.slice(0, daysPerWeek);
+    
+    // Δημιουργούμε τα initials με τη σειρά του προγράμματος
+    const dayInitialsArray = firstCycleDates.map(dateStr => {
+      const date = new Date(dateStr + 'T00:00:00'); // Προσθέτουμε time για να αποφύγουμε timezone issues
       const dayIndex = date.getDay();
-      uniqueDays.add(dayInitials[dayIndex]);
+      return dayInitials[dayIndex];
     });
 
-    return Array.from(uniqueDays).join('-');
+    return dayInitialsArray.join('-');
   };
 
   const progressPercentage = workoutStats.total > 0 ? Math.round((workoutStats.completed / workoutStats.total) * 100) : 0;
