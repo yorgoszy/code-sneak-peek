@@ -20,11 +20,23 @@ const Auth = () => {
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
 
-  // Redirect to dashboard if already authenticated
+  // Redirect to dashboard if already authenticated (but not during password recovery)
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      navigate("/dashboard");
-    }
+    const checkAndRedirect = async () => {
+      if (!loading && isAuthenticated) {
+        // Check if this is a password recovery session
+        const { data: { session } } = await supabase.auth.getSession();
+        const isRecovery = session?.user?.aud === 'authenticated' && 
+                          window.location.hash.includes('type=recovery');
+        
+        // Don't redirect if it's a recovery session
+        if (!isRecovery) {
+          navigate("/dashboard");
+        }
+      }
+    };
+    
+    checkAndRedirect();
   }, [isAuthenticated, loading, navigate]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
