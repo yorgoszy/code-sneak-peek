@@ -14,7 +14,7 @@ interface WeekStats {
   actualMinutes: number;
 }
 
-export const useWeekStats = (userId: string) => {
+export const useWeekStats = (userId: string, selectedWeekDate?: Date) => {
   const [stats, setStats] = useState<WeekStats>({
     scheduledHours: 0,
     actualHours: 0,
@@ -30,25 +30,32 @@ export const useWeekStats = (userId: string) => {
     if (userId) {
       fetchWeekStats();
     }
-  }, [userId]);
+  }, [userId, selectedWeekDate]);
 
   const fetchWeekStats = async () => {
     try {
       setLoading(true);
       
-      // Υπολογισμός ημερομηνιών τρέχουσας εβδομάδας (ξεκινάει από Δευτέρα)
-      const now = new Date();
-      const startOfWeek = new Date(now);
-      const dayOfWeek = now.getDay();
-      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Για Κυριακή πάμε στην προηγούμενη Δευτέρα
-      startOfWeek.setDate(now.getDate() - daysToSubtract);
-      startOfWeek.setHours(0, 0, 0, 0);
+      // Υπολογισμός ημερομηνιών εβδομάδας (ξεκινάει από Δευτέρα)
+      let startOfWeekDate: Date;
+      if (selectedWeekDate) {
+        // Χρήση της επιλεγμένης εβδομάδας
+        startOfWeekDate = new Date(selectedWeekDate);
+      } else {
+        // Τρέχουσα εβδομάδα
+        const now = new Date();
+        startOfWeekDate = new Date(now);
+        const dayOfWeek = now.getDay();
+        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        startOfWeekDate.setDate(now.getDate() - daysToSubtract);
+      }
+      startOfWeekDate.setHours(0, 0, 0, 0);
       
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6); // Κυριακή
-      endOfWeek.setHours(23, 59, 59, 999);
+      const endOfWeekDate = new Date(startOfWeekDate);
+      endOfWeekDate.setDate(startOfWeekDate.getDate() + 6); // Κυριακή
+      endOfWeekDate.setHours(23, 59, 59, 999);
 
-      console.log('🔍 Week Stats: Calculating for week', startOfWeek.toDateString(), 'to', endOfWeek.toDateString());
+      console.log('🔍 Week Stats: Calculating for week', startOfWeekDate.toDateString(), 'to', endOfWeekDate.toDateString());
 
       // Φέτε τα προγράμματα του χρήστη - χρησιμοποιούμε την ίδια λογική με το UserProfileDailyProgram
       const { data: userPrograms, error: programsError } = await supabase
@@ -182,8 +189,8 @@ export const useWeekStats = (userId: string) => {
       // Γενάρουμε όλες τις ημέρες της εβδομάδας
       const weekDays = [];
       for (let i = 0; i < 7; i++) {
-        const day = new Date(startOfWeek);
-        day.setDate(startOfWeek.getDate() + i);
+        const day = new Date(startOfWeekDate);
+        day.setDate(startOfWeekDate.getDate() + i);
         weekDays.push(day);
       }
 

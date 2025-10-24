@@ -1,19 +1,22 @@
 
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WorkoutStatsCards } from "./WorkoutStatsCards";
 import { DayWeekStatsCards } from "./DayWeekStatsCards";
 import { useWorkoutStats } from "./hooks/useWorkoutStats";
 import { useDayWeekStats } from "./hooks/useDayWeekStats";
 import { useWeekStats } from "./hooks/useWeekStats";
+import { WeekSelector } from "./WeekSelector";
 
 interface WorkoutStatsTabsSectionProps {
   userId: string;
 }
 
 export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps) => {
+  const [selectedWeekDate, setSelectedWeekDate] = useState<Date>(new Date());
   const { stats: workoutStats, loading: workoutStatsLoading } = useWorkoutStats(userId);
   const { stats: dayWeekStats, loading: dayWeekStatsLoading } = useDayWeekStats(userId);
-  const { stats: weekStats, loading: weekStatsLoading } = useWeekStats(userId);
+  const { stats: weekStats, loading: weekStatsLoading } = useWeekStats(userId, selectedWeekDate);
 
   return (
     <div className="space-y-4">
@@ -37,6 +40,11 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
         </TabsContent>
         
         <TabsContent value="week" className="space-y-4">
+          <WeekSelector 
+            selectedWeekDate={selectedWeekDate}
+            onWeekSelect={setSelectedWeekDate}
+          />
+          
           {weekStatsLoading ? (
             <div className="text-center py-8">
               <p className="text-gray-500">Φόρτωση στατιστικών εβδομάδας...</p>
