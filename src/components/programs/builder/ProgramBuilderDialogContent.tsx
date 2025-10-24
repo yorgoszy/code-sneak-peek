@@ -68,6 +68,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onRemoveBlock,
   onDuplicateBlock,
   onUpdateBlockName,
+  onUpdateBlockTrainingType,
   onAddExercise,
   onRemoveExercise,
   onUpdateExercise,
