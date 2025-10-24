@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { ProgramExercise } from '../types';
 
@@ -18,10 +18,22 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   onKgChange,
   onPercentageChange
 }) => {
+  const [isTimeMode, setIsTimeMode] = useState(false);
+
+  const handleLabelClick = () => {
+    setIsTimeMode(!isTimeMode);
+  };
+
   return (
     <div className="flex p-2 gap-2 w-full" style={{ minHeight: '28px' }}>
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Sets</label>
+        <label 
+          className="block mb-1 text-center w-full cursor-pointer hover:text-[#00ffba]" 
+          style={{ fontSize: '10px', color: '#666' }}
+          onClick={handleLabelClick}
+        >
+          {isTimeMode ? 'Time' : 'Sets'}
+        </label>
         <Input
           type="text"
           inputMode="numeric"
