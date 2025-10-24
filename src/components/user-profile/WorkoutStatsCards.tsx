@@ -61,7 +61,7 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
         </h4>
         <div className="flex-1 flex flex-col justify-end">
           <div className="text-sm md:text-base font-semibold text-green-600">
-            {Math.floor(stats.currentMonth.totalTrainingMinutes / 60)}:{String(stats.currentMonth.totalTrainingMinutes % 60).padStart(2, '0')}
+            {Math.floor(stats.currentMonth.totalTrainingMinutes / 60)}:{String(Math.ceil(stats.currentMonth.totalTrainingMinutes % 60)).padStart(2, '0')}
           </div>
           <div className={`text-[10px] ${getTrendColor(stats.improvements.hoursImprovement)}`}>
             {stats.improvements.hoursImprovement > 0 ? '+' : ''}{stats.improvements.hoursImprovement}h μήνα

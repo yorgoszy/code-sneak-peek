@@ -67,11 +67,11 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold">
                     <span className="text-green-600">
-                      {Math.floor(weekStatsForCards.actualMinutes / 60)}:{String(weekStatsForCards.actualMinutes % 60).padStart(2, '0')}
+                      {Math.floor(weekStatsForCards.actualMinutes / 60)}:{String(Math.ceil(weekStatsForCards.actualMinutes % 60)).padStart(2, '0')}
                     </span>
                     <span className="text-gray-400">/</span>
                     <span className="text-blue-600">
-                      {Math.floor(weekStatsForCards.scheduledMinutes / 60)}:{String(weekStatsForCards.scheduledMinutes % 60).padStart(2, '0')}
+                      {Math.floor(weekStatsForCards.scheduledMinutes / 60)}:{String(Math.ceil(weekStatsForCards.scheduledMinutes % 60)).padStart(2, '0')}
                     </span>
                   </div>
                   <p className="text-[10px] text-gray-500">
@@ -121,7 +121,7 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
                 <h4 className="text-xs font-medium text-gray-700 mb-1">Ώρες</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-green-600">
-                    {Math.floor(dayWeekStats.currentDay.minutes / 60)}:{String(dayWeekStats.currentDay.minutes % 60).padStart(2, '0')}
+                    {Math.floor(dayWeekStats.currentDay.minutes / 60)}:{String(Math.ceil(dayWeekStats.currentDay.minutes % 60)).padStart(2, '0')}
                   </div>
                   <p className="text-xs text-gray-500">
                     Σήμερα
