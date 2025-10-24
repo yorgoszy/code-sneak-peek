@@ -211,6 +211,13 @@ export const UserProfileSidebar = forwardRef<
       visible: true
     },
     { 
+      icon: Calendar, 
+      label: t('sidebar.calendar'), 
+      key: "calendar",
+      badge: null,
+      visible: true
+    },
+    { 
       icon: TrendingUp, 
       label: t('sidebar.progress'), 
       key: "progress",
