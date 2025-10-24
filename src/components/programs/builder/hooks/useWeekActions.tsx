@@ -63,6 +63,7 @@ export const useWeekActions = (
               id: generateId(),
               name: block.name,
               block_order: block.block_order,
+              training_type: block.training_type,
               program_exercises: sortedExercises.map((exercise) => {
                 const newExercise = {
                   id: generateId(),

@@ -21,6 +21,7 @@ export interface Block {
   id: string;
   name: string;
   block_order: number;
+  training_type?: 'str' | 'str/spd' | 'pwr' | 'spd/str' | 'spd' | 'str/end' | 'pwr/end' | 'spd/end' | 'end' | 'hpr';
   program_exercises: ProgramExercise[];
 }
 
@@ -112,6 +113,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
             id: block.id,
             name: block.name,
             block_order: block.block_order,
+            training_type: block.training_type,
             program_exercises: block.program_exercises?.map((pe: any) => {
               const exercise = exercises.find(ex => ex.id === pe.exercise_id);
               return {
