@@ -33,6 +33,7 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   'pwr/end': 'pwr/end',
   'spd/end': 'spd/end',
   end: 'end',
+  hpr: 'hpr',
 };
 
 export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
