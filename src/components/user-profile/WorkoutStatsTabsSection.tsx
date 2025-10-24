@@ -14,17 +14,25 @@ interface CustomMonthStats {
   scheduledWorkouts?: number;
 }
 
+interface CustomWeekStats {
+  scheduledMinutes: number;
+  actualMinutes: number;
+  missedWorkouts: number;
+}
+
 interface WorkoutStatsTabsSectionProps {
   userId: string;
   onTabChange?: (tab: 'month' | 'week' | 'day') => void;
   customMonthStats?: CustomMonthStats;
+  customWeekStats?: CustomWeekStats;
 }
 
-export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats }: WorkoutStatsTabsSectionProps) => {
+export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats, customWeekStats }: WorkoutStatsTabsSectionProps) => {
   const { stats: workoutStats, loading: workoutStatsLoading } = useWorkoutStats(userId);
   const { stats: dayWeekStats, loading: dayWeekStatsLoading } = useDayWeekStats(userId);
   const { stats: weekStats, loading: weekStatsLoading } = useWeekStats(userId);
   const monthStatsForCards = customMonthStats ? { currentMonth: customMonthStats, improvements: { workoutsImprovement: 0, hoursImprovement: 0, volumeImprovement: 0 } } : workoutStats;
+  const weekStatsForCards = customWeekStats || weekStats;
 
   return (
     <div className="space-y-4">
@@ -48,7 +56,7 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats 
         </TabsContent>
         
         <TabsContent value="week" className="space-y-4">
-          {weekStatsLoading ? (
+          {(weekStatsLoading && !customWeekStats) ? (
             <div className="text-center py-8">
               <p className="text-gray-500">Φόρτωση στατιστικών εβδομάδας...</p>
             </div>
@@ -58,7 +66,7 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats 
                 <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">Πραγμ. Ώρες</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-green-600">
-                    {Math.floor(weekStats.actualMinutes / 60)}:{String(weekStats.actualMinutes % 60).padStart(2, '0')}/{Math.floor(weekStats.scheduledMinutes / 60)}:{String(weekStats.scheduledMinutes % 60).padStart(2, '0')}
+                    {Math.floor(weekStatsForCards.actualMinutes / 60)}:{String(weekStatsForCards.actualMinutes % 60).padStart(2, '0')}/{Math.floor(weekStatsForCards.scheduledMinutes / 60)}:{String(weekStatsForCards.scheduledMinutes % 60).padStart(2, '0')}
                   </div>
                   <p className="text-[10px] text-gray-500">
                     Ολοκληρώθηκαν
@@ -70,7 +78,7 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats 
                 <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">Χαμένες</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-orange-600">
-                    {weekStats.missedWorkouts}
+                    {weekStatsForCards.missedWorkouts}
                   </div>
                   <p className="text-[10px] text-gray-500">
                     Εβδομάδα

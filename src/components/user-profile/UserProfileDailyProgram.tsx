@@ -127,6 +127,51 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     return totalSeconds / 60; // λεπτά
   };
 
+  const weekStats = React.useMemo(() => {
+    const now = new Date();
+    const startOfWeekDate = new Date(now);
+    const dayOfWeek = now.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startOfWeekDate.setDate(now.getDate() - daysToSubtract);
+    startOfWeekDate.setHours(0, 0, 0, 0);
+
+    let scheduledMinutes = 0, actualMinutes = 0, missed = 0;
+
+    const weekDays = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startOfWeekDate);
+      day.setDate(startOfWeekDate.getDate() + i);
+      weekDays.push(day);
+    }
+
+    for (const day of weekDays) {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      for (const program of userPrograms) {
+        if (!program.training_dates) continue;
+        const dateIndex = program.training_dates.findIndex(d => d === dateStr);
+        if (dateIndex === -1) continue;
+
+        const workoutMinutes = calculateWorkoutDuration(program, dateIndex);
+        scheduledMinutes += workoutMinutes;
+
+        const completion = workoutCompletions.find(c => c.assignment_id === program.id && c.scheduled_date === dateStr);
+        if (completion?.status === 'completed') {
+          actualMinutes += workoutMinutes;
+        } else {
+          const today = new Date();
+          const isPast = day < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          if (isPast || completion?.status === 'missed') missed++;
+        }
+      }
+    }
+
+    return {
+      scheduledMinutes,
+      actualMinutes,
+      missedWorkouts: missed,
+    };
+  }, [userPrograms, workoutCompletions]);
+
   const monthStats = React.useMemo(() => {
     const current = new Date();
     const monthStr = format(current, 'yyyy-MM');
@@ -306,7 +351,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   return (
     <div className="space-y-6">
       {/* Workout Stats Section */}
-      <WorkoutStatsTabsSection userId={userProfile?.id} onTabChange={setActiveStatsTab} customMonthStats={monthStats} />
+      <WorkoutStatsTabsSection userId={userProfile?.id} onTabChange={setActiveStatsTab} customMonthStats={monthStats} customWeekStats={weekStats} />
 
       {/* Training Types Pie Chart */}
       <TrainingTypesPieChart userId={userProfile?.id} hideTimeTabs={true} activeTab={activeStatsTab} />
