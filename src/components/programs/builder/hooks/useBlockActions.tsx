@@ -130,7 +130,7 @@ export const useBlockActions = (
               return {
                 ...day,
                 program_blocks: (day.program_blocks || []).map(block =>
-                  block.id === blockId ? { ...block, training_type: trainingType as any } : block
+                  block.id === blockId ? { ...block, training_type: trainingType as any, name: trainingType } : block
                 )
               };
             }
