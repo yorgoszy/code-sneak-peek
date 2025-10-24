@@ -1264,6 +1264,45 @@ export type Database = {
           },
         ]
       }
+      exercise_stretches: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          order_index: number | null
+          stretch_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          order_index?: number | null
+          stretch_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          order_index?: number | null
+          stretch_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_stretches_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_stretches_stretch_id_fkey"
+            columns: ["stretch_id"]
+            isOneToOne: false
+            referencedRelation: "stretches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_to_category: {
         Row: {
           category_id: string
@@ -3142,6 +3181,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stretches: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          name: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          name: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          name?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
       }
       subscription_types: {
         Row: {
