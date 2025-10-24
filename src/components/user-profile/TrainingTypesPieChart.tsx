@@ -433,8 +433,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             </p>
           </div>
         ) : timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month' ? (
-          <div className="overflow-x-auto scrollbar-green">
-            <div className="flex gap-2 min-w-min">
+          <div className="grid gap-0 md:gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(timeFilter === 'day' ? daysList.length : timeFilter === 'week' ? weeksList.length : monthsList.length, 3)}, 1fr)` }}>
             {(timeFilter === 'day' ? daysList : timeFilter === 'week' ? weeksList : monthsList).map((period) => {
               const periodData = data.find(item => item.period === period);
               if (!periodData) return null;
@@ -455,7 +454,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               const periodTotalMinutes = periodChartData.reduce((sum, item) => sum + item.value, 0);
 
               return (
-                <div key={period} className="border border-gray-200 rounded-none p-1 md:p-2 flex-shrink-0 w-[calc(33.333%-0.333rem)] min-w-[200px]">
+                <div key={period} className="border border-gray-200 rounded-none p-1 md:p-2">
                   <div className="mb-2">
                     <h4 className="text-[10px] font-semibold text-gray-900">{period}</h4>
                     <div className="text-[10px] text-gray-600">
@@ -577,7 +576,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 </div>
               );
             })}
-            </div>
           </div>
         ) : null}
       </CardContent>

@@ -151,23 +151,4 @@ html, body {
   .animate-click-me {
     animation: click-me 1.5s ease-in-out infinite;
   }
-
-  /* Green scrollbar */
-  .scrollbar-green::-webkit-scrollbar {
-    height: 8px;
-  }
-
-  .scrollbar-green::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 0px;
-  }
-
-  .scrollbar-green::-webkit-scrollbar-thumb {
-    background: #00ffba;
-    border-radius: 0px;
-  }
-
-  .scrollbar-green::-webkit-scrollbar-thumb:hover {
-    background: #00d9a0;
-  }
 }
