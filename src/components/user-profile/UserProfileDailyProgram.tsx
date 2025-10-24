@@ -202,7 +202,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
       <WorkoutStatsTabsSection userId={userProfile?.id} />
 
       {/* Training Types Pie Chart */}
-      <TrainingTypesPieChart userId={userProfile?.id} />
+      <TrainingTypesPieChart userId={userProfile?.id} hideTimeTabs={true} />
 
       <Card className="rounded-none">
         <CardHeader>

@@ -12,6 +12,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 
 interface TrainingTypesPieChartProps {
   userId: string;
+  hideTimeTabs?: boolean;
 }
 
 const COLORS = {
@@ -39,7 +40,7 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   end: 'Αντοχή',
 };
 
-export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId }) => {
+export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId, hideTimeTabs = false }) => {
   const [data, setData] = useState<any[]>([]);
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
@@ -302,32 +303,34 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           <div className="text-xs text-gray-600">
             Σύνολο: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setTimeFilter('day')}
-              className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
-                timeFilter === 'day' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Ημέρα
-            </button>
-            <button
-              onClick={() => setTimeFilter('week')}
-              className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
-                timeFilter === 'week' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Εβδομάδα
-            </button>
-            <button
-              onClick={() => setTimeFilter('month')}
-              className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
-                timeFilter === 'month' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Μήνας
-            </button>
-          </div>
+          {!hideTimeTabs && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setTimeFilter('day')}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
+                  timeFilter === 'day' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Ημέρα
+              </button>
+              <button
+                onClick={() => setTimeFilter('week')}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
+                  timeFilter === 'week' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Εβδομάδα
+              </button>
+              <button
+                onClick={() => setTimeFilter('month')}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
+                  timeFilter === 'month' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Μήνας
+              </button>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent className="p-3 pt-0">
