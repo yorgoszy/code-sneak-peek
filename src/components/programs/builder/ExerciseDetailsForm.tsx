@@ -89,7 +89,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
             height: '22px', 
             padding: '0 4px'
           }}
-          placeholder=""
+          placeholder={repsMode === 'time' ? '00:00' : ''}
         />
       </div>
       
