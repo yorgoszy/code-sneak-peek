@@ -53,50 +53,38 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats 
               <p className="text-gray-500">Φόρτωση στατιστικών εβδομάδας...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2 md:gap-3">
-              <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
-                <h4 className="text-xs font-medium text-gray-700 mb-1">Προγρ. Ώρες</h4>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
+                <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">Προγρ. Ώρες</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-blue-600">
                     {Math.floor(weekStats.scheduledMinutes / 60)}:{String(weekStats.scheduledMinutes % 60).padStart(2, '0')}
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-[10px] text-gray-500">
                     Εβδομάδα
                   </p>
                 </div>
               </div>
               
-              <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
-                <h4 className="text-xs font-medium text-gray-700 mb-1">Πραγμ. Ώρες</h4>
+              <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
+                <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">Πραγμ. Ώρες</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-green-600">
-                    {Math.floor(weekStats.actualMinutes / 60)}:{String(weekStats.actualMinutes % 60).padStart(2, '0')}
+                    {Math.floor(weekStats.actualMinutes / 60)}:{String(weekStats.actualMinutes % 60).padStart(2, '0')}/{Math.floor(weekStats.scheduledMinutes / 60)}:{String(weekStats.scheduledMinutes % 60).padStart(2, '0')}
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-[10px] text-gray-500">
                     Ολοκληρώθηκαν
                   </p>
                 </div>
               </div>
               
-              <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
-                <h4 className="text-xs font-medium text-gray-700 mb-1">Προπονήσεις</h4>
-                <div className="flex-1 flex flex-col justify-end">
-                  <div className="text-sm md:text-base font-semibold text-purple-600">
-                    {weekStats.scheduledWorkouts}
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Προγραμματισμένες
-                  </p>
-                </div>
-              </div>
-              
-              <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
-                <h4 className="text-xs font-medium text-gray-700 mb-1">Χαμένες</h4>
+              <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
+                <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">Χαμένες</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-orange-600">
                     {weekStats.missedWorkouts}
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-[10px] text-gray-500">
                     Εβδομάδα
                   </p>
                 </div>
