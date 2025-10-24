@@ -14,8 +14,8 @@ interface TrainingTypesPieChartProps {
 }
 
 const COLORS = {
-  end: '#e9dbff',
-  'str/end': '#ff8484',
+  end: '#8045ed',
+  'str/end': '#334ac4',
   'pwr/end': '#ef3fed',
   'spd/end': '#ff8ad1',
   str: '#ff3131',
@@ -360,6 +360,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                           labelLine={false}
                           label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
                           outerRadius={40}
+                          innerRadius={25}
                           fill="#8884d8"
                           dataKey="value"
                         >
@@ -391,6 +392,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                           labelLine={false}
                           label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
                           outerRadius={50}
+                          innerRadius={30}
                           fill="#8884d8"
                           dataKey="value"
                         >
@@ -430,6 +432,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   labelLine={false}
                   label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
                   outerRadius={45}
+                  innerRadius={28}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -461,6 +464,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   labelLine={false}
                   label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
                   outerRadius={60}
+                  innerRadius={35}
                   fill="#8884d8"
                   dataKey="value"
                 >
