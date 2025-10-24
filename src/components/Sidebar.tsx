@@ -16,7 +16,8 @@ import {
   BookOpen,
   ShoppingCart,
   Video,
-  Tag
+  Tag,
+  Pilcrow
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -501,6 +502,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Dumbbell, 
       label: "Ασκήσεις", 
       path: "/dashboard/exercises",
+      badge: null
+    },
+    { 
+      icon: Pilcrow, 
+      label: "Διατάσεις", 
+      path: "/dashboard/stretches",
       badge: null
     },
     {
