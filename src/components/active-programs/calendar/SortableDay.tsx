@@ -12,6 +12,7 @@ interface SortableDayProps {
   isDayCompleted: boolean;
   onDoubleClick: (e: React.MouseEvent) => void;
   isEditing: boolean;
+  displayName?: string;
 }
 
 export const SortableDay: React.FC<SortableDayProps> = ({
@@ -20,7 +21,8 @@ export const SortableDay: React.FC<SortableDayProps> = ({
   week,
   isDayCompleted,
   onDoubleClick,
-  isEditing
+  isEditing,
+  displayName
 }) => {
   const {
     attributes,
@@ -61,7 +63,7 @@ export const SortableDay: React.FC<SortableDayProps> = ({
         <div className={`flex items-center gap-0.5 ${isEditing ? 'ml-3 text-xs' : ''} truncate`}>
           {isDayCompleted && <CheckCircle className="w-2 h-2 text-[#00ffba] flex-shrink-0" />}
           <span className="truncate text-xs">
-            {day.name || `Ημέρα ${day.day_number}`}
+            {displayName || day.name || `Ημέρα ${day.day_number}`}
           </span>
         </div>
       </TabsTrigger>

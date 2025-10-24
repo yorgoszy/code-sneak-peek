@@ -3,6 +3,7 @@ import React from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DayProgramDialog } from './DayProgramDialog';
 import { format } from "date-fns";
+import { el } from "date-fns/locale";
 import { EditableProgramDialogHeader } from './EditableProgramDialogHeader';
 import { EditableProgramWeekCard } from './EditableProgramWeekCard';
 import { useEditableProgramState } from './hooks/useEditableProgramState';
@@ -210,6 +211,14 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                     onRemoveExercise={handleRemoveExercise}
                     onUpdateExercise={handleUpdateExercise}
                     onReorderDays={handleReorderDays}
+                    getDayLabel={(w, d) => {
+                      const date = getDateForDay(w, d);
+                      try {
+                        return format(date, 'EEEE', { locale: el });
+                      } catch {
+                        return d.name || `Ημέρα ${d.day_number}`;
+                      }
+                    }}
                   />
                 ))}
               </div>

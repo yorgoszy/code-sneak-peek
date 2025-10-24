@@ -21,6 +21,7 @@ interface EditableProgramWeekCardProps {
   onRemoveExercise: (exerciseId: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onReorderDays?: (weekId: string, oldIndex: number, newIndex: number) => void;
+  getDayLabel?: (week: any, day: any) => string;
 }
 
 export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = ({
@@ -36,7 +37,8 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
   onRemoveBlock,
   onRemoveExercise,
   onUpdateExercise,
-  onReorderDays
+  onReorderDays,
+  getDayLabel
 }) => {
   const isCompleted = isWeekCompleted(week.week_number, week.program_days?.length || 0);
 
@@ -74,6 +76,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
                 <TabsList className="flex w-full rounded-none gap-0 h-6 p-0">
                   {week.program_days?.map((day: any, dayIndex: number) => {
                     const isDayCompleted = isWorkoutCompleted(week.week_number, day.day_number);
+                    const label = getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`);
                     
                     return (
                       <SortableDay
@@ -84,6 +87,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
                         isDayCompleted={isDayCompleted}
                         onDoubleClick={(e) => onDayDoubleClick(week, day, e)}
                         isEditing={isEditing}
+                        displayName={label}
                       />
                     );
                   })}
@@ -94,6 +98,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
             <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${week.program_days?.length || 1}, 1fr)` }}>
               {week.program_days?.map((day: any, dayIndex: number) => {
                 const isDayCompleted = isWorkoutCompleted(week.week_number, day.day_number);
+                const label = getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`);
                 
                 return (
                   <SortableDay
@@ -104,6 +109,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
                     isDayCompleted={isDayCompleted}
                     onDoubleClick={(e) => onDayDoubleClick(week, day, e)}
                     isEditing={false}
+                    displayName={label}
                   />
                 );
               })}
@@ -124,6 +130,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
               onRemoveBlock={onRemoveBlock}
               onRemoveExercise={onRemoveExercise}
               onUpdateExercise={onUpdateExercise}
+              displayName={getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`)}
             />
           ))}
         </Tabs>

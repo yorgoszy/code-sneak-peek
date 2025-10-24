@@ -20,6 +20,7 @@ interface EditableProgramDayTabProps {
   onRemoveBlock: (blockId: string) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
+  displayName?: string;
 }
 
 export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
@@ -33,7 +34,8 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
   onAddExercise,
   onRemoveBlock,
   onRemoveExercise,
-  onUpdateExercise
+  onUpdateExercise,
+  displayName
 }) => {
   const handleBlockDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -51,7 +53,7 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
           <div>
             <h4 className="text-sm font-semibold text-gray-900 flex items-center space-x-2">
               <Dumbbell className="h-4 w-4" />
-              <span>{day.name || `Ημέρα ${day.day_number}`}</span>
+              <span>{displayName || day.name || `Ημέρα ${day.day_number}`}</span>
               {isWorkoutCompleted(week.week_number, day.day_number) && (
                 <CheckCircle className="w-4 h-4 text-[#00ffba]" />
               )}
