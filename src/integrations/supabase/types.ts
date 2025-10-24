@@ -2443,6 +2443,7 @@ export type Database = {
           exercise_order: number
           id: string
           kg: string | null
+          kg_mode: string | null
           ms: string | null
           notes: string | null
           percentage_1rm: number | null
@@ -2461,6 +2462,7 @@ export type Database = {
           exercise_order: number
           id?: string
           kg?: string | null
+          kg_mode?: string | null
           ms?: string | null
           notes?: string | null
           percentage_1rm?: number | null
@@ -2479,6 +2481,7 @@ export type Database = {
           exercise_order?: number
           id?: string
           kg?: string | null
+          kg_mode?: string | null
           ms?: string | null
           notes?: string | null
           percentage_1rm?: number | null
