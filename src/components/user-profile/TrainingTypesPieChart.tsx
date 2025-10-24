@@ -266,13 +266,29 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           <div className="text-xs text-gray-600">
             Σύνολο: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
           </div>
-          <Tabs value={timeFilter} onValueChange={(v) => setTimeFilter(v as any)} className="w-auto">
-            <TabsList className="rounded-none h-6">
-              <TabsTrigger value="day" className="text-[10px] rounded-none px-2">Ημέρα</TabsTrigger>
-              <TabsTrigger value="week" className="text-[10px] rounded-none px-2">Εβδομάδα</TabsTrigger>
-              <TabsTrigger value="month" className="text-[10px] rounded-none px-2">Μήνας</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setTimeFilter('day')}
+              className={`w-2 h-2 rounded-full transition-all ${
+                timeFilter === 'day' ? 'bg-[#00ffba] ring-2 ring-[#00ffba] ring-offset-1' : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+              title="Ημέρα"
+            />
+            <button
+              onClick={() => setTimeFilter('week')}
+              className={`w-2 h-2 rounded-full transition-all ${
+                timeFilter === 'week' ? 'bg-[#00ffba] ring-2 ring-[#00ffba] ring-offset-1' : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+              title="Εβδομάδα"
+            />
+            <button
+              onClick={() => setTimeFilter('month')}
+              className={`w-2 h-2 rounded-full transition-all ${
+                timeFilter === 'month' ? 'bg-[#00ffba] ring-2 ring-[#00ffba] ring-offset-1' : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+              title="Μήνας"
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-3 pt-0">
