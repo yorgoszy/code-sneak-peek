@@ -30,17 +30,11 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
     // Παίρνουμε τις πρώτες ημέρες του προγράμματος (ένας κύκλος)
     const firstCycleDates = assignment.training_dates.slice(0, daysPerWeek);
     
-    // Δημιουργούμε τα initials με τη σειρά του προγράμματος και τα λεπτά
+    // Δημιουργούμε τα initials με τη σειρά του προγράμματος (χωρίς λεπτά)
     const dayLabels = firstCycleDates.map((dateStr, index) => {
       const date = new Date(dateStr + 'T00:00:00'); // Προσθέτουμε time για να αποφύγουμε timezone issues
       const dayIndex = date.getDay();
-      const initial = dayInitials[dayIndex];
-      
-      // Παίρνουμε τα λεπτά από το αντίστοιχο program_day
-      const programDay = programDays[index];
-      const minutes = programDay?.estimated_duration_minutes;
-      
-      return minutes ? `${initial} ${minutes}'` : initial;
+      return dayInitials[dayIndex];
     });
 
     return dayLabels.join(' - ');
