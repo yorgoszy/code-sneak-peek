@@ -79,9 +79,15 @@ export const ResultsManagement: React.FC = () => {
   }, []);
 
   const uploadImage = async (file: File): Promise<string> => {
-    const fileName = `${Date.now()}-${file.name}`;
+    // Sanitize filename - remove non-ASCII characters
+    const sanitizedName = file.name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\x00-\x7F]/g, '')
+      .replace(/[^a-zA-Z0-9.-]/g, '_');
+    const fileName = `${Date.now()}-${sanitizedName}`;
     const { data, error } = await supabase.storage
-      .from('articles') // χρησιμοποιούμε το ίδιο bucket
+      .from('articles')
       .upload(fileName, file);
 
     if (error) throw error;
