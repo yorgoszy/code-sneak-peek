@@ -91,31 +91,8 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
     return null;
   }
 
-  // Αν έχουμε μόνο ένα block, το εμφανίζουμε χωρίς tabs
-  if (blocks.length === 1) {
-    console.log('📄 Rendering single block');
-    return (
-      <>
-        <SingleBlock
-          block={blocks[0]}
-          viewOnly={viewOnly}
-          getRemainingText={getRemainingText}
-          isExerciseComplete={isExerciseComplete}
-          onExerciseClick={handleExerciseClick}
-          onVideoClick={handleVideoClick}
-        />
-
-        <ExerciseVideoDialog
-          isOpen={isVideoDialogOpen}
-          onClose={() => setIsVideoDialogOpen(false)}
-          exercise={selectedExercise}
-        />
-      </>
-    );
-  }
-
-  // Αν έχουμε πολλαπλά blocks, τα εμφανίζουμε ως tabs
-  console.log('📑 Rendering multiple blocks with tabs');
+  // Πάντα δείχνουμε tabs, ακόμα και για ένα block
+  console.log('📑 Rendering blocks with tabs');
   return (
     <>
       <MultipleBlocks
