@@ -164,7 +164,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onClose={onClose}
           />
 
-          <div className="pt-14 overflow-y-auto max-h-[calc(95vh-7rem)] space-y-2">
+          <div className="pt-14 pb-2 overflow-y-auto space-y-2" style={{ maxHeight: 'calc(95vh - 8rem)' }}>
             {dayProgram ? (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
