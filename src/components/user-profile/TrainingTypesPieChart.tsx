@@ -287,7 +287,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <div className="text-sm font-medium">
+              <div className={`text-sm font-medium ${
+                format(startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'yyyy-MM-dd') === 
+                format(startOfWeek(new Date(), { locale: el, weekStartsOn: 1 }), 'yyyy-MM-dd')
+                  ? 'text-[#00ffba]' 
+                  : ''
+              }`}>
                 {format(startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'dd MMM', { locale: el })} - {format(endOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'dd MMM yyyy', { locale: el })}
               </div>
               <Button
