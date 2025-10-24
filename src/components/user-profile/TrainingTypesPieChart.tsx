@@ -433,7 +433,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             </p>
           </div>
         ) : timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {(timeFilter === 'day' ? daysList : timeFilter === 'week' ? weeksList : monthsList).slice(0, 3).map((period) => {
               const periodData = data.find(item => item.period === period);
               if (!periodData) return null;
