@@ -31,6 +31,7 @@ export interface ProgramExercise {
   exercise_order: number;
   sets: number;
   reps: string;
+  reps_mode?: 'reps' | 'time' | 'meter';
   kg: string;
   tempo: string;
   rest: string;
@@ -126,7 +127,9 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
                     exercise_order: pe.exercise_order,
                     sets: pe.sets,
                     reps: pe.reps || '',
+                    reps_mode: pe.reps_mode || 'reps',
                     kg: pe.kg || '',
+                    kg_mode: pe.kg_mode || 'kg',
                     tempo: pe.tempo || '',
                     rest: pe.rest || '',
                     notes: pe.notes || '',

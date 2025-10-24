@@ -19,7 +19,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   onPercentageChange
 }) => {
   const [isTimeMode, setIsTimeMode] = useState(false);
-  const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>('reps');
+  const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>(exercise.reps_mode || 'reps');
   const [kgMode, setKgMode] = useState<'kg' | 'rpm' | 'meter' | 's/m' | 'km/h'>(exercise.kg_mode || 'kg');
 
   const handleSetsLabelClick = () => {
@@ -28,9 +28,14 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
 
   const handleRepsLabelClick = () => {
     setRepsMode((prev) => {
-      if (prev === 'reps') return 'time';
-      if (prev === 'time') return 'meter';
-      return 'reps';
+      let newMode: 'reps' | 'time' | 'meter';
+      if (prev === 'reps') newMode = 'time';
+      else if (prev === 'time') newMode = 'meter';
+      else newMode = 'reps';
+      
+      // Save the mode to the exercise
+      onUpdate('reps_mode', newMode);
+      return newMode;
     });
   };
 
