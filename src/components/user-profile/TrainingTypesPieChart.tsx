@@ -56,15 +56,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   }, [userPrograms, timeFilter, isLoading]);
 
   const calculateTrainingTypesData = () => {
-    console.log('📊 Calculating training types data for user:', userId);
-    console.log('📊 User programs:', userPrograms);
-    
     const periodData: Record<string, Record<string, number>> = {};
 
     userPrograms.forEach((program) => {
-      console.log('📊 Processing program:', program.programs?.name);
       const stats = calculateProgramStats(program);
-      console.log('📊 Program stats:', stats);
       
       // Για κάθε block, προσθέτουμε τον χρόνο του στον τύπο του
       stats.blockStats.forEach((blockStat) => {
@@ -72,8 +67,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         
         const typeLabel = TRAINING_TYPE_LABELS[blockStat.training_type] || blockStat.training_type;
         const timeMinutes = Math.round(blockStat.time / 60);
-        
-        console.log(`📊 Block: ${blockStat.training_type} -> ${typeLabel}, Time: ${timeMinutes}min`);
         
         // Για κάθε training date, προσθέτουμε τα stats
         program.training_dates?.forEach((dateStr) => {
@@ -102,8 +95,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       });
     });
 
-    console.log('📊 Period data:', periodData);
-
     // Μετατρέπουμε σε array για το chart
     const chartData = Object.entries(periodData).map(([period, types]) => {
       const entry: any = { period };
@@ -113,7 +104,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       return entry;
     });
 
-    console.log('📊 Final chart data:', chartData);
     setData(chartData);
   };
 

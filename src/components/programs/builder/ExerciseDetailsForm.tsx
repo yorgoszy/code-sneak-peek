@@ -22,6 +22,16 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>(exercise.reps_mode || 'reps');
   const [kgMode, setKgMode] = useState<'kg' | 'rpm' | 'meter' | 's/m' | 'km/h'>(exercise.kg_mode || 'kg');
 
+  // Sync local state with exercise props when they change
+  React.useEffect(() => {
+    if (exercise.reps_mode && exercise.reps_mode !== repsMode) {
+      setRepsMode(exercise.reps_mode);
+    }
+    if (exercise.kg_mode && exercise.kg_mode !== kgMode) {
+      setKgMode(exercise.kg_mode);
+    }
+  }, [exercise.reps_mode, exercise.kg_mode]);
+
   const handleSetsLabelClick = () => {
     setIsTimeMode(!isTimeMode);
   };

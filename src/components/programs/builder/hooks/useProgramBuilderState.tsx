@@ -33,6 +33,9 @@ export interface ProgramExercise {
   reps: string;
   reps_mode?: 'reps' | 'time' | 'meter';
   kg: string;
+  kg_mode?: 'kg' | 'rpm' | 'meter' | 's/m' | 'km/h';
+  percentage_1rm?: number;
+  velocity_ms?: number;
   tempo: string;
   rest: string;
   notes?: string;
@@ -130,6 +133,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
                     reps_mode: pe.reps_mode || 'reps',
                     kg: pe.kg || '',
                     kg_mode: pe.kg_mode || 'kg',
+                    percentage_1rm: pe.percentage_1rm || 0,
+                    velocity_ms: pe.velocity_ms || 0,
                     tempo: pe.tempo || '',
                     rest: pe.rest || '',
                     notes: pe.notes || '',
