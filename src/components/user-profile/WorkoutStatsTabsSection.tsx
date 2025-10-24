@@ -65,8 +65,14 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
               <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
                 <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">Πραγμ. Ώρες</h4>
                 <div className="flex-1 flex flex-col justify-end">
-                  <div className="text-sm md:text-base font-semibold text-green-600">
-                    {Math.floor(weekStatsForCards.actualMinutes / 60)}:{String(weekStatsForCards.actualMinutes % 60).padStart(2, '0')}/{Math.floor(weekStatsForCards.scheduledMinutes / 60)}:{String(weekStatsForCards.scheduledMinutes % 60).padStart(2, '0')}
+                  <div className="text-sm md:text-base font-semibold">
+                    <span className="text-green-600">
+                      {Math.floor(weekStatsForCards.actualMinutes / 60)}:{String(weekStatsForCards.actualMinutes % 60).padStart(2, '0')}
+                    </span>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-blue-600">
+                      {Math.floor(weekStatsForCards.scheduledMinutes / 60)}:{String(weekStatsForCards.scheduledMinutes % 60).padStart(2, '0')}
+                    </span>
                   </div>
                   <p className="text-[10px] text-gray-500">
                     Ολοκληρώθηκαν
