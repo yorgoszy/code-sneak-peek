@@ -70,7 +70,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     } else if (!isLoading) {
       setData([]);
     }
-  }, [userPrograms, timeFilter, isLoading, currentWeek, currentMonth, currentYear]);
+  }, [userPrograms, timeFilter, isLoading, currentWeek, currentMonth, currentYear, activeTab]);
 
   // Αρχικοποίηση επιλεγμένης ημέρας όταν αλλάζει το timeFilter
   useEffect(() => {
@@ -82,14 +82,31 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   const calculateTrainingTypesData = () => {
     console.log('📊 Calculating training types data...');
     console.log('📊 User programs count:', userPrograms.length);
+    console.log('📊 Active tab:', activeTab);
     
     const periodData: Record<string, Record<string, number>> = {};
+    const today = new Date();
     const weekStart = startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 });
     const weekEnd = endOfWeek(currentWeek, { locale: el, weekStartsOn: 1 });
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
     const yearStart = startOfYear(currentYear);
     const yearEnd = endOfYear(currentYear);
+
+    // Αν το activeTab είναι set (από το ημερολόγιο), φιλτράρουμε για την τρέχουσα περίοδο
+    let filterStart: Date | null = null;
+    let filterEnd: Date | null = null;
+    
+    if (activeTab === 'day') {
+      filterStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      filterEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+    } else if (activeTab === 'week') {
+      filterStart = startOfWeek(today, { locale: el, weekStartsOn: 1 });
+      filterEnd = endOfWeek(today, { locale: el, weekStartsOn: 1 });
+    } else if (activeTab === 'month') {
+      filterStart = startOfMonth(today);
+      filterEnd = endOfMonth(today);
+    }
 
     userPrograms.forEach((program, programIndex) => {
       const programData = program.programs;
@@ -101,20 +118,30 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       program.training_dates?.forEach((dateStr, dateIndex) => {
         const date = parseISO(dateStr);
         
-        // Φιλτράρουμε για την τρέχουσα περίοδο ανάλογα με το mode
-        if (timeFilter === 'day' && !isWithinInterval(date, { start: weekStart, end: weekEnd })) {
-          return;
-        }
-        if (timeFilter === 'week' && !isWithinInterval(date, { start: monthStart, end: monthEnd })) {
-          return;
-        }
-        if (timeFilter === 'month' && !isWithinInterval(date, { start: yearStart, end: yearEnd })) {
-          return;
+        // Αν έχουμε activeTab (από ημερολόγιο), φιλτράρουμε για τη συγκεκριμένη περίοδο
+        if (activeTab && filterStart && filterEnd) {
+          if (!isWithinInterval(date, { start: filterStart, end: filterEnd })) {
+            return;
+          }
+        } else {
+          // Αλλιώς χρησιμοποιούμε την παλιά λογική για το programs view
+          if (timeFilter === 'day' && !isWithinInterval(date, { start: weekStart, end: weekEnd })) {
+            return;
+          }
+          if (timeFilter === 'week' && !isWithinInterval(date, { start: monthStart, end: monthEnd })) {
+            return;
+          }
+          if (timeFilter === 'month' && !isWithinInterval(date, { start: yearStart, end: yearEnd })) {
+            return;
+          }
         }
         
         let periodKey = '';
         
-        if (timeFilter === 'day') {
+        // Αν έχουμε activeTab, αθροίζουμε όλα σε μια κατηγορία
+        if (activeTab) {
+          periodKey = 'all';
+        } else if (timeFilter === 'day') {
           periodKey = format(date, 'EEEE', { locale: el });
         } else if (timeFilter === 'week') {
           const weekStart = startOfWeek(date, { locale: el, weekStartsOn: 1 });
@@ -342,7 +369,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         </div>
       </CardHeader>
       <CardContent className="p-3 pt-0">
-        {timeFilter === 'day' && (
+        {!activeTab && timeFilter === 'day' && (
           <div className="mb-2">
             {/* Week Navigation */}
             <div className="flex items-center justify-between">
@@ -374,7 +401,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           </div>
         )}
 
-        {timeFilter === 'week' && (
+        {!activeTab && timeFilter === 'week' && (
           <div className="mb-2">
             {/* Month Navigation */}
             <div className="flex items-center justify-between">
@@ -405,7 +432,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           </div>
         )}
 
-        {timeFilter === 'month' && (
+        {!activeTab && timeFilter === 'month' && (
           <div className="mb-2">
             {/* Year Navigation */}
             <div className="flex items-center justify-between">
@@ -443,6 +470,128 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             <p className="text-[10px] text-gray-400">
               Βεβαιωθείτε ότι έχετε ορίσει τύπο προπόνησης (str, end, pwr κτλ.) σε κάθε μπλοκ του προγράμματος
             </p>
+          </div>
+        ) : activeTab ? (
+          // Όταν έχουμε activeTab (από ημερολόγιο), εμφανίζουμε ένα μόνο pie chart με τα aggregated δεδομένα
+          <div className="w-full">
+            {chartData.length === 0 ? (
+              <div className="text-center py-4 text-gray-500 text-xs">
+                Δεν υπάρχουν δεδομένα για την επιλεγμένη περίοδο
+              </div>
+            ) : (
+              <>
+                {/* Mobile - Only minutes */}
+                <ResponsiveContainer width="100%" height={200} className="sm:hidden">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={(entry) => formatMinutes(entry.value)}
+                      outerRadius={60}
+                      innerRadius={35}
+                      fill="#8884d8"
+                      dataKey="value"
+                      style={{ fontSize: '10px' }}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: any) => formatMinutes(value)}
+                      contentStyle={{ 
+                        backgroundColor: 'white', 
+                        border: '1px solid #ccc',
+                        borderRadius: '0px',
+                        fontSize: '10px'
+                      }}
+                    />
+                    <Legend 
+                      wrapperStyle={{ fontSize: '9px' }}
+                      formatter={(value) => TRAINING_TYPE_LABELS[value] || value}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                
+                {/* Tablet - Medium text */}
+                <ResponsiveContainer width="100%" height={220} className="hidden sm:block md:hidden">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={(entry) => `${TRAINING_TYPE_LABELS[entry.name] || entry.name}: ${formatMinutes(entry.value)}`}
+                      outerRadius={65}
+                      innerRadius={40}
+                      fill="#8884d8"
+                      dataKey="value"
+                      style={{ fontSize: '9px' }}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: any) => formatMinutes(value)}
+                      contentStyle={{ 
+                        backgroundColor: 'white', 
+                        border: '1px solid #ccc',
+                        borderRadius: '0px',
+                        fontSize: '10px'
+                      }}
+                    />
+                    <Legend 
+                      wrapperStyle={{ fontSize: '10px' }}
+                      formatter={(value) => TRAINING_TYPE_LABELS[value] || value}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+
+                {/* Desktop - Large text */}
+                <ResponsiveContainer width="100%" height={250} className="hidden md:block">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={(entry) => `${TRAINING_TYPE_LABELS[entry.name] || entry.name}: ${formatMinutes(entry.value)}`}
+                      outerRadius={75}
+                      innerRadius={45}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: any) => formatMinutes(value)}
+                      contentStyle={{ 
+                        backgroundColor: 'white', 
+                        border: '1px solid #ccc',
+                        borderRadius: '0px'
+                      }}
+                    />
+                    <Legend 
+                      formatter={(value) => TRAINING_TYPE_LABELS[value] || value}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </>
+            )}
           </div>
         ) : timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month' ? (
           <Carousel
