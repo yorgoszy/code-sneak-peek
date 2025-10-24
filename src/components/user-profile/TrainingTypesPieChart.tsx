@@ -8,6 +8,7 @@ import { el } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { calculateProgramStats } from "@/hooks/useProgramStats";
+import { WeekSelector } from "./WeekSelector";
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -43,6 +44,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<string>('');
+  const [selectedWeek, setSelectedWeek] = useState<string>('');
   
   // Παίρνουμε τα active programs του χρήστη
   const { data: activePrograms, isLoading } = useActivePrograms();
@@ -59,6 +61,13 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       setData([]);
     }
   }, [userPrograms, timeFilter, isLoading, currentWeek]);
+
+  // Αρχικοποίηση επιλεγμένης εβδομάδας όταν αλλάζει το timeFilter
+  useEffect(() => {
+    if (timeFilter === 'week' && data.length > 0 && !selectedWeek) {
+      setSelectedWeek(data[0].period);
+    }
+  }, [timeFilter, data, selectedWeek]);
 
   const calculateTrainingTypesData = () => {
     console.log('📊 Calculating training types data...');
@@ -216,9 +225,11 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     return `${minutes}λ`;
   };
 
-  // Αν είμαστε σε day mode, φιλτράρουμε για την επιλεγμένη ημέρα
+  // Φιλτράρουμε δεδομένα ανάλογα με το mode
   const filteredData = timeFilter === 'day' && selectedDay
     ? data.filter(item => item.period === selectedDay)
+    : timeFilter === 'week' && selectedWeek
+    ? data.filter(item => item.period === selectedWeek)
     : data;
 
   // Αθροίζουμε όλα τα δεδομένα ανά training type
@@ -256,8 +267,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
   const totalMinutes = (Object.values(totalPieData) as number[]).reduce((sum, val) => sum + val, 0);
 
-  // Λίστα ημερών για τα tabs
+  // Λίστα ημερών και εβδομάδων
   const daysList = data.map(item => item.period);
+  const weeksList = timeFilter === 'week' ? data.map(item => item.period) : [];
 
   if (isLoading) {
     return (
@@ -337,6 +349,30 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               >
                 <ChevronRight className="h-3 w-3" />
               </Button>
+            </div>
+          </div>
+        )}
+
+        {timeFilter === 'week' && weeksList.length > 0 && (
+          <div className="mb-3">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              {weeksList.map((weekLabel, index) => {
+                const isSelected = selectedWeek === weekLabel;
+                
+                return (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedWeek(weekLabel)}
+                    className={`flex-shrink-0 px-3 py-1.5 border rounded-none text-xs transition-colors ${
+                      isSelected
+                        ? 'bg-[#00ffba] text-black border-[#00ffba]'
+                        : 'bg-white text-gray-700 border-gray-200 hover:border-[#00ffba]'
+                    }`}
+                  >
+                    {weekLabel}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
