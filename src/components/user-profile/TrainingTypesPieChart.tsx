@@ -14,12 +14,12 @@ interface TrainingTypesPieChartProps {
 }
 
 const COLORS = {
-  end: '#e9dbff',
+  end: '#8045ed',
   'str/end': '#ff8484',
   'pwr/end': '#ef3fed',
   'spd/end': '#ff8ad1',
   str: '#ff3131',
-  'str/spd': '#8affe3',
+  'str/spd': '#334ac4',
   'spd/str': '#8afbff',
   spd: '#a4e1ff',
   pwr: '#fa009a',
