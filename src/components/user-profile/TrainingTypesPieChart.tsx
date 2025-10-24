@@ -276,7 +276,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       </CardHeader>
       <CardContent>
         {timeFilter === 'day' && (
-          <div className="mb-4 space-y-4">
+          <div className="mb-4">
             {/* Week Navigation */}
             <div className="flex items-center justify-between">
               <Button
@@ -304,65 +304,127 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            
-            {/* Day Tabs */}
-            {daysList.length > 0 && (
-              <Tabs value={selectedDay} onValueChange={setSelectedDay} className="w-full">
-                <TabsList className="rounded-none h-8 w-full grid" style={{ gridTemplateColumns: `repeat(${daysList.length}, 1fr)` }}>
-                  {daysList.map((day) => (
-                    <TabsTrigger key={day} value={day} className="text-xs rounded-none">
-                      {day}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            )}
           </div>
         )}
         
-        {data.length === 0 || chartData.length === 0 ? (
+        {data.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <p className="mb-2">Δεν υπάρχουν δεδομένα για εμφάνιση</p>
             <p className="text-xs text-gray-400">
               Βεβαιωθείτε ότι έχετε ορίσει τύπο προπόνησης (str, end, pwr κτλ.) σε κάθε μπλοκ του προγράμματος
             </p>
           </div>
+        ) : timeFilter === 'day' ? (
+          <div className="space-y-6">
+            {daysList.map((day) => {
+              const dayData = data.find(item => item.period === day);
+              if (!dayData) return null;
+
+              // Υπολογίζουμε τα δεδομένα για αυτή την ημέρα
+              const dayPieData = Object.entries(dayData).reduce((acc, [key, value]) => {
+                if (key !== 'period') {
+                  acc[key] = value as number;
+                }
+                return acc;
+              }, {} as Record<string, number>);
+
+              const dayChartData = Object.entries(dayPieData).map(([name, value]) => ({
+                name,
+                value: value as number,
+              }));
+
+              const dayTotalMinutes = dayChartData.reduce((sum, item) => sum + item.value, 0);
+
+              return (
+                <div key={day} className="border border-gray-200 rounded-none p-4">
+                  <div className="mb-4">
+                    <h4 className="text-base font-semibold text-gray-900">{day}</h4>
+                    <div className="text-sm text-gray-600">
+                      Σύνολο: <span className="font-semibold">{formatMinutes(dayTotalMinutes)}</span>
+                    </div>
+                  </div>
+                  
+                  {dayChartData.length === 0 ? (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                      Δεν υπάρχουν δεδομένα για αυτή την ημέρα
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={dayChartData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
+                          outerRadius={70}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {dayChartData.map((entry, index) => {
+                            const colorKey = Object.keys(TRAINING_TYPE_LABELS).find(
+                              key => TRAINING_TYPE_LABELS[key] === entry.name
+                            );
+                            return (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={COLORS[colorKey as keyof typeof COLORS] || '#aca097'} 
+                              />
+                            );
+                          })}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: any) => formatMinutes(value)}
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #ccc',
+                            borderRadius: '0px'
+                          }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: '12px' }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => {
-                const colorKey = Object.keys(TRAINING_TYPE_LABELS).find(
-                  key => TRAINING_TYPE_LABELS[key] === entry.name
-                );
-                return (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={COLORS[colorKey as keyof typeof COLORS] || '#aca097'} 
-                  />
-                );
-              })}
-            </Pie>
-            <Tooltip 
-              formatter={(value: any) => formatMinutes(value)}
-              contentStyle={{ 
-                backgroundColor: 'white', 
-                border: '1px solid #ccc',
-                borderRadius: '0px'
-              }}
-            />
-            <Legend wrapperStyle={{ fontSize: '12px' }} />
-          </PieChart>
-        </ResponsiveContainer>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {chartData.map((entry, index) => {
+                  const colorKey = Object.keys(TRAINING_TYPE_LABELS).find(
+                    key => TRAINING_TYPE_LABELS[key] === entry.name
+                  );
+                  return (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[colorKey as keyof typeof COLORS] || '#aca097'} 
+                    />
+                  );
+                })}
+              </Pie>
+              <Tooltip 
+                formatter={(value: any) => formatMinutes(value)}
+                contentStyle={{ 
+                  backgroundColor: 'white', 
+                  border: '1px solid #ccc',
+                  borderRadius: '0px'
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: '12px' }} />
+            </PieChart>
+          </ResponsiveContainer>
         )}
       </CardContent>
     </Card>
