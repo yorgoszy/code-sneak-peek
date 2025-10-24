@@ -588,8 +588,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             })}
             </CarouselContent>
             <div className="flex justify-center gap-2 mt-2">
-              <CarouselPrevious className="rounded-none static translate-y-0" />
-              <CarouselNext className="rounded-none static translate-y-0" />
+              <CarouselPrevious className="rounded-none static translate-y-0 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80" />
+              <CarouselNext className="rounded-none static translate-y-0 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80" />
             </div>
           </Carousel>
         ) : null}
