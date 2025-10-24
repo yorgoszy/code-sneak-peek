@@ -433,8 +433,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             </p>
           </div>
         ) : timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month' ? (
-          <div className="flex gap-2 overflow-x-auto scrollbar-green pb-2">
-            {(timeFilter === 'day' ? daysList : timeFilter === 'week' ? weeksList : monthsList).map((period) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {(timeFilter === 'day' ? daysList : timeFilter === 'week' ? weeksList : monthsList).slice(0, 3).map((period) => {
               const periodData = data.find(item => item.period === period);
               if (!periodData) return null;
 
@@ -454,7 +454,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               const periodTotalMinutes = periodChartData.reduce((sum, item) => sum + item.value, 0);
 
               return (
-                <div key={period} className="border border-gray-200 rounded-none p-1 md:p-2 flex-shrink-0 w-[280px] sm:w-[320px] md:w-[360px]">
+                <div key={period} className="border border-gray-200 rounded-none p-1 md:p-2">
                   <div className="mb-2">
                     <h4 className="text-[10px] font-semibold text-gray-900">{period}</h4>
                     <div className="text-[10px] text-gray-600">
