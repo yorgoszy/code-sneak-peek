@@ -257,24 +257,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     );
   }
 
-  if (data.length === 0) {
-    return (
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            <p className="mb-2">Δεν υπάρχουν δεδομένα για εμφάνιση</p>
-            <p className="text-xs text-gray-400">
-              Βεβαιωθείτε ότι έχετε ορίσει τύπο προπόνησης (str, end, pwr κτλ.) σε κάθε μπλοκ του προγράμματος
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="rounded-none">
       <CardHeader>
@@ -333,7 +315,15 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           </div>
         )}
         
-        <ResponsiveContainer width="100%" height={300}>
+        {data.length === 0 || chartData.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p className="mb-2">Δεν υπάρχουν δεδομένα για εμφάνιση</p>
+            <p className="text-xs text-gray-400">
+              Βεβαιωθείτε ότι έχετε ορίσει τύπο προπόνησης (str, end, pwr κτλ.) σε κάθε μπλοκ του προγράμματος
+            </p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
               data={chartData}
@@ -368,6 +358,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             <Legend wrapperStyle={{ fontSize: '12px' }} />
           </PieChart>
         </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );
