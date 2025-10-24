@@ -85,6 +85,7 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
               </SortableContext>
             </DndContext>
           ) : (
+            // Conditional rendering: Αν έχει μόνο ένα block, το δείχνουμε απευθείας χωρίς tabs
             <ExerciseBlock 
               blocks={day.program_blocks} 
               viewOnly={!isEditing}
