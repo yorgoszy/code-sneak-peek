@@ -377,7 +377,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
+                          label={false}
                           outerRadius={40}
                           innerRadius={25}
                           fill="#8884d8"
@@ -449,7 +449,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
+                  label={false}
                   outerRadius={45}
                   innerRadius={28}
                   fill="#8884d8"
