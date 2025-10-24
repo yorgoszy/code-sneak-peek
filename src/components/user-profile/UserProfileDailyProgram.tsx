@@ -198,7 +198,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
 
     return {
       completedWorkouts: completed,
-      totalTrainingHours: Math.round((totalMinutes / 60) * 10) / 10,
+      totalTrainingHours: Math.round(totalMinutes / 60), // Ώρες χωρίς δεκαδικά
       totalVolume: 0,
       missedWorkouts: missed,
       scheduledWorkouts: scheduled,
