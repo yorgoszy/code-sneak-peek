@@ -151,7 +151,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden rounded-none p-3">
+        <DialogContent className="max-w-2xl max-h-[95vh] overflow-hidden rounded-none p-3">
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
@@ -164,7 +164,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onClose={onClose}
           />
 
-          <div className="pt-14 overflow-y-auto max-h-[calc(85vh-7rem)] space-y-2">
+          <div className="pt-14 overflow-y-auto max-h-[calc(95vh-7rem)] space-y-2">
             {dayProgram ? (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
