@@ -415,7 +415,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                             fontSize: '10px'
                           }}
                         />
-                        <Legend wrapperStyle={{ fontSize: '9px' }} />
                       </PieChart>
                     </ResponsiveContainer>
                     
@@ -450,7 +449,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                             fontSize: '10px'
                           }}
                         />
-                        <Legend wrapperStyle={{ fontSize: '8px' }} />
                       </PieChart>
                     </ResponsiveContainer>
 
@@ -484,9 +482,23 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                             fontSize: '10px'
                           }}
                         />
-                        <Legend wrapperStyle={{ fontSize: '9px' }} />
                       </PieChart>
                     </ResponsiveContainer>
+                    
+                    {/* Legend Container - Κάτω από το pie chart */}
+                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 justify-center">
+                      {dayChartData.map((entry) => (
+                        <div key={entry.name} className="flex items-center gap-1">
+                          <div 
+                            className="w-2 h-2 rounded-sm" 
+                            style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
+                          />
+                          <span className="text-[9px] text-gray-700">
+                            {TRAINING_TYPE_LABELS[entry.name] || entry.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                     </>
                   )}
                 </div>
@@ -526,7 +538,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     fontSize: '10px'
                   }}
                 />
-                <Legend wrapperStyle={{ fontSize: '9px' }} />
               </PieChart>
             </ResponsiveContainer>
             
@@ -561,7 +572,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     fontSize: '10px'
                   }}
                 />
-                <Legend wrapperStyle={{ fontSize: '8px' }} />
               </PieChart>
             </ResponsiveContainer>
 
@@ -595,9 +605,23 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   fontSize: '10px'
                 }}
               />
-              <Legend wrapperStyle={{ fontSize: '9px' }} />
             </PieChart>
           </ResponsiveContainer>
+          
+          {/* Legend Container - Κάτω από το pie chart */}
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 justify-center">
+            {chartData.map((entry) => (
+              <div key={entry.name} className="flex items-center gap-1.5">
+                <div 
+                  className="w-3 h-3 rounded-sm" 
+                  style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
+                />
+                <span className="text-xs text-gray-700">
+                  {TRAINING_TYPE_LABELS[entry.name] || entry.name}
+                </span>
+              </div>
+            ))}
+          </div>
           </>
         )}
       </CardContent>
