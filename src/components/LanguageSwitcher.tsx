@@ -18,9 +18,8 @@ export const LanguageSwitcher = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="rounded-none">
-          <Globe className="h-4 w-4 mr-2" />
-          {i18n.language === 'el' ? 'ΕΛ' : i18n.language === 'ar' ? 'AR' : 'EN'}
+        <Button variant="outline" size="sm" className="rounded-none h-8 w-8 p-0">
+          <Globe className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="rounded-none">

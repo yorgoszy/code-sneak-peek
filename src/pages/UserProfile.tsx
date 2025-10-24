@@ -193,9 +193,7 @@ const UserProfile = () => {
               <span className="text-xs md:text-sm text-gray-600 hidden lg:block truncate">
                 {currentUser?.email}
               </span>
-              <div className="hidden sm:block">
-                <LanguageSwitcher />
-              </div>
+              <LanguageSwitcher />
               <Button 
                 variant="outline" 
                 className="rounded-none h-8 px-2 md:px-4"
