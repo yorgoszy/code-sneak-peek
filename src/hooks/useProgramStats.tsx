@@ -66,8 +66,8 @@ const parseRestTime = (rest: string): number => {
   }
 };
 
-export const useProgramStats = (program: any): ProgramStats => {
-  return useMemo(() => {
+// Regular function instead of hook - can be called anywhere
+export const calculateProgramStats = (program: any): ProgramStats => {
     let totalVolume = 0;
     let totalIntensity = 0;
     let totalWatts = 0;
@@ -151,8 +151,12 @@ export const useProgramStats = (program: any): ProgramStats => {
       totalVolume: totalVolume / 1000, // Convert to tons
       totalIntensity: exerciseCount > 0 ? totalIntensity / exerciseCount : 0,
       totalWatts: totalWatts / 1000, // Convert to kilowatts
-      totalTime: Math.round(totalTimeSeconds / 60), // Convert to minutes
-      blockStats
-    };
-  }, [program]);
+    totalTime: Math.round(totalTimeSeconds / 60), // Convert to minutes
+    blockStats
+  };
+};
+
+// Hook wrapper for use in components
+export const useProgramStats = (program: any): ProgramStats => {
+  return useMemo(() => calculateProgramStats(program), [program]);
 };

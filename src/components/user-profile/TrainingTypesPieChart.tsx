@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, startOfWeek, startOfMonth, parseISO } from "date-fns";
 import { el } from "date-fns/locale";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
-import { useProgramStats } from "@/hooks/useProgramStats";
+import { calculateProgramStats } from "@/hooks/useProgramStats";
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -59,7 +59,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     const periodData: Record<string, Record<string, number>> = {};
 
     userPrograms.forEach((program) => {
-      const stats = useProgramStats(program);
+      const stats = calculateProgramStats(program);
       
       // Για κάθε block, προσθέτουμε τον χρόνο του στον τύπο του
       stats.blockStats.forEach((blockStat) => {
