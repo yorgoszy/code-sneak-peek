@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, startOfWeek, startOfMonth, parseISO } from "date-fns";
 import { el } from "date-fns/locale";
@@ -130,21 +130,26 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     return `${minutes}λ`;
   };
 
-  const totalMinutes = data.reduce((sum, item) => {
-    const itemSum = Object.entries(item)
-      .filter(([key]) => key !== 'period')
-      .reduce((s, [, value]) => s + (value as number), 0);
-    return sum + itemSum;
-  }, 0);
+  // Αθροίζουμε όλα τα δεδομένα ανά training type
+  const pieData = data.reduce((acc, item) => {
+    Object.entries(item).forEach(([key, value]) => {
+      if (key !== 'period') {
+        if (!acc[key]) {
+          acc[key] = 0;
+        }
+        acc[key] += value as number;
+      }
+    });
+    return acc;
+  }, {} as Record<string, number>);
 
-  // Παίρνουμε όλους τους unique types για τα bars
-  const allTypes = Array.from(
-    new Set(
-      data.flatMap(item => 
-        Object.keys(item).filter(key => key !== 'period')
-      )
-    )
-  );
+  // Μετατρέπουμε σε array για το pie chart
+  const chartData = Object.entries(pieData).map(([name, value]) => ({
+    name,
+    value: value as number,
+  }));
+
+  const totalMinutes = chartData.reduce((sum, item) => sum + item.value, 0);
 
   if (isLoading) {
     return (
@@ -196,10 +201,29 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} />
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
+              outerRadius={80}
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {chartData.map((entry, index) => {
+                const colorKey = Object.keys(TRAINING_TYPE_LABELS).find(
+                  key => TRAINING_TYPE_LABELS[key] === entry.name
+                );
+                return (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[colorKey as keyof typeof COLORS] || '#aca097'} 
+                  />
+                );
+              })}
+            </Pie>
             <Tooltip 
               formatter={(value: any) => formatMinutes(value)}
               contentStyle={{ 
@@ -209,20 +233,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               }}
             />
             <Legend wrapperStyle={{ fontSize: '12px' }} />
-            {allTypes.map((type) => {
-              const colorKey = Object.keys(TRAINING_TYPE_LABELS).find(
-                key => TRAINING_TYPE_LABELS[key] === type
-              );
-              return (
-                <Bar 
-                  key={type} 
-                  dataKey={type} 
-                  stackId="a" 
-                  fill={COLORS[colorKey as keyof typeof COLORS] || '#aca097'}
-                />
-              );
-            })}
-          </BarChart>
+          </PieChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
