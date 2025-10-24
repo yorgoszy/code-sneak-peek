@@ -40,10 +40,10 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
         </h4>
         <div className="flex-1 flex flex-col justify-end">
           <div className="text-sm md:text-base font-semibold text-blue-600">
-            {stats.currentMonth.scheduledWorkouts || 0}
+            {stats.currentMonth.completedWorkouts}/{stats.currentMonth.scheduledWorkouts || 0}
           </div>
           <div className="text-[10px] text-gray-500">
-            Ημέρες μήνα
+            Ολοκληρωμένες
           </div>
         </div>
       </div>
