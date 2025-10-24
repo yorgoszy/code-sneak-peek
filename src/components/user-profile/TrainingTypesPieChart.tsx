@@ -339,7 +339,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
-                className="rounded-none h-6 px-2"
+                className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
               >
                 <ChevronLeft className="h-3 w-3" />
               </Button>
@@ -355,7 +355,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
-                className="rounded-none h-6 px-2"
+                className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
               >
                 <ChevronRight className="h-3 w-3" />
               </Button>
@@ -371,7 +371,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="rounded-none h-6 px-2"
+                className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
               >
                 <ChevronLeft className="h-3 w-3" />
               </Button>
@@ -386,7 +386,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="rounded-none h-6 px-2"
+                className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
               >
                 <ChevronRight className="h-3 w-3" />
               </Button>
@@ -402,7 +402,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentYear(subYears(currentYear, 1))}
-                className="rounded-none h-6 px-2"
+                className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
               >
                 <ChevronLeft className="h-3 w-3" />
               </Button>
@@ -417,7 +417,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentYear(addYears(currentYear, 1))}
-                className="rounded-none h-6 px-2"
+                className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
               >
                 <ChevronRight className="h-3 w-3" />
               </Button>
