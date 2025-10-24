@@ -14,7 +14,6 @@ import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatu
 import { useUserBookings } from "@/hooks/useUserBookings";
 import { WorkoutStatsTabsSection } from "./WorkoutStatsTabsSection";
 import { TrainingTypesPieChart } from "./TrainingTypesPieChart";
-import { ActiveProgramsList } from "./ActiveProgramsList";
 
 interface UserProfileDailyProgramProps {
   userProfile: any;
@@ -359,14 +358,8 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
       {/* Workout Stats Section */}
       <WorkoutStatsTabsSection userId={userProfile?.id} onTabChange={setActiveStatsTab} customMonthStats={monthStats} customWeekStats={weekStats} />
 
-      {/* Grid Layout: Training Types Pie Chart + Active Programs */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Training Types Pie Chart */}
-        <TrainingTypesPieChart userId={userProfile?.id} hideTimeTabs={true} activeTab={activeStatsTab} />
-
-        {/* Active Programs List */}
-        <ActiveProgramsList userProfile={userProfile} />
-      </div>
+      {/* Training Types Pie Chart */}
+      <TrainingTypesPieChart userId={userProfile?.id} hideTimeTabs={true} activeTab={activeStatsTab} />
 
       <Card className="rounded-none">
         <CardHeader>
