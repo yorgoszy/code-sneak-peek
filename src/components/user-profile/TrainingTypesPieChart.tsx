@@ -346,7 +346,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               <div className={`text-[10px] md:text-sm font-medium ${
                 format(startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'yyyy-MM-dd') === 
                 format(startOfWeek(new Date(), { locale: el, weekStartsOn: 1 }), 'yyyy-MM-dd')
-                  ? 'text-[#00ffba]' 
+                  ? 'text-[#cb8954]' 
                   : ''
               }`}>
                 {format(startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'dd MMM', { locale: el })} - {format(endOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'dd MMM yyyy', { locale: el })}
@@ -377,7 +377,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               </Button>
               <div className={`text-[10px] md:text-sm font-medium ${
                 format(currentMonth, 'yyyy-MM') === format(new Date(), 'yyyy-MM')
-                  ? 'text-[#00ffba]' 
+                  ? 'text-[#cb8954]' 
                   : ''
               }`}>
                 {format(currentMonth, 'MMMM yyyy', { locale: el })}
@@ -408,7 +408,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               </Button>
               <div className={`text-[10px] md:text-sm font-medium ${
                 format(currentYear, 'yyyy') === format(new Date(), 'yyyy')
-                  ? 'text-[#00ffba]' 
+                  ? 'text-[#cb8954]' 
                   : ''
               }`}>
                 {format(currentYear, 'yyyy')}
