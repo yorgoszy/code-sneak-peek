@@ -19,9 +19,18 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   onPercentageChange
 }) => {
   const [isTimeMode, setIsTimeMode] = useState(false);
+  const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>('reps');
 
-  const handleLabelClick = () => {
+  const handleSetsLabelClick = () => {
     setIsTimeMode(!isTimeMode);
+  };
+
+  const handleRepsLabelClick = () => {
+    setRepsMode((prev) => {
+      if (prev === 'reps') return 'time';
+      if (prev === 'time') return 'meter';
+      return 'reps';
+    });
   };
 
   return (
@@ -30,7 +39,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
         <label 
           className="block mb-1 text-center w-full cursor-pointer hover:text-[#00ffba]" 
           style={{ fontSize: '10px', color: '#666' }}
-          onClick={handleLabelClick}
+          onClick={handleSetsLabelClick}
         >
           {isTimeMode ? 'Time' : 'Sets'}
         </label>
@@ -52,7 +61,13 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Reps</label>
+        <label 
+          className="block mb-1 text-center w-full cursor-pointer hover:text-[#00ffba]" 
+          style={{ fontSize: '10px', color: '#666' }}
+          onClick={handleRepsLabelClick}
+        >
+          {repsMode === 'reps' ? 'Reps' : repsMode === 'time' ? 'Time' : 'Meter'}
+        </label>
         <Input
           value={exercise.reps || ''}
           onChange={(e) => onUpdate('reps', e.target.value)}
