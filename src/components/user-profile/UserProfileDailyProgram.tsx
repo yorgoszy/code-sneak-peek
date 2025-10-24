@@ -13,7 +13,7 @@ import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { useUserBookings } from "@/hooks/useUserBookings";
 import { WorkoutStatsTabsSection } from "./WorkoutStatsTabsSection";
-import { TrainingAnalytics } from "./TrainingAnalytics";
+import { TrainingTypesPieChart } from "./TrainingTypesPieChart";
 
 interface UserProfileDailyProgramProps {
   userProfile: any;
@@ -201,8 +201,8 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
       {/* Workout Stats Section */}
       <WorkoutStatsTabsSection userId={userProfile?.id} />
 
-      {/* Training Analytics */}
-      <TrainingAnalytics userId={userProfile?.id} />
+      {/* Training Types Pie Chart */}
+      <TrainingTypesPieChart userId={userProfile?.id} />
 
       <Card className="rounded-none">
         <CardHeader>
