@@ -14,7 +14,7 @@ interface WeekStats {
   actualMinutes: number;
 }
 
-export const useWeekStats = (userId: string, selectedWeekDate?: Date) => {
+export const useWeekStats = (userId: string) => {
   const [stats, setStats] = useState<WeekStats>({
     scheduledHours: 0,
     actualHours: 0,
@@ -30,25 +30,18 @@ export const useWeekStats = (userId: string, selectedWeekDate?: Date) => {
     if (userId) {
       fetchWeekStats();
     }
-  }, [userId, selectedWeekDate]);
+  }, [userId]);
 
   const fetchWeekStats = async () => {
     try {
       setLoading(true);
       
-      // Υπολογισμός ημερομηνιών εβδομάδας (ξεκινάει από Δευτέρα)
-      let startOfWeekDate: Date;
-      if (selectedWeekDate) {
-        // Χρήση της επιλεγμένης εβδομάδας
-        startOfWeekDate = new Date(selectedWeekDate);
-      } else {
-        // Τρέχουσα εβδομάδα
-        const now = new Date();
-        startOfWeekDate = new Date(now);
-        const dayOfWeek = now.getDay();
-        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        startOfWeekDate.setDate(now.getDate() - daysToSubtract);
-      }
+      // Υπολογισμός ημερομηνιών τρέχουσας εβδομάδας (ξεκινάει από Δευτέρα)
+      const now = new Date();
+      const startOfWeekDate = new Date(now);
+      const dayOfWeek = now.getDay();
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      startOfWeekDate.setDate(now.getDate() - daysToSubtract);
       startOfWeekDate.setHours(0, 0, 0, 0);
       
       const endOfWeekDate = new Date(startOfWeekDate);

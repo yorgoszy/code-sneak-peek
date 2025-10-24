@@ -8,7 +8,6 @@ import { el } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { calculateProgramStats } from "@/hooks/useProgramStats";
-import { WeekSelector } from "./WeekSelector";
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -44,7 +43,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<string>('');
-  const [selectedWeek, setSelectedWeek] = useState<string>('');
   
   // Παίρνουμε τα active programs του χρήστη
   const { data: activePrograms, isLoading } = useActivePrograms();
@@ -62,12 +60,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     }
   }, [userPrograms, timeFilter, isLoading, currentWeek]);
 
-  // Αρχικοποίηση επιλεγμένης εβδομάδας όταν αλλάζει το timeFilter
+  // Αρχικοποίηση επιλεγμένης ημέρας όταν αλλάζει το timeFilter
   useEffect(() => {
-    if (timeFilter === 'week' && data.length > 0 && !selectedWeek) {
-      setSelectedWeek(data[0].period);
+    if (timeFilter === 'day' && data.length > 0 && !selectedDay) {
+      setSelectedDay(data[0].period);
     }
-  }, [timeFilter, data, selectedWeek]);
+  }, [timeFilter, data, selectedDay]);
 
   const calculateTrainingTypesData = () => {
     console.log('📊 Calculating training types data...');
@@ -228,8 +226,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   // Φιλτράρουμε δεδομένα ανάλογα με το mode
   const filteredData = timeFilter === 'day' && selectedDay
     ? data.filter(item => item.period === selectedDay)
-    : timeFilter === 'week' && selectedWeek
-    ? data.filter(item => item.period === selectedWeek)
     : data;
 
   // Αθροίζουμε όλα τα δεδομένα ανά training type
@@ -353,29 +349,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           </div>
         )}
 
-        {timeFilter === 'week' && weeksList.length > 0 && (
-          <div className="mb-3">
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
-              {weeksList.map((weekLabel, index) => {
-                const isSelected = selectedWeek === weekLabel;
-                
-                return (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedWeek(weekLabel)}
-                    className={`flex-shrink-0 px-3 py-1.5 border rounded-none text-xs transition-colors ${
-                      isSelected
-                        ? 'bg-[#00ffba] text-black border-[#00ffba]'
-                        : 'bg-white text-gray-700 border-gray-200 hover:border-[#00ffba]'
-                    }`}
-                  >
-                    {weekLabel}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
         
         {data.length === 0 ? (
           <div className="text-center py-4 text-gray-500">
@@ -384,37 +357,37 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               Βεβαιωθείτε ότι έχετε ορίσει τύπο προπόνησης (str, end, pwr κτλ.) σε κάθε μπλοκ του προγράμματος
             </p>
           </div>
-        ) : timeFilter === 'day' ? (
-          <div className="grid gap-0 md:gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(daysList.length, 3)}, 1fr)` }}>
-            {daysList.map((day) => {
-              const dayData = data.find(item => item.period === day);
-              if (!dayData) return null;
+        ) : timeFilter === 'day' || timeFilter === 'week' ? (
+          <div className="grid gap-0 md:gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(timeFilter === 'day' ? daysList.length : weeksList.length, 3)}, 1fr)` }}>
+            {(timeFilter === 'day' ? daysList : weeksList).map((period) => {
+              const periodData = data.find(item => item.period === period);
+              if (!periodData) return null;
 
-              // Υπολογίζουμε τα δεδομένα για αυτή την ημέρα
-              const dayPieData = Object.entries(dayData).reduce((acc, [key, value]) => {
+              // Υπολογίζουμε τα δεδομένα για αυτή την περίοδο
+              const periodPieData = Object.entries(periodData).reduce((acc, [key, value]) => {
                 if (key !== 'period') {
                   acc[key] = value as number;
                 }
                 return acc;
               }, {} as Record<string, number>);
 
-              const dayChartData = Object.entries(dayPieData).map(([name, value]) => ({
+              const periodChartData = Object.entries(periodPieData).map(([name, value]) => ({
                 name,
                 value: value as number,
               }));
 
-              const dayTotalMinutes = dayChartData.reduce((sum, item) => sum + item.value, 0);
+              const periodTotalMinutes = periodChartData.reduce((sum, item) => sum + item.value, 0);
 
               return (
-                <div key={day} className="border border-gray-200 rounded-none p-1 md:p-2">
+                <div key={period} className="border border-gray-200 rounded-none p-1 md:p-2">
                   <div className="mb-2">
-                    <h4 className="text-[10px] font-semibold text-gray-900">{day}</h4>
+                    <h4 className="text-[10px] font-semibold text-gray-900">{period}</h4>
                     <div className="text-[10px] text-gray-600">
-                      <span className="font-semibold">{formatMinutes(dayTotalMinutes)}</span>
+                      <span className="font-semibold">{formatMinutes(periodTotalMinutes)}</span>
                     </div>
                   </div>
                   
-                  {dayChartData.length === 0 ? (
+                  {periodChartData.length === 0 ? (
                     <div className="text-center py-2 text-gray-500 text-[10px]">
                       Δεν υπάρχουν δεδομένα
                     </div>
@@ -424,7 +397,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     <ResponsiveContainer width="100%" height={160} className="sm:hidden">
                       <PieChart>
                         <Pie
-                          data={dayChartData}
+                          data={periodChartData}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
@@ -435,7 +408,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                           dataKey="value"
                           style={{ fontSize: '9px' }}
                         >
-                          {dayChartData.map((entry, index) => (
+                          {periodChartData.map((entry, index) => (
                             <Cell 
                               key={`cell-${index}`} 
                               fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
@@ -459,7 +432,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     <ResponsiveContainer width="100%" height={160} className="hidden sm:block md:hidden">
                       <PieChart>
                         <Pie
-                          data={dayChartData}
+                          data={periodChartData}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
@@ -470,7 +443,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                           dataKey="value"
                           style={{ fontSize: '7px' }}
                         >
-                          {dayChartData.map((entry, index) => (
+                          {periodChartData.map((entry, index) => (
                             <Cell 
                               key={`cell-${index}`} 
                               fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
@@ -494,7 +467,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     <ResponsiveContainer width="100%" height={180} className="hidden md:block">
                       <PieChart>
                         <Pie
-                          data={dayChartData}
+                          data={periodChartData}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
@@ -504,7 +477,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                           fill="#8884d8"
                           dataKey="value"
                         >
-                          {dayChartData.map((entry, index) => (
+                          {periodChartData.map((entry, index) => (
                             <Cell 
                               key={`cell-${index}`} 
                               fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
