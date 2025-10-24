@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, startOfMonth, parseISO } from "date-fns";
 import { el } from "date-fns/locale";
+import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { useProgramStats } from "@/hooks/useProgramStats";
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -36,134 +37,74 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
 
 export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId }) => {
   const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
+  
+  // Παίρνουμε τα active programs του χρήστη
+  const { data: activePrograms, isLoading } = useActivePrograms();
+  
+  // Φιλτράρουμε για τον συγκεκριμένο χρήστη
+  const userPrograms = useMemo(() => {
+    return activePrograms?.filter(p => p.user_id === userId) || [];
+  }, [activePrograms, userId]);
 
   useEffect(() => {
-    fetchTrainingTypes();
-  }, [userId, timeFilter]);
-
-  const fetchTrainingTypes = async () => {
-    try {
-      setLoading(true);
-      
-      // Παίρνουμε όλα τα completed workouts του χρήστη
-      const { data: completions, error: completionsError } = await supabase
-        .from('workout_completions')
-        .select(`
-          id,
-          assignment_id,
-          scheduled_date,
-          status,
-          program_assignments!inner(
-            program_id,
-            programs!inner(
-              program_weeks(
-                program_days(
-                  program_blocks(
-                    training_type,
-                    program_exercises(
-                      sets,
-                      reps,
-                      tempo,
-                      rest
-                    )
-                  )
-                )
-              )
-            )
-          )
-        `)
-        .eq('user_id', userId)
-        .eq('status', 'completed');
-
-      if (completionsError) throw completionsError;
-
-      // Συγκεντρώνουμε τα training types ανά περίοδο
-      const periodData: Record<string, Record<string, number>> = {};
-
-      completions?.forEach((completion: any) => {
-        const program = completion.program_assignments?.programs;
-        if (!program?.program_weeks) return;
-
-        // Βρίσκουμε την περίοδο (ημέρα/εβδομάδα/μήνα)
-        const date = parseISO(completion.scheduled_date);
-        let periodKey = '';
-        
-        if (timeFilter === 'day') {
-          periodKey = format(date, 'dd/MM', { locale: el });
-        } else if (timeFilter === 'week') {
-          const weekStart = startOfWeek(date, { locale: el });
-          periodKey = `Εβδ ${format(weekStart, 'dd/MM', { locale: el })}`;
-        } else {
-          periodKey = format(date, 'MMM yyyy', { locale: el });
-        }
-
-        if (!periodData[periodKey]) {
-          periodData[periodKey] = {};
-        }
-
-        program.program_weeks.forEach((week: any) => {
-          week.program_days?.forEach((day: any) => {
-            day.program_blocks?.forEach((block: any) => {
-              if (!block.training_type) return;
-
-              // Υπολογίζουμε χρόνο μπλοκ
-              let blockMinutes = 0;
-              block.program_exercises?.forEach((ex: any) => {
-                const sets = ex.sets || 1;
-                const reps = parseReps(ex.reps);
-                const tempo = parseTempo(ex.tempo);
-                const rest = parseRest(ex.rest);
-                
-                const exerciseTime = (sets * reps * tempo + (sets - 1) * rest) / 60;
-                blockMinutes += exerciseTime;
-              });
-
-              const typeLabel = TRAINING_TYPE_LABELS[block.training_type] || block.training_type;
-              if (!periodData[periodKey][typeLabel]) {
-                periodData[periodKey][typeLabel] = 0;
-              }
-              periodData[periodKey][typeLabel] += blockMinutes;
-            });
-          });
-        });
-      });
-
-      // Μετατρέπουμε σε array για το chart
-      const chartData = Object.entries(periodData).map(([period, types]) => {
-        const entry: any = { period };
-        Object.entries(types).forEach(([type, minutes]) => {
-          entry[type] = Math.round(minutes);
-        });
-        return entry;
-      });
-
-      setData(chartData);
-    } catch (error) {
-      console.error('Error fetching training types:', error);
+    if (!isLoading && userPrograms.length > 0) {
+      calculateTrainingTypesData();
+    } else if (!isLoading) {
       setData([]);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [userPrograms, timeFilter, isLoading]);
 
-  const parseReps = (reps: string): number => {
-    if (!reps) return 10;
-    const numbers = reps.split(/[.,]/).map(n => parseFloat(n) || 0);
-    return numbers.reduce((sum, n) => sum + n, 0) || 10;
-  };
+  const calculateTrainingTypesData = () => {
+    const periodData: Record<string, Record<string, number>> = {};
 
-  const parseTempo = (tempo: string): number => {
-    if (!tempo) return 4;
-    const numbers = tempo.split(/[.,]/).map(n => parseFloat(n) || 0);
-    return numbers.reduce((sum, n) => sum + n, 0) || 4;
-  };
+    userPrograms.forEach((program) => {
+      const stats = useProgramStats(program);
+      
+      // Για κάθε block, προσθέτουμε τον χρόνο του στον τύπο του
+      stats.blockStats.forEach((blockStat) => {
+        if (!blockStat.training_type) return;
+        
+        const typeLabel = TRAINING_TYPE_LABELS[blockStat.training_type] || blockStat.training_type;
+        const timeMinutes = Math.round(blockStat.time / 60);
+        
+        // Για κάθε training date, προσθέτουμε τα stats
+        program.training_dates?.forEach((dateStr) => {
+          const date = parseISO(dateStr);
+          let periodKey = '';
+          
+          if (timeFilter === 'day') {
+            periodKey = format(date, 'dd/MM', { locale: el });
+          } else if (timeFilter === 'week') {
+            const weekStart = startOfWeek(date, { locale: el });
+            periodKey = `Εβδ ${format(weekStart, 'dd/MM', { locale: el })}`;
+          } else {
+            periodKey = format(date, 'MMM yyyy', { locale: el });
+          }
 
-  const parseRest = (rest: string): number => {
-    if (!rest) return 60;
-    const num = parseFloat(rest.replace(/[^0-9.]/g, '')) || 60;
-    return rest.includes("'") || rest.includes(":") ? num : num;
+          if (!periodData[periodKey]) {
+            periodData[periodKey] = {};
+          }
+
+          if (!periodData[periodKey][typeLabel]) {
+            periodData[periodKey][typeLabel] = 0;
+          }
+          
+          periodData[periodKey][typeLabel] += timeMinutes;
+        });
+      });
+    });
+
+    // Μετατρέπουμε σε array για το chart
+    const chartData = Object.entries(periodData).map(([period, types]) => {
+      const entry: any = { period };
+      Object.entries(types).forEach(([type, minutes]) => {
+        entry[type] = minutes;
+      });
+      return entry;
+    });
+
+    setData(chartData);
   };
 
   const formatMinutes = (minutes: number) => {
@@ -191,7 +132,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     )
   );
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="rounded-none">
         <CardHeader>
