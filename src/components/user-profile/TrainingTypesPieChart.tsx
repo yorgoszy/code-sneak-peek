@@ -62,41 +62,66 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     const periodData: Record<string, Record<string, number>> = {};
 
     userPrograms.forEach((program, programIndex) => {
-      const stats = calculateProgramStats(program);
+      const programData = program.programs;
+      if (!programData?.program_weeks) return;
       
-      console.log(`📊 Program ${programIndex + 1}: ${program.programs?.name}`);
-      console.log(`📊 Block stats count:`, stats.blockStats.length);
+      console.log(`📊 Program ${programIndex + 1}: ${programData.name}`);
       
-      // Για κάθε block, προσθέτουμε τον χρόνο του στον τύπο του
-      stats.blockStats.forEach((blockStat, blockIndex) => {
-        if (!blockStat.training_type) {
-          console.log(`⚠️ Block ${blockIndex + 1} has no training_type`);
-          return;
+      // Για κάθε training date, βρίσκουμε την αντίστοιχη ημέρα προπόνησης
+      program.training_dates?.forEach((dateStr, dateIndex) => {
+        const date = parseISO(dateStr);
+        let periodKey = '';
+        
+        if (timeFilter === 'day') {
+          periodKey = format(date, 'dd/MM', { locale: el });
+        } else if (timeFilter === 'week') {
+          const weekStart = startOfWeek(date, { locale: el });
+          periodKey = `Εβδ ${format(weekStart, 'dd/MM', { locale: el })}`;
+        } else {
+          periodKey = format(date, 'MMM yyyy', { locale: el });
         }
-        
-        const typeLabel = TRAINING_TYPE_LABELS[blockStat.training_type] || blockStat.training_type;
-        const timeMinutes = Math.round(blockStat.time / 60);
-        
-        console.log(`✅ Block ${blockIndex + 1}: ${blockStat.training_type} -> ${typeLabel}, ${timeMinutes}min`);
-        
-        // Για κάθε training date, προσθέτουμε τα stats
-        program.training_dates?.forEach((dateStr) => {
-          const date = parseISO(dateStr);
-          let periodKey = '';
-          
-          if (timeFilter === 'day') {
-            periodKey = format(date, 'dd/MM', { locale: el });
-          } else if (timeFilter === 'week') {
-            const weekStart = startOfWeek(date, { locale: el });
-            periodKey = `Εβδ ${format(weekStart, 'dd/MM', { locale: el })}`;
-          } else {
-            periodKey = format(date, 'MMM yyyy', { locale: el });
-          }
 
+        // Βρίσκουμε σε ποια εβδομάδα και ημέρα ανήκει αυτή η ημερομηνία
+        const daysPerWeek = programData.program_weeks[0]?.program_days?.length || 1;
+        const weekIndex = Math.floor(dateIndex / daysPerWeek);
+        const dayIndex = dateIndex % daysPerWeek;
+        
+        const week = programData.program_weeks[weekIndex];
+        if (!week) return;
+        
+        const day = week.program_days?.[dayIndex];
+        if (!day) return;
+        
+        console.log(`📊 Date ${dateStr}: Week ${weekIndex + 1}, Day ${dayIndex + 1}`);
+        
+        // Για κάθε block της ημέρας, υπολογίζουμε τα stats
+        day.program_blocks?.forEach((block: any) => {
+          if (!block.training_type) {
+            console.log(`⚠️ Block "${block.name}" has no training_type`);
+            return;
+          }
+          
+          // Υπολογίζουμε τον χρόνο του block
+          let blockTime = 0;
+          block.program_exercises?.forEach((exercise: any) => {
+            const sets = exercise.sets || 0;
+            const reps = parseRepsToTotal(exercise.reps || '0');
+            const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
+            const restSeconds = parseRestTime(exercise.rest || '');
+            const workTime = sets * reps * tempoSeconds;
+            const totalRestTime = sets * restSeconds;
+            blockTime += workTime + totalRestTime;
+          });
+          
+          const timeMinutes = Math.round(blockTime / 60);
+          const typeLabel = TRAINING_TYPE_LABELS[block.training_type] || block.training_type;
+          
+          console.log(`✅ Block "${block.name}": ${block.training_type} -> ${typeLabel}, ${timeMinutes}min`);
+          
           if (!periodData[periodKey]) {
             periodData[periodKey] = {};
           }
-
+          
           if (!periodData[periodKey][typeLabel]) {
             periodData[periodKey][typeLabel] = 0;
           }
@@ -119,6 +144,49 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
     console.log('📊 Final chart data:', chartData);
     setData(chartData);
+  };
+
+  // Helper functions από useProgramStats
+  const parseTempoToSeconds = (tempo: string): number => {
+    if (!tempo || tempo.trim() === '') return 3;
+    const parts = tempo.split('.');
+    let totalSeconds = 0;
+    parts.forEach(part => {
+      if (part === 'x' || part === 'X') {
+        totalSeconds += 0.5;
+      } else {
+        totalSeconds += parseFloat(part) || 0;
+      }
+    });
+    return totalSeconds;
+  };
+
+  const parseRepsToTotal = (reps: string): number => {
+    if (!reps) return 0;
+    if (!reps.includes('.')) {
+      return parseInt(reps) || 0;
+    }
+    const parts = reps.split('.');
+    let totalReps = 0;
+    parts.forEach(part => {
+      totalReps += parseInt(part) || 0;
+    });
+    return totalReps;
+  };
+
+  const parseRestTime = (rest: string): number => {
+    if (!rest) return 0;
+    if (rest.includes(':')) {
+      const [minutes, seconds] = rest.split(':');
+      return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
+    } else if (rest.includes("'")) {
+      return (parseFloat(rest.replace("'", "")) || 0) * 60;
+    } else if (rest.includes('s')) {
+      return parseFloat(rest.replace('s', '')) || 0;
+    } else {
+      const minutes = parseFloat(rest) || 0;
+      return minutes * 60;
+    }
   };
 
   const formatMinutes = (minutes: number) => {
