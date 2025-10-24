@@ -5,7 +5,7 @@ import { DayWeekStatsCards } from "./DayWeekStatsCards";
 import { useWorkoutStats } from "./hooks/useWorkoutStats";
 import { useDayWeekStats } from "./hooks/useDayWeekStats";
 import { useWeekStats } from "./hooks/useWeekStats";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Activity, Clock } from "lucide-react";
 
 interface CustomMonthStats {
   completedWorkouts: number;
@@ -66,7 +66,10 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
           ) : (
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
-                <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">Προπονήσεις</h4>
+                <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1 flex items-center space-x-1">
+                  <Activity className="h-3 w-3 text-blue-600" />
+                  <span>Προπονήσεις</span>
+                </h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-blue-600">
                     {weekStatsForCards.completedWorkouts}/{weekStatsForCards.scheduledWorkouts}
@@ -78,7 +81,10 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
               </div>
 
               <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
-                <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">Πραγμ. Ώρες</h4>
+                <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1 flex items-center space-x-1">
+                  <Clock className="h-3 w-3 text-green-600" />
+                  <span>Πραγμ. Ώρες</span>
+                </h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold">
                     <span className="text-green-600">
