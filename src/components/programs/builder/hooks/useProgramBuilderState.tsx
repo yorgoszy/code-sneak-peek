@@ -109,27 +109,31 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
           name: day.name,
           day_number: day.day_number,
           estimated_duration_minutes: day.estimated_duration_minutes,
-          program_blocks: day.program_blocks?.map((block: any) => ({
-            id: block.id,
-            name: block.name,
-            block_order: block.block_order,
-            training_type: block.training_type,
-            program_exercises: block.program_exercises?.map((pe: any) => {
-              const exercise = exercises.find(ex => ex.id === pe.exercise_id);
-              return {
-                id: pe.id,
-                exercise_id: pe.exercise_id,
-                exercise_order: pe.exercise_order,
-                sets: pe.sets,
-                reps: pe.reps || '',
-                kg: pe.kg || '',
-                tempo: pe.tempo || '',
-                rest: pe.rest || '',
-                notes: pe.notes || '',
-                exercises: exercise
-              };
-            }) || []
-          })) || []
+          program_blocks: day.program_blocks
+            ?.sort((a: any, b: any) => (a.block_order || 0) - (b.block_order || 0))
+            ?.map((block: any) => ({
+              id: block.id,
+              name: block.name,
+              block_order: block.block_order,
+              training_type: block.training_type,
+              program_exercises: block.program_exercises
+                ?.sort((a: any, b: any) => (a.exercise_order || 0) - (b.exercise_order || 0))
+                ?.map((pe: any) => {
+                  const exercise = exercises.find(ex => ex.id === pe.exercise_id);
+                  return {
+                    id: pe.id,
+                    exercise_id: pe.exercise_id,
+                    exercise_order: pe.exercise_order,
+                    sets: pe.sets,
+                    reps: pe.reps || '',
+                    kg: pe.kg || '',
+                    tempo: pe.tempo || '',
+                    rest: pe.rest || '',
+                    notes: pe.notes || '',
+                    exercises: exercise
+                  };
+                }) || []
+            })) || []
         })) || []
       })) || []
     };

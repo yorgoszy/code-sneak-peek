@@ -61,13 +61,17 @@ export const useProgramStructure = () => {
           continue;
         }
 
-        // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινόμηση blocks με βάση το block_order
-        const sortedBlocks = [...day.program_blocks].sort((a, b) => {
-          const orderA = Number(a.block_order) || 0;
-          const orderB = Number(b.block_order) || 0;
-          console.log(`🚨 [FIXED SORTING BLOCKS] Comparing block orders: ${orderA} vs ${orderB} for ${a.name} vs ${b.name}`);
-          return orderA - orderB;
-        });
+        // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινόμηση και επαναδιαμόρφωση block_order
+        const sortedBlocks = [...day.program_blocks]
+          .sort((a, b) => {
+            const orderA = Number(a.block_order) || 0;
+            const orderB = Number(b.block_order) || 0;
+            return orderA - orderB;
+          })
+          .map((block, index) => ({
+            ...block,
+            block_order: index + 1 // Επαναδιαμόρφωση σε 1, 2, 3...
+          }));
 
         console.log(`🚨 [FIXED] Correctly sorted blocks for day ${day.name}:`);
         sortedBlocks.forEach((blk, index) => {
@@ -106,13 +110,17 @@ export const useProgramStructure = () => {
             console.log(`🚨   ${index + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
           });
 
-          // ΣΩΣΤΗ ταξινόμηση ΜΟΝΟ με βάση το exercise_order
-          const sortedExercises = [...block.program_exercises].sort((a, b) => {
-            const orderA = Number(a.exercise_order) || 0;
-            const orderB = Number(b.exercise_order) || 0;
-            console.log(`🚨 [FIXED SORTING] Comparing exercise orders: ${orderA} vs ${orderB}`);
-            return orderA - orderB;
-          });
+          // ΣΩΣΤΗ ταξινόμηση και επαναδιαμόρφωση exercise_order
+          const sortedExercises = [...block.program_exercises]
+            .sort((a, b) => {
+              const orderA = Number(a.exercise_order) || 0;
+              const orderB = Number(b.exercise_order) || 0;
+              return orderA - orderB;
+            })
+            .map((ex, index) => ({
+              ...ex,
+              exercise_order: index + 1 // Επαναδιαμόρφωση σε 1, 2, 3...
+            }));
 
           console.log('🚨 [FIXED] Correctly sorted exercises order:');
           sortedExercises.forEach((ex, index) => {

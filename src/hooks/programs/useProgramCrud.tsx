@@ -35,7 +35,30 @@ export const useProgramCrud = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as Program[];
+      
+      // Ταξινόμηση της δομής μετά το fetch
+      const sortedData = (data || []).map(program => ({
+        ...program,
+        program_weeks: program.program_weeks
+          ?.sort((a, b) => (a.week_number || 0) - (b.week_number || 0))
+          ?.map(week => ({
+            ...week,
+            program_days: week.program_days
+              ?.sort((a, b) => (a.day_number || 0) - (b.day_number || 0))
+              ?.map(day => ({
+                ...day,
+                program_blocks: day.program_blocks
+                  ?.sort((a, b) => (a.block_order || 0) - (b.block_order || 0))
+                  ?.map(block => ({
+                    ...block,
+                    program_exercises: block.program_exercises
+                      ?.sort((a, b) => (a.exercise_order || 0) - (b.exercise_order || 0))
+                  }))
+              }))
+          }))
+      }));
+      
+      return sortedData as Program[];
     } catch (error) {
       console.error('Error fetching programs:', error);
       toast.error('Σφάλμα φόρτωσης προγραμμάτων');
@@ -110,9 +133,27 @@ export const useProgramCrud = () => {
             };
           });
 
+        // Ταξινόμηση της δομής
         return {
           ...program,
-          program_assignments: assignments
+          program_assignments: assignments,
+          program_weeks: program.program_weeks
+            ?.sort((a, b) => (a.week_number || 0) - (b.week_number || 0))
+            ?.map(week => ({
+              ...week,
+              program_days: week.program_days
+                ?.sort((a, b) => (a.day_number || 0) - (b.day_number || 0))
+                ?.map(day => ({
+                  ...day,
+                  program_blocks: day.program_blocks
+                    ?.sort((a, b) => (a.block_order || 0) - (b.block_order || 0))
+                    ?.map(block => ({
+                      ...block,
+                      program_exercises: block.program_exercises
+                        ?.sort((a, b) => (a.exercise_order || 0) - (b.exercise_order || 0))
+                    }))
+                }))
+            }))
         };
       });
 
