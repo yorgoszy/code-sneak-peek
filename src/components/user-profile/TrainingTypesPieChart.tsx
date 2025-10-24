@@ -8,6 +8,7 @@ import { el } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { calculateProgramStats } from "@/hooks/useProgramStats";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -433,8 +434,15 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             </p>
           </div>
         ) : timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month' ? (
-          <div className="grid grid-cols-3 gap-2">
-            {(timeFilter === 'day' ? daysList : timeFilter === 'week' ? weeksList : monthsList).slice(0, 3).map((period) => {
+          <Carousel
+            opts={{
+              align: "start",
+              slidesToScroll: 3,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-2">
+              {(timeFilter === 'day' ? daysList : timeFilter === 'week' ? weeksList : monthsList).map((period) => {
               const periodData = data.find(item => item.period === period);
               if (!periodData) return null;
 
@@ -454,7 +462,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               const periodTotalMinutes = periodChartData.reduce((sum, item) => sum + item.value, 0);
 
               return (
-                <div key={period} className="border border-gray-200 rounded-none p-1 md:p-2">
+                <CarouselItem key={period} className="pl-2 basis-1/3">
+                  <div className="border border-gray-200 rounded-none p-1 md:p-2">
                   <div className="mb-2">
                     <h4 className="text-[10px] font-semibold text-gray-900">{period}</h4>
                     <div className="text-[10px] text-gray-600">
@@ -573,10 +582,14 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     </ResponsiveContainer>
                     </>
                   )}
-                </div>
+                  </div>
+                </CarouselItem>
               );
             })}
-          </div>
+            </CarouselContent>
+            <CarouselPrevious className="rounded-none -left-3" />
+            <CarouselNext className="rounded-none -right-3" />
+          </Carousel>
         ) : null}
       </CardContent>
     </Card>
