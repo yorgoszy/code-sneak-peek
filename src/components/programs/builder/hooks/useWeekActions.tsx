@@ -95,21 +95,10 @@ export const useWeekActions = (
     
     console.log('🚨 [DUPLICATE WEEK] Updating program with weeks count:', updatedWeeks.length);
     
-    // Άμεση ενημέρωση του state
+    // Άμεση ενημέρωση του state - ΧΩΡΙΣ auto-save
     updateProgram({ weeks: updatedWeeks });
 
-    // Αν το πρόγραμμα έχει ID και υπάρχει saveProgram function, αποθήκευσε αμέσως
-    if (program.id && saveProgram) {
-      try {
-        console.log('💾 Auto-saving after week duplication...');
-        await saveProgram({ ...program, weeks: updatedWeeks });
-        console.log('✅ Week duplication saved to database');
-      } catch (error) {
-        console.error('❌ Failed to save week duplication:', error);
-      }
-    }
-
-    console.log('🚨 [DUPLICATE WEEK] Week duplication completed successfully');
+    console.log('🚨 [DUPLICATE WEEK] Week duplication completed successfully (no auto-save)');
   };
 
   const updateWeekName = (weekId: string, name: string) => {

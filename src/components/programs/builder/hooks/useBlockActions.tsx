@@ -65,12 +65,19 @@ export const useBlockActions = (
               const blockToDuplicate = day.program_blocks?.find(block => block.id === blockId);
               if (!blockToDuplicate) return day;
 
+              // Ταξινόμηση των ασκήσεων με βάση το exercise_order ΠΡΙΝ την αντιγραφή
+              const sortedExercises = [...(blockToDuplicate.program_exercises || [])].sort((a, b) => {
+                const orderA = Number(a.exercise_order) || 0;
+                const orderB = Number(b.exercise_order) || 0;
+                return orderA - orderB;
+              });
+
               const newBlock = {
                 ...JSON.parse(JSON.stringify(blockToDuplicate)),
                 id: generateId(),
                 name: `${blockToDuplicate.name} (Αντίγραφο)`,
                 block_order: (day.program_blocks?.length || 0) + 1,
-                program_exercises: blockToDuplicate.program_exercises.map(exercise => ({
+                program_exercises: sortedExercises.map(exercise => ({
                   ...exercise,
                   id: generateId()
                 }))
@@ -88,17 +95,6 @@ export const useBlockActions = (
       return week;
     });
     updateProgram({ weeks: updatedWeeks });
-
-    // Αν το πρόγραμμα έχει ID και υπάρχει saveProgram function, αποθήκευσε αμέσως
-    if (program.id && saveProgram) {
-      try {
-        console.log('💾 Auto-saving after block duplication...');
-        await saveProgram({ ...program, weeks: updatedWeeks });
-        console.log('✅ Block duplication saved to database');
-      } catch (error) {
-        console.error('❌ Failed to save block duplication:', error);
-      }
-    }
   };
 
   const updateBlockName = (weekId: string, dayId: string, blockId: string, name: string) => {

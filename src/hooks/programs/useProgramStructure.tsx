@@ -61,7 +61,20 @@ export const useProgramStructure = () => {
           continue;
         }
 
-        for (const block of day.program_blocks) {
+        // 🚨 ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Ταξινόμηση blocks με βάση το block_order
+        const sortedBlocks = [...day.program_blocks].sort((a, b) => {
+          const orderA = Number(a.block_order) || 0;
+          const orderB = Number(b.block_order) || 0;
+          console.log(`🚨 [FIXED SORTING BLOCKS] Comparing block orders: ${orderA} vs ${orderB} for ${a.name} vs ${b.name}`);
+          return orderA - orderB;
+        });
+
+        console.log(`🚨 [FIXED] Correctly sorted blocks for day ${day.name}:`);
+        sortedBlocks.forEach((blk, index) => {
+          console.log(`🚨   ${index + 1}. ${blk.name} (order: ${blk.block_order})`);
+        });
+
+        for (const block of sortedBlocks) {
           console.log('🧱 [useProgramStructure] Creating block:', block.name, 'with', block.program_exercises?.length || 0, 'exercises');
           
           const { data: blockData, error: blockError } = await supabase

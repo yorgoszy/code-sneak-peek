@@ -156,17 +156,6 @@ export const useExerciseActions = (
       return week;
     });
     updateProgram({ weeks: updatedWeeks });
-
-    // Αν το πρόγραμμα έχει ID και υπάρχει saveProgram function, αποθήκευσε αμέσως
-    if (program.id && saveProgram) {
-      try {
-        console.log('💾 Auto-saving after exercise duplication...');
-        await saveProgram({ ...program, weeks: updatedWeeks });
-        console.log('✅ Exercise duplication saved to database');
-      } catch (error) {
-        console.error('❌ Failed to save exercise duplication:', error);
-      }
-    }
   };
 
   return {
