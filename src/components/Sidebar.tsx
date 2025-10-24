@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
+import { Separator } from "@/components/ui/separator";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useState } from "react";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
@@ -458,6 +459,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/booking-sections",
       badge: null
     },
+    { type: 'separator' },
     { 
       icon: Calendar, 
       label: "Προγράμματα", 
@@ -476,6 +478,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/program-cards",
       badge: null
     },
+    { type: 'separator' },
     {
       icon: TrendingUp,
       label: "Πρόοδος",
@@ -562,7 +565,18 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
   const navigationContent = (
     <div className={`space-y-1 ${isMobile ? 'md:space-y-2' : 'space-y-2'}`}>
-      {menuItems.map((item) => {
+      {menuItems.map((item, index) => {
+        // Separator rendering
+        if (item.type === 'separator') {
+          return (
+            <Separator 
+              key={`separator-${index}`} 
+              className="my-2 bg-gray-300" 
+            />
+          );
+        }
+
+        // Regular menu item rendering
         const isActive = location.pathname === item.path && !item.external;
         return (
           <button
