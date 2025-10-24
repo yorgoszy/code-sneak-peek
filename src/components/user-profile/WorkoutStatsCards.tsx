@@ -73,7 +73,7 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
       <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
         <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">
           <span className="flex items-center space-x-1">
-            <AlertTriangle className="h-3 w-3 text-orange-600" />
+            <AlertTriangle className="h-3 w-3 text-red-600" />
             <span>Χαμένες</span>
           </span>
         </h4>

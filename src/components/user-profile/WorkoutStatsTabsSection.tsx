@@ -5,6 +5,7 @@ import { DayWeekStatsCards } from "./DayWeekStatsCards";
 import { useWorkoutStats } from "./hooks/useWorkoutStats";
 import { useDayWeekStats } from "./hooks/useDayWeekStats";
 import { useWeekStats } from "./hooks/useWeekStats";
+import { AlertTriangle } from "lucide-react";
 
 interface CustomMonthStats {
   completedWorkouts: number;
@@ -95,7 +96,12 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
               </div>
               
               <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
-                <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">Χαμένες</h4>
+                <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">
+                  <span className="flex items-center space-x-1">
+                    <AlertTriangle className="h-3 w-3 text-red-600" />
+                    <span>Χαμένες</span>
+                  </span>
+                </h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-red-600">
                     {weekStatsForCards.missedWorkouts}
