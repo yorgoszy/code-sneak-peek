@@ -157,15 +157,15 @@ const UserProfile = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation */}
-        <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-3 md:px-6 py-4 shadow-sm">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2 md:space-x-4 min-w-0">
+        <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-2 md:px-6 py-2 md:py-4 shadow-sm">
+          <div className="flex justify-between items-center gap-1 md:gap-2">
+            <div className="flex items-center space-x-1 md:space-x-4 min-w-0 flex-1">
               {/* Mobile/Tablet menu button */}
               {(isMobile || isTablet) && (
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="rounded-none lg:hidden"
+                  className="rounded-none lg:hidden h-8 w-8 p-0"
                   onClick={() => setShowMobileSidebar(true)}
                 >
                   <Menu className="h-4 w-4" />
@@ -173,35 +173,37 @@ const UserProfile = () => {
               )}
               
               <Link to="/dashboard/users">
-                <Button variant="outline" size="sm" className="rounded-none">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">{t('common.back')}</span>
+                <Button variant="outline" size="sm" className="rounded-none h-8 px-2 md:px-4">
+                  <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+                  <span className="hidden sm:inline text-xs md:text-sm">{t('common.back')}</span>
                 </Button>
               </Link>
               
-              <div className="min-w-0">
-                <h1 className="text-lg md:text-2xl font-bold text-gray-900 truncate">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm md:text-2xl font-bold text-gray-900 truncate">
                   {userProfile.name}
                 </h1>
-                <p className="text-xs md:text-sm text-gray-600 truncate">
+                <p className="text-[10px] md:text-sm text-gray-600 truncate hidden sm:block">
                   {userProfile.email} - {t(`roles.${userProfile.role}`)}
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-2 md:space-x-4">
-              <span className="text-xs md:text-sm text-gray-600 hidden sm:block truncate">
+            <div className="flex items-center space-x-1 md:space-x-4 flex-shrink-0">
+              <span className="text-xs md:text-sm text-gray-600 hidden lg:block truncate">
                 {currentUser?.email}
               </span>
-              <LanguageSwitcher />
+              <div className="hidden sm:block">
+                <LanguageSwitcher />
+              </div>
               <Button 
                 variant="outline" 
-                className="rounded-none"
-                size={isMobile ? "sm" : "default"}
+                className="rounded-none h-8 px-2 md:px-4"
+                size="sm"
                 onClick={handleSignOut}
               >
-                <LogOut className="h-4 w-4 mr-0 md:mr-2" />
-                <span className="hidden md:inline">{t('auth.signOut')}</span>
+                <LogOut className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+                <span className="hidden md:inline text-xs md:text-sm">{t('auth.signOut')}</span>
               </Button>
             </div>
           </div>
