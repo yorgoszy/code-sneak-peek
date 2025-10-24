@@ -47,30 +47,30 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
   };
 
   return (
-    <TabsContent key={day.id} value={dayIndex.toString()} className="mt-4">
-      <div className="bg-white border border-gray-200 rounded-none p-3">
+    <TabsContent key={day.id} value={dayIndex.toString()} className="mt-1">
+      <div className="bg-white border border-gray-200 rounded-none p-1">
         {editMode && isEditing && (
-          <div className="flex items-center justify-end mb-3">
+          <div className="flex items-center justify-end mb-1">
             <Button
               onClick={() => onAddNewBlock(day.id)}
               size="sm"
               variant="outline"
-              className="h-6 text-xs rounded-none"
+              className="h-5 text-xs rounded-none py-0 px-2"
             >
-              <Plus className="w-3 h-3 mr-1" />
+              <Plus className="w-2 h-2 mr-1" />
               Block
             </Button>
           </div>
         )}
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           {editMode && isEditing ? (
             <DndContext collisionDetection={closestCenter} onDragEnd={handleBlockDragEnd}>
               <SortableContext 
                 items={(day.program_blocks || []).map((block: any) => block.id)} 
                 strategy={verticalListSortingStrategy}
               >
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {(day.program_blocks || []).map((block: any) => (
                     <EditableBlock
                       key={block.id}
@@ -92,14 +92,15 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
           )}
           
           {(day.program_blocks || []).length === 0 && editMode && isEditing && (
-            <div className="text-center py-8 text-gray-500">
-              <p className="mb-2">Δεν υπάρχουν blocks σε αυτή την ημέρα</p>
+            <div className="text-center py-4 text-gray-500">
+              <p className="mb-2 text-xs">Δεν υπάρχουν blocks σε αυτή την ημέρα</p>
               <Button
                 onClick={() => onAddNewBlock(day.id)}
                 variant="outline"
-                className="rounded-none"
+                size="sm"
+                className="rounded-none h-6 text-xs"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-3 h-3 mr-1" />
                 Προσθήκη Block
               </Button>
             </div>

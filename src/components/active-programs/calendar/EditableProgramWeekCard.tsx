@@ -65,7 +65,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
         </h3>
       </div>
       
-      <div className="p-3">
+      <div className="p-1.5">
         <Tabs defaultValue="0" className="w-full">
           {editMode && isEditing ? (
             <DndContext collisionDetection={closestCenter} onDragEnd={handleDayDragEnd}>
