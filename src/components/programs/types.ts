@@ -19,6 +19,7 @@ export interface ProgramExercise {
   sets: number;
   reps: string;
   kg?: string;
+  kg_mode?: 'kg' | 'rpm' | 'meter' | 's/m' | 'km/h';
   percentage_1rm?: number;
   velocity_ms?: number;
   tempo?: string;

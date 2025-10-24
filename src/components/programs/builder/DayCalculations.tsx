@@ -38,8 +38,11 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
             const reps = repsData.count;
             
             // Volume calculation (sets × reps × kg) in kg
-            const volumeKg = sets * reps * kg;
-            totalVolume += volumeKg;
+            // Only calculate if kg_mode is 'kg' or undefined
+            if ((!exercise.kg_mode || exercise.kg_mode === 'kg') && kg > 0) {
+              const volumeKg = sets * reps * kg;
+              totalVolume += volumeKg;
+            }
 
             // Time calculation: (sets × reps × tempo) + (sets - 1) × rest
             const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');

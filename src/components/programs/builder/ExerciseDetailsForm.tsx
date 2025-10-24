@@ -20,7 +20,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
 }) => {
   const [isTimeMode, setIsTimeMode] = useState(false);
   const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>('reps');
-  const [kgMode, setKgMode] = useState<'kg' | 'rpm' | 'meter' | 's/m' | 'km/h'>('kg');
+  const [kgMode, setKgMode] = useState<'kg' | 'rpm' | 'meter' | 's/m' | 'km/h'>(exercise.kg_mode || 'kg');
 
   const handleSetsLabelClick = () => {
     setIsTimeMode(!isTimeMode);
@@ -36,11 +36,16 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
 
   const handleKgLabelClick = () => {
     setKgMode((prev) => {
-      if (prev === 'kg') return 'rpm';
-      if (prev === 'rpm') return 'meter';
-      if (prev === 'meter') return 's/m';
-      if (prev === 's/m') return 'km/h';
-      return 'kg';
+      let newMode: 'kg' | 'rpm' | 'meter' | 's/m' | 'km/h';
+      if (prev === 'kg') newMode = 'rpm';
+      else if (prev === 'rpm') newMode = 'meter';
+      else if (prev === 'meter') newMode = 's/m';
+      else if (prev === 's/m') newMode = 'km/h';
+      else newMode = 'kg';
+      
+      // Save the mode to the exercise
+      onUpdate('kg_mode', newMode);
+      return newMode;
     });
   };
 

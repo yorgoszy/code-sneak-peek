@@ -87,8 +87,11 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
           const kg = parseFloat(exercise.kg || '0') || 0;
 
           // Volume calculation (sets × reps × kg) in kg
-          const volumeKg = sets * reps * kg;
-          totalVolume += volumeKg;
+          // Only calculate if kg_mode is 'kg' or undefined
+          if ((!exercise.kg_mode || exercise.kg_mode === 'kg') && kg > 0) {
+            const volumeKg = sets * reps * kg;
+            totalVolume += volumeKg;
+          }
 
           // Intensity calculation (average percentage of 1RM)
           if (exercise.percentage_1rm) {
