@@ -56,17 +56,28 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   }, [userPrograms, timeFilter, isLoading]);
 
   const calculateTrainingTypesData = () => {
+    console.log('📊 Calculating training types data...');
+    console.log('📊 User programs count:', userPrograms.length);
+    
     const periodData: Record<string, Record<string, number>> = {};
 
-    userPrograms.forEach((program) => {
+    userPrograms.forEach((program, programIndex) => {
       const stats = calculateProgramStats(program);
       
+      console.log(`📊 Program ${programIndex + 1}: ${program.programs?.name}`);
+      console.log(`📊 Block stats count:`, stats.blockStats.length);
+      
       // Για κάθε block, προσθέτουμε τον χρόνο του στον τύπο του
-      stats.blockStats.forEach((blockStat) => {
-        if (!blockStat.training_type) return;
+      stats.blockStats.forEach((blockStat, blockIndex) => {
+        if (!blockStat.training_type) {
+          console.log(`⚠️ Block ${blockIndex + 1} has no training_type`);
+          return;
+        }
         
         const typeLabel = TRAINING_TYPE_LABELS[blockStat.training_type] || blockStat.training_type;
         const timeMinutes = Math.round(blockStat.time / 60);
+        
+        console.log(`✅ Block ${blockIndex + 1}: ${blockStat.training_type} -> ${typeLabel}, ${timeMinutes}min`);
         
         // Για κάθε training date, προσθέτουμε τα stats
         program.training_dates?.forEach((dateStr) => {
@@ -95,6 +106,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       });
     });
 
+    console.log('📊 Period data:', periodData);
+
     // Μετατρέπουμε σε array για το chart
     const chartData = Object.entries(periodData).map(([period, types]) => {
       const entry: any = { period };
@@ -104,6 +117,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       return entry;
     });
 
+    console.log('📊 Final chart data:', chartData);
     setData(chartData);
   };
 
@@ -153,7 +167,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
-            Δεν υπάρχουν ολοκληρωμένες προπονήσεις με τύπους
+            <p className="mb-2">Δεν υπάρχουν δεδομένα για εμφάνιση</p>
+            <p className="text-xs text-gray-400">
+              Βεβαιωθείτε ότι έχετε ορίσει τύπο προπόνησης (str, end, pwr κτλ.) σε κάθε μπλοκ του προγράμματος
+            </p>
           </div>
         </CardContent>
       </Card>
