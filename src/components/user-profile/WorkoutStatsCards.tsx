@@ -7,6 +7,7 @@ interface WorkoutStatsCardsProps {
       totalTrainingHours: number;
       totalVolume: number;
       missedWorkouts: number;
+      scheduledWorkouts?: number;
     };
     improvements: {
       workoutsImprovement: number;
@@ -45,26 +46,25 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
 
   return (
     <div className="grid grid-cols-2 gap-2 md:gap-3">
-      {/* Προπονήσεις αυτόν τον μήνα */}
+      {/* Ημέρες προπονήσεων αυτόν τον μήνα */}
       <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
         <h4 className="text-xs font-medium text-gray-700 mb-1 flex items-center justify-between">
           <span className="flex items-center space-x-1">
             <Activity className="h-3 w-3 text-blue-600" />
             <span>Προπονήσεις</span>
           </span>
-          <div className="scale-75">
-            {getTrendIcon(stats.improvements.workoutsImprovement)}
-          </div>
         </h4>
         <div className="flex-1 flex flex-col justify-end">
-          <div className="text-sm md:text-base font-semibold text-blue-600">{stats.currentMonth.completedWorkouts}</div>
-          <div className={`text-xs ${getTrendColor(stats.improvements.workoutsImprovement)}`}>
-            {stats.improvements.workoutsImprovement > 0 ? '+' : ''}{stats.improvements.workoutsImprovement} μήνα
+          <div className="text-sm md:text-base font-semibold text-blue-600">
+            {stats.currentMonth.scheduledWorkouts || 0}
+          </div>
+          <div className="text-xs text-gray-500">
+            Ημέρες μήνα
           </div>
         </div>
       </div>
 
-      {/* Ώρες προπονήσεων */}
+      {/* Ώρες ολοκληρωμένων προπονήσεων */}
       <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
         <h4 className="text-xs font-medium text-gray-700 mb-1 flex items-center justify-between">
           <span className="flex items-center space-x-1">
@@ -76,7 +76,9 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
           </div>
         </h4>
         <div className="flex-1 flex flex-col justify-end">
-          <div className="text-sm md:text-base font-semibold text-green-600">{stats.currentMonth.totalTrainingHours}h</div>
+          <div className="text-sm md:text-base font-semibold text-green-600">
+            {stats.currentMonth.totalTrainingHours}h
+          </div>
           <div className={`text-xs ${getTrendColor(stats.improvements.hoursImprovement)}`}>
             {stats.improvements.hoursImprovement > 0 ? '+' : ''}{stats.improvements.hoursImprovement}h μήνα
           </div>

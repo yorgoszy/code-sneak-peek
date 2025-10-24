@@ -37,10 +37,34 @@ export const useWorkoutStats = (userId: string) => {
       
       const { supabase } = await import("@/integrations/supabase/client");
 
-      // Φέρε τα προγράμματα του χρήστη
+      // Φέρε τα προγράμματα του χρήστη με πλήρη δεδομένα
       const { data: userPrograms } = await supabase
         .from('program_assignments')
-        .select('id, training_dates')
+        .select(`
+          id,
+          training_dates,
+          programs!inner (
+            id,
+            name,
+            program_weeks (
+              id,
+              program_days (
+                id,
+                day_number,
+                program_blocks (
+                  id,
+                  program_exercises (
+                    id,
+                    sets,
+                    reps,
+                    tempo,
+                    rest
+                  )
+                )
+              )
+            )
+          )
+        `)
         .eq('user_id', userId)
         .eq('status', 'active');
 
@@ -56,6 +80,80 @@ export const useWorkoutStats = (userId: string) => {
         .select('*')
         .in('assignment_id', assignmentIds);
 
+      // Helper functions για υπολογισμό χρόνου
+      const parseTempoToSeconds = (tempo: string): number => {
+        if (!tempo || tempo.trim() === '') return 3;
+        const parts = tempo.split('.');
+        let totalSeconds = 0;
+        parts.forEach(part => {
+          if (part === 'x' || part === 'X') {
+            totalSeconds += 0.5;
+          } else {
+            totalSeconds += parseFloat(part) || 0;
+          }
+        });
+        return totalSeconds;
+      };
+
+      const parseRepsToTotal = (reps: string): number => {
+        if (!reps) return 0;
+        if (!reps.includes('.')) {
+          return parseInt(reps) || 0;
+        }
+        const parts = reps.split('.');
+        let totalReps = 0;
+        parts.forEach(part => {
+          totalReps += parseInt(part) || 0;
+        });
+        return totalReps;
+      };
+
+      const parseRestTime = (rest: string): number => {
+        if (!rest) return 0;
+        if (rest.includes(':')) {
+          const [minutes, seconds] = rest.split(':');
+          return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
+        } else if (rest.includes("'")) {
+          return (parseFloat(rest.replace("'", "")) || 0) * 60;
+        } else if (rest.includes('s')) {
+          return parseFloat(rest.replace('s', '')) || 0;
+        } else {
+          const minutes = parseFloat(rest) || 0;
+          return minutes * 60;
+        }
+      };
+
+      // Υπολογισμός χρόνου προπόνησης
+      const calculateWorkoutDuration = (program: any, dateIndex: number): number => {
+        const programData = program.programs;
+        if (!programData?.program_weeks) return 0;
+
+        const daysPerWeek = programData.program_weeks[0]?.program_days?.length || 1;
+        const weekIndex = Math.floor(dateIndex / daysPerWeek);
+        const dayIndex = dateIndex % daysPerWeek;
+
+        const week = programData.program_weeks[weekIndex];
+        if (!week) return 0;
+
+        const day = week.program_days?.[dayIndex];
+        if (!day) return 0;
+
+        let totalSeconds = 0;
+        day.program_blocks?.forEach((block: any) => {
+          block.program_exercises?.forEach((exercise: any) => {
+            const sets = exercise.sets || 0;
+            const reps = parseRepsToTotal(exercise.reps || '0');
+            const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
+            const restSeconds = parseRestTime(exercise.rest || '');
+            const workTime = sets * reps * tempoSeconds;
+            const totalRestTime = sets * restSeconds;
+            totalSeconds += workTime + totalRestTime;
+          });
+        });
+
+        return totalSeconds / 60; // Επιστρέφουμε λεπτά
+      };
+
       // ΑΚΡΙΒΗ ΑΝΤΙΓΡΑΦΗ από UserProfileDailyProgram calculateMonthlyStats
       const calculateMonthlyStats = (monthDate: Date) => {
         const monthStr = format(monthDate, 'yyyy-MM');
@@ -64,6 +162,7 @@ export const useWorkoutStats = (userId: string) => {
         let allMonthlyWorkouts = 0;
         let completedCount = 0;
         let missedCount = 0;
+        let totalCompletedMinutes = 0;
         
         for (const program of userPrograms) {
           if (!program.training_dates) continue;
@@ -72,7 +171,9 @@ export const useWorkoutStats = (userId: string) => {
             date && date.startsWith(monthStr)
           );
           
-          for (const date of monthlyDates) {
+          for (let i = 0; i < monthlyDates.length; i++) {
+            const date = monthlyDates[i];
+            const dateIndex = program.training_dates.indexOf(date);
             allMonthlyWorkouts++;
             
             const completion = workoutCompletions?.find(c => 
@@ -81,6 +182,9 @@ export const useWorkoutStats = (userId: string) => {
             
             if (completion?.status === 'completed') {
               completedCount++;
+              // Υπολογίζουμε τον χρόνο της ολοκληρωμένης προπόνησης
+              const workoutMinutes = calculateWorkoutDuration(program, dateIndex);
+              totalCompletedMinutes += workoutMinutes;
             } else {
               // Έλεγχος αν έχει περάσει η ημερομηνία
               const workoutDate = new Date(date);
@@ -97,7 +201,8 @@ export const useWorkoutStats = (userId: string) => {
         return { 
           completed: completedCount, 
           missed: missedCount, 
-          total: allMonthlyWorkouts 
+          total: allMonthlyWorkouts,
+          totalMinutes: totalCompletedMinutes
         };
       };
 
@@ -110,23 +215,26 @@ export const useWorkoutStats = (userId: string) => {
 
       // Calculate improvements
       const workoutsImprovement = currentMonthStats.completed - previousMonthStats.completed;
+      const hoursImprovement = (currentMonthStats.totalMinutes / 60) - (previousMonthStats.totalMinutes / 60);
 
       setStats({
         currentMonth: {
           completedWorkouts: currentMonthStats.completed,
-          totalTrainingHours: 0, // Placeholder
+          totalTrainingHours: Math.round(currentMonthStats.totalMinutes / 60 * 10) / 10, // Ώρες με 1 δεκαδικό
           totalVolume: 0, // Placeholder
-          missedWorkouts: currentMonthStats.missed
+          missedWorkouts: currentMonthStats.missed,
+          scheduledWorkouts: currentMonthStats.total // Προσθήκη: συνολικές προγραμματισμένες
         },
         previousMonth: {
           completedWorkouts: previousMonthStats.completed,
-          totalTrainingHours: 0, // Placeholder
+          totalTrainingHours: Math.round(previousMonthStats.totalMinutes / 60 * 10) / 10,
           totalVolume: 0, // Placeholder
-          missedWorkouts: previousMonthStats.missed
+          missedWorkouts: previousMonthStats.missed,
+          scheduledWorkouts: previousMonthStats.total
         },
         improvements: {
           workoutsImprovement,
-          hoursImprovement: 0, // Placeholder
+          hoursImprovement: Math.round(hoursImprovement * 10) / 10,
           volumeImprovement: 0 // Placeholder
         }
       });
