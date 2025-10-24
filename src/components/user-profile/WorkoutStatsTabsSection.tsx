@@ -8,9 +8,10 @@ import { useWeekStats } from "./hooks/useWeekStats";
 
 interface WorkoutStatsTabsSectionProps {
   userId: string;
+  onTabChange?: (tab: 'day' | 'week' | 'month') => void;
 }
 
-export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps) => {
+export const WorkoutStatsTabsSection = ({ userId, onTabChange }: WorkoutStatsTabsSectionProps) => {
   const { stats: workoutStats, loading: workoutStatsLoading } = useWorkoutStats(userId);
   const { stats: dayWeekStats, loading: dayWeekStatsLoading } = useDayWeekStats(userId);
   const { stats: weekStats, loading: weekStatsLoading } = useWeekStats(userId);
@@ -19,7 +20,11 @@ export const WorkoutStatsTabsSection = ({ userId }: WorkoutStatsTabsSectionProps
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-800">Στατιστικά Προπονήσεων</h3>
       
-      <Tabs defaultValue="month" className="w-full">
+      <Tabs 
+        defaultValue="month" 
+        className="w-full"
+        onValueChange={(value) => onTabChange?.(value as 'day' | 'week' | 'month')}
+      >
         <TabsList className="grid w-full grid-cols-3 rounded-none">
           <TabsTrigger value="month" className="rounded-none">Μήνας</TabsTrigger>
           <TabsTrigger value="week" className="rounded-none">Εβδομάδα</TabsTrigger>
