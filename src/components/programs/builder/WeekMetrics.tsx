@@ -10,7 +10,7 @@ interface WeekMetricsProps {
 
 interface WeekStats {
   volume: string;
-  intensity: number;
+  intensity: string;
   watts: string;
   time: number;
 }
@@ -122,7 +122,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
 
   return {
     volume: (totalVolume / 1000).toFixed(2), // Convert kg to tons with 2 decimal places
-    intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount) : 0,
+    intensity: exerciseCount > 0 ? Math.round(totalIntensity / exerciseCount).toFixed(0) : '0', // Ακέραιος
     watts: (totalWatts / 1000).toFixed(1), // Convert watts to kilowatts with 1 decimal place
     time: Math.round(totalTimeSeconds / 60) // Convert to minutes
   };
@@ -178,7 +178,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
           <div className="font-semibold text-green-700">{currentStats.intensity}%</div>
           {previousStats && (
             <PercentageIndicator 
-              percentage={calculatePercentageChange(currentStats.intensity.toString(), previousStats.intensity.toString())} 
+              percentage={calculatePercentageChange(currentStats.intensity, previousStats.intensity)} 
             />
           )}
         </div>

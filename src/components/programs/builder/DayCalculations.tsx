@@ -77,7 +77,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
 
     return {
       volume: (totalVolume / 1000).toFixed(2), // Convert kg to tons with 2 decimal places
-      intensity: intensityCount > 0 ? Math.round(totalIntensitySum / intensityCount) : 0, // Μέσος όρος
+      intensity: intensityCount > 0 ? Math.round(totalIntensitySum / intensityCount).toFixed(0) : '0', // Μέσος όρος - ακέραιος
       watts: (totalWatts / 1000).toFixed(1), // Convert watts to kilowatts with 1 decimal place
       time: Math.round(totalTimeSeconds / 60), // Convert to minutes
       exerciseCount: blocks.reduce((total, block) => 
