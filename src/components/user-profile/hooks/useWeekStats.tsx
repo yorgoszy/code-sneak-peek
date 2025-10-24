@@ -12,6 +12,7 @@ interface WeekStats {
   missedWorkouts: number;
   scheduledMinutes: number;
   actualMinutes: number;
+  completedWorkouts: number;
 }
 
 export const useWeekStats = (userId: string) => {
@@ -22,7 +23,8 @@ export const useWeekStats = (userId: string) => {
     totalScheduledWorkouts: 0,
     missedWorkouts: 0,
     scheduledMinutes: 0,
-    actualMinutes: 0
+    actualMinutes: 0,
+    completedWorkouts: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -264,7 +266,8 @@ export const useWeekStats = (userId: string) => {
         actualMinutes: totalActualMinutes, // Συνολικά λεπτά, όχι υπόλοιπο!
         scheduledWorkouts: allWeeklyWorkouts,
         totalScheduledWorkouts: allWeeklyWorkouts,
-        missedWorkouts: missedCount
+        missedWorkouts: missedCount,
+        completedWorkouts: completedCount
       };
 
       setStats(weeklyStats);

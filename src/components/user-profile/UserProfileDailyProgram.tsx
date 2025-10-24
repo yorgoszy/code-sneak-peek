@@ -136,6 +136,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     startOfWeekDate.setHours(0, 0, 0, 0);
 
     let scheduledMinutes = 0, actualMinutes = 0, missed = 0;
+    let scheduledWorkouts = 0, completedWorkouts = 0;
 
     const weekDays = [];
     for (let i = 0; i < 7; i++) {
@@ -151,11 +152,13 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
         const dateIndex = program.training_dates.findIndex(d => d === dateStr);
         if (dateIndex === -1) continue;
 
+        scheduledWorkouts++;
         const workoutMinutes = calculateWorkoutDuration(program, dateIndex);
         scheduledMinutes += workoutMinutes;
 
         const completion = workoutCompletions.find(c => c.assignment_id === program.id && c.scheduled_date === dateStr);
         if (completion?.status === 'completed') {
+          completedWorkouts++;
           actualMinutes += workoutMinutes;
         } else {
           const today = new Date();
@@ -169,6 +172,8 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
       scheduledMinutes,
       actualMinutes,
       missedWorkouts: missed,
+      completedWorkouts,
+      scheduledWorkouts,
     };
   }, [userPrograms, workoutCompletions]);
 
