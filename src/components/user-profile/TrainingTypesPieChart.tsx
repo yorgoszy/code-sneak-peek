@@ -513,7 +513,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     />
                     <Legend 
                       wrapperStyle={{ fontSize: '9px' }}
-                      formatter={(value) => TRAINING_TYPE_LABELS[value] || value}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -526,7 +525,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={(entry) => `${TRAINING_TYPE_LABELS[entry.name] || entry.name}: ${formatMinutes(entry.value)}`}
+                      label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
                       outerRadius={65}
                       innerRadius={40}
                       fill="#8884d8"
@@ -551,7 +550,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     />
                     <Legend 
                       wrapperStyle={{ fontSize: '10px' }}
-                      formatter={(value) => TRAINING_TYPE_LABELS[value] || value}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -564,7 +562,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={(entry) => `${TRAINING_TYPE_LABELS[entry.name] || entry.name}: ${formatMinutes(entry.value)}`}
+                      label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
                       outerRadius={75}
                       innerRadius={45}
                       fill="#8884d8"
@@ -585,9 +583,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                         borderRadius: '0px'
                       }}
                     />
-                    <Legend 
-                      formatter={(value) => TRAINING_TYPE_LABELS[value] || value}
-                    />
+                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               </>
