@@ -27,7 +27,8 @@ export const parseRepsToTime = (reps: string): { isTime: boolean; seconds: numbe
   }
   
   // If no time format matched, parse as regular reps
-  if (!reps.includes('.')) {
+  // Check if it contains '.' or '/' for complex reps like "1.2.1.3" or "8/8"
+  if (!reps.includes('.') && !reps.includes('/')) {
     return { 
       isTime: false, 
       seconds: 0, 
@@ -35,8 +36,8 @@ export const parseRepsToTime = (reps: string): { isTime: boolean; seconds: numbe
     };
   }
   
-  // Split by '.' and sum all numbers for complex reps like "1.2.1.3"
-  const parts = reps.split('.');
+  // Split by '.' or '/' and sum all numbers for complex reps like "1.2.1.3" or "8/8"
+  const parts = reps.split(/[./]/);
   let totalReps = 0;
   
   parts.forEach(part => {
