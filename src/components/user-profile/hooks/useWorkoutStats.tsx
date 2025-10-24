@@ -37,8 +37,10 @@ export const useWorkoutStats = (userId: string) => {
       
       const { supabase } = await import("@/integrations/supabase/client");
 
+      console.log('📊 Fetching workout stats for user:', userId);
+
       // Φέρε τα προγράμματα του χρήστη με πλήρη δεδομένα
-      const { data: userPrograms } = await supabase
+      const { data: userPrograms, error: programsError } = await supabase
         .from('program_assignments')
         .select(`
           id,
@@ -48,6 +50,7 @@ export const useWorkoutStats = (userId: string) => {
             name,
             program_weeks (
               id,
+              week_number,
               program_days (
                 id,
                 day_number,
@@ -68,7 +71,11 @@ export const useWorkoutStats = (userId: string) => {
         .eq('user_id', userId)
         .eq('status', 'active');
 
+      console.log('📊 User programs:', userPrograms);
+      console.log('📊 Programs error:', programsError);
+
       if (!userPrograms?.length) {
+        console.log('📊 No user programs found');
         setLoading(false);
         return;
       }
@@ -79,6 +86,8 @@ export const useWorkoutStats = (userId: string) => {
         .from('workout_completions')
         .select('*')
         .in('assignment_id', assignmentIds);
+
+      console.log('📊 Workout completions:', workoutCompletions);
 
       // Helper functions για υπολογισμό χρόνου
       const parseTempoToSeconds = (tempo: string): number => {
