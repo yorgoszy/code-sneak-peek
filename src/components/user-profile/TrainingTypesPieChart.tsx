@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { format, startOfWeek, startOfMonth, parseISO } from "date-fns";
+import { el } from "date-fns/locale";
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -34,10 +37,11 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
 export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId }) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
 
   useEffect(() => {
     fetchTrainingTypes();
-  }, [userId]);
+  }, [userId, timeFilter]);
 
   const fetchTrainingTypes = async () => {
     try {
@@ -75,12 +79,29 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
       if (completionsError) throw completionsError;
 
-      // Συγκεντρώνουμε τα training types από τα blocks
-      const typeMinutes: Record<string, number> = {};
+      // Συγκεντρώνουμε τα training types ανά περίοδο
+      const periodData: Record<string, Record<string, number>> = {};
 
       completions?.forEach((completion: any) => {
         const program = completion.program_assignments?.programs;
         if (!program?.program_weeks) return;
+
+        // Βρίσκουμε την περίοδο (ημέρα/εβδομάδα/μήνα)
+        const date = parseISO(completion.scheduled_date);
+        let periodKey = '';
+        
+        if (timeFilter === 'day') {
+          periodKey = format(date, 'dd/MM', { locale: el });
+        } else if (timeFilter === 'week') {
+          const weekStart = startOfWeek(date, { locale: el });
+          periodKey = `Εβδ ${format(weekStart, 'dd/MM', { locale: el })}`;
+        } else {
+          periodKey = format(date, 'MMM yyyy', { locale: el });
+        }
+
+        if (!periodData[periodKey]) {
+          periodData[periodKey] = {};
+        }
 
         program.program_weeks.forEach((week: any) => {
           week.program_days?.forEach((day: any) => {
@@ -99,23 +120,24 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 blockMinutes += exerciseTime;
               });
 
-              if (!typeMinutes[block.training_type]) {
-                typeMinutes[block.training_type] = 0;
+              const typeLabel = TRAINING_TYPE_LABELS[block.training_type] || block.training_type;
+              if (!periodData[periodKey][typeLabel]) {
+                periodData[periodKey][typeLabel] = 0;
               }
-              typeMinutes[block.training_type] += blockMinutes;
+              periodData[periodKey][typeLabel] += blockMinutes;
             });
           });
         });
       });
 
       // Μετατρέπουμε σε array για το chart
-      const chartData = Object.entries(typeMinutes)
-        .filter(([_, minutes]) => minutes > 0)
-        .map(([type, minutes]) => ({
-          name: TRAINING_TYPE_LABELS[type] || type,
-          value: Math.round(minutes),
-          color: COLORS[type as keyof typeof COLORS] || '#aca097'
-        }));
+      const chartData = Object.entries(periodData).map(([period, types]) => {
+        const entry: any = { period };
+        Object.entries(types).forEach(([type, minutes]) => {
+          entry[type] = Math.round(minutes);
+        });
+        return entry;
+      });
 
       setData(chartData);
     } catch (error) {
@@ -153,7 +175,21 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     return `${minutes}λ`;
   };
 
-  const totalMinutes = data.reduce((sum, item) => sum + item.value, 0);
+  const totalMinutes = data.reduce((sum, item) => {
+    const itemSum = Object.entries(item)
+      .filter(([key]) => key !== 'period')
+      .reduce((s, [, value]) => s + (value as number), 0);
+    return sum + itemSum;
+  }, 0);
+
+  // Παίρνουμε όλους τους unique types για τα bars
+  const allTypes = Array.from(
+    new Set(
+      data.flatMap(item => 
+        Object.keys(item).filter(key => key !== 'period')
+      )
+    )
+  );
 
   if (loading) {
     return (
@@ -187,27 +223,25 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     <Card className="rounded-none">
       <CardHeader>
         <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
-        <div className="text-sm text-gray-600">
-          Σύνολο: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Σύνολο: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
+          </div>
+          <Tabs value={timeFilter} onValueChange={(v) => setTimeFilter(v as any)} className="w-auto">
+            <TabsList className="rounded-none h-8">
+              <TabsTrigger value="day" className="text-xs rounded-none">Ημέρα</TabsTrigger>
+              <TabsTrigger value="week" className="text-xs rounded-none">Εβδομάδα</TabsTrigger>
+              <TabsTrigger value="month" className="text-xs rounded-none">Μήνας</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} />
             <Tooltip 
               formatter={(value: any) => formatMinutes(value)}
               contentStyle={{ 
@@ -216,12 +250,21 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 borderRadius: '0px'
               }}
             />
-            <Legend 
-              verticalAlign="bottom" 
-              height={36}
-              formatter={(value, entry: any) => `${value}: ${formatMinutes(entry.payload.value)}`}
-            />
-          </PieChart>
+            <Legend wrapperStyle={{ fontSize: '12px' }} />
+            {allTypes.map((type) => {
+              const colorKey = Object.keys(TRAINING_TYPE_LABELS).find(
+                key => TRAINING_TYPE_LABELS[key] === type
+              );
+              return (
+                <Bar 
+                  key={type} 
+                  dataKey={type} 
+                  stackId="a" 
+                  fill={COLORS[colorKey as keyof typeof COLORS] || '#aca097'}
+                />
+              );
+            })}
+          </BarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
