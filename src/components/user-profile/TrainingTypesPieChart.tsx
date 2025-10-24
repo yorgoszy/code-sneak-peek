@@ -370,18 +370,20 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     </div>
                   ) : (
                     <>
-                    <ResponsiveContainer width="100%" height={160} className="md:hidden">
+                    {/* Mobile - Only minutes */}
+                    <ResponsiveContainer width="100%" height={160} className="sm:hidden">
                       <PieChart>
                         <Pie
                           data={dayChartData}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={false}
+                          label={(entry) => formatMinutes(entry.value)}
                           outerRadius={40}
                           innerRadius={25}
                           fill="#8884d8"
                           dataKey="value"
+                          style={{ fontSize: '9px' }}
                         >
                           {dayChartData.map((entry, index) => (
                             <Cell 
@@ -402,6 +404,43 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                         <Legend wrapperStyle={{ fontSize: '9px' }} />
                       </PieChart>
                     </ResponsiveContainer>
+                    
+                    {/* Tablet - Small text */}
+                    <ResponsiveContainer width="100%" height={160} className="hidden sm:block md:hidden">
+                      <PieChart>
+                        <Pie
+                          data={dayChartData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
+                          outerRadius={40}
+                          innerRadius={25}
+                          fill="#8884d8"
+                          dataKey="value"
+                          style={{ fontSize: '7px' }}
+                        >
+                          {dayChartData.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: any) => formatMinutes(value)}
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #ccc',
+                            borderRadius: '0px',
+                            fontSize: '10px'
+                          }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: '8px' }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+
+                    {/* Desktop */}
                     <ResponsiveContainer width="100%" height={180} className="hidden md:block">
                       <PieChart>
                         <Pie
@@ -442,18 +481,20 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           </div>
         ) : (
           <>
-            <ResponsiveContainer width="100%" height={180} className="md:hidden">
+            {/* Mobile - Only minutes */}
+            <ResponsiveContainer width="100%" height={180} className="sm:hidden">
               <PieChart>
                 <Pie
                   data={chartData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={false}
+                  label={(entry) => formatMinutes(entry.value)}
                   outerRadius={45}
                   innerRadius={28}
                   fill="#8884d8"
                   dataKey="value"
+                  style={{ fontSize: '9px' }}
                 >
                   {chartData.map((entry, index) => (
                     <Cell 
@@ -474,6 +515,43 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 <Legend wrapperStyle={{ fontSize: '9px' }} />
               </PieChart>
             </ResponsiveContainer>
+            
+            {/* Tablet - Small text */}
+            <ResponsiveContainer width="100%" height={180} className="hidden sm:block md:hidden">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
+                  outerRadius={45}
+                  innerRadius={28}
+                  fill="#8884d8"
+                  dataKey="value"
+                  style={{ fontSize: '7px' }}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                    />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value: any) => formatMinutes(value)}
+                  contentStyle={{ 
+                    backgroundColor: 'white', 
+                    border: '1px solid #ccc',
+                    borderRadius: '0px',
+                    fontSize: '10px'
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: '8px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+
+            {/* Desktop */}
             <ResponsiveContainer width="100%" height={220} className="hidden md:block">
               <PieChart>
                 <Pie
