@@ -23,6 +23,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
+  const [activeStatsTab, setActiveStatsTab] = useState<'month' | 'week' | 'day'>('month');
   
   const { data: activePrograms, isLoading } = useActivePrograms();
   const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
@@ -199,10 +200,10 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   return (
     <div className="space-y-6">
       {/* Workout Stats Section */}
-      <WorkoutStatsTabsSection userId={userProfile?.id} />
+      <WorkoutStatsTabsSection userId={userProfile?.id} onTabChange={setActiveStatsTab} />
 
       {/* Training Types Pie Chart */}
-      <TrainingTypesPieChart userId={userProfile?.id} hideTimeTabs={true} />
+      <TrainingTypesPieChart userId={userProfile?.id} hideTimeTabs={true} activeTab={activeStatsTab} />
 
       <Card className="rounded-none">
         <CardHeader>

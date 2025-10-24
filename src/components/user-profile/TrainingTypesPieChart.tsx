@@ -13,6 +13,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 interface TrainingTypesPieChartProps {
   userId: string;
   hideTimeTabs?: boolean;
+  activeTab?: 'month' | 'week' | 'day';
 }
 
 const COLORS = {
@@ -40,10 +41,17 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   end: 'Αντοχή',
 };
 
-export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId, hideTimeTabs = false }) => {
+export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId, hideTimeTabs = false, activeTab }) => {
   const [data, setData] = useState<any[]>([]);
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
+  
+  // Συγχρονίζουμε το timeFilter με το activeTab αν υπάρχει
+  useEffect(() => {
+    if (activeTab) {
+      setTimeFilter(activeTab);
+    }
+  }, [activeTab]);
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [currentYear, setCurrentYear] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<string>('');
