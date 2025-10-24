@@ -247,8 +247,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     value: value as number,
   }));
 
-  // Για το σύνολο σε day και week mode, αθροίζουμε όλες τις περιόδους
-  const totalMinutesData = (timeFilter === 'day' || timeFilter === 'week') ? data : filteredData;
+  // Για το σύνολο σε day, week και month mode, αθροίζουμε όλες τις περιόδους
+  const totalMinutesData = (timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month') ? data : filteredData;
   const totalPieData = totalMinutesData.reduce((acc, item) => {
     Object.entries(item).forEach(([key, value]) => {
       if (key !== 'period') {
@@ -263,9 +263,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
   const totalMinutes = (Object.values(totalPieData) as number[]).reduce((sum, val) => sum + val, 0);
 
-  // Λίστα ημερών και εβδομάδων
+  // Λίστα ημερών, εβδομάδων και μηνών
   const daysList = data.map(item => item.period);
   const weeksList = timeFilter === 'week' ? data.map(item => item.period) : [];
+  const monthsList = timeFilter === 'month' ? data.map(item => item.period) : [];
 
   if (isLoading) {
     return (
@@ -357,9 +358,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               Βεβαιωθείτε ότι έχετε ορίσει τύπο προπόνησης (str, end, pwr κτλ.) σε κάθε μπλοκ του προγράμματος
             </p>
           </div>
-        ) : timeFilter === 'day' || timeFilter === 'week' ? (
-          <div className="grid gap-0 md:gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(timeFilter === 'day' ? daysList.length : weeksList.length, 3)}, 1fr)` }}>
-            {(timeFilter === 'day' ? daysList : weeksList).map((period) => {
+        ) : timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month' ? (
+          <div className="grid gap-0 md:gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(timeFilter === 'day' ? daysList.length : timeFilter === 'week' ? weeksList.length : monthsList.length, 3)}, 1fr)` }}>
+            {(timeFilter === 'day' ? daysList : timeFilter === 'week' ? weeksList : monthsList).map((period) => {
               const periodData = data.find(item => item.period === period);
               if (!periodData) return null;
 
@@ -502,113 +503,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               );
             })}
           </div>
-        ) : (
-          <>
-            {/* Mobile - Only minutes */}
-            <ResponsiveContainer width="100%" height={180} className="sm:hidden">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(entry) => formatMinutes(entry.value)}
-                  outerRadius={45}
-                  innerRadius={28}
-                  fill="#8884d8"
-                  dataKey="value"
-                  style={{ fontSize: '9px' }}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                    />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: any) => formatMinutes(value)}
-                  contentStyle={{ 
-                    backgroundColor: 'white', 
-                    border: '1px solid #ccc',
-                    borderRadius: '0px',
-                    fontSize: '10px'
-                  }}
-                />
-                <Legend wrapperStyle={{ fontSize: '9px' }} />
-              </PieChart>
-            </ResponsiveContainer>
-            
-            {/* Tablet - Small text */}
-            <ResponsiveContainer width="100%" height={180} className="hidden sm:block md:hidden">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
-                  outerRadius={45}
-                  innerRadius={28}
-                  fill="#8884d8"
-                  dataKey="value"
-                  style={{ fontSize: '7px' }}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                    />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: any) => formatMinutes(value)}
-                  contentStyle={{ 
-                    backgroundColor: 'white', 
-                    border: '1px solid #ccc',
-                    borderRadius: '0px',
-                    fontSize: '10px'
-                  }}
-                />
-                <Legend wrapperStyle={{ fontSize: '8px' }} />
-              </PieChart>
-            </ResponsiveContainer>
-
-            {/* Desktop */}
-            <ResponsiveContainer width="100%" height={220} className="hidden md:block">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
-                  outerRadius={60}
-                  innerRadius={35}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                  />
-                ))}
-              </Pie>
-              <Tooltip 
-                formatter={(value: any) => formatMinutes(value)}
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #ccc',
-                  borderRadius: '0px',
-                  fontSize: '10px'
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: '9px' }} />
-            </PieChart>
-          </ResponsiveContainer>
-          </>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );
