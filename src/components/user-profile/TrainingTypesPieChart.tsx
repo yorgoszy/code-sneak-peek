@@ -433,7 +433,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             </p>
           </div>
         ) : timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month' ? (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-green">
             <div className="flex gap-2 min-w-min">
             {(timeFilter === 'day' ? daysList : timeFilter === 'week' ? weeksList : monthsList).map((period) => {
               const periodData = data.find(item => item.period === period);
