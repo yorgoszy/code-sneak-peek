@@ -4,7 +4,7 @@ interface WorkoutStatsCardsProps {
   stats: {
     currentMonth: {
       completedWorkouts: number;
-      totalTrainingHours: number;
+      totalTrainingMinutes: number;
       totalVolume: number;
       missedWorkouts: number;
       scheduledWorkouts?: number;
@@ -61,7 +61,7 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
         </h4>
         <div className="flex-1 flex flex-col justify-end">
           <div className="text-sm md:text-base font-semibold text-green-600">
-            {stats.currentMonth.totalTrainingHours}h
+            {Math.floor(stats.currentMonth.totalTrainingMinutes / 60)}:{String(stats.currentMonth.totalTrainingMinutes % 60).padStart(2, '0')}
           </div>
           <div className={`text-[10px] ${getTrendColor(stats.improvements.hoursImprovement)}`}>
             {stats.improvements.hoursImprovement > 0 ? '+' : ''}{stats.improvements.hoursImprovement}h μήνα

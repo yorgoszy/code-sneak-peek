@@ -6,11 +6,11 @@ import { calculateDayMetrics } from "./workoutCalculations";
 interface DayWeekStats {
   currentDay: {
     volume: number;
-    hours: number;
+    minutes: number;
   };
   currentWeek: {
     volume: number;
-    hours: number;
+    minutes: number;
   };
 }
 
@@ -18,11 +18,11 @@ export const useDayWeekStats = (userId: string) => {
   const [stats, setStats] = useState<DayWeekStats>({
     currentDay: {
       volume: 0,
-      hours: 0
+      minutes: 0
     },
     currentWeek: {
       volume: 0,
-      hours: 0
+      minutes: 0
     }
   });
   const [loading, setLoading] = useState(true);
@@ -61,9 +61,9 @@ export const useDayWeekStats = (userId: string) => {
         .eq('status', 'completed');
 
       let dayVolume = 0;
-      let dayHours = 0;
+      let dayMinutes = 0;
       let weekVolume = 0;
-      let weekHours = 0;
+      let weekMinutes = 0;
 
       // Calculate today's metrics
       for (const workout of todayData || []) {
@@ -88,7 +88,7 @@ export const useDayWeekStats = (userId: string) => {
             if (day?.program_blocks) {
               const dayMetrics = calculateDayMetrics(day.program_blocks);
               dayVolume += dayMetrics.volume;
-              dayHours += dayMetrics.timeMinutes / 60;
+              dayMinutes += dayMetrics.timeMinutes;
             }
           }
         }
@@ -117,7 +117,7 @@ export const useDayWeekStats = (userId: string) => {
             if (day?.program_blocks) {
               const dayMetrics = calculateDayMetrics(day.program_blocks);
               weekVolume += dayMetrics.volume;
-              weekHours += dayMetrics.timeMinutes / 60;
+              weekMinutes += dayMetrics.timeMinutes;
             }
           }
         }
@@ -126,11 +126,11 @@ export const useDayWeekStats = (userId: string) => {
       setStats({
         currentDay: {
           volume: Math.round(dayVolume),
-          hours: Math.round(dayHours * 10) / 10
+          minutes: Math.round(dayMinutes)
         },
         currentWeek: {
           volume: Math.round(weekVolume),
-          hours: Math.round(weekHours * 10) / 10
+          minutes: Math.round(weekMinutes)
         }
       });
 

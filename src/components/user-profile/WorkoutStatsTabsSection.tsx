@@ -8,7 +8,7 @@ import { useWeekStats } from "./hooks/useWeekStats";
 
 interface CustomMonthStats {
   completedWorkouts: number;
-  totalTrainingHours: number;
+  totalTrainingMinutes: number;
   totalVolume: number;
   missedWorkouts: number;
   scheduledWorkouts?: number;
@@ -121,7 +121,7 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
                 <h4 className="text-xs font-medium text-gray-700 mb-1">Ώρες</h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-green-600">
-                    {dayWeekStats.currentDay.hours}h
+                    {Math.floor(dayWeekStats.currentDay.minutes / 60)}:{String(dayWeekStats.currentDay.minutes % 60).padStart(2, '0')}
                   </div>
                   <p className="text-xs text-gray-500">
                     Σήμερα
