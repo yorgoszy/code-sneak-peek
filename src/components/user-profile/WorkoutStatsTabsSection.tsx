@@ -97,7 +97,7 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
               <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
                 <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">Χαμένες</h4>
                 <div className="flex-1 flex flex-col justify-end">
-                  <div className="text-sm md:text-base font-semibold text-orange-600">
+                  <div className="text-sm md:text-base font-semibold text-red-600">
                     {weekStatsForCards.missedWorkouts}
                   </div>
                   <p className="text-[10px] text-gray-500">

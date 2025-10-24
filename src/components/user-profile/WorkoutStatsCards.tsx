@@ -78,7 +78,7 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
           </span>
         </h4>
         <div className="flex-1 flex flex-col justify-end">
-          <div className="text-sm md:text-base font-semibold text-orange-600">{stats.currentMonth.missedWorkouts}</div>
+          <div className="text-sm md:text-base font-semibold text-red-600">{stats.currentMonth.missedWorkouts}</div>
           <div className="text-[10px] text-gray-500">
             Μήνα
           </div>
