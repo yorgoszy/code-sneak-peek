@@ -6,15 +6,25 @@ import { useWorkoutStats } from "./hooks/useWorkoutStats";
 import { useDayWeekStats } from "./hooks/useDayWeekStats";
 import { useWeekStats } from "./hooks/useWeekStats";
 
+interface CustomMonthStats {
+  completedWorkouts: number;
+  totalTrainingHours: number;
+  totalVolume: number;
+  missedWorkouts: number;
+  scheduledWorkouts?: number;
+}
+
 interface WorkoutStatsTabsSectionProps {
   userId: string;
   onTabChange?: (tab: 'month' | 'week' | 'day') => void;
+  customMonthStats?: CustomMonthStats;
 }
 
-export const WorkoutStatsTabsSection = ({ userId, onTabChange }: WorkoutStatsTabsSectionProps) => {
+export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats }: WorkoutStatsTabsSectionProps) => {
   const { stats: workoutStats, loading: workoutStatsLoading } = useWorkoutStats(userId);
   const { stats: dayWeekStats, loading: dayWeekStatsLoading } = useDayWeekStats(userId);
   const { stats: weekStats, loading: weekStatsLoading } = useWeekStats(userId);
+  const monthStatsForCards = customMonthStats ? { currentMonth: customMonthStats, improvements: { workoutsImprovement: 0, hoursImprovement: 0, volumeImprovement: 0 } } : workoutStats;
 
   return (
     <div className="space-y-4">
@@ -28,12 +38,12 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange }: WorkoutStatsTab
         </TabsList>
         
         <TabsContent value="month" className="space-y-4">
-          {workoutStatsLoading ? (
+          {(workoutStatsLoading && !customMonthStats) ? (
             <div className="text-center py-8">
               <p className="text-gray-500">Φόρτωση στατιστικών μήνα...</p>
             </div>
           ) : (
-            <WorkoutStatsCards stats={workoutStats} />
+            <WorkoutStatsCards stats={monthStatsForCards as any} />
           )}
         </TabsContent>
         

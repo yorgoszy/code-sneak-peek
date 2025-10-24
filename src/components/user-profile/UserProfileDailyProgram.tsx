@@ -54,6 +54,112 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     loadCompletions();
   }, [userPrograms.length, userProfile.id, getAllWorkoutCompletions]);
 
+  // Υπολογισμός στατιστικών μήνα από τα τοπικά δεδομένα (calendar-only)
+  const parseTempoToSeconds = (tempo: string): number => {
+    if (!tempo || tempo.trim() === '') return 3;
+    const parts = tempo.split('.');
+    let totalSeconds = 0;
+    parts.forEach(part => {
+      if (part === 'x' || part === 'X') {
+        totalSeconds += 0.5;
+      } else {
+        totalSeconds += parseFloat(part) || 0;
+      }
+    });
+    return totalSeconds;
+  };
+
+  const parseRepsToTotal = (reps: string): number => {
+    if (!reps) return 0;
+    if (!reps.includes('.')) {
+      return parseInt(reps) || 0;
+    }
+    const parts = reps.split('.');
+    let totalReps = 0;
+    parts.forEach(part => {
+      totalReps += parseInt(part) || 0;
+    });
+    return totalReps;
+  };
+
+  const parseRestTime = (rest: string): number => {
+    if (!rest) return 0;
+    if (rest.includes(':')) {
+      const [minutes, seconds] = rest.split(':');
+      return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
+    } else if (rest.includes("'")) {
+      return (parseFloat(rest.replace("'", "")) || 0) * 60;
+    } else if (rest.includes('s')) {
+      return parseFloat(rest.replace('s', '')) || 0;
+    } else {
+      const minutes = parseFloat(rest) || 0;
+      return minutes * 60;
+    }
+  };
+
+  const calculateWorkoutDuration = (program: any, dateIndex: number): number => {
+    const programData = program.programs;
+    if (!programData?.program_weeks) return 0;
+
+    const daysPerWeek = programData.program_weeks[0]?.program_days?.length || 1;
+    const weekIndex = Math.floor(dateIndex / daysPerWeek);
+    const dayIndex = dateIndex % daysPerWeek;
+
+    const week = programData.program_weeks[weekIndex];
+    if (!week) return 0;
+
+    const day = week.program_days?.[dayIndex];
+    if (!day) return 0;
+
+    let totalSeconds = 0;
+    day.program_blocks?.forEach((block: any) => {
+      block.program_exercises?.forEach((exercise: any) => {
+        const sets = exercise.sets || 0;
+        const reps = parseRepsToTotal(exercise.reps || '0');
+        const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
+        const restSeconds = parseRestTime(exercise.rest || '');
+        const workTime = sets * reps * tempoSeconds;
+        const totalRestTime = sets * restSeconds;
+        totalSeconds += workTime + totalRestTime;
+      });
+    });
+
+    return totalSeconds / 60; // λεπτά
+  };
+
+  const monthStats = React.useMemo(() => {
+    const current = new Date();
+    const monthStr = format(current, 'yyyy-MM');
+    let scheduled = 0, completed = 0, missed = 0, totalMinutes = 0;
+
+    for (const program of userPrograms) {
+      if (!program.training_dates) continue;
+      const monthlyDates = program.training_dates.filter((d: string) => d && d.startsWith(monthStr));
+      for (const date of monthlyDates) {
+        scheduled++;
+        const completion = workoutCompletions.find(c => c.assignment_id === program.id && c.scheduled_date === date);
+        if (completion?.status === 'completed') {
+          completed++;
+          const dateIndex = program.training_dates.indexOf(date);
+          totalMinutes += calculateWorkoutDuration(program, dateIndex);
+        } else {
+          const workoutDate = new Date(date);
+          const today = new Date();
+          const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          if (isPast || completion?.status === 'missed') missed++;
+        }
+      }
+    }
+
+    return {
+      completedWorkouts: completed,
+      totalTrainingHours: Math.round((totalMinutes / 60) * 10) / 10,
+      totalVolume: 0,
+      missedWorkouts: missed,
+      scheduledWorkouts: scheduled,
+    };
+  }, [userPrograms, workoutCompletions]);
+
   // ΚΥΡΙΑ ΔΙΟΡΘΩΣΗ: Απλή και σωστή λογική εύρεσης προγράμματος ημέρας
   const getDayProgram = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -200,7 +306,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   return (
     <div className="space-y-6">
       {/* Workout Stats Section */}
-      <WorkoutStatsTabsSection userId={userProfile?.id} onTabChange={setActiveStatsTab} />
+      <WorkoutStatsTabsSection userId={userProfile?.id} onTabChange={setActiveStatsTab} customMonthStats={monthStats} />
 
       {/* Training Types Pie Chart */}
       <TrainingTypesPieChart userId={userProfile?.id} hideTimeTabs={true} activeTab={activeStatsTab} />
