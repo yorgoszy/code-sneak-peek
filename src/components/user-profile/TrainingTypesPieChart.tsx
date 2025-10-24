@@ -315,7 +315,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             </p>
           </div>
         ) : timeFilter === 'day' ? (
-          <div className="space-y-6">
+          <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(daysList.length, 3)}, 1fr)` }}>
             {daysList.map((day) => {
               const dayData = data.find(item => item.period === day);
               if (!dayData) return null;
