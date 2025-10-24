@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, startOfWeek, startOfMonth, parseISO } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { format, startOfWeek, startOfMonth, parseISO, endOfWeek, addWeeks, subWeeks, isWithinInterval } from "date-fns";
 import { el } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { calculateProgramStats } from "@/hooks/useProgramStats";
 
@@ -38,6 +40,8 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
 export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId }) => {
   const [data, setData] = useState<any[]>([]);
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
+  const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
+  const [selectedDay, setSelectedDay] = useState<string>('');
   
   // Παίρνουμε τα active programs του χρήστη
   const { data: activePrograms, isLoading } = useActivePrograms();
@@ -53,13 +57,15 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     } else if (!isLoading) {
       setData([]);
     }
-  }, [userPrograms, timeFilter, isLoading]);
+  }, [userPrograms, timeFilter, isLoading, currentWeek]);
 
   const calculateTrainingTypesData = () => {
     console.log('📊 Calculating training types data...');
     console.log('📊 User programs count:', userPrograms.length);
     
     const periodData: Record<string, Record<string, number>> = {};
+    const weekStart = startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 });
+    const weekEnd = endOfWeek(currentWeek, { locale: el, weekStartsOn: 1 });
 
     userPrograms.forEach((program, programIndex) => {
       const programData = program.programs;
@@ -70,12 +76,18 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       // Για κάθε training date, βρίσκουμε την αντίστοιχη ημέρα προπόνησης
       program.training_dates?.forEach((dateStr, dateIndex) => {
         const date = parseISO(dateStr);
+        
+        // Φιλτράρουμε για την τρέχουσα εβδομάδα αν είμαστε σε day mode
+        if (timeFilter === 'day' && !isWithinInterval(date, { start: weekStart, end: weekEnd })) {
+          return;
+        }
+        
         let periodKey = '';
         
         if (timeFilter === 'day') {
-          periodKey = format(date, 'dd/MM', { locale: el });
+          periodKey = format(date, 'EEEE', { locale: el });
         } else if (timeFilter === 'week') {
-          const weekStart = startOfWeek(date, { locale: el });
+          const weekStart = startOfWeek(date, { locale: el, weekStartsOn: 1 });
           periodKey = `Εβδ ${format(weekStart, 'dd/MM', { locale: el })}`;
         } else {
           periodKey = format(date, 'MMM yyyy', { locale: el });
@@ -144,6 +156,11 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
     console.log('📊 Final chart data:', chartData);
     setData(chartData);
+    
+    // Αρχικοποιούμε την επιλεγμένη ημέρα αν είμαστε σε day mode
+    if (timeFilter === 'day' && chartData.length > 0 && !selectedDay) {
+      setSelectedDay(chartData[0].period);
+    }
   };
 
   // Helper functions από useProgramStats
@@ -198,8 +215,13 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     return `${minutes}λ`;
   };
 
+  // Αν είμαστε σε day mode, φιλτράρουμε για την επιλεγμένη ημέρα
+  const filteredData = timeFilter === 'day' && selectedDay
+    ? data.filter(item => item.period === selectedDay)
+    : data;
+
   // Αθροίζουμε όλα τα δεδομένα ανά training type
-  const pieData = data.reduce((acc, item) => {
+  const pieData = filteredData.reduce((acc, item) => {
     Object.entries(item).forEach(([key, value]) => {
       if (key !== 'period') {
         if (!acc[key]) {
@@ -218,6 +240,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   }));
 
   const totalMinutes = chartData.reduce((sum, item) => sum + item.value, 0);
+
+  // Λίστα ημερών για τα tabs
+  const daysList = data.map(item => item.period);
 
   if (isLoading) {
     return (
@@ -268,6 +293,46 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         </div>
       </CardHeader>
       <CardContent>
+        {timeFilter === 'day' && (
+          <div className="mb-4 space-y-4">
+            {/* Week Navigation */}
+            <div className="flex items-center justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
+                className="rounded-none"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="text-sm font-medium">
+                {format(startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'dd MMM', { locale: el })} - {format(endOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'dd MMM yyyy', { locale: el })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
+                className="rounded-none"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Day Tabs */}
+            {daysList.length > 0 && (
+              <Tabs value={selectedDay} onValueChange={setSelectedDay} className="w-full">
+                <TabsList className="rounded-none h-8 w-full grid" style={{ gridTemplateColumns: `repeat(${daysList.length}, 1fr)` }}>
+                  {daysList.map((day) => (
+                    <TabsTrigger key={day} value={day} className="text-xs rounded-none">
+                      {day}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            )}
+          </div>
+        )}
+        
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
