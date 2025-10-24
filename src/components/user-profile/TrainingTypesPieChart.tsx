@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { format, startOfWeek, startOfMonth, parseISO, endOfWeek, addWeeks, subWeeks, isWithinInterval } from "date-fns";
+import { format, startOfWeek, startOfMonth, parseISO, endOfWeek, addWeeks, subWeeks, addMonths, subMonths, addYears, subYears, endOfMonth, startOfYear, endOfYear, isWithinInterval } from "date-fns";
 import { el } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
@@ -42,6 +42,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   const [data, setData] = useState<any[]>([]);
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [currentYear, setCurrentYear] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<string>('');
   
   // Παίρνουμε τα active programs του χρήστη
@@ -58,7 +60,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     } else if (!isLoading) {
       setData([]);
     }
-  }, [userPrograms, timeFilter, isLoading, currentWeek]);
+  }, [userPrograms, timeFilter, isLoading, currentWeek, currentMonth, currentYear]);
 
   // Αρχικοποίηση επιλεγμένης ημέρας όταν αλλάζει το timeFilter
   useEffect(() => {
@@ -74,6 +76,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     const periodData: Record<string, Record<string, number>> = {};
     const weekStart = startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 });
     const weekEnd = endOfWeek(currentWeek, { locale: el, weekStartsOn: 1 });
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const yearStart = startOfYear(currentYear);
+    const yearEnd = endOfYear(currentYear);
 
     userPrograms.forEach((program, programIndex) => {
       const programData = program.programs;
@@ -85,8 +91,14 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       program.training_dates?.forEach((dateStr, dateIndex) => {
         const date = parseISO(dateStr);
         
-        // Φιλτράρουμε για την τρέχουσα εβδομάδα αν είμαστε σε day mode
+        // Φιλτράρουμε για την τρέχουσα περίοδο ανάλογα με το mode
         if (timeFilter === 'day' && !isWithinInterval(date, { start: weekStart, end: weekEnd })) {
+          return;
+        }
+        if (timeFilter === 'week' && !isWithinInterval(date, { start: monthStart, end: monthEnd })) {
+          return;
+        }
+        if (timeFilter === 'month' && !isWithinInterval(date, { start: yearStart, end: yearEnd })) {
           return;
         }
         
@@ -342,6 +354,68 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
+                className="rounded-none h-6 px-2"
+              >
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {timeFilter === 'week' && (
+          <div className="mb-2">
+            {/* Month Navigation */}
+            <div className="flex items-center justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                className="rounded-none h-6 px-2"
+              >
+                <ChevronLeft className="h-3 w-3" />
+              </Button>
+              <div className={`text-[10px] md:text-sm font-medium ${
+                format(currentMonth, 'yyyy-MM') === format(new Date(), 'yyyy-MM')
+                  ? 'text-[#00ffba]' 
+                  : ''
+              }`}>
+                {format(currentMonth, 'MMMM yyyy', { locale: el })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                className="rounded-none h-6 px-2"
+              >
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {timeFilter === 'month' && (
+          <div className="mb-2">
+            {/* Year Navigation */}
+            <div className="flex items-center justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentYear(subYears(currentYear, 1))}
+                className="rounded-none h-6 px-2"
+              >
+                <ChevronLeft className="h-3 w-3" />
+              </Button>
+              <div className={`text-[10px] md:text-sm font-medium ${
+                format(currentYear, 'yyyy') === format(new Date(), 'yyyy')
+                  ? 'text-[#00ffba]' 
+                  : ''
+              }`}>
+                {format(currentYear, 'yyyy')}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentYear(addYears(currentYear, 1))}
                 className="rounded-none h-6 px-2"
               >
                 <ChevronRight className="h-3 w-3" />
