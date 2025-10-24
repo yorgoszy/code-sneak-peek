@@ -106,10 +106,40 @@ export const useActivePrograms = () => {
           throw usersError;
         }
 
-        // Combine the data manually
+        // Combine the data manually with sorted program structure
         const enrichedAssignments: EnrichedAssignment[] = assignments.map(assignment => {
           const program = programs?.find(p => p.id === assignment.program_id);
           const user = users?.find(u => u.id === assignment.user_id);
+
+          // Deep sort the program structure to preserve intended order
+          const sortedProgram = program
+            ? {
+                id: program.id,
+                name: program.name,
+                description: program.description,
+                training_days:
+                  typeof program.training_days === 'number'
+                    ? []
+                    : program.training_days || [],
+                program_weeks: (program.program_weeks || [])
+                  .sort((a: any, b: any) => (a.week_number || 0) - (b.week_number || 0))
+                  .map((week: any) => ({
+                    ...week,
+                    program_days: (week.program_days || [])
+                      .sort((a: any, b: any) => (a.day_number || 0) - (b.day_number || 0))
+                      .map((day: any) => ({
+                        ...day,
+                        program_blocks: (day.program_blocks || [])
+                          .sort((a: any, b: any) => (a.block_order || 0) - (b.block_order || 0))
+                          .map((block: any) => ({
+                            ...block,
+                            program_exercises: (block.program_exercises || [])
+                              .sort((a: any, b: any) => (a.exercise_order || 0) - (b.exercise_order || 0))
+                          }))
+                      }))
+                  }))
+              }
+            : undefined;
 
           return {
             id: assignment.id,
@@ -126,21 +156,15 @@ export const useActivePrograms = () => {
             group_id: assignment.group_id,
             progress: assignment.progress,
             training_dates: assignment.training_dates,
-            programs: program ? {
-              id: program.id,
-              name: program.name,
-              description: program.description,
-              training_days: typeof program.training_days === 'number' 
-                ? [] 
-                : program.training_days || [],
-              program_weeks: program.program_weeks || []
-            } : undefined,
-            app_users: user ? {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              photo_url: user.photo_url
-            } : null
+            programs: sortedProgram,
+            app_users: user
+              ? {
+                  id: user.id,
+                  name: user.name,
+                  email: user.email,
+                  photo_url: user.photo_url
+                }
+              : null
           };
         });
 

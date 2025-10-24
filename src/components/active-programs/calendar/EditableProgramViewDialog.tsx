@@ -139,30 +139,18 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
 
   if (!assignment || !programData) return null;
 
-  // Δημιουργία εβδομάδων βάσει training_dates - κάθε εβδομάδα έχει τον ίδιο αριθμό ημερών
+  // Χρήση της πραγματικής δομής εβδομάδων του προγράμματος με σωστή σειρά
   const baseWeeks = programData.program_weeks || [];
-  const trainingDates = assignment.training_dates || [];
-  
   if (baseWeeks.length === 0) return null;
-  
-  const daysPerWeek = baseWeeks[0].program_days?.length || 7;
-  const totalWeeks = Math.ceil(trainingDates.length / daysPerWeek);
-  
-  // Δημιουργία εβδομάδων για κάθε επανάληψη
-  const weeks = Array.from({ length: totalWeeks }, (_, weekIndex) => {
-    const baseWeek = baseWeeks[0]; // Παίρνουμε τη βασική εβδομάδα
-    return {
-      ...baseWeek,
-      id: `${baseWeek.id}-week-${weekIndex + 1}`,
-      name: `Εβδομάδα ${weekIndex + 1}`,
-      week_number: weekIndex + 1,
-      program_days: baseWeek.program_days?.map(day => ({
-        ...day,
-        id: `${day.id}-week-${weekIndex + 1}`,
-        name: day.name
-      })) || []
-    };
-  });
+
+  // Ταξινόμηση εβδομάδων και ημερών βάσει order fields
+  const weeks = [...baseWeeks]
+    .sort((a: any, b: any) => (a.week_number || 0) - (b.week_number || 0))
+    .map((week: any) => ({
+      ...week,
+      program_days: [...(week.program_days || [])]
+        .sort((a: any, b: any) => (a.day_number || 0) - (b.day_number || 0))
+    }));
 
   if (weeks.length === 0) {
     return (
