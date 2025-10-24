@@ -24,15 +24,15 @@ interface BlockCardHeaderProps {
 }
 
 const TRAINING_TYPE_LABELS: Record<string, string> = {
-  str: 'Δύναμη',
-  'str/spd': 'Δύναμη/Ταχύτητα',
-  pwr: 'Ισχύς',
-  'spd/str': 'Ταχύτητα/Δύναμη',
-  spd: 'Ταχύτητα',
-  'str/end': 'Δύναμη/Αντοχή',
-  'pwr/end': 'Ισχύς/Αντοχή',
-  'spd/end': 'Ταχύτητα/Αντοχή',
-  end: 'Αντοχή',
+  str: 'str',
+  'str/spd': 'str/spd',
+  pwr: 'pwr',
+  'spd/str': 'spd/str',
+  spd: 'spd',
+  'str/end': 'str/end',
+  'pwr/end': 'pwr/end',
+  'spd/end': 'spd/end',
+  end: 'end',
 };
 
 export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
