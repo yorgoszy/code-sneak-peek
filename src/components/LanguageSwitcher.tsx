@@ -16,13 +16,13 @@ export const LanguageSwitcher = () => {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="rounded-none h-8 w-8 p-0">
           <Globe className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="rounded-none">
+      <DropdownMenuContent className="rounded-none" align="end" sideOffset={5}>
         <DropdownMenuItem 
           onClick={() => changeLanguage('el')}
           className={i18n.language === 'el' ? 'bg-gray-100' : ''}
