@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
@@ -51,38 +52,45 @@ function App() {
             <Toaster />
             <Suspense fallback={<CustomLoadingScreen />}>
               <Routes>
+                {/* Public routes */}
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/dashboard/users" element={<Users />} />
-                <Route path="/dashboard/groups" element={<Groups />} />
-                <Route path="/dashboard/subscriptions" element={<Subscriptions />} />
-                <Route path="/dashboard/exercises" element={<Exercises />} />
-                <Route path="/dashboard/programs" element={<Programs />} />
-                <Route path="/dashboard/active-programs" element={<ActivePrograms />} />
-                <Route path="/dashboard/program-cards" element={<ProgramCards />} />
-                <Route path="/dashboard/tests" element={<Tests />} />
-                <Route path="/dashboard/test-results" element={<TestResultsWithSidebar />} />
-                <Route path="/dashboard/progress" element={<ProgressTrackingWithSidebar />} />
-                <Route path="/dashboard/analytics" element={<Analytics />} />
-                <Route path="/dashboard/articles" element={<ArticlesWithSidebar />} />
-                <Route path="/dashboard/results" element={<ResultsWithSidebar />} />
-                <Route path="/dashboard/shop" element={<AdminShopWithSidebar />} />
-                <Route path="/dashboard/offers" element={<Offers />} />
-                <Route path="/dashboard/online-coaching" element={<OnlineCoachingWithSidebar />} />
-                <Route path="/dashboard/online-booking" element={<OnlineBookingWithSidebar />} />
-                <Route path="/dashboard/booking-sections" element={<BookingSectionsWithSidebar />} />
-                <Route path="/dashboard/school-notes" element={<SchoolNotesWithSidebar />} />
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/online-coaching" element={<OnlineCoaching />} />
-                <Route path="/meeting/:roomId" element={<MeetingRoom />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
-                <Route path="/user/:userId" element={<UserProfile />} />
-                <Route path="/dashboard/user-profile/:userId" element={<UserProfile />} />
-                <Route path="/dashboard/user-profile/:userId/edit" element={<ProfileEdit />} />
-                <Route path="/dashboard/user-profile/:userId/shop" element={<ShopWithSidebar />} />
-                <Route path="/program-builder" element={<ProgramBuilder />} />
+                
+                {/* Admin-only routes */}
+                <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
+                <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
+                <Route path="/dashboard/groups" element={<ProtectedRoute requireAdmin><Groups /></ProtectedRoute>} />
+                <Route path="/dashboard/subscriptions" element={<ProtectedRoute requireAdmin><Subscriptions /></ProtectedRoute>} />
+                <Route path="/dashboard/exercises" element={<ProtectedRoute requireAdmin><Exercises /></ProtectedRoute>} />
+                <Route path="/dashboard/programs" element={<ProtectedRoute requireAdmin><Programs /></ProtectedRoute>} />
+                <Route path="/dashboard/active-programs" element={<ProtectedRoute requireAdmin><ActivePrograms /></ProtectedRoute>} />
+                <Route path="/dashboard/program-cards" element={<ProtectedRoute requireAdmin><ProgramCards /></ProtectedRoute>} />
+                <Route path="/dashboard/tests" element={<ProtectedRoute requireAdmin><Tests /></ProtectedRoute>} />
+                <Route path="/dashboard/test-results" element={<ProtectedRoute requireAdmin><TestResultsWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/progress" element={<ProtectedRoute requireAdmin><ProgressTrackingWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/analytics" element={<ProtectedRoute requireAdmin><Analytics /></ProtectedRoute>} />
+                <Route path="/dashboard/articles" element={<ProtectedRoute requireAdmin><ArticlesWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/results" element={<ProtectedRoute requireAdmin><ResultsWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/shop" element={<ProtectedRoute requireAdmin><AdminShopWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/offers" element={<ProtectedRoute requireAdmin><Offers /></ProtectedRoute>} />
+                <Route path="/dashboard/online-coaching" element={<ProtectedRoute requireAdmin><OnlineCoachingWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/online-booking" element={<ProtectedRoute requireAdmin><OnlineBookingWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/booking-sections" element={<ProtectedRoute requireAdmin><BookingSectionsWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/school-notes" element={<ProtectedRoute requireAdmin><SchoolNotesWithSidebar /></ProtectedRoute>} />
+                <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
+                
+                {/* Protected user routes */}
+                <Route path="/meeting/:roomId" element={<ProtectedRoute><MeetingRoom /></ProtectedRoute>} />
+                <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+                <Route path="/dashboard/user-profile/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+                <Route path="/dashboard/user-profile/:userId/edit" element={<ProtectedRoute><ProfileEdit /></ProtectedRoute>} />
+                <Route path="/dashboard/user-profile/:userId/shop" element={<ProtectedRoute><ShopWithSidebar /></ProtectedRoute>} />
+                
+                {/* 404 */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
