@@ -16,7 +16,7 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
   assignment, 
   workoutStats 
 }) => {
-  const getTrainingDaysInitials = () => {
+  const getTrainingDaysWithDuration = () => {
     if (!assignment.training_dates || assignment.training_dates.length === 0) {
       return '';
     }
@@ -24,28 +24,35 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
     const dayInitials = ['Κ', 'Δ', 'Τ', 'Τ', 'Π', 'Π', 'Σ']; // Κυριακή, Δευτέρα, Τρίτη, Τετάρτη, Πέμπτη, Παρασκευή, Σάββατο
     
     // Βρίσκουμε πόσες ημέρες έχει μια εβδομάδα του προγράμματος
-    const daysPerWeek = assignment.programs?.program_weeks?.[0]?.program_days?.length || assignment.training_dates.length;
+    const programDays = assignment.programs?.program_weeks?.[0]?.program_days || [];
+    const daysPerWeek = programDays.length || assignment.training_dates.length;
     
     // Παίρνουμε τις πρώτες ημέρες του προγράμματος (ένας κύκλος)
     const firstCycleDates = assignment.training_dates.slice(0, daysPerWeek);
     
-    // Δημιουργούμε τα initials με τη σειρά του προγράμματος
-    const dayInitialsArray = firstCycleDates.map(dateStr => {
+    // Δημιουργούμε τα initials με τη σειρά του προγράμματος και τα λεπτά
+    const dayLabels = firstCycleDates.map((dateStr, index) => {
       const date = new Date(dateStr + 'T00:00:00'); // Προσθέτουμε time για να αποφύγουμε timezone issues
       const dayIndex = date.getDay();
-      return dayInitials[dayIndex];
+      const initial = dayInitials[dayIndex];
+      
+      // Παίρνουμε τα λεπτά από το αντίστοιχο program_day
+      const programDay = programDays[index];
+      const minutes = programDay?.estimated_duration_minutes;
+      
+      return minutes ? `${initial} ${minutes}'` : initial;
     });
 
-    return dayInitialsArray.join('-');
+    return dayLabels.join(' - ');
   };
 
   const progressPercentage = workoutStats.total > 0 ? Math.round((workoutStats.completed / workoutStats.total) * 100) : 0;
 
   return (
     <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
-      {/* Training Days */}
+      {/* Training Days with Duration */}
       <div className="text-xs text-blue-600 font-medium">
-        {getTrainingDaysInitials()}
+        {getTrainingDaysWithDuration()}
       </div>
       
       {/* Progress Stats */}
