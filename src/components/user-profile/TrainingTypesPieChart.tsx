@@ -385,7 +385,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   ) : (
                     <>
                     {/* Mobile - Only minutes */}
-                    <ResponsiveContainer width="100%" height={120} className="sm:hidden">
+                    <ResponsiveContainer width="100%" height={160} className="sm:hidden">
                       <PieChart>
                         <Pie
                           data={dayChartData}
@@ -415,26 +415,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                             fontSize: '10px'
                           }}
                         />
+                        <Legend wrapperStyle={{ fontSize: '9px' }} />
                       </PieChart>
                     </ResponsiveContainer>
                     
-                    {/* Custom Legend - Mobile */}
-                    <div className="flex flex-wrap gap-1 justify-center mt-1 sm:hidden">
-                      {dayChartData.map((entry, index) => (
-                        <div key={index} className="flex items-center gap-0.5">
-                          <div 
-                            className="w-1.5 h-1.5" 
-                            style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
-                          />
-                          <span className="text-[8px] text-gray-700">
-                            {TRAINING_TYPE_LABELS[entry.name] || entry.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                    
                     {/* Tablet - Small text */}
-                    <ResponsiveContainer width="100%" height={120} className="hidden sm:block md:hidden">
+                    <ResponsiveContainer width="100%" height={160} className="hidden sm:block md:hidden">
                       <PieChart>
                         <Pie
                           data={dayChartData}
@@ -464,26 +450,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                             fontSize: '10px'
                           }}
                         />
+                        <Legend wrapperStyle={{ fontSize: '8px' }} />
                       </PieChart>
                     </ResponsiveContainer>
-                    
-                    {/* Custom Legend - Tablet */}
-                    <div className="hidden sm:flex md:hidden flex-wrap gap-1 justify-center mt-1">
-                      {dayChartData.map((entry, index) => (
-                        <div key={index} className="flex items-center gap-0.5">
-                          <div 
-                            className="w-1.5 h-1.5" 
-                            style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
-                          />
-                          <span className="text-[8px] text-gray-700">
-                            {TRAINING_TYPE_LABELS[entry.name] || entry.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
 
                     {/* Desktop */}
-                    <ResponsiveContainer width="100%" height={140} className="hidden md:block">
+                    <ResponsiveContainer width="100%" height={180} className="hidden md:block">
                       <PieChart>
                         <Pie
                           data={dayChartData}
@@ -496,39 +468,25 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                           fill="#8884d8"
                           dataKey="value"
                         >
-                        {dayChartData.map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value: any) => formatMinutes(value)}
-                        contentStyle={{ 
-                          backgroundColor: 'white', 
-                          border: '1px solid #ccc',
-                          borderRadius: '0px',
-                          fontSize: '10px'
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  
-                  {/* Custom Legend */}
-                  <div className="flex flex-wrap gap-1.5 justify-center mt-2">
-                    {dayChartData.map((entry, index) => (
-                      <div key={index} className="flex items-center gap-1">
-                        <div 
-                          className="w-2 h-2" 
-                          style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
+                          {dayChartData.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: any) => formatMinutes(value)}
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #ccc',
+                            borderRadius: '0px',
+                            fontSize: '10px'
+                          }}
                         />
-                        <span className="text-[9px] text-gray-700">
-                          {TRAINING_TYPE_LABELS[entry.name] || entry.name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                        <Legend wrapperStyle={{ fontSize: '9px' }} />
+                      </PieChart>
+                    </ResponsiveContainer>
                     </>
                   )}
                 </div>
@@ -538,7 +496,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         ) : (
           <>
             {/* Mobile - Only minutes */}
-            <ResponsiveContainer width="100%" height={140} className="sm:hidden">
+            <ResponsiveContainer width="100%" height={180} className="sm:hidden">
               <PieChart>
                 <Pie
                   data={chartData}
@@ -568,26 +526,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     fontSize: '10px'
                   }}
                 />
+                <Legend wrapperStyle={{ fontSize: '9px' }} />
               </PieChart>
             </ResponsiveContainer>
             
-            {/* Custom Legend - Mobile */}
-            <div className="flex flex-wrap gap-1.5 justify-center mt-2 sm:hidden">
-              {chartData.map((entry, index) => (
-                <div key={index} className="flex items-center gap-0.5">
-                  <div 
-                    className="w-2 h-2" 
-                    style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
-                  />
-                  <span className="text-[9px] text-gray-700">
-                    {TRAINING_TYPE_LABELS[entry.name] || entry.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-            
             {/* Tablet - Small text */}
-            <ResponsiveContainer width="100%" height={140} className="hidden sm:block md:hidden">
+            <ResponsiveContainer width="100%" height={180} className="hidden sm:block md:hidden">
               <PieChart>
                 <Pie
                   data={chartData}
@@ -617,26 +561,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     fontSize: '10px'
                   }}
                 />
+                <Legend wrapperStyle={{ fontSize: '8px' }} />
               </PieChart>
             </ResponsiveContainer>
-            
-            {/* Custom Legend - Tablet */}
-            <div className="hidden sm:flex md:hidden flex-wrap gap-1.5 justify-center mt-2">
-              {chartData.map((entry, index) => (
-                <div key={index} className="flex items-center gap-0.5">
-                  <div 
-                    className="w-2 h-2" 
-                    style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
-                  />
-                  <span className="text-[9px] text-gray-700">
-                    {TRAINING_TYPE_LABELS[entry.name] || entry.name}
-                  </span>
-                </div>
-              ))}
-            </div>
 
             {/* Desktop */}
-            <ResponsiveContainer width="100%" height={180} className="hidden md:block">
+            <ResponsiveContainer width="100%" height={220} className="hidden md:block">
               <PieChart>
                 <Pie
                   data={chartData}
@@ -665,23 +595,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   fontSize: '10px'
                 }}
               />
+              <Legend wrapperStyle={{ fontSize: '9px' }} />
             </PieChart>
           </ResponsiveContainer>
-          
-          {/* Custom Legend */}
-          <div className="flex flex-wrap gap-2 justify-center mt-2">
-            {chartData.map((entry, index) => (
-              <div key={index} className="flex items-center gap-1">
-                <div 
-                  className="w-2.5 h-2.5" 
-                  style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
-                />
-                <span className="text-[10px] text-gray-700">
-                  {TRAINING_TYPE_LABELS[entry.name] || entry.name}
-                </span>
-              </div>
-            ))}
-          </div>
           </>
         )}
       </CardContent>
