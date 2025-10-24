@@ -441,7 +441,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             }}
             className="w-full"
           >
-            <CarouselContent className="-ml-2">
+            <CarouselContent className="-ml-0">
               {(timeFilter === 'day' ? daysList : timeFilter === 'week' ? weeksList : monthsList).map((period) => {
               const periodData = data.find(item => item.period === period);
               if (!periodData) return null;
@@ -462,7 +462,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               const periodTotalMinutes = periodChartData.reduce((sum, item) => sum + item.value, 0);
 
               return (
-                <CarouselItem key={period} className="pl-2 basis-1/3">
+                <CarouselItem key={period} className="pl-0 basis-1/3">
                   <div className="border border-gray-200 rounded-none p-1 md:p-2">
                   <div className="mb-2">
                     <h4 className="text-[10px] font-semibold text-gray-900">{period}</h4>
@@ -587,8 +587,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               );
             })}
             </CarouselContent>
-            <CarouselPrevious className="rounded-none -left-3" />
-            <CarouselNext className="rounded-none -right-3" />
+            <div className="flex justify-center gap-2 mt-2">
+              <CarouselPrevious className="rounded-none static translate-y-0" />
+              <CarouselNext className="rounded-none static translate-y-0" />
+            </div>
           </Carousel>
         ) : null}
       </CardContent>
