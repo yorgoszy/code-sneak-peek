@@ -266,28 +266,31 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           <div className="text-xs text-gray-600">
             Σύνολο: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setTimeFilter('day')}
-              className={`w-2 h-2 rounded-full transition-all ${
-                timeFilter === 'day' ? 'bg-[#00ffba] ring-2 ring-[#00ffba] ring-offset-1' : 'bg-gray-300 hover:bg-gray-400'
+              className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
+                timeFilter === 'day' ? 'bg-[#00ffba] text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
-              title="Ημέρα"
-            />
+            >
+              Ημέρα
+            </button>
             <button
               onClick={() => setTimeFilter('week')}
-              className={`w-2 h-2 rounded-full transition-all ${
-                timeFilter === 'week' ? 'bg-[#00ffba] ring-2 ring-[#00ffba] ring-offset-1' : 'bg-gray-300 hover:bg-gray-400'
+              className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
+                timeFilter === 'week' ? 'bg-[#00ffba] text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
-              title="Εβδομάδα"
-            />
+            >
+              Εβδομάδα
+            </button>
             <button
               onClick={() => setTimeFilter('month')}
-              className={`w-2 h-2 rounded-full transition-all ${
-                timeFilter === 'month' ? 'bg-[#00ffba] ring-2 ring-[#00ffba] ring-offset-1' : 'bg-gray-300 hover:bg-gray-400'
+              className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
+                timeFilter === 'month' ? 'bg-[#00ffba] text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
-              title="Μήνας"
-            />
+            >
+              Μήνας
+            </button>
           </div>
         </div>
       </CardHeader>
