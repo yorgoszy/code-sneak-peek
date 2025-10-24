@@ -1,4 +1,4 @@
-import { Activity, Clock, Dumbbell, TrendingUp, TrendingDown, Minus, AlertTriangle } from "lucide-react";
+import { Activity, Clock, TrendingUp, TrendingDown, Minus, AlertTriangle } from "lucide-react";
 
 interface WorkoutStatsCardsProps {
   stats: {
@@ -30,43 +30,27 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
     return "text-gray-600";
   };
 
-  const formatVolume = (volume: number) => {
-    if (volume >= 1000) {
-      return `${(volume / 1000).toFixed(1)}tn`;
-    }
-    return `${volume}kg`;
-  };
-
-  const formatVolumeImprovement = (volume: number) => {
-    if (Math.abs(volume) >= 1000) {
-      return `${(volume / 1000).toFixed(1)}tn`;
-    }
-    return `${volume}kg`;
-  };
-
   return (
-    <div className="grid grid-cols-2 gap-2 md:gap-3">
+    <div className="grid grid-cols-3 gap-2">
       {/* Ημέρες προπονήσεων αυτόν τον μήνα */}
-      <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
-        <h4 className="text-xs font-medium text-gray-700 mb-1 flex items-center justify-between">
-          <span className="flex items-center space-x-1">
-            <Activity className="h-3 w-3 text-blue-600" />
-            <span>Προπονήσεις</span>
-          </span>
+      <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
+        <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1 flex items-center space-x-1">
+          <Activity className="h-3 w-3 text-blue-600" />
+          <span>Προπονήσεις</span>
         </h4>
         <div className="flex-1 flex flex-col justify-end">
           <div className="text-sm md:text-base font-semibold text-blue-600">
             {stats.currentMonth.scheduledWorkouts || 0}
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-[10px] text-gray-500">
             Ημέρες μήνα
           </div>
         </div>
       </div>
 
       {/* Ώρες ολοκληρωμένων προπονήσεων */}
-      <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
-        <h4 className="text-xs font-medium text-gray-700 mb-1 flex items-center justify-between">
+      <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
+        <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1 flex items-center justify-between">
           <span className="flex items-center space-x-1">
             <Clock className="h-3 w-3 text-green-600" />
             <span>Ώρες</span>
@@ -79,34 +63,15 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
           <div className="text-sm md:text-base font-semibold text-green-600">
             {stats.currentMonth.totalTrainingHours}h
           </div>
-          <div className={`text-xs ${getTrendColor(stats.improvements.hoursImprovement)}`}>
+          <div className={`text-[10px] ${getTrendColor(stats.improvements.hoursImprovement)}`}>
             {stats.improvements.hoursImprovement > 0 ? '+' : ''}{stats.improvements.hoursImprovement}h μήνα
           </div>
         </div>
       </div>
 
-      {/* Όγκος προπονήσεων */}
-      <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
-        <h4 className="text-xs font-medium text-gray-700 mb-1 flex items-center justify-between">
-          <span className="flex items-center space-x-1">
-            <Dumbbell className="h-3 w-3 text-purple-600" />
-            <span>Όγκος</span>
-          </span>
-          <div className="scale-75">
-            {getTrendIcon(stats.improvements.volumeImprovement)}
-          </div>
-        </h4>
-        <div className="flex-1 flex flex-col justify-end">
-          <div className="text-sm md:text-base font-semibold text-purple-600">{formatVolume(stats.currentMonth.totalVolume)}</div>
-          <div className={`text-xs ${getTrendColor(stats.improvements.volumeImprovement)}`}>
-            {stats.improvements.volumeImprovement > 0 ? '+' : ''}{formatVolumeImprovement(stats.improvements.volumeImprovement)} μήνα
-          </div>
-        </div>
-      </div>
-
       {/* Χαμένες προπονήσεις */}
-      <div className="bg-white p-2 md:p-3 border rounded-none flex flex-col h-20 md:h-24">
-        <h4 className="text-xs font-medium text-gray-700 mb-1">
+      <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
+        <h4 className="text-[10px] md:text-xs font-medium text-gray-700 mb-1">
           <span className="flex items-center space-x-1">
             <AlertTriangle className="h-3 w-3 text-orange-600" />
             <span>Χαμένες</span>
@@ -114,7 +79,7 @@ export const WorkoutStatsCards = ({ stats }: WorkoutStatsCardsProps) => {
         </h4>
         <div className="flex-1 flex flex-col justify-end">
           <div className="text-sm md:text-base font-semibold text-orange-600">{stats.currentMonth.missedWorkouts}</div>
-          <div className="text-xs text-gray-500">
+          <div className="text-[10px] text-gray-500">
             Μήνα
           </div>
         </div>
