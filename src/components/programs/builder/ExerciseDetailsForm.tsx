@@ -20,6 +20,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
 }) => {
   const [isTimeMode, setIsTimeMode] = useState(false);
   const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>('reps');
+  const [kgMode, setKgMode] = useState<'kg' | 'rpm' | 'meter' | 's/m' | 'km/h'>('kg');
 
   const handleSetsLabelClick = () => {
     setIsTimeMode(!isTimeMode);
@@ -30,6 +31,16 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       if (prev === 'reps') return 'time';
       if (prev === 'time') return 'meter';
       return 'reps';
+    });
+  };
+
+  const handleKgLabelClick = () => {
+    setKgMode((prev) => {
+      if (prev === 'kg') return 'rpm';
+      if (prev === 'rpm') return 'meter';
+      if (prev === 'meter') return 's/m';
+      if (prev === 's/m') return 'km/h';
+      return 'kg';
     });
   };
 
@@ -101,7 +112,13 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       </div>
       
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
-        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
+        <label 
+          className="block mb-1 text-center w-full cursor-pointer hover:text-[#00ffba]" 
+          style={{ fontSize: '10px', color: '#666' }}
+          onClick={handleKgLabelClick}
+        >
+          {kgMode === 'kg' ? 'Kg' : kgMode === 'rpm' ? 'rpm' : kgMode === 'meter' ? 'meter' : kgMode === 's/m' ? 's/m' : 'km/h'}
+        </label>
         <Input
           type="text"
           inputMode="decimal"
