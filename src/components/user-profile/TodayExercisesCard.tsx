@@ -84,7 +84,7 @@ export const TodayExercisesCard: React.FC<TodayExercisesCardProps> = ({
           <Dumbbell className="h-3 w-3 text-blue-600" />
           <span>Ασκήσεις Σήμερα - {todayData.dayName}</span>
         </h4>
-        <div className="space-y-1 max-h-32 overflow-y-auto">
+        <div className="space-y-1">
           {todayData.exercises.map((exercise, index) => (
             <div key={index} className="text-xs flex justify-between items-center py-1 border-b border-gray-100 last:border-0">
               <span className="font-medium text-gray-800 truncate flex-1">{exercise.name}</span>
@@ -99,7 +99,7 @@ export const TodayExercisesCard: React.FC<TodayExercisesCardProps> = ({
       {/* Κάρτα Προτεινόμενων Διατάσεων */}
       <div className="bg-white p-3 border rounded-none">
         <h4 className="text-xs font-medium text-gray-700 mb-2">Προτεινόμενες Διατάσεις</h4>
-        <div className="space-y-1 max-h-32 overflow-y-auto">
+        <div className="space-y-1">
           <div className="text-xs py-1 border-b border-gray-100">
             <span className="font-medium text-gray-800">Διάταση Τετρακεφάλου</span>
           </div>
