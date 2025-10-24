@@ -306,7 +306,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             <button
               onClick={() => setTimeFilter('day')}
               className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
-                timeFilter === 'day' ? 'bg-[#00ffba] text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                timeFilter === 'day' ? 'bg-[#cb8954] text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               Ημέρα
@@ -314,7 +314,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             <button
               onClick={() => setTimeFilter('week')}
               className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
-                timeFilter === 'week' ? 'bg-[#00ffba] text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                timeFilter === 'week' ? 'bg-[#cb8954] text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               Εβδομάδα
@@ -322,7 +322,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             <button
               onClick={() => setTimeFilter('month')}
               className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
-                timeFilter === 'month' ? 'bg-[#00ffba] text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                timeFilter === 'month' ? 'bg-[#cb8954] text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               Μήνας
