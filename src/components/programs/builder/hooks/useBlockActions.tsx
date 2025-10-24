@@ -120,10 +120,34 @@ export const useBlockActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
+  const updateBlockTrainingType = (weekId: string, dayId: string, blockId: string, trainingType: string) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          program_days: (week.program_days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                program_blocks: (day.program_blocks || []).map(block =>
+                  block.id === blockId ? { ...block, training_type: trainingType as any } : block
+                )
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
   return {
     addBlock,
     removeBlock,
     duplicateBlock,
-    updateBlockName
+    updateBlockName,
+    updateBlockTrainingType
   };
 };

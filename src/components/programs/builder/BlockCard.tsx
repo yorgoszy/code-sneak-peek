@@ -14,6 +14,7 @@ interface BlockCardProps {
   onRemoveBlock: () => void;
   onDuplicateBlock: () => void;
   onUpdateBlockName: (name: string) => void;
+  onUpdateBlockTrainingType: (trainingType: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onDuplicateExercise: (exerciseId: string) => void;
@@ -27,6 +28,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   onRemoveBlock,
   onDuplicateBlock,
   onUpdateBlockName,
+  onUpdateBlockTrainingType,
   onUpdateExercise,
   onRemoveExercise,
   onDuplicateExercise,
@@ -75,6 +77,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <BlockCardHeader
             blockName={block.name}
+            trainingType={block.training_type}
             isOpen={isOpen}
             isEditing={isEditing}
             editingName={editingName}
@@ -86,6 +89,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
             onAddExercise={handleAddExerciseClick}
             onDuplicateBlock={onDuplicateBlock}
             onRemoveBlock={onRemoveBlock}
+            onTrainingTypeChange={onUpdateBlockTrainingType}
           />
           
           <BlockCardContent

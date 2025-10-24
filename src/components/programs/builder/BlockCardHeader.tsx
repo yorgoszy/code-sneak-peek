@@ -3,10 +3,12 @@ import React from 'react';
 import { CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
 
 interface BlockCardHeaderProps {
   blockName: string;
+  trainingType?: string;
   isOpen: boolean;
   isEditing: boolean;
   editingName: string;
@@ -18,10 +20,24 @@ interface BlockCardHeaderProps {
   onAddExercise: () => void;
   onDuplicateBlock: () => void;
   onRemoveBlock: () => void;
+  onTrainingTypeChange: (type: string) => void;
 }
+
+const TRAINING_TYPE_LABELS: Record<string, string> = {
+  str: 'Δύναμη',
+  'str/spd': 'Δύναμη/Ταχύτητα',
+  pwr: 'Ισχύς',
+  'spd/str': 'Ταχύτητα/Δύναμη',
+  spd: 'Ταχύτητα',
+  'str/end': 'Δύναμη/Αντοχή',
+  'pwr/end': 'Ισχύς/Αντοχή',
+  'spd/end': 'Ταχύτητα/Αντοχή',
+  end: 'Αντοχή',
+};
 
 export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   blockName,
+  trainingType,
   isOpen,
   isEditing,
   editingName,
@@ -32,10 +48,11 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onNameKeyPress,
   onAddExercise,
   onDuplicateBlock,
-  onRemoveBlock
+  onRemoveBlock,
+  onTrainingTypeChange
 }) => {
   return (
-    <CardHeader className="pb-2">
+    <CardHeader className="pb-2 space-y-2">
       <div className="flex justify-between items-center">
         <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-600 p-1 rounded">
           {isOpen ? <ChevronDown className="w-3 h-3 text-white" /> : <ChevronRight className="w-3 h-3 text-white" />}
@@ -101,6 +118,23 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             <Trash2 className="w-2 h-2 text-white" />
           </Button>
         </div>
+      </div>
+      
+      {/* Training Type Selector */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-white">Τύπος:</span>
+        <Select value={trainingType || ''} onValueChange={onTrainingTypeChange}>
+          <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[140px]" onClick={(e) => e.stopPropagation()}>
+            <SelectValue placeholder="Επιλέξτε τύπο" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            {Object.entries(TRAINING_TYPE_LABELS).map(([value, label]) => (
+              <SelectItem key={value} value={value} className="text-xs">
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </CardHeader>
   );

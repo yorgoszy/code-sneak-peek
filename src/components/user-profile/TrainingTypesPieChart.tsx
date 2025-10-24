@@ -1,126 +1,120 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 
 interface TrainingTypesPieChartProps {
   userId: string;
-  assignmentId?: string;
 }
 
 const COLORS = {
-  hypertrophy: '#00ffba',
-  strength: '#cb8954',
-  endurance: '#22c55e',
-  power: '#eab308',
-  speed: '#ef4444',
-  speed_endurance: '#f97316',
-  speed_strength: '#a855f7',
-  strength_speed: '#ec4899',
+  str: '#cb8954',
+  'str/spd': '#a855f7',
+  pwr: '#eab308',
+  'spd/str': '#ec4899',
+  spd: '#ef4444',
+  'str/end': '#f97316',
+  'pwr/end': '#84cc16',
+  'spd/end': '#14b8a6',
+  end: '#22c55e',
 };
 
 const TRAINING_TYPE_LABELS: Record<string, string> = {
-  hypertrophy: 'Υπερτροφία',
-  strength: 'Δύναμη',
-  endurance: 'Αντοχή',
-  power: 'Ισχύς',
-  speed: 'Ταχύτητα',
-  speed_endurance: 'Ταχύτητα/Αντοχή',
-  speed_strength: 'Ταχύτητα/Δύναμη',
-  strength_speed: 'Δύναμη/Ταχύτητα',
+  str: 'Δύναμη',
+  'str/spd': 'Δύναμη/Ταχύτητα',
+  pwr: 'Ισχύς',
+  'spd/str': 'Ταχύτητα/Δύναμη',
+  spd: 'Ταχύτητα',
+  'str/end': 'Δύναμη/Αντοχή',
+  'pwr/end': 'Ισχύς/Αντοχή',
+  'spd/end': 'Ταχύτητα/Αντοχή',
+  end: 'Αντοχή',
 };
 
-export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ 
-  userId, 
-  assignmentId 
-}) => {
-  const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month' | 'all'>('week');
+export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId }) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchTrainingTypes();
-  }, [userId, assignmentId, timeFilter]);
+  }, [userId]);
 
   const fetchTrainingTypes = async () => {
     try {
       setLoading(true);
       
-      let query = supabase
-        .from('workout_training_types')
+      // Παίρνουμε όλα τα completed workouts του χρήστη
+      const { data: completions, error: completionsError } = await supabase
+        .from('workout_completions')
         .select(`
-          *,
-          workout_completions!inner(
-            user_id,
-            assignment_id,
-            scheduled_date,
-            status
+          id,
+          assignment_id,
+          scheduled_date,
+          status,
+          program_assignments!inner(
+            program_id,
+            programs!inner(
+              program_weeks(
+                program_days(
+                  program_blocks(
+                    training_type,
+                    program_exercises(
+                      sets,
+                      reps,
+                      tempo,
+                      rest
+                    )
+                  )
+                )
+              )
+            )
           )
         `)
-        .eq('workout_completions.user_id', userId)
-        .eq('workout_completions.status', 'completed');
+        .eq('user_id', userId)
+        .eq('status', 'completed');
 
-      // Filter by assignment if specified
-      if (assignmentId) {
-        query = query.eq('workout_completions.assignment_id', assignmentId);
-      }
+      if (completionsError) throw completionsError;
 
-      // Apply time filter
-      const now = new Date();
-      let startDate: Date;
-      let endDate: Date = now;
+      // Συγκεντρώνουμε τα training types από τα blocks
+      const typeMinutes: Record<string, number> = {};
 
-      switch (timeFilter) {
-        case 'day':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-          break;
-        case 'week':
-          startDate = startOfWeek(now, { weekStartsOn: 1 });
-          endDate = endOfWeek(now, { weekStartsOn: 1 });
-          break;
-        case 'month':
-          startDate = startOfMonth(now);
-          endDate = endOfMonth(now);
-          break;
-        case 'all':
-          // No date filter for 'all'
-          startDate = new Date(0);
-          break;
-      }
+      completions?.forEach((completion: any) => {
+        const program = completion.program_assignments?.programs;
+        if (!program?.program_weeks) return;
 
-      if (timeFilter !== 'all') {
-        query = query
-          .gte('workout_completions.scheduled_date', format(startDate, 'yyyy-MM-dd'))
-          .lte('workout_completions.scheduled_date', format(endDate, 'yyyy-MM-dd'));
-      }
+        program.program_weeks.forEach((week: any) => {
+          week.program_days?.forEach((day: any) => {
+            day.program_blocks?.forEach((block: any) => {
+              if (!block.training_type) return;
 
-      const { data: trainingTypes, error } = await query;
+              // Υπολογίζουμε χρόνο μπλοκ
+              let blockMinutes = 0;
+              block.program_exercises?.forEach((ex: any) => {
+                const sets = ex.sets || 1;
+                const reps = parseReps(ex.reps);
+                const tempo = parseTempo(ex.tempo);
+                const rest = parseRest(ex.rest);
+                
+                const exerciseTime = (sets * reps * tempo + (sets - 1) * rest) / 60;
+                blockMinutes += exerciseTime;
+              });
 
-      if (error) throw error;
+              if (!typeMinutes[block.training_type]) {
+                typeMinutes[block.training_type] = 0;
+              }
+              typeMinutes[block.training_type] += blockMinutes;
+            });
+          });
+        });
+      });
 
-      // Aggregate by training type
-      const aggregated = trainingTypes.reduce((acc: any, item: any) => {
-        const type = item.training_type;
-        if (!acc[type]) {
-          acc[type] = {
-            name: TRAINING_TYPE_LABELS[type] || type,
-            value: 0,
-            color: COLORS[type as keyof typeof COLORS] || '#aca097'
-          };
-        }
-        acc[type].value += parseFloat(item.duration_minutes) || 0;
-        return acc;
-      }, {});
-
-      // Convert to array and filter out zero values
-      const chartData = Object.values(aggregated)
-        .filter((item: any) => item.value > 0)
-        .map((item: any) => ({
-          ...item,
-          value: Math.round(item.value) // Round to whole minutes
+      // Μετατρέπουμε σε array για το chart
+      const chartData = Object.entries(typeMinutes)
+        .filter(([_, minutes]) => minutes > 0)
+        .map(([type, minutes]) => ({
+          name: TRAINING_TYPE_LABELS[type] || type,
+          value: Math.round(minutes),
+          color: COLORS[type as keyof typeof COLORS] || '#aca097'
         }));
 
       setData(chartData);
@@ -130,6 +124,24 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const parseReps = (reps: string): number => {
+    if (!reps) return 10;
+    const numbers = reps.split(/[.,]/).map(n => parseFloat(n) || 0);
+    return numbers.reduce((sum, n) => sum + n, 0) || 10;
+  };
+
+  const parseTempo = (tempo: string): number => {
+    if (!tempo) return 4;
+    const numbers = tempo.split(/[.,]/).map(n => parseFloat(n) || 0);
+    return numbers.reduce((sum, n) => sum + n, 0) || 4;
+  };
+
+  const parseRest = (rest: string): number => {
+    if (!rest) return 60;
+    const num = parseFloat(rest.replace(/[^0-9.]/g, '')) || 60;
+    return rest.includes("'") || rest.includes(":") ? num : num;
   };
 
   const formatMinutes = (minutes: number) => {
@@ -150,9 +162,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({
           <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            Φόρτωση...
-          </div>
+          <div className="text-center py-8 text-gray-500">Φόρτωση...</div>
         </CardContent>
       </Card>
     );
@@ -161,25 +171,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({
   if (data.length === 0) {
     return (
       <Card className="rounded-none">
-        <CardHeader className="space-y-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
-            <Select value={timeFilter} onValueChange={(value: any) => setTimeFilter(value)}>
-              <SelectTrigger className="w-[180px] rounded-none">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="rounded-none">
-                <SelectItem value="day">Σήμερα</SelectItem>
-                <SelectItem value="week">Αυτή την Εβδομάδα</SelectItem>
-                <SelectItem value="month">Αυτόν τον Μήνα</SelectItem>
-                <SelectItem value="all">Όλες οι Προπονήσεις</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <CardHeader>
+          <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
-            Δεν υπάρχουν δεδομένα για την επιλεγμένη περίοδο
+            Δεν υπάρχουν ολοκληρωμένες προπονήσεις με τύπους
           </div>
         </CardContent>
       </Card>
@@ -188,21 +185,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="space-y-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
-          <Select value={timeFilter} onValueChange={(value: any) => setTimeFilter(value)}>
-            <SelectTrigger className="w-[180px] rounded-none">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="rounded-none">
-              <SelectItem value="day">Σήμερα</SelectItem>
-              <SelectItem value="week">Αυτή την Εβδομάδα</SelectItem>
-              <SelectItem value="month">Αυτόν τον Μήνα</SelectItem>
-              <SelectItem value="all">Όλες οι Προπονήσεις</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <CardHeader>
+        <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
         <div className="text-sm text-gray-600">
           Σύνολο: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
         </div>

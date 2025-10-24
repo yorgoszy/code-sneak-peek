@@ -36,6 +36,7 @@ export interface Block {
   id: string;
   name: string;
   block_order: number;
+  training_type?: 'str' | 'str/spd' | 'pwr' | 'spd/str' | 'spd' | 'str/end' | 'pwr/end' | 'spd/end' | 'end';
   program_exercises: ProgramExercise[];
 }
 

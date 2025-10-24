@@ -82,7 +82,8 @@ export const useProgramStructure = () => {
             .insert([{
               day_id: dayData.id,
               name: block.name,
-              block_order: block.block_order
+              block_order: block.block_order,
+              training_type: block.training_type || null
             }])
             .select()
             .single();

@@ -19,6 +19,7 @@ interface WeekTabsContentProps {
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
   onUpdateBlockName: (weekId: string, dayId: string, blockId: string, name: string) => void;
+  onUpdateBlockTrainingType: (weekId: string, dayId: string, blockId: string, trainingType: string) => void;
   onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onDuplicateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
@@ -40,6 +41,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   onRemoveBlock,
   onDuplicateBlock,
   onUpdateBlockName,
+  onUpdateBlockTrainingType,
   onUpdateExercise,
   onRemoveExercise,
   onDuplicateExercise,
@@ -85,6 +87,9 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                     onDuplicateBlock={(blockId) => onDuplicateBlock(week.id, day.id, blockId)}
                     onUpdateBlockName={(blockId, name) => 
                       onUpdateBlockName(week.id, day.id, blockId, name)
+                    }
+                    onUpdateBlockTrainingType={(blockId, trainingType) => 
+                      onUpdateBlockTrainingType(week.id, day.id, blockId, trainingType)
                     }
                     onUpdateExercise={(blockId, exerciseId, field, value) =>
                       onUpdateExercise(week.id, day.id, blockId, exerciseId, field, value)

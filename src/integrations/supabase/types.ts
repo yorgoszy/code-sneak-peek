@@ -2352,6 +2352,7 @@ export type Database = {
           day_id: string | null
           id: string
           name: string
+          training_type: string | null
           updated_at: string | null
         }
         Insert: {
@@ -2360,6 +2361,7 @@ export type Database = {
           day_id?: string | null
           id?: string
           name: string
+          training_type?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -2368,6 +2370,7 @@ export type Database = {
           day_id?: string | null
           id?: string
           name?: string
+          training_type?: string | null
           updated_at?: string | null
         }
         Relationships: [
