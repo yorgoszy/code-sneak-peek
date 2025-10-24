@@ -259,35 +259,35 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
   return (
     <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
+      <CardHeader className="p-3 pb-2">
+        <CardTitle className="text-xs font-semibold">Ανάλυση Τύπων Προπόνησης</CardTitle>
+        <div className="flex items-center justify-between mt-1">
+          <div className="text-xs text-gray-600">
             Σύνολο: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
           </div>
           <Tabs value={timeFilter} onValueChange={(v) => setTimeFilter(v as any)} className="w-auto">
-            <TabsList className="rounded-none h-8">
-              <TabsTrigger value="day" className="text-xs rounded-none">Ημέρα</TabsTrigger>
-              <TabsTrigger value="week" className="text-xs rounded-none">Εβδομάδα</TabsTrigger>
-              <TabsTrigger value="month" className="text-xs rounded-none">Μήνας</TabsTrigger>
+            <TabsList className="rounded-none h-6">
+              <TabsTrigger value="day" className="text-[10px] rounded-none px-2">Ημέρα</TabsTrigger>
+              <TabsTrigger value="week" className="text-[10px] rounded-none px-2">Εβδομάδα</TabsTrigger>
+              <TabsTrigger value="month" className="text-[10px] rounded-none px-2">Μήνας</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 pt-0">
         {timeFilter === 'day' && (
-          <div className="mb-4">
+          <div className="mb-2">
             {/* Week Navigation */}
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
-                className="rounded-none"
+                className="rounded-none h-6 px-2"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-3 w-3" />
               </Button>
-              <div className={`text-sm font-medium ${
+              <div className={`text-[10px] font-medium ${
                 format(startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'yyyy-MM-dd') === 
                 format(startOfWeek(new Date(), { locale: el, weekStartsOn: 1 }), 'yyyy-MM-dd')
                   ? 'text-[#00ffba]' 
@@ -299,23 +299,23 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
-                className="rounded-none"
+                className="rounded-none h-6 px-2"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-3 w-3" />
               </Button>
             </div>
           </div>
         )}
         
         {data.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <p className="mb-2">Δεν υπάρχουν δεδομένα για εμφάνιση</p>
-            <p className="text-xs text-gray-400">
+          <div className="text-center py-4 text-gray-500">
+            <p className="mb-1 text-xs">Δεν υπάρχουν δεδομένα για εμφάνιση</p>
+            <p className="text-[10px] text-gray-400">
               Βεβαιωθείτε ότι έχετε ορίσει τύπο προπόνησης (str, end, pwr κτλ.) σε κάθε μπλοκ του προγράμματος
             </p>
           </div>
         ) : timeFilter === 'day' ? (
-          <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(daysList.length, 3)}, 1fr)` }}>
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(daysList.length, 3)}, 1fr)` }}>
             {daysList.map((day) => {
               const dayData = data.find(item => item.period === day);
               if (!dayData) return null;
@@ -336,20 +336,20 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               const dayTotalMinutes = dayChartData.reduce((sum, item) => sum + item.value, 0);
 
               return (
-                <div key={day} className="border border-gray-200 rounded-none p-4">
-                  <div className="mb-4">
-                    <h4 className="text-base font-semibold text-gray-900">{day}</h4>
-                    <div className="text-sm text-gray-600">
-                      Σύνολο: <span className="font-semibold">{formatMinutes(dayTotalMinutes)}</span>
+                <div key={day} className="border border-gray-200 rounded-none p-2">
+                  <div className="mb-2">
+                    <h4 className="text-[10px] font-semibold text-gray-900">{day}</h4>
+                    <div className="text-[10px] text-gray-600">
+                      <span className="font-semibold">{formatMinutes(dayTotalMinutes)}</span>
                     </div>
                   </div>
                   
                   {dayChartData.length === 0 ? (
-                    <div className="text-center py-4 text-gray-500 text-sm">
-                      Δεν υπάρχουν δεδομένα για αυτή την ημέρα
+                    <div className="text-center py-2 text-gray-500 text-[10px]">
+                      Δεν υπάρχουν δεδομένα
                     </div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={250}>
+                    <ResponsiveContainer width="100%" height={180}>
                       <PieChart>
                         <Pie
                           data={dayChartData}
@@ -357,31 +357,22 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                           cy="50%"
                           labelLine={false}
                           label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
-                          outerRadius={70}
+                          outerRadius={50}
                           fill="#8884d8"
                           dataKey="value"
                         >
-                          {dayChartData.map((entry, index) => {
-                            const colorKey = Object.keys(TRAINING_TYPE_LABELS).find(
-                              key => TRAINING_TYPE_LABELS[key] === entry.name
-                            );
-                            return (
-                              <Cell 
-                                key={`cell-${index}`} 
-                                fill={COLORS[colorKey as keyof typeof COLORS] || '#aca097'} 
-                              />
-                            );
-                          })}
+...
                         </Pie>
                         <Tooltip 
                           formatter={(value: any) => formatMinutes(value)}
                           contentStyle={{ 
                             backgroundColor: 'white', 
                             border: '1px solid #ccc',
-                            borderRadius: '0px'
+                            borderRadius: '0px',
+                            fontSize: '10px'
                           }}
                         />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
+                        <Legend wrapperStyle={{ fontSize: '9px' }} />
                       </PieChart>
                     </ResponsiveContainer>
                   )}
@@ -390,7 +381,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             })}
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
                 data={chartData}
@@ -398,31 +389,22 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 cy="50%"
                 labelLine={false}
                 label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
-                outerRadius={80}
+                outerRadius={60}
                 fill="#8884d8"
                 dataKey="value"
               >
-                {chartData.map((entry, index) => {
-                  const colorKey = Object.keys(TRAINING_TYPE_LABELS).find(
-                    key => TRAINING_TYPE_LABELS[key] === entry.name
-                  );
-                  return (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={COLORS[colorKey as keyof typeof COLORS] || '#aca097'} 
-                    />
-                  );
-                })}
+...
               </Pie>
               <Tooltip 
                 formatter={(value: any) => formatMinutes(value)}
                 contentStyle={{ 
                   backgroundColor: 'white', 
                   border: '1px solid #ccc',
-                  borderRadius: '0px'
+                  borderRadius: '0px',
+                  fontSize: '10px'
                 }}
               />
-              <Legend wrapperStyle={{ fontSize: '12px' }} />
+              <Legend wrapperStyle={{ fontSize: '9px' }} />
             </PieChart>
           </ResponsiveContainer>
         )}
