@@ -14,15 +14,16 @@ interface TrainingTypesPieChartProps {
 }
 
 const COLORS = {
-  str: '#cb8954',
-  'str/spd': '#a855f7',
-  pwr: '#eab308',
-  'spd/str': '#ec4899',
-  spd: '#ef4444',
-  'str/end': '#f97316',
-  'pwr/end': '#84cc16',
-  'spd/end': '#14b8a6',
-  end: '#22c55e',
+  end: '#1800ad',
+  'str/end': '#353384',
+  'pwr/end': '#1800ad',
+  'spd/end': '#8045ed',
+  str: '#ff3131',
+  'str/spd': '#b61879',
+  'spd/str': '#cb3691',
+  spd: '#ff66c4',
+  pwr: '#f43bec',
+  hpr: '#2d1559',
 };
 
 const TRAINING_TYPE_LABELS: Record<string, string> = {
