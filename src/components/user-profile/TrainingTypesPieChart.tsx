@@ -247,8 +247,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     value: value as number,
   }));
 
-  // Για το σύνολο σε day mode, αθροίζουμε όλες τις ημέρες της εβδομάδας
-  const totalMinutesData = timeFilter === 'day' ? data : filteredData;
+  // Για το σύνολο σε day και week mode, αθροίζουμε όλες τις περιόδους
+  const totalMinutesData = (timeFilter === 'day' || timeFilter === 'week') ? data : filteredData;
   const totalPieData = totalMinutesData.reduce((acc, item) => {
     Object.entries(item).forEach(([key, value]) => {
       if (key !== 'period') {
