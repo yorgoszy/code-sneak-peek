@@ -68,7 +68,9 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
         <div className="flex items-center min-w-0">
           <TabsTrigger 
             value={week.id} 
-            className="rounded-none whitespace-nowrap px-2 md:px-4 text-xs md:text-sm min-w-0"
+            className={`rounded-none whitespace-nowrap px-2 md:px-4 text-xs md:text-sm min-w-0 transition-colors ${
+              isActive ? 'bg-foreground/10 font-semibold' : ''
+            }`}
             onDoubleClick={() => onWeekNameDoubleClick(week)}
           >
             {editingWeekId === week.id ? (
