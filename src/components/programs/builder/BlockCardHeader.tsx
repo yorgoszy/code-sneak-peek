@@ -34,6 +34,11 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   'spd/end': 'spd/end',
   end: 'end',
   hpr: 'hpr',
+  mobility: 'mobility',
+  stability: 'stability',
+  activation: 'activation',
+  'neural act': 'neural act',
+  recovery: 'recovery',
 };
 
 export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({

@@ -170,6 +170,13 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             return;
           }
           
+          // Εξαιρούμε τους τύπους που δεν θέλουμε στο pie chart
+          const excludedTypes = ['mobility', 'stability', 'activation', 'neural act', 'recovery'];
+          if (excludedTypes.includes(block.training_type)) {
+            console.log(`⏭️ Skipping block "${block.name}" with type ${block.training_type} (excluded from pie chart)`);
+            return;
+          }
+          
           // Υπολογίζουμε τον χρόνο του block
           let blockTime = 0;
           block.program_exercises?.forEach((exercise: any) => {
