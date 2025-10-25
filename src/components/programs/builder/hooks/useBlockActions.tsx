@@ -14,15 +14,40 @@ export const useBlockActions = (
           ...week,
           program_days: (week.program_days || []).map(day => {
             if (day.id === dayId) {
+              const currentBlocks = day.program_blocks || [];
+              
+              // Βρίσκουμε το recovery block
+              const recoveryIndex = currentBlocks.findIndex(b => b.training_type === 'recovery');
+              
               const newBlock = {
                 id: generateId(),
-                name: `Μπλοκ ${(day.program_blocks?.length || 0) + 1}`,
-                block_order: (day.program_blocks?.length || 0) + 1,
+                name: `Μπλοκ ${currentBlocks.length + 1}`,
+                block_order: currentBlocks.length + 1,
                 program_exercises: []
               };
+              
+              let updatedBlocks;
+              if (recoveryIndex !== -1) {
+                // Αν υπάρχει recovery, βάζουμε το νέο block πριν από αυτό
+                updatedBlocks = [
+                  ...currentBlocks.slice(0, recoveryIndex),
+                  newBlock,
+                  ...currentBlocks.slice(recoveryIndex)
+                ];
+              } else {
+                // Αλλιώς το βάζουμε στο τέλος
+                updatedBlocks = [...currentBlocks, newBlock];
+              }
+              
+              // Ενημερώνουμε τα block_order
+              updatedBlocks = updatedBlocks.map((block, index) => ({
+                ...block,
+                block_order: index + 1
+              }));
+              
               return {
                 ...day,
-                program_blocks: [...(day.program_blocks || []), newBlock]
+                program_blocks: updatedBlocks
               };
             }
             return day;

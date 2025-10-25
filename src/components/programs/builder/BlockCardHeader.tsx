@@ -21,7 +21,6 @@ interface BlockCardHeaderProps {
   onDuplicateBlock: () => void;
   onRemoveBlock: () => void;
   onTrainingTypeChange: (type: string) => void;
-  isPermanent?: boolean;
 }
 
 // Μόνιμα blocks που δεν εμφανίζονται στο dropdown
@@ -55,8 +54,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onAddExercise,
   onDuplicateBlock,
   onRemoveBlock,
-  onTrainingTypeChange,
-  isPermanent = false
+  onTrainingTypeChange
 }) => {
   return (
     <CardHeader className="pb-2 space-y-2">
@@ -102,32 +100,28 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
           >
             <Plus className="w-2 h-2 text-white" />
           </Button>
-          {!isPermanent && (
-            <>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDuplicateBlock();
-                }}
-                size="sm"
-                variant="ghost"
-                className="rounded-none hover:bg-gray-600"
-              >
-                <Copy className="w-2 h-2 text-white" />
-              </Button>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveBlock();
-                }}
-                size="sm"
-                variant="ghost"
-                className="rounded-none hover:bg-gray-600"
-              >
-                <Trash2 className="w-2 h-2 text-white" />
-              </Button>
-            </>
-          )}
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDuplicateBlock();
+            }}
+            size="sm"
+            variant="ghost"
+            className="rounded-none hover:bg-gray-600"
+          >
+            <Copy className="w-2 h-2 text-white" />
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveBlock();
+            }}
+            size="sm"
+            variant="ghost"
+            className="rounded-none hover:bg-gray-600"
+          >
+            <Trash2 className="w-2 h-2 text-white" />
+          </Button>
         </div>
       </div>
       

@@ -50,8 +50,24 @@ export const useReorderActions = (
               const [reorderedItem] = program_blocks.splice(oldIndex, 1);
               program_blocks.splice(newIndex, 0, reorderedItem);
               
+              // Βρίσκουμε το recovery block
+              const recoveryIndex = program_blocks.findIndex(b => b.training_type === 'recovery');
+              
+              let finalBlocks;
+              if (recoveryIndex !== -1 && recoveryIndex !== program_blocks.length - 1) {
+                // Αν το recovery δεν είναι ήδη τελευταίο, το μετακινούμε στο τέλος
+                const recoveryBlock = program_blocks[recoveryIndex];
+                finalBlocks = [
+                  ...program_blocks.slice(0, recoveryIndex),
+                  ...program_blocks.slice(recoveryIndex + 1),
+                  recoveryBlock
+                ];
+              } else {
+                finalBlocks = program_blocks;
+              }
+              
               // Update block order
-              const updatedBlocks = program_blocks.map((block, index) => ({
+              const updatedBlocks = finalBlocks.map((block, index) => ({
                 ...block,
                 block_order: index + 1
               }));
