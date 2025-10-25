@@ -107,7 +107,17 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
               <span className="hidden sm:inline">+Week</span>
               <span className="sm:hidden">+ Εβδομάδα</span>
             </Button>
-            <Button onClick={() => activeWeek && onAddDay(activeWeek)} disabled={!activeWeek} className="rounded-none w-full sm:w-auto text-xs md:text-sm" size="sm">
+            <Button 
+              onClick={() => {
+                console.log('🟢 + Day button clicked, activeWeek:', activeWeek);
+                if (activeWeek) {
+                  onAddDay(activeWeek);
+                }
+              }} 
+              disabled={!activeWeek} 
+              className="rounded-none w-full sm:w-auto text-xs md:text-sm" 
+              size="sm"
+            >
               <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
               <span className="hidden sm:inline">+ Day</span>
               <span className="sm:hidden">+ Ημέρα</span>

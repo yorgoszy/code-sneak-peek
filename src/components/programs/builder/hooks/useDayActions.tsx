@@ -8,6 +8,7 @@ export const useDayActions = (
   saveProgram?: (programData: any) => Promise<any>
 ) => {
   const addDay = (weekId: string) => {
+    console.log('🔵 addDay called with weekId:', weekId);
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         // Δημιουργούμε τα 5 μόνιμα blocks που θα υπάρχουν πάντα
@@ -55,6 +56,9 @@ export const useDayActions = (
           day_number: (week.program_days?.length || 0) + 1,
           program_blocks: permanentBlocks
         };
+        
+        console.log('✅ Created new day with permanent blocks:', newDay);
+        
         return {
           ...week,
           program_days: [...(week.program_days || []), newDay]
@@ -62,6 +66,7 @@ export const useDayActions = (
       }
       return week;
     });
+    console.log('🔵 Calling updateProgram with updated weeks');
     updateProgram({ weeks: updatedWeeks });
   };
 
