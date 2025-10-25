@@ -75,7 +75,7 @@ export const useMessageSender = ({
         .eq('status', 'active');
 
       const { data: tests } = await supabase
-        .from('anthropometric_test_sessions')
+        .from('test_sessions')
         .select(`
           test_date,
           anthropometric_test_data (
@@ -93,6 +93,14 @@ export const useMessageSender = ({
           endurance_test_data (
             vo2_max,
             push_ups
+          ),
+          jump_test_data (
+            non_counter_movement_jump,
+            counter_movement_jump,
+            depth_jump,
+            broad_jump,
+            triple_jump_left,
+            triple_jump_right
           )
         `)
         .eq('user_id', userId)

@@ -29,6 +29,15 @@ interface ProgressData {
     pullUps?: number;
     lastMeasurement?: string;
   };
+  jumps: {
+    nonCounterMovementJump?: number;
+    counterMovementJump?: number;
+    depthJump?: number;
+    broadJump?: number;
+    tripleJumpLeft?: number;
+    tripleJumpRight?: number;
+    lastMeasurement?: string;
+  };
 }
 
 interface WorkoutStatsData {
@@ -131,7 +140,8 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
           progress: {
             strength: {},
             anthropometric: {},
-            endurance: {}
+            endurance: {},
+            jumps: {}
           }
         };
 
@@ -372,6 +382,38 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
             pushUps: latest.push_ups || undefined,
             pullUps: latest.pull_ups || undefined,
             lastMeasurement: (latest as any).endurance_test_sessions.test_date
+          };
+        }
+
+        // Fetch Progress Data - Jump Tests
+        const { data: jumpTests } = await supabase
+          .from('jump_test_data')
+          .select(`
+            non_counter_movement_jump,
+            counter_movement_jump,
+            depth_jump,
+            broad_jump,
+            triple_jump_left,
+            triple_jump_right,
+            test_sessions!inner (
+              user_id,
+              test_date
+            )
+          `)
+          .eq('test_sessions.user_id', userId)
+          .order('test_sessions.test_date', { ascending: false })
+          .limit(1);
+
+        if (jumpTests && jumpTests.length > 0) {
+          const latest = jumpTests[0];
+          workoutStatsData.progress.jumps = {
+            nonCounterMovementJump: latest.non_counter_movement_jump || undefined,
+            counterMovementJump: latest.counter_movement_jump || undefined,
+            depthJump: latest.depth_jump || undefined,
+            broadJump: latest.broad_jump || undefined,
+            tripleJumpLeft: latest.triple_jump_left || undefined,
+            tripleJumpRight: latest.triple_jump_right || undefined,
+            lastMeasurement: (latest as any).test_sessions.test_date
           };
         }
 

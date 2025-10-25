@@ -133,6 +133,18 @@ serve(async (req) => {
           if (endurance.pushUps) enhancedContext += `\n- Push-ups: ${endurance.pushUps}`;
           if (endurance.pullUps) enhancedContext += `\n- Pull-ups: ${endurance.pullUps}`;
         }
+
+        // Jump progress
+        if (stats.progress.jumps && Object.keys(stats.progress.jumps).length > 0) {
+          const jumps = stats.progress.jumps;
+          enhancedContext += '\n\n🦘 ΑΛΜΑΤΑ:';
+          if (jumps.nonCounterMovementJump) enhancedContext += `\n- Non-CMJ: ${jumps.nonCounterMovementJump}cm`;
+          if (jumps.counterMovementJump) enhancedContext += `\n- CMJ: ${jumps.counterMovementJump}cm`;
+          if (jumps.depthJump) enhancedContext += `\n- Depth Jump: ${jumps.depthJump}cm`;
+          if (jumps.broadJump) enhancedContext += `\n- Broad Jump: ${jumps.broadJump}m`;
+          if (jumps.tripleJumpLeft) enhancedContext += `\n- Triple Jump Αριστερό: ${jumps.tripleJumpLeft}m`;
+          if (jumps.tripleJumpRight) enhancedContext += `\n- Triple Jump Δεξί: ${jumps.tripleJumpRight}m`;
+        }
       }
     }
 
