@@ -93,58 +93,33 @@ export const TodayExercisesCard: React.FC<TodayExercisesCardProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-2">
-        {/* Κάρτα Ασκήσεων */}
-        <div className="bg-white p-3 border rounded-none">
-          <h4 className="text-xs font-medium text-gray-700 mb-2 flex items-center space-x-1">
-            <Dumbbell className="h-3 w-3 text-blue-600" />
-            <span>Ασκήσεις Σήμερα - {todayData.dayName}</span>
-          </h4>
-          <div className="space-y-1">
-            {todayData.exercises.map((exercise, index) => {
-              const hasVideo = exercise.video_url && isValidVideoUrl(exercise.video_url);
-              
-              return (
-                <div 
-                  key={index} 
-                  className={`text-xs flex justify-between items-center py-1 border-b border-gray-100 last:border-0 ${
-                    hasVideo ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
-                  }`}
-                  onClick={() => hasVideo && handleExerciseClick(exercise)}
-                >
-                  <span className="font-medium text-gray-800 truncate flex-1 flex items-center gap-1">
-                    {exercise.name}
-                    {hasVideo && <Play className="w-3 h-3 text-blue-600" />}
-                  </span>
-                  <span className="text-gray-600 ml-2 whitespace-nowrap">
-                    {exercise.sets}x{exercise.reps}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Κάρτα Προτεινόμενων Διατάσεων */}
-        <div className="bg-white p-3 border rounded-none">
-          <h4 className="text-xs font-medium text-gray-700 mb-2">Προτεινόμενες Διατάσεις</h4>
-          <div className="space-y-1">
-            <div className="text-xs py-1 border-b border-gray-100">
-              <span className="font-medium text-gray-800">Διάταση Τετρακεφάλου</span>
-            </div>
-            <div className="text-xs py-1 border-b border-gray-100">
-              <span className="font-medium text-gray-800">Διάταση Οπίσθιων Μηριαίων</span>
-            </div>
-            <div className="text-xs py-1 border-b border-gray-100">
-              <span className="font-medium text-gray-800">Διάταση Γλουτών</span>
-            </div>
-            <div className="text-xs py-1 border-b border-gray-100">
-              <span className="font-medium text-gray-800">Διάταση Μέσης</span>
-            </div>
-            <div className="text-xs py-1">
-              <span className="font-medium text-gray-800">Διάταση Ώμων</span>
-            </div>
-          </div>
+      <div className="bg-white p-3 border rounded-none">
+        <h4 className="text-xs font-medium text-gray-700 mb-2 flex items-center space-x-1">
+          <Dumbbell className="h-3 w-3 text-blue-600" />
+          <span>Ασκήσεις Σήμερα - {todayData.dayName}</span>
+        </h4>
+        <div className="space-y-1">
+          {todayData.exercises.map((exercise, index) => {
+            const hasVideo = exercise.video_url && isValidVideoUrl(exercise.video_url);
+            
+            return (
+              <div 
+                key={index} 
+                className={`text-xs flex justify-between items-center py-1 border-b border-gray-100 last:border-0 ${
+                  hasVideo ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
+                }`}
+                onClick={() => hasVideo && handleExerciseClick(exercise)}
+              >
+                <span className="font-medium text-gray-800 truncate flex-1 flex items-center gap-1">
+                  {exercise.name}
+                  {hasVideo && <Play className="w-3 h-3 text-blue-600" />}
+                </span>
+                <span className="text-gray-600 ml-2 whitespace-nowrap">
+                  {exercise.sets}x{exercise.reps}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
