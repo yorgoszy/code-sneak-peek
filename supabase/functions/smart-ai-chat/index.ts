@@ -99,7 +99,41 @@ serve(async (req) => {
         });
       }
 
-      enhancedContext += workoutContext;
+      // Add progress data context
+      if (stats.progress) {
+        enhancedContext += '\n\n💪 ΠΡΟΟΔΟΣ ΧΡΗΣΤΗ:';
+        
+        // Strength progress
+        if (stats.progress.strength && Object.keys(stats.progress.strength).length > 0) {
+          enhancedContext += '\n\n🏋️ ΔΥΝΑΜΗ (1RM):';
+          Object.entries(stats.progress.strength).forEach(([exercise, data]: [string, any]) => {
+            enhancedContext += `\n- ${exercise}: ${data.latest1RM}kg @ ${data.latestVelocity.toFixed(2)}m/s`;
+            if (data.percentageChange !== null) {
+              const change = data.percentageChange >= 0 ? `+${data.percentageChange.toFixed(1)}%` : `${data.percentageChange.toFixed(1)}%`;
+              enhancedContext += ` (${change} από προηγούμενη μέτρηση)`;
+            }
+          });
+        }
+
+        // Anthropometric progress
+        if (stats.progress.anthropometric && Object.keys(stats.progress.anthropometric).length > 0) {
+          const anthro = stats.progress.anthropometric;
+          enhancedContext += '\n\n📏 ΣΩΜΑΤΟΜΕΤΡΙΚΑ:';
+          if (anthro.weight) enhancedContext += `\n- Βάρος: ${anthro.weight}kg`;
+          if (anthro.height) enhancedContext += `\n- Ύψος: ${anthro.height}cm`;
+          if (anthro.bodyFat) enhancedContext += `\n- Λίπος: ${anthro.bodyFat}%`;
+          if (anthro.muscleMass) enhancedContext += `\n- Μυϊκή Μάζα: ${anthro.muscleMass}%`;
+        }
+
+        // Endurance progress
+        if (stats.progress.endurance && Object.keys(stats.progress.endurance).length > 0) {
+          const endurance = stats.progress.endurance;
+          enhancedContext += '\n\n🏃 ΑΝΤΟΧΗ:';
+          if (endurance.vo2Max) enhancedContext += `\n- VO2 Max: ${endurance.vo2Max}`;
+          if (endurance.pushUps) enhancedContext += `\n- Push-ups: ${endurance.pushUps}`;
+          if (endurance.pullUps) enhancedContext += `\n- Pull-ups: ${endurance.pullUps}`;
+        }
+      }
     }
 
     // Add user profile info

@@ -204,7 +204,7 @@ export const assignmentService = {
                 console.log(`✅ [ASSIGNMENT OK] Exercise order is correct in block: ${block.name}`);
               }
 
-              // ΝΕΟ: Ενημέρωση τιμών από τον Builder (μόνο velocity_ms για τώρα)
+              // ΝΕΟ: Ενημέρωση τιμών από τον Builder
               exercises.forEach((dbEx: any) => {
                 const builderExercise = builderBlock?.program_exercises?.find((be: any) => Number(be.exercise_order) === Number(dbEx.exercise_order));
                 if (!builderExercise) return;
@@ -214,21 +214,33 @@ export const assignmentService = {
                   ? parseNumberWithComma(builderExercise.velocity_ms)
                   : null;
 
+                // Ενημέρωση reps_mode και kg_mode
+                const repsMode = builderExercise.reps_mode || 'reps';
+                const kgMode = builderExercise.kg_mode || 'kg';
+
                 // Αν στη βάση είναι διαφορετικό, ενημέρωσέ το
                 const currentDbVelocity = dbEx.velocity_ms as number | null;
                 const normalizedNew = Number.isFinite(velocityValue as number) ? (velocityValue as number) : null;
 
-                const isDifferent = (currentDbVelocity ?? null) !== (normalizedNew ?? null);
+                const isDifferent = (currentDbVelocity ?? null) !== (normalizedNew ?? null) ||
+                                   dbEx.reps_mode !== repsMode ||
+                                   dbEx.kg_mode !== kgMode;
+                
                 if (isDifferent) {
-                  console.log('📝 [ASSIGNMENT UPDATE] Updating velocity_ms', {
+                  console.log('📝 [ASSIGNMENT UPDATE] Updating exercise fields', {
                     exercise_name: dbEx.exercises?.name,
                     order: dbEx.exercise_order,
-                    from: currentDbVelocity,
-                    to: normalizedNew
+                    velocity: { from: currentDbVelocity, to: normalizedNew },
+                    reps_mode: { from: dbEx.reps_mode, to: repsMode },
+                    kg_mode: { from: dbEx.kg_mode, to: kgMode }
                   });
                   updates.push(
                     supabase.from('program_exercises')
-                      .update({ velocity_ms: normalizedNew })
+                      .update({ 
+                        velocity_ms: normalizedNew,
+                        reps_mode: repsMode,
+                        kg_mode: kgMode
+                      })
                       .eq('id', dbEx.id)
                       .select()
                   );
@@ -240,11 +252,11 @@ export const assignmentService = {
 
         // Εκτέλεση όλων των ενημερώσεων μαζί
         if (updates.length > 0) {
-          console.log(`💾 [ASSIGNMENT UPDATE] Applying ${updates.length} updates for velocity_ms...`);
+          console.log(`💾 [ASSIGNMENT UPDATE] Applying ${updates.length} updates for exercise modes...`);
           await Promise.all(updates as any);
-          console.log('✅ [ASSIGNMENT UPDATE] Velocity values updated successfully');
+          console.log('✅ [ASSIGNMENT UPDATE] Exercise modes and velocity updated successfully');
         } else {
-          console.log('ℹ️ [ASSIGNMENT UPDATE] No velocity updates needed');
+          console.log('ℹ️ [ASSIGNMENT UPDATE] No updates needed');
         }
       }
     } catch (error) {
@@ -363,7 +375,9 @@ export const assignmentService = {
                       exercise_id: exercise.exercise_id,
                       sets: exercise.sets || 1,
                       reps: exercise.reps || '',
+                      reps_mode: exercise.reps_mode || 'reps',
                       kg: exercise.kg || '',
+                      kg_mode: exercise.kg_mode || 'kg',
                       percentage_1rm: percentage1rmValue,
                       velocity_ms: velocityValue,
                       tempo: exercise.tempo || '',

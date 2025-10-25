@@ -8,6 +8,29 @@ interface WorkoutStats {
   missed: number;
 }
 
+interface ProgressData {
+  strength: Record<string, {
+    latest1RM: number;
+    latestVelocity: number;
+    latestDate: string;
+    percentageChange: number | null;
+    history: Array<{ weight: number; velocity: number; date: string }>;
+  }>;
+  anthropometric: {
+    weight?: number;
+    height?: number;
+    bodyFat?: number;
+    muscleMass?: number;
+    lastMeasurement?: string;
+  };
+  endurance: {
+    vo2Max?: number;
+    pushUps?: number;
+    pullUps?: number;
+    lastMeasurement?: string;
+  };
+}
+
 interface WorkoutStatsData {
   today: {
     hasWorkout: boolean;
@@ -32,6 +55,7 @@ interface WorkoutStatsData {
     program: string;
     status: 'completed' | 'missed';
   }>;
+  progress: ProgressData;
 }
 
 export const useWorkoutStatsSync = (userId: string | undefined) => {
@@ -103,7 +127,12 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
             upcomingDays: []
           },
           activePrograms: [],
-          recentWorkouts: []
+          recentWorkouts: [],
+          progress: {
+            strength: {},
+            anthropometric: {},
+            endurance: {}
+          }
         };
 
         // Process each assignment
@@ -193,6 +222,158 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
               status: c.status as 'completed' | 'missed'
             };
           });
+
+        // Fetch Progress Data - Strength tests
+        const { data: strengthTests } = await supabase
+          .from('strength_test_attempts')
+          .select(`
+            weight_kg,
+            velocity_ms,
+            exercise_id,
+            test_session_id,
+            exercises:exercise_id (
+              name
+            ),
+            strength_test_sessions!inner (
+              user_id,
+              test_date
+            )
+          `)
+          .eq('strength_test_sessions.user_id', userId)
+          .not('velocity_ms', 'is', null)
+          .order('strength_test_sessions.test_date', { ascending: false })
+          .limit(50);
+
+        // Process strength data
+        if (strengthTests && strengthTests.length > 0) {
+          const exerciseMap: Record<string, any[]> = {};
+          
+          strengthTests.forEach((test: any) => {
+            const exerciseName = test.exercises?.name || 'Unknown';
+            if (!exerciseMap[exerciseName]) {
+              exerciseMap[exerciseName] = [];
+            }
+            exerciseMap[exerciseName].push(test);
+          });
+
+          // Calculate 1RM for each exercise
+          Object.keys(exerciseMap).forEach(exerciseName => {
+            const tests = exerciseMap[exerciseName];
+            
+            // Group by session
+            const sessions = tests.reduce((acc: any, test: any) => {
+              const sessionId = test.test_session_id;
+              if (!acc[sessionId]) {
+                acc[sessionId] = {
+                  date: test.strength_test_sessions.test_date,
+                  attempts: []
+                };
+              }
+              acc[sessionId].attempts.push(test);
+              return acc;
+            }, {});
+
+            const sessionArray = Object.values(sessions).sort((a: any, b: any) => 
+              new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+
+            if (sessionArray.length > 0) {
+              const latestSession: any = sessionArray[0];
+              const latest1RM = latestSession.attempts.reduce((max: any, curr: any) => 
+                curr.weight_kg > max.weight_kg ? curr : max
+              );
+
+              let percentageChange = null;
+              const history: any[] = [];
+
+              if (sessionArray.length > 1) {
+                const previousSession: any = sessionArray[1];
+                const previous1RM = previousSession.attempts.reduce((max: any, curr: any) => 
+                  curr.weight_kg > max.weight_kg ? curr : max
+                );
+                
+                if (previous1RM.weight_kg > 0) {
+                  percentageChange = ((latest1RM.weight_kg - previous1RM.weight_kg) / previous1RM.weight_kg) * 100;
+                }
+
+                // Add up to 3 previous sessions to history
+                for (let i = 1; i < Math.min(sessionArray.length, 4); i++) {
+                  const session: any = sessionArray[i];
+                  const sessionMax = session.attempts.reduce((max: any, curr: any) => 
+                    curr.weight_kg > max.weight_kg ? curr : max
+                  );
+                  history.push({
+                    weight: sessionMax.weight_kg,
+                    velocity: sessionMax.velocity_ms,
+                    date: session.date
+                  });
+                }
+              }
+
+              workoutStatsData.progress.strength[exerciseName] = {
+                latest1RM: latest1RM.weight_kg,
+                latestVelocity: latest1RM.velocity_ms,
+                latestDate: latestSession.date,
+                percentageChange,
+                history
+              };
+            }
+          });
+        }
+
+        // Fetch Progress Data - Anthropometric
+        const { data: anthropometricTests } = await supabase
+          .from('anthropometric_test_data')
+          .select(`
+            weight,
+            height,
+            body_fat_percentage,
+            muscle_mass_percentage,
+            anthropometric_test_sessions!inner (
+              user_id,
+              test_date
+            )
+          `)
+          .eq('anthropometric_test_sessions.user_id', userId)
+          .order('anthropometric_test_sessions.test_date', { ascending: false })
+          .limit(1);
+
+        if (anthropometricTests && anthropometricTests.length > 0) {
+          const latest = anthropometricTests[0];
+          workoutStatsData.progress.anthropometric = {
+            weight: latest.weight || undefined,
+            height: latest.height || undefined,
+            bodyFat: latest.body_fat_percentage || undefined,
+            muscleMass: latest.muscle_mass_percentage || undefined,
+            lastMeasurement: (latest as any).anthropometric_test_sessions.test_date
+          };
+        }
+
+        // Fetch Progress Data - Endurance
+        const { data: enduranceTests } = await supabase
+          .from('endurance_test_data')
+          .select(`
+            vo2_max,
+            push_ups,
+            pull_ups,
+            endurance_test_sessions!inner (
+              user_id,
+              test_date
+            )
+          `)
+          .eq('endurance_test_sessions.user_id', userId)
+          .order('endurance_test_sessions.test_date', { ascending: false })
+          .limit(1);
+
+        if (enduranceTests && enduranceTests.length > 0) {
+          const latest = enduranceTests[0];
+          workoutStatsData.progress.endurance = {
+            vo2Max: latest.vo2_max || undefined,
+            pushUps: latest.push_ups || undefined,
+            pullUps: latest.pull_ups || undefined,
+            lastMeasurement: (latest as any).endurance_test_sessions.test_date
+          };
+        }
 
         // Update ai_user_profiles
         const { error: updateError } = await supabase
