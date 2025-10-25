@@ -109,12 +109,13 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
             </Button>
             <Button 
               onClick={() => {
-                console.log('🟢 + Day button clicked, activeWeek:', activeWeek);
-                if (activeWeek) {
-                  onAddDay(activeWeek);
+                const targetWeekId = activeWeek || weeks[0]?.id;
+                console.log('🟢 + Day button clicked. activeWeek:', activeWeek, 'fallback:', weeks[0]?.id);
+                if (targetWeekId) {
+                  onAddDay(targetWeekId);
                 }
               }} 
-              disabled={!activeWeek} 
+              disabled={weeks.length === 0} 
               className="rounded-none w-full sm:w-auto text-xs md:text-sm" 
               size="sm"
             >
