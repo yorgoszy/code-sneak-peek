@@ -112,6 +112,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                 const targetWeekId = activeWeek || weeks[0]?.id;
                 console.log('🟢 + Day button clicked. activeWeek:', activeWeek, 'fallback:', weeks[0]?.id);
                 if (targetWeekId) {
+                  setActiveWeek(targetWeekId);
                   onAddDay(targetWeekId);
                 }
               }} 
