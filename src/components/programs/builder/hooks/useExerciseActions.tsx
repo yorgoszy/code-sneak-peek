@@ -14,26 +14,146 @@ export const useExerciseActions = (
     return exercise ? exercise.name : 'Unknown Exercise';
   };
 
-  // Fetch exercise relationships
-  const fetchExerciseRelationships = async (exerciseId: string) => {
-    const { data, error } = await supabase
+  const addExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
+    // Fetch relationships asynchronously and apply them
+    supabase
       .from('exercise_relationships')
       .select('relationship_type, related_exercise_id, order_index')
       .eq('exercise_id', exerciseId)
-      .order('order_index', { ascending: true });
+      .order('order_index', { ascending: true })
+      .then(({ data: relationships, error }) => {
+        if (error) {
+          console.error('Error fetching exercise relationships:', error);
+          return;
+        }
 
-    if (error) {
-      console.error('Error fetching exercise relationships:', error);
-      return [];
-    }
+        const updatedWeeks = (program.weeks || []).map(week => {
+          if (week.id === weekId) {
+            return {
+              ...week,
+              program_days: (week.program_days || []).map(day => {
+                if (day.id === dayId) {
+                  return {
+                    ...day,
+                    program_blocks: (day.program_blocks || []).map(block => {
+                      // Add exercise to the target block
+                      if (block.id === blockId) {
+                        const newExercise = {
+                          id: generateId(),
+                          exercise_id: exerciseId,
+                          sets: 1,
+                          reps: '',
+                          reps_mode: 'reps' as const,
+                          kg: '',
+                          kg_mode: 'kg' as const,
+                          percentage_1rm: 0,
+                          velocity_ms: 0,
+                          tempo: '',
+                          rest: '',
+                          notes: '',
+                          exercise_order: (block.program_exercises?.length || 0) + 1,
+                          exercises: {
+                            id: exerciseId,
+                            name: findExerciseName(exerciseId),
+                            description: ''
+                          }
+                        };
+                        return {
+                          ...block,
+                          program_exercises: [...(block.program_exercises || []), newExercise]
+                        };
+                      }
 
-    return data || [];
-  };
+                      if (!relationships || relationships.length === 0) return block;
 
-  const addExercise = async (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
-    // Fetch relationships for the selected exercise
-    const relationships = await fetchExerciseRelationships(exerciseId);
+                      // Auto-add mobility exercises to mobility blocks
+                      const mobilityRelationships = relationships.filter(r => r.relationship_type === 'mobility');
+                      if (block.training_type === 'mobility' && mobilityRelationships.length > 0) {
+                        const mobilityExercises = mobilityRelationships.map((rel, index) => ({
+                          id: generateId(),
+                          exercise_id: rel.related_exercise_id,
+                          sets: 1,
+                          reps: '',
+                          reps_mode: 'reps' as const,
+                          kg: '',
+                          kg_mode: 'kg' as const,
+                          percentage_1rm: 0,
+                          velocity_ms: 0,
+                          tempo: '',
+                          rest: '',
+                          notes: '',
+                          exercise_order: (block.program_exercises?.length || 0) + index + 1,
+                          exercises: {
+                            id: rel.related_exercise_id,
+                            name: findExerciseName(rel.related_exercise_id),
+                            description: ''
+                          }
+                        }));
 
+                        const existingIds = (block.program_exercises || []).map(e => e.exercise_id);
+                        const newMobilityExercises = mobilityExercises.filter(
+                          e => !existingIds.includes(e.exercise_id)
+                        );
+
+                        if (newMobilityExercises.length > 0) {
+                          return {
+                            ...block,
+                            program_exercises: [...(block.program_exercises || []), ...newMobilityExercises]
+                          };
+                        }
+                      }
+
+                      // Auto-add stability exercises to stability blocks
+                      const stabilityRelationships = relationships.filter(r => r.relationship_type === 'stability');
+                      if (block.training_type === 'stability' && stabilityRelationships.length > 0) {
+                        const stabilityExercises = stabilityRelationships.map((rel, index) => ({
+                          id: generateId(),
+                          exercise_id: rel.related_exercise_id,
+                          sets: 1,
+                          reps: '',
+                          reps_mode: 'reps' as const,
+                          kg: '',
+                          kg_mode: 'kg' as const,
+                          percentage_1rm: 0,
+                          velocity_ms: 0,
+                          tempo: '',
+                          rest: '',
+                          notes: '',
+                          exercise_order: (block.program_exercises?.length || 0) + index + 1,
+                          exercises: {
+                            id: rel.related_exercise_id,
+                            name: findExerciseName(rel.related_exercise_id),
+                            description: ''
+                          }
+                        }));
+
+                        const existingIds = (block.program_exercises || []).map(e => e.exercise_id);
+                        const newStabilityExercises = stabilityExercises.filter(
+                          e => !existingIds.includes(e.exercise_id)
+                        );
+
+                        if (newStabilityExercises.length > 0) {
+                          return {
+                            ...block,
+                            program_exercises: [...(block.program_exercises || []), ...newStabilityExercises]
+                          };
+                        }
+                      }
+
+                      return block;
+                    })
+                  };
+                }
+                return day;
+              })
+            };
+          }
+          return week;
+        });
+        updateProgram({ weeks: updatedWeeks });
+      });
+
+    // Immediately add the main exercise without waiting for relationships
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
@@ -43,7 +163,6 @@ export const useExerciseActions = (
               return {
                 ...day,
                 program_blocks: (day.program_blocks || []).map(block => {
-                  // Add exercise to the target block
                   if (block.id === blockId) {
                     const newExercise = {
                       id: generateId(),
@@ -70,83 +189,6 @@ export const useExerciseActions = (
                       program_exercises: [...(block.program_exercises || []), newExercise]
                     };
                   }
-
-                  // Auto-add mobility exercises to mobility blocks
-                  const mobilityRelationships = relationships.filter(r => r.relationship_type === 'mobility');
-                  if (block.training_type === 'mobility' && mobilityRelationships.length > 0) {
-                    const mobilityExercises = mobilityRelationships.map((rel, index) => ({
-                      id: generateId(),
-                      exercise_id: rel.related_exercise_id,
-                      sets: 1,
-                      reps: '',
-                      reps_mode: 'reps' as const,
-                      kg: '',
-                      kg_mode: 'kg' as const,
-                      percentage_1rm: 0,
-                      velocity_ms: 0,
-                      tempo: '',
-                      rest: '',
-                      notes: '',
-                      exercise_order: (block.program_exercises?.length || 0) + index + 1,
-                      exercises: {
-                        id: rel.related_exercise_id,
-                        name: findExerciseName(rel.related_exercise_id),
-                        description: ''
-                      }
-                    }));
-
-                    // Only add if not already present
-                    const existingIds = (block.program_exercises || []).map(e => e.exercise_id);
-                    const newMobilityExercises = mobilityExercises.filter(
-                      e => !existingIds.includes(e.exercise_id)
-                    );
-
-                    if (newMobilityExercises.length > 0) {
-                      return {
-                        ...block,
-                        program_exercises: [...(block.program_exercises || []), ...newMobilityExercises]
-                      };
-                    }
-                  }
-
-                  // Auto-add stability exercises to stability blocks
-                  const stabilityRelationships = relationships.filter(r => r.relationship_type === 'stability');
-                  if (block.training_type === 'stability' && stabilityRelationships.length > 0) {
-                    const stabilityExercises = stabilityRelationships.map((rel, index) => ({
-                      id: generateId(),
-                      exercise_id: rel.related_exercise_id,
-                      sets: 1,
-                      reps: '',
-                      reps_mode: 'reps' as const,
-                      kg: '',
-                      kg_mode: 'kg' as const,
-                      percentage_1rm: 0,
-                      velocity_ms: 0,
-                      tempo: '',
-                      rest: '',
-                      notes: '',
-                      exercise_order: (block.program_exercises?.length || 0) + index + 1,
-                      exercises: {
-                        id: rel.related_exercise_id,
-                        name: findExerciseName(rel.related_exercise_id),
-                        description: ''
-                      }
-                    }));
-
-                    // Only add if not already present
-                    const existingIds = (block.program_exercises || []).map(e => e.exercise_id);
-                    const newStabilityExercises = stabilityExercises.filter(
-                      e => !existingIds.includes(e.exercise_id)
-                    );
-
-                    if (newStabilityExercises.length > 0) {
-                      return {
-                        ...block,
-                        program_exercises: [...(block.program_exercises || []), ...newStabilityExercises]
-                      };
-                    }
-                  }
-
                   return block;
                 })
               };
