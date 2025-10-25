@@ -28,8 +28,6 @@ interface ExerciseRelationship {
 export const ExerciseRelationships: React.FC = () => {
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
   const [selectedExerciseName, setSelectedExerciseName] = useState<string>('');
-  const [selectedFoamRolId, setSelectedFoamRolId] = useState<string>('');
-  const [selectedFoamRolName, setSelectedFoamRolName] = useState<string>('');
   const [selectedMobilityId, setSelectedMobilityId] = useState<string>('');
   const [selectedMobilityName, setSelectedMobilityName] = useState<string>('');
   const [selectedStabilityId, setSelectedStabilityId] = useState<string>('');
@@ -38,7 +36,6 @@ export const ExerciseRelationships: React.FC = () => {
   
   // Dialog states
   const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
-  const [foamRolDialogOpen, setFoamRolDialogOpen] = useState(false);
   const [mobilityDialogOpen, setMobilityDialogOpen] = useState(false);
   const [stabilityDialogOpen, setStabilityDialogOpen] = useState(false);
   
@@ -75,30 +72,6 @@ export const ExerciseRelationships: React.FC = () => {
           )
         `)
         .eq('exercise_to_category.exercise_categories.name', 'mobility')
-        .order('name');
-      
-      if (error) throw error;
-      return data as Exercise[];
-    }
-  });
-
-  // Fetch foam rol exercises
-  const { data: foamRolExercises } = useQuery({
-    queryKey: ['foamrol-exercises'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('exercises')
-        .select(`
-          id,
-          name,
-          video_url,
-          exercise_to_category!inner(
-            exercise_categories!inner(
-              name
-            )
-          )
-        `)
-        .eq('exercise_to_category.exercise_categories.name', 'foam roll')
         .order('name');
       
       if (error) throw error;
@@ -175,18 +148,11 @@ export const ExerciseRelationships: React.FC = () => {
 
   // Create relationship mutation
   const createRelationshipMutation = useMutation({
-    mutationFn: async (type: 'foam_rol' | 'mobility' | 'stability') => {
-      let relatedId = '';
-      if (type === 'foam_rol') {
-        relatedId = selectedFoamRolId;
-      } else if (type === 'mobility') {
-        relatedId = selectedMobilityId;
-      } else {
-        relatedId = selectedStabilityId;
-      }
+    mutationFn: async (type: 'mobility' | 'stability') => {
+      const relatedId = type === 'mobility' ? selectedMobilityId : selectedStabilityId;
       
       if (!selectedExerciseId || !relatedId) {
-        throw new Error('Επιλέξτε άσκηση και ' + type);
+        throw new Error('Επιλέξτε άσκηση και ' + (type === 'mobility' ? 'mobility' : 'stability'));
       }
 
       if (selectedExerciseId === relatedId) {
@@ -210,10 +176,7 @@ export const ExerciseRelationships: React.FC = () => {
     onSuccess: (_, type) => {
       queryClient.invalidateQueries({ queryKey: ['exercise-relationships'] });
       toast.success('Η σύνδεση δημιουργήθηκε επιτυχώς');
-      if (type === 'foam_rol') {
-        setSelectedFoamRolId('');
-        setSelectedFoamRolName('');
-      } else if (type === 'mobility') {
+      if (type === 'mobility') {
         setSelectedMobilityId('');
         setSelectedMobilityName('');
       } else {
@@ -299,32 +262,9 @@ export const ExerciseRelationships: React.FC = () => {
             </div>
           </div>
 
-          {/* Foam Rol, Mobility and Stability in same row */}
-          <div className="grid gap-3 md:grid-cols-3">
-            {/* Foam Rol */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium mb-1 block">Foam Rol</label>
-              <div className="flex gap-2">
-                <div
-                  onClick={() => setFoamRolDialogOpen(true)}
-                  className="flex-1 flex items-center justify-between p-2 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <span className={selectedFoamRolName ? 'text-xs' : 'text-xs text-gray-500'}>
-                    {selectedFoamRolName || 'Επιλέξτε foam rol'}
-                  </span>
-                  <ChevronRight className="h-3 w-3 text-gray-400" />
-                </div>
-                <Button
-                  onClick={() => createRelationshipMutation.mutate('foam_rol')}
-                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0 h-8 w-8 p-0"
-                  disabled={!selectedExerciseId || !selectedFoamRolId}
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Mobility and Stability in same row */}
+          {/* Mobility and Stability in same row */}
+          <div className="grid gap-3 md:grid-cols-2">
+            {/* Mobility */}
             <div className="space-y-1">
               <label className="text-xs font-medium mb-1 block">Mobility</label>
               <div className="flex gap-2">
@@ -436,19 +376,6 @@ export const ExerciseRelationships: React.FC = () => {
           if (exercise) {
             setSelectedExerciseId(id);
             setSelectedExerciseName(exercise.name);
-          }
-        }}
-      />
-
-      <ExerciseSelectionDialog
-        open={foamRolDialogOpen}
-        onOpenChange={setFoamRolDialogOpen}
-        exercises={foamRolExercises || []}
-        onSelectExercise={(id) => {
-          const exercise = foamRolExercises?.find(e => e.id === id);
-          if (exercise) {
-            setSelectedFoamRolId(id);
-            setSelectedFoamRolName(exercise.name);
           }
         }}
       />
