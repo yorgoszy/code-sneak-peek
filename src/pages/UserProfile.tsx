@@ -12,6 +12,7 @@ import { useUserProfileData } from "@/components/user-profile/hooks/useUserProfi
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from 'react-i18next';
+import { useWorkoutStatsSync } from "@/hooks/useWorkoutStatsSync";
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -49,6 +50,9 @@ const UserProfile = () => {
   }, [location.search]);
 
   const { stats, programs, tests, payments, visits } = useUserProfileData(userProfile, !!userProfile);
+  
+  // Sync workout stats for AI
+  useWorkoutStatsSync(userId);
 
   useEffect(() => {
     if (userId) {

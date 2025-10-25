@@ -221,6 +221,7 @@ export type Database = {
           preferences: Json | null
           updated_at: string
           user_id: string
+          workout_stats: Json | null
         }
         Insert: {
           created_at?: string
@@ -234,6 +235,7 @@ export type Database = {
           preferences?: Json | null
           updated_at?: string
           user_id: string
+          workout_stats?: Json | null
         }
         Update: {
           created_at?: string
@@ -247,6 +249,7 @@ export type Database = {
           preferences?: Json | null
           updated_at?: string
           user_id?: string
+          workout_stats?: Json | null
         }
         Relationships: [
           {

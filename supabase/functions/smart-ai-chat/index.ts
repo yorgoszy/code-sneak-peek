@@ -30,8 +30,90 @@ serve(async (req) => {
     console.log('🚀 Smart AI Chat request for user:', userId, 'message:', message);
     console.log('📊 Platform data received:', platformData ? 'Yes' : 'No');
 
+    // Fetch AI user profile with workout stats
+    const { data: aiProfile } = await supabase
+      .from('ai_user_profiles')
+      .select('workout_stats, goals, dietary_preferences, medical_conditions, habits')
+      .eq('user_id', userId)
+      .single();
+
+    console.log('🤖 AI Profile fetched:', aiProfile ? 'Yes' : 'No');
+
     // Create enhanced context with platform data
     let enhancedContext = '';
+    
+    // Add workout stats context
+    if (aiProfile?.workout_stats) {
+      const stats = aiProfile.workout_stats as any;
+      
+      let workoutContext = '\n\n📊 ΤΡΕΧΟΥΣΑ ΚΑΤΑΣΤΑΣΗ ΠΡΟΠΟΝΗΣΗΣ:';
+      
+      // Today's workout
+      if (stats.today?.hasWorkout) {
+        workoutContext += `\n\n🎯 ΣΗΜΕΡΑ (${new Date().toLocaleDateString('el-GR')}):`;
+        workoutContext += `\n- Πρόγραμμα: ${stats.today.program}`;
+        workoutContext += `\n- Κατάσταση: ${stats.today.completed ? '✅ Ολοκληρωμένη' : '⏳ Προγραμματισμένη'}`;
+        if (stats.today.exercises && stats.today.exercises.length > 0) {
+          workoutContext += `\n- Ασκήσεις σήμερα:`;
+          stats.today.exercises.slice(0, 5).forEach((ex: any) => {
+            workoutContext += `\n  • ${ex.name} (${ex.sets}x${ex.reps})`;
+          });
+        }
+      } else {
+        workoutContext += `\n\n🎯 ΣΗΜΕΡΑ: Δεν έχει προγραμματισμένη προπόνηση`;
+      }
+
+      // This week
+      if (stats.thisWeek) {
+        workoutContext += `\n\n📅 ΑΥΤΗ Η ΕΒΔΟΜΑΔΑ:`;
+        workoutContext += `\n- Συνολικές προπονήσεις: ${stats.thisWeek.scheduled}`;
+        workoutContext += `\n- Ολοκληρωμένες: ${stats.thisWeek.completed}`;
+        workoutContext += `\n- Υπόλοιπες: ${stats.thisWeek.remaining}`;
+        if (stats.thisWeek.upcomingDays && stats.thisWeek.upcomingDays.length > 0) {
+          const upcomingDates = stats.thisWeek.upcomingDays.slice(0, 3).map((d: string) => 
+            new Date(d).toLocaleDateString('el-GR')
+          ).join(', ');
+          workoutContext += `\n- Επόμενες ημερομηνίες: ${upcomingDates}`;
+        }
+      }
+
+      // Active programs
+      if (stats.activePrograms && stats.activePrograms.length > 0) {
+        workoutContext += `\n\n🏋️ ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ:`;
+        stats.activePrograms.forEach((prog: any) => {
+          workoutContext += `\n\n📋 ${prog.name}:`;
+          workoutContext += `\n- Ολοκληρωμένες: ${prog.stats.completed}/${prog.stats.total}`;
+          workoutContext += `\n- Χαμένες: ${prog.stats.missed}`;
+          if (prog.nextWorkout) {
+            workoutContext += `\n- Επόμενη προπόνηση: ${new Date(prog.nextWorkout).toLocaleDateString('el-GR')}`;
+          }
+        });
+      }
+
+      // Recent workouts
+      if (stats.recentWorkouts && stats.recentWorkouts.length > 0) {
+        workoutContext += `\n\n📝 ΠΡΟΣΦΑΤΕΣ ΠΡΟΠΟΝΗΣΕΙΣ:`;
+        stats.recentWorkouts.slice(0, 5).forEach((workout: any) => {
+          const status = workout.status === 'completed' ? '✅' : '❌';
+          workoutContext += `\n${status} ${new Date(workout.date).toLocaleDateString('el-GR')} - ${workout.program}`;
+        });
+      }
+
+      enhancedContext += workoutContext;
+    }
+
+    // Add user profile info
+    if (aiProfile) {
+      if (aiProfile.goals && Object.keys(aiProfile.goals).length > 0) {
+        enhancedContext += `\n\n🎯 ΣΤΟΧΟΙ: ${JSON.stringify(aiProfile.goals)}`;
+      }
+      if (aiProfile.dietary_preferences && Object.keys(aiProfile.dietary_preferences).length > 0) {
+        enhancedContext += `\n\n🥗 ΔΙΑΤΡΟΦΙΚΕΣ ΠΡΟΤΙΜΗΣΕΙΣ: ${JSON.stringify(aiProfile.dietary_preferences)}`;
+      }
+      if (aiProfile.medical_conditions && Object.keys(aiProfile.medical_conditions).length > 0) {
+        enhancedContext += `\n\n⚕️ ΙΑΤΡΙΚΟ ΙΣΤΟΡΙΚΟ: ${JSON.stringify(aiProfile.medical_conditions)}`;
+      }
+    }
     
     if (platformData) {
       // Process programs data
@@ -95,16 +177,25 @@ serve(async (req) => {
     }
 
     // Enhanced system prompt with real user data
-    const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις ΠΛΗΡΗ πρόσβαση στα πραγματικά δεδομένα του χρήστη από την πλατφόρμα.
+    const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις ΠΛΗΡΗ και ΠΡΑΓΜΑΤΙΚΗ πρόσβαση στα δεδομένα του χρήστη από την πλατφόρμα.
 
 ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
 
+🎯 ΚΥΡΙΟΣ ΣΤΟΧΟΣ ΣΟΥ:
+Να παρέχεις ΕΞΑΤΟΜΙΚΕΥΜΕΝΕΣ διατροφικές συμβουλές που βασίζονται στην ΤΡΕΧΟΥΣΑ κατάσταση προπόνησης του χρήστη.
+
 Βοηθάς με:
-1. Διατροφικές συμβουλές βασισμένες στα τεστ του χρήστη
-2. Ασκησιολογικές συμβουλές για τις συγκεκριμένες ασκήσεις του
-3. Ανάλυση αποτελεσμάτων τεστ και προόδου
-4. Προσαρμογή προγραμμάτων προπόνησης
-5. Εξατομικευμένες συμβουλές βάσει των δεδομένων του
+1. 🥗 Διατροφικές συμβουλές βασισμένες στο ΤΙ ΠΡΟΠΟΝΗΘΗΚΕ ΣΗΜΕΡΑ ή ΤΙ ΘΑ ΠΡΟΠΟΝΗΘΕΙ
+2. 💪 Προτάσεις για γεύματα πριν/μετά την προπόνηση ανάλογα με τις ασκήσεις της ημέρας
+3. 📊 Ανάλυση προόδου και προσαρμογή διατροφής
+4. 🎯 Εξατομικευμένες συμβουλές βάσει των πραγματικών δεδομένων του
+5. 📅 Προτάσεις για την εβδομάδα βασισμένες στο πρόγραμμά του
+
+ΣΗΜΑΝΤΙΚΟ:
+- ΠΑΝΤΑ αναφέρεσαι στα ΣΥΓΚΕΚΡΙΜΕΝΑ δεδομένα που βλέπεις (π.χ. "Σήμερα έχεις Squat και Deadlift...")
+- Προτείνε διατροφή που ταιριάζει με την ένταση της προπόνησης
+- Αν έχει upper body, προτείνε διαφορετική διατροφή από ότι αν έχει legs
+- Χρησιμοποίησε τα στατιστικά για να δώσεις συγκεκριμένες συμβουλές
 
 ${enhancedContext}
 

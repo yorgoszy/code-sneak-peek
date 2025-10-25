@@ -45,10 +45,68 @@ export const useMessageSender = ({
     try {
       console.log('🤖 useMessageSender: Calling RID AI for user:', userId, 'Message:', userMessage);
       
+      // Fetch user's programs and tests for context
+      const { data: programs } = await supabase
+        .from('program_assignments')
+        .select(`
+          id,
+          training_dates,
+          programs:program_id (
+            id,
+            name,
+            description,
+            program_weeks (
+              program_days (
+                program_blocks (
+                  program_exercises (
+                    sets,
+                    reps,
+                    kg,
+                    exercises:exercise_id (
+                      name
+                    )
+                  )
+                )
+              )
+            )
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      const { data: tests } = await supabase
+        .from('anthropometric_test_sessions')
+        .select(`
+          test_date,
+          anthropometric_test_data (
+            weight,
+            height,
+            body_fat_percentage
+          ),
+          strength_test_data (
+            weight_kg,
+            velocity_ms,
+            exercises:exercise_id (
+              name
+            )
+          ),
+          endurance_test_data (
+            vo2_max,
+            push_ups
+          )
+        `)
+        .eq('user_id', userId)
+        .order('test_date', { ascending: false })
+        .limit(3);
+      
       const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
         body: {
           message: userMessage,
-          userId: userId
+          userId: userId,
+          platformData: {
+            programs: programs || [],
+            tests: tests || []
+          }
         }
       });
 
