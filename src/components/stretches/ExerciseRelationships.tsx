@@ -11,6 +11,7 @@ import { ExerciseSearchDialog } from './ExerciseSearchDialog';
 interface Exercise {
   id: string;
   name: string;
+  video_url?: string | null;
 }
 
 interface ExerciseRelationship {
@@ -45,7 +46,7 @@ export const ExerciseRelationships: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('exercises')
-        .select('id, name')
+        .select('id, name, video_url')
         .order('name');
       
       if (error) throw error;
@@ -62,6 +63,7 @@ export const ExerciseRelationships: React.FC = () => {
         .select(`
           id,
           name,
+          video_url,
           exercise_to_category!inner(
             exercise_categories!inner(
               name
@@ -85,6 +87,7 @@ export const ExerciseRelationships: React.FC = () => {
         .select(`
           id,
           name,
+          video_url,
           exercise_to_category!inner(
             exercise_categories!inner(
               name

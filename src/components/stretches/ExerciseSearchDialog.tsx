@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, Video } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Exercise {
   id: string;
   name: string;
+  video_url?: string | null;
 }
 
 interface ExerciseSearchDialogProps {
@@ -29,6 +30,18 @@ export const ExerciseSearchDialog: React.FC<ExerciseSearchDialogProps> = ({
   const filteredExercises = exercises?.filter(ex =>
     ex.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
+
+  const getVideoThumbnail = (videoUrl: string | null | undefined): string | null => {
+    if (!videoUrl) return null;
+    
+    // YouTube thumbnail
+    const youtubeMatch = videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+    if (youtubeMatch) {
+      return `https://img.youtube.com/vi/${youtubeMatch[1]}/mqdefault.jpg`;
+    }
+    
+    return null;
+  };
 
   const handleSelect = (exercise: Exercise) => {
     onSelect(exercise.id, exercise.name);
@@ -64,15 +77,33 @@ export const ExerciseSearchDialog: React.FC<ExerciseSearchDialogProps> = ({
                   Δεν βρέθηκαν ασκήσεις
                 </div>
               ) : (
-                filteredExercises.map((exercise) => (
-                  <div
-                    key={exercise.id}
-                    onClick={() => handleSelect(exercise)}
-                    className="p-3 hover:bg-gray-100 cursor-pointer rounded-none border border-transparent hover:border-gray-200 transition-colors"
-                  >
-                    <span className="text-sm">{exercise.name}</span>
-                  </div>
-                ))
+                filteredExercises.map((exercise) => {
+                  const thumbnail = getVideoThumbnail(exercise.video_url);
+                  
+                  return (
+                    <div
+                      key={exercise.id}
+                      onClick={() => handleSelect(exercise)}
+                      className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer rounded-none border border-transparent hover:border-gray-200 transition-colors"
+                    >
+                      {/* Thumbnail */}
+                      <div className="w-16 h-12 bg-gray-200 rounded-none flex items-center justify-center shrink-0 overflow-hidden">
+                        {thumbnail ? (
+                          <img 
+                            src={thumbnail} 
+                            alt={exercise.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Video className="w-6 h-6 text-gray-400" />
+                        )}
+                      </div>
+                      
+                      {/* Exercise Name */}
+                      <span className="text-sm flex-1">{exercise.name}</span>
+                    </div>
+                  );
+                })
               )}
             </div>
           </ScrollArea>
