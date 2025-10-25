@@ -101,11 +101,18 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
       <CardHeader className="p-3 md:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <CardTitle className="text-sm md:text-base">Εβδομάδες Προπόνησης</CardTitle>
-          <Button onClick={onAddWeek} className="rounded-none w-full sm:w-auto text-xs md:text-sm" size="sm">
-            <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-            <span className="hidden sm:inline">+Week</span>
-            <span className="sm:hidden">+ Εβδομάδα</span>
-          </Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button onClick={onAddWeek} className="rounded-none w-full sm:w-auto text-xs md:text-sm" size="sm">
+              <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">+Week</span>
+              <span className="sm:hidden">+ Εβδομάδα</span>
+            </Button>
+            <Button onClick={() => activeWeek && onAddDay(activeWeek)} disabled={!activeWeek} className="rounded-none w-full sm:w-auto text-xs md:text-sm" size="sm">
+              <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">+ Day</span>
+              <span className="sm:hidden">+ Ημέρα</span>
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-3 md:p-6">
