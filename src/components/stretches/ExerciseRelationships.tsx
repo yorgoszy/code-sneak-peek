@@ -31,8 +31,8 @@ interface ExerciseRelationship {
 
 export const ExerciseRelationships: React.FC = () => {
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
-  const [selectedRelatedExerciseId, setSelectedRelatedExerciseId] = useState<string>('');
-  const [selectedType, setSelectedType] = useState<'mobility' | 'stability'>('mobility');
+  const [selectedMobilityId, setSelectedMobilityId] = useState<string>('');
+  const [selectedStabilityId, setSelectedStabilityId] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const queryClient = useQueryClient();
 
@@ -96,9 +96,6 @@ export const ExerciseRelationships: React.FC = () => {
     }
   });
 
-  // Get the appropriate list based on selected type
-  const availableRelatedExercises = selectedType === 'mobility' ? mobilityExercises : stabilityExercises;
-
   // Fetch exercise relationships
   const { data: relationships, isLoading } = useQuery({
     queryKey: ['exercise-relationships'],
@@ -142,14 +139,16 @@ export const ExerciseRelationships: React.FC = () => {
     }
   });
 
-  // Create relationship
+  // Create relationship mutation
   const createRelationshipMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedExerciseId || !selectedRelatedExerciseId) {
-        throw new Error('Επιλέξτε άσκηση και διάταση');
+    mutationFn: async (type: 'mobility' | 'stability') => {
+      const relatedId = type === 'mobility' ? selectedMobilityId : selectedStabilityId;
+      
+      if (!selectedExerciseId || !relatedId) {
+        throw new Error('Επιλέξτε άσκηση και ' + (type === 'mobility' ? 'mobility' : 'stability'));
       }
 
-      if (selectedExerciseId === selectedRelatedExerciseId) {
+      if (selectedExerciseId === relatedId) {
         throw new Error('Δεν μπορείτε να συνδέσετε μια άσκηση με τον εαυτό της');
       }
 
@@ -157,8 +156,8 @@ export const ExerciseRelationships: React.FC = () => {
         .from('exercise_relationships')
         .insert([{
           exercise_id: selectedExerciseId,
-          related_exercise_id: selectedRelatedExerciseId,
-          relationship_type: selectedType,
+          related_exercise_id: relatedId,
+          relationship_type: type,
           order_index: 0
         }])
         .select()
@@ -167,11 +166,14 @@ export const ExerciseRelationships: React.FC = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, type) => {
       queryClient.invalidateQueries({ queryKey: ['exercise-relationships'] });
       toast.success('Η σύνδεση δημιουργήθηκε επιτυχώς');
-      setSelectedExerciseId('');
-      setSelectedRelatedExerciseId('');
+      if (type === 'mobility') {
+        setSelectedMobilityId('');
+      } else {
+        setSelectedStabilityId('');
+      }
     },
     onError: (error: any) => {
       if (error.message.includes('duplicate') || error.message.includes('unique')) {
@@ -233,70 +235,79 @@ export const ExerciseRelationships: React.FC = () => {
         <CardHeader>
           <CardTitle>Νέα Σύνδεση Άσκησης</CardTitle>
           <p className="text-sm text-gray-500 mt-2">
-            Συνδέστε ασκήσεις με mobility ή stability ασκήσεις
+            Επιλέξτε άσκηση και συνδέστε την με mobility ή/και stability ασκήσεις
           </p>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Άσκηση</label>
-              <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Επιλέξτε άσκηση" />
-                </SelectTrigger>
-                <SelectContent>
-                  {exercises?.map((exercise) => (
-                    <SelectItem key={exercise.id} value={exercise.id}>
-                      {exercise.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <CardContent className="space-y-4">
+          {/* Exercise Selection */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Άσκηση</label>
+            <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε άσκηση" />
+              </SelectTrigger>
+              <SelectContent>
+                {exercises?.map((exercise) => (
+                  <SelectItem key={exercise.id} value={exercise.id}>
+                    {exercise.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Mobility and Stability in same row */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Mobility */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium mb-2 block">Mobility</label>
+              <div className="flex gap-2">
+                <Select value={selectedMobilityId} onValueChange={setSelectedMobilityId}>
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Επιλέξτε mobility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mobilityExercises?.map((exercise) => (
+                      <SelectItem key={exercise.id} value={exercise.id}>
+                        {exercise.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={() => createRelationshipMutation.mutate('mobility')}
+                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0"
+                  disabled={!selectedExerciseId || !selectedMobilityId}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">Τύπος</label>
-              <Select value={selectedType} onValueChange={(value: 'mobility' | 'stability') => {
-                setSelectedType(value);
-                setSelectedRelatedExerciseId(''); // Reset related exercise when type changes
-              }}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mobility">Mobility</SelectItem>
-                  <SelectItem value="stability">Stability</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                {selectedType === 'mobility' ? 'Διάταση' : 'Stability'}
-              </label>
-              <Select value={selectedRelatedExerciseId} onValueChange={setSelectedRelatedExerciseId}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder={`Επιλέξτε ${selectedType === 'mobility' ? 'διάταση' : 'stability'}`} />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableRelatedExercises?.map((exercise) => (
-                    <SelectItem key={exercise.id} value={exercise.id}>
-                      {exercise.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-end">
-              <Button
-                onClick={() => createRelationshipMutation.mutate()}
-                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black w-full"
-                disabled={!selectedExerciseId || !selectedRelatedExerciseId}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Προσθήκη
-              </Button>
+            {/* Stability */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium mb-2 block">Stability</label>
+              <div className="flex gap-2">
+                <Select value={selectedStabilityId} onValueChange={setSelectedStabilityId}>
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Επιλέξτε stability" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stabilityExercises?.map((exercise) => (
+                      <SelectItem key={exercise.id} value={exercise.id}>
+                        {exercise.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={() => createRelationshipMutation.mutate('stability')}
+                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0"
+                  disabled={!selectedExerciseId || !selectedStabilityId}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -308,7 +319,7 @@ export const ExerciseRelationships: React.FC = () => {
         <Input
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Αναζήτηση ασκήσεων ή διατάσεων..."
+          placeholder="Αναζήτηση ασκήσεων..."
           className="pl-10 rounded-none"
         />
       </div>
