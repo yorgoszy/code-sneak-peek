@@ -6,11 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash2, Search, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
-import { ExerciseSearchDialog } from './ExerciseSearchDialog';
+import { ExerciseSelectionDialog } from '@/components/programs/builder/ExerciseSelectionDialog';
 
 interface Exercise {
   id: string;
   name: string;
+  description?: string;
   video_url?: string | null;
 }
 
@@ -365,38 +366,44 @@ export const ExerciseRelationships: React.FC = () => {
         </div>
       )}
 
-      {/* Search Dialogs */}
-      <ExerciseSearchDialog
-        isOpen={exerciseDialogOpen}
-        onClose={() => setExerciseDialogOpen(false)}
-        exercises={exercises}
-        onSelect={(id, name) => {
-          setSelectedExerciseId(id);
-          setSelectedExerciseName(name);
+      {/* Exercise Selection Dialogs */}
+      <ExerciseSelectionDialog
+        open={exerciseDialogOpen}
+        onOpenChange={setExerciseDialogOpen}
+        exercises={exercises || []}
+        onSelectExercise={(id) => {
+          const exercise = exercises?.find(e => e.id === id);
+          if (exercise) {
+            setSelectedExerciseId(id);
+            setSelectedExerciseName(exercise.name);
+          }
         }}
-        title="Επιλογή Άσκησης"
       />
 
-      <ExerciseSearchDialog
-        isOpen={mobilityDialogOpen}
-        onClose={() => setMobilityDialogOpen(false)}
-        exercises={mobilityExercises}
-        onSelect={(id, name) => {
-          setSelectedMobilityId(id);
-          setSelectedMobilityName(name);
+      <ExerciseSelectionDialog
+        open={mobilityDialogOpen}
+        onOpenChange={setMobilityDialogOpen}
+        exercises={mobilityExercises || []}
+        onSelectExercise={(id) => {
+          const exercise = mobilityExercises?.find(e => e.id === id);
+          if (exercise) {
+            setSelectedMobilityId(id);
+            setSelectedMobilityName(exercise.name);
+          }
         }}
-        title="Επιλογή Mobility Άσκησης"
       />
 
-      <ExerciseSearchDialog
-        isOpen={stabilityDialogOpen}
-        onClose={() => setStabilityDialogOpen(false)}
-        exercises={stabilityExercises}
-        onSelect={(id, name) => {
-          setSelectedStabilityId(id);
-          setSelectedStabilityName(name);
+      <ExerciseSelectionDialog
+        open={stabilityDialogOpen}
+        onOpenChange={setStabilityDialogOpen}
+        exercises={stabilityExercises || []}
+        onSelectExercise={(id) => {
+          const exercise = stabilityExercises?.find(e => e.id === id);
+          if (exercise) {
+            setSelectedStabilityId(id);
+            setSelectedStabilityName(exercise.name);
+          }
         }}
-        title="Επιλογή Stability Άσκησης"
       />
     </div>
   );
