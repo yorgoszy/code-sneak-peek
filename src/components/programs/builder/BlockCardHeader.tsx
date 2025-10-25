@@ -21,8 +21,13 @@ interface BlockCardHeaderProps {
   onDuplicateBlock: () => void;
   onRemoveBlock: () => void;
   onTrainingTypeChange: (type: string) => void;
+  isPermanent?: boolean;
 }
 
+// Μόνιμα blocks που δεν εμφανίζονται στο dropdown
+const PERMANENT_BLOCKS = ['mobility', 'stability', 'activation', 'neural act', 'recovery'];
+
+// Training types που εμφανίζονται στο dropdown (χωρίς τα μόνιμα)
 const TRAINING_TYPE_LABELS: Record<string, string> = {
   str: 'str',
   'str/spd': 'str/spd',
@@ -34,11 +39,6 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   'spd/end': 'spd/end',
   end: 'end',
   hpr: 'hpr',
-  mobility: 'mobility',
-  stability: 'stability',
-  activation: 'activation',
-  'neural act': 'neural act',
-  recovery: 'recovery',
 };
 
 export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
@@ -55,7 +55,8 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onAddExercise,
   onDuplicateBlock,
   onRemoveBlock,
-  onTrainingTypeChange
+  onTrainingTypeChange,
+  isPermanent = false
 }) => {
   return (
     <CardHeader className="pb-2 space-y-2">
@@ -101,47 +102,53 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
           >
             <Plus className="w-2 h-2 text-white" />
           </Button>
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDuplicateBlock();
-            }}
-            size="sm"
-            variant="ghost"
-            className="rounded-none hover:bg-gray-600"
-          >
-            <Copy className="w-2 h-2 text-white" />
-          </Button>
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemoveBlock();
-            }}
-            size="sm"
-            variant="ghost"
-            className="rounded-none hover:bg-gray-600"
-          >
-            <Trash2 className="w-2 h-2 text-white" />
-          </Button>
+          {!isPermanent && (
+            <>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDuplicateBlock();
+                }}
+                size="sm"
+                variant="ghost"
+                className="rounded-none hover:bg-gray-600"
+              >
+                <Copy className="w-2 h-2 text-white" />
+              </Button>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemoveBlock();
+                }}
+                size="sm"
+                variant="ghost"
+                className="rounded-none hover:bg-gray-600"
+              >
+                <Trash2 className="w-2 h-2 text-white" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
       
-      {/* Training Type Selector */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-white">Τύπος:</span>
-        <Select value={trainingType || ''} onValueChange={onTrainingTypeChange}>
-          <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[140px]" onClick={(e) => e.stopPropagation()}>
-            <SelectValue placeholder="Επιλέξτε τύπο" />
-          </SelectTrigger>
-          <SelectContent className="rounded-none">
-            {Object.entries(TRAINING_TYPE_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value} className="text-xs">
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Training Type Selector - Κρυμμένο για τα μόνιμα blocks */}
+      {!PERMANENT_BLOCKS.includes(trainingType || '') && (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-white">Τύπος:</span>
+          <Select value={trainingType || ''} onValueChange={onTrainingTypeChange}>
+            <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[140px]" onClick={(e) => e.stopPropagation()}>
+              <SelectValue placeholder="Επιλέξτε τύπο" />
+            </SelectTrigger>
+            <SelectContent className="rounded-none">
+              {Object.entries(TRAINING_TYPE_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value} className="text-xs">
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
     </CardHeader>
   );
 };

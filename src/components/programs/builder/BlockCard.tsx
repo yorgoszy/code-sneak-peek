@@ -7,6 +7,9 @@ import { BlockCardContent } from './BlockCardContent';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { Exercise, Block } from '../types';
 
+// Μόνιμα blocks που δεν μπορούν να διαγραφούν
+const PERMANENT_BLOCKS = ['mobility', 'stability', 'activation', 'neural act', 'recovery'];
+
 interface BlockCardProps {
   block: Block;
   exercises: Exercise[];
@@ -70,6 +73,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   };
 
   const exercisesCount = block.program_exercises.length;
+  const isPermanentBlock = PERMANENT_BLOCKS.includes(block.training_type || '');
 
   return (
     <>
@@ -87,9 +91,10 @@ export const BlockCard: React.FC<BlockCardProps> = ({
             onNameSave={handleNameSave}
             onNameKeyPress={handleNameKeyPress}
             onAddExercise={handleAddExerciseClick}
-            onDuplicateBlock={onDuplicateBlock}
-            onRemoveBlock={onRemoveBlock}
+            onDuplicateBlock={isPermanentBlock ? () => {} : onDuplicateBlock}
+            onRemoveBlock={isPermanentBlock ? () => {} : onRemoveBlock}
             onTrainingTypeChange={onUpdateBlockTrainingType}
+            isPermanent={isPermanentBlock}
           />
           
           <BlockCardContent
