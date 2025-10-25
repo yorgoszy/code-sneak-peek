@@ -32,6 +32,7 @@ interface ExerciseRelationship {
 export const ExerciseRelationships: React.FC = () => {
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
   const [selectedRelatedExerciseId, setSelectedRelatedExerciseId] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<'mobility' | 'stability'>('mobility');
   const [searchTerm, setSearchTerm] = useState('');
   const queryClient = useQueryClient();
 
@@ -49,7 +50,7 @@ export const ExerciseRelationships: React.FC = () => {
     }
   });
 
-  // Fetch mobility exercises (διατάσεις)
+  // Fetch mobility exercises
   const { data: mobilityExercises } = useQuery({
     queryKey: ['mobility-exercises'],
     queryFn: async () => {
@@ -71,6 +72,32 @@ export const ExerciseRelationships: React.FC = () => {
       return data as Exercise[];
     }
   });
+
+  // Fetch stability exercises
+  const { data: stabilityExercises } = useQuery({
+    queryKey: ['stability-exercises'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('exercises')
+        .select(`
+          id,
+          name,
+          exercise_to_category!inner(
+            exercise_categories!inner(
+              name
+            )
+          )
+        `)
+        .eq('exercise_to_category.exercise_categories.name', 'stability')
+        .order('name');
+      
+      if (error) throw error;
+      return data as Exercise[];
+    }
+  });
+
+  // Get the appropriate list based on selected type
+  const availableRelatedExercises = selectedType === 'mobility' ? mobilityExercises : stabilityExercises;
 
   // Fetch exercise relationships
   const { data: relationships, isLoading } = useQuery({
@@ -131,7 +158,7 @@ export const ExerciseRelationships: React.FC = () => {
         .insert([{
           exercise_id: selectedExerciseId,
           related_exercise_id: selectedRelatedExerciseId,
-          relationship_type: 'mobility',
+          relationship_type: selectedType,
           order_index: 0
         }])
         .select()
@@ -204,13 +231,13 @@ export const ExerciseRelationships: React.FC = () => {
       {/* Add Relationship Form */}
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle>Νέα Σύνδεση Άσκησης με Διάταση</CardTitle>
+          <CardTitle>Νέα Σύνδεση Άσκησης</CardTitle>
           <p className="text-sm text-gray-500 mt-2">
-            Οι διατάσεις είναι όλες οι ασκήσεις που έχουν την κατηγορία "mobility"
+            Συνδέστε ασκήσεις με mobility ή stability ασκήσεις
           </p>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Άσκηση</label>
               <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
@@ -228,13 +255,31 @@ export const ExerciseRelationships: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Διάταση (Mobility)</label>
-              <Select value={selectedRelatedExerciseId} onValueChange={setSelectedRelatedExerciseId}>
+              <label className="text-sm font-medium mb-2 block">Τύπος</label>
+              <Select value={selectedType} onValueChange={(value: 'mobility' | 'stability') => {
+                setSelectedType(value);
+                setSelectedRelatedExerciseId(''); // Reset related exercise when type changes
+              }}>
                 <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Επιλέξτε διάταση" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {mobilityExercises?.map((exercise) => (
+                  <SelectItem value="mobility">Mobility</SelectItem>
+                  <SelectItem value="stability">Stability</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                {selectedType === 'mobility' ? 'Διάταση' : 'Stability'}
+              </label>
+              <Select value={selectedRelatedExerciseId} onValueChange={setSelectedRelatedExerciseId}>
+                <SelectTrigger className="rounded-none">
+                  <SelectValue placeholder={`Επιλέξτε ${selectedType === 'mobility' ? 'διάταση' : 'stability'}`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableRelatedExercises?.map((exercise) => (
                     <SelectItem key={exercise.id} value={exercise.id}>
                       {exercise.name}
                     </SelectItem>
@@ -250,7 +295,7 @@ export const ExerciseRelationships: React.FC = () => {
                 disabled={!selectedExerciseId || !selectedRelatedExerciseId}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Προσθήκη Σύνδεσης
+                Προσθήκη
               </Button>
             </div>
           </div>
@@ -282,7 +327,12 @@ export const ExerciseRelationships: React.FC = () => {
                     key={rel.id}
                     className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-none"
                   >
-                    <span className="text-sm">{rel.related_exercise.name}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs px-2 py-1 bg-gray-200 rounded-none font-medium">
+                        {rel.relationship_type}
+                      </span>
+                      <span className="text-sm">{rel.related_exercise.name}</span>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
