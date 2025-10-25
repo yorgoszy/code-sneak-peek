@@ -241,71 +241,71 @@ export const ExerciseRelationships: React.FC = () => {
     <div className="space-y-6">
       {/* Add Relationship Form */}
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Νέα Σύνδεση Άσκησης</CardTitle>
-          <p className="text-sm text-gray-500 mt-2">
+        <CardHeader className="pb-3 pt-4 px-4">
+          <CardTitle className="text-base">Νέα Σύνδεση Άσκησης</CardTitle>
+          <p className="text-xs text-gray-500 mt-1">
             Επιλέξτε άσκηση και συνδέστε την με mobility ή/και stability ασκήσεις
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 px-4 pb-4">
           {/* Exercise Selection */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Άσκηση</label>
+            <label className="text-xs font-medium mb-1 block">Άσκηση</label>
             <div
               onClick={() => setExerciseDialogOpen(true)}
-              className="flex items-center justify-between p-3 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-between p-2 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
             >
-              <span className={selectedExerciseName ? 'text-sm' : 'text-sm text-gray-500'}>
+              <span className={selectedExerciseName ? 'text-xs' : 'text-xs text-gray-500'}>
                 {selectedExerciseName || 'Επιλέξτε άσκηση'}
               </span>
-              <ChevronRight className="h-4 w-4 text-gray-400" />
+              <ChevronRight className="h-3 w-3 text-gray-400" />
             </div>
           </div>
 
           {/* Mobility and Stability in same row */}
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             {/* Mobility */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium mb-2 block">Mobility</label>
+            <div className="space-y-1">
+              <label className="text-xs font-medium mb-1 block">Mobility</label>
               <div className="flex gap-2">
                 <div
                   onClick={() => setMobilityDialogOpen(true)}
-                  className="flex-1 flex items-center justify-between p-3 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
+                  className="flex-1 flex items-center justify-between p-2 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
                 >
-                  <span className={selectedMobilityName ? 'text-sm' : 'text-sm text-gray-500'}>
+                  <span className={selectedMobilityName ? 'text-xs' : 'text-xs text-gray-500'}>
                     {selectedMobilityName || 'Επιλέξτε mobility'}
                   </span>
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                  <ChevronRight className="h-3 w-3 text-gray-400" />
                 </div>
                 <Button
                   onClick={() => createRelationshipMutation.mutate('mobility')}
-                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0"
+                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0 h-8 w-8 p-0"
                   disabled={!selectedExerciseId || !selectedMobilityId}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3 w-3" />
                 </Button>
               </div>
             </div>
 
             {/* Stability */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium mb-2 block">Stability</label>
+            <div className="space-y-1">
+              <label className="text-xs font-medium mb-1 block">Stability</label>
               <div className="flex gap-2">
                 <div
                   onClick={() => setStabilityDialogOpen(true)}
-                  className="flex-1 flex items-center justify-between p-3 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
+                  className="flex-1 flex items-center justify-between p-2 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
                 >
-                  <span className={selectedStabilityName ? 'text-sm' : 'text-sm text-gray-500'}>
+                  <span className={selectedStabilityName ? 'text-xs' : 'text-xs text-gray-500'}>
                     {selectedStabilityName || 'Επιλέξτε stability'}
                   </span>
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                  <ChevronRight className="h-3 w-3 text-gray-400" />
                 </div>
                 <Button
                   onClick={() => createRelationshipMutation.mutate('stability')}
-                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0"
+                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0 h-8 w-8 p-0"
                   disabled={!selectedExerciseId || !selectedStabilityId}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3 w-3" />
                 </Button>
               </div>
             </div>
@@ -328,29 +328,29 @@ export const ExerciseRelationships: React.FC = () => {
       <div className="space-y-4">
         {Object.entries(groupedRelationships || {}).map(([exerciseId, { exerciseName, relationships }]) => (
           <Card key={exerciseId} className="rounded-none">
-            <CardHeader>
-              <CardTitle className="text-lg">{exerciseName}</CardTitle>
+            <CardHeader className="py-2 px-3">
+              <CardTitle className="text-sm">{exerciseName}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
+            <CardContent className="px-3 pb-3">
+              <div className="space-y-1">
                 {relationships.map((rel) => (
                   <div
                     key={rel.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-none"
+                    className="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded-none"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs px-2 py-1 bg-gray-200 rounded-none font-medium">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] px-1.5 py-0.5 bg-gray-200 rounded-none font-medium">
                         {rel.relationship_type}
                       </span>
-                      <span className="text-sm">{rel.related_exercise.name}</span>
+                      <span className="text-xs">{rel.related_exercise.name}</span>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => deleteRelationshipMutation.mutate(rel.id)}
-                      className="rounded-none text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="rounded-none text-red-600 hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 ))}
