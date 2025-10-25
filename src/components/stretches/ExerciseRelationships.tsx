@@ -4,15 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Search } from 'lucide-react';
+import { Plus, Trash2, Search, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ExerciseSearchDialog } from './ExerciseSearchDialog';
 
 interface Exercise {
   id: string;
@@ -31,9 +25,18 @@ interface ExerciseRelationship {
 
 export const ExerciseRelationships: React.FC = () => {
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
+  const [selectedExerciseName, setSelectedExerciseName] = useState<string>('');
   const [selectedMobilityId, setSelectedMobilityId] = useState<string>('');
+  const [selectedMobilityName, setSelectedMobilityName] = useState<string>('');
   const [selectedStabilityId, setSelectedStabilityId] = useState<string>('');
+  const [selectedStabilityName, setSelectedStabilityName] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Dialog states
+  const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
+  const [mobilityDialogOpen, setMobilityDialogOpen] = useState(false);
+  const [stabilityDialogOpen, setStabilityDialogOpen] = useState(false);
+  
   const queryClient = useQueryClient();
 
   // Fetch all exercises
@@ -171,8 +174,10 @@ export const ExerciseRelationships: React.FC = () => {
       toast.success('Η σύνδεση δημιουργήθηκε επιτυχώς');
       if (type === 'mobility') {
         setSelectedMobilityId('');
+        setSelectedMobilityName('');
       } else {
         setSelectedStabilityId('');
+        setSelectedStabilityName('');
       }
     },
     onError: (error: any) => {
@@ -242,18 +247,15 @@ export const ExerciseRelationships: React.FC = () => {
           {/* Exercise Selection */}
           <div>
             <label className="text-sm font-medium mb-2 block">Άσκηση</label>
-            <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
-              <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Επιλέξτε άσκηση" />
-              </SelectTrigger>
-              <SelectContent>
-                {exercises?.map((exercise) => (
-                  <SelectItem key={exercise.id} value={exercise.id}>
-                    {exercise.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div
+              onClick={() => setExerciseDialogOpen(true)}
+              className="flex items-center justify-between p-3 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
+            >
+              <span className={selectedExerciseName ? 'text-sm' : 'text-sm text-gray-500'}>
+                {selectedExerciseName || 'Επιλέξτε άσκηση'}
+              </span>
+              <ChevronRight className="h-4 w-4 text-gray-400" />
+            </div>
           </div>
 
           {/* Mobility and Stability in same row */}
@@ -262,18 +264,15 @@ export const ExerciseRelationships: React.FC = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium mb-2 block">Mobility</label>
               <div className="flex gap-2">
-                <Select value={selectedMobilityId} onValueChange={setSelectedMobilityId}>
-                  <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder="Επιλέξτε mobility" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mobilityExercises?.map((exercise) => (
-                      <SelectItem key={exercise.id} value={exercise.id}>
-                        {exercise.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div
+                  onClick={() => setMobilityDialogOpen(true)}
+                  className="flex-1 flex items-center justify-between p-3 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <span className={selectedMobilityName ? 'text-sm' : 'text-sm text-gray-500'}>
+                    {selectedMobilityName || 'Επιλέξτε mobility'}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                </div>
                 <Button
                   onClick={() => createRelationshipMutation.mutate('mobility')}
                   className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0"
@@ -288,18 +287,15 @@ export const ExerciseRelationships: React.FC = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium mb-2 block">Stability</label>
               <div className="flex gap-2">
-                <Select value={selectedStabilityId} onValueChange={setSelectedStabilityId}>
-                  <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder="Επιλέξτε stability" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {stabilityExercises?.map((exercise) => (
-                      <SelectItem key={exercise.id} value={exercise.id}>
-                        {exercise.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div
+                  onClick={() => setStabilityDialogOpen(true)}
+                  className="flex-1 flex items-center justify-between p-3 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <span className={selectedStabilityName ? 'text-sm' : 'text-sm text-gray-500'}>
+                    {selectedStabilityName || 'Επιλέξτε stability'}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                </div>
                 <Button
                   onClick={() => createRelationshipMutation.mutate('stability')}
                   className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0"
@@ -365,6 +361,40 @@ export const ExerciseRelationships: React.FC = () => {
           Δεν υπάρχουν συνδέσεις. Δημιουργήστε την πρώτη σας σύνδεση!
         </div>
       )}
+
+      {/* Search Dialogs */}
+      <ExerciseSearchDialog
+        isOpen={exerciseDialogOpen}
+        onClose={() => setExerciseDialogOpen(false)}
+        exercises={exercises}
+        onSelect={(id, name) => {
+          setSelectedExerciseId(id);
+          setSelectedExerciseName(name);
+        }}
+        title="Επιλογή Άσκησης"
+      />
+
+      <ExerciseSearchDialog
+        isOpen={mobilityDialogOpen}
+        onClose={() => setMobilityDialogOpen(false)}
+        exercises={mobilityExercises}
+        onSelect={(id, name) => {
+          setSelectedMobilityId(id);
+          setSelectedMobilityName(name);
+        }}
+        title="Επιλογή Mobility Άσκησης"
+      />
+
+      <ExerciseSearchDialog
+        isOpen={stabilityDialogOpen}
+        onClose={() => setStabilityDialogOpen(false)}
+        exercises={stabilityExercises}
+        onSelect={(id, name) => {
+          setSelectedStabilityId(id);
+          setSelectedStabilityName(name);
+        }}
+        title="Επιλογή Stability Άσκησης"
+      />
     </div>
   );
 };
