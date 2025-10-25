@@ -1207,6 +1207,48 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_relationships: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          order_index: number | null
+          related_exercise_id: string
+          relationship_type: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          order_index?: number | null
+          related_exercise_id: string
+          relationship_type?: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          order_index?: number | null
+          related_exercise_id?: string
+          relationship_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_relationships_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_relationships_related_exercise_id_fkey"
+            columns: ["related_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_results: {
         Row: {
           actual_kg: string | null

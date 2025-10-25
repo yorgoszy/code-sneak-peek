@@ -19,27 +19,23 @@ interface Exercise {
   name: string;
 }
 
-interface Stretch {
-  id: string;
-  name: string;
-}
-
-interface ExerciseStretch {
+interface ExerciseRelationship {
   id: string;
   exercise_id: string;
-  stretch_id: string;
+  related_exercise_id: string;
+  relationship_type: string;
   order_index: number;
-  exercises: { name: string };
-  stretches: { name: string };
+  exercise: { name: string };
+  related_exercise: { name: string };
 }
 
-export const ExerciseStretchLinks: React.FC = () => {
+export const ExerciseRelationships: React.FC = () => {
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
-  const [selectedStretchId, setSelectedStretchId] = useState<string>('');
+  const [selectedRelatedExerciseId, setSelectedRelatedExerciseId] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const queryClient = useQueryClient();
 
-  // Fetch exercises
+  // Fetch all exercises
   const { data: exercises } = useQuery({
     queryKey: ['exercises'],
     queryFn: async () => {
@@ -53,50 +49,89 @@ export const ExerciseStretchLinks: React.FC = () => {
     }
   });
 
-  // Fetch stretches
-  const { data: stretches } = useQuery({
-    queryKey: ['stretches'],
+  // Fetch mobility exercises (διατάσεις)
+  const { data: mobilityExercises } = useQuery({
+    queryKey: ['mobility-exercises'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('stretches')
-        .select('id, name')
+        .from('exercises')
+        .select(`
+          id,
+          name,
+          exercise_to_category!inner(
+            exercise_categories!inner(
+              name
+            )
+          )
+        `)
+        .eq('exercise_to_category.exercise_categories.name', 'mobility')
         .order('name');
       
       if (error) throw error;
-      return data as Stretch[];
+      return data as Exercise[];
     }
   });
 
-  // Fetch exercise-stretch links
-  const { data: links, isLoading } = useQuery({
-    queryKey: ['exercise-stretches'],
+  // Fetch exercise relationships
+  const { data: relationships, isLoading } = useQuery({
+    queryKey: ['exercise-relationships'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('exercise_stretches')
-        .select(`
-          *,
-          exercises (name),
-          stretches (name)
-        `)
+      // First get the relationships
+      const { data: rels, error: relsError } = await supabase
+        .from('exercise_relationships')
+        .select('*')
         .order('exercise_id');
       
-      if (error) throw error;
-      return data as ExerciseStretch[];
+      if (relsError) throw relsError;
+      if (!rels || rels.length === 0) return [];
+      
+      // Get all unique exercise IDs
+      const exerciseIds = [...new Set([
+        ...rels.map(r => r.exercise_id),
+        ...rels.map(r => r.related_exercise_id)
+      ])];
+      
+      // Fetch exercise names
+      const { data: exerciseNames, error: namesError } = await supabase
+        .from('exercises')
+        .select('id, name')
+        .in('id', exerciseIds);
+      
+      if (namesError) throw namesError;
+      
+      // Create a map for quick lookup
+      const exerciseMap = new Map(exerciseNames?.map(e => [e.id, e.name]) || []);
+      
+      // Combine the data
+      return rels.map(rel => ({
+        id: rel.id,
+        exercise_id: rel.exercise_id,
+        related_exercise_id: rel.related_exercise_id,
+        relationship_type: rel.relationship_type,
+        order_index: rel.order_index,
+        exercise: { name: exerciseMap.get(rel.exercise_id) || 'Unknown' },
+        related_exercise: { name: exerciseMap.get(rel.related_exercise_id) || 'Unknown' }
+      })) as ExerciseRelationship[];
     }
   });
 
-  // Create link
-  const createLinkMutation = useMutation({
+  // Create relationship
+  const createRelationshipMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedExerciseId || !selectedStretchId) {
+      if (!selectedExerciseId || !selectedRelatedExerciseId) {
         throw new Error('Επιλέξτε άσκηση και διάταση');
       }
 
+      if (selectedExerciseId === selectedRelatedExerciseId) {
+        throw new Error('Δεν μπορείτε να συνδέσετε μια άσκηση με τον εαυτό της');
+      }
+
       const { data, error } = await supabase
-        .from('exercise_stretches')
+        .from('exercise_relationships')
         .insert([{
           exercise_id: selectedExerciseId,
-          stretch_id: selectedStretchId,
+          related_exercise_id: selectedRelatedExerciseId,
+          relationship_type: 'mobility',
           order_index: 0
         }])
         .select()
@@ -106,32 +141,34 @@ export const ExerciseStretchLinks: React.FC = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['exercise-stretches'] });
+      queryClient.invalidateQueries({ queryKey: ['exercise-relationships'] });
       toast.success('Η σύνδεση δημιουργήθηκε επιτυχώς');
       setSelectedExerciseId('');
-      setSelectedStretchId('');
+      setSelectedRelatedExerciseId('');
     },
     onError: (error: any) => {
-      if (error.message.includes('duplicate')) {
+      if (error.message.includes('duplicate') || error.message.includes('unique')) {
         toast.error('Η σύνδεση υπάρχει ήδη');
+      } else if (error.message.includes('εαυτό')) {
+        toast.error(error.message);
       } else {
         toast.error('Σφάλμα κατά τη δημιουργία της σύνδεσης');
       }
     }
   });
 
-  // Delete link
-  const deleteLinkMutation = useMutation({
+  // Delete relationship
+  const deleteRelationshipMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('exercise_stretches')
+        .from('exercise_relationships')
         .delete()
         .eq('id', id);
       
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['exercise-stretches'] });
+      queryClient.invalidateQueries({ queryKey: ['exercise-relationships'] });
       toast.success('Η σύνδεση διαγράφηκε επιτυχώς');
     },
     onError: () => {
@@ -139,24 +176,24 @@ export const ExerciseStretchLinks: React.FC = () => {
     }
   });
 
-  // Filter links by search term
-  const filteredLinks = links?.filter(link => 
-    link.exercises.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    link.stretches.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter relationships by search term
+  const filteredRelationships = relationships?.filter(rel => 
+    rel.exercise.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    rel.related_exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Group links by exercise
-  const groupedLinks = filteredLinks?.reduce((acc, link) => {
-    const exerciseId = link.exercise_id;
+  // Group relationships by exercise
+  const groupedRelationships = filteredRelationships?.reduce((acc, rel) => {
+    const exerciseId = rel.exercise_id;
     if (!acc[exerciseId]) {
       acc[exerciseId] = {
-        exerciseName: link.exercises.name,
-        stretches: []
+        exerciseName: rel.exercise.name,
+        relationships: []
       };
     }
-    acc[exerciseId].stretches.push(link);
+    acc[exerciseId].relationships.push(rel);
     return acc;
-  }, {} as Record<string, { exerciseName: string; stretches: ExerciseStretch[] }>);
+  }, {} as Record<string, { exerciseName: string; relationships: ExerciseRelationship[] }>);
 
   if (isLoading) {
     return <div className="text-center py-8">Φόρτωση...</div>;
@@ -164,10 +201,13 @@ export const ExerciseStretchLinks: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Add Link Form */}
+      {/* Add Relationship Form */}
       <Card className="rounded-none">
         <CardHeader>
           <CardTitle>Νέα Σύνδεση Άσκησης με Διάταση</CardTitle>
+          <p className="text-sm text-gray-500 mt-2">
+            Οι διατάσεις είναι όλες οι ασκήσεις που έχουν την κατηγορία "mobility"
+          </p>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
@@ -188,15 +228,15 @@ export const ExerciseStretchLinks: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Διάταση</label>
-              <Select value={selectedStretchId} onValueChange={setSelectedStretchId}>
+              <label className="text-sm font-medium mb-2 block">Διάταση (Mobility)</label>
+              <Select value={selectedRelatedExerciseId} onValueChange={setSelectedRelatedExerciseId}>
                 <SelectTrigger className="rounded-none">
                   <SelectValue placeholder="Επιλέξτε διάταση" />
                 </SelectTrigger>
                 <SelectContent>
-                  {stretches?.map((stretch) => (
-                    <SelectItem key={stretch.id} value={stretch.id}>
-                      {stretch.name}
+                  {mobilityExercises?.map((exercise) => (
+                    <SelectItem key={exercise.id} value={exercise.id}>
+                      {exercise.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -205,9 +245,9 @@ export const ExerciseStretchLinks: React.FC = () => {
 
             <div className="flex items-end">
               <Button
-                onClick={() => createLinkMutation.mutate()}
+                onClick={() => createRelationshipMutation.mutate()}
                 className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black w-full"
-                disabled={!selectedExerciseId || !selectedStretchId}
+                disabled={!selectedExerciseId || !selectedRelatedExerciseId}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Προσθήκη Σύνδεσης
@@ -228,25 +268,25 @@ export const ExerciseStretchLinks: React.FC = () => {
         />
       </div>
 
-      {/* Links by Exercise */}
+      {/* Relationships by Exercise */}
       <div className="space-y-4">
-        {Object.entries(groupedLinks || {}).map(([exerciseId, { exerciseName, stretches }]) => (
+        {Object.entries(groupedRelationships || {}).map(([exerciseId, { exerciseName, relationships }]) => (
           <Card key={exerciseId} className="rounded-none">
             <CardHeader>
               <CardTitle className="text-lg">{exerciseName}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {stretches.map((link) => (
+                {relationships.map((rel) => (
                   <div
-                    key={link.id}
+                    key={rel.id}
                     className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-none"
                   >
-                    <span className="text-sm">{link.stretches.name}</span>
+                    <span className="text-sm">{rel.related_exercise.name}</span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => deleteLinkMutation.mutate(link.id)}
+                      onClick={() => deleteRelationshipMutation.mutate(rel.id)}
                       className="rounded-none text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -259,7 +299,7 @@ export const ExerciseStretchLinks: React.FC = () => {
         ))}
       </div>
 
-      {(!groupedLinks || Object.keys(groupedLinks).length === 0) && (
+      {(!groupedRelationships || Object.keys(groupedRelationships).length === 0) && (
         <div className="text-center py-12 text-gray-500">
           Δεν υπάρχουν συνδέσεις. Δημιουργήστε την πρώτη σας σύνδεση!
         </div>
