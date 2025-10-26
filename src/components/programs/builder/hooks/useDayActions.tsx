@@ -140,10 +140,26 @@ export const useDayActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
+  const updateDayTestDay = (weekId: string, dayId: string, isTestDay: boolean, testTypes: string[]) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          program_days: (week.program_days || []).map(day =>
+            day.id === dayId ? { ...day, is_test_day: isTestDay, test_types: testTypes } : day
+          )
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
   return {
     addDay,
     removeDay,
     duplicateDay,
-    updateDayName
+    updateDayName,
+    updateDayTestDay
   };
 };

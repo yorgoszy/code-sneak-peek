@@ -6,6 +6,7 @@ import { GripVertical } from "lucide-react";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
 import { DayCalculations } from './DayCalculations';
+import { TestDaySelector } from './TestDaySelector';
 import { Exercise, Day } from '../types';
 
 interface DayCardProps {
@@ -15,6 +16,7 @@ interface DayCardProps {
   onRemoveDay: () => void;
   onDuplicateDay: () => void;
   onUpdateDayName: (name: string) => void;
+  onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
@@ -34,6 +36,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   onRemoveDay,
   onDuplicateDay,
   onUpdateDayName,
+  onUpdateDayTestDay,
   onAddExercise,
   onRemoveBlock,
   onDuplicateBlock,
@@ -81,6 +84,7 @@ export const DayCard: React.FC<DayCardProps> = ({
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <DayCardHeader
           dayName={day.name}
+          isTestDay={day.is_test_day || false}
           isOpen={isOpen}
           isEditing={isEditing}
           editingName={editingName}
@@ -95,7 +99,15 @@ export const DayCard: React.FC<DayCardProps> = ({
         />
         
         {isOpen && (
-          <DayCardContent
+          <>
+            <TestDaySelector
+              isTestDay={day.is_test_day || false}
+              selectedTestTypes={day.test_types || []}
+              onTestDayChange={(isTestDay) => onUpdateDayTestDay(isTestDay, day.test_types || [])}
+              onTestTypesChange={(testTypes) => onUpdateDayTestDay(day.is_test_day || false, testTypes)}
+            />
+            
+            <DayCardContent
             blocks={day.program_blocks || []}
             exercises={exercises}
             onAddExercise={onAddExercise}
@@ -109,6 +121,7 @@ export const DayCard: React.FC<DayCardProps> = ({
             onReorderBlocks={onReorderBlocks}
             onReorderExercises={onReorderExercises}
           />
+          </>
         )}
         
         <DayCalculations 

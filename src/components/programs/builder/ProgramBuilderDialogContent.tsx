@@ -27,6 +27,7 @@ interface ProgramBuilderDialogContentProps {
   onRemoveDay: (weekId: string, dayId: string) => void;
   onDuplicateDay: (weekId: string, dayId: string) => void;
   onUpdateDayName: (weekId: string, dayId: string, name: string) => void;
+  onUpdateDayTestDay: (weekId: string, dayId: string, isTestDay: boolean, testTypes: string[]) => void;
   onAddBlock: (weekId: string, dayId: string) => void;
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
@@ -64,6 +65,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onRemoveDay,
   onDuplicateDay,
   onUpdateDayName,
+  onUpdateDayTestDay,
   onAddBlock,
   onRemoveBlock,
   onDuplicateBlock,
@@ -137,6 +139,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onRemoveDay={onRemoveDay}
             onDuplicateDay={onDuplicateDay}
             onUpdateDayName={onUpdateDayName}
+            onUpdateDayTestDay={onUpdateDayTestDay}
             onAddBlock={onAddBlock}
             onRemoveBlock={onRemoveBlock}
             onDuplicateBlock={onDuplicateBlock}

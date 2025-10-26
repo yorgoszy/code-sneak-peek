@@ -7,6 +7,7 @@ import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
 
 interface DayCardHeaderProps {
   dayName: string;
+  isTestDay: boolean;
   isOpen: boolean;
   isEditing: boolean;
   editingName: string;
@@ -22,6 +23,7 @@ interface DayCardHeaderProps {
 
 export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   dayName,
+  isTestDay,
   isOpen,
   isEditing,
   editingName,
@@ -57,6 +59,11 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             ) : (
               <>
                 {dayName}
+                {isTestDay && (
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                    Τεστ
+                  </span>
+                )}
                 {!isOpen && blocksCount > 0 && (
                   <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
                     {blocksCount}

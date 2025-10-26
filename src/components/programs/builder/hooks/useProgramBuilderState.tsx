@@ -14,6 +14,8 @@ export interface Day {
   name: string;
   day_number: number;
   estimated_duration_minutes?: number;
+  is_test_day?: boolean;
+  test_types?: string[];
   program_blocks: Block[];
 }
 
@@ -113,6 +115,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
           name: day.name,
           day_number: day.day_number,
           estimated_duration_minutes: day.estimated_duration_minutes,
+          is_test_day: day.is_test_day || false,
+          test_types: day.test_types || [],
           program_blocks: day.program_blocks
             ?.sort((a: any, b: any) => (a.block_order || 0) - (b.block_order || 0))
             ?.map((block: any) => ({
