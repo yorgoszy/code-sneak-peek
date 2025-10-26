@@ -13,8 +13,8 @@ export const useProgramBuilderActions = (
   exercises: any[],
   saveProgram?: (programData: any) => Promise<any>
 ) => {
-  // Βελτιωμένη updateProgram που διατηρεί όλες τις βασικές πληροφορίες ΚΑΙ κάνει auto-save
-  const updateProgramWithPreservation = async (updates: Partial<ProgramStructure>) => {
+  // Βελτιωμένη updateProgram που διατηρεί όλες τις βασικές πληροφορίες
+  const updateProgramWithPreservation = (updates: Partial<ProgramStructure>) => {
     const preservedUpdates = {
       ...updates,
       user_id: program.user_id, // Διατήρηση του επιλεγμένου χρήστη
@@ -25,21 +25,6 @@ export const useProgramBuilderActions = (
       training_dates: program.training_dates // Διατήρηση των επιλεγμένων ημερομηνιών
     };
     updateProgram(preservedUpdates);
-    
-    // 🚨 AUTO-SAVE: Αν έχουμε program.id και saveProgram function, αποθηκεύουμε αυτόματα
-    if (program.id && saveProgram) {
-      try {
-        console.log('💾 [AUTO-SAVE] Saving program changes...', program.id);
-        await saveProgram({
-          ...program,
-          ...preservedUpdates,
-          weeks: preservedUpdates.weeks || program.weeks
-        });
-        console.log('✅ [AUTO-SAVE] Program saved successfully');
-      } catch (error) {
-        console.error('❌ [AUTO-SAVE] Error saving program:', error);
-      }
-    }
   };
 
   const weekActions = useWeekActions(program, updateProgramWithPreservation, generateId, saveProgram);
