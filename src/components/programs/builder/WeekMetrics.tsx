@@ -125,7 +125,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
 
   return {
     volume: (totalVolume / 1000).toFixed(2), // Convert kg to tons with 2 decimal places
-    intensity: exerciseCount > 0 ? String(Math.min(999, Math.round(totalIntensity / exerciseCount))) : '0', // Ακέραιος μέχρι 3 ψηφία
+    intensity: exerciseCount > 0 ? String(Math.min(100, Math.round(totalIntensity / exerciseCount))) : '0', // Ακέραιος μέχρι 100%
     watts: (totalWatts / 1000).toFixed(1), // Convert watts to kilowatts with 1 decimal place
     time: Math.round(totalTimeSeconds / 60) // Convert to minutes
   };
