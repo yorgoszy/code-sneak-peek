@@ -120,8 +120,12 @@ export const useProgramSave = () => {
               .eq('program_id', programData.id);
           }
 
-          // Διαγραφή υπάρχουσας δομής πριν την αναδημιουργία
-          await deleteExistingStructure(programData.id);
+          // Διαγραφή υπάρχουσας δομής πριν την αναδημιουργία (μόνο αν δώθηκαν weeks)
+          if (weeks && weeks.length > 0) {
+            await deleteExistingStructure(programData.id);
+          } else {
+            console.warn('⏭️ [useProgramSave] Skip deleting structure: no weeks provided in save payload');
+          }
         } else {
           // Το πρόγραμμα δεν υπάρχει, δημιουργούμε νέο
           console.log('📝 Program not found, creating new one');
