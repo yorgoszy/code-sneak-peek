@@ -2480,7 +2480,9 @@ export type Database = {
           day_number: number
           estimated_duration_minutes: number | null
           id: string
+          is_test_day: boolean | null
           name: string
+          test_types: string[] | null
           updated_at: string | null
           week_id: string | null
         }
@@ -2489,7 +2491,9 @@ export type Database = {
           day_number: number
           estimated_duration_minutes?: number | null
           id?: string
+          is_test_day?: boolean | null
           name: string
+          test_types?: string[] | null
           updated_at?: string | null
           week_id?: string | null
         }
@@ -2498,7 +2502,9 @@ export type Database = {
           day_number?: number
           estimated_duration_minutes?: number | null
           id?: string
+          is_test_day?: boolean | null
           name?: string
+          test_types?: string[] | null
           updated_at?: string | null
           week_id?: string | null
         }
