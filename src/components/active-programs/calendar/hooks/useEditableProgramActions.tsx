@@ -62,6 +62,8 @@ export const useEditableProgramActions = (
       .update({
         name: day.name,
         estimated_duration_minutes: day.estimated_duration_minutes,
+        is_test_day: day.is_test_day ?? false,
+        test_types: day.test_types ?? [],
         updated_at: new Date().toISOString()
       })
       .eq('id', day.id);
