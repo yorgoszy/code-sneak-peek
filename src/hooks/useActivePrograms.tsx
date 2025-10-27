@@ -47,6 +47,8 @@ export const useActivePrograms = () => {
                 name,
                 day_number,
                 estimated_duration_minutes,
+                is_test_day,
+                test_types,
                 program_blocks!fk_program_blocks_day_id(
                   id,
                   name,

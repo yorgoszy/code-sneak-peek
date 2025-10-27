@@ -29,6 +29,8 @@ export interface EnrichedAssignment {
         name: string;
         day_number: number;
         estimated_duration_minutes?: number;
+        is_test_day?: boolean;
+        test_types?: string[];
         program_blocks: Array<{
           id: string;
           name: string;

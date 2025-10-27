@@ -289,35 +289,72 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
     const fetchUpcomingTests = async () => {
       try {
         const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
         
-        // Φόρτωση επερχόμενων τεστ
+        // Φόρτωση επερχόμενων τεστ από τον πίνακα tests
         const { data: scheduledTests, error } = await supabase
           .from('tests')
           .select('scheduled_date')
           .eq('user_id', user.id)
           .eq('status', 'scheduled')
-          .gte('scheduled_date', now.toISOString().split('T')[0])
+          .gte('scheduled_date', todayStr)
           .order('scheduled_date', { ascending: true });
 
         if (error) {
           console.error('Error fetching upcoming tests:', error);
+        }
+
+        // Συλλογή ημερομηνιών από scheduled tests
+        const allTestDates: string[] = [];
+        if (scheduledTests && scheduledTests.length > 0) {
+          allTestDates.push(...scheduledTests.map(t => t.scheduled_date));
+        }
+
+        // Συλλογή ημερομηνιών από test days στα assigned programs
+        if (activePrograms && activePrograms.length > 0) {
+          for (const assignment of activePrograms) {
+            if (assignment.training_dates && assignment.programs?.program_weeks) {
+              const trainingDates = assignment.training_dates;
+              const weeks = assignment.programs.program_weeks;
+              
+              // Υπολογισμός του συνολικού αριθμού ημερών ανά εβδομάδα
+              const daysPerWeek = weeks[0]?.program_days?.length || 0;
+              
+              // Διατρέχουμε όλες τις εβδομάδες και ημέρες
+              weeks.forEach((week, weekIndex) => {
+                week.program_days?.forEach((day, dayIndex) => {
+                  if (day.is_test_day) {
+                    // Βρίσκουμε τη σωστή ημερομηνία για αυτή την ημέρα
+                    const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
+                    if (totalDayIndex < trainingDates.length) {
+                      const testDate = trainingDates[totalDayIndex];
+                      // Προσθέτουμε μόνο μελλοντικές ημερομηνίες
+                      if (testDate >= todayStr) {
+                        allTestDates.push(testDate);
+                      }
+                    }
+                  }
+                });
+              });
+            }
+          }
+        }
+
+        // Αν δεν έχουμε καθόλου tests
+        if (allTestDates.length === 0) {
           setUpcomingTests(null);
           return;
         }
 
-        if (!scheduledTests || scheduledTests.length === 0) {
-          setUpcomingTests(null);
-          return;
-        }
-
-        // Βρες το πρώτο επερχόμενο τεστ
-        const nextTest = scheduledTests[0];
-        const testDate = new Date(nextTest.scheduled_date);
+        // Ταξινόμηση των ημερομηνιών και εύρεση της πιο κοντινής
+        allTestDates.sort();
+        const nextTestDate = allTestDates[0];
+        const testDate = new Date(nextTestDate);
         const diffMs = testDate.getTime() - now.getTime();
         const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
         setUpcomingTests({
-          count: scheduledTests.length,
+          count: allTestDates.length,
           daysLeft: Math.max(0, daysLeft)
         });
 
