@@ -496,13 +496,25 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
         // Παίρνουμε τις ολοκληρώσεις για αυτό το assignment
         const completions = await getWorkoutCompletions(program.id);
         
-        // Μετράμε τις μελλοντικές ημέρες που έχουν πρόγραμμα και δεν έχουν ολοκληρωθεί/χαθεί
-        program.training_dates.forEach(dateStr => {
+        // Μετράμε τις μελλοντικές ημέρες που έχουν πρόγραμμα (εξαιρούνται οι test days) και δεν έχουν ολοκληρωθεί/χαθεί
+        const weeks = program.programs?.program_weeks || [];
+        const daysPerWeek = weeks[0]?.program_days?.length || 0;
+
+        program.training_dates.forEach((dateStr, idx) => {
           const workoutDate = new Date(dateStr);
           workoutDate.setHours(0, 0, 0, 0);
-          
-          // Μόνο μελλοντικές ημερομηνίες (συμπεριλαμβανομένης της σημερινής)
-          if (workoutDate >= today) {
+
+          // Εντοπίζουμε την αντίστοιχη ημέρα προγράμματος για να ελέγξουμε αν είναι test day
+          let isTestDay = false;
+          if (daysPerWeek > 0) {
+            const weekIndex = Math.floor(idx / daysPerWeek);
+            const dayIndex = idx % daysPerWeek;
+            const dayData = weeks[weekIndex]?.program_days?.[dayIndex];
+            isTestDay = dayData?.is_test_day === true;
+          }
+
+          // Μόνο μελλοντικές ημερομηνίες (συμπεριλαμβανομένης της σημερινής) και όχι test day
+          if (workoutDate >= today && !isTestDay) {
             const completion = completions.find(c => c.scheduled_date === dateStr);
             
             // Αν δεν υπάρχει completion ή το status δεν είναι completed/missed
