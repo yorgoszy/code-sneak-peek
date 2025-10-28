@@ -8,13 +8,21 @@ export const useEditableProgramActions = (
   onRefresh?: () => void
 ) => {
   const saveChanges = async () => {
-    if (!programData || !assignment) return;
+    if (!programData || !assignment) {
+      console.error('❌ Δεν υπάρχουν δεδομένα για αποθήκευση');
+      toast.error('Δεν υπάρχουν δεδομένα για αποθήκευση');
+      return;
+    }
     
     try {
-      console.log('🔄 Αποθήκευση αλλαγών προγράμματος...');
+      console.log('🔄 Έναρξη αποθήκευσης αλλαγών προγράμματος...', {
+        programId: programData.id,
+        programName: programData.name,
+        weeks: programData.program_weeks?.length
+      });
       
       // Ενημέρωση του προγράμματος στη βάση δεδομένων
-      const { error } = await supabase
+      const { error: programError } = await supabase
         .from('programs')
         .update({
           name: programData.name,
@@ -23,82 +31,141 @@ export const useEditableProgramActions = (
         })
         .eq('id', programData.id);
 
-      if (error) throw error;
+      if (programError) {
+        console.error('❌ Σφάλμα στην ενημέρωση προγράμματος:', programError);
+        throw programError;
+      }
+
+      console.log('✅ Πρόγραμμα ενημερώθηκε');
 
       // Ενημέρωση εβδομάδων, ημερών, blocks και ασκήσεων
       for (const week of programData.program_weeks || []) {
         await updateWeek(week);
       }
 
+      console.log('✅ Όλες οι αλλαγές αποθηκεύτηκαν επιτυχώς!');
       toast.success('Οι αλλαγές αποθηκεύτηκαν επιτυχώς!');
       if (onRefresh) onRefresh();
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Σφάλμα κατά την αποθήκευση:', error);
-      toast.error('Σφάλμα κατά την αποθήκευση των αλλαγών');
+      toast.error(`Σφάλμα: ${error?.message || 'Αποτυχία αποθήκευσης'}`);
+      throw error;
     }
   };
 
   const updateWeek = async (week: any) => {
-    // Ενημέρωση εβδομάδας
-    await supabase
-      .from('program_weeks')
-      .update({
-        name: week.name,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', week.id);
+    try {
+      console.log(`🔄 Ενημέρωση εβδομάδας: ${week.name} (${week.id})`);
+      
+      // Ενημέρωση εβδομάδας
+      const { error: weekError } = await supabase
+        .from('program_weeks')
+        .update({
+          name: week.name,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', week.id);
 
-    // Ενημέρωση ημερών
-    for (const day of week.program_days || []) {
-      await updateDay(day);
+      if (weekError) {
+        console.error('❌ Σφάλμα στην ενημέρωση εβδομάδας:', weekError);
+        throw weekError;
+      }
+
+      // Ενημέρωση ημερών
+      for (const day of week.program_days || []) {
+        await updateDay(day);
+      }
+      
+      console.log(`✅ Εβδομάδα ${week.name} ενημερώθηκε`);
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά την ενημέρωση εβδομάδας:', error);
+      throw error;
     }
   };
 
   const updateDay = async (day: any) => {
-    // Ενημέρωση ημέρας
-    await supabase
-      .from('program_days')
-      .update({
-        name: day.name,
-        estimated_duration_minutes: day.estimated_duration_minutes,
-        is_test_day: day.is_test_day ?? false,
-        test_types: day.test_types ?? [],
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', day.id);
+    try {
+      console.log(`  🔄 Ενημέρωση ημέρας: ${day.name} (${day.id})`);
+      
+      // Ενημέρωση ημέρας
+      const { error: dayError } = await supabase
+        .from('program_days')
+        .update({
+          name: day.name,
+          estimated_duration_minutes: day.estimated_duration_minutes,
+          is_test_day: day.is_test_day ?? false,
+          test_types: day.test_types ?? [],
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', day.id);
 
-    // Ενημέρωση blocks
-    for (const block of day.program_blocks || []) {
-      await updateBlock(block);
+      if (dayError) {
+        console.error('❌ Σφάλμα στην ενημέρωση ημέρας:', dayError);
+        throw dayError;
+      }
+
+      // Ενημέρωση blocks
+      for (const block of day.program_blocks || []) {
+        await updateBlock(block);
+      }
+      
+      console.log(`  ✅ Ημέρα ${day.name} ενημερώθηκε`);
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά την ενημέρωση ημέρας:', error);
+      throw error;
     }
   };
 
   const updateBlock = async (block: any) => {
-    // Ενημέρωση block
-    await supabase
-      .from('program_blocks')
-      .update({
-        name: block.name,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', block.id);
-
-    // Ενημέρωση ασκήσεων
-    for (const exercise of block.program_exercises || []) {
-      await supabase
-        .from('program_exercises')
+    try {
+      console.log(`    🔄 Ενημέρωση block: ${block.name} (${block.id})`);
+      
+      // Ενημέρωση block
+      const { error: blockError } = await supabase
+        .from('program_blocks')
         .update({
-          sets: exercise.sets,
-          reps: exercise.reps,
-          kg: exercise.kg,
-          percentage_1rm: exercise.percentage_1rm,
-          tempo: exercise.tempo,
-          rest: exercise.rest,
-          notes: exercise.notes,
+          name: block.name,
           updated_at: new Date().toISOString()
         })
-        .eq('id', exercise.id);
+        .eq('id', block.id);
+
+      if (blockError) {
+        console.error('❌ Σφάλμα στην ενημέρωση block:', blockError);
+        throw blockError;
+      }
+
+      // Ενημέρωση ασκήσεων
+      for (const exercise of block.program_exercises || []) {
+        console.log(`      🔄 Ενημέρωση άσκησης: ${exercise.exercises?.name} (${exercise.id})`);
+        
+        const { error: exerciseError } = await supabase
+          .from('program_exercises')
+          .update({
+            sets: exercise.sets,
+            reps: exercise.reps,
+            kg: exercise.kg,
+            percentage_1rm: exercise.percentage_1rm,
+            tempo: exercise.tempo,
+            rest: exercise.rest,
+            notes: exercise.notes,
+            velocity_ms: exercise.velocity_ms,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', exercise.id);
+
+        if (exerciseError) {
+          console.error('❌ Σφάλμα στην ενημέρωση άσκησης:', exerciseError);
+          throw exerciseError;
+        }
+        
+        console.log(`      ✅ Άσκηση ${exercise.exercises?.name} ενημερώθηκε`);
+      }
+      
+      console.log(`    ✅ Block ${block.name} ενημερώθηκε`);
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά την ενημέρωση block:', error);
+      throw error;
     }
   };
 
