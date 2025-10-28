@@ -98,6 +98,8 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
             program_weeks (
               program_days (
                 name,
+                is_test_day,
+                test_types,
                 program_blocks (
                   program_exercises (
                     sets,
@@ -153,36 +155,53 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
           const program = programs?.find(p => p.id === assignment.program_id);
           if (!program) continue;
 
-          // Calculate stats for this program
+          // Calculate stats for this program (excluding test days)
           const stats: WorkoutStats = {
             completed: 0,
-            total: trainingDates.length,
+            total: 0,
             missed: 0
           };
 
           let nextWorkout: string | undefined;
 
           for (const date of trainingDates) {
+            const dayIndex = trainingDates.indexOf(date);
+            const dayData = program.program_weeks?.[0]?.program_days?.[dayIndex];
+            const isTestDay = dayData?.is_test_day === true;
+
             const completion = completions?.find(
               c => c.assignment_id === assignment.id && c.scheduled_date === date
             );
 
-            if (completion?.status === 'completed') {
-              stats.completed++;
-            } else if (completion?.status === 'missed') {
-              stats.missed++;
-            }
+            // Only count non-test days in workout stats
+            if (!isTestDay) {
+              stats.total++;
+              
+              if (completion?.status === 'completed') {
+                stats.completed++;
+              } else if (completion?.status === 'missed') {
+                stats.missed++;
+              }
 
-            // Find next workout
-            if (!nextWorkout && date >= today) {
-              nextWorkout = date;
+              // Find next workout (non-test day)
+              if (!nextWorkout && date >= today) {
+                nextWorkout = date;
+              }
+
+              // Count this week's workouts (non-test days only)
+              if (date >= startOfWeek && date <= endOfWeek) {
+                workoutStatsData.thisWeek.scheduled++;
+                if (completion?.status === 'completed') {
+                  workoutStatsData.thisWeek.completed++;
+                }
+                if (date > today) {
+                  workoutStatsData.thisWeek.upcomingDays.push(date);
+                }
+              }
             }
 
             // Check if today
             if (date === today) {
-              const dayIndex = trainingDates.indexOf(date);
-              const dayData = program.program_weeks?.[0]?.program_days?.[dayIndex];
-              
               workoutStatsData.today = {
                 hasWorkout: true,
                 program: program.name,
@@ -195,17 +214,6 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
                 ) || [],
                 completed: completion?.status === 'completed'
               };
-            }
-
-            // Count this week's workouts
-            if (date >= startOfWeek && date <= endOfWeek) {
-              workoutStatsData.thisWeek.scheduled++;
-              if (completion?.status === 'completed') {
-                workoutStatsData.thisWeek.completed++;
-              }
-              if (date > today) {
-                workoutStatsData.thisWeek.upcomingDays.push(date);
-              }
             }
           }
 
