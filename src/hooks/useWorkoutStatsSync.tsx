@@ -164,9 +164,17 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
 
           let nextWorkout: string | undefined;
 
-          for (const date of trainingDates) {
-            const dayIndex = trainingDates.indexOf(date);
-            const dayData = program.program_weeks?.[0]?.program_days?.[dayIndex];
+          const daysPerWeek = program.program_weeks?.[0]?.program_days?.length || 0;
+
+          for (let i = 0; i < trainingDates.length; i++) {
+            const date = trainingDates[i];
+
+            let dayData: any = null;
+            if (daysPerWeek > 0) {
+              const wkIndex = Math.floor(i / daysPerWeek);
+              const dayIdx = i % daysPerWeek;
+              dayData = program.program_weeks?.[wkIndex]?.program_days?.[dayIdx];
+            }
             const isTestDay = dayData?.is_test_day === true;
 
             const completion = completions?.find(
@@ -203,15 +211,15 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
             // Check if today
             if (date === today) {
               workoutStatsData.today = {
-                hasWorkout: true,
+                hasWorkout: !isTestDay,
                 program: program.name,
-                exercises: dayData?.program_blocks?.flatMap((block: any) =>
+                exercises: isTestDay ? [] : (dayData?.program_blocks?.flatMap((block: any) =>
                   block.program_exercises?.map((pe: any) => ({
                     name: pe.exercises?.name || '',
                     sets: pe.sets || '',
                     reps: pe.reps || ''
                   })) || []
-                ) || [],
+                ) || []),
                 completed: completion?.status === 'completed'
               };
             }
