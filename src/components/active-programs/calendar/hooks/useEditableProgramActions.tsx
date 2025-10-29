@@ -15,33 +15,117 @@ export const useEditableProgramActions = (
     }
     
     try {
-      console.log('🔄 Έναρξη αποθήκευσης αλλαγών προγράμματος...', {
-        programId: programData.id,
-        programName: programData.name,
-        weeks: programData.program_weeks?.length
-      });
+      console.log('🔄 Έναρξη αποθήκευσης αλλαγών προγράμματος...');
       
-      // Ενημέρωση του προγράμματος στη βάση δεδομένων
-      const { error: programError } = await supabase
-        .from('programs')
-        .update({
-          name: programData.name,
-          description: programData.description,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', programData.id);
+      // Συλλογή όλων των updates σε arrays
+      const weekUpdates: any[] = [];
+      const dayUpdates: any[] = [];
+      const blockUpdates: any[] = [];
+      const exerciseUpdates: any[] = [];
 
-      if (programError) {
-        console.error('❌ Σφάλμα στην ενημέρωση προγράμματος:', programError);
-        throw programError;
-      }
-
-      console.log('✅ Πρόγραμμα ενημερώθηκε');
-
-      // Ενημέρωση εβδομάδων, ημερών, blocks και ασκήσεων
+      // Προετοιμασία όλων των updates
       for (const week of programData.program_weeks || []) {
-        await updateWeek(week);
+        weekUpdates.push({
+          id: week.id,
+          name: week.name,
+          updated_at: new Date().toISOString()
+        });
+
+        for (const day of week.program_days || []) {
+          dayUpdates.push({
+            id: day.id,
+            name: day.name,
+            estimated_duration_minutes: day.estimated_duration_minutes,
+            is_test_day: day.is_test_day ?? false,
+            test_types: day.test_types ?? [],
+            updated_at: new Date().toISOString()
+          });
+
+          for (const block of day.program_blocks || []) {
+            blockUpdates.push({
+              id: block.id,
+              name: block.name,
+              updated_at: new Date().toISOString()
+            });
+
+            for (const exercise of block.program_exercises || []) {
+              exerciseUpdates.push({
+                id: exercise.id,
+                sets: exercise.sets,
+                reps: exercise.reps,
+                kg: exercise.kg,
+                percentage_1rm: exercise.percentage_1rm,
+                tempo: exercise.tempo,
+                rest: exercise.rest,
+                notes: exercise.notes,
+                velocity_ms: exercise.velocity_ms,
+                updated_at: new Date().toISOString()
+              });
+            }
+          }
+        }
       }
+
+      // Εκτέλεση όλων των updates παράλληλα
+      await Promise.all([
+        // Program update
+        supabase
+          .from('programs')
+          .update({
+            name: programData.name,
+            description: programData.description,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', programData.id),
+
+        // Batch week updates
+        ...weekUpdates.map(week =>
+          supabase
+            .from('program_weeks')
+            .update({ name: week.name, updated_at: week.updated_at })
+            .eq('id', week.id)
+        ),
+
+        // Batch day updates
+        ...dayUpdates.map(day =>
+          supabase
+            .from('program_days')
+            .update({
+              name: day.name,
+              estimated_duration_minutes: day.estimated_duration_minutes,
+              is_test_day: day.is_test_day,
+              test_types: day.test_types,
+              updated_at: day.updated_at
+            })
+            .eq('id', day.id)
+        ),
+
+        // Batch block updates
+        ...blockUpdates.map(block =>
+          supabase
+            .from('program_blocks')
+            .update({ name: block.name, updated_at: block.updated_at })
+            .eq('id', block.id)
+        ),
+
+        // Batch exercise updates
+        ...exerciseUpdates.map(exercise =>
+          supabase
+            .from('program_exercises')
+            .update({
+              sets: exercise.sets,
+              reps: exercise.reps,
+              kg: exercise.kg,
+              percentage_1rm: exercise.percentage_1rm,
+              tempo: exercise.tempo,
+              rest: exercise.rest,
+              notes: exercise.notes,
+              velocity_ms: exercise.velocity_ms,
+              updated_at: exercise.updated_at
+            })
+            .eq('id', exercise.id)
+        )
+      ]);
 
       console.log('✅ Όλες οι αλλαγές αποθηκεύτηκαν επιτυχώς!');
       toast.success('Οι αλλαγές αποθηκεύτηκαν επιτυχώς!');
