@@ -16,6 +16,7 @@ interface WeekTabsContentProps {
   onDuplicateDay: (weekId: string, dayId: string) => void;
   onUpdateDayName: (weekId: string, dayId: string, name: string) => void;
   onUpdateDayTestDay: (weekId: string, dayId: string, isTestDay: boolean, testTypes: string[]) => void;
+  onUpdateDayCompetitionDay: (weekId: string, dayId: string, isCompetitionDay: boolean) => void;
   onAddExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
@@ -39,6 +40,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   onDuplicateDay,
   onUpdateDayName,
   onUpdateDayTestDay,
+  onUpdateDayCompetitionDay,
   onAddExercise,
   onRemoveBlock,
   onDuplicateBlock,
@@ -84,6 +86,9 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                     onUpdateDayName={(name) => onUpdateDayName(week.id, day.id, name)}
                     onUpdateDayTestDay={(isTestDay, testTypes) => 
                       onUpdateDayTestDay(week.id, day.id, isTestDay, testTypes)
+                    }
+                    onUpdateDayCompetitionDay={(isCompetitionDay) => 
+                      onUpdateDayCompetitionDay(week.id, day.id, isCompetitionDay)
                     }
                     onAddExercise={(blockId, exerciseId) =>
                       onAddExercise(week.id, day.id, blockId, exerciseId)

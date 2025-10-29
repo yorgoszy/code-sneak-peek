@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, MessageCircle, Gift, Hand, MousePointer, MousePointer2, Pointer, Fingerprint, TrendingUp, History, BookOpen } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, MessageCircle, Gift, Hand, MousePointer, MousePointer2, Pointer, Fingerprint, TrendingUp, History, BookOpen, Trophy } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +33,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number} | null>(null);
   const [offersData, setOffersData] = useState<{available: number, accepted: boolean, hasMagicBox: boolean} | null>(null);
   const [upcomingTests, setUpcomingTests] = useState<{count: number, daysLeft: number} | null>(null);
+  const [upcomingCompetitions, setUpcomingCompetitions] = useState<{count: number, daysLeft: number} | null>(null);
   const [upcomingWorkouts, setUpcomingWorkouts] = useState<number>(0);
   
   const { data: activePrograms } = useActivePrograms();
@@ -364,6 +365,65 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
       }
     };
 
+    const fetchUpcomingCompetitions = async () => {
+      try {
+        // Ελέγχουμε αν ο χρήστης είναι αθλητής
+        if (!user.is_athlete) {
+          setUpcomingCompetitions(null);
+          return;
+        }
+
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        const allCompetitionDates: string[] = [];
+
+        // Συλλογή ημερομηνιών από competition days στα assigned programs
+        if (activePrograms && activePrograms.length > 0) {
+          for (const assignment of activePrograms) {
+            if (assignment.training_dates && assignment.programs?.program_weeks) {
+              const trainingDates = assignment.training_dates;
+              const weeks = assignment.programs.program_weeks;
+              const daysPerWeek = weeks[0]?.program_days?.length || 0;
+              
+              weeks.forEach((week, weekIndex) => {
+                week.program_days?.forEach((day, dayIndex) => {
+                  if (day.is_competition_day) {
+                    const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
+                    if (totalDayIndex < trainingDates.length) {
+                      const competitionDate = trainingDates[totalDayIndex];
+                      if (competitionDate >= todayStr) {
+                        allCompetitionDates.push(competitionDate);
+                      }
+                    }
+                  }
+                });
+              });
+            }
+          }
+        }
+
+        if (allCompetitionDates.length === 0) {
+          setUpcomingCompetitions(null);
+          return;
+        }
+
+        allCompetitionDates.sort();
+        const nextCompetitionDate = allCompetitionDates[0];
+        const competitionDate = new Date(nextCompetitionDate);
+        const diffMs = competitionDate.getTime() - now.getTime();
+        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+        setUpcomingCompetitions({
+          count: allCompetitionDates.length,
+          daysLeft: Math.max(0, daysLeft)
+        });
+
+      } catch (error) {
+        console.error('Error fetching upcoming competitions:', error);
+        setUpcomingCompetitions(null);
+      }
+    };
+
     const fetchOffersData = async () => {
       try {
         // Φόρτωση ενεργών προσφορών για τον χρήστη
@@ -464,6 +524,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
       fetchVideocallData();
       fetchUpcomingBookings();
       fetchUpcomingTests();
+      fetchUpcomingCompetitions();
       fetchOffersData();
       if (user.role !== 'trainer' && user.role !== 'admin') {
         fetchUpcomingWorkouts();
@@ -504,17 +565,19 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           const workoutDate = new Date(dateStr);
           workoutDate.setHours(0, 0, 0, 0);
 
-          // Εντοπίζουμε την αντίστοιχη ημέρα προγράμματος για να ελέγξουμε αν είναι test day
+          // Εντοπίζουμε την αντίστοιχη ημέρα προγράμματος για να ελέγξουμε αν είναι test day ή competition day
           let isTestDay = false;
+          let isCompetitionDay = false;
           if (daysPerWeek > 0) {
             const weekIndex = Math.floor(idx / daysPerWeek);
             const dayIndex = idx % daysPerWeek;
             const dayData = weeks[weekIndex]?.program_days?.[dayIndex];
             isTestDay = dayData?.is_test_day === true;
+            isCompetitionDay = dayData?.is_competition_day === true;
           }
 
-          // Μόνο μελλοντικές ημερομηνίες (συμπεριλαμβανομένης της σημερινής) και όχι test day
-          if (workoutDate >= today && !isTestDay) {
+          // Μόνο μελλοντικές ημερομηνίες (συμπεριλαμβανομένης της σημερινής) και όχι test/competition day
+          if (workoutDate >= today && !isTestDay && !isCompetitionDay) {
             const completion = completions.find(c => c.scheduled_date === dateStr);
             
             // Αν δεν υπάρχει completion ή το status δεν είναι completed/missed
@@ -757,6 +820,42 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               {t('overview.upcomingTests')}
             </div>
           </button>
+
+          {/* Επερχόμενοι Αγώνες - Μόνο για αθλητές */}
+          {user.is_athlete && (
+            <button 
+              onClick={() => {
+                if (setActiveTab) {
+                  setActiveTab('calendar');
+                } else {
+                  navigate(`/dashboard/user-profile/${user.id}?tab=calendar`);
+                }
+              }}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            >
+              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+                <Trophy className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
+                  upcomingCompetitions ? 'text-amber-500' : 'text-gray-400'
+                }`} />
+              </div>
+              <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} min-w-12`}>
+                {upcomingCompetitions ? (
+                  upcomingCompetitions.daysLeft === 0 ? (
+                    <span className="text-red-600">Σήμερα!</span>
+                  ) : upcomingCompetitions.daysLeft <= 3 ? (
+                    <span className="text-orange-600">{upcomingCompetitions.daysLeft}η</span>
+                  ) : (
+                    <span className="text-amber-600">{upcomingCompetitions.daysLeft}η</span>
+                  )
+                ) : (
+                  <span className="text-gray-400">-</span>
+                )}
+              </div>
+              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+                Επερχόμενοι Αγώνες
+              </div>
+            </button>
+          )}
 
           {/* Πρόοδος - Έβδομο */}
           <button 

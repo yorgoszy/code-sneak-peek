@@ -4,6 +4,7 @@ export interface User {
   email: string;
   photo_url?: string;
   role?: string;
+  is_athlete?: boolean;
 }
 
 export interface Exercise {
@@ -49,6 +50,7 @@ export interface Day {
   estimated_duration_minutes?: number;
   is_test_day?: boolean;
   test_types?: string[];
+  is_competition_day?: boolean;
   program_blocks: Block[];
 }
 

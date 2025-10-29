@@ -100,6 +100,7 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
                 name,
                 is_test_day,
                 test_types,
+                is_competition_day,
                 program_blocks (
                   program_exercises (
                     sets,
@@ -176,13 +177,14 @@ export const useWorkoutStatsSync = (userId: string | undefined) => {
               dayData = program.program_weeks?.[wkIndex]?.program_days?.[dayIdx];
             }
             const isTestDay = dayData?.is_test_day === true;
+            const isCompetitionDay = dayData?.is_competition_day === true;
 
             const completion = completions?.find(
               c => c.assignment_id === assignment.id && c.scheduled_date === date
             );
 
-            // Only count non-test days in workout stats
-            if (!isTestDay) {
+            // Only count non-test and non-competition days in workout stats
+            if (!isTestDay && !isCompetitionDay) {
               stats.total++;
               
               if (completion?.status === 'completed') {

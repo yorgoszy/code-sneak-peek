@@ -7,6 +7,7 @@ import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
 import { DayCalculations } from './DayCalculations';
 import { TestDaySelector } from './TestDaySelector';
+import { CompetitionDaySelector } from './CompetitionDaySelector';
 import { Exercise, Day } from '../types';
 
 interface DayCardProps {
@@ -17,6 +18,7 @@ interface DayCardProps {
   onDuplicateDay: () => void;
   onUpdateDayName: (name: string) => void;
   onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
+  onUpdateDayCompetitionDay: (isCompetitionDay: boolean) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
@@ -37,6 +39,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   onDuplicateDay,
   onUpdateDayName,
   onUpdateDayTestDay,
+  onUpdateDayCompetitionDay,
   onAddExercise,
   onRemoveBlock,
   onDuplicateBlock,
@@ -105,6 +108,11 @@ export const DayCard: React.FC<DayCardProps> = ({
               selectedTestTypes={day.test_types || []}
               onTestDayChange={(isTestDay) => onUpdateDayTestDay(isTestDay, day.test_types || [])}
               onTestTypesChange={(testTypes) => onUpdateDayTestDay(day.is_test_day || false, testTypes)}
+            />
+            
+            <CompetitionDaySelector
+              isCompetitionDay={day.is_competition_day || false}
+              onCompetitionDayChange={onUpdateDayCompetitionDay}
             />
             
             <DayCardContent

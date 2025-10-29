@@ -38,6 +38,7 @@ export const useEditableProgramActions = (
             estimated_duration_minutes: day.estimated_duration_minutes,
             is_test_day: day.is_test_day ?? false,
             test_types: day.test_types ?? [],
+            is_competition_day: day.is_competition_day ?? false,
             updated_at: new Date().toISOString()
           });
 
@@ -95,6 +96,7 @@ export const useEditableProgramActions = (
               estimated_duration_minutes: day.estimated_duration_minutes,
               is_test_day: day.is_test_day,
               test_types: day.test_types,
+              is_competition_day: day.is_competition_day,
               updated_at: day.updated_at
             })
             .eq('id', day.id)
