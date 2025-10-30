@@ -808,9 +808,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 upcomingTests.daysLeft === 0 ? (
                   <span className="text-red-600">{t('overview.today')}!</span>
                 ) : upcomingTests.daysLeft <= 3 ? (
-                  <span className="text-orange-600">{upcomingTests.daysLeft}η</span>
+                  <span className="text-orange-600">{upcomingTests.daysLeft}</span>
                 ) : (
-                  <span className="text-purple-600">{upcomingTests.daysLeft}η</span>
+                  <span className="text-purple-600">{upcomingTests.daysLeft}</span>
                 )
               ) : (
                 <span className="text-gray-400">-</span>
@@ -843,9 +843,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   upcomingCompetitions.daysLeft === 0 ? (
                     <span className="text-red-600">Σήμερα!</span>
                   ) : upcomingCompetitions.daysLeft <= 3 ? (
-                    <span className="text-orange-600">{upcomingCompetitions.daysLeft}η</span>
+                    <span className="text-orange-600">{upcomingCompetitions.daysLeft}</span>
                   ) : (
-                    <span className="text-amber-600">{upcomingCompetitions.daysLeft}η</span>
+                    <span className="text-amber-600">{upcomingCompetitions.daysLeft}</span>
                   )
                 ) : (
                   <span className="text-gray-400">-</span>
