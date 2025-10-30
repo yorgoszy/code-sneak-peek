@@ -368,7 +368,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
     const fetchUpcomingCompetitions = async () => {
       try {
         // Ελέγχουμε αν ο χρήστης είναι αθλητής
-        if (!user.is_athlete) {
+        if (!(user.is_athlete || user.role === 'athlete')) {
           setUpcomingCompetitions(null);
           return;
         }
@@ -822,7 +822,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           </button>
 
           {/* Επερχόμενοι Αγώνες - Μόνο για αθλητές */}
-          {user.is_athlete && (
+          {(user.is_athlete || user.role === 'athlete') && (
             <button 
               onClick={() => {
                 if (setActiveTab) {
