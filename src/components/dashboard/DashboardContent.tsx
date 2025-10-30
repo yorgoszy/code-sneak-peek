@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { TodaysProgramsCard } from "./TodaysProgramsCard";
 import { UpcomingTestsCard } from "./UpcomingTestsCard";
+import { AllUpcomingTestsCard } from "./AllUpcomingTestsCard";
+import { AllUpcomingCompetitionsCard } from "./AllUpcomingCompetitionsCard";
 import { QuickActions } from "@/components/QuickActions";
 import { RecentActivity } from "@/components/RecentActivity";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -85,6 +87,8 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
             onProgramClick={handleProgramClick}
           />
           {isAdmin && <UpcomingTestsCard />}
+          {isAdmin && <AllUpcomingTestsCard />}
+          {isAdmin && <AllUpcomingCompetitionsCard />}
         </div>
         
         {isAdmin && (
