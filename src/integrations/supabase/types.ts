@@ -907,6 +907,47 @@ export type Database = {
           },
         ]
       }
+      competitions: {
+        Row: {
+          competition_date: string
+          created_at: string
+          id: string
+          location: string | null
+          name: string | null
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          competition_date: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          competition_date?: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discount_coupons: {
         Row: {
           code: string
