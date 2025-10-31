@@ -92,10 +92,6 @@ export const AllUpcomingTestsCard = () => {
     }
   };
 
-  if (upcomingTests.length === 0) {
-    return null;
-  }
-
   return (
     <Card className="rounded-none">
       <CardHeader>
@@ -105,8 +101,14 @@ export const AllUpcomingTestsCard = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3 max-h-[400px] overflow-y-auto">
-          {upcomingTests.map((test, idx) => (
+        {upcomingTests.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Trophy className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+            <p>Δεν υπάρχουν επερχόμενα τεστ</p>
+          </div>
+        ) : (
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {upcomingTests.map((test, idx) => (
             <div 
               key={idx}
               className="flex items-center justify-between p-3 bg-gray-50 rounded-none border border-gray-200"
@@ -131,7 +133,8 @@ export const AllUpcomingTestsCard = () => {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

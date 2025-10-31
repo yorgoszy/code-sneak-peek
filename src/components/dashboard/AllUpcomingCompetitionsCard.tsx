@@ -60,10 +60,6 @@ export const AllUpcomingCompetitionsCard = () => {
     }
   };
 
-  if (upcomingCompetitions.length === 0) {
-    return null;
-  }
-
   return (
     <Card className="rounded-none">
       <CardHeader>
@@ -73,8 +69,14 @@ export const AllUpcomingCompetitionsCard = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3 max-h-[400px] overflow-y-auto">
-          {upcomingCompetitions.map((comp, idx) => (
+        {upcomingCompetitions.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Trophy className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+            <p>Δεν υπάρχουν επερχόμενοι αγώνες</p>
+          </div>
+        ) : (
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {upcomingCompetitions.map((comp, idx) => (
             <div 
               key={idx}
               className="flex items-center justify-between p-3 bg-gray-50 rounded-none border border-gray-200"
@@ -100,7 +102,8 @@ export const AllUpcomingCompetitionsCard = () => {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
