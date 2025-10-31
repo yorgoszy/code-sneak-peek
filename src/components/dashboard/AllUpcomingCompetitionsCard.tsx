@@ -27,7 +27,7 @@ export const AllUpcomingCompetitionsCard = () => {
 
       // Φόρτωση όλων των competitions από σήμερα και μετά
       const { data: competitions, error } = await supabase
-        .from('competitions')
+        .from('competitions' as any)
         .select(`
           competition_date,
           name,
@@ -44,7 +44,7 @@ export const AllUpcomingCompetitionsCard = () => {
       }
 
       if (competitions) {
-        const allCompetitions: UpcomingCompetition[] = competitions.map(comp => ({
+        const allCompetitions: UpcomingCompetition[] = (competitions as any[]).map((comp: any) => ({
           date: comp.competition_date,
           name: comp.name,
           location: comp.location,
