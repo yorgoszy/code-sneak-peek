@@ -88,6 +88,7 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
             onProgramClick={handleProgramClick}
           />
           {isAdmin && <UpcomingTestsCard />}
+          <RecentActivity />
         </div>
 
         {/* Col 2: Επερχόμενα Τεστ */}
@@ -106,7 +107,6 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
         
         {/* Col 4: Recent + Quick Actions */}
         <div className="space-y-4 md:space-y-6">
-          <RecentActivity />
           {isAdmin && <QuickActions />}
         </div>
       </div>

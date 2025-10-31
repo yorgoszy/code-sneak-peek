@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, differenceInCalendarDays } from "date-fns";
 import { el } from "date-fns/locale";
 
 interface UpcomingCompetition {
@@ -22,19 +22,11 @@ export const AllUpcomingCompetitionsCard = () => {
 
   const fetchAllUpcomingCompetitions = async () => {
     try {
-      const now = new Date();
-      const todayStr = now.toISOString().split('T')[0];
+      const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-      // Φόρτωση όλων των competitions από σήμερα και μετά
       const { data: competitions, error } = await supabase
         .from('competitions' as any)
-        .select(`
-          competition_date,
-          name,
-          location,
-          user_id,
-          app_users!competitions_user_id_fkey(name)
-        `)
+        .select('competition_date, name, location, user_id')
         .gte('competition_date', todayStr)
         .order('competition_date', { ascending: true });
 
@@ -43,18 +35,31 @@ export const AllUpcomingCompetitionsCard = () => {
         return;
       }
 
-      if (competitions) {
-        const allCompetitions: UpcomingCompetition[] = (competitions as any[]).map((comp: any) => ({
-          date: comp.competition_date,
-          name: comp.name,
-          location: comp.location,
-          userName: comp.app_users?.name,
-          userId: comp.user_id
-        }));
+      const comps = (competitions as any[]) || [];
 
-        setUpcomingCompetitions(allCompetitions);
+      // Fetch user names in a separate query to avoid type/join issues
+      const userIds = Array.from(new Set(comps.map((c: any) => c.user_id).filter(Boolean)));
+      let usersById: Record<string, { name?: string }> = {};
+      if (userIds.length > 0) {
+        const { data: users } = await supabase
+          .from('app_users' as any)
+          .select('id, name')
+          .in('id', userIds);
+        usersById = (users || []).reduce((acc: any, u: any) => {
+          acc[u.id] = { name: u.name };
+          return acc;
+        }, {});
       }
 
+      const allCompetitions: UpcomingCompetition[] = comps.map((comp: any) => ({
+        date: comp.competition_date,
+        name: comp.name,
+        location: comp.location,
+        userName: usersById[comp.user_id]?.name,
+        userId: comp.user_id
+      }));
+
+      setUpcomingCompetitions(allCompetitions);
     } catch (error) {
       console.error('Error fetching all upcoming competitions:', error);
     }
@@ -99,6 +104,12 @@ export const AllUpcomingCompetitionsCard = () => {
                 {comp.location && (
                   <p className="text-xs text-gray-600">{comp.location}</p>
                 )}
+                <p className="text-xs text-gray-600">
+                  {(() => {
+                    const daysLeft = differenceInCalendarDays(new Date(comp.date), new Date());
+                    return daysLeft === 0 ? 'σήμερα' : daysLeft === 1 ? 'αύριο' : `σε ${daysLeft} μέρες`;
+                  })()}
+                </p>
               </div>
             </div>
           ))}
