@@ -10,6 +10,7 @@ import { Exercise, Block } from '../types';
 interface DayCardContentProps {
   blocks: Block[];
   exercises: Exercise[];
+  selectedUserId?: string;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
@@ -25,6 +26,7 @@ interface DayCardContentProps {
 export const DayCardContent: React.FC<DayCardContentProps> = ({
   blocks,
   exercises,
+  selectedUserId,
   onAddExercise,
   onRemoveBlock,
   onDuplicateBlock,
@@ -57,6 +59,7 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
                   key={block.id}
                   block={block}
                   exercises={exercises}
+                  selectedUserId={selectedUserId}
                   onAddExercise={(exerciseId) => onAddExercise(block.id, exerciseId)}
                   onRemoveBlock={() => onRemoveBlock(block.id)}
                   onDuplicateBlock={() => onDuplicateBlock(block.id)}

@@ -1,16 +1,18 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Exercise, ProgramExercise } from '../types';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { ExerciseSelectionButton } from './ExerciseSelectionButton';
 import { ExerciseDetailsForm } from './ExerciseDetailsForm';
 import { useExerciseInputHandlers } from './hooks/useExerciseInputHandlers';
 import { calculateExerciseNumber } from './utils/exerciseNumberCalculator';
+import { useExercise1RM } from '@/hooks/useExercise1RM';
 
 interface ExerciseRowProps {
   exercise: ProgramExercise;
   exercises: Exercise[];
   allBlockExercises: ProgramExercise[];
+  selectedUserId?: string;
   onUpdate: (field: string, value: any) => void;
   onRemove: () => void;
   onDuplicate: () => void;
@@ -21,6 +23,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   exercise,
   exercises,
   allBlockExercises,
+  selectedUserId,
   onUpdate,
   onRemove,
   onDuplicate,
@@ -29,6 +32,20 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   
   const { handleVelocityChange, handleKgChange, handlePercentageChange } = useExerciseInputHandlers({ onUpdate });
+
+  // Fetch 1RM for selected user and exercise
+  const { oneRM } = useExercise1RM({
+    userId: selectedUserId || null,
+    exerciseId: exercise.exercise_id || null
+  });
+
+  // Auto-fill kg field with 1RM when exercise is selected and kg is empty
+  useEffect(() => {
+    if (oneRM && exercise.exercise_id && !exercise.kg) {
+      console.log('🏋️ Auto-filling 1RM:', oneRM, 'kg for exercise:', exercise.exercise_id);
+      onUpdate('kg', oneRM.toString().replace('.', ','));
+    }
+  }, [oneRM, exercise.exercise_id]);
 
   const handleExerciseSelect = (exerciseId: string) => {
     onUpdate('exercise_id', exerciseId);
