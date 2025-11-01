@@ -3775,6 +3775,64 @@ export type Database = {
           },
         ]
       }
+      user_exercise_1rm: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          exercise_id: string
+          id: string
+          notes: string | null
+          recorded_date: string
+          updated_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          exercise_id: string
+          id?: string
+          notes?: string | null
+          recorded_date?: string
+          updated_at?: string
+          user_id: string
+          weight: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          exercise_id?: string
+          id?: string
+          notes?: string | null
+          recorded_date?: string
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_exercise_1rm_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_exercise_1rm_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_exercise_1rm_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_magic_boxes: {
         Row: {
           campaign_id: string
