@@ -49,6 +49,18 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
     }
   }, [oneRM, exercise.exercise_id, exercise.kg]);
 
+  // Auto-calculate kg based on %1RM
+  useEffect(() => {
+    if (oneRM && exercise.percentage_1rm) {
+      const percentage = parseFloat(exercise.percentage_1rm.toString().replace(',', '.'));
+      if (!isNaN(percentage) && percentage > 0) {
+        const calculatedKg = (oneRM * percentage) / 100;
+        console.log('📊 Auto-calculating kg from %1RM:', percentage, '% of', oneRM, '=', calculatedKg, 'kg');
+        onUpdate('kg', calculatedKg.toFixed(2).replace('.', ','));
+      }
+    }
+  }, [oneRM, exercise.percentage_1rm]);
+
   const handleExerciseSelect = (exerciseId: string) => {
     onUpdate('exercise_id', exerciseId);
     setShowExerciseDialog(false);
