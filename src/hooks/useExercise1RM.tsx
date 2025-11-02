@@ -12,12 +12,17 @@ export const useExercise1RM = ({ userId, exerciseId }: UseExercise1RMProps) => {
 
   useEffect(() => {
     const fetch1RM = async () => {
+      console.log('🔍 useExercise1RM - userId:', userId, 'exerciseId:', exerciseId);
+      
       if (!userId || !exerciseId) {
+        console.log('⚠️ useExercise1RM - Missing userId or exerciseId');
         setOneRM(null);
         return;
       }
 
       setLoading(true);
+      console.log('🔄 Fetching 1RM from user_exercise_1rm table...');
+      
       try {
         const { data, error } = await supabase
           .from('user_exercise_1rm' as any)
@@ -26,14 +31,16 @@ export const useExercise1RM = ({ userId, exerciseId }: UseExercise1RMProps) => {
           .eq('exercise_id', exerciseId)
           .order('recorded_date', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-          console.error('Error fetching 1RM:', error);
+        if (error) {
+          console.error('❌ Error fetching 1RM:', error);
           setOneRM(null);
         } else if (data) {
+          console.log('✅ Found 1RM:', (data as any).weight, 'kg');
           setOneRM((data as any).weight);
         } else {
+          console.log('⚠️ No 1RM found for this user/exercise combination');
           setOneRM(null);
         }
       } catch (error) {

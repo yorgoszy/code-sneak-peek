@@ -39,13 +39,15 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
     exerciseId: exercise.exercise_id || null
   });
 
+  console.log('🎯 ExerciseRow - selectedUserId:', selectedUserId, 'exercise_id:', exercise.exercise_id, 'oneRM:', oneRM, 'current kg:', exercise.kg);
+
   // Auto-fill kg field with 1RM when exercise is selected and kg is empty
   useEffect(() => {
     if (oneRM && exercise.exercise_id && !exercise.kg) {
       console.log('🏋️ Auto-filling 1RM:', oneRM, 'kg for exercise:', exercise.exercise_id);
       onUpdate('kg', oneRM.toString().replace('.', ','));
     }
-  }, [oneRM, exercise.exercise_id]);
+  }, [oneRM, exercise.exercise_id, exercise.kg]);
 
   const handleExerciseSelect = (exerciseId: string) => {
     onUpdate('exercise_id', exerciseId);
