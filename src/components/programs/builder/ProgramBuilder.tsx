@@ -78,12 +78,16 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
 }) => {
   console.log('🔄 ProgramBuilder render - user_ids:', program.user_ids);
   
+  // Προτεραιότητα: user_id -> πρώτος από user_ids
+  const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : undefined);
+  console.log('🎯 ProgramBuilder - selectedUserId:', selectedUserId);
+  
   return (
     <div className="space-y-6">
       <ProgramBasicInfo
         name={program.name}
         description={program.description}
-        selectedUserId={program.user_id}
+        selectedUserId={selectedUserId}
         selectedUserIds={program.user_ids || []}
         selectedGroupId={program.selected_group_id}
         users={users}
@@ -99,7 +103,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
       <TrainingWeeks
         weeks={program.weeks}
         exercises={exercises}
-        selectedUserId={program.user_id}
+        selectedUserId={selectedUserId}
         onAddWeek={onAddWeek}
         onRemoveWeek={onRemoveWeek}
         onDuplicateWeek={onDuplicateWeek}
