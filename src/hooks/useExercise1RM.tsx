@@ -21,26 +21,33 @@ export const useExercise1RM = ({ userId, exerciseId }: UseExercise1RMProps) => {
       }
 
       setLoading(true);
-      console.log('🔄 Fetching 1RM from user_exercise_1rm table...');
+      console.log('🔄 Fetching 1RM from Force/Velocity tests...');
       
       try {
+        // Διαβάζω απευθείας από strength_test_attempts
         const { data, error } = await supabase
-          .from('user_exercise_1rm' as any)
-          .select('weight')
-          .eq('user_id', userId)
+          .from('strength_test_attempts')
+          .select(`
+            weight_kg,
+            strength_test_sessions!inner (
+              test_date,
+              user_id
+            )
+          `)
+          .eq('strength_test_sessions.user_id', userId)
           .eq('exercise_id', exerciseId)
-          .order('recorded_date', { ascending: false })
+          .order('strength_test_sessions.test_date', { ascending: false })
           .limit(1)
           .maybeSingle();
 
         if (error) {
-          console.error('❌ Error fetching 1RM:', error);
+          console.error('❌ Error fetching 1RM from Force/Velocity:', error);
           setOneRM(null);
         } else if (data) {
-          console.log('✅ Found 1RM:', (data as any).weight, 'kg');
-          setOneRM((data as any).weight);
+          console.log('✅ Found 1RM from Force/Velocity:', (data as any).weight_kg, 'kg');
+          setOneRM((data as any).weight_kg);
         } else {
-          console.log('⚠️ No 1RM found for this user/exercise combination');
+          console.log('⚠️ No Force/Velocity data found for this user/exercise combination');
           setOneRM(null);
         }
       } catch (error) {
