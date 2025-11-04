@@ -11,8 +11,8 @@ export const useDayActions = (
     console.log('🔵 addDay called with weekId:', weekId);
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
-        // Δημιουργούμε τα 5 μόνιμα blocks που θα υπάρχουν πάντα
-        const permanentBlocks = [
+        // Δημιουργούμε τα 8 προκαθορισμένα blocks που θα υπάρχουν πάντα
+        const defaultBlocks = [
           {
             id: generateId(),
             name: 'mobility',
@@ -43,9 +43,30 @@ export const useDayActions = (
           },
           {
             id: generateId(),
+            name: 'Block 1',
+            training_type: 'str' as const,
+            block_order: 5,
+            program_exercises: []
+          },
+          {
+            id: generateId(),
+            name: 'Block 2',
+            training_type: 'str' as const,
+            block_order: 6,
+            program_exercises: []
+          },
+          {
+            id: generateId(),
+            name: 'Block 3',
+            training_type: 'str' as const,
+            block_order: 7,
+            program_exercises: []
+          },
+          {
+            id: generateId(),
             name: 'recovery',
             training_type: 'recovery' as const,
-            block_order: 5,
+            block_order: 8,
             program_exercises: []
           }
         ];
@@ -54,10 +75,10 @@ export const useDayActions = (
           id: generateId(),
           name: `Ημέρα ${(week.program_days?.length || 0) + 1}`,
           day_number: (week.program_days?.length || 0) + 1,
-          program_blocks: permanentBlocks
+          program_blocks: defaultBlocks
         };
         
-        console.log('✅ Created new day with permanent blocks:', newDay);
+        console.log('✅ Created new day with 8 default blocks:', newDay);
         
         return {
           ...week,
