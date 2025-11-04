@@ -1,0 +1,75 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TrendingUp } from "lucide-react";
+import { format } from "date-fns";
+import { el } from "date-fns/locale";
+import type { OneRMRecord } from "./OneRMManagement";
+
+interface UserOneRMCardProps {
+  userName: string;
+  userAvatar?: string;
+  exercises: {
+    exerciseName: string;
+    weight: number;
+    recordedDate: string;
+    notes?: string;
+  }[];
+}
+
+export const UserOneRMCard = ({ userName, userAvatar, exercises }: UserOneRMCardProps) => {
+  const initials = userName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  return (
+    <Card className="rounded-none">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-3">
+          <Avatar className="w-10 h-10">
+            <AvatarImage src={userAvatar} />
+            <AvatarFallback className="bg-[#00ffba] text-black">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-lg">{userName}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {exercises.length === 0 ? (
+          <div className="text-center py-4 text-gray-500">
+            <TrendingUp className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-sm">Δεν υπάρχουν καταγραφές 1RM</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {exercises.map((exercise, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-none"
+              >
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900 text-sm">
+                    {exercise.exerciseName}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {format(new Date(exercise.recordedDate), 'd MMM yyyy', { locale: el })}
+                  </p>
+                  {exercise.notes && (
+                    <p className="text-xs text-gray-500 mt-1 italic">{exercise.notes}</p>
+                  )}
+                </div>
+                <div className="text-right ml-4">
+                  <p className="text-xl font-bold text-[#00ffba]">{exercise.weight}</p>
+                  <p className="text-xs text-gray-500">kg</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};

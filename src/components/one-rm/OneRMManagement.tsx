@@ -5,7 +5,7 @@ import { Plus, TrendingUp, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { OneRMForm } from "./OneRMForm";
-import { OneRMList } from "./OneRMList";
+import { UserOneRMCard } from "./UserOneRMCard";
 
 export interface OneRMRecord {
   id: string;
@@ -43,7 +43,7 @@ export const OneRMManagement = () => {
         .from('user_exercise_1rm' as any)
         .select(`
           *,
-          app_users!user_exercise_1rm_user_id_fkey(name),
+          app_users!user_exercise_1rm_user_id_fkey(name, avatar_url),
           exercises(name)
         `)
         .order('recorded_date', { ascending: false });
@@ -56,6 +56,67 @@ export const OneRMManagement = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Ομαδοποίηση records ανά χρήστη και άσκηση
+  const getUsersWithLatestRM = () => {
+    const usersMap = new Map<string, {
+      userId: string;
+      userName: string;
+      userAvatar?: string;
+      exercises: Map<string, {
+        exerciseName: string;
+        weight: number;
+        recordedDate: string;
+        notes?: string;
+      }>;
+    }>();
+
+    records.forEach(record => {
+      const userId = record.user_id;
+      const userName = record.app_users?.name || 'Άγνωστος Χρήστης';
+      const userAvatar = (record.app_users as any)?.avatar_url;
+      const exerciseId = record.exercise_id;
+      const exerciseName = record.exercises?.name || 'Άγνωστη Άσκηση';
+
+      if (!usersMap.has(userId)) {
+        usersMap.set(userId, {
+          userId,
+          userName,
+          userAvatar,
+          exercises: new Map()
+        });
+      }
+
+      const user = usersMap.get(userId)!;
+      
+      // Κρατάμε μόνο το πιο πρόσφατο 1RM για κάθε άσκηση
+      if (!user.exercises.has(exerciseId)) {
+        user.exercises.set(exerciseId, {
+          exerciseName,
+          weight: record.weight,
+          recordedDate: record.recorded_date,
+          notes: record.notes
+        });
+      } else {
+        const existing = user.exercises.get(exerciseId)!;
+        if (new Date(record.recorded_date) > new Date(existing.recordedDate)) {
+          user.exercises.set(exerciseId, {
+            exerciseName,
+            weight: record.weight,
+            recordedDate: record.recorded_date,
+            notes: record.notes
+          });
+        }
+      }
+    });
+
+    return Array.from(usersMap.values()).map(user => ({
+      userId: user.userId,
+      userName: user.userName,
+      userAvatar: user.userAvatar,
+      exercises: Array.from(user.exercises.values())
+    }));
   };
 
   const handleAddNew = () => {
@@ -253,22 +314,23 @@ export const OneRMManagement = () => {
         </div>
       </div>
 
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-[#cb8954]" />
-            Καταγραφές 1RM
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <OneRMList
-            records={records}
-            isLoading={isLoading}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <div className="text-center py-12 text-gray-500">
+          <TrendingUp className="h-12 w-12 mx-auto mb-3 animate-pulse text-[#00ffba]" />
+          <p>Φόρτωση δεδομένων...</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {getUsersWithLatestRM().map((user) => (
+            <UserOneRMCard
+              key={user.userId}
+              userName={user.userName}
+              userAvatar={user.userAvatar}
+              exercises={user.exercises}
+            />
+          ))}
+        </div>
+      )}
 
       <OneRMForm
         isOpen={isFormOpen}
