@@ -52,6 +52,7 @@ export interface ProgramStructure {
   user_ids: string[];
   selected_group_id?: string;
   is_multiple_assignment: boolean;
+  is_template?: boolean;
   training_dates: Date[];
   weeks: Week[];
 }
@@ -105,6 +106,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
       user_ids: programData.user_ids || [],
       selected_group_id: programData.selected_group_id || '',
       is_multiple_assignment: programData.is_multiple_assignment || true,
+      is_template: programData.is_template || false,
       training_dates: programData.training_dates?.map((date: string) => new Date(date)) || [],
       weeks: programData.program_weeks?.map((week: any) => ({
         id: week.id,
