@@ -25,52 +25,51 @@ export const UserOneRMCard = ({ userName, userAvatar, exercises }: UserOneRMCard
     .slice(0, 2);
 
   return (
-    <div className="space-y-2">
-      {exercises.length === 0 ? (
-        <Card className="rounded-none">
-          <CardContent className="p-4">
-            <div className="text-center py-2 text-gray-500">
-              <TrendingUp className="h-6 w-6 mx-auto mb-1 text-gray-300" />
-              <p className="text-sm">{userName} - Δεν υπάρχουν καταγραφές 1RM</p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        exercises.map((exercise, index) => (
-          <Card key={index} className="rounded-none hover:shadow-md transition-shadow">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-4">
-                <Avatar className="w-10 h-10 flex-shrink-0">
-                  <AvatarImage src={userAvatar} />
-                  <AvatarFallback className="bg-[#00ffba] text-black text-xs">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 text-sm truncate">{userName}</p>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 text-sm truncate">
+    <Card className="rounded-none">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-3">
+          <Avatar className="w-10 h-10">
+            <AvatarImage src={userAvatar} />
+            <AvatarFallback className="bg-[#00ffba] text-black">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-lg">{userName}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {exercises.length === 0 ? (
+          <div className="text-center py-4 text-gray-500">
+            <TrendingUp className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-sm">Δεν υπάρχουν καταγραφές 1RM</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {exercises.map((exercise, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-none"
+              >
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900 text-sm">
                     {exercise.exerciseName}
                   </p>
-                </div>
-
-                <div className="text-right flex-shrink-0">
-                  <p className="text-lg font-bold text-[#00ffba]">{exercise.weight} kg</p>
-                </div>
-
-                <div className="text-right flex-shrink-0 min-w-[90px]">
                   <p className="text-xs text-gray-500">
                     {format(new Date(exercise.recordedDate), 'd MMM yyyy', { locale: el })}
                   </p>
+                  {exercise.notes && (
+                    <p className="text-xs text-gray-500 mt-1 italic">{exercise.notes}</p>
+                  )}
+                </div>
+                <div className="text-right ml-4">
+                  <p className="text-xl font-bold text-[#00ffba]">{exercise.weight}</p>
+                  <p className="text-xs text-gray-500">kg</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
