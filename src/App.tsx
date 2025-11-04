@@ -21,6 +21,7 @@ import Tests from "@/pages/Tests";
 import Results from "@/pages/Results";
 import UserProfile from "@/pages/UserProfile";
 import ProgramBuilder from "@/pages/ProgramBuilder";
+import ProgramTemplates from "@/pages/ProgramTemplates";
 import NotFound from "@/pages/NotFound";
 import Subscriptions from "@/pages/Subscriptions";
 import Analytics from "@/pages/Analytics";
@@ -69,6 +70,7 @@ function App() {
                 <Route path="/dashboard/subscriptions" element={<ProtectedRoute requireAdmin><Subscriptions /></ProtectedRoute>} />
                 <Route path="/dashboard/exercises" element={<ProtectedRoute requireAdmin><Exercises /></ProtectedRoute>} />
                 <Route path="/dashboard/programs" element={<ProtectedRoute requireAdmin><Programs /></ProtectedRoute>} />
+                <Route path="/dashboard/program-templates" element={<ProtectedRoute requireAdmin><ProgramTemplates /></ProtectedRoute>} />
                 <Route path="/dashboard/active-programs" element={<ProtectedRoute requireAdmin><ActivePrograms /></ProtectedRoute>} />
                 <Route path="/dashboard/program-cards" element={<ProtectedRoute requireAdmin><ProgramCards /></ProtectedRoute>} />
                 <Route path="/dashboard/tests" element={<ProtectedRoute requireAdmin><Tests /></ProtectedRoute>} />

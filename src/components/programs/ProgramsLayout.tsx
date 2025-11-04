@@ -28,6 +28,7 @@ interface ProgramsLayoutProps {
   onDeleteBlock: (blockId: string) => void;
   onDeleteExercise: (exerciseId: string) => void;
   onOpenBuilder: () => void;
+  isTemplateMode?: boolean;
 }
 
 export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
@@ -43,7 +44,8 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   onCreateProgram,
   onBuilderDialogClose,
   onDuplicateProgram,
-  onOpenBuilder
+  onOpenBuilder,
+  isTemplateMode = false
 }) => {
   const isMobile = useIsMobile();
 
@@ -51,7 +53,7 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
     <div className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
       <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'justify-between items-center'}`}>
         <h1 className={`${isMobile ? 'text-xl' : 'text-2xl lg:text-3xl'} font-bold`}>
-          {isMobile ? 'Προγράμματα' : 'Προγράμματα Προπόνησης'}
+          {isMobile ? (isTemplateMode ? 'Templates' : 'Προγράμματα') : (isTemplateMode ? 'Templates Προγραμμάτων' : 'Προγράμματα Προπόνησης')}
         </h1>
         <ProgramBuilderTrigger onClick={onOpenBuilder} />
       </div>

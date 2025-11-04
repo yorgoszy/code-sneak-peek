@@ -469,6 +469,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     { 
+      icon: FileText, 
+      label: "Templates", 
+      path: "/dashboard/program-templates",
+      badge: null
+    },
+    { 
       icon: BarChart3, 
       label: "Ενεργά Προγράμματα", 
       path: "/dashboard/active-programs",

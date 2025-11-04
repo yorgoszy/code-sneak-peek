@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { assignmentService } from '../services/assignmentService';
 import { workoutCompletionService } from '../services/workoutCompletionService';
 import { useProgramWorkoutCompletions } from '@/hooks/programs/useProgramWorkoutCompletions';
+import { processTemplateForUser } from '@/utils/percentageCalculator';
 import type { ProgramStructure } from './useProgramBuilderState';
 
 export const useAssignmentDialog = (
@@ -92,6 +93,14 @@ export const useAssignmentDialog = (
       for (const userId of userIds) {
         console.log(`👤 [useAssignmentDialog] Processing assignment for user: ${userId}`);
         
+        // 🔄 Αν είναι template, επεξεργαζόμαστε το πρόγραμμα για τον χρήστη
+        let processedProgram = savedProgram;
+        if ((program as any).is_template) {
+          console.log(`🎯 [useAssignmentDialog] Processing template for user ${userId} with %1RM calculations...`);
+          processedProgram = await processTemplateForUser(savedProgram, userId);
+          console.log(`✅ [useAssignmentDialog] Template processed for user ${userId}`);
+        }
+        
         const trainingDatesStrings = trainingDates.map(date => {
           const localDate = new Date(date);
           localDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
@@ -101,7 +110,7 @@ export const useAssignmentDialog = (
         console.log(`📅 [useAssignmentDialog] Training dates for user ${userId}:`, trainingDatesStrings);
 
         const assignmentData = {
-          program: savedProgram,
+          program: processedProgram,
           userId: userId,
           trainingDates: trainingDatesStrings
         };
@@ -116,7 +125,7 @@ export const useAssignmentDialog = (
         const completions = await createWorkoutCompletions(
           assignment[0].id,
           userId,
-          savedProgram.id,
+          processedProgram.id,
           trainingDatesStrings,
           program
         );

@@ -86,6 +86,7 @@ export interface Program {
   description?: string;
   athlete_id?: string;
   user_id?: string;
+  is_template?: boolean;
   app_users?: { name: string } | null;
   program_weeks: Week[];
   program_assignments?: ProgramAssignment[];
@@ -104,6 +105,7 @@ export interface ProgramStructure {
   name: string;
   description?: string;
   user_id?: string;
+  is_template?: boolean;
   start_date?: Date;
   training_days?: string[];
   training_dates?: string[];
