@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingUp, RefreshCw } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, TrendingUp, RefreshCw, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { OneRMForm } from "./OneRMForm";
 import { UserOneRMCard } from "./UserOneRMCard";
+import { matchesSearchTerm } from "@/lib/utils";
 
 export interface OneRMRecord {
   id: string;
@@ -31,10 +34,32 @@ export const OneRMManagement = () => {
   const [selectedRecord, setSelectedRecord] = useState<OneRMRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string>("all");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string }>>(new Map());
 
   useEffect(() => {
     fetchRecords();
+    fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, email');
+      
+      if (error) throw error;
+      
+      const map = new Map(
+        (data || []).map(user => [user.id, { name: user.name, email: user.email }])
+      );
+      setUsersMap(map);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
 
   const fetchRecords = async () => {
     setIsLoading(true);
@@ -43,7 +68,7 @@ export const OneRMManagement = () => {
         .from('user_exercise_1rm' as any)
         .select(`
           *,
-          app_users!user_exercise_1rm_user_id_fkey(name, avatar_url),
+          app_users!user_exercise_1rm_user_id_fkey(name, avatar_url, email),
           exercises(name)
         `)
         .order('recorded_date', { ascending: false });
@@ -58,8 +83,75 @@ export const OneRMManagement = () => {
     }
   };
 
+  // Φιλτραρισμένα records
+  const filteredRecords = useMemo(() => {
+    return records.filter(record => {
+      // Filter by user search (name or email)
+      if (userSearch.trim()) {
+        const user = record.app_users as any;
+        const userName = user?.name || '';
+        const userEmail = user?.email || '';
+        
+        if (!matchesSearchTerm(userName, userSearch) && !matchesSearchTerm(userEmail, userSearch)) {
+          return false;
+        }
+      }
+      
+      // Filter by exercise
+      if (selectedExerciseId !== "all") {
+        if (record.exercise_id !== selectedExerciseId) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [records, userSearch, selectedExerciseId]);
+
+  // Διαθέσιμες ασκήσεις
+  const availableExercises = useMemo(() => {
+    const exercisesMap = new Map<string, string>();
+    records.forEach(record => {
+      if (record.exercise_id && record.exercises?.name) {
+        exercisesMap.set(record.exercise_id, record.exercises.name);
+      }
+    });
+    return Array.from(exercisesMap.entries())
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [records]);
+
+  // User suggestions για autocomplete
+  const userSuggestions = useMemo(() => {
+    if (!userSearch.trim()) return [];
+    
+    const uniqueUsers = new Map<string, { id: string; name: string; email: string }>();
+    records.forEach(record => {
+      const user = record.app_users as any;
+      if (user && record.user_id) {
+        uniqueUsers.set(record.user_id, {
+          id: record.user_id,
+          name: user.name || '',
+          email: user.email || ''
+        });
+      }
+    });
+    
+    return Array.from(uniqueUsers.values())
+      .filter(user => 
+        matchesSearchTerm(user.name, userSearch) || 
+        matchesSearchTerm(user.email, userSearch)
+      )
+      .slice(0, 10);
+  }, [userSearch, records]);
+
+  const handleClearFilters = () => {
+    setUserSearch("");
+    setSelectedExerciseId("all");
+  };
+
   // Ομαδοποίηση records ανά χρήστη και άσκηση
-  const getUsersWithLatestRM = () => {
+  const getUsersWithLatestRM = (recordsToProcess: OneRMRecord[]) => {
     const usersMap = new Map<string, {
       userId: string;
       userName: string;
@@ -72,7 +164,7 @@ export const OneRMManagement = () => {
       }>;
     }>();
 
-    records.forEach(record => {
+    recordsToProcess.forEach(record => {
       const userId = record.user_id;
       const userName = record.app_users?.name || 'Άγνωστος Χρήστης';
       const userAvatar = (record.app_users as any)?.avatar_url;
@@ -314,14 +406,92 @@ export const OneRMManagement = () => {
         </div>
       </div>
 
+      {/* Φίλτρα */}
+      <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-stretch sm:items-start">
+        {/* User Search */}
+        <div className="relative w-full sm:w-[250px]">
+          <Input
+            type="text"
+            placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
+            value={userSearch}
+            onChange={(e) => setUserSearch(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            className="rounded-none pr-8"
+          />
+          {userSearch && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+              onClick={() => setUserSearch("")}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+          
+          {showSuggestions && userSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-[300px] overflow-y-auto z-50">
+              {userSuggestions.map((user) => (
+                <div
+                  key={user.id}
+                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => {
+                    setUserSearch(user.name);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  <div className="font-medium text-sm">{user.name}</div>
+                  <div className="text-xs text-gray-500">{user.email}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Exercise Filter */}
+        <div className="w-full sm:w-[250px]">
+          <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
+            <SelectTrigger className="rounded-none">
+              <SelectValue placeholder="Όλες οι ασκήσεις" />
+            </SelectTrigger>
+            <SelectContent className="rounded-none max-h-[300px]">
+              <SelectItem value="all" className="rounded-none">Όλες οι ασκήσεις</SelectItem>
+              {availableExercises.map(exercise => (
+                <SelectItem key={exercise.id} value={exercise.id} className="rounded-none">
+                  {exercise.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Clear Filters Button */}
+        {(userSearch || selectedExerciseId !== "all") && (
+          <Button
+            variant="outline"
+            onClick={handleClearFilters}
+            className="rounded-none"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Καθαρισμός Φίλτρων
+          </Button>
+        )}
+      </div>
+
       {isLoading ? (
         <div className="text-center py-12 text-gray-500">
           <TrendingUp className="h-12 w-12 mx-auto mb-3 animate-pulse text-[#00ffba]" />
           <p>Φόρτωση δεδομένων...</p>
         </div>
+      ) : filteredRecords.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">
+          <TrendingUp className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+          <p>Δεν βρέθηκαν καταγραφές με τα επιλεγμένα φίλτρα</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {getUsersWithLatestRM().map((user) => (
+          {getUsersWithLatestRM(filteredRecords).map((user) => (
             <UserOneRMCard
               key={user.userId}
               userName={user.userName}
