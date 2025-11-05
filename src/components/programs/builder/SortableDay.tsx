@@ -45,18 +45,8 @@ export const SortableDay: React.FC<SortableDayProps> = (props) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative">
-      {/* Drag Handle - Absolute positioned στην αριστερή πλευρά */}
-      <div 
-        {...attributes} 
-        {...listeners}
-        className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 cursor-grab active:cursor-grabbing bg-white rounded-none border border-gray-200 p-1 hover:bg-gray-50 transition-colors"
-      >
-        <GripVertical className="w-4 h-4 text-gray-400" />
-      </div>
-      
-      {/* Day Card */}
-      <DayCard {...props} />
+    <div ref={setNodeRef} style={style} className="relative group">
+      <DayCard {...props} dragHandleProps={{ attributes, listeners }} />
     </div>
   );
 };

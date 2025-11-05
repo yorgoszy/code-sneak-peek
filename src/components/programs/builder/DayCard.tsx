@@ -30,6 +30,10 @@ interface DayCardProps {
   onDuplicateExercise: (blockId: string, exerciseId: string) => void;
   onReorderBlocks: (oldIndex: number, newIndex: number) => void;
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
+  dragHandleProps?: {
+    attributes: any;
+    listeners: any;
+  };
 }
 
 export const DayCard: React.FC<DayCardProps> = ({
@@ -51,7 +55,8 @@ export const DayCard: React.FC<DayCardProps> = ({
   onRemoveExercise,
   onDuplicateExercise,
   onReorderBlocks,
-  onReorderExercises
+  onReorderExercises,
+  dragHandleProps
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -82,7 +87,11 @@ export const DayCard: React.FC<DayCardProps> = ({
 
   return (
     <Card className="rounded-none relative w-full" style={{ minHeight: '30px' }}>
-      <div className="absolute left-0 top-0 bottom-0 w-3 md:w-4 flex items-center justify-center cursor-move z-10">
+      <div 
+        {...(dragHandleProps?.attributes || {})}
+        {...(dragHandleProps?.listeners || {})}
+        className="absolute left-0 top-0 bottom-0 w-3 md:w-4 flex items-center justify-center cursor-grab active:cursor-grabbing z-10 hover:bg-gray-100 transition-colors"
+      >
         <GripVertical className="w-2 h-2 md:w-3 md:h-3 text-gray-400" />
       </div>
       
