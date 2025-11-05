@@ -46,22 +46,19 @@ export const useAssignmentDialog = (
         isTemplate: (program as any).is_template
       });
 
-      // 🔥 ΑΝ ΕΙΝΑΙ TEMPLATE: Δημιουργούμε νέο πρόγραμμα (αντίγραφο) για κάθε ανάθεση
-      let programToAssign = program;
+      // 🔥 ΠΑΝΤΑ δημιουργούμε αντίγραφο για κάθε ανάθεση ώστε το αρχικό πρόγραμμα να μένει μόνιμο
+      console.log('📋 [useAssignmentDialog] Creating program copy for assignment...');
+      console.log('📋 [useAssignmentDialog] Is template:', (program as any).is_template);
       
-      if ((program as any).is_template) {
-        console.log('📋 [useAssignmentDialog] This is a template, creating a copy for assignment...');
-        
-        // Δημιουργούμε αντίγραφο χωρίς το ID και το is_template flag
-        programToAssign = {
-          ...program,
-          id: undefined, // Αφαιρούμε το ID για να δημιουργηθεί νέο πρόγραμμα
-          is_template: false, // Το νέο πρόγραμμα ΔΕΝ είναι template
-          name: `${program.name} (Ανάθεση)` // Προσθέτουμε suffix
-        } as ProgramStructure;
-        
-        console.log('✅ [useAssignmentDialog] Template copy created:', programToAssign.name);
-      }
+      // Δημιουργούμε αντίγραφο χωρίς το ID
+      const programToAssign = {
+        ...program,
+        id: undefined, // Αφαιρούμε το ID για να δημιουργηθεί νέο πρόγραμμα
+        is_template: false, // Τα ανατεθειμένα προγράμματα ΔΕΝ είναι templates
+        name: (program as any).is_template ? program.name : `${program.name} (Ανάθεση)` // Suffix μόνο για κανονικά προγράμματα
+      } as ProgramStructure;
+      
+      console.log('✅ [useAssignmentDialog] Program copy created:', programToAssign.name);
 
       // 🚨 ΚΡΙΤΙΚΟΣ ΕΛΕΓΧΟΣ: Έλεγχος σειράς ασκήσεων πριν την ανάθεση
       console.log('🚨 [ASSIGNMENT DIALOG] Checking exercise order before assignment:');
@@ -99,10 +96,10 @@ export const useAssignmentDialog = (
         });
       });
 
-      // Αποθήκευση του προγράμματος (νέο αν είναι template, υπάρχον αν όχι)
-      console.log('💾 [useAssignmentDialog] Saving program...', programToAssign.is_template ? '(template will remain unchanged)' : '');
+      // Αποθήκευση του νέου προγράμματος (αντίγραφο)
+      console.log('💾 [useAssignmentDialog] Saving program copy (original will remain unchanged)...');
       const savedProgram = await onCreateProgram(programToAssign);
-      console.log('✅ [useAssignmentDialog] Program saved:', savedProgram);
+      console.log('✅ [useAssignmentDialog] Program copy saved:', savedProgram);
 
       const assignments = [];
       const allWorkoutCompletions = [];
@@ -111,12 +108,12 @@ export const useAssignmentDialog = (
       for (const userId of userIds) {
         console.log(`👤 [useAssignmentDialog] Processing assignment for user: ${userId}`);
         
-        // 🔄 Αν το ΑΡΧΙΚΟ πρόγραμμα είναι template, επεξεργαζόμαστε το νέο πρόγραμμα για τον χρήστη
+        // 🔄 Αν το ΑΡΧΙΚΟ πρόγραμμα είναι template, επεξεργαζόμαστε το αντίγραφο για τον χρήστη με %1RM
         let processedProgram = savedProgram;
         if ((program as any).is_template) {
-          console.log(`🎯 [useAssignmentDialog] Processing template copy for user ${userId} with %1RM calculations...`);
+          console.log(`🎯 [useAssignmentDialog] Processing copy for user ${userId} with %1RM calculations...`);
           processedProgram = await processTemplateForUser(savedProgram, userId);
-          console.log(`✅ [useAssignmentDialog] Template copy processed for user ${userId}`);
+          console.log(`✅ [useAssignmentDialog] Copy processed for user ${userId}`);
         }
         
         const trainingDatesStrings = trainingDates.map(date => {
