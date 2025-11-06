@@ -46,13 +46,16 @@ export const useAssignmentDialog = (
         isTemplate: (program as any).is_template
       });
 
-      // 🔥 ΠΑΝΤΑ δημιουργούμε αντίγραφο για κάθε ανάθεση ώστε το αρχικό πρόγραμμα να μένει μόνιμο
-      console.log('📋 [useAssignmentDialog] Creating program copy for assignment...');
+      // 🔥 DEEP COPY για να μην επηρεαστεί το αρχικό πρόγραμμα
+      console.log('📋 [useAssignmentDialog] Creating deep copy for assignment...');
       console.log('📋 [useAssignmentDialog] Is template:', (program as any).is_template);
+      
+      // Deep copy με JSON parse/stringify για πλήρη αντιγραφή
+      const programCopy = JSON.parse(JSON.stringify(program));
       
       // Δημιουργούμε αντίγραφο χωρίς το ID
       const programToAssign = {
-        ...program,
+        ...programCopy,
         id: undefined, // Αφαιρούμε το ID για να δημιουργηθεί νέο πρόγραμμα
         is_template: false, // Τα ανατεθειμένα προγράμματα ΔΕΝ είναι templates
         name: (program as any).is_template ? program.name : `${program.name} (Ανάθεση)` // Suffix μόνο για κανονικά προγράμματα
@@ -96,10 +99,10 @@ export const useAssignmentDialog = (
         });
       });
 
-      // Αποθήκευση του νέου προγράμματος (αντίγραφο)
+      // Αποθήκευση του νέου προγράμματος (αντίγραφο) ΧΩΡΙΣ %1RM υπολογισμούς
       console.log('💾 [useAssignmentDialog] Saving program copy (original will remain unchanged)...');
       const savedProgram = await onCreateProgram(programToAssign);
-      console.log('✅ [useAssignmentDialog] Program copy saved:', savedProgram);
+      console.log('✅ [useAssignmentDialog] Program copy saved with ID:', savedProgram.id);
 
       const assignments = [];
       const allWorkoutCompletions = [];
@@ -108,11 +111,14 @@ export const useAssignmentDialog = (
       for (const userId of userIds) {
         console.log(`👤 [useAssignmentDialog] Processing assignment for user: ${userId}`);
         
-        // 🔄 Αν το ΑΡΧΙΚΟ πρόγραμμα είναι template, επεξεργαζόμαστε το αντίγραφο για τον χρήστη με %1RM
+        // 🔄 Αν το ΑΡΧΙΚΟ πρόγραμμα είναι template, επεξεργαζόμαστε ΝΕΟ COPY για κάθε χρήστη
+        // ΣΗΜΑΝΤΙΚΟ: Δεν τροποποιούμε το savedProgram, δημιουργούμε νέο copy
         let processedProgram = savedProgram;
         if ((program as any).is_template) {
-          console.log(`🎯 [useAssignmentDialog] Processing copy for user ${userId} with %1RM calculations...`);
-          processedProgram = await processTemplateForUser(savedProgram, userId);
+          console.log(`🎯 [useAssignmentDialog] Processing NEW copy for user ${userId} with %1RM calculations...`);
+          // Deep copy του savedProgram πριν το επεξεργαστούμε
+          const programCopyForUser = JSON.parse(JSON.stringify(savedProgram));
+          processedProgram = await processTemplateForUser(programCopyForUser, userId);
           console.log(`✅ [useAssignmentDialog] Copy processed for user ${userId}`);
         }
         
