@@ -55,8 +55,17 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
       const percentage = parseFloat(exercise.percentage_1rm.toString().replace(',', '.'));
       if (!isNaN(percentage) && percentage > 0) {
         const calculatedKg = (oneRM * percentage) / 100;
-        console.log('📊 Auto-calculating kg from %1RM:', percentage, '% of', oneRM, '=', calculatedKg, 'kg');
-        onUpdate('kg', calculatedKg.toFixed(2).replace('.', ','));
+        
+        // Στρογγυλοποίηση προς τα πάνω
+        let roundedWeight = Math.ceil(calculatedKg);
+        
+        // Διασφάλιση ότι είναι άρτιος αριθμός
+        if (roundedWeight % 2 !== 0) {
+          roundedWeight += 1;
+        }
+        
+        console.log('📊 Auto-calculating kg from %1RM:', percentage, '% of', oneRM, '=', calculatedKg, 'kg → rounded to', roundedWeight, 'kg');
+        onUpdate('kg', roundedWeight.toString().replace('.', ','));
       }
     }
   }, [oneRM, exercise.percentage_1rm]);
