@@ -40,8 +40,15 @@ export const calculate1RMPercentage = async (
     const oneRM = (oneRMRecords[0] as any).weight;
     const calculatedWeight = (oneRM * percentage) / 100;
     
-    // Στρογγυλοποίηση σε 2 δεκαδικά
-    return calculatedWeight.toFixed(2);
+    // Στρογγυλοποίηση προς τα πάνω
+    let roundedWeight = Math.ceil(calculatedWeight);
+    
+    // Διασφάλιση ότι είναι άρτιος αριθμός
+    if (roundedWeight % 2 !== 0) {
+      roundedWeight += 1;
+    }
+    
+    return roundedWeight.toString();
   } catch (error) {
     console.error('Σφάλμα υπολογισμού %1RM:', error);
     return kg;
