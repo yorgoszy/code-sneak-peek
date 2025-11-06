@@ -40,12 +40,21 @@ export const calculate1RMPercentage = async (
     const oneRM = (oneRMRecords[0] as any).weight;
     const calculatedWeight = (oneRM * percentage) / 100;
     
-    // Στρογγυλοποίηση προς τα πάνω
-    let roundedWeight = Math.ceil(calculatedWeight);
+    // Κλασική στρογγυλοποίηση (0.5+ πάνω, <0.5 κάτω)
+    let roundedWeight = Math.round(calculatedWeight);
     
     // Διασφάλιση ότι είναι άρτιος αριθμός
     if (roundedWeight % 2 !== 0) {
-      roundedWeight += 1;
+      // Βρες τον πιο κοντινό άρτιο
+      const lowerEven = roundedWeight - 1;
+      const upperEven = roundedWeight + 1;
+      
+      // Επέλεξε τον άρτιο που είναι πιο κοντά στο calculatedWeight
+      if (Math.abs(calculatedWeight - lowerEven) < Math.abs(calculatedWeight - upperEven)) {
+        roundedWeight = lowerEven;
+      } else {
+        roundedWeight = upperEven;
+      }
     }
     
     return roundedWeight.toString();

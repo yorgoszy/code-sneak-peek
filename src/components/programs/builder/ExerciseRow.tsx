@@ -56,12 +56,21 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
       if (!isNaN(percentage) && percentage > 0) {
         const calculatedKg = (oneRM * percentage) / 100;
         
-        // Στρογγυλοποίηση προς τα πάνω
-        let roundedWeight = Math.ceil(calculatedKg);
+        // Κλασική στρογγυλοποίηση (0.5+ πάνω, <0.5 κάτω)
+        let roundedWeight = Math.round(calculatedKg);
         
         // Διασφάλιση ότι είναι άρτιος αριθμός
         if (roundedWeight % 2 !== 0) {
-          roundedWeight += 1;
+          // Βρες τον πιο κοντινό άρτιο
+          const lowerEven = roundedWeight - 1;
+          const upperEven = roundedWeight + 1;
+          
+          // Επέλεξε τον άρτιο που είναι πιο κοντά στο calculatedKg
+          if (Math.abs(calculatedKg - lowerEven) < Math.abs(calculatedKg - upperEven)) {
+            roundedWeight = lowerEven;
+          } else {
+            roundedWeight = upperEven;
+          }
         }
         
         console.log('📊 Auto-calculating kg from %1RM:', percentage, '% of', oneRM, '=', calculatedKg, 'kg → rounded to', roundedWeight, 'kg');
