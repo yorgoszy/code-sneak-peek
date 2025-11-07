@@ -75,16 +75,28 @@ const handleReceiptNotification = async (requestBody: any) => {
 
     const resend = new Resend(resendApiKey)
 
+    // Λήψη items από τη σχέση receipt_items
+    const { data: receiptItems, error: itemsError } = await supabase
+      .from('receipt_items')
+      .select('*')
+      .eq('receipt_id', receipt.id)
+
     // Δημιουργία HTML για απόδειξη
     const receiptHTML = generateGeneralReceiptHTML({
       receiptNumber: receipt.receipt_number,
       userName: user.name,
       userEmail: user.email,
       customerName: receipt.customer_name,
+      customerVat: receipt.customer_vat,
       total: receipt.total,
+      subtotal: receipt.net_amount,
+      vatAmount: receipt.tax_amount,
       issueDate: receipt.issue_date,
-      description: receipt.description || 'Υπηρεσίες',
-      vatAmount: receipt.total * 0.24
+      startDate: receipt.start_date,
+      endDate: receipt.end_date,
+      invoiceMark: receipt.invoice_mark,
+      description: receipt.description || 'Υπηρεσίες Γυμναστηρίου',
+      items: receiptItems || []
     })
 
     const emailResponse = await resend.emails.send({
@@ -124,6 +136,11 @@ const handleReceiptNotification = async (requestBody: any) => {
 }
 
 const generateGeneralReceiptHTML = (data: any) => {
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
   return `
     <!DOCTYPE html>
     <html>
@@ -131,78 +148,140 @@ const generateGeneralReceiptHTML = (data: any) => {
         <meta charset="utf-8">
         <title>Απόδειξη - HYPERKIDS</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
-            .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-            .header { text-align: center; border-bottom: 2px solid #00ffba; padding-bottom: 20px; margin-bottom: 30px; }
-            .logo { font-size: 28px; font-weight: bold; color: #333; margin-bottom: 10px; }
-            .receipt-title { font-size: 24px; color: #00ffba; margin: 20px 0; }
-            .info-section { margin: 20px 0; }
-            .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-            .label { font-weight: bold; color: #333; }
-            .value { color: #666; }
-            .total-section { background: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #00ffba; }
-            .total-amount { font-size: 24px; font-weight: bold; color: #00ffba; text-align: right; }
-            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: Arial, sans-serif; background-color: #ffffff; }
+            .container { max-width: 800px; margin: 0 auto; background: white; padding: 16px; border: 1px solid #e5e7eb; }
+            .header { display: flex; align-items: start; justify-content: space-between; border-bottom: 2px solid #00ffba; padding-bottom: 12px; margin-bottom: 16px; }
+            .header-left { flex: 1; text-align: left; }
+            .header-left p { font-size: 12px; color: #374151; line-height: 1.4; }
+            .header-left strong { font-weight: bold; }
+            .receipt-title { font-size: 18px; color: #00ffba; text-align: center; margin-bottom: 12px; font-weight: 600; }
+            .info-section { margin-bottom: 16px; }
+            .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
+            .info-row.two-cols { display: flex; justify-content: space-between; }
+            .info-row.two-cols > div { flex: 1; }
+            .info-row.two-cols > div:last-child { text-align: right; }
+            .label { font-weight: 600; color: #111827; }
+            .value { color: #4b5563; }
+            .items-section { margin-bottom: 16px; }
+            .items-section h3 { font-size: 12px; font-weight: 600; color: #111827; margin-bottom: 8px; }
+            .item { border: 1px solid #e5e7eb; padding: 12px; margin-bottom: 8px; }
+            .item-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+            .item-name { font-weight: 500; color: #111827; font-size: 12px; }
+            .item-quantity { color: #4b5563; font-size: 12px; }
+            .item-details { display: flex; justify-content: space-between; font-size: 12px; color: #4b5563; }
+            .total-section { background: #f9fafb; padding: 12px; border-left: 4px solid #00ffba; }
+            .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 12px; }
+            .total-row.final { border-top: 2px solid #00ffba; padding-top: 8px; margin-top: 12px; }
+            .total-row.final .label { font-size: 18px; font-weight: bold; color: #00ffba; }
+            .total-row.final .value { font-size: 18px; font-weight: bold; color: #00ffba; }
+            .footer { display: flex; justify-content: center; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
+            .footer img { width: 50%; height: auto; object-fit: contain; filter: grayscale(100%) brightness(0.9); opacity: 0.4; }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <div class="logo">HYPERKIDS</div>
-                <p>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</p>
-                <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
-                <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
-                <p>Τηλ: 2310 529104</p>
+                <div class="header-left">
+                    <p><strong>HYPERKIDS</strong></p>
+                    <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
+                    <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
+                    <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
+                    <p>Τηλ: 2310 529104</p>
+                </div>
             </div>
             
-            <h2 class="receipt-title">ΑΠΟΔΕΙΞΗ</h2>
+            <h2 class="receipt-title">ΑΠΟΔΕΙΞΗ ΣΥΝΔΡΟΜΗΣ</h2>
             
             <div class="info-section">
-                <div class="info-row">
-                    <span class="label">Αριθμός Απόδειξης:</span>
-                    <span class="value">${data.receiptNumber}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Ημερομηνία Έκδοσης:</span>
-                    <span class="value">${new Date(data.issueDate).toLocaleDateString('el-GR')}</span>
+                <div class="info-row two-cols">
+                    <div>
+                        <span class="label">Αριθμός Απόδειξης: </span>
+                        <span class="value">${data.receiptNumber}</span>
+                    </div>
+                    <div>
+                        <span class="label">Έκδοση: </span>
+                        <span class="value">${formatDate(data.issueDate)}</span>
+                    </div>
                 </div>
                 <div class="info-row">
                     <span class="label">Πελάτης:</span>
                     <span class="value">${data.customerName}</span>
                 </div>
+                ${data.customerVat ? `
                 <div class="info-row">
-                    <span class="label">Email:</span>
-                    <span class="value">${data.userEmail}</span>
+                    <span class="label">ΑΦΜ:</span>
+                    <span class="value">${data.customerVat}</span>
                 </div>
+                ` : ''}
+                ${data.startDate || data.endDate ? `
+                <div class="info-row two-cols">
+                    ${data.startDate ? `
+                    <div>
+                        <span class="label">Έναρξης: </span>
+                        <span class="value">${formatDate(data.startDate)}</span>
+                    </div>
+                    ` : ''}
+                    ${data.endDate ? `
+                    <div>
+                        <span class="label">Λήξης: </span>
+                        <span class="value">${formatDate(data.endDate)}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
+                ${data.invoiceMark ? `
+                <div class="info-row">
+                    <span class="label">ΜΑΡΚ:</span>
+                    <span class="value">${data.invoiceMark}</span>
+                </div>
+                ` : ''}
             </div>
             
-            <div class="info-section">
-                <h3>Περιγραφή</h3>
-                <div class="info-row">
-                    <span class="label">Υπηρεσία:</span>
-                    <span class="value">${data.description}</span>
+            <div class="items-section">
+                <h3>Στοιχεία Συνδρομής</h3>
+                ${data.items && data.items.length > 0 ? data.items.map((item: any) => `
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-name">${item.description}</span>
+                        <span class="item-quantity">Ποσότητα: ${item.quantity}</span>
+                    </div>
+                    <div class="item-details">
+                        <span>Τιμή μονάδας: €${item.unitPrice.toFixed(2)}</span>
+                        <span>ΦΠΑ: ${item.vatRate}%</span>
+                    </div>
                 </div>
+                `).join('') : `
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-name">${data.description || 'Υπηρεσίες Γυμναστηρίου'}</span>
+                        <span class="item-quantity">Ποσότητα: 1</span>
+                    </div>
+                    <div class="item-details">
+                        <span>Τιμή μονάδας: €${data.subtotal.toFixed(2)}</span>
+                        <span>ΦΠΑ: 13%</span>
+                    </div>
+                </div>
+                `}
             </div>
             
             <div class="total-section">
-                <div class="info-row">
-                    <span class="label">Αξία:</span>
-                    <span class="value">€${(data.total / 1.24).toFixed(2)}</span>
+                <div class="total-row">
+                    <span class="label">Αξία Συνδρομής:</span>
+                    <span class="value">€${data.subtotal.toFixed(2)}</span>
                 </div>
-                <div class="info-row">
-                    <span class="label">ΦΠΑ (24%):</span>
+                <div class="total-row">
+                    <span class="label">ΦΠΑ (13%):</span>
                     <span class="value">€${data.vatAmount.toFixed(2)}</span>
                 </div>
-                <div style="margin-top: 10px; border-top: 2px solid #00ffba; padding-top: 10px;">
-                    <div class="total-amount">
-                        Σύνολο: €${data.total.toFixed(2)}
-                    </div>
+                <div class="total-row final">
+                    <span class="label">Σύνολο:</span>
+                    <span class="value">€${data.total.toFixed(2)}</span>
                 </div>
             </div>
             
-            <div class="footer" style="text-align: right;">
-                <img src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" alt="HYPERKIDS Logo" style="width: 80px; height: auto; margin-left: auto; display: block; margin-bottom: 10px;" />
-                <p><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά</em></p>
+            <div class="footer">
+                <img src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" alt="HYPERKIDS Logo" />
             </div>
         </div>
     </body>

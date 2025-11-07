@@ -144,6 +144,22 @@ export const ReceiptMyDataIntegration: React.FC<ReceiptMyDataIntegrationProps> =
           description: `Απόδειξη στάλθηκε στο MyData. ΜΑΡΚ: ${data.invoiceMark}`,
         });
 
+        // Αποστολή email notification μετά την επιτυχή καταχώρηση MARK
+        console.log('📧 Αποστολή email notification για απόδειξη:', receipt.id);
+        const { error: emailError } = await supabase.functions.invoke('send-subscription-receipt', {
+          body: {
+            type: 'receipt_notification',
+            receiptId: receipt.id
+          }
+        });
+
+        if (emailError) {
+          console.error('❌ Σφάλμα αποστολής email:', emailError);
+          // Δεν σταματάμε τη διαδικασία αν αποτύχει το email
+        } else {
+          console.log('✅ Email notification στάλθηκε επιτυχώς');
+        }
+
         onUpdate();
       } else {
         throw new Error(data.error || 'Unknown error');
