@@ -7,14 +7,15 @@ import { el } from "date-fns/locale";
 
 interface UpcomingCompetition {
   date: string;
-  name?: string;
-  location?: string;
   userName?: string;
   userId?: string;
+  programName?: string;
+  dayName?: string;
 }
 
 export const AllUpcomingCompetitionsCard = () => {
   const [upcomingCompetitions, setUpcomingCompetitions] = useState<UpcomingCompetition[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchAllUpcomingCompetitions();
@@ -22,46 +23,89 @@ export const AllUpcomingCompetitionsCard = () => {
 
   const fetchAllUpcomingCompetitions = async () => {
     try {
+      setLoading(true);
       const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-      const { data: competitions, error } = await supabase
-        .from('competitions' as any)
-        .select('competition_date, name, location, user_id')
-        .gte('competition_date', todayStr)
-        .order('competition_date', { ascending: true });
+      // Fetch all active program assignments
+      const { data: assignments, error: assignmentsError } = await supabase
+        .from('program_assignments')
+        .select(`
+          id,
+          user_id,
+          program_id,
+          training_dates,
+          status,
+          app_users!program_assignments_user_id_fkey (
+            id,
+            name
+          ),
+          programs!program_assignments_program_id_fkey (
+            id,
+            name,
+            program_weeks!fk_program_weeks_program_id (
+              id,
+              week_number,
+              program_days!fk_program_days_week_id (
+                id,
+                name,
+                day_number,
+                is_competition_day
+              )
+            )
+          )
+        `)
+        .eq('status', 'active')
+        .gte('end_date', todayStr);
 
-      if (error) {
-        console.error('Error fetching competitions:', error);
+      if (assignmentsError) {
+        console.error('Error fetching assignments:', assignmentsError);
         return;
       }
 
-      const comps = (competitions as any[]) || [];
+      const competitions: UpcomingCompetition[] = [];
 
-      // Fetch user names in a separate query to avoid type/join issues
-      const userIds = Array.from(new Set(comps.map((c: any) => c.user_id).filter(Boolean)));
-      let usersById: Record<string, { name?: string }> = {};
-      if (userIds.length > 0) {
-        const { data: users } = await supabase
-          .from('app_users' as any)
-          .select('id, name')
-          .in('id', userIds);
-        usersById = (users || []).reduce((acc: any, u: any) => {
-          acc[u.id] = { name: u.name };
-          return acc;
-        }, {});
+      // Process each assignment
+      for (const assignment of assignments || []) {
+        const trainingDates = assignment.training_dates || [];
+        const program = Array.isArray(assignment.programs) ? assignment.programs[0] : assignment.programs;
+        const user = Array.isArray(assignment.app_users) ? assignment.app_users[0] : assignment.app_users;
+
+        if (!program?.program_weeks?.[0]?.program_days) continue;
+
+        const programDays = program.program_weeks[0].program_days;
+        const totalDays = programDays.length;
+
+        // Check each training date
+        trainingDates.forEach((dateStr: string, index: number) => {
+          // Skip past dates
+          if (dateStr < todayStr) return;
+
+          // Find which program day this corresponds to
+          const dayIndex = index % totalDays;
+          const programDay = programDays[dayIndex];
+
+          // If this day is marked as competition day, add it to the list
+          if (programDay?.is_competition_day) {
+            competitions.push({
+              date: dateStr,
+              userName: user?.name,
+              userId: user?.id,
+              programName: program.name,
+              dayName: programDay.name
+            });
+          }
+        });
       }
 
-      const allCompetitions: UpcomingCompetition[] = comps.map((comp: any) => ({
-        date: comp.competition_date,
-        name: comp.name,
-        location: comp.location,
-        userName: usersById[comp.user_id]?.name,
-        userId: comp.user_id
-      }));
+      // Sort by date ascending
+      competitions.sort((a, b) => a.date.localeCompare(b.date));
 
-      setUpcomingCompetitions(allCompetitions);
+      console.log('✅ Found upcoming competitions:', competitions);
+      setUpcomingCompetitions(competitions);
     } catch (error) {
       console.error('Error fetching all upcoming competitions:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,7 +118,11 @@ export const AllUpcomingCompetitionsCard = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {upcomingCompetitions.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>Φόρτωση...</p>
+          </div>
+        ) : upcomingCompetitions.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <Trophy className="h-12 w-12 mx-auto mb-3 text-gray-300" />
             <p>Δεν υπάρχουν επερχόμενοι αγώνες</p>
@@ -95,14 +143,14 @@ export const AllUpcomingCompetitionsCard = () => {
                   {comp.userName && (
                     <p className="text-xs text-gray-600">{comp.userName}</p>
                   )}
+                  {comp.dayName && (
+                    <p className="text-xs text-gray-500 italic">{comp.dayName}</p>
+                  )}
                 </div>
               </div>
               <div className="text-right">
-                {comp.name && (
-                  <p className="text-xs font-medium text-gray-900">{comp.name}</p>
-                )}
-                {comp.location && (
-                  <p className="text-xs text-gray-600">{comp.location}</p>
+                {comp.programName && (
+                  <p className="text-xs font-medium text-gray-900">{comp.programName}</p>
                 )}
                 <p className="text-xs text-gray-600">
                   {(() => {
