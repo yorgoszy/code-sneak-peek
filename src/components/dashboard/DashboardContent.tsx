@@ -77,7 +77,7 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
   return (
     <>
       <div className={`grid gap-4 md:gap-6 ${
-        isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'
+        isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'
       }`}>
         {/* Col 1: Σημερινά Προγράμματα (+ εβδομαδιαία τεστ) */}
         <div className="space-y-4 md:space-y-6">
@@ -88,7 +88,6 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
             onProgramClick={handleProgramClick}
           />
           {isAdmin && <UpcomingTestsCard />}
-          <RecentActivity />
         </div>
 
         {/* Col 2: Επερχόμενα Τεστ */}
@@ -105,7 +104,12 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
           </div>
         )}
         
-        {/* Col 4: Recent + Quick Actions */}
+        {/* Row 2 - Col 1: Recent Activity */}
+        <div className="space-y-4 md:space-y-6">
+          <RecentActivity />
+        </div>
+
+        {/* Row 2 - Col 2: Quick Actions */}
         <div className="space-y-4 md:space-y-6">
           {isAdmin && <QuickActions />}
         </div>
