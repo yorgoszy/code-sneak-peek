@@ -54,8 +54,7 @@ export const AllUpcomingCompetitionsCard = () => {
             )
           )
         `)
-        .eq('status', 'active')
-        .gte('end_date', todayStr);
+        .eq('status', 'active');
 
       if (assignmentsError) {
         console.error('Error fetching assignments:', assignmentsError);
@@ -64,34 +63,54 @@ export const AllUpcomingCompetitionsCard = () => {
 
       const competitions: UpcomingCompetition[] = [];
 
-      // Process each assignment
+      // Process each assignment mapping dates across ALL program weeks/days
       for (const assignment of assignments || []) {
         const trainingDates = assignment.training_dates || [];
-        const program = Array.isArray(assignment.programs) ? assignment.programs[0] : assignment.programs;
+        const programRaw = Array.isArray(assignment.programs) ? assignment.programs[0] : assignment.programs;
         const user = Array.isArray(assignment.app_users) ? assignment.app_users[0] : assignment.app_users;
 
-        if (!program?.program_weeks?.[0]?.program_days) continue;
+        const weeks = (programRaw?.program_weeks || [])
+          .slice()
+          .sort((a: any, b: any) => (a.week_number || 0) - (b.week_number || 0));
 
-        const programDays = program.program_weeks[0].program_days;
-        const totalDays = programDays.length;
+        if (weeks.length === 0) continue;
 
-        // Check each training date
+        const weeksDays: any[][] = weeks.map((w: any) =>
+          (w.program_days || []).slice().sort((a: any, b: any) => (a.day_number || 0) - (b.day_number || 0))
+        );
+
+        const cycleLength = weeksDays.reduce((sum, days) => sum + days.length, 0);
+        if (cycleLength === 0) continue;
+
+        // Check each training date and find its corresponding week/day in the cycle
         trainingDates.forEach((dateStr: string, index: number) => {
           // Skip past dates
           if (dateStr < todayStr) return;
 
-          // Find which program day this corresponds to
-          const dayIndex = index % totalDays;
-          const programDay = programDays[dayIndex];
+          const idxInCycle = index % cycleLength;
+          let acc = 0;
+          let foundWeekIndex = 0;
+          let foundDayIndex = 0;
+          for (let wi = 0; wi < weeksDays.length; wi++) {
+            const len = weeksDays[wi].length;
+            if (idxInCycle < acc + len) {
+              foundWeekIndex = wi;
+              foundDayIndex = idxInCycle - acc;
+              break;
+            }
+            acc += len;
+          }
+
+          const day = weeksDays[foundWeekIndex]?.[foundDayIndex];
 
           // If this day is marked as competition day, add it to the list
-          if (programDay?.is_competition_day) {
+          if (day?.is_competition_day) {
             competitions.push({
               date: dateStr,
               userName: user?.name,
               userId: user?.id,
-              programName: program.name,
-              dayName: programDay.name
+              programName: programRaw?.name,
+              dayName: day.name
             });
           }
         });
