@@ -380,6 +380,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
         // Συλλογή ημερομηνιών από competition days στα assigned programs
         if (activePrograms && activePrograms.length > 0) {
           for (const assignment of activePrograms) {
+            // Δείξε μόνο αγώνες που ανήκουν στον τρέχοντα χρήστη
+            if (assignment.user_id !== user.id) continue;
+
             if (assignment.training_dates && assignment.programs?.program_weeks) {
               const trainingDates = assignment.training_dates;
               const weeks = assignment.programs.program_weeks;
