@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Trophy } from "lucide-react";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useMemo } from "react";
+import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { format, differenceInCalendarDays } from "date-fns";
 import { el } from "date-fns/locale";
 
@@ -14,119 +14,49 @@ interface UpcomingCompetition {
 }
 
 export const AllUpcomingCompetitionsCard = () => {
-  const [upcomingCompetitions, setUpcomingCompetitions] = useState<UpcomingCompetition[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: activePrograms, isLoading } = useActivePrograms();
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-  useEffect(() => {
-    fetchAllUpcomingCompetitions();
-  }, []);
+  const upcomingCompetitions = useMemo<UpcomingCompetition[]>(() => {
+    const comps: UpcomingCompetition[] = [];
+    if (!activePrograms) return comps;
 
-  const fetchAllUpcomingCompetitions = async () => {
-    try {
-      setLoading(true);
-      const todayStr = format(new Date(), 'yyyy-MM-dd');
+    for (const assignment of activePrograms) {
+      const trainingDates = assignment.training_dates || [];
+      const program = assignment.programs as any;
+      const user = (assignment as any).app_users as any;
+      const weeks = program?.program_weeks || [];
+      if (!weeks?.length) continue;
 
-      // Fetch all active program assignments
-      const { data: assignments, error: assignmentsError } = await supabase
-        .from('program_assignments')
-        .select(`
-          id,
-          user_id,
-          program_id,
-          training_dates,
-          status,
-          app_users!program_assignments_user_id_fkey (
-            id,
-            name
-          ),
-          programs!program_assignments_program_id_fkey (
-            id,
-            name,
-            program_weeks!fk_program_weeks_program_id (
-              id,
-              week_number,
-              program_days!fk_program_days_week_id (
-                id,
-                name,
-                day_number,
-                is_competition_day
-              )
-            )
-          )
-        `)
-        .eq('status', 'active');
+      const daysPerWeek = weeks[0]?.program_days?.length || 0;
+      if (!daysPerWeek) continue;
 
-      if (assignmentsError) {
-        console.error('Error fetching assignments:', assignmentsError);
-        return;
-      }
-
-      const competitions: UpcomingCompetition[] = [];
-
-      // Process each assignment mapping dates across ALL program weeks/days
-      for (const assignment of assignments || []) {
-        const trainingDates = assignment.training_dates || [];
-        const programRaw = Array.isArray(assignment.programs) ? assignment.programs[0] : assignment.programs;
-        const user = Array.isArray(assignment.app_users) ? assignment.app_users[0] : assignment.app_users;
-
-        const weeks = (programRaw?.program_weeks || [])
-          .slice()
-          .sort((a: any, b: any) => (a.week_number || 0) - (b.week_number || 0));
-
-        if (weeks.length === 0) continue;
-
-        const weeksDays: any[][] = weeks.map((w: any) =>
-          (w.program_days || []).slice().sort((a: any, b: any) => (a.day_number || 0) - (b.day_number || 0))
-        );
-
-        const cycleLength = weeksDays.reduce((sum, days) => sum + days.length, 0);
-        if (cycleLength === 0) continue;
-
-        // Check each training date and find its corresponding week/day in the cycle
-        trainingDates.forEach((dateStr: string, index: number) => {
-          // Skip past dates
-          if (dateStr < todayStr) return;
-
-          const idxInCycle = index % cycleLength;
-          let acc = 0;
-          let foundWeekIndex = 0;
-          let foundDayIndex = 0;
-          for (let wi = 0; wi < weeksDays.length; wi++) {
-            const len = weeksDays[wi].length;
-            if (idxInCycle < acc + len) {
-              foundWeekIndex = wi;
-              foundDayIndex = idxInCycle - acc;
-              break;
-            }
-            acc += len;
-          }
-
-          const day = weeksDays[foundWeekIndex]?.[foundDayIndex];
-
-          // If this day is marked as competition day, add it to the list
+      weeks.forEach((week: any, weekIndex: number) => {
+        (week.program_days || []).forEach((day: any, dayIndex: number) => {
           if (day?.is_competition_day) {
-            competitions.push({
-              date: dateStr,
-              userName: user?.name,
-              userId: user?.id,
-              programName: programRaw?.name,
-              dayName: day.name
-            });
+            const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
+            if (totalDayIndex < trainingDates.length) {
+              const dateStr = trainingDates[totalDayIndex];
+              if (dateStr >= todayStr) {
+                comps.push({
+                  date: dateStr,
+                  userName: user?.name,
+                  userId: user?.id,
+                  programName: program?.name,
+                  dayName: day?.name
+                });
+              }
+            }
           }
         });
-      }
-
-      // Sort by date ascending
-      competitions.sort((a, b) => a.date.localeCompare(b.date));
-
-      console.log('✅ Found upcoming competitions:', competitions);
-      setUpcomingCompetitions(competitions);
-    } catch (error) {
-      console.error('Error fetching all upcoming competitions:', error);
-    } finally {
-      setLoading(false);
+      });
     }
-  };
+
+    comps.sort((a, b) => a.date.localeCompare(b.date));
+    return comps;
+  }, [activePrograms, todayStr]);
+
+  const loading = isLoading;
 
   return (
     <Card className="rounded-none">
