@@ -3,7 +3,7 @@ import { Calendar, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
-import { format } from "date-fns";
+import { format, differenceInCalendarDays } from "date-fns";
 import { el } from "date-fns/locale";
 
 interface UpcomingTest {
@@ -126,10 +126,16 @@ export const AllUpcomingTestsCard = () => {
               </div>
               <div className="text-right">
                 {test.testTypes && test.testTypes.length > 0 && (
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs font-medium text-gray-900">
                     {test.testTypes.join(', ')}
                   </p>
                 )}
+                <p className="text-xs text-gray-600">
+                  {(() => {
+                    const daysLeft = differenceInCalendarDays(new Date(test.date), new Date());
+                    return daysLeft === 0 ? 'σήμερα' : daysLeft === 1 ? 'αύριο' : `σε ${daysLeft} μέρες`;
+                  })()}
+                </p>
               </div>
             </div>
           ))}
