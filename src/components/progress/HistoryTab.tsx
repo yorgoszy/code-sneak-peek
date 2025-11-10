@@ -257,6 +257,39 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
     return Array.from(new Set(years)).sort((a, b) => b - a);
   }, [sessions]);
 
+  // Group filtered sessions by exercise
+  const sessionsByExercise = useMemo(() => {
+    const grouped = new Map<string, { exerciseName: string; sessions: any[] }>();
+    
+    filteredSessions.forEach(session => {
+      session.strength_test_attempts?.forEach((attempt: any) => {
+        const exerciseId = attempt.exercises?.id;
+        const exerciseName = attempt.exercises?.name || t('history.unknownExercise');
+        
+        if (!exerciseId) return;
+        
+        if (!grouped.has(exerciseId)) {
+          grouped.set(exerciseId, { exerciseName, sessions: [] });
+        }
+        
+        // Check if this session is already added for this exercise
+        const existingSession = grouped.get(exerciseId)!.sessions.find(s => s.id === session.id);
+        if (!existingSession) {
+          grouped.get(exerciseId)!.sessions.push({
+            ...session,
+            exerciseAttempts: [attempt]
+          });
+        } else {
+          existingSession.exerciseAttempts.push(attempt);
+        }
+      });
+    });
+    
+    return Array.from(grouped.entries())
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => a.exerciseName.localeCompare(b.exerciseName));
+  }, [filteredSessions, t]);
+
   if (loading) {
     return <div className="text-center py-8 text-gray-500">{t('history.loading')}</div>;
   }
@@ -375,109 +408,104 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
         </Button>
       </div>
 
-      <div className="space-y-4">
-        {filteredSessions.map((session) => {
-          // Group attempts by exercise
-          const attemptsByExercise = session.strength_test_attempts.reduce((acc: any, attempt: any) => {
-            const exerciseId = attempt.exercises?.id;
-            if (!acc[exerciseId]) {
-              acc[exerciseId] = {
-                exerciseName: attempt.exercises?.name || t('history.unknownExercise'),
-                attempts: []
-              };
-            }
-            acc[exerciseId].attempts.push(attempt);
-            return acc;
-          }, {});
-
-          return (
-            <Card key={session.id} className="rounded-none">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <CardTitle className="text-base whitespace-nowrap">
-                      {session.app_users?.name || t('history.unknownUser')}
-                    </CardTitle>
-                    <span className="text-sm text-gray-500">
-                      {format(new Date(session.test_date), 'dd MMM yyyy', { locale: el })}
-                    </span>
-                  </div>
-                  {!readOnly && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteSessionClick(session.id)}
-                      className="rounded-none text-destructive hover:text-destructive h-7 w-7"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {Object.values(attemptsByExercise).map((exerciseData: any, idx: number) => {
-                  // Prepare chart data for this exercise
-                  const chartData = exerciseData.attempts.map((attempt: any) => ({
-                    exerciseName: exerciseData.exerciseName,
-                    exerciseId: attempt.exercises?.id,
-                    velocity: attempt.velocity_ms || 0,
-                    weight: attempt.weight_kg,
-                    date: session.test_date,
-                    sessionId: session.id
-                  }));
-
-                  return (
-                    <div key={idx} className="grid grid-cols-1 lg:grid-cols-[230px_1fr] gap-4 md:gap-6">
-                      {/* Left side - Attempts list */}
+      <div className="space-y-6">
+        {sessionsByExercise.map((exerciseGroup) => (
+          <div key={exerciseGroup.id} className="space-y-3">
+            {/* Exercise Title */}
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+              {exerciseGroup.exerciseName}
+            </h3>
+            
+            {/* Horizontal scrollable cards */}
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {exerciseGroup.sessions.map((session) => {
+                const userName = session.app_users?.name || usersMap.get(session.user_id)?.name || t('history.unknownUser');
+                
+                return (
+                  <Card key={session.id} className="rounded-none min-w-[280px] shrink-0">
+                    <CardContent className="p-3">
                       <div className="space-y-2">
-                        <div className="text-sm font-semibold mb-2">{exerciseData.exerciseName}</div>
-                        <div className="space-y-1 overflow-x-auto">
-                          {/* Header */}
-                          <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 p-1 text-xs font-medium text-gray-600 min-w-[200px]">
+                        {/* Header */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-sm text-gray-900 truncate">
+                                {userName}
+                              </span>
+                              <span className="text-xs text-gray-500 whitespace-nowrap">
+                                {format(new Date(session.test_date), 'dd/MM/yy')}
+                              </span>
+                            </div>
+                          </div>
+                          {!readOnly && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteSessionClick(session.id)}
+                              className="rounded-none h-8 w-8 p-0 shrink-0"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {/* Attempts */}
+                        <div className="space-y-1">
+                          <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 text-xs font-medium text-gray-600">
                             <span className="w-4">#</span>
                             <span>{t('history.kg')}</span>
                             <span>m/s</span>
                             <span className="w-6"></span>
                           </div>
-                          {/* Attempts */}
-                          {exerciseData.attempts
-                            .sort((a: any, b: any) => a.attempt_number - b.attempt_number)
+                          {session.exerciseAttempts
+                            ?.sort((a: any, b: any) => a.attempt_number - b.attempt_number)
                             .map((attempt: any) => (
-                              <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 p-1 border rounded-none bg-white min-w-[200px]">
-                                <span className="text-xs font-medium w-4">#{attempt.attempt_number}</span>
-                                <span className="text-xs border rounded-none p-1 bg-gray-50">{attempt.weight_kg} kg</span>
-                                <span className="text-xs border rounded-none p-1 bg-gray-50">{attempt.velocity_ms} m/s</span>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleEditAttempt(attempt)}
-                                  className="rounded-none h-6 w-6 p-0"
-                                >
-                                  <Pencil className="w-3 h-3" />
-                                </Button>
+                              <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-1">
+                                <span className="text-xs font-medium w-4 flex items-center">#{attempt.attempt_number}</span>
+                                <span className="text-xs border rounded-none p-1 bg-gray-50 flex items-center justify-center">
+                                  {attempt.weight_kg} kg
+                                </span>
+                                <span className="text-xs border rounded-none p-1 bg-gray-50 flex items-center justify-center">
+                                  {attempt.velocity_ms} m/s
+                                </span>
+                                {!readOnly && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleEditAttempt(attempt)}
+                                    className="rounded-none h-6 w-6 p-0"
+                                  >
+                                    <Pencil className="w-3 h-3" />
+                                  </Button>
+                                )}
                               </div>
                             ))}
                         </div>
-                      </div>
 
-                      {/* Right side - Chart */}
-                      <div className="flex items-center justify-center min-h-[200px] md:min-h-[300px]">
-                        {chartData.length > 0 && (
-                          <div className="w-full">
+                        {/* Chart */}
+                        {session.exerciseAttempts && session.exerciseAttempts.length > 0 && (
+                          <div className="pt-2 border-t border-gray-200">
                             <LoadVelocityChart 
-                              data={chartData}
-                              selectedExercises={[exerciseData.exerciseName]}
+                              data={session.exerciseAttempts.map((attempt: any) => ({
+                                exerciseName: exerciseGroup.exerciseName,
+                                exerciseId: attempt.exercises?.id,
+                                velocity: attempt.velocity_ms || 0,
+                                weight: attempt.weight_kg,
+                                date: session.test_date,
+                                sessionId: session.id
+                              }))}
+                              selectedExercises={[exerciseGroup.exerciseName]}
                             />
                           </div>
                         )}
                       </div>
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          );
-        })}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       <Dialog open={!!editingAttempt} onOpenChange={() => setEditingAttempt(null)}>
