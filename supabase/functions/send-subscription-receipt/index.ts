@@ -25,6 +25,7 @@ const handleReceiptNotification = async (requestBody: any) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     console.log('📧 Χειρισμός receipt notification:', requestBody)
+    const { receiptId, pdfBase64 } = requestBody
 
     // Λήψη στοιχείων απόδειξης
     const { data: receipt, error: receiptError } = await supabase
@@ -36,7 +37,7 @@ const handleReceiptNotification = async (requestBody: any) => {
           email
         )
       `)
-      .eq('id', requestBody.receiptId)
+      .eq('id', receiptId)
       .single()
 
     if (receiptError || !receipt) {
@@ -99,12 +100,23 @@ const handleReceiptNotification = async (requestBody: any) => {
       items: receiptItems || []
     })
 
-    const emailResponse = await resend.emails.send({
+    // Δημιουργία email με ή χωρίς PDF attachment
+    const emailOptions: any = {
       from: 'HYPERKIDS <noreply@hyperkids.gr>',
       to: [user.email],
       subject: `Απόδειξη #${receipt.receipt_number} - HYPERKIDS`,
       html: receiptHTML,
-    })
+    }
+
+    // Αν υπάρχει PDF, το προσθέτουμε ως attachment
+    if (pdfBase64) {
+      emailOptions.attachments = [{
+        filename: `${receipt.receipt_number}.pdf`,
+        content: pdfBase64,
+      }]
+    }
+
+    const emailResponse = await resend.emails.send(emailOptions)
 
     console.log('✅ Email απόδειξης στάλθηκε επιτυχώς:', emailResponse.id)
 

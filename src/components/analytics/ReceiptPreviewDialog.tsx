@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, X } from "lucide-react";
 import { format } from "date-fns";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { generateReceiptPDF, downloadPDFFromBase64 } from "@/utils/pdfGenerator";
 
 interface ReceiptData {
   id: string;
@@ -48,80 +47,9 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
   const downloadPDF = async () => {
     if (!receipt) return;
 
-    const element = document.getElementById('receipt-content');
-    if (!element) return;
-
-    try {
-      // Περιμένουμε να φορτώσουν όλες οι εικόνες
-      const images = element.querySelectorAll('img');
-      await Promise.all(Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise(resolve => {
-          img.onload = resolve;
-          img.onerror = resolve;
-          setTimeout(resolve, 1000); // fallback timeout
-        });
-      }));
-
-      // Βελτιωμένες ρυθμίσεις html2canvas για ακριβή αντιγραφή
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        ignoreElements: () => false,
-        removeContainer: false,
-        foreignObjectRendering: false,
-        imageTimeout: 5000,
-        onclone: (clonedDoc, clonedElement) => {
-          // Εξασφαλίζουμε ότι το cloned element έχει τα ίδια styles
-          const originalElement = document.getElementById('receipt-content');
-          if (originalElement && clonedElement) {
-            clonedElement.style.cssText = originalElement.style.cssText;
-            clonedElement.style.display = 'block';
-            clonedElement.style.visibility = 'visible';
-            clonedElement.style.opacity = '1';
-            clonedElement.style.transform = 'none';
-            clonedElement.style.position = 'static';
-            
-            // Αντιγραφή όλων των inline styles από το original
-            const allElements = originalElement.querySelectorAll('*');
-            const clonedElements = clonedElement.querySelectorAll('*');
-            
-            allElements.forEach((el, index) => {
-              if (clonedElements[index]) {
-                (clonedElements[index] as HTMLElement).style.cssText = (el as HTMLElement).style.cssText;
-              }
-            });
-          }
-        }
-      });
-      
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      // Υπολογισμός μεγέθους για να χωρέσει ακριβώς όπως στην προβολή
-      const imgWidth = pdfWidth - 10; // 5mm margin
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      if (imgHeight <= pdfHeight - 10) {
-        // Χωράει σε μία σελίδα
-        pdf.addImage(imgData, 'PNG', 5, 5, imgWidth, imgHeight);
-      } else {
-        // Κλιμάκωση για να χωρέσει
-        const scaledHeight = pdfHeight - 10;
-        const scaledWidth = (canvas.width * scaledHeight) / canvas.height;
-        const x = (pdfWidth - scaledWidth) / 2;
-        pdf.addImage(imgData, 'PNG', x, 5, scaledWidth, scaledHeight);
-      }
-      
-      pdf.save(`${receipt.receiptNumber}.pdf`);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
+    const pdfBase64 = await generateReceiptPDF('receipt-content');
+    if (pdfBase64) {
+      downloadPDFFromBase64(pdfBase64, `${receipt.receiptNumber}.pdf`);
     }
   };
 
