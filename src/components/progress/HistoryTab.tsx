@@ -408,16 +408,16 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
         </Button>
       </div>
 
-      <div className="space-y-6">
+      <div className="flex gap-6 overflow-x-auto pb-4">
         {sessionsByExercise.map((exerciseGroup) => (
-          <div key={exerciseGroup.id} className="space-y-3">
+          <div key={exerciseGroup.id} className="flex-shrink-0 space-y-3">
             {/* Exercise Title */}
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 whitespace-nowrap">
               {exerciseGroup.exerciseName}
             </h3>
             
-            {/* Horizontal scrollable cards */}
-            <div className="flex gap-3 overflow-x-auto pb-2">
+            {/* Vertical cards for this exercise */}
+            <div className="space-y-3">
               {exerciseGroup.sessions.map((session) => {
                 const userName = session.app_users?.name || usersMap.get(session.user_id)?.name || t('history.unknownUser');
                 
