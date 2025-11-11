@@ -285,9 +285,28 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
       });
     });
     
+    // Προτεραιότητα ασκήσεων
+    const priorityOrder = ['BP', 'SQ', 'Deadlift Trapbar', 'DL'];
+    
     return Array.from(grouped.entries())
       .map(([id, data]) => ({ id, ...data }))
-      .sort((a, b) => a.exerciseName.localeCompare(b.exerciseName));
+      .sort((a, b) => {
+        const aIndex = priorityOrder.findIndex(name => 
+          a.exerciseName.toLowerCase().includes(name.toLowerCase())
+        );
+        const bIndex = priorityOrder.findIndex(name => 
+          b.exerciseName.toLowerCase().includes(name.toLowerCase())
+        );
+        
+        // Αν και οι δύο είναι στη λίστα προτεραιότητας
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        // Αν μόνο το a είναι στη λίστα προτεραιότητας
+        if (aIndex !== -1) return -1;
+        // Αν μόνο το b είναι στη λίστα προτεραιότητας
+        if (bIndex !== -1) return 1;
+        // Αλφαβητική ταξινόμηση για τις υπόλοιπες
+        return a.exerciseName.localeCompare(b.exerciseName);
+      });
   }, [filteredSessions, t]);
 
   if (loading) {
