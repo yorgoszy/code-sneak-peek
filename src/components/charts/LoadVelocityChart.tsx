@@ -94,25 +94,22 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
     <Card className="rounded-none max-w-2xl">
       <CardContent className="p-0">
         <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={chartData} margin={{ top: 5, right: 0, bottom: 20, left: 0 }}>
+          <LineChart data={chartData} margin={{ top: 1, right: 1, bottom: 1, left: 1 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="velocity"
               type="number"
-              domain={[0, 'dataMax']}
-              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -5, fontSize: 9 }}
+              domain={[0, 1.5]}
               tick={{ fontSize: 8 }}
             />
             <YAxis 
               type="number"
-              domain={[0, (dataMax: any) => Math.ceil((typeof dataMax === 'number' ? dataMax : 0) + 5)]}
-              label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft', fontSize: 9 }}
+              domain={[0, 300]}
               tick={{ fontSize: 8 }}
-              tickCount={5}
+              tickCount={7}
               allowDecimals={false}
               axisLine={true}
               tickLine={true}
-              allowDataOverflow
             />
             <Tooltip 
               content={({ active, payload }) => {
