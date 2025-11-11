@@ -441,17 +441,17 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                 const userName = session.app_users?.name || usersMap.get(session.user_id)?.name || t('history.unknownUser');
                 
                 return (
-                  <Card key={session.id} className="rounded-none min-w-[280px] shrink-0">
-                    <CardContent className="p-3">
-                      <div className="space-y-2">
+                  <Card key={session.id} className="rounded-none min-w-[240px] shrink-0">
+                    <CardContent className="p-2">
+                      <div className="space-y-1.5">
                         {/* Header */}
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center justify-between gap-1.5">
                           <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-sm text-gray-900 truncate">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold text-xs text-gray-900 truncate">
                                 {userName}
                               </span>
-                              <span className="text-xs text-gray-500 whitespace-nowrap">
+                              <span className="text-[10px] text-gray-500 whitespace-nowrap">
                                 {format(new Date(session.test_date), 'dd/MM/yy')}
                               </span>
                             </div>
@@ -461,16 +461,16 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                               size="sm"
                               variant="ghost"
                               onClick={() => handleDeleteSessionClick(session.id)}
-                              className="rounded-none h-8 w-8 p-0 shrink-0"
+                              className="rounded-none h-6 w-6 p-0 shrink-0"
                             >
-                              <Trash2 className="w-4 h-4 text-red-500" />
+                              <Trash2 className="w-3 h-3 text-red-500" />
                             </Button>
                           )}
                         </div>
                         
                         {/* Attempts */}
-                        <div className="space-y-1">
-                          <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 text-xs font-medium text-gray-600">
+                        <div className="space-y-0.5">
+                          <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-0.5 text-[10px] font-medium text-gray-600">
                             <span className="w-4">#</span>
                             <span>{t('history.kg')}</span>
                             <span>m/s</span>
@@ -479,12 +479,12 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                           {session.exerciseAttempts
                             ?.sort((a: any, b: any) => a.attempt_number - b.attempt_number)
                             .map((attempt: any) => (
-                              <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-1">
-                                <span className="text-xs font-medium w-4 flex items-center">#{attempt.attempt_number}</span>
-                                <span className="text-xs border rounded-none p-1 bg-gray-50 flex items-center justify-center">
+                              <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-0.5">
+                                <span className="text-[10px] font-medium w-4 flex items-center">#{attempt.attempt_number}</span>
+                                <span className="text-[10px] border rounded-none p-0.5 bg-gray-50 flex items-center justify-center">
                                   {attempt.weight_kg} kg
                                 </span>
-                                <span className="text-xs border rounded-none p-1 bg-gray-50 flex items-center justify-center">
+                                <span className="text-[10px] border rounded-none p-0.5 bg-gray-50 flex items-center justify-center">
                                   {attempt.velocity_ms} m/s
                                 </span>
                                 {!readOnly && (
@@ -492,9 +492,9 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleEditAttempt(attempt)}
-                                    className="rounded-none h-6 w-6 p-0"
+                                    className="rounded-none h-5 w-5 p-0"
                                   >
-                                    <Pencil className="w-3 h-3" />
+                                    <Pencil className="w-2.5 h-2.5" />
                                   </Button>
                                 )}
                               </div>
@@ -503,7 +503,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
 
                         {/* Chart */}
                         {session.exerciseAttempts && session.exerciseAttempts.length > 0 && (
-                          <div className="pt-2 border-t border-gray-200">
+                          <div className="pt-1 border-t border-gray-200 -mx-2">
                             <LoadVelocityChart 
                               data={session.exerciseAttempts.map((attempt: any) => ({
                                 exerciseName: exerciseGroup.exerciseName,

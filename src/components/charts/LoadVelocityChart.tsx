@@ -92,22 +92,22 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
 
   return (
     <Card className="rounded-none max-w-2xl">
-      <CardContent className="pt-4 pb-0">
-        <ResponsiveContainer width="100%" height={270}>
-          <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 30, left: 48 }}>
+      <CardContent className="p-0">
+        <ResponsiveContainer width="100%" height={200}>
+          <LineChart data={chartData} margin={{ top: 5, right: 0, bottom: 20, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="velocity"
               type="number"
               domain={[0, 'dataMax']}
-              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -5, fontSize: 11 }}
-              tick={{ fontSize: 10 }}
+              label={{ value: 'Ταχύτητα (m/s)', position: 'insideBottom', offset: -5, fontSize: 9 }}
+              tick={{ fontSize: 8 }}
             />
             <YAxis 
               type="number"
               domain={[0, (dataMax: any) => Math.ceil((typeof dataMax === 'number' ? dataMax : 0) + 5)]}
-              label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft', fontSize: 11 }}
-              tick={{ fontSize: 10 }}
+              label={{ value: 'Βάρος (kg)', angle: -90, position: 'insideLeft', fontSize: 9 }}
+              tick={{ fontSize: 8 }}
               tickCount={5}
               allowDecimals={false}
               axisLine={true}
@@ -121,7 +121,7 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
                   const dateKey = `${first.dataKey}_date`;
                   const dateVal = first?.payload?.[dateKey];
                   return (
-                    <div className="bg-white p-2 border border-gray-200 rounded shadow text-xs space-y-1">
+                    <div className="bg-white p-1.5 border border-gray-200 rounded shadow text-[10px] space-y-0.5">
                       <p className="font-medium">Ταχύτητα: {first.payload.velocity} m/s</p>
                       <p className="text-gray-600">Ημερομηνία: {dateVal ?? '-'}</p>
                       {payload.map((entry: any, index: number) => (
@@ -135,7 +135,7 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
                 return null;
               }}
             />
-            <Legend verticalAlign="bottom" height={36} wrapperStyle={{ paddingTop: '10px' }} />
+            <Legend verticalAlign="bottom" height={24} wrapperStyle={{ paddingTop: '5px', fontSize: '9px' }} />
             {selectedExercises.map((exerciseName, index) => {
               const exerciseData = data.filter(d => d.exerciseName === exerciseName);
               const exerciseId = exerciseData[0]?.exerciseId;
@@ -154,8 +154,8 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
                     type="monotone" 
                     dataKey={`${exerciseName}_${exerciseData[0]?.sessionId || 'default'}`}
                     stroke={getLineColor(exerciseName, index)}
-                    strokeWidth={2}
-                    dot={{ strokeWidth: 2, r: 3 }}
+                    strokeWidth={1.5}
+                    dot={{ strokeWidth: 1.5, r: 2 }}
                     name={exerciseName}
                     connectNulls
                   />
@@ -173,9 +173,9 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
                     type="monotone" 
                     dataKey={sessionKey}
                     stroke={getLineColor(exerciseName, index)}
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     strokeDasharray={dashArray}
-                    dot={{ strokeWidth: 2, r: 3 }}
+                    dot={{ strokeWidth: 1.5, r: 2 }}
                     name={exerciseName}
                     connectNulls
                   />
