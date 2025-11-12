@@ -196,7 +196,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
               {/* Εβδομάδες - Οριζόντια Layout */}
               <div className="grid gap-4" style={{ 
                 gridTemplateColumns: editMode && isEditing 
-                  ? `repeat(${weeks.length}, 30%)` 
+                  ? `repeat(${weeks.length}, 35%)` 
                   : `repeat(${weeks.length}, 1fr)` 
               }}>
                 {weeks.map((week: any, weekIndex: number) => (

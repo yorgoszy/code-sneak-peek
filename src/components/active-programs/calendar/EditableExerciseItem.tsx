@@ -42,7 +42,7 @@ export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white border border-gray-200 p-2 ${isDragging ? 'opacity-50' : ''}`}
+      className={`bg-white border border-gray-200 ${isDragging ? 'opacity-50' : ''}`}
     >
       <div className="flex items-center gap-2 mb-2">
         <div
