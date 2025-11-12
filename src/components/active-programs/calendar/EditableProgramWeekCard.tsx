@@ -57,7 +57,11 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
   };
 
   return (
-    <div key={week.id} className="border border-gray-200 rounded-none">
+    <div 
+      key={week.id} 
+      className="border border-gray-200 rounded-none"
+      style={editMode && isEditing ? { minHeight: 'calc(100% + 30px)' } : undefined}
+    >
       <div className="bg-gray-50 p-3 border-b border-gray-200">
         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
           {isCompleted && <CheckCircle className="w-5 h-5 text-[#00ffba]" />}

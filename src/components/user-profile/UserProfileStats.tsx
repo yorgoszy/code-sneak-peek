@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, MessageCircle, Gift, Hand, MousePointer, MousePointer2, Pointer, Fingerprint, TrendingUp, History, BookOpen, Trophy } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
@@ -36,8 +36,13 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const [upcomingCompetitions, setUpcomingCompetitions] = useState<{count: number, daysLeft: number} | null>(null);
   const [upcomingWorkouts, setUpcomingWorkouts] = useState<number>(0);
   
-  const { data: activePrograms } = useActivePrograms();
+  const { data: allActivePrograms } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletionsCache();
+  
+  // Φιλτράρουμε τα programs μόνο για αυτόν τον χρήστη
+  const activePrograms = useMemo(() => {
+    return allActivePrograms?.filter(p => p.user_id === user.id) || [];
+  }, [allActivePrograms, user.id]);
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
