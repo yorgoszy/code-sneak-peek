@@ -194,7 +194,11 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
           <div className="pt-16 pb-2 overflow-y-auto max-h-[calc(90vh-8rem)]">
             <div className="space-y-4">
               {/* Εβδομάδες - Οριζόντια Layout */}
-              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${weeks.length}, 1fr)` }}>
+              <div className="grid gap-4" style={{ 
+                gridTemplateColumns: editMode && isEditing 
+                  ? `repeat(${weeks.length}, 30%)` 
+                  : `repeat(${weeks.length}, 1fr)` 
+              }}>
                 {weeks.map((week: any, weekIndex: number) => (
                   <EditableProgramWeekCard
                     key={week.id}
