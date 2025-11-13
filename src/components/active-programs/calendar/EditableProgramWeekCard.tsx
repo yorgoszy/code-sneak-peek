@@ -59,24 +59,24 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
   return (
     <div 
       key={week.id} 
-      className={`border border-gray-200 rounded-none ${editMode && isEditing ? 'pb-[30px]' : ''}`}
+      className="border border-gray-200 rounded-none flex flex-col h-full"
     >
-      <div className="bg-gray-50 p-3 border-b border-gray-200">
+      <div className="bg-gray-50 p-3 border-b border-gray-200 sticky top-0 z-20">
         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
           {isCompleted && <CheckCircle className="w-5 h-5 text-[#00ffba]" />}
           {week.name || `Εβδομάδα ${week.week_number}`}
         </h3>
       </div>
       
-      <div className="p-1.5">
-        <Tabs defaultValue="0" className="w-full">
+      <div className="flex-1 overflow-hidden">
+        <Tabs defaultValue="0" className="w-full h-full flex flex-col">
           {editMode && isEditing ? (
             <DndContext collisionDetection={closestCenter} onDragEnd={handleDayDragEnd}>
               <SortableContext 
                 items={(week.program_days || []).map((day: any) => day.id)} 
                 strategy={horizontalListSortingStrategy}
               >
-                <TabsList className="flex w-full rounded-none gap-0 h-6 p-0">
+                <TabsList className="flex w-full rounded-none gap-0 h-6 p-0 sticky top-[57px] z-10 bg-white">
                   {week.program_days?.map((day: any, dayIndex: number) => {
                     const isDayCompleted = isWorkoutCompleted(week.week_number, day.day_number);
                     const label = getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`);
@@ -98,7 +98,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
               </SortableContext>
             </DndContext>
           ) : (
-            <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${week.program_days?.length || 1}, 1fr)` }}>
+            <TabsList className="grid w-full rounded-none sticky top-[57px] z-10 bg-white" style={{ gridTemplateColumns: `repeat(${week.program_days?.length || 1}, 1fr)` }}>
               {week.program_days?.map((day: any, dayIndex: number) => {
                 const isDayCompleted = isWorkoutCompleted(week.week_number, day.day_number);
                 const label = getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`);

@@ -47,8 +47,8 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
   };
 
   return (
-    <TabsContent key={day.id} value={dayIndex.toString()} className="mt-1">
-      <div className="bg-white border border-gray-200 rounded-none p-1">
+    <TabsContent key={day.id} value={dayIndex.toString()} className="mt-0 h-full flex flex-col">
+      <div className="bg-white border border-gray-200 rounded-none p-1 flex-1 overflow-y-auto max-h-[calc(90vh-13rem)]">
         {editMode && isEditing && (
           <div className="flex items-center justify-end mb-1">
             <Button
