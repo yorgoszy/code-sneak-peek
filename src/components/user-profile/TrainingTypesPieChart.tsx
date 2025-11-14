@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { calculateProgramStats } from "@/hooks/useProgramStats";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { parseRepsToTime, parseTempoToSeconds, parseRestTime } from '@/utils/timeCalculations';
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -181,12 +182,26 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           let blockTime = 0;
           block.program_exercises?.forEach((exercise: any) => {
             const sets = exercise.sets || 0;
-            const reps = parseRepsToTotal(exercise.reps || '0');
-            const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
-            const restSeconds = parseRestTime(exercise.rest || '');
-            const workTime = sets * reps * tempoSeconds;
-            const totalRestTime = sets * restSeconds;
-            blockTime += workTime + totalRestTime;
+            const repsData = parseRepsToTime(exercise.reps || '0');
+            
+            // Έλεγχος αν το reps_mode είναι 'time' ή αν το string reps περιέχει χρόνο
+            const isTimeMode = exercise.reps_mode === 'time' || repsData.isTime;
+            
+            if (isTimeMode) {
+              // Time-based exercise
+              const workTime = sets * repsData.seconds;
+              const restSeconds = parseRestTime(exercise.rest || '');
+              const totalRestTime = sets * restSeconds;
+              blockTime += workTime + totalRestTime;
+            } else {
+              // Rep-based exercise
+              const reps = repsData.count;
+              const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
+              const restSeconds = parseRestTime(exercise.rest || '');
+              const workTime = sets * reps * tempoSeconds;
+              const totalRestTime = sets * restSeconds;
+              blockTime += workTime + totalRestTime;
+            }
           });
           
           const timeMinutes = Math.round(blockTime / 60);

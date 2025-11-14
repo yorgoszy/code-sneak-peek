@@ -15,7 +15,10 @@ export const calculateDayMetrics = (blocks: any[]) => {
       const tempo = parseTempoToSeconds(exercise.tempo);
       const rest = parseRestTime(exercise.rest) / 60; // Convert to minutes
 
-      if (repsData.isTime) {
+      // Έλεγχος αν το reps_mode είναι 'time' ή αν το string reps περιέχει χρόνο
+      const isTimeMode = exercise.reps_mode === 'time' || repsData.isTime;
+
+      if (isTimeMode) {
         // Time-based exercise
         const workTime = (sets * repsData.seconds) / 60; // Convert to minutes
         const restTime = sets * rest;
