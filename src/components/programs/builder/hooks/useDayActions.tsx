@@ -43,21 +43,21 @@ export const useDayActions = (
           },
           {
             id: generateId(),
-            name: 'Block 1',
+            name: 'str 1',
             training_type: 'str' as const,
             block_order: 5,
             program_exercises: []
           },
           {
             id: generateId(),
-            name: 'Block 2',
+            name: 'str 2',
             training_type: 'str' as const,
             block_order: 6,
             program_exercises: []
           },
           {
             id: generateId(),
-            name: 'Block 3',
+            name: 'str 3',
             training_type: 'str' as const,
             block_order: 7,
             program_exercises: []

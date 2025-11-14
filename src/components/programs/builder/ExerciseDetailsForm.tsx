@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { ProgramExercise } from '../types';
+import { formatTimeInput } from '@/utils/timeFormatting';
 
 interface ExerciseDetailsFormProps {
   exercise: ProgramExercise;
@@ -76,18 +77,23 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
         </label>
         <Input
           type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={exercise.sets || ''}
-          onChange={(e) => onUpdate('sets', parseInt(e.target.value) || '')}
-          className="text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
+          value={isTimeMode ? formatTimeInput(String(exercise.sets || '')) : (exercise.sets || '')}
+          onChange={(e) => {
+            if (isTimeMode) {
+              const formatted = formatTimeInput(e.target.value);
+              onUpdate('sets', formatted);
+            } else {
+              onUpdate('sets', parseInt(e.target.value) || '');
+            }
+          }}
+          className="text-center w-full"
           style={{ 
             borderRadius: '0px', 
             fontSize: '12px', 
             height: '22px', 
             padding: '0 4px'
           }}
-          placeholder=""
+          placeholder={isTimeMode ? '00:00' : ''}
         />
       </div>
       
@@ -100,8 +106,15 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
           {repsMode === 'reps' ? 'Reps' : repsMode === 'time' ? 'Time' : 'Meter'}
         </label>
         <Input
-          value={exercise.reps || ''}
-          onChange={(e) => onUpdate('reps', e.target.value)}
+          value={repsMode === 'time' ? formatTimeInput(String(exercise.reps || '')) : (exercise.reps || '')}
+          onChange={(e) => {
+            if (repsMode === 'time') {
+              const formatted = formatTimeInput(e.target.value);
+              onUpdate('reps', formatted);
+            } else {
+              onUpdate('reps', e.target.value);
+            }
+          }}
           className="text-center w-full"
           style={{ 
             borderRadius: '0px', 
@@ -192,8 +205,11 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
       <div className="flex flex-col items-center" style={{ width: '50px' }}>
         <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
         <Input
-          value={exercise.rest || ''}
-          onChange={(e) => onUpdate('rest', e.target.value)}
+          value={formatTimeInput(String(exercise.rest || ''))}
+          onChange={(e) => {
+            const formatted = formatTimeInput(e.target.value);
+            onUpdate('rest', formatted);
+          }}
           className="text-center w-full"
           style={{ 
             borderRadius: '0px', 
@@ -201,7 +217,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
             height: '22px', 
             padding: '0 4px'
           }}
-          placeholder=""
+          placeholder="00:00"
         />
       </div>
     </div>
