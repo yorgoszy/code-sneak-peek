@@ -22,7 +22,10 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks }) => {
           const repsData = parseRepsToTime(exercise.reps);
           const kg = parseNumberWithComma(exercise.kg || '0');
 
-          if (repsData.isTime) {
+          // Έλεγχος αν το reps_mode είναι 'time' ή αν το string reps περιέχει χρόνο
+          const isTimeMode = exercise.reps_mode === 'time' || repsData.isTime;
+
+          if (isTimeMode) {
             // Αν το reps είναι χρόνος, προσθέτουμε τον χρόνο απευθείας
             // Time calculation for time-based reps: sets × time_per_set + sets × rest
             const workTime = sets * repsData.seconds;
@@ -61,7 +64,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks }) => {
 
           // Watts calculation - Force × Velocity (μόνο για ασκήσεις με βάρος)
           const velocity = parseNumberWithComma(exercise.velocity_ms || '0');
-          if (kg > 0 && velocity > 0 && !repsData.isTime) {
+          if (kg > 0 && velocity > 0 && !isTimeMode) {
             // Force = mass × acceleration (9.81 m/s²)
             const force = kg * 9.81; // in Newtons
             // Power = Force × Velocity

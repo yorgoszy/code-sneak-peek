@@ -155,25 +155,6 @@ export const useWeekStats = (userId: string) => {
         return null;
       };
 
-      // Helper functions από DayCalculations
-      const parseRepsToTime = (reps: any) => {
-        if (!reps) return 0;
-        const repsStr = String(reps);
-        if (repsStr.includes('.')) {
-          return repsStr.split('.').reduce((sum: number, val: string) => sum + (parseInt(val) || 0), 0);
-        }
-        return parseInt(repsStr) || 0;
-      };
-
-      const parseTempoToSeconds = (tempo: any) => {
-        if (!tempo || tempo === '0') return 4;
-        const tempoStr = String(tempo);
-        if (tempoStr.includes('.')) {
-          return tempoStr.split('.').reduce((sum: number, val: string) => sum + (parseInt(val) || 0), 0);
-        }
-        return parseInt(tempoStr) || 4;
-      };
-
       // Υπολογισμός εβδομαδιαίων στατιστικών
       let allWeeklyWorkouts = 0;
       let completedCount = 0;
@@ -235,11 +216,24 @@ export const useWeekStats = (userId: string) => {
               if (exercise.exercise_id) {
                 const sets = exercise.sets || 0;
                 const repsData = parseRepsToTime(exercise.reps);
-                const tempo = parseTempoToSeconds(exercise.tempo);
-                const restTime = parseInt(exercise.rest) || 0;
                 
-                const exerciseTime = (sets * repsData * tempo) + (sets * restTime);
-                totalTimeSeconds += exerciseTime;
+                // Έλεγχος αν το reps_mode είναι 'time' ή αν το string reps περιέχει χρόνο
+                const isTimeMode = exercise.reps_mode === 'time' || repsData.isTime;
+                
+                if (isTimeMode) {
+                  // Time-based exercise
+                  const workTime = sets * repsData.seconds;
+                  const restTime = parseRestTime(exercise.rest || '');
+                  const totalRestTime = sets * restTime;
+                  totalTimeSeconds += workTime + totalRestTime;
+                } else {
+                  // Rep-based exercise
+                  const tempo = parseTempoToSeconds(exercise.tempo || '');
+                  const restTime = parseRestTime(exercise.rest || '');
+                  const workTime = sets * repsData.count * tempo;
+                  const totalRestTime = sets * restTime;
+                  totalTimeSeconds += workTime + totalRestTime;
+                }
               }
             });
           });
