@@ -15,6 +15,8 @@ interface SortableBlockProps {
   onDuplicateBlock: () => void;
   onUpdateBlockName: (name: string) => void;
   onUpdateBlockTrainingType: (trainingType: string) => void;
+  onUpdateBlockWorkoutFormat: (format: string) => void;
+  onUpdateBlockWorkoutDuration: (duration: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onDuplicateExercise: (exerciseId: string) => void;

@@ -168,11 +168,59 @@ export const useBlockActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
+  const updateBlockWorkoutFormat = (weekId: string, dayId: string, blockId: string, workoutFormat: string) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          program_days: (week.program_days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                program_blocks: (day.program_blocks || []).map(block =>
+                  block.id === blockId ? { ...block, workout_format: workoutFormat as any } : block
+                )
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
+  const updateBlockWorkoutDuration = (weekId: string, dayId: string, blockId: string, workoutDuration: string) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          program_days: (week.program_days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                program_blocks: (day.program_blocks || []).map(block =>
+                  block.id === blockId ? { ...block, workout_duration: workoutDuration } : block
+                )
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
   return {
     addBlock,
     removeBlock,
     duplicateBlock,
     updateBlockName,
-    updateBlockTrainingType
+    updateBlockTrainingType,
+    updateBlockWorkoutFormat,
+    updateBlockWorkoutDuration
   };
 };
