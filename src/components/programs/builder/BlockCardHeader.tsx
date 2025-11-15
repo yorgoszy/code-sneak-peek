@@ -4,11 +4,15 @@ import { CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { formatTimeInput } from '@/utils/timeFormatting';
 
 interface BlockCardHeaderProps {
   blockName: string;
   trainingType?: string;
+  workoutFormat?: string;
+  workoutDuration?: string;
   isOpen: boolean;
   isEditing: boolean;
   editingName: string;
@@ -21,12 +25,11 @@ interface BlockCardHeaderProps {
   onDuplicateBlock: () => void;
   onRemoveBlock: () => void;
   onTrainingTypeChange: (type: string) => void;
+  onWorkoutFormatChange: (format: string) => void;
+  onWorkoutDurationChange: (duration: string) => void;
 }
 
-// Μόνιμα blocks που δεν εμφανίζονται στο dropdown
-const PERMANENT_BLOCKS = ['mobility', 'stability', 'activation', 'neural act', 'recovery'];
-
-// Training types που εμφανίζονται στο dropdown (χωρίς τα μόνιμα)
+// Training types που εμφανίζονται στο dropdown
 const TRAINING_TYPE_LABELS: Record<string, string> = {
   str: 'str',
   'str/spd': 'str/spd',
@@ -38,11 +41,22 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   'spd/end': 'spd/end',
   end: 'end',
   hpr: 'hpr',
+  accessory: 'accessory',
+  rotational: 'rotational',
+};
+
+const WORKOUT_FORMAT_LABELS: Record<string, string> = {
+  time_cap: 'Time Cap',
+  emom: 'EMOM',
+  for_time: 'For Time',
+  amrap: 'AMRAP',
 };
 
 export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   blockName,
   trainingType,
+  workoutFormat,
+  workoutDuration,
   isOpen,
   isEditing,
   editingName,
@@ -54,7 +68,9 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onAddExercise,
   onDuplicateBlock,
   onRemoveBlock,
-  onTrainingTypeChange
+  onTrainingTypeChange,
+  onWorkoutFormatChange,
+  onWorkoutDurationChange
 }) => {
   return (
     <CardHeader className="pb-2 space-y-2">
@@ -125,15 +141,15 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
         </div>
       </div>
       
-      {/* Training Type Selector - Κρυμμένο για τα μόνιμα blocks */}
-      {!PERMANENT_BLOCKS.includes(trainingType || '') && (
+      {/* Training Type, Workout Format and Duration */}
+      <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <span className="text-xs text-white">Τύπος:</span>
           <Select value={trainingType || ''} onValueChange={onTrainingTypeChange}>
-            <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[140px]" onClick={(e) => e.stopPropagation()}>
-              <SelectValue placeholder="Επιλέξτε τύπο" />
+            <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[120px]" onClick={(e) => e.stopPropagation()}>
+              <SelectValue placeholder="Επιλέξτε" />
             </SelectTrigger>
-            <SelectContent className="rounded-none">
+            <SelectContent className="rounded-none bg-white z-50">
               {Object.entries(TRAINING_TYPE_LABELS).map(([value, label]) => (
                 <SelectItem key={value} value={value} className="text-xs">
                   {label}
@@ -142,7 +158,41 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             </SelectContent>
           </Select>
         </div>
-      )}
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-white">Format:</span>
+          <Select value={workoutFormat || ''} onValueChange={onWorkoutFormatChange}>
+            <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[100px]" onClick={(e) => e.stopPropagation()}>
+              <SelectValue placeholder="Κανένα" />
+            </SelectTrigger>
+            <SelectContent className="rounded-none bg-white z-50">
+              <SelectItem value="" className="text-xs">Κανένα</SelectItem>
+              {Object.entries(WORKOUT_FORMAT_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value} className="text-xs">
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {workoutFormat && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white">Χρόνος:</span>
+            <Input
+              type="text"
+              value={workoutDuration || ''}
+              onChange={(e) => {
+                const formatted = formatTimeInput(e.target.value);
+                onWorkoutDurationChange(formatted);
+              }}
+              placeholder="00:00"
+              className="h-6 w-[60px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
+      </div>
     </CardHeader>
   );
 };

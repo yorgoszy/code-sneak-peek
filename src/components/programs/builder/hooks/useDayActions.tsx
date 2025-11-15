@@ -11,62 +11,27 @@ export const useDayActions = (
     console.log('🔵 addDay called with weekId:', weekId);
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
-        // Δημιουργούμε τα 8 προκαθορισμένα blocks που θα υπάρχουν πάντα
+        // Δημιουργούμε τα 3 προκαθορισμένα blocks που θα υπάρχουν πάντα
         const defaultBlocks = [
           {
             id: generateId(),
-            name: 'mobility',
-            training_type: 'mobility' as const,
+            name: 'str',
+            training_type: 'str' as const,
             block_order: 1,
             program_exercises: []
           },
           {
             id: generateId(),
-            name: 'stability',
-            training_type: 'stability' as const,
+            name: 'end',
+            training_type: 'end' as const,
             block_order: 2,
             program_exercises: []
           },
           {
             id: generateId(),
-            name: 'activation',
-            training_type: 'activation' as const,
+            name: 'hpr',
+            training_type: 'hpr' as const,
             block_order: 3,
-            program_exercises: []
-          },
-          {
-            id: generateId(),
-            name: 'neural act',
-            training_type: 'neural act' as const,
-            block_order: 4,
-            program_exercises: []
-          },
-          {
-            id: generateId(),
-            name: 'str 1',
-            training_type: 'str' as const,
-            block_order: 5,
-            program_exercises: []
-          },
-          {
-            id: generateId(),
-            name: 'str 2',
-            training_type: 'str' as const,
-            block_order: 6,
-            program_exercises: []
-          },
-          {
-            id: generateId(),
-            name: 'str 3',
-            training_type: 'str' as const,
-            block_order: 7,
-            program_exercises: []
-          },
-          {
-            id: generateId(),
-            name: 'recovery',
-            training_type: 'recovery' as const,
-            block_order: 8,
             program_exercises: []
           }
         ];
@@ -78,7 +43,7 @@ export const useDayActions = (
           program_blocks: defaultBlocks
         };
         
-        console.log('✅ Created new day with 8 default blocks:', newDay);
+        console.log('✅ Created new day with 3 default blocks:', newDay);
         
         return {
           ...week,

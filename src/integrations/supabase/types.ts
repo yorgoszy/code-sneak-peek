@@ -2585,6 +2585,7 @@ export type Database = {
           notes: string | null
           percentage_1rm: number | null
           reps: string | null
+          reps_mode: string | null
           rest: string | null
           rm: string | null
           sets: number
@@ -2604,6 +2605,7 @@ export type Database = {
           notes?: string | null
           percentage_1rm?: number | null
           reps?: string | null
+          reps_mode?: string | null
           rest?: string | null
           rm?: string | null
           sets: number
@@ -2623,6 +2625,7 @@ export type Database = {
           notes?: string | null
           percentage_1rm?: number | null
           reps?: string | null
+          reps_mode?: string | null
           rest?: string | null
           rm?: string | null
           sets?: number
