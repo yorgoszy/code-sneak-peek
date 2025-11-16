@@ -33,23 +33,39 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
     const calendarElement = calendarRef.current;
     if (!calendarElement) return;
 
+    let scrollTimeout: NodeJS.Timeout;
+    let scrollAccumulator = 0;
+
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       e.stopPropagation();
       
-      if (e.deltaY > 0) {
-        // Scroll down = next month
-        setCurrentMonth(prev => addMonths(prev, 1));
-      } else {
-        // Scroll up = previous month
-        setCurrentMonth(prev => subMonths(prev, 1));
-      }
+      // Accumulate scroll delta
+      scrollAccumulator += e.deltaY;
+      
+      // Clear existing timeout
+      clearTimeout(scrollTimeout);
+      
+      // Wait for scroll to settle and require larger threshold
+      scrollTimeout = setTimeout(() => {
+        if (Math.abs(scrollAccumulator) > 100) { // Increased threshold for smoother feel
+          if (scrollAccumulator > 0) {
+            // Scroll down = next month
+            setCurrentMonth(prev => addMonths(prev, 1));
+          } else {
+            // Scroll up = previous month
+            setCurrentMonth(prev => subMonths(prev, 1));
+          }
+        }
+        scrollAccumulator = 0;
+      }, 150); // Debounce delay for smoother response
     };
 
     calendarElement.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => {
       calendarElement.removeEventListener('wheel', handleWheel);
+      clearTimeout(scrollTimeout);
     };
   }, []);
 
