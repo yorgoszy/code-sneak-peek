@@ -26,29 +26,42 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   isDateSelected,
   isDateDisabled
 }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
 
   useEffect(() => {
-    const el = scrollRef.current;
+    const el = calendarRef.current;
     if (!el) return;
 
-    let step = 48; // default row height fallback
+    let rowHeight = 48; // fallback row height (px)
 
     // Measure one calendar row height when rendered
     const measure = () => {
       const row = el.querySelector('.rdp-row') as HTMLElement | null;
       if (row) {
         const rect = row.getBoundingClientRect();
-        if (rect.height) step = rect.height;
+        if (rect.height) rowHeight = rect.height;
       }
     };
+
+    let accumulator = 0;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      const direction = e.deltaY > 0 ? 1 : -1;
-      el.scrollTop += direction * step;
+
+      accumulator += e.deltaY;
+
+      // Change month each time we pass one "row" worth of scroll
+      while (Math.abs(accumulator) >= rowHeight) {
+        if (accumulator > 0) {
+          setCurrentMonth(prev => addMonths(prev, 1));
+          accumulator -= rowHeight;
+        } else {
+          setCurrentMonth(prev => subMonths(prev, 1));
+          accumulator += rowHeight;
+        }
+      }
     };
 
     // Initial measure (after mount and next frame)
@@ -87,7 +100,7 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
       
       <CardContent>
         <div className="flex justify-center">
-          <div ref={scrollRef} className="cursor-pointer max-h-64 overflow-y-auto scroll-smooth">
+          <div ref={calendarRef} className="cursor-pointer">
             <Calendar
               mode="multiple"
               selected={selectedDatesAsStrings.map(date => parseISO(date))}
