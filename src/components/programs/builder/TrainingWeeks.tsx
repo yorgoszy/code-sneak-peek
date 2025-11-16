@@ -30,6 +30,8 @@ interface TrainingWeeksProps {
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
   onUpdateBlockName: (weekId: string, dayId: string, blockId: string, name: string) => void;
   onUpdateBlockTrainingType: (weekId: string, dayId: string, blockId: string, trainingType: string) => void;
+  onUpdateBlockWorkoutFormat: (weekId: string, dayId: string, blockId: string, format: string) => void;
+  onUpdateBlockWorkoutDuration: (weekId: string, dayId: string, blockId: string, duration: string) => void;
   onAddExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
@@ -59,6 +61,8 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onDuplicateBlock,
   onUpdateBlockName,
   onUpdateBlockTrainingType,
+  onUpdateBlockWorkoutFormat,
+  onUpdateBlockWorkoutDuration,
   onAddExercise,
   onRemoveExercise,
   onUpdateExercise,
@@ -167,6 +171,8 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                 onDuplicateBlock={onDuplicateBlock}
                 onUpdateBlockName={onUpdateBlockName}
                 onUpdateBlockTrainingType={onUpdateBlockTrainingType}
+                onUpdateBlockWorkoutFormat={onUpdateBlockWorkoutFormat}
+                onUpdateBlockWorkoutDuration={onUpdateBlockWorkoutDuration}
                 onUpdateExercise={onUpdateExercise}
                 onRemoveExercise={onRemoveExercise}
                 onDuplicateExercise={onDuplicateExercise}
