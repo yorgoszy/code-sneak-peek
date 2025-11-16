@@ -46,9 +46,9 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
       // Clear existing timeout
       clearTimeout(scrollTimeout);
       
-      // Wait for scroll to settle and require larger threshold
+      // Wait for scroll to settle with reduced threshold
       scrollTimeout = setTimeout(() => {
-        if (Math.abs(scrollAccumulator) > 100) { // Increased threshold for smoother feel
+        if (Math.abs(scrollAccumulator) > 30) { // Lower threshold for better responsiveness
           if (scrollAccumulator > 0) {
             // Scroll down = next month
             setCurrentMonth(prev => addMonths(prev, 1));
@@ -58,7 +58,7 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
           }
         }
         scrollAccumulator = 0;
-      }, 150); // Debounce delay for smoother response
+      }, 50); // Shorter delay for smoother feel
     };
 
     calendarElement.addEventListener('wheel', handleWheel, { passive: false });
