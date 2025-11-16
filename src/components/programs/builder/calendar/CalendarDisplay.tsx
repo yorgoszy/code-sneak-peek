@@ -26,41 +26,40 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   isDateSelected,
   isDateDisabled
 }) => {
-  const calendarRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
 
   useEffect(() => {
-    const calendarElement = calendarRef.current;
-    if (!calendarElement) return;
+    const el = scrollRef.current;
+    if (!el) return;
 
-    let lastScrollTime = 0;
-    const scrollDelay = 200; // Minimum time between month changes in ms
+    let step = 48; // default row height fallback
+
+    // Measure one calendar row height when rendered
+    const measure = () => {
+      const row = el.querySelector('.rdp-row') as HTMLElement | null;
+      if (row) {
+        const rect = row.getBoundingClientRect();
+        if (rect.height) step = rect.height;
+      }
+    };
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      
-      const now = Date.now();
-      
-      // Only change month if enough time has passed since last change
-      if (now - lastScrollTime > scrollDelay) {
-        if (Math.abs(e.deltaY) > 5) { // Very low threshold for immediate response
-          if (e.deltaY > 0) {
-            // Scroll down = next month
-            setCurrentMonth(prev => addMonths(prev, 1));
-          } else {
-            // Scroll up = previous month
-            setCurrentMonth(prev => subMonths(prev, 1));
-          }
-          lastScrollTime = now;
-        }
-      }
+      const direction = e.deltaY > 0 ? 1 : -1;
+      el.scrollTop += direction * step;
     };
 
-    calendarElement.addEventListener('wheel', handleWheel, { passive: false });
+    // Initial measure (after mount and next frame)
+    measure();
+    const raf = requestAnimationFrame(measure);
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => {
-      calendarElement.removeEventListener('wheel', handleWheel);
+      cancelAnimationFrame(raf);
+      el.removeEventListener('wheel', handleWheel);
     };
   }, []);
 
@@ -88,7 +87,7 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
       
       <CardContent>
         <div className="flex justify-center">
-          <div ref={calendarRef} className="cursor-pointer">
+          <div ref={scrollRef} className="cursor-pointer max-h-64 overflow-y-auto scroll-smooth">
             <Calendar
               mode="multiple"
               selected={selectedDatesAsStrings.map(date => parseISO(date))}
