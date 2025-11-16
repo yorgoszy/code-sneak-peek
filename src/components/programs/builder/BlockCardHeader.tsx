@@ -142,7 +142,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
       </div>
       
       {/* Training Type, Workout Format and Duration */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <span className="text-xs text-white">Τύπος:</span>
           <Select value={trainingType || ''} onValueChange={onTrainingTypeChange}>
@@ -174,24 +174,24 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
               ))}
             </SelectContent>
           </Select>
-        </div>
 
-        {workoutFormat && workoutFormat !== 'none' && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white">Χρόνος:</span>
-            <Input
-              type="text"
-              value={workoutDuration || ''}
-              onChange={(e) => {
-                const formatted = formatTimeInput(e.target.value);
-                onWorkoutDurationChange(formatted);
-              }}
-              placeholder="00:00"
-              className="h-6 w-[60px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        )}
+          {workoutFormat && workoutFormat !== 'none' && (
+            <>
+              <span className="text-xs text-white">Χρόνος:</span>
+              <Input
+                type="text"
+                value={workoutDuration || ''}
+                onChange={(e) => {
+                  const formatted = formatTimeInput(e.target.value);
+                  onWorkoutDurationChange(formatted);
+                }}
+                placeholder="00:00"
+                className="h-6 w-[60px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </>
+          )}
+        </div>
       </div>
     </CardHeader>
   );
