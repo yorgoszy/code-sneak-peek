@@ -161,12 +161,12 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
 
         <div className="flex items-center gap-2">
           <span className="text-xs text-white">Format:</span>
-          <Select value={workoutFormat || ''} onValueChange={onWorkoutFormatChange}>
+          <Select value={workoutFormat || 'none'} onValueChange={(value) => onWorkoutFormatChange(value === 'none' ? '' : value)}>
             <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[100px]" onClick={(e) => e.stopPropagation()}>
               <SelectValue placeholder="Κανένα" />
             </SelectTrigger>
             <SelectContent className="rounded-none bg-white z-50">
-              <SelectItem value="" className="text-xs">Κανένα</SelectItem>
+              <SelectItem value="none" className="text-xs">Κανένα</SelectItem>
               {Object.entries(WORKOUT_FORMAT_LABELS).map(([value, label]) => (
                 <SelectItem key={value} value={value} className="text-xs">
                   {label}
@@ -176,7 +176,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
           </Select>
         </div>
 
-        {workoutFormat && (
+        {workoutFormat && workoutFormat !== 'none' && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-white">Χρόνος:</span>
             <Input
