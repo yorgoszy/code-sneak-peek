@@ -30,6 +30,9 @@ interface Block {
   id: string;
   name: string;
   block_order: number;
+  training_type?: string;
+  workout_format?: string;
+  workout_duration?: string;
   program_exercises: Exercise[];
 }
 
