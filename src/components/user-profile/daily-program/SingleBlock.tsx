@@ -26,6 +26,9 @@ interface Block {
   id: string;
   name: string;
   block_order: number;
+  training_type?: string;
+  workout_format?: string;
+  workout_duration?: string;
   program_exercises: Exercise[];
 }
 
@@ -57,6 +60,29 @@ export const SingleBlock: React.FC<SingleBlockProps> = ({
       <h6 className="text-xs font-medium text-white mb-1">
         {block.name}
       </h6>
+      
+      {/* Block Info */}
+      {(block.training_type || block.workout_format) && (
+        <div className="mb-2 p-1.5 bg-gray-600 rounded-none">
+          <div className="flex items-center gap-2 text-xs text-gray-300">
+            {block.training_type && (
+              <span className="font-medium">
+                Type: <span className="text-white">{block.training_type}</span>
+              </span>
+            )}
+            {block.workout_format && (
+              <span className="font-medium">
+                Format: <span className="text-white">{block.workout_format}</span>
+              </span>
+            )}
+            {block.workout_duration && (
+              <span className="font-medium">
+                Duration: <span className="text-white">{block.workout_duration}</span>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
       
       <div className="space-y-0">
         {block.program_exercises

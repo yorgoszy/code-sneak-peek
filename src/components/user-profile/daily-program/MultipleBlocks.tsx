@@ -27,6 +27,9 @@ interface Block {
   id: string;
   name: string;
   block_order: number;
+  training_type?: string;
+  workout_format?: string;
+  workout_duration?: string;
   program_exercises: Exercise[];
 }
 
@@ -67,6 +70,29 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
       
       {blocks?.map((block) => (
         <TabsContent key={block.id} value={block.id} className="mt-2">
+          {/* Block Info Header */}
+          {(block.training_type || block.workout_format) && (
+            <div className="mb-2 p-2 bg-muted rounded-none border border-border">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                {block.training_type && (
+                  <span className="font-medium">
+                    Type: <span className="text-foreground">{block.training_type}</span>
+                  </span>
+                )}
+                {block.workout_format && (
+                  <span className="font-medium">
+                    Format: <span className="text-foreground">{block.workout_format}</span>
+                  </span>
+                )}
+                {block.workout_duration && (
+                  <span className="font-medium">
+                    Duration: <span className="text-foreground">{block.workout_duration}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+          
           <div className="space-y-0">
             {block.program_exercises
               ?.sort((a, b) => a.exercise_order - b.exercise_order)
