@@ -78,6 +78,27 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
 
     return (
       <div className="space-y-3">
+        {(block.training_type || block.workout_format || block.workout_duration) && (
+          <div className="mb-2 p-2 bg-muted rounded-none border border-border">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              {block.training_type && (
+                <span className="font-medium">
+                  Type: <span className="text-foreground">{block.training_type}</span>
+                </span>
+              )}
+              {block.workout_format && (
+                <span className="font-medium">
+                  Format: <span className="text-foreground">{block.workout_format}</span>
+                </span>
+              )}
+              {block.workout_duration && (
+                <span className="font-medium">
+                  Duration: <span className="text-foreground">{block.workout_duration}</span>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
           {sortedExercises.map((exercise, exerciseIndex) => (
             <ExerciseItem
               key={exercise.id}
@@ -134,6 +155,27 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
         return (
           <TabsContent key={block.id} value={block.id} className="mt-2">
             <div className="space-y-3">
+              {(block.training_type || block.workout_format || block.workout_duration) && (
+                <div className="mb-2 p-2 bg-muted rounded-none border border-border">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    {block.training_type && (
+                      <span className="font-medium">
+                        Type: <span className="text-foreground">{block.training_type}</span>
+                      </span>
+                    )}
+                    {block.workout_format && (
+                      <span className="font-medium">
+                        Format: <span className="text-foreground">{block.workout_format}</span>
+                      </span>
+                    )}
+                    {block.workout_duration && (
+                      <span className="font-medium">
+                        Duration: <span className="text-foreground">{block.workout_duration}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
                 {sortedExercises.map((exercise, exerciseIndex) => (
                   <ExerciseItem
                     key={exercise.id}
