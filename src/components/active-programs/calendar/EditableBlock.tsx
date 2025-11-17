@@ -69,7 +69,22 @@ export const EditableBlock: React.FC<EditableBlockProps> = ({
           >
             <GripVertical className="w-4 h-4 text-gray-400" />
           </div>
-          <h5 className="font-medium text-sm">{block.name}</h5>
+          <div className="flex flex-col">
+            <h5 className="font-medium text-sm">{block.name}</h5>
+            {(block.training_type || block.workout_format) && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                {block.training_type && (
+                  <span>Type: <span className="text-foreground">{block.training_type}</span></span>
+                )}
+                {block.workout_format && (
+                  <span>Format: <span className="text-foreground">{block.workout_format}</span></span>
+                )}
+                {block.workout_duration && (
+                  <span>Duration: <span className="text-foreground">{block.workout_duration}</span></span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <Button
