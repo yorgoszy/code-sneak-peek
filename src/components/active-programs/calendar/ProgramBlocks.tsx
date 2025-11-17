@@ -78,54 +78,31 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
 
     return (
       <div className="space-y-3">
-        {/* Block Info Header for single block */}
-        {(block.training_type || block.workout_format) && (
-          <div className="mb-2 p-2 bg-muted rounded-none border border-border">
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {block.training_type && (
-                <span className="font-medium">
-                  Type: <span className="text-foreground">{block.training_type}</span>
-                </span>
-              )}
-              {block.workout_format && (
-                <span className="font-medium">
-                  Format: <span className="text-foreground">{block.workout_format}</span>
-                </span>
-              )}
-              {block.workout_duration && (
-                <span className="font-medium">
-                  Duration: <span className="text-foreground">{block.workout_duration}</span>
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-        
-        {sortedExercises.map((exercise, exerciseIndex) => (
-          <ExerciseItem
-            key={exercise.id}
-            exercise={exercise}
-            exerciseNumber={exerciseIndex + 1}
-            workoutInProgress={workoutInProgress}
-            getRemainingText={getRemainingText}
-            isExerciseComplete={isExerciseComplete}
-            getCompletedSets={getCompletedSets}
-            onExerciseClick={onExerciseClick}
-            onSetClick={onSetClick}
-            onVideoClick={onVideoClick}
-            getNotes={getNotes}
-            updateNotes={updateNotes}
-            clearNotes={clearNotes}
-            updateKg={updateKg}
-            clearKg={clearKg}
-            updateVelocity={updateVelocity}
-            clearVelocity={clearVelocity}
-            updateReps={updateReps}
-            clearReps={clearReps}
-            selectedDate={selectedDate}
-            program={program}
-          />
-        ))}
+          {sortedExercises.map((exercise, exerciseIndex) => (
+            <ExerciseItem
+              key={exercise.id}
+              exercise={exercise}
+              exerciseNumber={exerciseIndex + 1}
+              workoutInProgress={workoutInProgress}
+              getRemainingText={getRemainingText}
+              isExerciseComplete={isExerciseComplete}
+              getCompletedSets={getCompletedSets}
+              onExerciseClick={onExerciseClick}
+              onSetClick={onSetClick}
+              onVideoClick={onVideoClick}
+              getNotes={getNotes}
+              updateNotes={updateNotes}
+              clearNotes={clearNotes}
+              updateKg={updateKg}
+              clearKg={clearKg}
+              updateVelocity={updateVelocity}
+              clearVelocity={clearVelocity}
+              updateReps={updateReps}
+              clearReps={clearReps}
+              selectedDate={selectedDate}
+              program={program}
+            />
+          ))}
       </div>
     );
   }
@@ -156,55 +133,32 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
 
         return (
           <TabsContent key={block.id} value={block.id} className="mt-2">
-            {/* Block Info Header */}
-            {(block.training_type || block.workout_format) && (
-              <div className="mb-2 p-2 bg-muted rounded-none border border-border">
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  {block.training_type && (
-                    <span className="font-medium">
-                      Type: <span className="text-foreground">{block.training_type}</span>
-                    </span>
-                  )}
-                  {block.workout_format && (
-                    <span className="font-medium">
-                      Format: <span className="text-foreground">{block.workout_format}</span>
-                    </span>
-                  )}
-                  {block.workout_duration && (
-                    <span className="font-medium">
-                      Duration: <span className="text-foreground">{block.workout_duration}</span>
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-            
             <div className="space-y-3">
-              {sortedExercises.map((exercise, exerciseIndex) => (
-                <ExerciseItem
-                  key={exercise.id}
-                  exercise={exercise}
-                  exerciseNumber={exerciseIndex + 1}
-                  workoutInProgress={workoutInProgress}
-                  getRemainingText={getRemainingText}
-                  isExerciseComplete={isExerciseComplete}
-                  getCompletedSets={getCompletedSets}
-                  onExerciseClick={onExerciseClick}
-                  onSetClick={onSetClick}
-                  onVideoClick={onVideoClick}
-                  getNotes={getNotes}
-                  updateNotes={updateNotes}
-                  clearNotes={clearNotes}
-                  updateKg={updateKg}
-                  clearKg={clearKg}
-                  updateVelocity={updateVelocity}
-                  clearVelocity={clearVelocity}
-                  updateReps={updateReps}
-                  clearReps={clearReps}
-                  selectedDate={selectedDate}
-                  program={program}
-                />
-              ))}
+                {sortedExercises.map((exercise, exerciseIndex) => (
+                  <ExerciseItem
+                    key={exercise.id}
+                    exercise={exercise}
+                    exerciseNumber={exerciseIndex + 1}
+                    workoutInProgress={workoutInProgress}
+                    getRemainingText={getRemainingText}
+                    isExerciseComplete={isExerciseComplete}
+                    getCompletedSets={getCompletedSets}
+                    onExerciseClick={onExerciseClick}
+                    onSetClick={onSetClick}
+                    onVideoClick={onVideoClick}
+                    getNotes={getNotes}
+                    updateNotes={updateNotes}
+                    clearNotes={clearNotes}
+                    updateKg={updateKg}
+                    clearKg={clearKg}
+                    updateVelocity={updateVelocity}
+                    clearVelocity={clearVelocity}
+                    updateReps={updateReps}
+                    clearReps={clearReps}
+                    selectedDate={selectedDate}
+                    program={program}
+                  />
+                ))}
             </div>
           </TabsContent>
         );

@@ -55,8 +55,6 @@ export const useActivePrograms = () => {
                   name,
                   block_order,
                   training_type,
-                  workout_format,
-                  workout_duration,
                   program_exercises!fk_program_exercises_block_id(
                     id,
                     exercise_id,
