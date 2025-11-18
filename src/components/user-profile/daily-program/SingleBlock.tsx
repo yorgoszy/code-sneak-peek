@@ -62,14 +62,9 @@ export const SingleBlock: React.FC<SingleBlockProps> = ({
       </h6>
       
       {/* Block Info */}
-      {(block.training_type || block.workout_format) && (
+      {(block.workout_format || block.workout_duration) && (
         <div className="mb-2 p-1.5 bg-gray-600 rounded-none">
           <div className="flex items-center gap-2 text-xs text-gray-300">
-            {block.training_type && (
-              <span className="font-medium">
-                Type: <span className="text-white">{block.training_type}</span>
-              </span>
-            )}
             {block.workout_format && (
               <span className="font-medium">
                 Format: <span className="text-white">{block.workout_format}</span>
