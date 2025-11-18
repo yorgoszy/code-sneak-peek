@@ -70,6 +70,16 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
       
       {blocks?.map((block) => (
         <TabsContent key={block.id} value={block.id} className="mt-2">
+          {/* Block Info Header */}
+          {(block.workout_format || block.workout_duration) && (
+            <div className="mb-2 p-2 bg-muted rounded-none border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {block.workout_format && <span className="text-foreground">{block.workout_format}</span>}
+                {block.workout_format && block.workout_duration && <span>,</span>}
+                {block.workout_duration && <span className="text-foreground">{block.workout_duration}</span>}
+              </div>
+            </div>
+          )}
           
           <div className="space-y-0">
             {block.program_exercises

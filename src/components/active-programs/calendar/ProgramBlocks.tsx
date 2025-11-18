@@ -78,6 +78,15 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
 
     return (
       <div className="space-y-3">
+        {(block.workout_format || block.workout_duration) && (
+          <div className="mb-2 p-2 bg-muted rounded-none border border-border">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              {block.workout_format && <span className="text-foreground">{block.workout_format}</span>}
+              {block.workout_format && block.workout_duration && <span>,</span>}
+              {block.workout_duration && <span className="text-foreground">{block.workout_duration}</span>}
+            </div>
+          </div>
+        )}
           {sortedExercises.map((exercise, exerciseIndex) => (
             <ExerciseItem
               key={exercise.id}
@@ -134,6 +143,15 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
         return (
           <TabsContent key={block.id} value={block.id} className="mt-2">
             <div className="space-y-3">
+              {(block.workout_format || block.workout_duration) && (
+                <div className="mb-2 p-2 bg-muted rounded-none border border-border">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {block.workout_format && <span className="text-foreground">{block.workout_format}</span>}
+                    {block.workout_format && block.workout_duration && <span>,</span>}
+                    {block.workout_duration && <span className="text-foreground">{block.workout_duration}</span>}
+                  </div>
+                </div>
+              )}
                 {sortedExercises.map((exercise, exerciseIndex) => (
                   <ExerciseItem
                     key={exercise.id}
