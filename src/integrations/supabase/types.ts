@@ -2482,6 +2482,8 @@ export type Database = {
           name: string
           training_type: string | null
           updated_at: string | null
+          workout_duration: string | null
+          workout_format: string | null
         }
         Insert: {
           block_order: number
@@ -2491,6 +2493,8 @@ export type Database = {
           name: string
           training_type?: string | null
           updated_at?: string | null
+          workout_duration?: string | null
+          workout_format?: string | null
         }
         Update: {
           block_order?: number
@@ -2500,6 +2504,8 @@ export type Database = {
           name?: string
           training_type?: string | null
           updated_at?: string | null
+          workout_duration?: string | null
+          workout_format?: string | null
         }
         Relationships: [
           {
