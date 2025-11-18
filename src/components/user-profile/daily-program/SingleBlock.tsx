@@ -66,7 +66,7 @@ export const SingleBlock: React.FC<SingleBlockProps> = ({
         <div className="mb-2 p-1.5 bg-gray-600 rounded-none">
           <div className="flex items-center gap-2 text-xs text-gray-300">
             {block.workout_format && <span className="text-white">{block.workout_format}</span>}
-            {block.workout_format && block.workout_duration && <span>,</span>}
+            {block.workout_format && block.workout_duration && <span>-</span>}
             {block.workout_duration && <span className="text-white">{block.workout_duration}</span>}
           </div>
         </div>

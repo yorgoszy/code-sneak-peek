@@ -75,7 +75,7 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
             <div className="mb-2 p-2 bg-muted rounded-none border border-border">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {block.workout_format && <span className="text-foreground">{block.workout_format}</span>}
-                {block.workout_format && block.workout_duration && <span>,</span>}
+                {block.workout_format && block.workout_duration && <span>-</span>}
                 {block.workout_duration && <span className="text-foreground">{block.workout_duration}</span>}
               </div>
             </div>
