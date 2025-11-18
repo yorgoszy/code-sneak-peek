@@ -92,24 +92,6 @@ export const EditableBlock: React.FC<EditableBlockProps> = ({
         </div>
       </div>
 
-      {/* Block Info Header */}
-      {(block.workout_format || block.workout_duration) && (
-        <div className="mb-2 p-2 bg-muted rounded-none border border-border">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            {block.workout_format && (
-              <span className="font-medium">
-                Format: <span className="text-foreground">{block.workout_format}</span>
-              </span>
-            )}
-            {block.workout_duration && (
-              <span className="font-medium">
-                Duration: <span className="text-foreground">{block.workout_duration}</span>
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext 
           items={(block.program_exercises || []).map((ex: any) => ex.id)} 
