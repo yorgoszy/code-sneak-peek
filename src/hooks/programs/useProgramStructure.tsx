@@ -90,7 +90,9 @@ export const useProgramStructure = () => {
               day_id: dayData.id,
               name: block.name,
               block_order: block.block_order,
-              training_type: block.training_type || null
+              training_type: block.training_type || null,
+              workout_format: block.workout_format || null,
+              workout_duration: block.workout_duration || null
             }])
             .select()
             .single();
