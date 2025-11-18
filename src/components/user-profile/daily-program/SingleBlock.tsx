@@ -61,24 +61,6 @@ export const SingleBlock: React.FC<SingleBlockProps> = ({
         {block.name}
       </h6>
       
-      {/* Block Info */}
-      {(block.workout_format || block.workout_duration) && (
-        <div className="mb-2 p-1.5 bg-gray-600 rounded-none">
-          <div className="flex items-center gap-2 text-xs text-gray-300">
-            {block.workout_format && (
-              <span className="font-medium">
-                Format: <span className="text-white">{block.workout_format}</span>
-              </span>
-            )}
-            {block.workout_duration && (
-              <span className="font-medium">
-                Duration: <span className="text-white">{block.workout_duration}</span>
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-      
       <div className="space-y-0">
         {block.program_exercises
           ?.sort((a, b) => a.exercise_order - b.exercise_order)
