@@ -119,6 +119,21 @@ const Programs = () => {
     }
   };
 
+  const handleConvertToTemplate = async (program: Program) => {
+    try {
+      console.log('🔄 Converting program to template:', program.id);
+      const templateData = { 
+        ...program, 
+        is_template: true 
+      };
+      await saveProgram(templateData);
+      console.log('✅ Program converted to template successfully');
+      await loadPrograms();
+    } catch (error) {
+      console.error('❌ Error converting program to template:', error);
+    }
+  };
+
   const handlePreviewProgram = (program: Program) => {
     setPreviewProgram(program);
     setPreviewOpen(true);
@@ -276,6 +291,7 @@ const Programs = () => {
             onDeleteBlock={() => {}}
             onDeleteExercise={() => {}}
             onOpenBuilder={handleOpenBuilder}
+            onConvertToTemplate={handleConvertToTemplate}
           />
         </div>
       </div>
