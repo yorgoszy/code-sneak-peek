@@ -94,11 +94,11 @@ export const EditableBlock: React.FC<EditableBlockProps> = ({
 
       {/* Block Info Header */}
       {(block.workout_format || block.workout_duration) && (
-        <div className="mb-2 p-2 bg-muted rounded-none border border-border">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {block.workout_format && <span className="text-foreground">{block.workout_format}</span>}
-            {block.workout_format && block.workout_duration && <span>-</span>}
-            {block.workout_duration && <span className="text-foreground">{block.workout_duration}</span>}
+        <div className="mb-2">
+          <div className="inline-flex items-center gap-2 text-xs border border-[#cb8954] px-2 py-1">
+            {block.workout_format && <span className="text-[#cb8954]">{block.workout_format}</span>}
+            {block.workout_format && block.workout_duration && <span className="text-[#cb8954]">-</span>}
+            {block.workout_duration && <span className="text-[#cb8954]">{block.workout_duration}</span>}
           </div>
         </div>
       )}
