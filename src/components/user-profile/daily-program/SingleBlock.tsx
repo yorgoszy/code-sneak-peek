@@ -63,11 +63,11 @@ export const SingleBlock: React.FC<SingleBlockProps> = ({
       
       {/* Block Info */}
       {(block.workout_format || block.workout_duration) && (
-        <div className="mb-2 p-1.5 bg-gray-600 rounded-none">
-          <div className="flex items-center gap-2 text-xs text-gray-300">
-            {block.workout_format && <span className="text-white">{block.workout_format}</span>}
-            {block.workout_format && block.workout_duration && <span>-</span>}
-            {block.workout_duration && <span className="text-white">{block.workout_duration}</span>}
+        <div className="mb-2">
+          <div className="inline-flex items-center gap-2 text-xs border border-[#cb8954] px-2 py-1">
+            {block.workout_format && <span className="text-[#cb8954]">{block.workout_format}</span>}
+            {block.workout_format && block.workout_duration && <span className="text-[#cb8954]">-</span>}
+            {block.workout_duration && <span className="text-[#cb8954]">{block.workout_duration}</span>}
           </div>
         </div>
       )}
