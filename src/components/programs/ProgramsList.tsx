@@ -23,6 +23,7 @@ interface ProgramsListProps {
   onEditProgram: (program: Program) => void;
   onDuplicateProgram?: (program: Program) => void;
   onPreviewProgram?: (program: Program) => void;
+  onConvertToTemplate?: (program: Program) => void;
 }
 
 export const ProgramsList: React.FC<ProgramsListProps> = ({
@@ -32,7 +33,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   onDeleteProgram,
   onEditProgram,
   onDuplicateProgram,
-  onPreviewProgram
+  onPreviewProgram,
+  onConvertToTemplate
 }) => {
   const isMobile = useIsMobile();
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -317,6 +319,23 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                           >
                             <Copy className={`${isMobile ? 'w-4 h-4 mr-2' : 'w-4 h-4'}`} />
                             {isMobile && 'Αντιγραφή'}
+                          </Button>
+                        )}
+
+                        {/* Convert to Template button */}
+                        {onConvertToTemplate && (
+                          <Button
+                            variant="outline"
+                            size={isMobile ? "default" : "sm"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onConvertToTemplate(program);
+                            }}
+                            className={`rounded-none bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba] hover:bg-[#00ffba]/20 ${isMobile ? 'w-full justify-center' : ''}`}
+                            title="Μετατροπή σε Template"
+                          >
+                            <Play className={`${isMobile ? 'w-4 h-4 mr-2' : 'w-4 h-4'}`} />
+                            {isMobile && 'Template'}
                           </Button>
                         )}
 

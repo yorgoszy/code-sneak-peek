@@ -29,6 +29,7 @@ interface ProgramsLayoutProps {
   onDeleteExercise: (exerciseId: string) => void;
   onOpenBuilder: () => void;
   isTemplateMode?: boolean;
+  onConvertToTemplate?: (program: Program) => void;
 }
 
 export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
@@ -45,7 +46,8 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   onBuilderDialogClose,
   onDuplicateProgram,
   onOpenBuilder,
-  isTemplateMode = false
+  isTemplateMode = false,
+  onConvertToTemplate
 }) => {
   const isMobile = useIsMobile();
 
@@ -67,6 +69,7 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
           onDeleteProgram={onDeleteProgram}
           onEditProgram={onEditProgram}
           onDuplicateProgram={onDuplicateProgram}
+          onConvertToTemplate={onConvertToTemplate}
         />
       </div>
 
