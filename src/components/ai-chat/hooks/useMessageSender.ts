@@ -74,38 +74,95 @@ export const useMessageSender = ({
         .eq('user_id', userId)
         .eq('status', 'active');
 
-      const { data: tests } = await supabase
-        .from('test_sessions')
+      // Fetch strength test history (Force-Velocity data)
+      const { data: strengthHistory } = await supabase
+        .from('strength_test_attempts')
         .select(`
-          test_date,
-          anthropometric_test_data (
-            weight,
-            height,
-            body_fat_percentage
-          ),
-          strength_test_data (
-            weight_kg,
-            velocity_ms,
-            exercises:exercise_id (
-              name
-            )
-          ),
-          endurance_test_data (
-            vo2_max,
-            push_ups
-          ),
-          jump_test_data (
-            non_counter_movement_jump,
-            counter_movement_jump,
-            depth_jump,
-            broad_jump,
-            triple_jump_left,
-            triple_jump_right
+          weight_kg,
+          velocity_ms,
+          exercise_id,
+          exercises:exercise_id (name),
+          strength_test_sessions!inner (
+            user_id,
+            test_date
           )
         `)
-        .eq('user_id', userId)
-        .order('test_date', { ascending: false })
-        .limit(3);
+        .eq('strength_test_sessions.user_id', userId)
+        .not('velocity_ms', 'is', null)
+        .order('strength_test_sessions.test_date', { ascending: false })
+        .limit(50);
+
+      // Fetch endurance test history
+      const { data: enduranceHistory } = await supabase
+        .from('endurance_test_data')
+        .select(`
+          mas_kmh,
+          mas_meters,
+          mas_minutes,
+          vo2_max,
+          max_hr,
+          resting_hr_1min,
+          push_ups,
+          pull_ups,
+          crunches,
+          t2b,
+          sprint_meters,
+          sprint_seconds,
+          sprint_watt,
+          farmer_kg,
+          farmer_meters,
+          farmer_seconds,
+          endurance_test_sessions!inner (
+            user_id,
+            test_date
+          )
+        `)
+        .eq('endurance_test_sessions.user_id', userId)
+        .order('endurance_test_sessions.test_date', { ascending: false })
+        .limit(20);
+
+      // Fetch jump test history
+      const { data: jumpHistory } = await supabase
+        .from('jump_test_data')
+        .select(`
+          non_counter_movement_jump,
+          counter_movement_jump,
+          depth_jump,
+          broad_jump,
+          triple_jump_left,
+          triple_jump_right,
+          jump_test_sessions!inner (
+            user_id,
+            test_date
+          )
+        `)
+        .eq('jump_test_sessions.user_id', userId)
+        .order('jump_test_sessions.test_date', { ascending: false })
+        .limit(20);
+
+      // Fetch anthropometric test history
+      const { data: anthropometricHistory } = await supabase
+        .from('anthropometric_test_data')
+        .select(`
+          weight,
+          height,
+          body_fat_percentage,
+          muscle_mass_percentage,
+          visceral_fat_percentage,
+          bone_density,
+          waist_circumference,
+          hip_circumference,
+          chest_circumference,
+          arm_circumference,
+          thigh_circumference,
+          anthropometric_test_sessions!inner (
+            user_id,
+            test_date
+          )
+        `)
+        .eq('anthropometric_test_sessions.user_id', userId)
+        .order('anthropometric_test_sessions.test_date', { ascending: false })
+        .limit(20);
       
       const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
         body: {
@@ -113,7 +170,10 @@ export const useMessageSender = ({
           userId: userId,
           platformData: {
             programs: programs || [],
-            tests: tests || []
+            strengthHistory: strengthHistory || [],
+            enduranceHistory: enduranceHistory || [],
+            jumpHistory: jumpHistory || [],
+            anthropometricHistory: anthropometricHistory || []
           }
         }
       });
