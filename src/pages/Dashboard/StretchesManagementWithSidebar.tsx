@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { StretchesManagement } from "@/components/stretches/StretchesManagement";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
@@ -45,33 +45,65 @@ const StretchesManagementWithSidebar = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Stretches Content */}
-        <div className="flex-1 p-3 md:p-6">
-          {/* Header with user info */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Διατάσεις</h1>
-              <p className="text-gray-600">
-                Διαχείριση διατάσεων και συνδέσεων με ασκήσεις
-              </p>
-            </div>
+        {/* Mobile Header */}
+        {isMobile && (
+          <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMobileSidebar(true)}
+              className="rounded-none"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
             
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 truncate max-w-[150px]">
                 {dashboardUserProfile?.name || user?.email}
-                {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
               </span>
               <Button 
-                variant="outline" 
+                variant="ghost"
+                size="sm"
                 className="rounded-none"
                 onClick={handleSignOut}
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                Αποσύνδεση
+                <LogOut className="h-5 w-5" />
               </Button>
             </div>
           </div>
+        )}
 
+        {/* Desktop Header */}
+        {!isMobile && (
+          <div className="bg-white border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Διατάσεις</h1>
+                <p className="text-gray-600">
+                  Διαχείριση διατάσεων και συνδέσεων με ασκήσεις
+                </p>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">
+                  {dashboardUserProfile?.name || user?.email}
+                  {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                </span>
+                <Button 
+                  variant="outline" 
+                  className="rounded-none"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Αποσύνδεση
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stretches Content */}
+        <div className="flex-1 overflow-auto">
           <StretchesManagement />
         </div>
       </div>
