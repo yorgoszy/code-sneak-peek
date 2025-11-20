@@ -36,7 +36,7 @@ serve(async (req) => {
     const { data: userExercisesData, error: userExercisesError } = await supabase
       .from('program_assignments')
       .select(`
-        programs!inner(
+        programs!fk_program_assignments_program_id(
           program_weeks(
             program_days(
               program_blocks(
@@ -88,7 +88,7 @@ serve(async (req) => {
     const { data: programsData, error: programsError } = await supabase
       .from('program_assignments')
       .select(`
-        programs!inner(
+        programs!fk_program_assignments_program_id(
           name,
           description,
           program_weeks(
@@ -175,7 +175,7 @@ ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
 
     console.log('🤖 Sending request to Gemini API...');
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
