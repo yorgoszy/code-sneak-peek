@@ -44,27 +44,22 @@ export const UserOneRMCard = ({ userName, userAvatar, exercises }: UserOneRMCard
             <p className="text-sm">Δεν υπάρχουν καταγραφές 1RM</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
             {exercises.map((exercise, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-none"
+                className="flex flex-col items-center justify-center p-3 bg-gray-50 border border-gray-200 rounded-none min-w-[140px]"
               >
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900 text-sm">
-                    {exercise.exerciseName}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {format(new Date(exercise.recordedDate), 'd MMM yyyy', { locale: el })}
-                  </p>
-                  {exercise.notes && (
-                    <p className="text-xs text-gray-500 mt-1 italic">{exercise.notes}</p>
-                  )}
-                </div>
-                <div className="text-right ml-4">
-                  <p className="text-xl font-bold text-[#00ffba]">{exercise.weight}</p>
-                  <p className="text-xs text-gray-500">kg</p>
-                </div>
+                <p className="font-medium text-gray-900 text-sm text-center mb-1">
+                  {exercise.exerciseName}
+                </p>
+                <p className="text-2xl font-bold text-[#00ffba] mb-1">{exercise.weight} kg</p>
+                <p className="text-xs text-gray-500">
+                  {format(new Date(exercise.recordedDate), 'd MMM yyyy', { locale: el })}
+                </p>
+                {exercise.notes && (
+                  <p className="text-xs text-gray-500 mt-1 italic text-center">{exercise.notes}</p>
+                )}
               </div>
             ))}
           </div>
