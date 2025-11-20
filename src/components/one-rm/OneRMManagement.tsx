@@ -150,18 +150,17 @@ export const OneRMManagement = () => {
     setSelectedExerciseId("all");
   };
 
-  // Ομαδοποίηση records ανά χρήστη και άσκηση
-  const getUsersWithLatestRM = (recordsToProcess: OneRMRecord[]) => {
-    const usersMap = new Map<string, {
+  // Δημιουργία flat array με όλες τις ασκήσεις (μία κάρτα ανά άσκηση)
+  const getExerciseCards = (recordsToProcess: OneRMRecord[]) => {
+    const exerciseCardsMap = new Map<string, {
       userId: string;
       userName: string;
       userAvatar?: string;
-      exercises: Map<string, {
-        exerciseName: string;
-        weight: number;
-        recordedDate: string;
-        notes?: string;
-      }>;
+      exerciseId: string;
+      exerciseName: string;
+      weight: number;
+      recordedDate: string;
+      notes?: string;
     }>();
 
     recordsToProcess.forEach(record => {
@@ -170,30 +169,29 @@ export const OneRMManagement = () => {
       const userAvatar = (record.app_users as any)?.photo_url || (record.app_users as any)?.avatar_url;
       const exerciseId = record.exercise_id;
       const exerciseName = record.exercises?.name || 'Άγνωστη Άσκηση';
-
-      if (!usersMap.has(userId)) {
-        usersMap.set(userId, {
+      
+      const key = `${userId}-${exerciseId}`;
+      
+      // Κρατάμε μόνο το πιο πρόσφατο 1RM για κάθε συνδυασμό χρήστη-άσκησης
+      if (!exerciseCardsMap.has(key)) {
+        exerciseCardsMap.set(key, {
           userId,
           userName,
           userAvatar,
-          exercises: new Map()
-        });
-      }
-
-      const user = usersMap.get(userId)!;
-      
-      // Κρατάμε μόνο το πιο πρόσφατο 1RM για κάθε άσκηση
-      if (!user.exercises.has(exerciseId)) {
-        user.exercises.set(exerciseId, {
+          exerciseId,
           exerciseName,
           weight: record.weight,
           recordedDate: record.recorded_date,
           notes: record.notes
         });
       } else {
-        const existing = user.exercises.get(exerciseId)!;
+        const existing = exerciseCardsMap.get(key)!;
         if (new Date(record.recorded_date) > new Date(existing.recordedDate)) {
-          user.exercises.set(exerciseId, {
+          exerciseCardsMap.set(key, {
+            userId,
+            userName,
+            userAvatar,
+            exerciseId,
             exerciseName,
             weight: record.weight,
             recordedDate: record.recorded_date,
@@ -203,12 +201,7 @@ export const OneRMManagement = () => {
       }
     });
 
-    return Array.from(usersMap.values()).map(user => ({
-      userId: user.userId,
-      userName: user.userName,
-      userAvatar: user.userAvatar,
-      exercises: Array.from(user.exercises.values())
-    }));
+    return Array.from(exerciseCardsMap.values());
   };
 
   const handleAddNew = () => {
@@ -490,13 +483,16 @@ export const OneRMManagement = () => {
           <p>Δεν βρέθηκαν καταγραφές με τα επιλεγμένα φίλτρα</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {getUsersWithLatestRM(filteredRecords).map((user) => (
+        <div className="flex flex-wrap gap-4">
+          {getExerciseCards(filteredRecords).map((card) => (
             <UserOneRMCard
-              key={user.userId}
-              userName={user.userName}
-              userAvatar={user.userAvatar}
-              exercises={user.exercises}
+              key={`${card.userId}-${card.exerciseId}`}
+              userName={card.userName}
+              userAvatar={card.userAvatar}
+              exerciseName={card.exerciseName}
+              weight={card.weight}
+              recordedDate={card.recordedDate}
+              notes={card.notes}
             />
           ))}
         </div>
