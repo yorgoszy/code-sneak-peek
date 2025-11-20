@@ -165,15 +165,6 @@ export const OneRMManagement = () => {
     }>();
 
     recordsToProcess.forEach(record => {
-      // Φιλτράρω τα records με "Αυτόματη καταγραφή" ή "Αυτόματη ενημέρωση" από Force/Velocity
-      if (record.notes) {
-        const lowerNotes = record.notes.toLowerCase();
-        if ((lowerNotes.includes('αυτόματη καταγραφή από force/velocity') || 
-             lowerNotes.includes('αυτόματη ενημέρωση από force/velocity'))) {
-          return; // Παραλείπω αυτό το record
-        }
-      }
-
       const userId = record.user_id;
       const userName = record.app_users?.name || 'Άγνωστος Χρήστης';
       const userAvatar = (record.app_users as any)?.photo_url || (record.app_users as any)?.avatar_url;
@@ -212,15 +203,12 @@ export const OneRMManagement = () => {
       }
     });
 
-    // Φιλτράρω χρήστες που δεν έχουν exercises μετά το φιλτράρισμα
-    return Array.from(usersMap.values())
-      .map(user => ({
-        userId: user.userId,
-        userName: user.userName,
-        userAvatar: user.userAvatar,
-        exercises: Array.from(user.exercises.values())
-      }))
-      .filter(user => user.exercises.length > 0);
+    return Array.from(usersMap.values()).map(user => ({
+      userId: user.userId,
+      userName: user.userName,
+      userAvatar: user.userAvatar,
+      exercises: Array.from(user.exercises.values())
+    }));
   };
 
   const handleAddNew = () => {
@@ -502,7 +490,7 @@ export const OneRMManagement = () => {
           <p>Δεν βρέθηκαν καταγραφές με τα επιλεγμένα φίλτρα</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {getUsersWithLatestRM(filteredRecords).map((user) => (
             <UserOneRMCard
               key={user.userId}
