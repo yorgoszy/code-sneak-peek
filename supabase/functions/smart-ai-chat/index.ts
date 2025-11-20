@@ -190,35 +190,100 @@ serve(async (req) => {
         enhancedContext += `\n\n🏋️ ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ ΤΟΥ ΧΡΗΣΤΗ:\n${programsList}`;
       }
 
-      // Process test data
-      if (platformData.tests && platformData.tests.length > 0) {
-        const testsList = platformData.tests.map(testSession => {
-          let testDetails = `📅 Ημερομηνία: ${testSession.test_date}`;
-          
-          if (testSession.anthropometric_test_data && testSession.anthropometric_test_data.length > 0) {
-            const anthro = testSession.anthropometric_test_data[0];
-            testDetails += `\n📏 Σωματομετρικά: Ύψος ${anthro.height}cm, Βάρος ${anthro.weight}kg`;
-            if (anthro.body_fat_percentage) testDetails += `, Λίπος ${anthro.body_fat_percentage}%`;
-          }
-          
-          if (testSession.strength_test_data && testSession.strength_test_data.length > 0) {
-            const strengthTests = testSession.strength_test_data.map(st => 
-              `${st.exercises?.name}: ${st.weight_kg}kg${st.velocity_ms ? ` (${st.velocity_ms}m/s)` : ''}`
-            ).join(', ');
-            testDetails += `\n💪 Δύναμη: ${strengthTests}`;
-          }
-          
-          if (testSession.endurance_test_data && testSession.endurance_test_data.length > 0) {
-            const endurance = testSession.endurance_test_data[0];
-            testDetails += `\n🏃 Αντοχή:`;
-            if (endurance.vo2_max) testDetails += ` VO2 Max ${endurance.vo2_max}`;
-            if (endurance.push_ups) testDetails += `, Push-ups ${endurance.push_ups}`;
-          }
-          
-          return testDetails;
-        }).join('\n\n');
+      // Process strength history (Force-Velocity data)
+      if (platformData.strengthHistory && platformData.strengthHistory.length > 0) {
+        enhancedContext += '\n\n💪 ΙΣΤΟΡΙΚΟ ΔΥΝΑΜΗΣ (FORCE-VELOCITY):';
         
-        enhancedContext += `\n\n📊 ΠΡΌΣΦΑΤΑ ΑΠΟΤΕΛΕΣΜΑΤΑ ΤΕΣΤ:\n${testsList}`;
+        // Group by exercise
+        const exerciseGroups = {};
+        platformData.strengthHistory.forEach(attempt => {
+          const exerciseName = attempt.exercises?.name || 'Άγνωστη Άσκηση';
+          if (!exerciseGroups[exerciseName]) {
+            exerciseGroups[exerciseName] = [];
+          }
+          exerciseGroups[exerciseName].push({
+            weight: attempt.weight_kg,
+            velocity: attempt.velocity_ms,
+            date: attempt.strength_test_sessions?.test_date
+          });
+        });
+        
+        // Display grouped data
+        Object.entries(exerciseGroups).forEach(([exercise, attempts]) => {
+          enhancedContext += `\n\n${exercise}:`;
+          attempts.slice(0, 5).forEach((attempt, index) => {
+            enhancedContext += `\n  ${index + 1}. ${attempt.weight}kg @ ${attempt.velocity.toFixed(2)}m/s (${new Date(attempt.date).toLocaleDateString('el-GR')})`;
+          });
+        });
+      }
+
+      // Process endurance history
+      if (platformData.enduranceHistory && platformData.enduranceHistory.length > 0) {
+        enhancedContext += '\n\n🏃 ΙΣΤΟΡΙΚΟ ΑΝΤΟΧΗΣ:';
+        
+        platformData.enduranceHistory.slice(0, 5).forEach((test, index) => {
+          const date = new Date(test.endurance_test_sessions?.test_date).toLocaleDateString('el-GR');
+          enhancedContext += `\n\n${index + 1}. ${date}:`;
+          
+          if (test.vo2_max) enhancedContext += `\n  - VO2 Max: ${test.vo2_max}`;
+          if (test.mas_kmh) enhancedContext += `\n  - MAS: ${test.mas_kmh} km/h`;
+          if (test.max_hr) enhancedContext += `\n  - Max HR: ${test.max_hr} bpm`;
+          if (test.resting_hr_1min) enhancedContext += `\n  - Resting HR: ${test.resting_hr_1min} bpm`;
+          if (test.push_ups) enhancedContext += `\n  - Push-ups: ${test.push_ups}`;
+          if (test.pull_ups) enhancedContext += `\n  - Pull-ups: ${test.pull_ups}`;
+          if (test.crunches) enhancedContext += `\n  - Crunches: ${test.crunches}`;
+          if (test.t2b) enhancedContext += `\n  - Toes-to-Bar: ${test.t2b}`;
+          
+          if (test.sprint_meters && test.sprint_seconds) {
+            enhancedContext += `\n  - Sprint: ${test.sprint_meters}m σε ${test.sprint_seconds}s`;
+            if (test.sprint_watt) enhancedContext += ` (${test.sprint_watt}W)`;
+          }
+          
+          if (test.farmer_kg && test.farmer_meters) {
+            enhancedContext += `\n  - Farmer's Walk: ${test.farmer_kg}kg για ${test.farmer_meters}m`;
+            if (test.farmer_seconds) enhancedContext += ` σε ${test.farmer_seconds}s`;
+          }
+        });
+      }
+
+      // Process jump history
+      if (platformData.jumpHistory && platformData.jumpHistory.length > 0) {
+        enhancedContext += '\n\n🦘 ΙΣΤΟΡΙΚΟ ΑΛΜΑΤΩΝ:';
+        
+        platformData.jumpHistory.slice(0, 5).forEach((test, index) => {
+          const date = new Date(test.jump_test_sessions?.test_date).toLocaleDateString('el-GR');
+          enhancedContext += `\n\n${index + 1}. ${date}:`;
+          
+          if (test.non_counter_movement_jump) enhancedContext += `\n  - Non-CMJ: ${test.non_counter_movement_jump}cm`;
+          if (test.counter_movement_jump) enhancedContext += `\n  - CMJ: ${test.counter_movement_jump}cm`;
+          if (test.depth_jump) enhancedContext += `\n  - Depth Jump: ${test.depth_jump}cm`;
+          if (test.broad_jump) enhancedContext += `\n  - Broad Jump: ${test.broad_jump}cm`;
+          if (test.triple_jump_left) enhancedContext += `\n  - Triple Jump (Αριστερό): ${test.triple_jump_left}cm`;
+          if (test.triple_jump_right) enhancedContext += `\n  - Triple Jump (Δεξί): ${test.triple_jump_right}cm`;
+        });
+      }
+
+      // Process anthropometric history
+      if (platformData.anthropometricHistory && platformData.anthropometricHistory.length > 0) {
+        enhancedContext += '\n\n📏 ΙΣΤΟΡΙΚΟ ΣΩΜΑΤΟΜΕΤΡΙΚΩΝ:';
+        
+        platformData.anthropometricHistory.slice(0, 5).forEach((test, index) => {
+          const date = new Date(test.anthropometric_test_sessions?.test_date).toLocaleDateString('el-GR');
+          enhancedContext += `\n\n${index + 1}. ${date}:`;
+          
+          if (test.weight) enhancedContext += `\n  - Βάρος: ${test.weight}kg`;
+          if (test.height) enhancedContext += `\n  - Ύψος: ${test.height}cm`;
+          if (test.body_fat_percentage) enhancedContext += `\n  - Λίπος: ${test.body_fat_percentage}%`;
+          if (test.muscle_mass_percentage) enhancedContext += `\n  - Μυϊκή Μάζα: ${test.muscle_mass_percentage}%`;
+          if (test.visceral_fat_percentage) enhancedContext += `\n  - Σπλαχνικό Λίπος: ${test.visceral_fat_percentage}%`;
+          if (test.bone_density) enhancedContext += `\n  - Οστική Πυκνότητα: ${test.bone_density}`;
+          
+          if (test.waist_circumference) enhancedContext += `\n  - Περίμετρος Μέσης: ${test.waist_circumference}cm`;
+          if (test.hip_circumference) enhancedContext += `\n  - Περίμετρος Γοφού: ${test.hip_circumference}cm`;
+          if (test.chest_circumference) enhancedContext += `\n  - Περίμετρος Στήθους: ${test.chest_circumference}cm`;
+          if (test.arm_circumference) enhancedContext += `\n  - Περίμετρος Χεριού: ${test.arm_circumference}cm`;
+          if (test.thigh_circumference) enhancedContext += `\n  - Περίμετρος Μηρού: ${test.thigh_circumference}cm`;
+        });
       }
     }
 
