@@ -57,9 +57,6 @@ export const UserOneRMCard = ({ userName, userAvatar, exercises }: UserOneRMCard
                 <p className="text-xs text-gray-500">
                   {format(new Date(exercise.recordedDate), 'd MMM yyyy', { locale: el })}
                 </p>
-                {exercise.notes && (
-                  <p className="text-xs text-gray-500 mt-1 italic text-center">{exercise.notes}</p>
-                )}
               </div>
             ))}
           </div>
