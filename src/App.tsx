@@ -43,6 +43,7 @@ import { OneRMManagementWithSidebar } from "@/pages/Dashboard/OneRMManagementWit
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Offers from "@/pages/Offers";
 import ProfileEdit from "@/pages/ProfileEdit";
+import InstallApp from "@/pages/InstallApp";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ function App() {
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/online-coaching" element={<OnlineCoaching />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
+                <Route path="/install" element={<InstallApp />} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
