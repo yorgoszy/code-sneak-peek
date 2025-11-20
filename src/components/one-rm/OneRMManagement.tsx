@@ -400,25 +400,27 @@ export const OneRMManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-0">
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">1RM - Μέγιστη Επανάληψη</h1>
-          <p className="text-gray-600 mt-1">Διαχείριση 1RM ανά ασκούμενο και άσκηση</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">1RM - Μέγιστη Επανάληψη</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1">Διαχείριση 1RM ανά ασκούμενο και άσκηση</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
           <Button
             onClick={handleSyncFromForceVelocity}
             disabled={isSyncing}
             variant="outline"
-            className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+            className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10 w-full sm:w-auto text-sm"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? 'Συγχρονισμός...' : 'Συγχρονισμός από Force/Velocity'}
+            <span className="hidden sm:inline">{isSyncing ? 'Συγχρονισμός...' : 'Συγχρονισμός από Force/Velocity'}</span>
+            <span className="sm:hidden">Sync F/V</span>
           </Button>
           <Button
             onClick={handleAddNew}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 mr-2" />
             Νέα Καταγραφή
@@ -427,76 +429,78 @@ export const OneRMManagement = () => {
       </div>
 
       {/* Φίλτρα */}
-      <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-stretch sm:items-start">
-        {/* User Search */}
-        <div className="relative w-full sm:w-[250px]">
-          <Input
-            type="text"
-            placeholder="Αναζήτηση χρήστη (όνομα ή email)..."
-            value={userSearch}
-            onChange={(e) => setUserSearch(e.target.value)}
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            className="rounded-none pr-8"
-          />
-          {userSearch && (
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* User Search */}
+          <div className="relative flex-1 sm:flex-initial sm:w-[250px]">
+            <Input
+              type="text"
+              placeholder="Αναζήτηση χρήστη..."
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              className="rounded-none pr-8"
+            />
+            {userSearch && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+                onClick={() => setUserSearch("")}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+            
+            {showSuggestions && userSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-[300px] overflow-y-auto z-50">
+                {userSuggestions.map((user) => (
+                  <div
+                    key={user.id}
+                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => {
+                      setUserSearch(user.name);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    <div className="font-medium text-sm">{user.name}</div>
+                    <div className="text-xs text-gray-500">{user.email}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Exercise Filter */}
+          <div className="flex-1 sm:flex-initial sm:w-[250px]">
+            <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Όλες οι ασκήσεις" />
+              </SelectTrigger>
+              <SelectContent className="rounded-none max-h-[300px]">
+                <SelectItem value="all" className="rounded-none">Όλες οι ασκήσεις</SelectItem>
+                {availableExercises.map(exercise => (
+                  <SelectItem key={exercise.id} value={exercise.id} className="rounded-none">
+                    {exercise.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Clear Filters Button */}
+          {(userSearch || selectedExerciseId !== "all") && (
             <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
-              onClick={() => setUserSearch("")}
+              variant="outline"
+              onClick={handleClearFilters}
+              className="rounded-none w-full sm:w-auto"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4 mr-2" />
+              Καθαρισμός
             </Button>
           )}
-          
-          {showSuggestions && userSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-[300px] overflow-y-auto z-50">
-              {userSuggestions.map((user) => (
-                <div
-                  key={user.id}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => {
-                    setUserSearch(user.name);
-                    setShowSuggestions(false);
-                  }}
-                >
-                  <div className="font-medium text-sm">{user.name}</div>
-                  <div className="text-xs text-gray-500">{user.email}</div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
-
-        {/* Exercise Filter */}
-        <div className="w-full sm:w-[250px]">
-          <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
-            <SelectTrigger className="rounded-none">
-              <SelectValue placeholder="Όλες οι ασκήσεις" />
-            </SelectTrigger>
-            <SelectContent className="rounded-none max-h-[300px]">
-              <SelectItem value="all" className="rounded-none">Όλες οι ασκήσεις</SelectItem>
-              {availableExercises.map(exercise => (
-                <SelectItem key={exercise.id} value={exercise.id} className="rounded-none">
-                  {exercise.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Clear Filters Button */}
-        {(userSearch || selectedExerciseId !== "all") && (
-          <Button
-            variant="outline"
-            onClick={handleClearFilters}
-            className="rounded-none"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Καθαρισμός Φίλτρων
-          </Button>
-        )}
       </div>
 
       {isLoading ? (
