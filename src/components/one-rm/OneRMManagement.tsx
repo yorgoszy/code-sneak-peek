@@ -150,6 +150,22 @@ export const OneRMManagement = () => {
     setSelectedExerciseId("all");
   };
 
+  // Σειρά προτεραιότητας ασκήσεων
+  const getExercisePriority = (exerciseName: string): number => {
+    const name = exerciseName.toLowerCase();
+    if (name.includes('bench press') || name.includes('bp')) return 1;
+    if (name.includes('squat') && !name.includes('single')) return 2;
+    if (name.includes('deadlift') && name.includes('trap')) return 4;
+    if (name.includes('deadlift') || name.includes('dl')) return 3;
+    if (name.includes('military press') || name.includes('mp')) return 5;
+    if (name.includes('clean')) return 6;
+    if (name.includes('jerk') && name.includes('back')) return 8;
+    if (name.includes('jerk')) return 7;
+    if (name.includes('row')) return 9;
+    if (name.includes('pull up') || name.includes('pull-up')) return 10;
+    return 999; // Άλλες ασκήσεις στο τέλος
+  };
+
   // Ομαδοποίηση records ανά χρήστη και άσκηση
   const getUsersWithLatestRM = (recordsToProcess: OneRMRecord[]) => {
     const usersMap = new Map<string, {
@@ -207,7 +223,11 @@ export const OneRMManagement = () => {
       userId: user.userId,
       userName: user.userName,
       userAvatar: user.userAvatar,
-      exercises: Array.from(user.exercises.values())
+      exercises: Array.from(user.exercises.values()).sort((a, b) => {
+        const priorityA = getExercisePriority(a.exerciseName);
+        const priorityB = getExercisePriority(b.exerciseName);
+        return priorityA - priorityB;
+      })
     }));
   };
 
