@@ -65,7 +65,7 @@ export const BaseSidebar: React.FC<BaseSidebarProps> = ({
       </div>
 
       {/* Navigation */}
-      <nav className="p-4 flex-1 overflow-y-auto max-h-[calc(100vh-120px)] scrollbar-thin scrollbar-thumb-[#cb8954] scrollbar-track-gray-100">
+      <nav className="p-4 flex-1 overflow-y-auto max-h-[calc(100vh-120px)] scrollbar-none">
         {navigationContent}
       </nav>
 
