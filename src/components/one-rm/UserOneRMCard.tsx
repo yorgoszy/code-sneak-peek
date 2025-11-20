@@ -24,6 +24,16 @@ export const UserOneRMCard = ({ userName, userAvatar, exercises }: UserOneRMCard
     .toUpperCase()
     .slice(0, 2);
 
+  // Φιλτράρω τα exercises που έχουν "Αυτόματη καταγραφή" ή "Αυτόματη ενημέρωση" από Force/Velocity
+  const filteredExercises = exercises.filter(exercise => {
+    if (!exercise.notes) return true;
+    const lowerNotes = exercise.notes.toLowerCase();
+    return !(
+      (lowerNotes.includes('αυτόματη καταγραφή') || lowerNotes.includes('αυτόματη ενημέρωση')) &&
+      lowerNotes.includes('force/velocity')
+    );
+  });
+
   return (
     <Card className="rounded-none">
       <CardHeader className="pb-3">
@@ -38,14 +48,14 @@ export const UserOneRMCard = ({ userName, userAvatar, exercises }: UserOneRMCard
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {exercises.length === 0 ? (
+        {filteredExercises.length === 0 ? (
           <div className="text-center py-4 text-gray-500">
             <TrendingUp className="h-8 w-8 mx-auto mb-2 text-gray-300" />
             <p className="text-sm">Δεν υπάρχουν καταγραφές 1RM</p>
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {exercises.map((exercise, index) => (
+            {filteredExercises.map((exercise, index) => (
               <div
                 key={index}
                 className="flex flex-col items-center justify-center p-3 bg-gray-50 border border-gray-200 rounded-none min-w-[140px]"
