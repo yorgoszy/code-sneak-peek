@@ -28,9 +28,9 @@ export const UserOneRMCard = ({ userName, userAvatar, exercises }: UserOneRMCard
     <Card className="rounded-none">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-3">
-          <Avatar className="w-10 h-10">
-            <AvatarImage src={userAvatar} />
-            <AvatarFallback className="bg-[#00ffba] text-black">
+          <Avatar className="w-10 h-10 flex-shrink-0">
+            <AvatarImage src={userAvatar} alt={userName} />
+            <AvatarFallback>
               {initials}
             </AvatarFallback>
           </Avatar>
