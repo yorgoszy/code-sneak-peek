@@ -152,17 +152,17 @@ export const OneRMManagement = () => {
 
   // Σειρά προτεραιότητας ασκήσεων
   const getExercisePriority = (exerciseName: string): number => {
-    const name = exerciseName.toLowerCase();
-    if (name.includes('bench press') || name.includes('bp')) return 1;
-    if (name.includes('squat') && !name.includes('single')) return 2;
-    if (name.includes('deadlift') && name.includes('trap')) return 4;
-    if (name.includes('deadlift') || name.includes('dl')) return 3;
-    if (name.includes('military press') || name.includes('mp')) return 5;
-    if (name.includes('clean')) return 6;
-    if (name.includes('jerk') && name.includes('back')) return 8;
-    if (name.includes('jerk')) return 7;
-    if (name.includes('row')) return 9;
-    if (name.includes('pull up') || name.includes('pull-up')) return 10;
+    const name = exerciseName.toUpperCase().trim();
+    if (name === 'BP') return 1;
+    if (name === 'SQ') return 2;
+    if (name === 'DL') return 3;
+    if (name === 'DEADLIFT TRAP BAR') return 4;
+    if (name === 'MP') return 5;
+    if (name.includes('CLEAN')) return 6;
+    if (name === 'JERK') return 7;
+    if (name === 'JERK BACK') return 8;
+    if (name.includes('ROW')) return 9;
+    if (name.includes('PULL UP') || name.includes('PULL-UP')) return 10;
     return 999; // Άλλες ασκήσεις στο τέλος
   };
 
