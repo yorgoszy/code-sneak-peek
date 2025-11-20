@@ -168,8 +168,8 @@ export const OneRMManagement = () => {
       // Φιλτράρω τα records με "Αυτόματη καταγραφή" ή "Αυτόματη ενημέρωση" από Force/Velocity
       if (record.notes) {
         const lowerNotes = record.notes.toLowerCase();
-        if ((lowerNotes.includes('αυτόματη καταγραφή') || lowerNotes.includes('αυτόματη ενημέρωση')) &&
-            lowerNotes.includes('force/velocity')) {
+        if ((lowerNotes.includes('αυτόματη καταγραφή από force/velocity') || 
+             lowerNotes.includes('αυτόματη ενημέρωση από force/velocity'))) {
           return; // Παραλείπω αυτό το record
         }
       }
