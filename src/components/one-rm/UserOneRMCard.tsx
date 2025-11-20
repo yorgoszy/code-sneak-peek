@@ -53,7 +53,7 @@ export const UserOneRMCard = ({ userName, userAvatar, exercises }: UserOneRMCard
                 <p className="font-medium text-gray-900 text-xs text-center mb-0.5">
                   {exercise.exerciseName}
                 </p>
-                <p className="text-lg font-bold text-[#00ffba] mb-0.5">{exercise.weight} kg</p>
+                <p className="text-lg font-bold text-[#cb8954] mb-0.5">{exercise.weight} kg</p>
                 <p className="text-[10px] text-gray-500">
                   {format(new Date(exercise.recordedDate), 'd MMM yyyy', { locale: el })}
                 </p>
