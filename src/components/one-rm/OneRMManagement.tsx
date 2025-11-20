@@ -68,7 +68,7 @@ export const OneRMManagement = () => {
         .from('user_exercise_1rm' as any)
         .select(`
           *,
-          app_users!user_exercise_1rm_user_id_fkey(name, avatar_url, email),
+          app_users!user_exercise_1rm_user_id_fkey(name, photo_url, avatar_url, email),
           exercises(name)
         `)
         .order('recorded_date', { ascending: false });
@@ -167,7 +167,7 @@ export const OneRMManagement = () => {
     recordsToProcess.forEach(record => {
       const userId = record.user_id;
       const userName = record.app_users?.name || 'Άγνωστος Χρήστης';
-      const userAvatar = (record.app_users as any)?.avatar_url;
+      const userAvatar = (record.app_users as any)?.photo_url || (record.app_users as any)?.avatar_url;
       const exerciseId = record.exercise_id;
       const exerciseName = record.exercises?.name || 'Άγνωστη Άσκηση';
 
