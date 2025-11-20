@@ -113,6 +113,87 @@ serve(async (req) => {
       console.error('Error fetching programs:', programsError);
     }
 
+    // Fetch user's strength test history
+    const { data: strengthHistory } = await supabase
+      .from('strength_test_attempts')
+      .select(`
+        id,
+        attempt_date,
+        exercise_id,
+        weight_kg,
+        velocity_ms,
+        estimated_1rm,
+        exercises(name)
+      `)
+      .eq('user_id', userId)
+      .order('attempt_date', { ascending: false })
+      .limit(20);
+
+    // Fetch user's endurance test history
+    const { data: enduranceHistory } = await supabase
+      .from('endurance_test_data')
+      .select(`
+        id,
+        created_at,
+        vo2_max,
+        mas_kmh,
+        sprint_watt,
+        push_ups,
+        pull_ups,
+        crunches,
+        test_session_id,
+        endurance_test_sessions!inner(
+          user_id,
+          test_date
+        )
+      `)
+      .eq('endurance_test_sessions.user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    // Fetch user's jump test history
+    const { data: jumpHistory } = await supabase
+      .from('jump_test_data')
+      .select(`
+        id,
+        created_at,
+        counter_movement_jump,
+        non_counter_movement_jump,
+        broad_jump,
+        triple_jump_left,
+        triple_jump_right,
+        test_session_id,
+        jump_test_sessions!inner(
+          user_id,
+          test_date
+        )
+      `)
+      .eq('jump_test_sessions.user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    // Fetch user's anthropometric history
+    const { data: anthropometricHistory } = await supabase
+      .from('anthropometric_test_data')
+      .select(`
+        id,
+        created_at,
+        height,
+        weight,
+        body_fat_percentage,
+        muscle_mass_percentage,
+        waist_circumference,
+        chest_circumference,
+        test_session_id,
+        anthropometric_test_sessions!inner(
+          user_id,
+          test_date
+        )
+      `)
+      .eq('anthropometric_test_sessions.user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
     // Create context about user's exercises with video URLs
     let exerciseContext = '';
     if (userExercises.size > 0) {
@@ -140,36 +221,104 @@ serve(async (req) => {
       programContext = `\n\nΤα ενεργά προγράμματά σου:\n${programsList}`;
     }
 
+    // Create context about user's strength test history
+    let strengthContext = '';
+    if (strengthHistory && strengthHistory.length > 0) {
+      const strengthList = strengthHistory.map(test => {
+        return `- ${test.exercises?.name || 'Άσκηση'}: ${test.weight_kg}kg, Ταχύτητα: ${test.velocity_ms}m/s, Εκτίμηση 1RM: ${test.estimated_1rm}kg (${new Date(test.attempt_date).toLocaleDateString('el-GR')})`;
+      }).join('\n');
+      
+      strengthContext = `\n\nΙστορικό Δύναμης (τελευταίες δοκιμές):\n${strengthList}`;
+    }
+
+    // Create context about user's endurance test history
+    let enduranceContext = '';
+    if (enduranceHistory && enduranceHistory.length > 0) {
+      const enduranceList = enduranceHistory.map(test => {
+        const parts = [];
+        if (test.vo2_max) parts.push(`VO2max: ${test.vo2_max}`);
+        if (test.mas_kmh) parts.push(`MAS: ${test.mas_kmh} km/h`);
+        if (test.sprint_watt) parts.push(`Sprint: ${test.sprint_watt}W`);
+        if (test.push_ups) parts.push(`Push-ups: ${test.push_ups}`);
+        if (test.pull_ups) parts.push(`Pull-ups: ${test.pull_ups}`);
+        const date = test.endurance_test_sessions?.[0]?.test_date || test.created_at;
+        return `- ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})`;
+      }).join('\n');
+      
+      enduranceContext = `\n\nΙστορικό Αντοχής:\n${enduranceList}`;
+    }
+
+    // Create context about user's jump test history
+    let jumpContext = '';
+    if (jumpHistory && jumpHistory.length > 0) {
+      const jumpList = jumpHistory.map(test => {
+        const parts = [];
+        if (test.counter_movement_jump) parts.push(`CMJ: ${test.counter_movement_jump}cm`);
+        if (test.broad_jump) parts.push(`Broad: ${test.broad_jump}cm`);
+        if (test.triple_jump_left) parts.push(`Triple L: ${test.triple_jump_left}cm`);
+        if (test.triple_jump_right) parts.push(`Triple R: ${test.triple_jump_right}cm`);
+        const date = test.jump_test_sessions?.[0]?.test_date || test.created_at;
+        return `- ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})`;
+      }).join('\n');
+      
+      jumpContext = `\n\nΙστορικό Άλματος:\n${jumpList}`;
+    }
+
+    // Create context about user's anthropometric history
+    let anthropometricContext = '';
+    if (anthropometricHistory && anthropometricHistory.length > 0) {
+      const anthropometricList = anthropometricHistory.map(test => {
+        const parts = [];
+        if (test.weight) parts.push(`Βάρος: ${test.weight}kg`);
+        if (test.body_fat_percentage) parts.push(`Λίπος: ${test.body_fat_percentage}%`);
+        if (test.muscle_mass_percentage) parts.push(`Μυϊκή Μάζα: ${test.muscle_mass_percentage}%`);
+        const date = test.anthropometric_test_sessions?.[0]?.test_date || test.created_at;
+        return `- ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})`;
+      }).join('\n');
+      
+      anthropometricContext = `\n\nΑνθρωπομετρικό Ιστορικό:\n${anthropometricList}`;
+    }
+
     // Enhanced system prompt with user's specific exercises
-    const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις πρόσβαση στις ασκήσεις και τα προγράμματα του χρήστη.
+    const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, και το πλήρες ιστορικό προόδου του χρήστη.
 
 Βοηθάς με:
 1. Διατροφικές συμβουλές και σχεδιασμό γευμάτων
 2. Ασκησιολογικές συμβουλές και τεχνικές
-3. Αξιολόγηση αποτελεσμάτων τεστ
+3. Αξιολόγηση αποτελεσμάτων τεστ και ανάλυση προόδου
 4. Προγραμματισμό προπονήσεων
 5. Αποκατάσταση και πρόληψη τραυματισμών
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
+7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
 
-${exerciseContext}${programContext}
+${exerciseContext}${programContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}
 
-ΣΗΜΑΝΤΙΚΟ: Όταν αναφέρεις ασκήσεις από τις ασκήσεις του χρήστη, γράφε τες ΑΚΡΙΒΩΣ με το format:
+ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό του χρήστη. Μπορείς να:
+- Αναλύσεις την πρόοδό του στη δύναμη (1RM, ταχύτητα)
+- Δεις την εξέλιξη της αντοχής του (VO2max, MAS, sprint)
+- Παρακολουθήσεις τα άλματά του (CMJ, broad jump, triple jumps)
+- Εντοπίσεις αλλαγές στο σωματικό του σύνθεμα (βάρος, λίπος, μυϊκή μάζα)
+- Συγκρίνεις αποτελέσματα μεταξύ διαφορετικών περιόδων
+- Εντοπίσεις τάσεις και patterns στην πρόοδό του
+
+Όταν αναφέρεις ασκήσεις, γράφε τες ΑΚΡΙΒΩΣ με το format:
 "Άσκηση: [Όνομα Άσκησης]"
 
 Παράδειγμα: "Άσκηση: Squat" ή "Άσκηση: Push Up"
 
-Όταν συζητάς για ασκήσεις:
-- Αναφέρου τις ασκήσεις που έχει ο χρήστης στα προγράμματά του
-- Δώσε συγκεκριμένες συμβουλές για τεχνική εκτέλεση
-- Πρότεινε εναλλακτικές από τις ασκήσεις που έχει
-- Εξήγησε τα οφέλη κάθε άσκησης που χρησιμοποιεί
+Όταν συζητάς για πρόοδο:
+- Αναφέρου συγκεκριμένα νούμερα από το ιστορικό
+- Σύγκρινε παλιότερα με πρόσφατα αποτελέσματα
+- Εντόπισε βελτιώσεις ή περιοχές που χρειάζονται προσοχή
+- Δώσε συγκεκριμένες συμβουλές βασισμένες στα δεδομένα
 
 ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
 
 Πάντα:
 - Απαντάς στα ελληνικά
 - Δίνεις λεπτομερείς, πρακτικές συμβουλές
-- Αναφέρεις συγκεκριμένες ασκήσεις από τα προγράμματα του χρήστη όταν χρειάζεται
+- Χρησιμοποιείς τα πραγματικά δεδομένα του χρήστη
+- Αναφέρεις συγκεκριμένες ασκήσεις και αποτελέσματα
 - Τονίζεις τη σημασία της επαγγελματικής παρακολούθησης
 - Είσαι φιλικός και υποστηρικτικός`;
 
