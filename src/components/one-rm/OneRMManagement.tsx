@@ -165,6 +165,15 @@ export const OneRMManagement = () => {
     }>();
 
     recordsToProcess.forEach(record => {
+      // Φιλτράρω τα records με "Αυτόματη καταγραφή" ή "Αυτόματη ενημέρωση" από Force/Velocity
+      if (record.notes) {
+        const lowerNotes = record.notes.toLowerCase();
+        if ((lowerNotes.includes('αυτόματη καταγραφή') || lowerNotes.includes('αυτόματη ενημέρωση')) &&
+            lowerNotes.includes('force/velocity')) {
+          return; // Παραλείπω αυτό το record
+        }
+      }
+
       const userId = record.user_id;
       const userName = record.app_users?.name || 'Άγνωστος Χρήστης';
       const userAvatar = (record.app_users as any)?.photo_url || (record.app_users as any)?.avatar_url;
@@ -203,12 +212,15 @@ export const OneRMManagement = () => {
       }
     });
 
-    return Array.from(usersMap.values()).map(user => ({
-      userId: user.userId,
-      userName: user.userName,
-      userAvatar: user.userAvatar,
-      exercises: Array.from(user.exercises.values())
-    }));
+    // Φιλτράρω χρήστες που δεν έχουν exercises μετά το φιλτράρισμα
+    return Array.from(usersMap.values())
+      .map(user => ({
+        userId: user.userId,
+        userName: user.userName,
+        userAvatar: user.userAvatar,
+        exercises: Array.from(user.exercises.values())
+      }))
+      .filter(user => user.exercises.length > 0);
   };
 
   const handleAddNew = () => {
