@@ -22,10 +22,14 @@ interface InlineAIChatProps {
 }
 
 // Κλήσεις στα AI Edge Functions
-const callGeminiAI = async (message: string): Promise<string> => {
+const callGeminiAI = async (message: string, userId?: string, userName?: string): Promise<string> => {
   try {
     const { data, error } = await supabase.functions.invoke('gemini-ai-chat', {
-      body: { message }
+      body: { 
+        message,
+        userId,
+        userName
+      }
     });
 
     if (error) throw error;
@@ -147,7 +151,7 @@ export const InlineAIChat: React.FC<InlineAIChatProps> = ({
                  userInput.toLowerCase().includes('workout')) {
         response = await callOpenAI(userInput);
       } else {
-        response = await callGeminiAI(userInput);
+        response = await callGeminiAI(userInput, athleteId, athleteName);
       }
 
       const assistantMessage: Message = {
