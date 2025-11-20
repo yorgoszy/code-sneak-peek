@@ -337,7 +337,6 @@ export const OneRMManagement = () => {
               .update({
                 weight: data.max_weight,
                 recorded_date: data.recorded_date,
-                notes: 'Αυτόματη ενημέρωση από Force/Velocity tests',
                 updated_at: new Date().toISOString()
               })
               .eq('id', existingRecord.id);
@@ -356,7 +355,6 @@ export const OneRMManagement = () => {
                 exercise_id: data.exercise_id,
                 weight: data.max_weight,
                 recorded_date: data.recorded_date,
-                notes: 'Αυτόματη καταγραφή από Force/Velocity tests',
                 created_by: appUser?.id
               });
 
