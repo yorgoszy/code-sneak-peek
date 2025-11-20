@@ -1,8 +1,6 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 interface HeroSectionProps {
   translations: any;
@@ -10,8 +8,6 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
-  const navigate = useNavigate();
-  
   const handleContactClick = () => {
     const footerSection = document.getElementById('footer');
     if (footerSection) {
@@ -20,10 +16,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         block: 'start'
       });
     }
-  };
-
-  const handleInstallClick = () => {
-    navigate('/install');
   };
 
   return (
@@ -35,13 +27,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         }
         .get-started-btn:hover {
           background-color: #b5794a !important;
-        }
-        .install-btn {
-          background-color: #00ffba !important;
-          color: black !important;
-        }
-        .install-btn:hover {
-          background-color: #00e6a8 !important;
         }
         .contact-btn:hover {
           border-color: #cf8d54 !important;
@@ -71,13 +56,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
               onClick={onGetStarted}
             >
               {translations.getStarted}
-            </Button>
-            <Button 
-              className="install-btn rounded-none transition-colors duration-200"
-              onClick={handleInstallClick}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Κατέβασε την Εφαρμογή
             </Button>
             <Button 
               variant="outline" 

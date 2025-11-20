@@ -13,7 +13,8 @@ import {
   Tag,
   TrendingUp,
   History,
-  BookOpen
+  BookOpen,
+  Download
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -23,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAllPrograms } from "@/hooks/useAllPrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from "react-router-dom";
 
 interface UserProfileSidebarProps {
   isCollapsed: boolean;
@@ -45,6 +47,7 @@ export const UserProfileSidebar = forwardRef<
   stats
 }, ref) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
   const [activePrograms, setActivePrograms] = useState(0);
@@ -321,7 +324,18 @@ export const UserProfileSidebar = forwardRef<
         );
       })}
       
-      {/* RidAI Προπονητής Button */}
+      {/* Κατέβασε την Εφαρμογή Button */}
+      <button
+        onClick={() => navigate('/install')}
+        className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-white bg-[#00ffba] hover:bg-[#00e6a8] transition-colors rounded-none mt-2"
+      >
+        <Download className="h-5 w-5 flex-shrink-0 text-black" />
+        {(!isCollapsed || isMobile) && (
+          <span className="text-sm font-medium text-black truncate">Κατέβασε την Εφαρμογή</span>
+        )}
+      </button>
+      
+      {/* AI Προπονητής Button */}
       <button
         onClick={handleAIChatClick}
         className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none border-t border-gray-200 mt-2 pt-4"
