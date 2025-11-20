@@ -25,10 +25,14 @@ interface EnhancedAIChatDialogProps {
 }
 
 // Κλήσεις στα AI Edge Functions
-const callGeminiAI = async (message: string): Promise<string> => {
+const callGeminiAI = async (message: string, userId?: string, userName?: string): Promise<string> => {
   try {
     const { data, error } = await supabase.functions.invoke('gemini-ai-chat', {
-      body: { message }
+      body: { 
+        message,
+        userId,
+        userName
+      }
     });
 
     if (error) throw error;
@@ -522,7 +526,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         // Βήμα 2: Δοκιμάζουμε πρώτα το Gemini AI (δωρεάν)
         try {
           console.log('🔥 Δοκιμάζω Gemini AI πρώτα...');
-          const geminiResponse = await callGeminiAI(currentInput);
+          const geminiResponse = await callGeminiAI(currentInput, athleteId, athleteName);
           
           if (isGoodResponse(geminiResponse)) {
             finalResponse = geminiResponse;
