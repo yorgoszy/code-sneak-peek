@@ -327,11 +327,11 @@ export const UserProfileSidebar = forwardRef<
       {/* Κατέβασε την Εφαρμογή Button */}
       <button
         onClick={() => navigate('/install')}
-        className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-white bg-[#00ffba] hover:bg-[#00e6a8] transition-colors rounded-none mt-2"
+        className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-white bg-[#cb8954] hover:bg-[#b5794a] transition-colors rounded-none mt-2"
       >
-        <Download className="h-5 w-5 flex-shrink-0 text-black" />
+        <Download className="h-5 w-5 flex-shrink-0 text-white" />
         {(!isCollapsed || isMobile) && (
-          <span className="text-sm font-medium text-black truncate">Κατέβασε την Εφαρμογή</span>
+          <span className="text-sm font-medium text-white truncate">Κατέβασε την Εφαρμογή</span>
         )}
       </button>
       
