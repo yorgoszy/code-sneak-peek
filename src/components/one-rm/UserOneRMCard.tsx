@@ -54,7 +54,7 @@ export const UserOneRMCard = ({ userName, userAvatar, exercises }: UserOneRMCard
                   {exercise.exerciseName}
                 </p>
                 <p className="text-base font-bold text-[#cb8954] mb-0.5">{exercise.weight} kg</p>
-                <p className="text-[9px] text-gray-500">
+                <p className="text-[10px] text-gray-500">
                   {format(new Date(exercise.recordedDate), 'dd/MM/yy')}
                 </p>
               </div>
