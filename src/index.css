@@ -174,4 +174,30 @@ html, body {
     scrollbar-width: thin;
     scrollbar-color: #00ffba #f1f1f1;
   }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thumb-\[\#cb8954\]::-webkit-scrollbar-thumb {
+    background: #cb8954;
+    border-radius: 0px;
+  }
+
+  .scrollbar-thumb-\[\#cb8954\]::-webkit-scrollbar-thumb:hover {
+    background: #b87648;
+  }
+
+  .scrollbar-track-gray-100::-webkit-scrollbar-track {
+    background: #f3f4f6;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #cb8954 #f3f4f6;
+  }
 }
