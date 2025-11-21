@@ -18,7 +18,10 @@ import {
   Video,
   Tag,
   Pilcrow,
-  Gauge
+  Gauge,
+  Download,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -40,6 +43,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const location = useLocation();
   const { userProfile } = useRoleCheck();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [isDownloadMenuOpen, setIsDownloadMenuOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
   const [pendingVideocalls, setPendingVideocalls] = useState(0);
   const [todayBookings, setTodayBookings] = useState({ total: 0, cancelled: 0 });
@@ -554,6 +558,14 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null,
       external: true
     },
+    { type: 'separator' },
+    {
+      icon: Download,
+      label: "Download PWA Apps",
+      path: null,
+      badge: null,
+      isDownloadMenu: true
+    },
     {
       icon: ArrowLeft,
       label: "Επιστροφή στην Αρχική",
@@ -583,6 +595,10 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     </div>
   );
 
+  const pwaWidgets = [
+    { name: "Ημερολόγιο", path: "/calendar-widget", icon: Calendar }
+  ];
+
   const navigationContent = (
     <div className={`space-y-1 ${isMobile ? 'md:space-y-2' : 'space-y-2'}`}>
       {menuItems.map((item, index) => {
@@ -593,6 +609,41 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
               key={`separator-${index}`} 
               className="my-2 bg-gray-300" 
             />
+          );
+        }
+
+        // Download menu rendering
+        if (item.isDownloadMenu) {
+          return (
+            <div key="download-menu">
+              <button
+                onClick={() => setIsDownloadMenuOpen(!isDownloadMenuOpen)}
+                className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none text-gray-700`}
+              >
+                <div className="flex items-center space-x-3">
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  {(!isCollapsed || isMobile) && <span className="truncate">{item.label}</span>}
+                </div>
+                {(!isCollapsed || isMobile) && (
+                  isDownloadMenuOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+              
+              {isDownloadMenuOpen && (!isCollapsed || isMobile) && (
+                <div className="ml-8 space-y-1 mt-1">
+                  {pwaWidgets.map((widget) => (
+                    <button
+                      key={widget.path}
+                      onClick={() => window.open(widget.path, '_blank')}
+                      className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-none"
+                    >
+                      <widget.icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{widget.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           );
         }
 
