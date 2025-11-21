@@ -50,8 +50,6 @@ import SubscriptionsWidget from "@/pages/SubscriptionsWidget";
 import InstallSubscriptionsWidget from "@/pages/InstallSubscriptionsWidget";
 import AthletesProgressWidget from "@/pages/AthletesProgressWidget";
 import InstallAthletesProgressWidget from "@/pages/InstallAthletesProgressWidget";
-import DashboardWidget from "@/pages/DashboardWidget";
-import InstallDashboardWidget from "@/pages/InstallDashboardWidget";
 
 const queryClient = new QueryClient();
 
@@ -78,8 +76,6 @@ function App() {
                 <Route path="/subscriptions-widget" element={<ProtectedRoute><SubscriptionsWidget /></ProtectedRoute>} />
                 <Route path="/install-athletes-progress" element={<ProtectedRoute><InstallAthletesProgressWidget /></ProtectedRoute>} />
                 <Route path="/athletes-progress-widget" element={<ProtectedRoute><AthletesProgressWidget /></ProtectedRoute>} />
-                <Route path="/install-dashboard" element={<ProtectedRoute><InstallDashboardWidget /></ProtectedRoute>} />
-                <Route path="/dashboard-widget" element={<ProtectedRoute><DashboardWidget /></ProtectedRoute>} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />

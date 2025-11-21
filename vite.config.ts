@@ -18,15 +18,15 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['lovable-uploads/50032971-abc1-489c-af48-27aacdb66ec3.png'],
       manifest: {
-        name: 'Dashboard - HYPERKIDS',
-        short_name: 'Dashboard',
-        description: 'Το Dashboard μου HYPERKIDS',
+        name: 'HYPERKIDS',
+        short_name: 'HYPERKIDS',
+        description: 'HYPERKIDS - Προπονητική και Διατροφή για Παιδιά',
         theme_color: '#00ffba',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/dashboard-widget',
-        scope: '/dashboard-widget',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
             src: '/lovable-uploads/50032971-abc1-489c-af48-27aacdb66ec3.png',
