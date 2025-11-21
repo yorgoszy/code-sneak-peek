@@ -130,8 +130,8 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <CarouselPrevious className="left-0" style={{ backgroundColor: '#00ffba', color: 'black', border: 'none' }} />
+            <CarouselNext className="right-0" style={{ backgroundColor: '#00ffba', color: 'black', border: 'none' }} />
           </Carousel>
         ) : (
           <div className="flex justify-center">
