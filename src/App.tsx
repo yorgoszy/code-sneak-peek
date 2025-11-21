@@ -6,8 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-
-import Index from "@/pages/Index";
+import { RootRedirect } from "@/components/RootRedirect";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
@@ -57,7 +56,7 @@ function App() {
             <Suspense fallback={<CustomLoadingScreen />}>
               <Routes>
                 {/* Public routes */}
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<RootRedirect />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/shop" element={<Shop />} />
