@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { UserProfileHistory } from "@/components/user-profile/UserProfileHistory";
+import { UserProgressSection } from "@/components/user-profile/UserProgressSection";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { Combobox } from "@/components/ui/combobox";
 
@@ -124,10 +124,10 @@ export const AthletesProgressWithSidebar = () => {
               {selectedUserId && (
                 <Card className="rounded-none">
                   <CardHeader>
-                    <CardTitle className="text-xl font-semibold">Ιστορικό Προόδου</CardTitle>
+                    <CardTitle className="text-xl font-semibold">Πρόοδος</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <UserProfileHistory userId={selectedUserId} />
+                    <UserProgressSection userId={selectedUserId} />
                   </CardContent>
                 </Card>
               )}
