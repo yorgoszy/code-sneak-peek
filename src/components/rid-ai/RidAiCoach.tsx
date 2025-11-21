@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User } from "lucide-react";
+import { Send, Bot, User, Loader2 } from "lucide-react";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface Message {
@@ -16,8 +17,43 @@ export const RidAiCoach = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const { userProfile } = useRoleCheck();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Load conversation history on mount
+  useEffect(() => {
+    const loadHistory = async () => {
+      if (!userProfile?.id) return;
+      
+      setIsLoadingHistory(true);
+      try {
+        const { data, error } = await supabase
+          .from('ai_conversations')
+          .select('*')
+          .eq('user_id', userProfile.id)
+          .order('created_at', { ascending: true })
+          .limit(50);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const formattedMessages: Message[] = data.map((msg: any) => ({
+            role: msg.message_type as 'user' | 'assistant',
+            content: msg.content
+          }));
+          setMessages(formattedMessages);
+        }
+      } catch (error) {
+        console.error('Error loading conversation history:', error);
+        toast.error('Σφάλμα κατά τη φόρτωση του ιστορικού');
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
+    loadHistory();
+  }, [userProfile?.id]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -121,7 +157,13 @@ export const RidAiCoach = () => {
       <CardContent className="flex-1 flex flex-col p-0">
         <ScrollArea className="flex-1 p-4" ref={scrollRef}>
           <div className="space-y-4">
-            {messages.length === 0 && (
+            {isLoadingHistory && (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-[#00ffba]" />
+              </div>
+            )}
+
+            {!isLoadingHistory && messages.length === 0 && (
               <div className="text-center text-gray-500 py-8">
                 <Bot className="w-12 h-12 mx-auto mb-4 text-[#00ffba]" />
                 <p className="font-semibold mb-2">Γεια σου! Είμαι ο RID</p>
@@ -131,7 +173,8 @@ export const RidAiCoach = () => {
               </div>
             )}
 
-            {messages.map((message, index) => (
+            {!isLoadingHistory && messages.map((message, index) => (
+
               <div
                 key={index}
                 className={`flex gap-3 ${
@@ -191,7 +234,7 @@ export const RidAiCoach = () => {
             />
             <Button
               onClick={sendMessage}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || isLoadingHistory}
               className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
             >
               <Send className="w-4 h-4" />
