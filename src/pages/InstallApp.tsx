@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Smartphone, Check, Monitor, Info } from 'lucide-react';
+import { Download, Smartphone, Check, Monitor, Info, ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function InstallApp() {
+  const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -48,8 +50,16 @@ export default function InstallApp() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full rounded-none">
-        <CardHeader className="text-center">
+      <Card className="max-w-2xl w-full rounded-none relative">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 left-4 rounded-none"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <CardHeader className="text-center pt-12">
           <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-[#cb8954]/10 flex items-center justify-center">
             <Smartphone className="w-10 h-10 text-[#cb8954]" />
           </div>
