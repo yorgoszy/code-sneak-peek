@@ -44,6 +44,7 @@ import Offers from "@/pages/Offers";
 import ProfileEdit from "@/pages/ProfileEdit";
 import InstallApp from "@/pages/InstallApp";
 import CalendarWidget from "@/pages/CalendarWidget";
+import InstallCalendarWidget from "@/pages/InstallCalendarWidget";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ function App() {
                 <Route path="/online-coaching" element={<OnlineCoaching />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/install" element={<InstallApp />} />
+                <Route path="/install-calendar" element={<ProtectedRoute><InstallCalendarWidget /></ProtectedRoute>} />
                 <Route path="/calendar-widget" element={<ProtectedRoute><CalendarWidget /></ProtectedRoute>} />
                 
                 {/* Admin-only routes */}
