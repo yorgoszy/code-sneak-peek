@@ -1,19 +1,17 @@
 import { Sidebar } from "@/components/Sidebar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import { UserProfileHistory } from "@/components/user-profile/UserProfileHistory";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
+import { Combobox } from "@/components/ui/combobox";
 
 export const AthletesProgressWithSidebar = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadUsers();
@@ -35,6 +33,15 @@ export const AthletesProgressWithSidebar = () => {
       setLoading(false);
     }
   };
+
+  const userOptions = useMemo(() => 
+    (users || []).map(user => ({ 
+      value: user.id, 
+      label: user.name,
+      searchTerms: `${user.name} ${user.email || ''}`
+    })),
+    [users]
+  );
 
   const handleUserSelect = (userId: string) => {
     setSelectedUserId(userId);
@@ -61,18 +68,15 @@ export const AthletesProgressWithSidebar = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Επιλέξτε Αθλητή
                       </label>
-                      <Select value={selectedUserId} onValueChange={handleUserSelect}>
-                        <SelectTrigger className="w-full md:w-96 rounded-none">
-                          <SelectValue placeholder="Επιλέξτε χρήστη..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {users.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              {user.name} ({user.email})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="w-full md:w-96">
+                        <Combobox
+                          options={userOptions}
+                          value={selectedUserId}
+                          onValueChange={handleUserSelect}
+                          placeholder="Αναζήτηση με όνομα ή email..."
+                          emptyMessage="Δεν βρέθηκε χρήστης."
+                        />
+                      </div>
                     </div>
 
                     {selectedUserId && (
