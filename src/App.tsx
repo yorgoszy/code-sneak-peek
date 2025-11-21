@@ -48,6 +48,8 @@ import CalendarWidget from "@/pages/CalendarWidget";
 import InstallCalendarWidget from "@/pages/InstallCalendarWidget";
 import SubscriptionsWidget from "@/pages/SubscriptionsWidget";
 import InstallSubscriptionsWidget from "@/pages/InstallSubscriptionsWidget";
+import AthletesProgressWidget from "@/pages/AthletesProgressWidget";
+import InstallAthletesProgressWidget from "@/pages/InstallAthletesProgressWidget";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +74,8 @@ function App() {
                 <Route path="/calendar-widget" element={<ProtectedRoute><CalendarWidget /></ProtectedRoute>} />
                 <Route path="/install-subscriptions" element={<ProtectedRoute><InstallSubscriptionsWidget /></ProtectedRoute>} />
                 <Route path="/subscriptions-widget" element={<ProtectedRoute><SubscriptionsWidget /></ProtectedRoute>} />
+                <Route path="/install-athletes-progress" element={<ProtectedRoute><InstallAthletesProgressWidget /></ProtectedRoute>} />
+                <Route path="/athletes-progress-widget" element={<ProtectedRoute><AthletesProgressWidget /></ProtectedRoute>} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
