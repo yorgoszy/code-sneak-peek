@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { UserProfileSidebar } from "@/components/user-profile/UserProfileSidebar";
 import { UserProfileContent } from "@/components/user-profile/UserProfileContent";
-import { useUserProfileData } from "@/components/user-profile/hooks/useUserProfileData";
+import { useDashboardData } from "@/components/user-profile/hooks/useDashboardData";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -19,8 +19,8 @@ const DashboardWidget = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   
-  // Fetch user profile data using the hook
-  const { stats, programs, tests, payments, visits } = useUserProfileData(userProfile, !!userProfile);
+  // Use lightweight dashboard data hook
+  const { stats, programs, loading: dashboardLoading } = useDashboardData(user?.id || '');
 
   // Fetch user profile
   useEffect(() => {
@@ -68,7 +68,7 @@ const DashboardWidget = () => {
     };
   }, [user?.id]);
 
-  if (authLoading || profileLoading) {
+  if (authLoading || profileLoading || dashboardLoading) {
     return <CustomLoadingScreen />;
   }
 
@@ -137,9 +137,9 @@ const DashboardWidget = () => {
             userProfile={userProfile}
             stats={stats}
             programs={programs}
-            tests={tests}
-            payments={payments}
-            visits={visits}
+            tests={[]}
+            payments={[]}
+            visits={[]}
           />
         </div>
       </div>
