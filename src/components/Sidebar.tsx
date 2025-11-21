@@ -596,7 +596,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   );
 
   const pwaWidgets = [
-    { name: "Ημερολόγιο", path: "/calendar-widget", icon: Calendar }
+    { name: "Ημερολόγιο", path: "/install-calendar", icon: Calendar }
   ];
 
   const navigationContent = (
@@ -634,7 +634,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
                   {pwaWidgets.map((widget) => (
                     <button
                       key={widget.path}
-                      onClick={() => window.open(widget.path, '_blank')}
+                      onClick={() => navigate(widget.path)}
                       className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-none"
                     >
                       <widget.icon className="h-4 w-4 flex-shrink-0" />
