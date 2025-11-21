@@ -50,37 +50,21 @@ const DashboardWidget = () => {
     if (!user?.id) return;
     
     // Set custom manifest for dashboard widget
-    const manifestData = {
-      name: 'Dashboard - HYPERKIDS',
-      short_name: 'Dashboard',
-      description: 'Το Dashboard μου HYPERKIDS',
-      theme_color: '#00ffba',
-      background_color: '#ffffff',
-      display: 'standalone',
-      orientation: 'portrait',
-      start_url: `/dashboard-widget`,
-      scope: '/dashboard-widget',
-      icons: [
-        {
-          src: '/pwa-icons/dashboard-icon.png',
-          sizes: '512x512',
-          type: 'image/png',
-          purpose: 'any maskable'
-        }
-      ]
-    };
-
-    const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
-    const manifestURL = URL.createObjectURL(manifestBlob);
+    const existingManifest = document.querySelector('link[rel="manifest"]');
+    if (existingManifest) {
+      existingManifest.remove();
+    }
     
     const link = document.createElement('link');
     link.rel = 'manifest';
-    link.href = manifestURL;
+    link.href = '/dashboard-manifest.json';
     document.head.appendChild(link);
 
     return () => {
-      document.head.removeChild(link);
-      URL.revokeObjectURL(manifestURL);
+      const manifestLink = document.querySelector('link[rel="manifest"][href="/dashboard-manifest.json"]');
+      if (manifestLink) {
+        manifestLink.remove();
+      }
     };
   }, [user?.id]);
 
