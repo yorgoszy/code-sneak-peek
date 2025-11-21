@@ -596,7 +596,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   );
 
   const pwaWidgets = [
-    { name: "Ημερολόγιο", path: "/install-calendar", icon: Calendar }
+    { name: "Ημερολόγιο", path: "/install-calendar", icon: Calendar },
+    { name: "Συνδρομές", path: "/install-subscriptions", icon: Crown }
   ];
 
   const navigationContent = (
