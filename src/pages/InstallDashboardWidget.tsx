@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, Smartphone, Check, Monitor, ArrowLeft, BarChart3 } from 'lucide-react';
@@ -7,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function InstallDashboardWidget() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -53,7 +55,9 @@ export default function InstallDashboardWidget() {
   };
 
   const handleOpenWidget = () => {
-    window.open('/dashboard-widget', '_blank');
+    if (user) {
+      window.open(`/dashboard-widget/${user.id}`, '_blank');
+    }
   };
 
   const handleBack = () => {
