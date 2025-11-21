@@ -3,16 +3,15 @@ import { useState, useEffect, useMemo } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { UserProfileHistory } from "@/components/user-profile/UserProfileHistory";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { Combobox } from "@/components/ui/combobox";
-import { useNavigate } from "react-router-dom";
 
 export const AthletesProgressWithSidebar = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadUsers();
@@ -85,9 +84,6 @@ export const AthletesProgressWithSidebar = () => {
 
   const handleUserSelect = (userId: string) => {
     setSelectedUserId(userId);
-    if (userId) {
-      navigate(`/dashboard/user-profile/${userId}?tab=progress`);
-    }
   };
 
   if (loading) {
@@ -121,15 +117,28 @@ export const AthletesProgressWithSidebar = () => {
                         />
                       </div>
                     </div>
-                    
-                    {!selectedUserId && (
-                      <div className="text-center py-12 text-gray-500">
-                        Επιλέξτε έναν αθλητή για να δείτε την πρόοδό του
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
+
+              {selectedUserId && (
+                <Card className="rounded-none">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold">Ιστορικό Προόδου</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <UserProfileHistory userId={selectedUserId} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {!selectedUserId && (
+                <Card className="rounded-none">
+                  <CardContent className="text-center py-12 text-gray-500">
+                    Επιλέξτε έναν αθλητή για να δείτε την πρόοδό του
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </main>
         </div>
