@@ -162,32 +162,87 @@ serve(async (req) => {
     }
     
     if (platformData) {
-      // Process programs data
+      // Process programs data with workout stats
       if (platformData.programs && platformData.programs.length > 0) {
-        const programsList = platformData.programs.map(assignment => {
+        enhancedContext += '\n\n🏋️ ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ ΚΑΙ ΣΤΑΤΙΣΤΙΚΑ:';
+        
+        platformData.programs.forEach(assignment => {
           const program = assignment.programs;
-          let exercisesList = '';
+          const stats = assignment.workoutStats;
+          const user = assignment.app_users;
           
-          if (program?.program_weeks) {
-            const exercises = new Set();
+          enhancedContext += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+          enhancedContext += `\n📋 Πρόγραμμα: ${program.name}`;
+          if (program.description) {
+            enhancedContext += `\n📝 Περιγραφή: ${program.description}`;
+          }
+          
+          // User info
+          if (user) {
+            enhancedContext += `\n👤 Αθλητής: ${user.name} (${user.email})`;
+          }
+          
+          // Assignment details
+          enhancedContext += `\n📅 Ημερομηνίες: ${assignment.start_date} έως ${assignment.end_date}`;
+          enhancedContext += `\n🎯 Κατάσταση: ${assignment.status}`;
+          if (assignment.notes) {
+            enhancedContext += `\n💬 Σημειώσεις: ${assignment.notes}`;
+          }
+          
+          // Workout Stats
+          if (stats) {
+            enhancedContext += `\n\n📊 ΣΤΑΤΙΣΤΙΚΑ ΠΡΟΠΟΝΗΣΗΣ:`;
+            enhancedContext += `\n✅ Ολοκληρωμένες: ${stats.completed}/${stats.total} (${stats.progress}%)`;
+            enhancedContext += `\n❌ Χαμένες: ${stats.missed}`;
+            enhancedContext += `\n⏳ Υπόλοιπες: ${stats.total - stats.completed}`;
+          }
+          
+          // Training dates
+          if (assignment.training_dates && assignment.training_dates.length > 0) {
+            const today = new Date().toISOString().split('T')[0];
+            const upcoming = assignment.training_dates.filter(d => d >= today).slice(0, 5);
+            if (upcoming.length > 0) {
+              enhancedContext += `\n\n📆 ΕΠΟΜΕΝΕΣ ΠΡΟΠΟΝΗΣΕΙΣ:`;
+              upcoming.forEach(date => {
+                const dateObj = new Date(date);
+                enhancedContext += `\n- ${dateObj.toLocaleDateString('el-GR')}`;
+              });
+            }
+          }
+          
+          // Program structure with exercises
+          if (program?.program_weeks && program.program_weeks.length > 0) {
+            enhancedContext += `\n\n🗓️ ΔΟΜΗ ΠΡΟΓΡΑΜΜΑΤΟΣ:`;
+            
             program.program_weeks.forEach(week => {
+              enhancedContext += `\n\n${week.name || `Εβδομάδα ${week.week_number}`}:`;
+              
               week.program_days?.forEach(day => {
+                enhancedContext += `\n  ${day.name || `Ημέρα ${day.day_number}`}`;
+                if (day.estimated_duration_minutes) {
+                  enhancedContext += ` (${day.estimated_duration_minutes} λεπτά)`;
+                }
+                
                 day.program_blocks?.forEach(block => {
+                  enhancedContext += `\n    ${block.name}:`;
+                  
                   block.program_exercises?.forEach(pe => {
-                    if (pe.exercises) {
-                      exercises.add(`- Άσκηση: ${pe.exercises.name} (${pe.sets} sets x ${pe.reps} reps${pe.kg ? `, ${pe.kg}kg` : ''})`);
+                    const exercise = pe.exercises;
+                    if (exercise) {
+                      enhancedContext += `\n      • ${exercise.name}: ${pe.sets} sets x ${pe.reps} reps`;
+                      if (pe.kg) enhancedContext += ` @ ${pe.kg}kg`;
+                      if (pe.tempo) enhancedContext += ` (Tempo: ${pe.tempo})`;
+                      if (pe.rest) enhancedContext += ` (Ανάπαυση: ${pe.rest})`;
+                      if (pe.velocity_ms) enhancedContext += ` (Ταχύτητα: ${pe.velocity_ms}m/s)`;
+                      if (pe.percentage_1rm) enhancedContext += ` (${pe.percentage_1rm}% 1RM)`;
+                      if (pe.notes) enhancedContext += `\n        Σημειώσεις: ${pe.notes}`;
                     }
                   });
                 });
               });
             });
-            exercisesList = Array.from(exercises).join('\n');
           }
-          
-          return `📋 Πρόγραμμα: ${program.name}${program.description ? ` - ${program.description}` : ''}\nΑσκήσεις:\n${exercisesList}`;
-        }).join('\n\n');
-        
-        enhancedContext += `\n\n🏋️ ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ ΤΟΥ ΧΡΗΣΤΗ:\n${programsList}`;
+        });
       }
 
       // Process strength history (Force-Velocity data)
@@ -293,39 +348,57 @@ serve(async (req) => {
 ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
 
 🎯 ΚΥΡΙΟΣ ΣΤΟΧΟΣ ΣΟΥ:
-Να παρέχεις ΕΞΑΤΟΜΙΚΕΥΜΕΝΕΣ διατροφικές συμβουλές που βασίζονται στην ΤΡΕΧΟΥΣΑ κατάσταση προπόνησης του χρήστη.
+Να παρέχεις ΕΞΑΤΟΜΙΚΕΥΜΕΝΕΣ διατροφικές και προπονητικές συμβουλές που βασίζονται στην ΤΡΕΧΟΥΣΑ κατάσταση του χρήστη.
 
-Βοηθάς με:
-1. 🥗 Διατροφικές συμβουλές βασισμένες στο ΤΙ ΠΡΟΠΟΝΗΘΗΚΕ ΣΗΜΕΡΑ ή ΤΙ ΘΑ ΠΡΟΠΟΝΗΘΕΙ
-2. 💪 Προτάσεις για γεύματα πριν/μετά την προπόνηση ανάλογα με τις ασκήσεις της ημέρας
-3. 📊 Ανάλυση προόδου και προσαρμογή διατροφής
-4. 🎯 Εξατομικευμένες συμβουλές βάσει των πραγματικών δεδομένων του
-5. 📅 Προτάσεις για την εβδομάδα βασισμένες στο πρόγραμμά του
+📊 ΔΕΔΟΜΕΝΑ ΣΤΗ ΔΙΑΘΕΣΗ ΣΟΥ:
+1. 🏋️ ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ με:
+   - Πλήρη δομή προπονήσεων (εβδομάδες, ημέρες, blocks, ασκήσεις)
+   - Στατιστικά προόδου (ολοκληρωμένες/συνολικές/χαμένες προπονήσεις)
+   - Επόμενες προπονήσεις και ημερομηνίες
+   - Λεπτομέρειες ασκήσεων (sets, reps, kg, tempo, rest, velocity)
+   
+2. 💪 ΙΣΤΟΡΙΚΟ ΔΥΝΑΜΗΣ:
+   - Force-Velocity δεδομένα
+   - 1RM ιστορικό ανά άσκηση
+   - Προοδος στη δύναμη
+   
+3. 🏃 ΙΣΤΟΡΙΚΟ ΑΝΤΟΧΗΣ:
+   - VO2 Max, MAS
+   - Καρδιακός ρυθμός
+   - Push-ups, Pull-ups, Crunches
+   
+4. 🦘 ΙΣΤΟΡΙΚΟ ΑΛΜΑΤΩΝ:
+   - CMJ, Non-CMJ, Depth Jump
+   - Broad Jump, Triple Jump
+   
+5. 📏 ΣΩΜΑΤΟΜΕΤΡΙΚΑ:
+   - Βάρος, Ύψος, Λίπος, Μυϊκή Μάζα
+   - Περιμέτρους (μέση, γοφός, στήθος, χέρι, μηρός)
 
-ΣΗΜΑΝΤΙΚΟ:
-- ΠΑΝΤΑ αναφέρεσαι στα ΣΥΓΚΕΚΡΙΜΕΝΑ δεδομένα που βλέπεις (π.χ. "Σήμερα έχεις Squat και Deadlift...")
-- Προτείνε διατροφή που ταιριάζει με την ένταση της προπόνησης
-- Αν έχει upper body, προτείνε διαφορετική διατροφή από ότι αν έχει legs
+💬 ΤΡΟΠΟΣ ΕΠΙΚΟΙΝΩΝΙΑΣ:
+- ΠΑΝΤΑ αναφέρεσαι στα ΣΥΓΚΕΚΡΙΜΕΝΑ δεδομένα που βλέπεις
+- Προτείνε διατροφή που ταιριάζει με την ένταση και τον τύπο προπόνησης
+- Αν έχει upper body σήμερα, διαφορετική διατροφή από legs day
 - Χρησιμοποίησε τα στατιστικά για να δώσεις συγκεκριμένες συμβουλές
+- Αναγνώρισε την πρόοδο και τις βελτιώσεις του
+- Προτείνε προσαρμογές στο πρόγραμμα βάσει των αποτελεσμάτων
 
 ${enhancedContext}
 
-ΣΗΜΑΝΤΙΚΟ: Όταν αναφέρεις ασκήσεις από τα προγράμματα του χρήστη, γράφε τις ΑΚΡΙΒΩΣ με το format:
-"Άσκηση: [Όνομα Άσκησης]"
-
-Παράδειγμα: "Άσκηση: Squat" ή "Άσκηση: Push Up"
+ΣΗΜΑΝΤΙΚΟ: Όταν αναφέρεις ασκήσεις, γράφε τις ΑΚΡΙΒΩΣ όπως εμφανίζονται στα δεδομένα.
 
 Όταν συζητάς:
 - Αναφέρου συγκεκριμένα στοιχεία από τα δεδομένα του χρήστη
-- Δώσε εξατομικευμένες συμβουλές βάσει των τεστ του
+- Δώσε εξατομικευμένες συμβουλές βάσει των τεστ και προπονήσεών του
 - Πρότεινε βελτιώσεις στα προγράμματά του
 - Ανάλυσε την πρόοδό του με βάση τα ιστορικά δεδομένα
+- Σχολίασε τα workout stats του (ποσοστό ολοκλήρωσης, missed workouts κλπ)
 
 Πάντα:
 - Απαντάς στα ελληνικά
 - Δίνεις συγκεκριμένες, εξατομικευμένες συμβουλές
 - Αναφέρεις τα πραγματικά δεδομένα του χρήστη
-- Είσαι φιλικός και υποστηρικτικός`;
+- Είσαι φιλικός, υποστηρικτικός και motivational`;
 
     // Try Gemini first
     let aiResponse;

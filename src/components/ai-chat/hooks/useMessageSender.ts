@@ -45,34 +45,106 @@ export const useMessageSender = ({
     try {
       console.log('🤖 useMessageSender: Calling RID AI for user:', userId, 'Message:', userMessage);
       
-      // Fetch user's programs and tests for context
+      // Fetch user's programs with full details including user info
       const { data: programs } = await supabase
         .from('program_assignments')
         .select(`
           id,
           training_dates,
+          status,
+          start_date,
+          end_date,
+          notes,
+          created_at,
           programs:program_id (
             id,
             name,
             description,
             program_weeks (
+              id,
+              name,
+              week_number,
               program_days (
+                id,
+                name,
+                day_number,
+                estimated_duration_minutes,
                 program_blocks (
+                  id,
+                  name,
+                  block_order,
                   program_exercises (
+                    id,
                     sets,
                     reps,
                     kg,
+                    tempo,
+                    rest,
+                    notes,
+                    percentage_1rm,
+                    velocity_ms,
+                    exercise_order,
                     exercises:exercise_id (
-                      name
+                      id,
+                      name,
+                      description
                     )
                   )
                 )
               )
             )
+          ),
+          app_users:user_id (
+            id,
+            name,
+            email,
+            photo_url
           )
         `)
         .eq('user_id', userId)
         .eq('status', 'active');
+
+      // Fetch workout completions for each program to calculate stats
+      let programsWithStats = programs || [];
+      if (programs && programs.length > 0) {
+        const assignmentIds = programs.map(p => p.id);
+        const { data: completions } = await supabase
+          .from('workout_completions')
+          .select('*')
+          .in('assignment_id', assignmentIds)
+          .order('scheduled_date', { ascending: false });
+
+        // Calculate stats for each program
+        programsWithStats = programs.map(program => {
+          const programCompletions = (completions || []).filter(c => c.assignment_id === program.id);
+          const trainingDates = program.training_dates || [];
+          
+          // Calculate unique completed dates
+          const uniqueCompletedDates = new Set();
+          programCompletions.forEach(c => {
+            if (c.status === 'completed' && trainingDates.includes(c.scheduled_date)) {
+              uniqueCompletedDates.add(c.scheduled_date);
+            }
+          });
+          
+          const completedWorkouts = uniqueCompletedDates.size;
+          const missedWorkouts = programCompletions.filter(c => c.status === 'missed').length;
+          const totalWorkouts = trainingDates.length;
+          const progress = totalWorkouts > 0 
+            ? Math.min(100, Math.round((completedWorkouts / totalWorkouts) * 100))
+            : 0;
+
+          return {
+            ...program,
+            workoutStats: {
+              completed: completedWorkouts,
+              total: totalWorkouts,
+              missed: missedWorkouts,
+              progress
+            }
+          };
+        });
+      }
 
       // Fetch strength test history (Force-Velocity data)
       const { data: strengthHistory } = await supabase
@@ -169,7 +241,7 @@ export const useMessageSender = ({
           message: userMessage,
           userId: userId,
           platformData: {
-            programs: programs || [],
+            programs: programsWithStats || [],
             strengthHistory: strengthHistory || [],
             enduranceHistory: enduranceHistory || [],
             jumpHistory: jumpHistory || [],
