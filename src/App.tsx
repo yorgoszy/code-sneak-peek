@@ -50,6 +50,7 @@ import SubscriptionsWidget from "@/pages/SubscriptionsWidget";
 import InstallSubscriptionsWidget from "@/pages/InstallSubscriptionsWidget";
 import AthletesProgressWidget from "@/pages/AthletesProgressWidget";
 import InstallAthletesProgressWidget from "@/pages/InstallAthletesProgressWidget";
+import RidAiCoachPage from "@/pages/RidAiCoachPage";
 
 const queryClient = new QueryClient();
 
@@ -102,6 +103,7 @@ function App() {
                 <Route path="/dashboard/school-notes" element={<ProtectedRoute requireAdmin><SchoolNotesWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/stretches" element={<ProtectedRoute requireAdmin><StretchesManagementWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/one-rm" element={<ProtectedRoute requireAdmin><OneRMManagementWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/rid-ai-coach" element={<ProtectedRoute><RidAiCoachPage /></ProtectedRoute>} />
                 <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
                 
                 {/* Protected user routes */}

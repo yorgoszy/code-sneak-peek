@@ -71,14 +71,18 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         const { data: acceptedOffers, error: paymentsError } = await supabase
           .from('payments')
           .select('id, offer_id')
-          .not('subscription_type_id', 'is', null)
+          .not('offer_id', 'is', null)
           .gte('payment_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Τελευταίες 30 ημέρες
 
         if (paymentsError) throw paymentsError;
         
-        // Παίρνουμε τα acknowledged offer IDs από localStorage
-        const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
-        const acknowledgedOfferIds = new Set(acknowledgedIds);
+        // Παίρνουμε τα acknowledged offer IDs από τη βάση δεδομένων
+        const { data: acknowledgedData } = await supabase
+          .from('acknowledged_payments')
+          .select('payment_id')
+          .eq('admin_user_id', userProfile.id);
+
+        const acknowledgedOfferIds = new Set(acknowledgedData?.map(a => a.payment_id) || []);
         
         // Υπολογίζουμε πόσες αποδεκτές προσφορές δεν έχουν επισημανθεί
         const newAcceptedOffers = acceptedOffers?.filter(offer => 
@@ -445,6 +449,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       label: "Προσφορές",
       path: "/dashboard/offers",
       badge: availableOffers > 0 ? availableOffers.toString() : null
+    },
+    {
+      icon: Brain,
+      label: "RID AI Coach",
+      path: "/dashboard/rid-ai-coach",
+      badge: null
     },
     {
       icon: Video,
