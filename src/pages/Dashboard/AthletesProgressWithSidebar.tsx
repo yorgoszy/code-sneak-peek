@@ -20,9 +20,47 @@ export const AthletesProgressWithSidebar = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
+      
+      // Φέρνουμε χρήστες που έχουν τουλάχιστον ένα test session
+      const { data: strengthUsers } = await supabase
+        .from('strength_test_sessions')
+        .select('user_id')
+        .not('user_id', 'is', null);
+
+      const { data: anthropometricUsers } = await supabase
+        .from('anthropometric_test_sessions')
+        .select('user_id')
+        .not('user_id', 'is', null);
+
+      const { data: enduranceUsers } = await supabase
+        .from('endurance_test_sessions')
+        .select('user_id')
+        .not('user_id', 'is', null);
+
+      const { data: jumpUsers } = await supabase
+        .from('jump_test_sessions')
+        .select('user_id')
+        .not('user_id', 'is', null);
+
+      // Συλλέγουμε όλα τα unique user IDs
+      const userIdsWithTests = new Set([
+        ...(strengthUsers?.map(u => u.user_id) || []),
+        ...(anthropometricUsers?.map(u => u.user_id) || []),
+        ...(enduranceUsers?.map(u => u.user_id) || []),
+        ...(jumpUsers?.map(u => u.user_id) || [])
+      ]);
+
+      if (userIdsWithTests.size === 0) {
+        setUsers([]);
+        setLoading(false);
+        return;
+      }
+
+      // Φέρνουμε τα στοιχεία των χρηστών που έχουν tests
       const { data, error } = await supabase
         .from('app_users')
         .select('id, name, email')
+        .in('id', Array.from(userIdsWithTests))
         .order('name', { ascending: true });
 
       if (error) throw error;
