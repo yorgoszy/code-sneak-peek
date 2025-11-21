@@ -12,10 +12,19 @@ export default function InstallApp() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
+
   useEffect(() => {
     // Έλεγχος αν είναι mobile
-    const checkMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const userAgent = navigator.userAgent;
+    const checkMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    const checkIOS = /iPhone|iPad|iPod/i.test(userAgent);
+    const checkAndroid = /Android/i.test(userAgent);
+    
     setIsMobile(checkMobile);
+    setIsIOS(checkIOS);
+    setIsAndroid(checkAndroid);
 
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -91,49 +100,48 @@ export default function InstallApp() {
             </div>
           ) : (
             <>
-              {isInstallable && isMobile ? (
-                <Button
-                  onClick={handleInstall}
-                  className="w-full bg-[#cb8954] hover:bg-[#b5794a] text-white rounded-none"
-                  size="lg"
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  Εγκατάσταση Τώρα
-                </Button>
-              ) : isMobile ? (
-                <div className="space-y-4 pt-4 border-t">
-                  <Alert className="rounded-none">
-                    <Info className="h-4 w-4" />
-                    <AlertDescription className="text-sm">
-                      <strong>Βήμα 1:</strong> Ανάλογα με τη συσκευή σου, ακολούθησε τις παρακάτω οδηγίες
-                    </AlertDescription>
-                  </Alert>
+              {isMobile && (
+                <div className="space-y-4">
+                  {isAndroid && (
+                    <>
+                      {isInstallable ? (
+                        <Button
+                          onClick={handleInstall}
+                          className="w-full bg-[#cb8954] hover:bg-[#b5794a] text-white rounded-none"
+                          size="lg"
+                        >
+                          <Download className="w-5 h-5 mr-2" />
+                          Εγκατάσταση για Android
+                        </Button>
+                      ) : (
+                        <div className="bg-gray-50 p-4 rounded-none">
+                          <p className="font-semibold mb-2 flex items-center gap-2">
+                            <span>🤖</span> Οδηγίες για Android:
+                          </p>
+                          <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                            <li>Πάτησε το μενού του browser (⋮) πάνω δεξιά</li>
+                            <li>Επίλεξε "Εγκατάσταση εφαρμογής" ή "Προσθήκη στην αρχική οθόνη"</li>
+                            <li>Πάτησε "Εγκατάσταση" για επιβεβαίωση</li>
+                          </ol>
+                        </div>
+                      )}
+                    </>
+                  )}
                   
-                  <div className="space-y-3 text-sm">
+                  {isIOS && (
                     <div className="bg-gray-50 p-4 rounded-none">
                       <p className="font-semibold mb-2 flex items-center gap-2">
-                        <span>📱</span> iPhone / iPad:
+                        <span>📱</span> Οδηγίες για iPhone / iPad:
                       </p>
-                      <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                      <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
                         <li>Πάτησε το κουμπί "Κοινή χρήση" <span className="inline-block">↗️</span> στο κάτω μέρος της οθόνης</li>
                         <li>Κύλησε κάτω και επίλεξε "Προσθήκη στην Αφετηρία"</li>
                         <li>Πάτησε "Προσθήκη" για επιβεβαίωση</li>
                       </ol>
                     </div>
-                    
-                    <div className="bg-gray-50 p-4 rounded-none">
-                      <p className="font-semibold mb-2 flex items-center gap-2">
-                        <span>🤖</span> Android:
-                      </p>
-                      <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                        <li>Πάτησε το μενού του browser (⋮) πάνω δεξιά</li>
-                        <li>Επίλεξε "Εγκατάσταση εφαρμογής" ή "Προσθήκη στην αρχική οθόνη"</li>
-                        <li>Πάτησε "Εγκατάσταση" για επιβεβαίωση</li>
-                      </ol>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              ) : null}
+              )}
             </>
           )}
         </CardContent>
