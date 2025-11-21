@@ -1,7 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface ResultsSectionProps {
   translations: any;
@@ -22,6 +29,7 @@ interface Result {
 const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchResults();
@@ -78,6 +86,53 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
           <div style={{ color: '#aca097' }}>
             Δεν υπάρχουν αποτελέσματα προς εμφάνιση
           </div>
+        ) : isMobile ? (
+          <Carousel className="w-full max-w-sm mx-auto">
+            <CarouselContent>
+              {results.map((result) => (
+                <CarouselItem key={result.id}>
+                  <article className="bg-black rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
+                    {result.image_url && (
+                      <div className="relative">
+                        <img 
+                          src={result.image_url} 
+                          alt={result.title_el}
+                          className="w-full h-48 object-cover"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent"></div>
+                      </div>
+                    )}
+                    
+                    <div className="p-6 flex flex-col flex-grow">
+                      <div className="text-sm mb-2" style={{ color: '#cb8954' }}>
+                        {format(new Date(result.result_date), 'dd MMM yyyy')}
+                      </div>
+                      
+                      <h3 className="text-xl font-bold mb-3" style={{ fontFamily: 'Robert Pro, sans-serif', color: '#aca097' }}>
+                        {translations?.language === 'en' && result.title_en ? result.title_en : result.title_el}
+                      </h3>
+                      
+                      <p className="mb-4 flex-grow" style={{ color: '#aca097' }}>
+                        {translations?.language === 'en' && result.content_en ? result.content_en : result.content_el}
+                      </p>
+                      
+                      {result.hashtags && (
+                        <div className="flex flex-wrap gap-1">
+                          {parseHashtags(result.hashtags).map((tag, index) => (
+                            <span key={index} className="inline-block px-2 py-1 text-xs rounded-full" style={{ backgroundColor: '#cb8954', color: 'black' }}>
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         ) : (
           <div className="flex justify-center">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl">
