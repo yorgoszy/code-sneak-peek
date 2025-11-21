@@ -24,6 +24,8 @@ export default function Offers() {
 
   useEffect(() => {
     if (userProfile?.id) {
+      // Καθαρίζουμε το localStorage για τις προσφορές
+      localStorage.removeItem('acknowledgedOffers');
       loadUserOffers();
     }
   }, [userProfile?.id]);
