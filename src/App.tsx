@@ -39,6 +39,7 @@ import BookingSectionsWithSidebar from "@/pages/Dashboard/BookingSectionsWithSid
 import { SchoolNotesWithSidebar } from "@/pages/Dashboard/SchoolNotesWithSidebar";
 import StretchesManagementWithSidebar from "@/pages/Dashboard/StretchesManagementWithSidebar";
 import { OneRMManagementWithSidebar } from "@/pages/Dashboard/OneRMManagementWithSidebar";
+import { AthletesProgressWithSidebar } from "@/pages/Dashboard/AthletesProgressWithSidebar";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Offers from "@/pages/Offers";
 import ProfileEdit from "@/pages/ProfileEdit";
@@ -85,6 +86,7 @@ function App() {
                 <Route path="/dashboard/tests" element={<ProtectedRoute requireAdmin><Tests /></ProtectedRoute>} />
                 <Route path="/dashboard/test-results" element={<ProtectedRoute requireAdmin><TestResultsWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/progress" element={<ProtectedRoute requireAdmin><ProgressTrackingWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/athletes-progress" element={<ProtectedRoute requireAdmin><AthletesProgressWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/analytics" element={<ProtectedRoute requireAdmin><Analytics /></ProtectedRoute>} />
                 <Route path="/dashboard/articles" element={<ProtectedRoute requireAdmin><ArticlesWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/results" element={<ProtectedRoute requireAdmin><ResultsWithSidebar /></ProtectedRoute>} />

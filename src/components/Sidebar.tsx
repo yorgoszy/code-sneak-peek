@@ -497,6 +497,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/progress",
       badge: null
     },
+    {
+      icon: Users,
+      label: "Πρόοδος Αθλητών",
+      path: "/dashboard/athletes-progress",
+      badge: null
+    },
     { 
       icon: FileText, 
       label: "Τεστ", 
