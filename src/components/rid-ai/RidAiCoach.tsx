@@ -21,38 +21,43 @@ export const RidAiCoach = () => {
   const { userProfile } = useRoleCheck();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Load conversation history on mount
-  useEffect(() => {
-    const loadHistory = async () => {
-      if (!userProfile?.id) return;
-      
-      setIsLoadingHistory(true);
-      try {
-        const { data, error } = await supabase
-          .from('ai_conversations')
-          .select('*')
-          .eq('user_id', userProfile.id)
-          .order('created_at', { ascending: true })
-          .limit(50);
+  // Load conversation history
+  const loadHistory = async () => {
+    if (!userProfile?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('ai_conversations')
+        .select('*')
+        .eq('user_id', userProfile.id)
+        .order('created_at', { ascending: true })
+        .limit(50);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        if (data && data.length > 0) {
-          const formattedMessages: Message[] = data.map((msg: any) => ({
-            role: msg.message_type as 'user' | 'assistant',
-            content: msg.content
-          }));
-          setMessages(formattedMessages);
-        }
-      } catch (error) {
-        console.error('Error loading conversation history:', error);
-        toast.error('Σφάλμα κατά τη φόρτωση του ιστορικού');
-      } finally {
-        setIsLoadingHistory(false);
+      if (data && data.length > 0) {
+        const formattedMessages: Message[] = data.map((msg: any) => ({
+          role: msg.message_type as 'user' | 'assistant',
+          content: msg.content
+        }));
+        setMessages(formattedMessages);
+      } else {
+        setMessages([]);
       }
-    };
+    } catch (error) {
+      console.error('Error loading conversation history:', error);
+      toast.error('Σφάλμα κατά τη φόρτωση του ιστορικού');
+    }
+  };
 
-    loadHistory();
+  // Load history on mount
+  useEffect(() => {
+    const init = async () => {
+      setIsLoadingHistory(true);
+      await loadHistory();
+      setIsLoadingHistory(false);
+    };
+    init();
   }, [userProfile?.id]);
 
   useEffect(() => {
@@ -65,9 +70,12 @@ export const RidAiCoach = () => {
     if (!input.trim() || !userProfile?.id) return;
 
     const userMessage: Message = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
+
+    // Optimistically add user message
+    setMessages(prev => [...prev, userMessage]);
 
     try {
       const response = await fetch(
@@ -92,6 +100,7 @@ export const RidAiCoach = () => {
       const decoder = new TextDecoder();
       let assistantMessage = '';
 
+      // Add empty assistant message for streaming
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
       while (true) {
@@ -126,10 +135,16 @@ export const RidAiCoach = () => {
           }
         }
       }
+
+      // After streaming is complete, reload from database to ensure sync
+      await loadHistory();
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Σφάλμα κατά την αποστολή μηνύματος');
-      setMessages(prev => prev.slice(0, -1));
+      // Remove optimistic messages
+      setMessages(prev => prev.slice(0, -2));
+      // Restore input
+      setInput(currentInput);
     } finally {
       setIsLoading(false);
     }
