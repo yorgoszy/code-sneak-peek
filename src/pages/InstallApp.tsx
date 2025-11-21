@@ -52,7 +52,7 @@ export default function InstallApp() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full rounded-none relative">
         <Button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/dashboard')}
           variant="ghost"
           size="icon"
           className="absolute top-4 left-4 rounded-none"
