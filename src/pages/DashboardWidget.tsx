@@ -52,8 +52,8 @@ const DashboardWidget = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // Render the user's profile page directly
-  return <UserProfile />;
+  // Redirect to the user's profile page with their ID
+  return <Navigate to={`/user/${user.id}`} replace />;
 };
 
 export default DashboardWidget;
