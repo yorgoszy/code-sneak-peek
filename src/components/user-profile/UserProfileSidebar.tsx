@@ -326,7 +326,7 @@ export const UserProfileSidebar = forwardRef<
       
       {/* Κατέβασε την Εφαρμογή Button */}
       <button
-        onClick={() => navigate('/install')}
+        onClick={() => navigate('/install-dashboard')}
         className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-white bg-[#cb8954] hover:bg-[#b5794a] transition-colors rounded-none mt-2"
       >
         <Download className="h-5 w-5 flex-shrink-0 text-white" />
