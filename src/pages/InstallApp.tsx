@@ -91,30 +91,6 @@ export default function InstallApp() {
             </div>
           ) : (
             <>
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Πλεονεκτήματα:</h3>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[#00ffba]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-[#00ffba]">1</span>
-                    </div>
-                    <p className="text-sm">Πρόσβαση χωρίς σύνδεση στο διαδίκτυο</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[#00ffba]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-[#00ffba]">2</span>
-                    </div>
-                    <p className="text-sm">Γρήγορη φόρτωση και καλύτερη απόδοση</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[#00ffba]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-[#00ffba]">3</span>
-                    </div>
-                    <p className="text-sm">Εύκολη πρόσβαση από την αρχική οθόνη - σαν κανονική εφαρμογή!</p>
-                  </div>
-                </div>
-              </div>
-
               {isInstallable && isMobile ? (
                 <Button
                   onClick={handleInstall}
