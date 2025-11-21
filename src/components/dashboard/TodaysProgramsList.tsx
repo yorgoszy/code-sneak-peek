@@ -2,7 +2,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { User, Play, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 
@@ -72,19 +71,6 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <Badge 
-                variant="outline" 
-                className={`rounded-none text-[10px] px-1.5 py-0.5 ${
-                  isCompleted 
-                    ? 'bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba]' 
-                    : isMissed
-                    ? 'bg-red-100 text-red-600 border-red-300'
-                    : 'bg-blue-50 text-blue-600 border-blue-200'
-                }`}
-              >
-                {isCompleted ? 'Completed' : isMissed ? 'Missed' : 'Scheduled'}
-              </Badge>
-
               <Button
                 variant="ghost"
                 size="sm"
