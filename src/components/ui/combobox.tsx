@@ -16,6 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Normalize function to remove accents and convert to lowercase
 const normalizeString = (str: string): string => {
@@ -26,7 +27,7 @@ const normalizeString = (str: string): string => {
 };
 
 interface ComboboxProps {
-  options: { value: string; label: string; searchTerms?: string }[];
+  options: { value: string; label: string; searchTerms?: string; avatarUrl?: string | null }[];
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
@@ -110,6 +111,12 @@ export function Combobox({
                       value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
+                  {option.avatarUrl !== undefined && (
+                    <Avatar className="h-6 w-6 mr-2">
+                      <AvatarImage src={option.avatarUrl || undefined} />
+                      <AvatarFallback>{option.label.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  )}
                   {option.label}
                 </CommandItem>
               ))}
