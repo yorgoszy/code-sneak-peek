@@ -24,8 +24,6 @@ export default function Offers() {
 
   useEffect(() => {
     if (userProfile?.id) {
-      // Καθαρίζουμε το localStorage για τις προσφορές
-      localStorage.removeItem('acknowledgedOffers');
       loadUserOffers();
     }
   }, [userProfile?.id]);
@@ -56,9 +54,18 @@ export default function Offers() {
         
         console.log('✅ Accepted offers for admin:', acceptedOffers);
         
-        // Παίρνουμε τα acknowledged offer IDs από localStorage
-        const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
-        const acknowledgedOfferIds = new Set(acknowledgedIds);
+        // Παίρνουμε τα acknowledged offer IDs από τη βάση δεδομένων
+        const { data: acknowledgedData, error: ackError } = await supabase
+          .from('acknowledged_payments')
+          .select('payment_id')
+          .eq('admin_user_id', userProfile.id);
+
+        if (ackError) {
+          console.error('❌ Error loading acknowledged payments:', ackError);
+          throw ackError;
+        }
+
+        const acknowledgedOfferIds = new Set(acknowledgedData?.map(a => a.payment_id) || []);
 
         // Διαχωρισμός προσφορών με βάση το αν έχουν επισημανθεί ως "ενημερώθηκα"
         const allOffers = acceptedOffers || [];
@@ -240,15 +247,20 @@ export default function Offers() {
     setMarkingAsRead(true);
     
     try {
-      // Παίρνουμε τα υπάρχοντα acknowledged offer IDs από localStorage
-      const existingAcknowledged = JSON.parse(localStorage.getItem('acknowledgedOffers') || '[]');
-      
-      // Προσθέτουμε τα IDs των νέων αποδεκτών προσφορών
-      const newOfferIds = newOffers.map(offer => offer.id);
-      const updatedAcknowledged = [...existingAcknowledged, ...newOfferIds];
-      
-      // Αποθηκεύουμε στο localStorage
-      localStorage.setItem('acknowledgedOffers', JSON.stringify(updatedAcknowledged));
+      // Δημιουργούμε εγγραφές στη βάση για κάθε νέα προσφορά
+      const acknowledgedRecords = newOffers.map(offer => ({
+        admin_user_id: userProfile.id,
+        payment_id: offer.id
+      }));
+
+      const { error } = await supabase
+        .from('acknowledged_payments')
+        .insert(acknowledgedRecords);
+
+      if (error) {
+        console.error('❌ Error saving acknowledged payments:', error);
+        throw error;
+      }
       
       // Μεταφορά νέων προσφορών στο "Ενημερώθηκα"
       setReadOffers(prev => [...prev, ...newOffers]);
