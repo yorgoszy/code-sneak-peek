@@ -59,7 +59,7 @@ export const AthletesProgressWithSidebar = () => {
       // Φέρνουμε τα στοιχεία των χρηστών που έχουν tests
       const { data, error } = await supabase
         .from('app_users')
-        .select('id, name, email, avatar_url')
+        .select('id, name, email, photo_url')
         .in('id', Array.from(userIdsWithTests))
         .order('name', { ascending: true });
 
@@ -77,7 +77,7 @@ export const AthletesProgressWithSidebar = () => {
       value: user.id, 
       label: user.name,
       searchTerms: `${user.name} ${user.email || ''}`,
-      avatarUrl: user.avatar_url
+      avatarUrl: user.photo_url
     })),
     [users]
   );
