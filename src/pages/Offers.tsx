@@ -44,7 +44,7 @@ export default function Offers() {
             app_users!payments_user_id_fkey(id, name, email),
             subscription_types!payments_subscription_type_id_fkey(name, description, price)
           `)
-          .not('subscription_type_id', 'is', null)
+          .not('offer_id', 'is', null)
           .order('payment_date', { ascending: false });
 
         if (error) {
