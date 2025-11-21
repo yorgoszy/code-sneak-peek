@@ -44,6 +44,14 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [searchValue, setSearchValue] = React.useState("")
+  const buttonRef = React.useRef<HTMLButtonElement>(null)
+  const [buttonWidth, setButtonWidth] = React.useState<number>(0)
+
+  React.useEffect(() => {
+    if (buttonRef.current) {
+      setButtonWidth(buttonRef.current.offsetWidth)
+    }
+  }, [open])
 
   // Filter options based on normalized search
   const filteredOptions = React.useMemo(() => {
@@ -62,6 +70,7 @@ export function Combobox({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={buttonRef}
           variant="outline"
           role="combobox"
           aria-expanded={open}
@@ -71,7 +80,11 @@ export function Combobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0 rounded-none z-50">
+      <PopoverContent 
+        className="p-0 rounded-none z-50 bg-white" 
+        style={{ width: buttonWidth || 'auto' }}
+        align="start"
+      >
         <Command>
           <CommandInput 
             placeholder="Αναζήτηση..." 
