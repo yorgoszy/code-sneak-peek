@@ -397,13 +397,14 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         .from('ai_conversations')
         .select('*')
         .eq('user_id', athleteId)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
         .limit(50); // Τα 50 πιο πρόσφατα μηνύματα
 
       if (error) throw error;
 
       if (history && history.length > 0) {
-        const formattedMessages: Message[] = history.map((msg: any) => ({
+        // Αντιστρέφουμε τη σειρά για να δείξουμε τα παλαιότερα πρώτα
+        const formattedMessages: Message[] = history.reverse().map((msg: any) => ({
           id: msg.id,
           content: msg.content,
           role: msg.message_type as 'user' | 'assistant',
@@ -565,6 +566,9 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       // Αποθηκεύουμε την απάντηση του AI
       await saveMessageToDatabase(assistantMessage);
       
+      // Ξαναφορτώνουμε το conversation history για να είμαστε συγχρονισμένοι
+      await loadConversationHistory();
+      
     } catch (error) {
       console.error('RidAI Error:', error);
       toast.error('Σφάλμα στον RidAI Προπονητή');
@@ -578,6 +582,9 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       
       setMessages(prev => [...prev, errorMessage]);
       await saveMessageToDatabase(errorMessage);
+      
+      // Ξαναφορτώνουμε το conversation history ακόμα και σε περίπτωση σφάλματος
+      await loadConversationHistory();
     } finally {
       setIsLoading(false);
     }
