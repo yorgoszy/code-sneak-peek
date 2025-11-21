@@ -102,7 +102,7 @@ export const AthletesProgressWithSidebar = () => {
                   <CardTitle className="text-2xl font-bold">Πρόοδος Αθλητών</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Επιλέξτε Αθλητή
@@ -117,21 +117,28 @@ export const AthletesProgressWithSidebar = () => {
                         />
                       </div>
                     </div>
-
-                    {selectedUserId && (
-                      <div className="mt-6">
-                        <UserProfileHistory userId={selectedUserId} />
-                      </div>
-                    )}
-
-                    {!selectedUserId && (
-                      <div className="text-center py-12 text-gray-500">
-                        Επιλέξτε έναν αθλητή για να δείτε την πρόοδό του
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
+
+              {selectedUserId && (
+                <Card className="rounded-none">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold">Ιστορικό Προόδου</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <UserProfileHistory userId={selectedUserId} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {!selectedUserId && (
+                <Card className="rounded-none">
+                  <CardContent className="text-center py-12 text-gray-500">
+                    Επιλέξτε έναν αθλητή για να δείτε την πρόοδό του
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </main>
         </div>
