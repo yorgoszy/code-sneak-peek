@@ -1,14 +1,16 @@
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import UserProfile from "@/pages/UserProfile";
 
 const DashboardWidget = () => {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { userId } = useParams();
 
   useEffect(() => {
+    if (!user?.id) return;
+    
     // Set custom manifest for dashboard widget
     const manifestData = {
       name: 'Dashboard - HYPERKIDS',
@@ -18,7 +20,7 @@ const DashboardWidget = () => {
       background_color: '#ffffff',
       display: 'standalone',
       orientation: 'portrait',
-      start_url: '/dashboard-widget',
+      start_url: `/dashboard-widget/${user.id}`,
       scope: '/dashboard-widget',
       icons: [
         {
@@ -42,7 +44,7 @@ const DashboardWidget = () => {
       document.head.removeChild(link);
       URL.revokeObjectURL(manifestURL);
     };
-  }, []);
+  }, [user?.id]);
 
   if (authLoading) {
     return <CustomLoadingScreen />;
@@ -52,8 +54,13 @@ const DashboardWidget = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // Redirect to the user's profile page with their ID
-  return <Navigate to={`/user/${user.id}`} replace />;
+  // If no userId in URL, redirect to dashboard-widget with user's ID
+  if (!userId) {
+    return <Navigate to={`/dashboard-widget/${user.id}`} replace />;
+  }
+
+  // Render the user's profile page directly
+  return <UserProfile />;
 };
 
 export default DashboardWidget;
