@@ -61,9 +61,9 @@ export default function InstallDashboardWidget() {
   };
 
   const handleBack = () => {
-    // Go back to user profile if we came from there, otherwise go to dashboard
-    if (window.history.length > 1) {
-      navigate(-1);
+    // Go back to user profile
+    if (user?.id) {
+      navigate(`/user/${user.id}`);
     } else {
       navigate('/dashboard');
     }
