@@ -55,9 +55,7 @@ export default function InstallDashboardWidget() {
   };
 
   const handleOpenWidget = () => {
-    if (user) {
-      window.open(`/dashboard-widget/${user.id}`, '_blank');
-    }
+    window.open('/dashboard-widget', '_blank');
   };
 
   const handleBack = () => {

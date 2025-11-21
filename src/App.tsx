@@ -80,7 +80,6 @@ function App() {
                 <Route path="/athletes-progress-widget" element={<ProtectedRoute><AthletesProgressWidget /></ProtectedRoute>} />
                 <Route path="/install-dashboard" element={<ProtectedRoute><InstallDashboardWidget /></ProtectedRoute>} />
                 <Route path="/dashboard-widget" element={<ProtectedRoute><DashboardWidget /></ProtectedRoute>} />
-                <Route path="/dashboard-widget/:userId" element={<ProtectedRoute><DashboardWidget /></ProtectedRoute>} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
