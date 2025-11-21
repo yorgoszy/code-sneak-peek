@@ -14,6 +14,42 @@ const AthletesProgressWidget = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Set custom manifest for athletes progress widget
+    const manifestData = {
+      name: 'Πρόοδος Αθλητών - HYPERKIDS',
+      short_name: 'Πρόοδος',
+      description: 'Πρόοδος Αθλητών HYPERKIDS',
+      theme_color: '#00ffba',
+      background_color: '#ffffff',
+      display: 'standalone',
+      orientation: 'portrait',
+      start_url: '/athletes-progress-widget',
+      scope: '/athletes-progress-widget',
+      icons: [
+        {
+          src: '/pwa-icons/progress-icon.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any maskable'
+        }
+      ]
+    };
+
+    const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+    const manifestURL = URL.createObjectURL(manifestBlob);
+    
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = manifestURL;
+    document.head.appendChild(link);
+
+    return () => {
+      document.head.removeChild(link);
+      URL.revokeObjectURL(manifestURL);
+    };
+  }, []);
+
+  useEffect(() => {
     loadUsers();
   }, []);
 

@@ -35,8 +35,44 @@ const CalendarWidget = () => {
     updateElapsedTime,
   } = useMultipleWorkouts();
 
-  // Check for missed workouts on component mount
   useEffect(() => {
+    // Set custom manifest for calendar widget
+    const manifestData = {
+      name: 'Ημερολόγιο - HYPERKIDS',
+      short_name: 'Ημερολόγιο',
+      description: 'Ημερολόγιο Προπονήσεων HYPERKIDS',
+      theme_color: '#00ffba',
+      background_color: '#ffffff',
+      display: 'standalone',
+      orientation: 'portrait',
+      start_url: '/calendar-widget',
+      scope: '/calendar-widget',
+      icons: [
+        {
+          src: '/pwa-icons/calendar-icon.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any maskable'
+        }
+      ]
+    };
+
+    const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+    const manifestURL = URL.createObjectURL(manifestBlob);
+    
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = manifestURL;
+    document.head.appendChild(link);
+
+    return () => {
+      document.head.removeChild(link);
+      URL.revokeObjectURL(manifestURL);
+    };
+  }, []);
+
+  useEffect(() => {
+    const userAgent = navigator.userAgent;
     const checkMissedWorkouts = async () => {
       try {
         await workoutStatusService.markMissedWorkoutsForPastDates();
