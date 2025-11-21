@@ -60,7 +60,7 @@ const DashboardWidget = () => {
   }
 
   // Render the user's profile page directly
-  return <UserProfile />;
+  return <UserProfile hideBackButton={true} />;
 };
 
 export default DashboardWidget;

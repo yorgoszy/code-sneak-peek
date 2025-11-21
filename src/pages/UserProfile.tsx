@@ -14,7 +14,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from 'react-i18next';
 import { useWorkoutStatsSync } from "@/hooks/useWorkoutStatsSync";
 
-const UserProfile = () => {
+const UserProfile = ({ hideBackButton = false }: { hideBackButton?: boolean }) => {
   const { userId } = useParams();
   const location = useLocation();
   const { user: currentUser, loading, signOut, isAuthenticated } = useAuth();
@@ -176,12 +176,14 @@ const UserProfile = () => {
                 </Button>
               )}
               
-              <Link to="/dashboard/users">
-                <Button variant="outline" size="sm" className="rounded-none h-8 px-2 md:px-4">
-                  <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
-                  <span className="hidden sm:inline text-xs md:text-sm">{t('common.back')}</span>
-                </Button>
-              </Link>
+              {!hideBackButton && (
+                <Link to="/dashboard/users">
+                  <Button variant="outline" size="sm" className="rounded-none h-8 px-2 md:px-4">
+                    <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+                    <span className="hidden sm:inline text-xs md:text-sm">{t('common.back')}</span>
+                  </Button>
+                </Link>
+              )}
               
               <div className="min-w-0 flex-1">
                 <h1 className="text-sm md:text-2xl font-bold text-gray-900 truncate">
