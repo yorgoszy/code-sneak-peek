@@ -1932,7 +1932,7 @@ ${athletesList}
         console.log('🔍 Loading 1RM data...');
         
         const oneRMResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/user_exercise_1rm?select=*,app_users!user_exercise_1rm_user_id_fkey(name,email),exercises(name)&order=recorded_date.desc&limit=200`,
+          `${SUPABASE_URL}/rest/v1/user_exercise_1rm?select=*,app_users!user_exercise_1rm_user_id_fkey(name,email),exercises(name)&order=weight.desc`,
           {
             headers: {
               "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1943,7 +1943,43 @@ ${athletesList}
         const oneRMData = await oneRMResponse.json();
 
         if (Array.isArray(oneRMData) && oneRMData.length > 0) {
-          // Οργάνωση δεδομένων ανά χρήστη
+          console.log(`📦 Fetched ${oneRMData.length} 1RM records from database`);
+          
+          // Οργάνωση δεδομένων ανά χρήστη+άσκηση (κρατάμε το μέγιστο 1RM)
+          const userExerciseMap = new Map<string, {
+            userId: string;
+            userName: string;
+            userEmail: string;
+            exerciseId: string;
+            exerciseName: string;
+            maxWeight: number;
+            recordedDate: string;
+            notes?: string;
+          }>();
+
+          oneRMData.forEach((record: any) => {
+            const userId = record.user_id;
+            const exerciseId = record.exercise_id;
+            const key = `${userId}_${exerciseId}`;
+            
+            // Επειδή τα δεδομένα είναι sorted by weight desc, το πρώτο είναι το μέγιστο
+            if (!userExerciseMap.has(key)) {
+              userExerciseMap.set(key, {
+                userId,
+                userName: record.app_users?.name || 'Άγνωστος',
+                userEmail: record.app_users?.email || '',
+                exerciseId,
+                exerciseName: record.exercises?.name || 'Άγνωστη άσκηση',
+                maxWeight: record.weight,
+                recordedDate: record.recorded_date,
+                notes: record.notes
+              });
+            }
+          });
+
+          console.log(`✅ Processed ${userExerciseMap.size} unique user-exercise combinations`);
+
+          // Ομαδοποίηση ανά χρήστη
           const userOneRMMap = new Map<string, {
             userName: string;
             userEmail: string;
@@ -1955,38 +1991,48 @@ ${athletesList}
             }>;
           }>();
 
-          oneRMData.forEach((record: any) => {
-            const userId = record.user_id;
-            const userName = record.app_users?.name || 'Άγνωστος';
-            const userEmail = record.app_users?.email || '';
-            const exerciseName = record.exercises?.name || 'Άγνωστη άσκηση';
-
-            if (!userOneRMMap.has(userId)) {
-              userOneRMMap.set(userId, {
-                userName,
-                userEmail,
+          userExerciseMap.forEach((data) => {
+            if (!userOneRMMap.has(data.userId)) {
+              userOneRMMap.set(data.userId, {
+                userName: data.userName,
+                userEmail: data.userEmail,
                 exercises: []
               });
             }
-
-            const userData = userOneRMMap.get(userId)!;
             
-            // Προσθήκη άσκησης αν δεν υπάρχει ήδη (κρατάμε τη νεότερη)
-            const existingExercise = userData.exercises.find(e => e.exerciseName === exerciseName);
-            if (!existingExercise) {
-              userData.exercises.push({
-                exerciseName,
-                weight: record.weight,
-                recordedDate: record.recorded_date,
-                notes: record.notes
-              });
-            }
+            userOneRMMap.get(data.userId)!.exercises.push({
+              exerciseName: data.exerciseName,
+              weight: data.maxWeight,
+              recordedDate: data.recordedDate,
+              notes: data.notes
+            });
           });
 
-          // Δημιουργία readable context
+          // Δημιουργία readable context με σειρά προτεραιότητας ασκήσεων
+          const getExercisePriority = (name: string): number => {
+            const n = name.toUpperCase().trim();
+            if (n === 'BP') return 1;
+            if (n === 'SQ') return 2;
+            if (n === 'DL') return 3;
+            if (n === 'DEADLIFT TRAP BAR') return 4;
+            if (n === 'MP') return 5;
+            if (n.includes('CLEAN')) return 6;
+            if (n === 'JERK') return 7;
+            if (n === 'JERK BACK') return 8;
+            if (n.includes('ROW')) return 9;
+            if (n.includes('PULL UP') || n.includes('PULL-UP')) return 10;
+            return 999;
+          };
+
           const oneRMList = Array.from(userOneRMMap.entries())
+            .sort((a, b) => a[1].userName.localeCompare(b[1].userName, 'el'))
             .map(([userId, data]) => {
-              const exercisesList = data.exercises
+              // Sort exercises by priority
+              const sortedExercises = [...data.exercises].sort((a, b) => 
+                getExercisePriority(a.exerciseName) - getExercisePriority(b.exerciseName)
+              );
+              
+              const exercisesList = sortedExercises
                 .map(ex => `  • ${ex.exerciseName}: ${ex.weight}kg (${new Date(ex.recordedDate).toLocaleDateString('el-GR')})${ex.notes ? ` - ${ex.notes}` : ''}`)
                 .join('\n');
               return `\n${data.userName}${data.userEmail ? ` (${data.userEmail})` : ''}:\n${exercisesList}`;
@@ -1996,26 +2042,31 @@ ${athletesList}
           // Στατιστικά
           const totalUsers = userOneRMMap.size;
           const totalRecords = oneRMData.length;
-          const exercisesSet = new Set(oneRMData.map((r: any) => r.exercises?.name).filter(Boolean));
+          const uniqueCombinations = userExerciseMap.size;
+          const exercisesSet = new Set(Array.from(userExerciseMap.values()).map(v => v.exerciseName));
           const topExercises = Array.from(exercisesSet).slice(0, 10);
 
           oneRMContext = `\n\n💪 1RM - ΜΕΓΙΣΤΗ ΕΠΑΝΑΛΗΨΗ (από /dashboard/one-rm):
 
 📊 ΣΤΑΤΙΣΤΙΚΑ:
 - Σύνολο Αθλητών με 1RM: ${totalUsers}
-- Σύνολο Καταγραφών: ${totalRecords}
+- Σύνολο Καταγραφών στη ΒΔ: ${totalRecords}
+- Μοναδικοί Συνδυασμοί Αθλητή-Άσκησης: ${uniqueCombinations}
 - Ασκήσεις με 1RM: ${exercisesSet.size}
 - Top ασκήσεις: ${topExercises.join(', ')}
 
-📝 ΑΝΑΛΥΤΙΚΑ ΔΕΔΟΜΕΝΑ 1RM ΑΝΑ ΑΘΛΗΤΗ:${oneRMList}
+📝 ΑΝΑΛΥΤΙΚΑ ΔΕΔΟΜΕΝΑ 1RM ΑΝΑ ΑΘΛΗΤΗ (ΜΕΓΙΣΤΑ ΒΑΡΗ):${oneRMList}
 
 💡 ΟΔΗΓΙΕΣ ΧΡΗΣΗΣ:
-- Όταν σε ρωτήσουν "τι 1RM έχει ο [όνομα];" → Βρες τον αθλητή στη λίστα παραπάνω
+- Όταν σε ρωτήσουν "τι 1RM έχει ο [όνομα];" → Βρες τον αθλητή στη λίστα παραπάνω και δώσε ΤΑ ΜΕΓΙΣΤΑ ΒΑΡΗ
 - Όταν σε ρωτήσουν "ποιος έχει το μεγαλύτερο 1RM στο [άσκηση];" → Σύγκρινε τα βάρη για αυτή την άσκηση
-- Όταν σε ρωτήσουν "πότε έκανε τελευταία φορά 1RM ο [όνομα];" → Κοίτα τις ημερομηνίες
-- Τα δεδομένα αυτά προέρχονται από τη σελίδα "1RM - Μέγιστη Επανάληψη" (/dashboard/one-rm)`;
+- Όταν σε ρωτήσουν "πότε έκανε τελευταία φορά 1RM ο [όνομα];" → Κοίτα τις ημερομηνίες (προσοχή: αυτή είναι η ημερομηνία του ΜΕΓΙΣΤΟΥ 1RM, όχι του πιο πρόσφατου)
+- ΣΗΜΑΝΤΙΚΟ: Τα βάρη που βλέπεις είναι τα ΜΕΓΙΣΤΑ 1RM για κάθε άσκηση, ανεξάρτητα από το πότε έγιναν
+- Τα δεδομένα προέρχονται από /dashboard/one-rm`;
           
-          console.log(`✅ Loaded ${totalRecords} 1RM records for ${totalUsers} athletes`);
+          console.log(`✅ Created 1RM context with ${totalUsers} athletes, ${uniqueCombinations} exercise combinations`);
+        } else {
+          console.log('⚠️ No 1RM data found');
         }
       } catch (error) {
         console.error('❌ Error loading 1RM data:', error);
