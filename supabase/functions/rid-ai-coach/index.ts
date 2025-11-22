@@ -61,6 +61,7 @@ serve(async (req) => {
       }
     );
     const strengthHistory = await strengthResponse.json();
+    console.log('Strength History:', JSON.stringify(strengthHistory, null, 2));
 
     // Φόρτωση ιστορικού αντοχής
     const enduranceResponse = await fetch(
