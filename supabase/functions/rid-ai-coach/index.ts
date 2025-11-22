@@ -206,21 +206,45 @@ serve(async (req) => {
     let calendarContext = '';
     
     if (Array.isArray(enrichedAssignments) && enrichedAssignments.length > 0) {
-      // Συλλογή όλων των προγραμματισμένων ημερομηνιών με status
+      // Συλλογή όλων των προγραμματισμένων ημερομηνιών με status και λεπτά
       const allProgramDates: any[] = [];
       
       enrichedAssignments.forEach((assignment: any) => {
         if (assignment.training_dates && assignment.programs && assignment.app_users) {
-          assignment.training_dates.forEach((dateStr: string) => {
+          const program = assignment.programs;
+          const daysPerWeek = program.program_weeks?.[0]?.program_days?.length || 0;
+          
+          assignment.training_dates.forEach((dateStr: string, index: number) => {
             const completion = workoutCompletions.find((c: any) => 
               c.assignment_id === assignment.id && c.scheduled_date === dateStr
             );
+            
+            // Υπολογισμός ποια ημέρα του προγράμματος είναι
+            const dayIndex = index % daysPerWeek;
+            const programDay = program.program_weeks?.[0]?.program_days?.[dayIndex];
+            const estimatedMinutes = programDay?.estimated_duration_minutes || 60; // default 60 λεπτά
+            
+            // Υπολογισμός status: αν η ημερομηνία έχει περάσει και δεν έχει completion, είναι missed
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const workoutDate = new Date(dateStr);
+            workoutDate.setHours(0, 0, 0, 0);
+            
+            let status = 'scheduled';
+            if (completion) {
+              status = completion.status;
+            } else if (workoutDate < today) {
+              status = 'missed'; // Η ημερομηνία πέρασε χωρίς completion
+            }
+            
             allProgramDates.push({
               date: dateStr,
-              status: completion?.status || 'scheduled',
+              status: status,
               programName: assignment.programs.name,
               userName: assignment.app_users.name,
-              assignmentId: assignment.id
+              assignmentId: assignment.id,
+              estimatedMinutes: estimatedMinutes,
+              actualMinutes: completion?.actual_duration_minutes || 0
             });
           });
         }
@@ -237,19 +261,16 @@ serve(async (req) => {
       const todaysWorkouts = allProgramDates.filter(d => d.date === todayStr);
       const futureWorkouts = allProgramDates.filter(d => d.date > todayStr);
       
-      // Τελευταίες 5 προπονήσεις
-      const recentWorkouts = pastWorkouts.slice(-5);
-      
-      // Επόμενες 5 προπονήσεις
-      const upcomingWorkouts = futureWorkouts.slice(0, 5);
-      
       // Calendar context
       const calendarStats = {
         totalScheduled: allProgramDates.length,
         completed: allProgramDates.filter(d => d.status === 'completed').length,
         missed: allProgramDates.filter(d => d.status === 'missed').length,
-        scheduled: allProgramDates.filter(d => d.status === 'scheduled').length
+        scheduled: allProgramDates.filter(d => d.status === 'scheduled' && d.date >= todayStr).length,
+        totalEstimatedMinutes: allProgramDates.reduce((sum, d) => sum + d.estimatedMinutes, 0),
+        totalActualMinutes: allProgramDates.filter(d => d.status === 'completed').reduce((sum, d) => sum + d.actualMinutes, 0)
       };
+      
       
       // Group workouts by month for detailed breakdown
       const workoutsByMonth: Record<string, any[]> = {};
@@ -260,6 +281,20 @@ serve(async (req) => {
           workoutsByMonth[monthKey] = [];
         }
         workoutsByMonth[monthKey].push(workout);
+      });
+      
+      // Group workouts by week
+      const workoutsByWeek: Record<string, any[]> = {};
+      allProgramDates.forEach((workout: any) => {
+        const date = new Date(workout.date);
+        const startOfYear = new Date(date.getFullYear(), 0, 1);
+        const dayOfYear = Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+        const weekNumber = Math.ceil((dayOfYear + 1) / 7);
+        const weekKey = `${date.getFullYear()}-W${String(weekNumber).padStart(2, '0')}`;
+        if (!workoutsByWeek[weekKey]) {
+          workoutsByWeek[weekKey] = [];
+        }
+        workoutsByWeek[weekKey].push(workout);
       });
       
       // Create monthly summary (ALL months with workouts)
@@ -274,6 +309,13 @@ serve(async (req) => {
           const completed = workouts.filter(w => w.status === 'completed').length;
           const missed = workouts.filter(w => w.status === 'missed').length;
           const scheduled = workouts.filter(w => w.status === 'scheduled').length;
+          const totalWorkouts = workouts.length;
+          
+          // Υπολογισμός ωρών
+          const completedMinutes = workouts.filter(w => w.status === 'completed').reduce((sum, w) => sum + (w.actualMinutes || w.estimatedMinutes), 0);
+          const scheduledMinutes = workouts.reduce((sum, w) => sum + w.estimatedMinutes, 0);
+          const completedHours = Math.round(completedMinutes / 60 * 10) / 10;
+          const scheduledHours = Math.round(scheduledMinutes / 60 * 10) / 10;
           
           const workoutList = workouts
             .sort((a, b) => a.date.localeCompare(b.date))
@@ -285,11 +327,32 @@ serve(async (req) => {
             })
             .join('\n');
           
-          return `\n${monthName} ${year}:\n- Ολοκληρωμένες: ${completed}, Χαμένες: ${missed}, Προγραμματισμένες: ${scheduled}\n${workoutList}`;
+          return `\n${monthName} ${year}:\n- Προπονήσεις: ${completed}/${totalWorkouts} (Ολοκληρωμένες/Συνολικές)\n- Ώρες: ${completedHours}h/${scheduledHours}h (Πραγματικές/Προγραμματισμένες)\n- Χαμένες: ${missed}\n${workoutList}`;
         })
         .join('\n');
       
-      calendarContext = `\n\nΗμερολόγιο Προπονήσεων (Συνολικά):\n- Σύνολο προγραμματισμένων: ${calendarStats.totalScheduled}\n- Ολοκληρωμένες: ${calendarStats.completed}\n- Χαμένες: ${calendarStats.missed}\n- Προγραμματισμένες (εκκρεμείς): ${calendarStats.scheduled}\n\nΑνάλυση ανά μήνα (όλοι οι μήνες με προπονήσεις):${monthlyBreakdown}`;
+      // Create weekly summary (last 8 weeks)
+      const weeklyBreakdown = Object.entries(workoutsByWeek)
+        .sort(([a], [b]) => b.localeCompare(a))
+        .slice(0, 8)
+        .map(([weekKey, workouts]) => {
+          const [year, weekStr] = weekKey.split('-W');
+          const weekNum = parseInt(weekStr);
+          
+          const completed = workouts.filter(w => w.status === 'completed').length;
+          const missed = workouts.filter(w => w.status === 'missed').length;
+          const scheduled = workouts.filter(w => w.status === 'scheduled').length;
+          const totalWorkouts = workouts.length;
+          
+          const completedMinutes = workouts.filter(w => w.status === 'completed').reduce((sum, w) => sum + (w.actualMinutes || w.estimatedMinutes), 0);
+          const completedHours = Math.round(completedMinutes / 60 * 10) / 10;
+          
+          return `Εβδομάδα ${weekNum}/${year}: ${completed}/${totalWorkouts} προπονήσεις, ${completedHours}h ώρες, ${missed} χαμένες`;
+        })
+        .join('\n');
+      
+      calendarContext = `\n\nΗμερολόγιο Προπονήσεων (Συνολικά):\n- Σύνολο προγραμματισμένων: ${calendarStats.totalScheduled}\n- Ολοκληρωμένες: ${calendarStats.completed}\n- Χαμένες: ${calendarStats.missed}\n- Προγραμματισμένες (εκκρεμείς): ${calendarStats.scheduled}\n- Συνολικές ώρες προπόνησης: ${Math.round(calendarStats.totalActualMinutes / 60 * 10) / 10}h\n\nΑνάλυση ανά μήνα (όλοι οι μήνες με προπονήσεις):${monthlyBreakdown}\n\nΑνάλυση ανά εβδομάδα (τελευταίες 8 εβδομάδες):\n${weeklyBreakdown}`;
+      
       
       
       if (todaysWorkouts.length > 0) {
