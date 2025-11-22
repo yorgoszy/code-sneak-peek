@@ -451,12 +451,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: availableOffers > 0 ? availableOffers.toString() : null
     },
     {
-      icon: Brain,
-      label: "RID AI Coach",
-      path: "/dashboard/rid-ai-coach",
-      badge: null
-    },
-    {
       icon: Video,
       label: "Online Coaching",
       path: "/dashboard/online-coaching",
