@@ -528,6 +528,290 @@ serve(async (req) => {
         }).join('\n');
         
         trainingTypesContext = `\n\nΑνάλυση Τύπων Προπόνησης ανά Μήνα:${monthlyBreakdowns}`;
+        
+        // 🆕 Εβδομαδιαία ανάλυση (τρέχουσα εβδομάδα)
+        const weekStartDate = new Date();
+        weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay() + 1); // Monday
+        const weekEndDate = new Date(weekStartDate);
+        weekEndDate.setDate(weekStartDate.getDate() + 6); // Sunday
+        
+        const weekTypesByMonth: Record<string, Record<string, number>> = {};
+        
+        enrichedAssignments.forEach((assignment) => {
+          const program = assignment.programs;
+          if (!program?.program_weeks) return;
+          
+          assignment.training_dates?.forEach((dateStr: string, dateIndex: number) => {
+            const date = new Date(dateStr);
+            
+            // Φιλτράρουμε μόνο για την τρέχουσα εβδομάδα
+            if (date < weekStartDate || date > weekEndDate) return;
+            
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            if (!weekTypesByMonth[monthKey]) weekTypesByMonth[monthKey] = {};
+            
+            const daysPerWeek = program.program_weeks[0]?.program_days?.length || 1;
+            const weekIndex = Math.floor(dateIndex / daysPerWeek);
+            const dayIndex = dateIndex % daysPerWeek;
+            
+            const week = program.program_weeks[weekIndex];
+            if (!week) return;
+            
+            const day = week.program_days?.[dayIndex];
+            if (!day) return;
+            
+            day.program_blocks?.forEach((block: any) => {
+              if (!block.training_type) return;
+              
+              const excludedTypes = ['mobility', 'stability', 'activation', 'neural act', 'recovery'];
+              if (excludedTypes.includes(block.training_type)) return;
+              
+              let blockTime = 0;
+              block.program_exercises?.forEach((exercise: any) => {
+                const sets = exercise.sets || 0;
+                const reps = exercise.reps || '0';
+                const tempo = exercise.tempo || '';
+                const rest = exercise.rest || '';
+                
+                const isTimeMode = exercise.reps_mode === 'time';
+                let repsCount = 0;
+                let repsSeconds = 0;
+                
+                if (isTimeMode) {
+                  if (reps.includes(':')) {
+                    const [min, sec] = reps.split(':');
+                    repsSeconds = (parseInt(min) || 0) * 60 + (parseInt(sec) || 0);
+                  } else if (reps.includes("'")) {
+                    repsSeconds = (parseFloat(reps.replace("'", "")) || 0) * 60;
+                  } else if (reps.includes('s')) {
+                    repsSeconds = parseFloat(reps.replace('s', '')) || 0;
+                  } else {
+                    repsSeconds = parseFloat(reps) || 0;
+                  }
+                } else {
+                  if (reps.includes('.')) {
+                    reps.split('.').forEach((part: string) => {
+                      repsCount += parseInt(part) || 0;
+                    });
+                  } else {
+                    repsCount = parseInt(reps) || 0;
+                  }
+                }
+                
+                let tempoSeconds = 3;
+                if (tempo) {
+                  const parts = tempo.split('.');
+                  tempoSeconds = 0;
+                  parts.forEach((part: string) => {
+                    if (part === 'x' || part === 'X') {
+                      tempoSeconds += 0.5;
+                    } else {
+                      tempoSeconds += parseFloat(part) || 0;
+                    }
+                  });
+                }
+                
+                let restSeconds = 0;
+                if (rest.includes(':')) {
+                  const [min, sec] = rest.split(':');
+                  restSeconds = (parseInt(min) || 0) * 60 + (parseInt(sec) || 0);
+                } else if (rest.includes("'")) {
+                  restSeconds = (parseFloat(rest.replace("'", "")) || 0) * 60;
+                } else if (rest.includes('s')) {
+                  restSeconds = parseFloat(rest.replace('s', '')) || 0;
+                } else {
+                  restSeconds = (parseFloat(rest) || 0) * 60;
+                }
+                
+                if (isTimeMode) {
+                  blockTime += sets * repsSeconds + sets * restSeconds;
+                } else {
+                  blockTime += sets * repsCount * tempoSeconds + sets * restSeconds;
+                }
+              });
+              
+              const timeMinutes = Math.round(blockTime / 60);
+              const typeLabel = block.training_type;
+              
+              if (!weekTypesByMonth[monthKey][typeLabel]) {
+                weekTypesByMonth[monthKey][typeLabel] = 0;
+              }
+              weekTypesByMonth[monthKey][typeLabel] += timeMinutes;
+            });
+          });
+        });
+        
+        let weeklyTypeBreakdown = '';
+        if (Object.keys(weekTypesByMonth).length > 0) {
+          const weekBreakdowns = Object.entries(weekTypesByMonth)
+            .map(([monthKey, types]) => {
+              const [year, month] = monthKey.split('-');
+              const monthName = new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString('el-GR', { month: 'long' });
+              
+              const typesList = Object.entries(types)
+                .map(([type, minutes]) => {
+                  const hours = Math.round((minutes as number) / 60 * 10) / 10;
+                  const label = typeLabels[type] || type;
+                  return `  - ${label}: ${hours}h (${minutes}λ)`;
+                })
+                .join('\n');
+              
+              const totalMinutes = Object.values(types).reduce((sum, m) => sum + (m as number), 0);
+              const totalHours = Math.round(totalMinutes / 60 * 10) / 10;
+              
+              return `\n${monthName} ${year} (Σύνολο: ${totalHours}h):\n${typesList}`;
+            }).join('\n');
+          
+          weeklyTypeBreakdown = `\n\nΑνάλυση Τύπων Προπόνησης για την Τρέχουσα Εβδομάδα (${weekStartDate.toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit' })} - ${weekEndDate.toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit' })}):${weekBreakdowns}`;
+        }
+        
+        // 🆕 Ημερήσια ανάλυση (σήμερα)
+        const todayDate = new Date();
+        const todayStr = todayDate.toISOString().split('T')[0];
+        
+        const todayTypesByMonth: Record<string, Record<string, number>> = {};
+        let todayExercises: Array<{name: string; sets: number; reps: string}> = [];
+        
+        enrichedAssignments.forEach((assignment) => {
+          const program = assignment.programs;
+          if (!program?.program_weeks) return;
+          
+          assignment.training_dates?.forEach((dateStr: string, dateIndex: number) => {
+            if (dateStr !== todayStr) return;
+            
+            const date = new Date(dateStr);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            if (!todayTypesByMonth[monthKey]) todayTypesByMonth[monthKey] = {};
+            
+            const daysPerWeek = program.program_weeks[0]?.program_days?.length || 1;
+            const weekIndex = Math.floor(dateIndex / daysPerWeek);
+            const dayIndex = dateIndex % daysPerWeek;
+            
+            const week = program.program_weeks[weekIndex];
+            if (!week) return;
+            
+            const day = week.program_days?.[dayIndex];
+            if (!day) return;
+            
+            day.program_blocks?.forEach((block: any) => {
+              if (!block.training_type) return;
+              
+              const excludedTypes = ['mobility', 'stability', 'activation', 'neural act', 'recovery'];
+              if (excludedTypes.includes(block.training_type)) return;
+              
+              let blockTime = 0;
+              block.program_exercises?.forEach((exercise: any) => {
+                const sets = exercise.sets || 0;
+                const reps = exercise.reps || '0';
+                const tempo = exercise.tempo || '';
+                const rest = exercise.rest || '';
+                
+                // Αποθηκεύουμε την άσκηση
+                todayExercises.push({
+                  name: exercise.exercises?.name || 'Άσκηση',
+                  sets: sets,
+                  reps: reps
+                });
+                
+                const isTimeMode = exercise.reps_mode === 'time';
+                let repsCount = 0;
+                let repsSeconds = 0;
+                
+                if (isTimeMode) {
+                  if (reps.includes(':')) {
+                    const [min, sec] = reps.split(':');
+                    repsSeconds = (parseInt(min) || 0) * 60 + (parseInt(sec) || 0);
+                  } else if (reps.includes("'")) {
+                    repsSeconds = (parseFloat(reps.replace("'", "")) || 0) * 60;
+                  } else if (reps.includes('s')) {
+                    repsSeconds = parseFloat(reps.replace('s', '')) || 0;
+                  } else {
+                    repsSeconds = parseFloat(reps) || 0;
+                  }
+                } else {
+                  if (reps.includes('.')) {
+                    reps.split('.').forEach((part: string) => {
+                      repsCount += parseInt(part) || 0;
+                    });
+                  } else {
+                    repsCount = parseInt(reps) || 0;
+                  }
+                }
+                
+                let tempoSeconds = 3;
+                if (tempo) {
+                  const parts = tempo.split('.');
+                  tempoSeconds = 0;
+                  parts.forEach((part: string) => {
+                    if (part === 'x' || part === 'X') {
+                      tempoSeconds += 0.5;
+                    } else {
+                      tempoSeconds += parseFloat(part) || 0;
+                    }
+                  });
+                }
+                
+                let restSeconds = 0;
+                if (rest.includes(':')) {
+                  const [min, sec] = rest.split(':');
+                  restSeconds = (parseInt(min) || 0) * 60 + (parseInt(sec) || 0);
+                } else if (rest.includes("'")) {
+                  restSeconds = (parseFloat(rest.replace("'", "")) || 0) * 60;
+                } else if (rest.includes('s')) {
+                  restSeconds = parseFloat(rest.replace('s', '')) || 0;
+                } else {
+                  restSeconds = (parseFloat(rest) || 0) * 60;
+                }
+                
+                if (isTimeMode) {
+                  blockTime += sets * repsSeconds + sets * restSeconds;
+                } else {
+                  blockTime += sets * repsCount * tempoSeconds + sets * restSeconds;
+                }
+              });
+              
+              const timeMinutes = Math.round(blockTime / 60);
+              const typeLabel = block.training_type;
+              
+              if (!todayTypesByMonth[monthKey][typeLabel]) {
+                todayTypesByMonth[monthKey][typeLabel] = 0;
+              }
+              todayTypesByMonth[monthKey][typeLabel] += timeMinutes;
+            });
+          });
+        });
+        
+        let todayTypeBreakdown = '';
+        if (Object.keys(todayTypesByMonth).length > 0) {
+          const todayBreakdowns = Object.entries(todayTypesByMonth)
+            .map(([monthKey, types]) => {
+              const typesList = Object.entries(types)
+                .map(([type, minutes]) => {
+                  const hours = Math.round((minutes as number) / 60 * 10) / 10;
+                  const label = typeLabels[type] || type;
+                  return `  - ${label}: ${hours}h (${minutes}λ)`;
+                })
+                .join('\n');
+              
+              const totalMinutes = Object.values(types).reduce((sum, m) => sum + (m as number), 0);
+              const totalHours = Math.round(totalMinutes / 60 * 10) / 10;
+              
+              return `\nΣύνολο: ${totalHours}h\n${typesList}`;
+            }).join('\n');
+          
+          todayTypeBreakdown = `\n\nΑνάλυση Τύπων Προπόνησης για Σήμερα (${todayDate.toLocaleDateString('el-GR', { weekday: 'long', day: '2-digit', month: 'long' })}):${todayBreakdowns}`;
+        }
+        
+        let todayExercisesContext = '';
+        if (todayExercises.length > 0) {
+          const exercisesList = todayExercises
+            .map(ex => `  - ${ex.name}: ${ex.sets}x${ex.reps}`)
+            .join('\n');
+          todayExercisesContext = `\n\nΑσκήσεις Σήμερα:\n${exercisesList}`;
+        }
+        
+        trainingTypesContext += weeklyTypeBreakdown + todayTypeBreakdown + todayExercisesContext;
+        
         console.log('✅ Training types context created:', trainingTypesContext.substring(0, 200) + '...');
       } else {
         console.log('⚠️ No training types data found');
