@@ -261,6 +261,10 @@ serve(async (req) => {
       const todaysWorkouts = allProgramDates.filter(d => d.date === todayStr);
       const futureWorkouts = allProgramDates.filter(d => d.date > todayStr);
       
+      // Τελευταίες 5 και επόμενες 5 προπονήσεις
+      const recentWorkouts = pastWorkouts.slice(-5);
+      const upcomingWorkouts = futureWorkouts.slice(0, 5);
+      
       // Calendar context
       const calendarStats = {
         totalScheduled: allProgramDates.length,
