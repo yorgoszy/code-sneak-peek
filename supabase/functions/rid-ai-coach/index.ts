@@ -159,6 +159,73 @@ ${activePrograms.map((p, i) => `${i + 1}. ${p.userName} (${p.userEmail})
 
 ${completedPrograms.length > 0 ? `\n✅ Πρόσφατα Ολοκληρωμένα:
 ${completedPrograms.slice(0, 5).map((p, i) => `${i + 1}. ${p.userName} - ${p.programName} (${p.progress})`).join('\n')}` : ''}`;
+
+        // 📅 CALENDAR VIEW: Δημιουργία λεπτομερούς ημερολογίου
+        // Group workouts by date
+        const workoutsByDate: { [date: string]: Array<{userName: string, programName: string, status: string}> } = {};
+        
+        allAssignments.forEach((assignment: any) => {
+          const program = Array.isArray(allProgramsData) ? allProgramsData.find((p: any) => p.id === assignment.program_id) : null;
+          const user = Array.isArray(allUsersData) ? allUsersData.find((u: any) => u.id === assignment.user_id) : null;
+          
+          if (assignment.training_dates && program && user) {
+            assignment.training_dates.forEach((dateStr: string) => {
+              if (!workoutsByDate[dateStr]) {
+                workoutsByDate[dateStr] = [];
+              }
+              
+              const completion = Array.isArray(allCompletions) 
+                ? allCompletions.find((c: any) => c.assignment_id === assignment.id && c.scheduled_date === dateStr)
+                : null;
+              
+              const status = completion?.status || 'scheduled';
+              
+              workoutsByDate[dateStr].push({
+                userName: user.name || 'Unknown',
+                programName: program.name || 'Unknown Program',
+                status: status
+              });
+            });
+          }
+        });
+        
+        // Ταξινόμηση ημερομηνιών
+        const sortedDates = Object.keys(workoutsByDate).sort();
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Παρελθόν, Σήμερα, Μέλλον
+        const pastDates = sortedDates.filter(d => d < today);
+        const futureDates = sortedDates.filter(d => d > today);
+        const todayDate = sortedDates.find(d => d === today);
+        
+        // Πάρε τελευταίες 7 μέρες και επόμενες 14 μέρες
+        const recentPast = pastDates.slice(-7);
+        const upcomingFuture = futureDates.slice(0, 14);
+        
+        const calendarDisplay = [...recentPast, ...(todayDate ? [todayDate] : []), ...upcomingFuture]
+          .map(dateStr => {
+            const workouts = workoutsByDate[dateStr];
+            const dateObj = new Date(dateStr);
+            const formattedDate = dateObj.toLocaleDateString('el-GR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+            const isTodayDate = dateStr === today;
+            
+            const workoutsList = workouts.map(w => {
+              const statusIcon = w.status === 'completed' ? '✅' : w.status === 'missed' ? '❌' : '📅';
+              return `      ${statusIcon} ${w.userName} - ${w.programName}`;
+            }).join('\n');
+            
+            const totalCount = workouts.length;
+            const completedCount = workouts.filter(w => w.status === 'completed').length;
+            const missedCount = workouts.filter(w => w.status === 'missed').length;
+            const scheduledCount = workouts.filter(w => w.status === 'scheduled').length;
+            
+            return `${isTodayDate ? '🔥 ' : ''}${formattedDate} (${totalCount} προπονήσεις - ✅${completedCount} ❌${missedCount} 📅${scheduledCount}):
+${workoutsList}`;
+          })
+          .join('\n\n');
+        
+        adminActiveProgramsContext += `\n\n📅 ΗΜΕΡΟΛΟΓΙΟ ΠΡΟΠΟΝΗΣΕΩΝ (Calendar View):
+${calendarDisplay}`;
       }
     }
 
