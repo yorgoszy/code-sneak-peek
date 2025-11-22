@@ -56,7 +56,7 @@ serve(async (req) => {
     let programsData: any[] = [];
     if (programIds.length > 0) {
       const programsResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/programs?id=in.(${programIds.join(',')})&select=id,name,description,training_days,program_weeks!fk_program_weeks_program_id(id,name,week_number,program_days!fk_program_days_week_id(id,name,day_number,estimated_duration_minutes,is_test_day,test_types,is_competition_day,program_blocks!fk_program_blocks_day_id(id,name,block_order,program_exercises!fk_program_exercises_block_id(id,sets,reps,kg,tempo,rest,notes,exercise_order,exercises!fk_program_exercises_exercise_id(id,name,description,video_url)))))`,
+        `${SUPABASE_URL}/rest/v1/programs?id=in.(${programIds.join(',')})&select=id,name,description,training_days,program_weeks!fk_program_weeks_program_id(id,name,week_number,program_days!fk_program_days_week_id(id,name,day_number,estimated_duration_minutes,is_test_day,test_types,is_competition_day,program_blocks!fk_program_blocks_day_id(id,name,block_order,training_type,workout_format,workout_duration,program_exercises!fk_program_exercises_block_id(id,sets,reps,kg,tempo,rest,notes,exercise_order,reps_mode,exercises!fk_program_exercises_exercise_id(id,name,description,video_url)))))`,
         {
           headers: {
             "apikey": SUPABASE_SERVICE_ROLE_KEY!,
