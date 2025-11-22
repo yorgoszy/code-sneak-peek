@@ -1143,8 +1143,14 @@ serve(async (req) => {
     if (Array.isArray(subscriptions) && subscriptions.length > 0) {
       let totalDays = 0;
       let isPausedStatus = false;
+      let isPaid = false;
       
       subscriptions.forEach((sub: any) => {
+        // Έλεγχος αν είναι πληρωμένη
+        if (sub.is_paid) {
+          isPaid = true;
+        }
+        
         if (sub.is_paused && sub.paused_days_remaining) {
           totalDays += sub.paused_days_remaining;
           isPausedStatus = true;
@@ -1159,8 +1165,9 @@ serve(async (req) => {
       });
       
       if (totalDays > 0) {
-        const status = isPausedStatus ? '(Σε παύση)' : '';
-        subscriptionInfo = `\nΣυνδρομή: ${totalDays} ημέρες απομένουν ${status}`;
+        const paymentStatus = isPaid ? 'ΠΛΗΡΩΜΕΝΗ' : 'ΑΠΛΗΡΩΤΗ';
+        const pauseStatus = isPausedStatus ? ' (Σε παύση)' : '';
+        subscriptionInfo = `\nΣυνδρομή: ${totalDays} ημέρες απομένουν - Κατάσταση Πληρωμής: ${paymentStatus}${pauseStatus}`;
       }
     }
     
