@@ -50,6 +50,31 @@ serve(async (req) => {
     );
     const programsData = await programsResponse.json();
 
+    // Φόρτωση workout completions και attendance stats
+    const workoutStatsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${userId}&status=eq.active&select=id,training_dates,assignment_attendance(completed_workouts,missed_workouts,makeup_workouts,total_scheduled_workouts,attendance_percentage)`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const workoutStatsData = await workoutStatsResponse.json();
+    
+    // Φόρτωση workout completions για λεπτομερή στατιστικά
+    const workoutCompletionsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/workout_completions?user_id=eq.${userId}&order=completed_at.desc&limit=100&select=*`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const workoutCompletions = await workoutCompletionsResponse.json();
+    console.log('📊 Workout Stats:', JSON.stringify(workoutStatsData, null, 2));
+
     // Φόρτωση ιστορικού δύναμης μέσω sessions
     const strengthResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/strength_test_sessions?select=test_date,strength_test_attempts(weight_kg,velocity_ms,is_1rm,exercises(name))&user_id=eq.${userId}&order=test_date.desc&limit=20`,
@@ -129,6 +154,40 @@ serve(async (req) => {
         return `- ${program?.name || 'Πρόγραμμα'}${program?.description ? `: ${program.description}` : ''}`;
       }).join('\n');
       programContext = `\n\nΤα ενεργά προγράμματά σου:\n${programsList}`;
+    }
+    
+    // Context για workout stats
+    let workoutStatsContext = '';
+    if (Array.isArray(workoutStatsData) && workoutStatsData.length > 0) {
+      const today = new Date();
+      const last7Days = new Date(today);
+      last7Days.setDate(today.getDate() - 7);
+      const last30Days = new Date(today);
+      last30Days.setDate(today.getDate() - 30);
+      
+      // Υπολογισμός stats ανά περίοδο
+      const completionsLast7 = workoutCompletions.filter((c: any) => 
+        c.status === 'completed' && new Date(c.completed_at) >= last7Days
+      ).length;
+      const completionsLast30 = workoutCompletions.filter((c: any) => 
+        c.status === 'completed' && new Date(c.completed_at) >= last30Days
+      ).length;
+      const missedLast7 = workoutCompletions.filter((c: any) => 
+        c.status === 'missed' && new Date(c.scheduled_date) >= last7Days
+      ).length;
+      const missedLast30 = workoutCompletions.filter((c: any) => 
+        c.status === 'missed' && new Date(c.scheduled_date) >= last30Days
+      ).length;
+      
+      const statsList = workoutStatsData.map((assignment: any) => {
+        const attendance = assignment.assignment_attendance?.[0];
+        if (attendance) {
+          return `\nΠρόγραμμα: ${attendance.completed_workouts}/${attendance.total_scheduled_workouts} προπονήσεις (${Math.round(attendance.attendance_percentage || 0)}% παρουσία)\n- Ολοκληρωμένες: ${attendance.completed_workouts}\n- Χαμένες: ${attendance.missed_workouts}\n- Αναπλήρωση: ${attendance.makeup_workouts}`;
+        }
+        return '';
+      }).filter(Boolean).join('\n');
+      
+      workoutStatsContext = `\n\nΣτατιστικά Προπονήσεων:\n${statsList}\n\nΤελευταία 7 ημέρες:\n- Ολοκληρωμένες: ${completionsLast7}\n- Χαμένες: ${missedLast7}\n\nΤελευταίος μήνας (30 ημέρες):\n- Ολοκληρωμένες: ${completionsLast30}\n- Χαμένες: ${missedLast30}`;
     }
 
     // Context για δύναμη
@@ -257,8 +316,8 @@ serve(async (req) => {
 5. Αποκατάσταση και πρόληψη τραυματισμών
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
-
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}
+      
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${workoutStatsContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}
 
 ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό του χρήστη. Μπορείς να:
 - Αναλύσεις την πρόοδό του στη δύναμη (1RM, ταχύτητα)
@@ -267,6 +326,9 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
 - Εντοπίσεις αλλαγές στο σωματικό του σύνθεμα (βάρος, λίπος, μυϊκή μάζα)
 - Συγκρίνεις αποτελέσματα μεταξύ διαφορετικών περιόδων
 - Εντοπίσεις τάσεις και patterns στην πρόοδό του
+- Δεις τα στατιστικά προπονήσεων του (ημερήσια, εβδομαδιαία, μηνιαία)
+- Αναλύσεις την παρουσία και συνέπειά του στις προπονήσεις
+- Εντοπίσεις patterns σε χαμένες προπονήσεις ή αναπληρώσεις
 
 Οι απαντήσεις σου πρέπει να είναι:
 - Προσωπικές και βασισμένες στα ΠΡΑΓΜΑΤΙΚΑ δεδομένα του χρήστη
