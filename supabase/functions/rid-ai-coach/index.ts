@@ -1124,6 +1124,171 @@ serve(async (req) => {
       allDaysContext = `\n\n📅 ΗΜΕΡΟΛΟΓΙΟ ΠΡΟΠΟΝΗΣΕΩΝ (Όλες οι προπονήσεις):\n\n${daysList}`;
     }
 
+    // Context για Overview Stats (από UserProfileStats)
+    let overviewStatsContext = '';
+    
+    // 1. Subscription Info
+    const subscriptionsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_subscriptions?user_id=eq.${userId}&status=eq.active&order=created_at.desc`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const subscriptions = await subscriptionsResponse.json();
+    
+    let subscriptionInfo = '';
+    if (Array.isArray(subscriptions) && subscriptions.length > 0) {
+      let totalDays = 0;
+      let isPausedStatus = false;
+      
+      subscriptions.forEach((sub: any) => {
+        if (sub.is_paused && sub.paused_days_remaining) {
+          totalDays += sub.paused_days_remaining;
+          isPausedStatus = true;
+        } else if (!sub.is_paused) {
+          const today = new Date();
+          const endDate = new Date(sub.end_date);
+          const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+          if (remainingDays > 0) {
+            totalDays += remainingDays;
+          }
+        }
+      });
+      
+      if (totalDays > 0) {
+        const status = isPausedStatus ? '(Σε παύση)' : '';
+        subscriptionInfo = `\nΣυνδρομή: ${totalDays} ημέρες απομένουν ${status}`;
+      }
+    }
+    
+    // 2. Visits Data
+    const visitPackagesResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/visit_packages?user_id=eq.${userId}&status=eq.active&remaining_visits=gt.0&order=purchase_date.desc`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const visitPackages = await visitPackagesResponse.json();
+    
+    let visitsInfo = '';
+    if (Array.isArray(visitPackages) && visitPackages.length > 0) {
+      let totalVisits = 0;
+      let totalUsed = 0;
+      visitPackages.forEach((pkg: any) => {
+        totalVisits += pkg.total_visits;
+        totalUsed += (pkg.total_visits - pkg.remaining_visits);
+      });
+      visitsInfo = `\nΕπισκέψεις Γυμναστηρίου: ${totalUsed}/${totalVisits} χρησιμοποιημένες`;
+    }
+    
+    // 3. Videocall Data
+    const videocallPackagesResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/videocall_packages?user_id=eq.${userId}&status=eq.active&remaining_videocalls=gt.0&order=purchase_date.desc`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const videocallPackages = await videocallPackagesResponse.json();
+    
+    let videocallsInfo = '';
+    if (Array.isArray(videocallPackages) && videocallPackages.length > 0) {
+      let totalVideocalls = 0;
+      let totalUsed = 0;
+      videocallPackages.forEach((pkg: any) => {
+        totalVideocalls += pkg.total_videocalls;
+        totalUsed += (pkg.total_videocalls - pkg.remaining_videocalls);
+      });
+      videocallsInfo = `\nΒιντεοκλήσεις: ${totalUsed}/${totalVideocalls} χρησιμοποιημένες`;
+    }
+    
+    // 4. Upcoming Bookings
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:00`;
+    
+    const upcomingBookingsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/booking_sessions?user_id=eq.${userId}&status=eq.confirmed&or=(booking_date.gt.${todayStr},and(booking_date.eq.${todayStr},booking_time.gt.${currentTime}))&order=booking_date.asc,booking_time.asc&limit=2`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const upcomingBookings = await upcomingBookingsResponse.json();
+    
+    let bookingsInfo = '';
+    if (Array.isArray(upcomingBookings)) {
+      const nextVideocall = upcomingBookings.find((b: any) => b.booking_type === 'videocall');
+      const nextVisit = upcomingBookings.find((b: any) => b.booking_type === 'gym_visit');
+      
+      if (nextVideocall) {
+        const bookingDateTime = new Date(`${nextVideocall.booking_date} ${nextVideocall.booking_time}`);
+        const diffMs = bookingDateTime.getTime() - now.getTime();
+        const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const hoursLeft = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        bookingsInfo += `\nΕπόμενη Βιντεοκλήση: ${nextVideocall.booking_date} στις ${nextVideocall.booking_time} (σε ${daysLeft} ημέρες, ${hoursLeft} ώρες)`;
+      }
+      
+      if (nextVisit) {
+        const bookingDateTime = new Date(`${nextVisit.booking_date} ${nextVisit.booking_time}`);
+        const diffMs = bookingDateTime.getTime() - now.getTime();
+        const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const hoursLeft = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        bookingsInfo += `\nΕπόμενη Επίσκεψη: ${nextVisit.booking_date} στις ${nextVisit.booking_time} (σε ${daysLeft} ημέρες, ${hoursLeft} ώρες)`;
+      }
+    }
+    
+    // 5. Upcoming Tests
+    const upcomingTestsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/tests?user_id=eq.${userId}&status=eq.scheduled&scheduled_date=gte.${todayStr}&order=scheduled_date.asc`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const upcomingTests = await upcomingTestsResponse.json();
+    
+    let testsInfo = '';
+    if (Array.isArray(upcomingTests) && upcomingTests.length > 0) {
+      const nextTestDate = new Date(upcomingTests[0].scheduled_date);
+      const diffMs = nextTestDate.getTime() - now.getTime();
+      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      testsInfo = `\nΕπερχόμενα Τεστ: ${upcomingTests.length} τεστ (επόμενο σε ${daysLeft} ημέρες)`;
+    }
+    
+    // 6. Offers/Coupons
+    const couponsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/discount_coupons?user_id=eq.${userId}&is_used=eq.false&order=created_at.desc`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const coupons = await couponsResponse.json();
+    
+    let offersInfo = '';
+    if (Array.isArray(coupons) && coupons.length > 0) {
+      offersInfo = `\nΔιαθέσιμα Κουπόνια: ${coupons.length}`;
+    }
+    
+    if (subscriptionInfo || visitsInfo || videocallsInfo || bookingsInfo || testsInfo || offersInfo) {
+      overviewStatsContext = `\n\n📊 ΓΕΝΙΚΑ ΣΤΑΤΙΣΤΙΚΑ (Επισκόπηση):${subscriptionInfo}${visitsInfo}${videocallsInfo}${bookingsInfo}${testsInfo}${offersInfo}`;
+    }
+
     // Αποθήκευση μηνύματος χρήστη
     const userMessage = messages[messages.length - 1];
     if (userMessage.role === "user") {
@@ -1223,7 +1388,7 @@ serve(async (req) => {
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}${todayProgramContext}${allDaysContext}
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}
 
 ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό και ημερολόγιο του χρήστη. Μπορείς να:
 - Αναλύσεις την πρόοδό του στη δύναμη (1RM, ταχύτητα)
