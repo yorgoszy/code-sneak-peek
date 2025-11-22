@@ -38,9 +38,9 @@ serve(async (req) => {
     const userData = await userDataResponse.json();
     const userProfile = userData[0] || {};
 
-    // Φόρτωση ενεργών προγραμμάτων με τη σωστή δομή
-    const programsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${userId}&order=created_at.desc&select=*,programs!fk_program_assignments_program_id(*,program_weeks(id,name,week_number,program_days(id,name,day_number,program_blocks(id,name,block_order,program_exercises(id,sets,reps,kg,tempo,rest,notes,exercises(id,name,description))))))`,
+    // Φόρτωση ΟΛΩΝ των assignments για το ημερολόγιο (active και completed)
+    const assignmentsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${userId}&status=in.(active,completed)&select=*`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -48,8 +48,53 @@ serve(async (req) => {
         }
       }
     );
-    const programsData = await programsResponse.json();
-    console.log('📊 Programs loaded:', Array.isArray(programsData) ? programsData.length : 0);
+    const assignments = await assignmentsResponse.json();
+    console.log('📊 Assignments loaded:', Array.isArray(assignments) ? assignments.length : 0);
+
+    // Φόρτωση προγραμμάτων με πλήρη δομή
+    const programIds = Array.isArray(assignments) ? assignments.map((a: any) => a.program_id).filter(Boolean) : [];
+    let programsData: any[] = [];
+    if (programIds.length > 0) {
+      const programsResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/programs?id=in.(${programIds.join(',')})&select=id,name,description,training_days,program_weeks!fk_program_weeks_program_id(id,name,week_number,program_days!fk_program_days_week_id(id,name,day_number,estimated_duration_minutes,is_test_day,test_types,is_competition_day,program_blocks!fk_program_blocks_day_id(id,name,block_order,program_exercises!fk_program_exercises_block_id(id,sets,reps,kg,tempo,rest,notes,exercise_order,exercises!fk_program_exercises_exercise_id(id,name,description,video_url)))))`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      programsData = await programsResponse.json();
+      console.log('📊 Programs with full structure loaded:', Array.isArray(programsData) ? programsData.length : 0);
+    }
+
+    // Φόρτωση app_users
+    const userIds = Array.isArray(assignments) ? assignments.map((a: any) => a.user_id).filter(Boolean) : [];
+    let usersData: any[] = [];
+    if (userIds.length > 0) {
+      const usersResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/app_users?id=in.(${userIds.join(',')})&select=id,name,email,photo_url`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      usersData = await usersResponse.json();
+      console.log('📊 Users loaded:', Array.isArray(usersData) ? usersData.length : 0);
+    }
+
+    // Συνδυασμός assignments με programs και users
+    const enrichedAssignments = Array.isArray(assignments) ? assignments.map((assignment: any) => {
+      const program = Array.isArray(programsData) ? programsData.find((p: any) => p.id === assignment.program_id) : null;
+      const user = Array.isArray(usersData) ? usersData.find((u: any) => u.id === assignment.user_id) : null;
+      return {
+        ...assignment,
+        programs: program,
+        app_users: user
+      };
+    }) : [];
 
     // Φόρτωση workout completions και attendance stats
     const workoutStatsResponse = await fetch(
@@ -156,16 +201,90 @@ serve(async (req) => {
       }
     }
 
-    // Context για προγράμματα
+    // Context για προγράμματα και ημερολόγιο
     let programContext = '';
-    if (Array.isArray(programsData) && programsData.length > 0) {
-      const programsList = programsData.map((assignment: any) => {
+    let calendarContext = '';
+    
+    if (Array.isArray(enrichedAssignments) && enrichedAssignments.length > 0) {
+      // Συλλογή όλων των προγραμματισμένων ημερομηνιών με status
+      const allProgramDates: any[] = [];
+      
+      enrichedAssignments.forEach((assignment: any) => {
+        if (assignment.training_dates && assignment.programs && assignment.app_users) {
+          assignment.training_dates.forEach((dateStr: string) => {
+            const completion = workoutCompletions.find((c: any) => 
+              c.assignment_id === assignment.id && c.scheduled_date === dateStr
+            );
+            allProgramDates.push({
+              date: dateStr,
+              status: completion?.status || 'scheduled',
+              programName: assignment.programs.name,
+              userName: assignment.app_users.name,
+              assignmentId: assignment.id
+            });
+          });
+        }
+      });
+      
+      // Ταξινόμηση κατά ημερομηνία
+      allProgramDates.sort((a, b) => a.date.localeCompare(b.date));
+      
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      
+      // Χωρισμός σε παρελθόν, σήμερα, μέλλον
+      const pastWorkouts = allProgramDates.filter(d => d.date < todayStr);
+      const todaysWorkouts = allProgramDates.filter(d => d.date === todayStr);
+      const futureWorkouts = allProgramDates.filter(d => d.date > todayStr);
+      
+      // Τελευταίες 5 προπονήσεις
+      const recentWorkouts = pastWorkouts.slice(-5);
+      
+      // Επόμενες 5 προπονήσεις
+      const upcomingWorkouts = futureWorkouts.slice(0, 5);
+      
+      // Calendar context
+      const calendarStats = {
+        totalScheduled: allProgramDates.length,
+        completed: allProgramDates.filter(d => d.status === 'completed').length,
+        missed: allProgramDates.filter(d => d.status === 'missed').length,
+        scheduled: allProgramDates.filter(d => d.status === 'scheduled').length
+      };
+      
+      calendarContext = `\n\nΗμερολόγιο Προπονήσεων:\n- Σύνολο προγραμματισμένων: ${calendarStats.totalScheduled}\n- Ολοκληρωμένες: ${calendarStats.completed}\n- Χαμένες: ${calendarStats.missed}\n- Προγραμματισμένες (εκκρεμείς): ${calendarStats.scheduled}`;
+      
+      if (todaysWorkouts.length > 0) {
+        const todaysList = todaysWorkouts.map((w: any) => 
+          `- ${w.programName} (${w.status === 'completed' ? '✓ Ολοκληρωμένη' : w.status === 'missed' ? '✗ Χαμένη' : 'Προγραμματισμένη σήμερα'})`
+        ).join('\n');
+        calendarContext += `\n\nΣήμερα (${todayStr}):\n${todaysList}`;
+      }
+      
+      if (recentWorkouts.length > 0) {
+        const recentList = recentWorkouts.map((w: any) => 
+          `- ${w.date}: ${w.programName} (${w.status === 'completed' ? '✓' : w.status === 'missed' ? '✗' : '?'})`
+        ).join('\n');
+        calendarContext += `\n\nΤελευταίες προπονήσεις:\n${recentList}`;
+      }
+      
+      if (upcomingWorkouts.length > 0) {
+        const upcomingList = upcomingWorkouts.map((w: any) => 
+          `- ${w.date}: ${w.programName}`
+        ).join('\n');
+        calendarContext += `\n\nΕπόμενες προπονήσεις:\n${upcomingList}`;
+      }
+      
+      // Program context
+      const programsList = enrichedAssignments.map((assignment: any) => {
         const program = assignment.programs;
         const totalWeeks = program?.program_weeks?.length || 0;
         const totalDays = program?.program_weeks?.reduce((sum: number, w: any) => sum + (w.program_days?.length || 0), 0) || 0;
         const status = assignment.status || 'active';
         const trainingDates = assignment.training_dates?.length || 0;
-        return `- ${program?.name || 'Πρόγραμμα'} (${status}): ${totalWeeks} εβδομάδες, ${totalDays} ημέρες προπόνησης, ${trainingDates} προγραμματισμένες ημερομηνίες${program?.description ? ` - ${program.description}` : ''}`;
+        const completedDates = assignment.training_dates?.filter((d: string) => 
+          workoutCompletions.some((c: any) => c.assignment_id === assignment.id && c.scheduled_date === d && c.status === 'completed')
+        ).length || 0;
+        return `- ${program?.name || 'Πρόγραμμα'} (${status}): ${totalWeeks} εβδομάδες, ${totalDays} ημέρες προπόνησης, ${completedDates}/${trainingDates} ολοκληρωμένες${program?.description ? ` - ${program.description}` : ''}`;
       }).join('\n');
       programContext = `\n\nΤα προγράμματά σου:\n${programsList}`;
     }
@@ -334,9 +453,9 @@ serve(async (req) => {
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${workoutStatsContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}
 
-ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό του χρήστη. Μπορείς να:
+ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό και ημερολόγιο του χρήστη. Μπορείς να:
 - Αναλύσεις την πρόοδό του στη δύναμη (1RM, ταχύτητα)
 - Δεις την εξέλιξη της αντοχής του (VO2max, MAS, sprint)
 - Παρακολουθήσεις τα άλματά του (CMJ, broad jump, triple jumps)
@@ -346,6 +465,9 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
 - Δεις τα στατιστικά προπονήσεων του (ημερήσια, εβδομαδιαία, μηνιαία)
 - Αναλύσεις την παρουσία και συνέπειά του στις προπονήσεις
 - Εντοπίσεις patterns σε χαμένες προπονήσεις ή αναπληρώσεις
+- Δεις το ημερολόγιο προπονήσεων (προγραμματισμένες, ολοκληρωμένες, χαμένες)
+- Αναλύσεις την πρόοδό του ανά εβδομάδα/μήνα βάσει του ημερολογίου
+- Προτείνεις ημερομηνίες για προπονήσεις βάσει του προγράμματός του
 
 Οι απαντήσεις σου πρέπει να είναι:
 - Προσωπικές και βασισμένες στα ΠΡΑΓΜΑΤΙΚΑ δεδομένα του χρήστη
