@@ -1925,6 +1925,103 @@ ${athletesList}
       }
     }
 
+    // Context για 1RM δεδομένα (μόνο σε Admin Mode)
+    let oneRMContext = '';
+    if (isAdmin && !targetUserId) {
+      try {
+        console.log('🔍 Loading 1RM data...');
+        
+        const oneRMResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/user_exercise_1rm?select=*,app_users!user_exercise_1rm_user_id_fkey(name,email),exercises(name)&order=recorded_date.desc&limit=200`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const oneRMData = await oneRMResponse.json();
+
+        if (Array.isArray(oneRMData) && oneRMData.length > 0) {
+          // Οργάνωση δεδομένων ανά χρήστη
+          const userOneRMMap = new Map<string, {
+            userName: string;
+            userEmail: string;
+            exercises: Array<{
+              exerciseName: string;
+              weight: number;
+              recordedDate: string;
+              notes?: string;
+            }>;
+          }>();
+
+          oneRMData.forEach((record: any) => {
+            const userId = record.user_id;
+            const userName = record.app_users?.name || 'Άγνωστος';
+            const userEmail = record.app_users?.email || '';
+            const exerciseName = record.exercises?.name || 'Άγνωστη άσκηση';
+
+            if (!userOneRMMap.has(userId)) {
+              userOneRMMap.set(userId, {
+                userName,
+                userEmail,
+                exercises: []
+              });
+            }
+
+            const userData = userOneRMMap.get(userId)!;
+            
+            // Προσθήκη άσκησης αν δεν υπάρχει ήδη (κρατάμε τη νεότερη)
+            const existingExercise = userData.exercises.find(e => e.exerciseName === exerciseName);
+            if (!existingExercise) {
+              userData.exercises.push({
+                exerciseName,
+                weight: record.weight,
+                recordedDate: record.recorded_date,
+                notes: record.notes
+              });
+            }
+          });
+
+          // Δημιουργία readable context
+          const oneRMList = Array.from(userOneRMMap.entries())
+            .map(([userId, data]) => {
+              const exercisesList = data.exercises
+                .map(ex => `  • ${ex.exerciseName}: ${ex.weight}kg (${new Date(ex.recordedDate).toLocaleDateString('el-GR')})${ex.notes ? ` - ${ex.notes}` : ''}`)
+                .join('\n');
+              return `\n${data.userName}${data.userEmail ? ` (${data.userEmail})` : ''}:\n${exercisesList}`;
+            })
+            .join('\n');
+
+          // Στατιστικά
+          const totalUsers = userOneRMMap.size;
+          const totalRecords = oneRMData.length;
+          const exercisesSet = new Set(oneRMData.map((r: any) => r.exercises?.name).filter(Boolean));
+          const topExercises = Array.from(exercisesSet).slice(0, 10);
+
+          oneRMContext = `\n\n💪 1RM - ΜΕΓΙΣΤΗ ΕΠΑΝΑΛΗΨΗ (από /dashboard/one-rm):
+
+📊 ΣΤΑΤΙΣΤΙΚΑ:
+- Σύνολο Αθλητών με 1RM: ${totalUsers}
+- Σύνολο Καταγραφών: ${totalRecords}
+- Ασκήσεις με 1RM: ${exercisesSet.size}
+- Top ασκήσεις: ${topExercises.join(', ')}
+
+📝 ΑΝΑΛΥΤΙΚΑ ΔΕΔΟΜΕΝΑ 1RM ΑΝΑ ΑΘΛΗΤΗ:${oneRMList}
+
+💡 ΟΔΗΓΙΕΣ ΧΡΗΣΗΣ:
+- Όταν σε ρωτήσουν "τι 1RM έχει ο [όνομα];" → Βρες τον αθλητή στη λίστα παραπάνω
+- Όταν σε ρωτήσουν "ποιος έχει το μεγαλύτερο 1RM στο [άσκηση];" → Σύγκρινε τα βάρη για αυτή την άσκηση
+- Όταν σε ρωτήσουν "πότε έκανε τελευταία φορά 1RM ο [όνομα];" → Κοίτα τις ημερομηνίες
+- Τα δεδομένα αυτά προέρχονται από τη σελίδα "1RM - Μέγιστη Επανάληψη" (/dashboard/one-rm)`;
+          
+          console.log(`✅ Loaded ${totalRecords} 1RM records for ${totalUsers} athletes`);
+        }
+      } catch (error) {
+        console.error('❌ Error loading 1RM data:', error);
+      }
+    }
+
     // Αποθήκευση μηνύματος χρήστη (πάντα για τον effectiveUserId)
     const userMessage = messages[messages.length - 1];
     if (userMessage.role === "user") {
@@ -2045,7 +2142,7 @@ ${athletesList}
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${availableAthletesContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}
 
 ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό και ημερολόγιο του χρήστη. Μπορείς να:
 - Αναλύσεις την πρόοδό του στη δύναμη (1RM, ταχύτητα)
