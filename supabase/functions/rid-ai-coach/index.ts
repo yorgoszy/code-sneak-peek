@@ -251,7 +251,47 @@ serve(async (req) => {
         scheduled: allProgramDates.filter(d => d.status === 'scheduled').length
       };
       
-      calendarContext = `\n\nΗμερολόγιο Προπονήσεων:\n- Σύνολο προγραμματισμένων: ${calendarStats.totalScheduled}\n- Ολοκληρωμένες: ${calendarStats.completed}\n- Χαμένες: ${calendarStats.missed}\n- Προγραμματισμένες (εκκρεμείς): ${calendarStats.scheduled}`;
+      // Group workouts by month for detailed breakdown
+      const workoutsByMonth: Record<string, any[]> = {};
+      allProgramDates.forEach((workout: any) => {
+        const date = new Date(workout.date);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        if (!workoutsByMonth[monthKey]) {
+          workoutsByMonth[monthKey] = [];
+        }
+        workoutsByMonth[monthKey].push(workout);
+      });
+      
+      // Create monthly summary
+      const monthlyBreakdown = Object.entries(workoutsByMonth)
+        .sort(([a], [b]) => b.localeCompare(a)) // Most recent first
+        .slice(0, 6) // Last 6 months
+        .map(([monthKey, workouts]) => {
+          const [year, month] = monthKey.split('-');
+          const monthNames = ['Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος', 'Μάιος', 'Ιούνιος', 
+                             'Ιούλιος', 'Αύγουστος', 'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'];
+          const monthName = monthNames[parseInt(month) - 1];
+          
+          const completed = workouts.filter(w => w.status === 'completed').length;
+          const missed = workouts.filter(w => w.status === 'missed').length;
+          const scheduled = workouts.filter(w => w.status === 'scheduled').length;
+          
+          const workoutList = workouts
+            .sort((a, b) => a.date.localeCompare(b.date))
+            .map(w => {
+              const dateObj = new Date(w.date);
+              const day = dateObj.getDate();
+              const statusSymbol = w.status === 'completed' ? '✓' : w.status === 'missed' ? '✗' : '○';
+              return `  ${day}/${month}: ${statusSymbol} ${w.programName}`;
+            })
+            .join('\n');
+          
+          return `\n${monthName} ${year}:\n- Ολοκληρωμένες: ${completed}, Χαμένες: ${missed}, Προγραμματισμένες: ${scheduled}\n${workoutList}`;
+        })
+        .join('\n');
+      
+      calendarContext = `\n\nΗμερολόγιο Προπονήσεων (Συνολικά):\n- Σύνολο προγραμματισμένων: ${calendarStats.totalScheduled}\n- Ολοκληρωμένες: ${calendarStats.completed}\n- Χαμένες: ${calendarStats.missed}\n- Προγραμματισμένες (εκκρεμείς): ${calendarStats.scheduled}\n\nΑνάλυση ανά μήνα (τελευταίοι 6 μήνες):${monthlyBreakdown}`;
+      
       
       if (todaysWorkouts.length > 0) {
         const todaysList = todaysWorkouts.map((w: any) => 
