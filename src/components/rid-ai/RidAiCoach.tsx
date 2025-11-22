@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Send, Bot, User, Loader2, Users } from "lucide-react";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,16 +21,43 @@ export const RidAiCoach = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const { userProfile } = useRoleCheck();
   const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // Admin features
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const isAdmin = userProfile?.role === 'admin';
+
+  // Load all users for admin
+  useEffect(() => {
+    if (isAdmin) {
+      loadAllUsers();
+    }
+  }, [isAdmin]);
+
+  const loadAllUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, email')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      setAllUsers(data || []);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
 
   // Load conversation history
-  const loadHistory = async () => {
-    if (!userProfile?.id) return;
+  const loadHistory = async (targetUserId?: string) => {
+    const userId = targetUserId || userProfile?.id;
+    if (!userId) return;
     
     try {
       const { data, error } = await supabase
         .from('ai_conversations')
         .select('*')
-        .eq('user_id', userProfile.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: true })
         .limit(50);
 
@@ -50,15 +78,15 @@ export const RidAiCoach = () => {
     }
   };
 
-  // Load history on mount
+  // Load history on mount or when selected user changes
   useEffect(() => {
     const init = async () => {
       setIsLoadingHistory(true);
-      await loadHistory();
+      await loadHistory(isAdmin ? selectedUserId : undefined);
       setIsLoadingHistory(false);
     };
     init();
-  }, [userProfile?.id]);
+  }, [userProfile?.id, selectedUserId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -90,7 +118,8 @@ export const RidAiCoach = () => {
           },
           body: JSON.stringify({
             messages: allMessages,
-            userId: userProfile.id
+            userId: userProfile.id,
+            targetUserId: isAdmin && selectedUserId ? selectedUserId : undefined
           })
         }
       );
@@ -140,7 +169,7 @@ export const RidAiCoach = () => {
       }
 
       // After streaming is complete, reload from database to ensure sync
-      await loadHistory();
+      await loadHistory(isAdmin && selectedUserId ? selectedUserId : undefined);
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Σφάλμα κατά την αποστολή μηνύματος');
@@ -163,13 +192,36 @@ export const RidAiCoach = () => {
   return (
     <Card className="w-full h-[600px] flex flex-col rounded-none">
       <CardHeader className="border-b">
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-[#00ffba]" />
-          RID AI Coach
-        </CardTitle>
-        <p className="text-sm text-gray-600">
-          Ο προσωπικός σου προπονητής που σε θυμάται και μαθαίνει από κάθε συζήτηση
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="w-5 h-5 text-[#00ffba]" />
+              RID AI Coach
+            </CardTitle>
+            <p className="text-sm text-gray-600">
+              Ο προσωπικός σου προπονητής που σε θυμάται και μαθαίνει από κάθε συζήτηση
+            </p>
+          </div>
+          
+          {isAdmin && (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-gray-600" />
+              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                <SelectTrigger className="w-[250px] rounded-none">
+                  <SelectValue placeholder="Επίλεξε χρήστη..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Ο δικός μου λογαριασμός</SelectItem>
+                  {allUsers.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.name} ({user.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0">
