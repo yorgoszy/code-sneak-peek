@@ -17,6 +17,15 @@ serve(async (req) => {
       throw new Error("User ID is required");
     }
 
+    // Δήλωση environment variables ΠΡΩΤΑ
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
     // Έλεγχος αν ο χρήστης είναι admin
     const callerUserResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/app_users?id=eq.${userId}&select=role`,
@@ -33,14 +42,6 @@ serve(async (req) => {
     // Αν είναι admin και έχει δώσει targetUserId, χρησιμοποιούμε αυτό
     // Αλλιώς χρησιμοποιούμε το δικό του userId
     const effectiveUserId = (isAdmin && targetUserId) ? targetUserId : userId;
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
-
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     // Φόρτωση στοιχείων χρήστη (χρησιμοποιούμε effectiveUserId)
     const userDataResponse = await fetch(
