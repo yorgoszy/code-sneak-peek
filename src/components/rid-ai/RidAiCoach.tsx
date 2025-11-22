@@ -78,6 +78,9 @@ export const RidAiCoach = () => {
     setMessages(prev => [...prev, userMessage]);
 
     try {
+      // Prepare all messages including the new one for full conversation context
+      const allMessages = [...messages, userMessage];
+      
       const response = await fetch(
         'https://dicwdviufetibnafzipa.supabase.co/functions/v1/rid-ai-coach',
         {
@@ -86,7 +89,7 @@ export const RidAiCoach = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            messages: [userMessage],
+            messages: allMessages,
             userId: userProfile.id
           })
         }
