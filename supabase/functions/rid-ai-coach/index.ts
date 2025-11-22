@@ -418,6 +418,7 @@ ${calendarDisplay}`;
     let enduranceContext = '';
     let jumpContext = '';
     let anthropometricContext = '';
+    let availableAthletesContext = '';
     let athletesProgressContext = '';
     let todayProgramContext = '';
     let allDaysContext = '';
@@ -1376,6 +1377,80 @@ ${calendarDisplay}`;
       anthropometricContext = `\n\nΑνθρωπομετρικό Ιστορικό:\n${anthropometricList}`;
     }
     
+    // Context για διαθέσιμους αθλητές στο Athletes Progress dropdown
+    let availableAthletesContext = '';
+    if (isAdmin && !targetUserId) {
+      try {
+        // Φόρτωση αθλητών που έχουν τουλάχιστον ένα test session
+        const [strengthUsersResp, anthropometricUsersResp, enduranceUsersResp, jumpUsersResp] = await Promise.all([
+          fetch(`${SUPABASE_URL}/rest/v1/strength_test_sessions?select=user_id`, {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }),
+          fetch(`${SUPABASE_URL}/rest/v1/anthropometric_test_sessions?select=user_id`, {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }),
+          fetch(`${SUPABASE_URL}/rest/v1/endurance_test_sessions?select=user_id`, {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }),
+          fetch(`${SUPABASE_URL}/rest/v1/jump_test_sessions?select=user_id`, {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          })
+        ]);
+
+        const [strengthUsers, anthropometricUsers, enduranceUsers, jumpUsers] = await Promise.all([
+          strengthUsersResp.json(),
+          anthropometricUsersResp.json(),
+          enduranceUsersResp.json(),
+          jumpUsersResp.json()
+        ]);
+
+        // Συλλέγουμε όλα τα unique user IDs
+        const userIdsWithTests = new Set([
+          ...(Array.isArray(strengthUsers) ? strengthUsers.map((u: any) => u.user_id) : []),
+          ...(Array.isArray(anthropometricUsers) ? anthropometricUsers.map((u: any) => u.user_id) : []),
+          ...(Array.isArray(enduranceUsers) ? enduranceUsers.map((u: any) => u.user_id) : []),
+          ...(Array.isArray(jumpUsers) ? jumpUsers.map((u: any) => u.user_id) : [])
+        ]);
+
+        if (userIdsWithTests.size > 0) {
+          // Φόρτωση στοιχείων χρηστών
+          const athletesResponse = await fetch(
+            `${SUPABASE_URL}/rest/v1/app_users?id=in.(${Array.from(userIdsWithTests).join(',')})&select=id,name,email,photo_url&order=name.asc`,
+            {
+              headers: {
+                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+              }
+            }
+          );
+          const athletes = await athletesResponse.json();
+
+          if (Array.isArray(athletes) && athletes.length > 0) {
+            const athletesList = athletes.map((athlete: any) => 
+              `- ${athlete.name}${athlete.email ? ` (${athlete.email})` : ''}`
+            ).join('\n');
+            
+            availableAthletesContext = `\n\n👥 ΔΙΑΘΕΣΙΜΟΙ ΑΘΛΗΤΕΣ ΣΤΟ ATHLETES PROGRESS (dropdown):\nΣύνολο: ${athletes.length} αθλητές με test data\n\n${athletesList}\n\n💡 Όταν σε ρωτήσουν "ποιους αθλητές βλέπω στο dropdown;" ή "ποιοι έχουν tests;", χρησιμοποίησε αυτή τη λίστα!`;
+            console.log(`✅ Loaded ${athletes.length} athletes with test data for dropdown context`);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error loading available athletes:', error);
+      }
+    }
+    
     // Context για Athletes Progress - Λεπτομερής ανάλυση δύναμης με 1RM
     if (Array.isArray(strengthAttemptsData) && strengthAttemptsData.length > 0 && Array.isArray(exercisesData)) {
       athletesProgressContext = '\n\n📊 ATHLETES PROGRESS - Λεπτομερής Ανάλυση Δύναμης (1RM & Load-Velocity):\n\n';
@@ -1922,7 +1997,7 @@ ${calendarDisplay}`;
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${availableAthletesContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}
 
 ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό και ημερολόγιο του χρήστη. Μπορείς να:
 - Αναλύσεις την πρόοδό του στη δύναμη (1RM, ταχύτητα)
