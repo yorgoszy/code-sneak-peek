@@ -52,7 +52,7 @@ serve(async (req) => {
 
     // Φόρτωση ιστορικού δύναμης μέσω sessions
     const strengthResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/strength_test_sessions?select=test_date,strength_test_attempts(weight_kg,velocity_ms,estimated_1rm,exercises(name))&user_id=eq.${userId}&order=test_date.desc&limit=20`,
+      `${SUPABASE_URL}/rest/v1/strength_test_sessions?select=test_date,strength_test_attempts(weight_kg,velocity_ms,is_1rm,exercises(name))&user_id=eq.${userId}&order=test_date.desc&limit=20`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -148,7 +148,8 @@ serve(async (req) => {
       
       if (attempts.length > 0) {
         const strengthList = attempts.map((attempt: any) => {
-          return `- ${attempt.exercises?.name || 'Άσκηση'}: ${attempt.weight_kg}kg, Ταχύτητα: ${attempt.velocity_ms}m/s, 1RM: ${attempt.estimated_1rm}kg (${new Date(attempt.test_date).toLocaleDateString('el-GR')})`;
+          const is1rm = attempt.is_1rm ? ' (1RM)' : '';
+          return `- ${attempt.exercises?.name || 'Άσκηση'}: ${attempt.weight_kg}kg, Ταχύτητα: ${attempt.velocity_ms}m/s${is1rm} (${new Date(attempt.test_date).toLocaleDateString('el-GR')})`;
         }).join('\n');
         strengthContext = `\n\nΙστορικό Δύναμης:\n${strengthList}`;
       }
