@@ -386,7 +386,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
                         </div>
                         <div className="flex items-center justify-between mt-1.5 sm:mt-1">
                           <div className="text-xs sm:text-[9px] text-gray-400">
-                            {t('progress.lastMeasurement')}: {new Date(oneRM.date).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                            {new Date(oneRM.date).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                           </div>
                           {oneRM.percentageChange !== null && (
                             <div className={`text-xs sm:text-[10px] font-medium ${oneRM.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
