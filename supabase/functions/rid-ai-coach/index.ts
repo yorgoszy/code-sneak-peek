@@ -98,6 +98,66 @@ serve(async (req) => {
         );
         const allCompletions = await allCompletionsResponse.json();
         
+        // 🏋️ Φόρτωση ΠΛΗΡΟΥΣ ΔΟΜΗΣ προγραμμάτων (weeks, days, blocks, exercises)
+        const weeksResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/program_weeks?program_id=in.(${allProgramIds.join(',')})&select=*&order=week_order.asc`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const allWeeksData = await weeksResponse.json();
+        const allWeekIds = allWeeksData.map((w: any) => w.id);
+        
+        const daysResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/program_days?week_id=in.(${allWeekIds.join(',')})&select=*&order=day_order.asc`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const allDaysData = await daysResponse.json();
+        const allDayIds = allDaysData.map((d: any) => d.id);
+        
+        const blocksResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${allDayIds.join(',')})&select=*&order=block_order.asc`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const allBlocksData = await blocksResponse.json();
+        const allBlockIds = allBlocksData.map((b: any) => b.id);
+        
+        const programExercisesResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/program_exercises?block_id=in.(${allBlockIds.join(',')})&select=*&order=exercise_order.asc`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const allProgramExercisesData = await programExercisesResponse.json();
+        const allExerciseIds = [...new Set(allProgramExercisesData.map((pe: any) => pe.exercise_id).filter(Boolean))];
+        
+        const exercisesResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/exercises?id=in.(${allExerciseIds.join(',')})&select=id,name,description`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const allExercisesData = await exercisesResponse.json();
+        
         // Δημιουργία summary
         const activeProgramsSummary = allAssignments.map((assignment: any) => {
           const program = Array.isArray(allProgramsData) ? allProgramsData.find((p: any) => p.id === assignment.program_id) : null;
@@ -226,6 +286,69 @@ ${workoutsList}`;
         
         adminActiveProgramsContext += `\n\n📅 ΗΜΕΡΟΛΟΓΙΟ ΠΡΟΠΟΝΗΣΕΩΝ (Calendar View):
 ${calendarDisplay}`;
+        
+        // 📋 ΛΕΠΤΟΜΕΡΕΙΣ ΠΡΟΠΟΝΗΣΕΙΣ (DayProgramCard Details)
+        // Δημιουργία λεπτομερούς context για όλες τις ημέρες όλων των προγραμμάτων
+        let detailedWorkoutsContext = '\n\n📋 ΛΕΠΤΟΜΕΡΗΣ ΠΡΟΒΟΛΗ ΠΡΟΠΟΝΗΣΕΩΝ (Όλες οι DayProgramCard):\n\n';
+        
+        allAssignments.forEach((assignment: any) => {
+          const program = Array.isArray(allProgramsData) ? allProgramsData.find((p: any) => p.id === assignment.program_id) : null;
+          const user = Array.isArray(allUsersData) ? allUsersData.find((u: any) => u.id === assignment.user_id) : null;
+          
+          if (!program || !user || !assignment.training_dates) return;
+          
+          detailedWorkoutsContext += `\n🏃 ${user.name} - ${program.name}:\n`;
+          
+          // Map training dates to days
+          const programWeeks = allWeeksData.filter((w: any) => w.program_id === program.id);
+          
+          programWeeks.forEach((week: any) => {
+            const weekDays = allDaysData.filter((d: any) => d.week_id === week.id);
+            
+            weekDays.forEach((day: any, dayIndex: number) => {
+              const dateIndex = dayIndex;
+              if (dateIndex >= assignment.training_dates.length) return;
+              
+              const scheduledDate = assignment.training_dates[dateIndex];
+              const completion = Array.isArray(allCompletions) 
+                ? allCompletions.find((c: any) => c.assignment_id === assignment.id && c.scheduled_date === scheduledDate)
+                : null;
+              
+              const statusIcon = completion?.status === 'completed' ? '✅' : completion?.status === 'missed' ? '❌' : '📅';
+              
+              detailedWorkoutsContext += `\n  ${statusIcon} ${scheduledDate} - ${day.name}:\n`;
+              
+              // Blocks και ασκήσεις
+              const dayBlocks = allBlocksData.filter((b: any) => b.day_id === day.id);
+              
+              dayBlocks.forEach((block: any) => {
+                detailedWorkoutsContext += `\n    🔹 ${block.name}${block.training_type ? ` (${block.training_type})` : ''}:\n`;
+                
+                const blockExercises = allProgramExercisesData.filter((pe: any) => pe.block_id === block.id);
+                
+                blockExercises.forEach((pe: any) => {
+                  const exercise = Array.isArray(allExercisesData) 
+                    ? allExercisesData.find((e: any) => e.id === pe.exercise_id)
+                    : null;
+                  
+                  const exerciseName = exercise?.name || 'Unknown Exercise';
+                  detailedWorkoutsContext += `      • ${exerciseName}: ${pe.sets || '?'}x${pe.reps || '?'}`;
+                  
+                  if (pe.kg) detailedWorkoutsContext += ` @ ${pe.kg}kg`;
+                  if (pe.tempo) detailedWorkoutsContext += ` tempo ${pe.tempo}`;
+                  if (pe.rest) detailedWorkoutsContext += ` rest ${pe.rest}s`;
+                  if (pe.notes) detailedWorkoutsContext += ` (${pe.notes})`;
+                  
+                  detailedWorkoutsContext += '\n';
+                });
+              });
+            });
+          });
+          
+          detailedWorkoutsContext += '\n';
+        });
+        
+        adminActiveProgramsContext += detailedWorkoutsContext;
       }
     }
 
