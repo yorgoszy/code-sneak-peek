@@ -651,7 +651,7 @@ serve(async (req) => {
               const typesList = Object.entries(types)
                 .map(([type, minutes]) => {
                   const hours = Math.round((minutes as number) / 60 * 10) / 10;
-                  const label = typeLabels[type] || type;
+                  const label = TRAINING_TYPE_LABELS[type] || type;
                   return `  - ${label}: ${hours}h (${minutes}λ)`;
                 })
                 .join('\n');
@@ -788,7 +788,7 @@ serve(async (req) => {
               const typesList = Object.entries(types)
                 .map(([type, minutes]) => {
                   const hours = Math.round((minutes as number) / 60 * 10) / 10;
-                  const label = typeLabels[type] || type;
+                  const label = TRAINING_TYPE_LABELS[type] || type;
                   return `  - ${label}: ${hours}h (${minutes}λ)`;
                 })
                 .join('\n');
