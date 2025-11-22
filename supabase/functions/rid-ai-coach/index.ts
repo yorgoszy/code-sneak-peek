@@ -108,7 +108,15 @@ serve(async (req) => {
             }
           }
         );
-        const allWeeksData = await weeksResponse.json();
+        const weeksJsonData = await weeksResponse.json();
+        const allWeeksData = Array.isArray(weeksJsonData) ? weeksJsonData : [];
+        console.log(`✅ Loaded ${allWeeksData.length} weeks`);
+        
+        if (allWeeksData.length === 0) {
+          console.log('⚠️ No weeks found for programs');
+          adminActiveProgramsContext = '\n\n🎯 ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ: Δεν βρέθηκαν εβδομάδες στα προγράμματα';
+        } else {
+        
         const allWeekIds = allWeeksData.map((w: any) => w.id);
         
         const daysResponse = await fetch(
@@ -120,8 +128,11 @@ serve(async (req) => {
             }
           }
         );
-        const allDaysData = await daysResponse.json();
-        const allDayIds = allDaysData.map((d: any) => d.id);
+        const daysJsonData = await daysResponse.json();
+        const allDaysData = Array.isArray(daysJsonData) ? daysJsonData : [];
+        console.log(`✅ Loaded ${allDaysData.length} days`);
+        
+        const allDayIds = allDaysData.length > 0 ? allDaysData.map((d: any) => d.id) : [];
         
         const blocksResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${allDayIds.join(',')})&select=*&order=block_order.asc`,
@@ -132,8 +143,11 @@ serve(async (req) => {
             }
           }
         );
-        const allBlocksData = await blocksResponse.json();
-        const allBlockIds = allBlocksData.map((b: any) => b.id);
+        const blocksJsonData = await blocksResponse.json();
+        const allBlocksData = Array.isArray(blocksJsonData) ? blocksJsonData : [];
+        console.log(`✅ Loaded ${allBlocksData.length} blocks`);
+        
+        const allBlockIds = allBlocksData.length > 0 ? allBlocksData.map((b: any) => b.id) : [];
         
         const programExercisesResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/program_exercises?block_id=in.(${allBlockIds.join(',')})&select=*&order=exercise_order.asc`,
@@ -144,8 +158,13 @@ serve(async (req) => {
             }
           }
         );
-        const allProgramExercisesData = await programExercisesResponse.json();
-        const allExerciseIds = [...new Set(allProgramExercisesData.map((pe: any) => pe.exercise_id).filter(Boolean))];
+        const programExercisesJsonData = await programExercisesResponse.json();
+        const allProgramExercisesData = Array.isArray(programExercisesJsonData) ? programExercisesJsonData : [];
+        console.log(`✅ Loaded ${allProgramExercisesData.length} program exercises`);
+        
+        const allExerciseIds = allProgramExercisesData.length > 0 
+          ? [...new Set(allProgramExercisesData.map((pe: any) => pe.exercise_id).filter(Boolean))]
+          : [];
         
         const exercisesResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/exercises?id=in.(${allExerciseIds.join(',')})&select=id,name,description`,
@@ -156,7 +175,9 @@ serve(async (req) => {
             }
           }
         );
-        const allExercisesData = await exercisesResponse.json();
+        const exercisesJsonData = await exercisesResponse.json();
+        const allExercisesData = Array.isArray(exercisesJsonData) ? exercisesJsonData : [];
+        console.log(`✅ Loaded ${allExercisesData.length} exercises`);
         
         // Δημιουργία summary
         const activeProgramsSummary = allAssignments.map((assignment: any) => {
@@ -366,6 +387,7 @@ ${calendarDisplay}`;
         }
         
         adminActiveProgramsContext += detailedWorkoutsContext;
+        }
       }
     }
 
