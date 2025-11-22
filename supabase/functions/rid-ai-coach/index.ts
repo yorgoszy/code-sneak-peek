@@ -1377,121 +1377,6 @@ ${calendarDisplay}`;
       anthropometricContext = `\n\nΑνθρωπομετρικό Ιστορικό:\n${anthropometricList}`;
     }
     
-    // Context για διαθέσιμους αθλητές στο Athletes Progress dropdown
-    let availableAthletesContext = '';
-    if (isAdmin && !targetUserId) {
-      try {
-        // Φόρτωση αθλητών που έχουν τουλάχιστον ένα test session
-        const [strengthUsersResp, anthropometricUsersResp, enduranceUsersResp, jumpUsersResp] = await Promise.all([
-          fetch(`${SUPABASE_URL}/rest/v1/strength_test_sessions?select=user_id`, {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }),
-          fetch(`${SUPABASE_URL}/rest/v1/anthropometric_test_sessions?select=user_id`, {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }),
-          fetch(`${SUPABASE_URL}/rest/v1/endurance_test_sessions?select=user_id`, {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }),
-          fetch(`${SUPABASE_URL}/rest/v1/jump_test_sessions?select=user_id`, {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          })
-        ]);
-
-        const [strengthUsers, anthropometricUsers, enduranceUsers, jumpUsers] = await Promise.all([
-          strengthUsersResp.json(),
-          anthropometricUsersResp.json(),
-          enduranceUsersResp.json(),
-          jumpUsersResp.json()
-        ]);
-
-        // Δημιουργία map για να κρατήσουμε ποιος user έχει ποιο test type
-        const userTestsMap = new Map<string, Set<string>>();
-        
-        const addUserTest = (users: any[], testType: string) => {
-          if (Array.isArray(users)) {
-            users.forEach((u: any) => {
-              if (u.user_id) {
-                if (!userTestsMap.has(u.user_id)) {
-                  userTestsMap.set(u.user_id, new Set());
-                }
-                userTestsMap.get(u.user_id)!.add(testType);
-              }
-            });
-          }
-        };
-
-        addUserTest(strengthUsers, 'Δύναμη');
-        addUserTest(anthropometricUsers, 'Ανθρωπομετρικά');
-        addUserTest(enduranceUsers, 'Αντοχή');
-        addUserTest(jumpUsers, 'Άλματα');
-
-        if (userTestsMap.size > 0) {
-          // Φόρτωση στοιχείων χρηστών
-          const athletesResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/app_users?id=in.(${Array.from(userTestsMap.keys()).join(',')})&select=id,name,email,photo_url&order=name.asc`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
-          );
-          const athletes = await athletesResponse.json();
-
-          if (Array.isArray(athletes) && athletes.length > 0) {
-            const athletesList = athletes.map((athlete: any) => {
-              const tests = Array.from(userTestsMap.get(athlete.id) || []).join(', ');
-              return `- ${athlete.name}${athlete.email ? ` (${athlete.email})` : ''} → Tests: ${tests}`;
-            }).join('\n');
-            
-            // Κατηγοριοποίηση ανά τύπο test
-            const strengthAthletes = athletes.filter((a: any) => userTestsMap.get(a.id)?.has('Δύναμη'));
-            const anthropometricAthletes = athletes.filter((a: any) => userTestsMap.get(a.id)?.has('Ανθρωπομετρικά'));
-            const enduranceAthletes = athletes.filter((a: any) => userTestsMap.get(a.id)?.has('Αντοχή'));
-            const jumpAthletes = athletes.filter((a: any) => userTestsMap.get(a.id)?.has('Άλματα'));
-            
-            availableAthletesContext = `\n\n👥 ΔΙΑΘΕΣΙΜΟΙ ΑΘΛΗΤΕΣ ΣΤΟ ATHLETES PROGRESS (dropdown):
-Σύνολο: ${athletes.length} αθλητές με test data
-
-📋 ΠΛΗΡΗΣ ΛΙΣΤΑ ΜΕ ΤΥΠΟΥΣ TESTS:
-${athletesList}
-
-📊 ΑΝΑΛΥΣΗ ΑΝΑ ΤΥΠΟ TEST:
-🏋️ Δύναμη (${strengthAthletes.length}): ${strengthAthletes.map((a: any) => a.name).join(', ')}
-📏 Ανθρωπομετρικά (${anthropometricAthletes.length}): ${anthropometricAthletes.map((a: any) => a.name).join(', ')}
-🏃 Αντοχή (${enduranceAthletes.length}): ${enduranceAthletes.map((a: any) => a.name).join(', ')}
-⬆️ Άλματα (${jumpAthletes.length}): ${jumpAthletes.map((a: any) => a.name).join(', ')}
-
-💡 ΟΔΗΓΙΕΣ:
-- Όταν σε ρωτήσουν "ποιοι έχουν τεστ δύναμης;" → Χρησιμοποίησε τη λίστα "Δύναμη" παραπάνω
-- Όταν σε ρωτήσουν "ποιοι έχουν ανθρωπομετρικά;" → Χρησιμοποίησε τη λίστα "Ανθρωπομετρικά"
-- Όταν σε ρωτήσουν "ποιους αθλητές βλέπω στο dropdown;" → Δώσε τη ΠΛΗΡΗ ΛΙΣΤΑ με όλα τα ονόματα`;
-            
-            console.log(`✅ Loaded ${athletes.length} athletes with test data breakdown:`,
-              `Strength: ${strengthAthletes.length},`,
-              `Anthropometric: ${anthropometricAthletes.length},`,
-              `Endurance: ${enduranceAthletes.length},`,
-              `Jump: ${jumpAthletes.length}`
-            );
-          }
-        }
-      } catch (error) {
-        console.error('❌ Error loading available athletes:', error);
-      }
-    }
-    
     // Context για Athletes Progress - Λεπτομερής ανάλυση δύναμης με 1RM
     if (Array.isArray(strengthAttemptsData) && strengthAttemptsData.length > 0 && Array.isArray(exercisesData)) {
       athletesProgressContext = '\n\n📊 ATHLETES PROGRESS - Λεπτομερής Ανάλυση Δύναμης (1RM & Load-Velocity):\n\n';
@@ -1916,6 +1801,128 @@ ${athletesList}
     }
     } else {
       console.log(`🔥 Admin overview mode - skipping personal data loading`);
+    }
+
+    // Context για διαθέσιμους αθλητές στο Athletes Progress dropdown (μόνο σε Admin Mode)
+    if (isAdmin && !targetUserId) {
+      try {
+        console.log('🔍 Loading available athletes with test data...');
+        
+        // Φόρτωση αθλητών που έχουν τουλάχιστον ένα test session
+        const [strengthUsersResp, anthropometricUsersResp, enduranceUsersResp, jumpUsersResp] = await Promise.all([
+          fetch(`${SUPABASE_URL}/rest/v1/strength_test_sessions?select=user_id`, {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }),
+          fetch(`${SUPABASE_URL}/rest/v1/anthropometric_test_sessions?select=user_id`, {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }),
+          fetch(`${SUPABASE_URL}/rest/v1/endurance_test_sessions?select=user_id`, {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }),
+          fetch(`${SUPABASE_URL}/rest/v1/jump_test_sessions?select=user_id`, {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          })
+        ]);
+
+        const [strengthUsers, anthropometricUsers, enduranceUsers, jumpUsers] = await Promise.all([
+          strengthUsersResp.json(),
+          anthropometricUsersResp.json(),
+          enduranceUsersResp.json(),
+          jumpUsersResp.json()
+        ]);
+
+        // Δημιουργία map για να κρατήσουμε ποιος user έχει ποιο test type
+        const userTestsMap = new Map<string, Set<string>>();
+        
+        const addUserTest = (users: any[], testType: string) => {
+          if (Array.isArray(users)) {
+            users.forEach((u: any) => {
+              if (u.user_id) {
+                if (!userTestsMap.has(u.user_id)) {
+                  userTestsMap.set(u.user_id, new Set());
+                }
+                userTestsMap.get(u.user_id)!.add(testType);
+              }
+            });
+          }
+        };
+
+        addUserTest(strengthUsers, 'Δύναμη');
+        addUserTest(anthropometricUsers, 'Ανθρωπομετρικά');
+        addUserTest(enduranceUsers, 'Αντοχή');
+        addUserTest(jumpUsers, 'Άλματα');
+
+        console.log(`📊 Found ${userTestsMap.size} unique users with test data`);
+
+        if (userTestsMap.size > 0) {
+          // Φόρτωση στοιχείων χρηστών
+          const athletesResponse = await fetch(
+            `${SUPABASE_URL}/rest/v1/app_users?id=in.(${Array.from(userTestsMap.keys()).join(',')})&select=id,name,email,photo_url&order=name.asc`,
+            {
+              headers: {
+                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+              }
+            }
+          );
+          const athletes = await athletesResponse.json();
+
+          if (Array.isArray(athletes) && athletes.length > 0) {
+            const athletesList = athletes.map((athlete: any) => {
+              const tests = Array.from(userTestsMap.get(athlete.id) || []).join(', ');
+              return `- ${athlete.name}${athlete.email ? ` (${athlete.email})` : ''} → Tests: ${tests}`;
+            }).join('\n');
+            
+            // Κατηγοριοποίηση ανά τύπο test
+            const strengthAthletes = athletes.filter((a: any) => userTestsMap.get(a.id)?.has('Δύναμη'));
+            const anthropometricAthletes = athletes.filter((a: any) => userTestsMap.get(a.id)?.has('Ανθρωπομετρικά'));
+            const enduranceAthletes = athletes.filter((a: any) => userTestsMap.get(a.id)?.has('Αντοχή'));
+            const jumpAthletes = athletes.filter((a: any) => userTestsMap.get(a.id)?.has('Άλματα'));
+            
+            availableAthletesContext = `\n\n👥 ΔΙΑΘΕΣΙΜΟΙ ΑΘΛΗΤΕΣ ΣΤΟ ATHLETES PROGRESS (dropdown):
+Σύνολο: ${athletes.length} αθλητές με test data
+
+📋 ΠΛΗΡΗΣ ΛΙΣΤΑ ΜΕ ΤΥΠΟΥΣ TESTS:
+${athletesList}
+
+📊 ΑΝΑΛΥΣΗ ΑΝΑ ΤΥΠΟ TEST:
+🏋️ Δύναμη (${strengthAthletes.length}): ${strengthAthletes.map((a: any) => a.name).join(', ')}
+📏 Ανθρωπομετρικά (${anthropometricAthletes.length}): ${anthropometricAthletes.map((a: any) => a.name).join(', ')}
+🏃 Αντοχή (${enduranceAthletes.length}): ${enduranceAthletes.map((a: any) => a.name).join(', ')}
+⬆️ Άλματα (${jumpAthletes.length}): ${jumpAthletes.map((a: any) => a.name).join(', ')}
+
+💡 ΟΔΗΓΙΕΣ:
+- Όταν σε ρωτήσουν "ποιοι έχουν τεστ δύναμης;" → Χρησιμοποίησε τη λίστα "Δύναμη" παραπάνω
+- Όταν σε ρωτήσουν "ποιοι έχουν ανθρωπομετρικά;" → Χρησιμοποίησε τη λίστα "Ανθρωπομετρικά"
+- Όταν σε ρωτήσουν "ποιους αθλητές βλέπω στο dropdown;" → Δώσε τη ΠΛΗΡΗ ΛΙΣΤΑ με όλα τα ονόματα`;
+            
+            console.log(`✅ Loaded ${athletes.length} athletes with test data breakdown:`,
+              `Strength: ${strengthAthletes.length},`,
+              `Anthropometric: ${anthropometricAthletes.length},`,
+              `Endurance: ${enduranceAthletes.length},`,
+              `Jump: ${jumpAthletes.length}`
+            );
+          } else {
+            console.log('⚠️ No athletes found in app_users table');
+          }
+        } else {
+          console.log('⚠️ No users found with test sessions');
+        }
+      } catch (error) {
+        console.error('❌ Error loading available athletes:', error);
+      }
     }
 
     // Αποθήκευση μηνύματος χρήστη (πάντα για τον effectiveUserId)
