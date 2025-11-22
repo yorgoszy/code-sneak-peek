@@ -370,9 +370,14 @@ serve(async (req) => {
         hpr: 'Υπερτροφία'
       };
       
+      console.log('🎯 Starting training types calculation...');
+      
       enrichedAssignments.forEach((assignment: any) => {
         const program = assignment.programs;
-        if (!program?.program_weeks) return;
+        if (!program?.program_weeks) {
+          console.log('⚠️ No program_weeks found');
+          return;
+        }
         
         assignment.training_dates?.forEach((dateStr: string, dateIndex: number) => {
           const date = new Date(dateStr);
@@ -395,11 +400,19 @@ serve(async (req) => {
           
           // Για κάθε block, υπολογίζουμε τον χρόνο
           day.program_blocks?.forEach((block: any) => {
-            if (!block.training_type) return;
+            if (!block.training_type) {
+              console.log(`⚠️ Block "${block.name}" has no training_type`);
+              return;
+            }
+            
+            console.log(`🔍 Processing block: ${block.name}, type: ${block.training_type}`);
             
             // Εξαίρεση τύπων που δεν εμφανίζονται στο pie chart
             const excludedTypes = ['mobility', 'stability', 'activation', 'neural act', 'recovery'];
-            if (excludedTypes.includes(block.training_type)) return;
+            if (excludedTypes.includes(block.training_type)) {
+              console.log(`⏭️ Skipping excluded type: ${block.training_type}`);
+              return;
+            }
             
             let blockTime = 0;
             block.program_exercises?.forEach((exercise: any) => {
@@ -475,6 +488,8 @@ serve(async (req) => {
             const timeMinutes = Math.round(blockTime / 60);
             const typeLabel = block.training_type;
             
+            console.log(`✅ Block "${block.name}": ${typeLabel} -> ${timeMinutes}min`);
+            
             if (!trainingTypesByMonth[monthKey][typeLabel]) {
               trainingTypesByMonth[monthKey][typeLabel] = 0;
             }
@@ -482,6 +497,8 @@ serve(async (req) => {
           });
         });
       });
+      
+      console.log('📊 Training types by month:', JSON.stringify(trainingTypesByMonth, null, 2));
       
       // Create training types summary
       let trainingTypesContext = '';
@@ -511,6 +528,9 @@ serve(async (req) => {
         }).join('\n');
         
         trainingTypesContext = `\n\nΑνάλυση Τύπων Προπόνησης ανά Μήνα:${monthlyBreakdowns}`;
+        console.log('✅ Training types context created:', trainingTypesContext.substring(0, 200) + '...');
+      } else {
+        console.log('⚠️ No training types data found');
       }
       
       calendarContext = `\n\nΗμερολόγιο Προπονήσεων (Συνολικά):\n- Σύνολο προγραμματισμένων: ${calendarStats.totalScheduled}\n- Ολοκληρωμένες: ${calendarStats.completed}\n- Χαμένες: ${calendarStats.missed}\n- Προγραμματισμένες (εκκρεμείς): ${calendarStats.scheduled}\n- Συνολικές ώρες προπόνησης: ${Math.round(calendarStats.totalActualMinutes / 60 * 10) / 10}h\n\nΑνάλυση ανά μήνα (όλοι οι μήνες με προπονήσεις):${monthlyBreakdown}\n\nΑνάλυση ανά εβδομάδα (τελευταίες 8 εβδομάδες):\n${weeklyBreakdown}${trainingTypesContext}`;
