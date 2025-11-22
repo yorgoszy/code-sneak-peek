@@ -50,9 +50,9 @@ serve(async (req) => {
     );
     const programsData = await programsResponse.json();
 
-    // Φόρτωση ιστορικού δύναμης
+    // Φόρτωση ιστορικού δύναμης με σωστό join μέσω sessions
     const strengthResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/strength_test_attempts?user_id=eq.${userId}&select=id,attempt_date,exercise_id,weight_kg,velocity_ms,estimated_1rm,exercises(name)&order=attempt_date.desc&limit=20`,
+      `${SUPABASE_URL}/rest/v1/strength_test_attempts?select=weight_kg,velocity_ms,estimated_1rm,exercises(name),strength_test_sessions!inner(user_id,test_date)&strength_test_sessions.user_id=eq.${userId}&order=strength_test_sessions(test_date).desc&limit=20`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -134,7 +134,8 @@ serve(async (req) => {
     let strengthContext = '';
     if (Array.isArray(strengthHistory) && strengthHistory.length > 0) {
       const strengthList = strengthHistory.map((test: any) => {
-        return `- ${test.exercises?.name || 'Άσκηση'}: ${test.weight_kg}kg, Ταχύτητα: ${test.velocity_ms}m/s, 1RM: ${test.estimated_1rm}kg (${new Date(test.attempt_date).toLocaleDateString('el-GR')})`;
+        const testDate = test.strength_test_sessions?.[0]?.test_date || 'N/A';
+        return `- ${test.exercises?.name || 'Άσκηση'}: ${test.weight_kg}kg, Ταχύτητα: ${test.velocity_ms}m/s, 1RM: ${test.estimated_1rm}kg (${new Date(testDate).toLocaleDateString('el-GR')})`;
       }).join('\n');
       strengthContext = `\n\nΙστορικό Δύναμης:\n${strengthList}`;
     }
