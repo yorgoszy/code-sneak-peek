@@ -154,7 +154,7 @@ serve(async (req) => {
         
         // Χωρισμός σε batches για να αποφύγουμε πολύ μεγάλο URL
         const allProgramExercisesData: any[] = [];
-        const batchSize = 50;
+        const batchSize = 25; // Μικρότερο batch για μεγάλους πίνακες
         
         for (let i = 0; i < allBlockIds.length; i += batchSize) {
           const batchIds = allBlockIds.slice(i, i + batchSize);
