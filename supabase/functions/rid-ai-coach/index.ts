@@ -11,11 +11,28 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, userId } = await req.json();
+    const { messages, userId, targetUserId } = await req.json();
     
     if (!userId) {
       throw new Error("User ID is required");
     }
+
+    // Έλεγχος αν ο χρήστης είναι admin
+    const callerUserResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/app_users?id=eq.${userId}&select=role`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const callerUserData = await callerUserResponse.json();
+    const isAdmin = callerUserData[0]?.role === 'admin';
+
+    // Αν είναι admin και έχει δώσει targetUserId, χρησιμοποιούμε αυτό
+    // Αλλιώς χρησιμοποιούμε το δικό του userId
+    const effectiveUserId = (isAdmin && targetUserId) ? targetUserId : userId;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -25,9 +42,9 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    // Φόρτωση στοιχείων χρήστη
+    // Φόρτωση στοιχείων χρήστη (χρησιμοποιούμε effectiveUserId)
     const userDataResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/app_users?id=eq.${userId}&select=*`,
+      `${SUPABASE_URL}/rest/v1/app_users?id=eq.${effectiveUserId}&select=*`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -40,7 +57,7 @@ serve(async (req) => {
 
     // Φόρτωση ΟΛΩΝ των assignments για το ημερολόγιο (active και completed)
     const assignmentsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${userId}&status=in.(active,completed)&select=*`,
+      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${effectiveUserId}&status=in.(active,completed)&select=*`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -98,7 +115,7 @@ serve(async (req) => {
 
     // Φόρτωση workout completions και attendance stats
     const workoutStatsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${userId}&select=id,training_dates,status,start_date,end_date,programs!fk_program_assignments_program_id(name),assignment_attendance(completed_workouts,missed_workouts,makeup_workouts,total_scheduled_workouts,attendance_percentage)`,
+      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${effectiveUserId}&select=id,training_dates,status,start_date,end_date,programs!fk_program_assignments_program_id(name),assignment_attendance(completed_workouts,missed_workouts,makeup_workouts,total_scheduled_workouts,attendance_percentage)`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -111,7 +128,7 @@ serve(async (req) => {
     
     // Φόρτωση workout completions για λεπτομερή στατιστικά
     const workoutCompletionsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/workout_completions?user_id=eq.${userId}&order=created_at.desc&limit=100&select=*`,
+      `${SUPABASE_URL}/rest/v1/workout_completions?user_id=eq.${effectiveUserId}&order=created_at.desc&limit=100&select=*`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -132,7 +149,7 @@ serve(async (req) => {
 
     // Φόρτωση ιστορικού δύναμης μέσω sessions
     const strengthResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/strength_test_sessions?select=test_date,strength_test_attempts(weight_kg,velocity_ms,is_1rm,exercises(name))&user_id=eq.${userId}&order=test_date.desc&limit=20`,
+      `${SUPABASE_URL}/rest/v1/strength_test_sessions?select=test_date,strength_test_attempts(weight_kg,velocity_ms,is_1rm,exercises(name))&user_id=eq.${effectiveUserId}&order=test_date.desc&limit=20`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -145,7 +162,7 @@ serve(async (req) => {
 
     // Φόρτωση ιστορικού αντοχής
     const enduranceResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/endurance_test_data?select=id,created_at,vo2_max,mas_kmh,sprint_watt,push_ups,pull_ups,crunches,endurance_test_sessions!inner(user_id,test_date)&endurance_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=10`,
+      `${SUPABASE_URL}/rest/v1/endurance_test_data?select=id,created_at,vo2_max,mas_kmh,sprint_watt,push_ups,pull_ups,crunches,endurance_test_sessions!inner(user_id,test_date)&endurance_test_sessions.user_id=eq.${effectiveUserId}&order=created_at.desc&limit=10`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -157,7 +174,7 @@ serve(async (req) => {
 
     // Φόρτωση ιστορικού άλματος
     const jumpResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/jump_test_data?select=id,created_at,counter_movement_jump,non_counter_movement_jump,broad_jump,triple_jump_left,triple_jump_right,jump_test_sessions!inner(user_id,test_date)&jump_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=10`,
+      `${SUPABASE_URL}/rest/v1/jump_test_data?select=id,created_at,counter_movement_jump,non_counter_movement_jump,broad_jump,triple_jump_left,triple_jump_right,jump_test_sessions!inner(user_id,test_date)&jump_test_sessions.user_id=eq.${effectiveUserId}&order=created_at.desc&limit=10`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -169,7 +186,7 @@ serve(async (req) => {
 
     // Φόρτωση ανθρωπομετρικού ιστορικού
     const anthropometricResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/anthropometric_test_data?select=id,created_at,height,weight,body_fat_percentage,muscle_mass_percentage,waist_circumference,chest_circumference,anthropometric_test_sessions!inner(user_id,test_date)&anthropometric_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=10`,
+      `${SUPABASE_URL}/rest/v1/anthropometric_test_data?select=id,created_at,height,weight,body_fat_percentage,muscle_mass_percentage,waist_circumference,chest_circumference,anthropometric_test_sessions!inner(user_id,test_date)&anthropometric_test_sessions.user_id=eq.${effectiveUserId}&order=created_at.desc&limit=10`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1129,7 +1146,7 @@ serve(async (req) => {
     
     // 1. Subscription Info
     const subscriptionsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_subscriptions?user_id=eq.${userId}&status=eq.active&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/user_subscriptions?user_id=eq.${effectiveUserId}&status=eq.active&order=created_at.desc`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1173,7 +1190,7 @@ serve(async (req) => {
     
     // 2. Visits Data
     const visitPackagesResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/visit_packages?user_id=eq.${userId}&status=eq.active&remaining_visits=gt.0&order=purchase_date.desc`,
+      `${SUPABASE_URL}/rest/v1/visit_packages?user_id=eq.${effectiveUserId}&status=eq.active&remaining_visits=gt.0&order=purchase_date.desc`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1196,7 +1213,7 @@ serve(async (req) => {
     
     // 3. Videocall Data
     const videocallPackagesResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/videocall_packages?user_id=eq.${userId}&status=eq.active&remaining_videocalls=gt.0&order=purchase_date.desc`,
+      `${SUPABASE_URL}/rest/v1/videocall_packages?user_id=eq.${effectiveUserId}&status=eq.active&remaining_videocalls=gt.0&order=purchase_date.desc`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1223,7 +1240,7 @@ serve(async (req) => {
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:00`;
     
     const upcomingBookingsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/booking_sessions?user_id=eq.${userId}&status=eq.confirmed&or=(booking_date.gt.${todayStr},and(booking_date.eq.${todayStr},booking_time.gt.${currentTime}))&order=booking_date.asc,booking_time.asc&limit=2`,
+      `${SUPABASE_URL}/rest/v1/booking_sessions?user_id=eq.${effectiveUserId}&status=eq.confirmed&or=(booking_date.gt.${todayStr},and(booking_date.eq.${todayStr},booking_time.gt.${currentTime}))&order=booking_date.asc,booking_time.asc&limit=2`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1257,7 +1274,7 @@ serve(async (req) => {
     
     // 5. Upcoming Tests
     const upcomingTestsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/tests?user_id=eq.${userId}&status=eq.scheduled&scheduled_date=gte.${todayStr}&order=scheduled_date.asc`,
+      `${SUPABASE_URL}/rest/v1/tests?user_id=eq.${effectiveUserId}&status=eq.scheduled&scheduled_date=gte.${todayStr}&order=scheduled_date.asc`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1277,7 +1294,7 @@ serve(async (req) => {
     
     // 6. Offers/Coupons
     const couponsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/discount_coupons?user_id=eq.${userId}&is_used=eq.false&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/discount_coupons?user_id=eq.${effectiveUserId}&is_used=eq.false&order=created_at.desc`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1296,7 +1313,7 @@ serve(async (req) => {
       overviewStatsContext = `\n\n📊 ΓΕΝΙΚΑ ΣΤΑΤΙΣΤΙΚΑ (Επισκόπηση):${subscriptionInfo}${visitsInfo}${videocallsInfo}${bookingsInfo}${testsInfo}${offersInfo}`;
     }
 
-    // Αποθήκευση μηνύματος χρήστη
+    // Αποθήκευση μηνύματος χρήστη (πάντα για τον effectiveUserId)
     const userMessage = messages[messages.length - 1];
     if (userMessage.role === "user") {
       await fetch(`${SUPABASE_URL}/rest/v1/ai_conversations`, {
@@ -1308,17 +1325,17 @@ serve(async (req) => {
           "Prefer": "return=minimal"
         },
         body: JSON.stringify({
-          user_id: userId,
+          user_id: effectiveUserId,
           content: userMessage.content,
           message_type: "user",
-          metadata: {}
+          metadata: isAdmin && targetUserId ? { viewed_by_admin: userId } : {}
         })
       });
     }
 
-    // Φόρτωση ιστορικού συνομιλιών
+    // Φόρτωση ιστορικού συνομιλιών (για τον effectiveUserId)
     const historyResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/ai_conversations?user_id=eq.${userId}&order=created_at.asc&limit=50`,
+      `${SUPABASE_URL}/rest/v1/ai_conversations?user_id=eq.${effectiveUserId}&order=created_at.asc&limit=50`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
