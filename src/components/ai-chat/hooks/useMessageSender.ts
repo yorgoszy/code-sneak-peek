@@ -235,6 +235,65 @@ export const useMessageSender = ({
         .eq('anthropometric_test_sessions.user_id', userId)
         .order('anthropometric_test_sessions.test_date', { ascending: false })
         .limit(20);
+
+      // Fetch all workout completions για calendar_data
+      const { data: allCompletions } = await supabase
+        .from('workout_completions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('scheduled_date', { ascending: true });
+
+      // Δημιουργία calendar_data από τα programs
+      const calendar_data: any[] = [];
+      if (programsWithStats && programsWithStats.length > 0) {
+        for (const program of programsWithStats) {
+          const trainingDates = program.training_dates || [];
+          const programData = program.programs as any;
+          const programWeeks = programData?.program_weeks || [];
+          
+          if (programWeeks.length === 0) continue;
+          
+          const programDays = programWeeks[0]?.program_days || [];
+          if (programDays.length === 0) continue;
+          
+          trainingDates.forEach((dateStr: string, index: number) => {
+            const dayIndex = index % programDays.length;
+            const dayProgram = programDays[dayIndex];
+            
+            // Βρες το status από workout_completions
+            const completion = (allCompletions || []).find(
+              (c: any) => c.assignment_id === program.id && c.scheduled_date === dateStr
+            );
+            const status = completion?.status || 'scheduled';
+            
+            // Συλλογή ασκήσεων με λεπτομέρειες
+            const exercises: string[] = [];
+            if (dayProgram.program_blocks && Array.isArray(dayProgram.program_blocks)) {
+              for (const block of dayProgram.program_blocks) {
+                if (block.program_exercises && Array.isArray(block.program_exercises)) {
+                  for (const ex of block.program_exercises) {
+                    const exName = ex.exercises?.name || 'Άσκηση';
+                    const sets = ex.sets || '-';
+                    const reps = ex.reps || '-';
+                    const kg = ex.kg || '-';
+                    const rest = ex.rest || '-';
+                    const tempo = ex.tempo || '-';
+                    exercises.push(`${exName}: ${sets}x${reps} @ ${kg}kg, tempo: ${tempo}, rest: ${rest}`);
+                  }
+                }
+              }
+            }
+            
+            calendar_data.push({
+              date: dateStr,
+              program: programData?.name || 'Πρόγραμμα',
+              day: dayProgram.name || `Ημέρα ${dayProgram.day_number}`,
+              status: status,
+              exercises: exercises
+            });
+          });
+        }
+      }
       
       const { data, error } = await supabase.functions.invoke('smart-ai-chat', {
         body: {
@@ -245,7 +304,8 @@ export const useMessageSender = ({
             strengthHistory: strengthHistory || [],
             enduranceHistory: enduranceHistory || [],
             jumpHistory: jumpHistory || [],
-            anthropometricHistory: anthropometricHistory || []
+            anthropometricHistory: anthropometricHistory || [],
+            calendar_data: calendar_data
           }
         }
       });
