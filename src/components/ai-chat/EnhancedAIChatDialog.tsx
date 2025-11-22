@@ -24,344 +24,6 @@ interface EnhancedAIChatDialogProps {
   athletePhotoUrl?: string;
 }
 
-// Κλήσεις στα AI Edge Functions
-const callGeminiAI = async (message: string, userId?: string, userName?: string): Promise<string> => {
-  try {
-    const { data, error } = await supabase.functions.invoke('gemini-ai-chat', {
-      body: { 
-        message,
-        userId,
-        userName
-      }
-    });
-
-    if (error) throw error;
-    return data?.response || 'Σφάλμα στην απάντηση του Gemini AI';
-  } catch (error) {
-    console.error('Gemini AI Error:', error);
-    throw new Error('Το Gemini AI δεν είναι διαθέσιμο αυτή τη στιγμή');
-  }
-};
-
-const callOpenAI = async (message: string): Promise<string> => {
-  try {
-    const { data, error } = await supabase.functions.invoke('ai-fitness-chat', {
-      body: { message }
-    });
-
-    if (error) throw error;
-    return data?.response || 'Σφάλμα στην απάντηση του OpenAI';
-  } catch (error) {
-    console.error('OpenAI Error:', error);
-    throw new Error('Το OpenAI δεν είναι διαθέσιμο αυτή τη στιγμή');
-  }
-};
-
-// Έξυπνο Local AI που μαθαίνει από Gemini και OpenAI
-class SmartLocalAI {
-  private static instance: SmartLocalAI;
-  private knowledgeBase: Map<string, string> = new Map();
-  private userProfiles: Map<string, any> = new Map();
-  private conversationMemory: Map<string, any[]> = new Map();
-
-  static getInstance(): SmartLocalAI {
-    if (!SmartLocalAI.instance) {
-      SmartLocalAI.instance = new SmartLocalAI();
-    }
-    return SmartLocalAI.instance;
-  }
-
-  // Μαθαίνει από τις απαντήσεις του Gemini και OpenAI
-  async learnFromResponse(question: string, response: string, source: 'gemini' | 'openai', userId?: string) {
-    const normalizedQuestion = question.toLowerCase().trim();
-    
-    // Αποθηκεύει τη γνώση για μελλοντική χρήση
-    this.knowledgeBase.set(normalizedQuestion, response);
-    
-    // Αναλύει και εξάγει προσωπικές πληροφορίες από τη συνομιλία
-    if (userId) {
-      await this.extractPersonalInfo(question, response, userId);
-    }
-    
-    console.log(`🧠 Local AI έμαθε από ${source.toUpperCase()}: "${normalizedQuestion.substring(0, 50)}..."`);
-    
-    // Αποθηκεύει στη βάση δεδομένων
-    await this.saveToDatabase(question, response, source, userId);
-  }
-
-  // Εξάγει προσωπικές πληροφορίες από τη συνομιλία
-  async extractPersonalInfo(question: string, response: string, userId: string) {
-    const lowerText = (question + ' ' + response).toLowerCase();
-    const userProfile = this.userProfiles.get(userId) || {};
-
-    // Διατροφικές προτιμήσεις
-    if (lowerText.includes('βίγκαν') || lowerText.includes('vegan')) {
-      userProfile.dietary_preferences = [...(Array.isArray(userProfile.dietary_preferences) ? userProfile.dietary_preferences : []), 'vegan'];
-    }
-    if (lowerText.includes('χορτοφάγος') || lowerText.includes('vegetarian')) {
-      userProfile.dietary_preferences = [...(Array.isArray(userProfile.dietary_preferences) ? userProfile.dietary_preferences : []), 'vegetarian'];
-    }
-    
-    // Ιατρικές καταστάσεις
-    if (lowerText.includes('διαβητικός') || lowerText.includes('διαβήτη')) {
-      userProfile.medical_conditions = [...(Array.isArray(userProfile.medical_conditions) ? userProfile.medical_conditions : []), 'diabetes'];
-    }
-    if (lowerText.includes('καρδιακός') || lowerText.includes('καρδιά')) {
-      userProfile.medical_conditions = [...(Array.isArray(userProfile.medical_conditions) ? userProfile.medical_conditions : []), 'heart_condition'];
-    }
-    if (lowerText.includes('υπέρταση') || lowerText.includes('πίεση')) {
-      userProfile.medical_conditions = [...(Array.isArray(userProfile.medical_conditions) ? userProfile.medical_conditions : []), 'hypertension'];
-    }
-
-    // Στόχοι προπόνησης
-    if (lowerText.includes('αδυνάτισμα') || lowerText.includes('χάσω κιλά')) {
-      userProfile.goals = [...(Array.isArray(userProfile.goals) ? userProfile.goals : []), 'weight_loss'];
-    }
-    if (lowerText.includes('μυϊκή μάζα') || lowerText.includes('όγκος')) {
-      userProfile.goals = [...(Array.isArray(userProfile.goals) ? userProfile.goals : []), 'muscle_gain'];
-    }
-    if (lowerText.includes('δύναμη')) {
-      userProfile.goals = [...(Array.isArray(userProfile.goals) ? userProfile.goals : []), 'strength'];
-    }
-
-    this.userProfiles.set(userId, userProfile);
-    
-    // Ενημερώνει τη βάση δεδομένων
-    await this.updateUserProfile(userId, userProfile);
-  }
-
-  // Αποθηκεύει συνομιλία στη βάση δεδομένων
-  async saveToDatabase(question: string, response: string, source: string, userId?: string) {
-    try {
-      // Αποθηκεύει τη συνομιλία
-      if (userId) {
-        await supabase.from('ai_conversations').insert([
-          { user_id: userId, message_type: 'user', content: question },
-          { user_id: userId, message_type: 'assistant', content: response, metadata: { source } }
-        ]);
-      }
-
-      // Αποθηκεύει τη γενική γνώση
-      await supabase.from('ai_global_knowledge').insert({
-        knowledge_type: 'learned_response',
-        category: this.categorizeQuestion(question),
-        original_info: question,
-        corrected_info: response,
-        confidence_score: source === 'openai' ? 8 : 6,
-        metadata: { source, learned_at: new Date().toISOString() }
-      });
-    } catch (error) {
-      console.error('Σφάλμα αποθήκευσης:', error);
-    }
-  }
-
-  // Ενημερώνει το προφίλ χρήστη
-  async updateUserProfile(userId: string, profileData: any) {
-    try {
-      await supabase.from('ai_user_profiles').upsert({
-        user_id: userId,
-        goals: Array.isArray(profileData.goals) ? profileData.goals : [],
-        medical_conditions: Array.isArray(profileData.medical_conditions) ? profileData.medical_conditions : [],
-        dietary_preferences: Array.isArray(profileData.dietary_preferences) ? profileData.dietary_preferences : [],
-        updated_at: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Σφάλμα ενημέρωσης προφίλ:', error);
-    }
-  }
-
-  // Κατηγοριοποιεί την ερώτηση
-  categorizeQuestion(question: string): string {
-    const lowerQ = question.toLowerCase();
-    if (lowerQ.includes('διατροφή') || lowerQ.includes('φαγητό')) return 'nutrition';
-    if (lowerQ.includes('προπόνηση') || lowerQ.includes('άσκηση')) return 'training';
-    if (lowerQ.includes('υγεία') || lowerQ.includes('ιατρικό')) return 'medical';
-    return 'general';
-  }
-
-  // Φορτώνει το προφίλ χρήστη
-  async loadUserProfile(userId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('ai_user_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
-      if (data && !error) {
-        this.userProfiles.set(userId, data);
-        return data;
-      }
-    } catch (error) {
-      console.error('Σφάλμα φόρτωσης προφίλ:', error);
-    }
-    return null;
-  }
-
-  // Ελέγχει αν το Local AI γνωρίζει την απάντηση
-  async hasKnowledge(question: string, userId?: string): Promise<string | null> {
-    const normalizedQuestion = question.toLowerCase().trim();
-    
-    // Ακριβής match στη μνήμη
-    if (this.knowledgeBase.has(normalizedQuestion)) {
-      return this.knowledgeBase.get(normalizedQuestion) || null;
-    }
-
-    // Αναζήτηση στη βάση δεδομένων
-    try {
-      const { data, error } = await supabase
-        .from('ai_global_knowledge')
-        .select('corrected_info, confidence_score')
-        .ilike('original_info', `%${normalizedQuestion}%`)
-        .order('confidence_score', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (data && !error && data.confidence_score > 5) {
-        return data.corrected_info;
-      }
-    } catch (error) {
-      console.log('Δεν βρέθηκε στη βάση γνώσης');
-    }
-
-    return null;
-  }
-
-  // Βασικές απαντήσεις με εξατομίκευση
-  async getBasicResponse(message: string, athleteName?: string, userId?: string): Promise<string | null> {
-    const lowerMessage = message.toLowerCase();
-    const greeting = athleteName ? `${athleteName}` : 'φίλε μου';
-    
-    // Φορτώνει το προφίλ του χρήστη
-    const userProfile = userId ? await this.loadUserProfile(userId) : null;
-    
-    if (lowerMessage.includes('γεια') || lowerMessage.includes('hello') || lowerMessage.includes('καλησπέρα') || lowerMessage.includes('καλημέρα')) {
-      let personalizedGreeting = `Γεια σου ${greeting}! 👋 
-
-Είμαι ο **RidAI Προπονητής** - ένα έξυπνο σύστημα τεχνητής νοημοσύνης.
-
-**Ειδικεύομαι σε:**
-🏋️ Προπόνηση & Ασκήσεις
-🥗 Διατροφή & Θερμίδες  
-💪 Μυϊκή Ανάπτυξη
-🔥 Απώλεια Βάρους
-😴 Ανάκαμψη & Ύπνο`;
-
-      // Προσθέτει εξατομικευμένες πληροφορίες αν υπάρχουν
-      if (userProfile) {
-        const dietaryPrefs = Array.isArray(userProfile.dietary_preferences) ? userProfile.dietary_preferences : [];
-        const medicalConds = Array.isArray(userProfile.medical_conditions) ? userProfile.medical_conditions : [];
-        const userGoals = Array.isArray(userProfile.goals) ? userProfile.goals : [];
-
-        if (dietaryPrefs.length > 0) {
-          personalizedGreeting += `\n\n🌱 **Θυμάμαι ότι είσαι:** ${dietaryPrefs.join(', ')}`;
-        }
-        if (medicalConds.length > 0) {
-          personalizedGreeting += `\n💊 **Λαμβάνω υπόψη:** ${medicalConds.join(', ')}`;
-        }
-        if (userGoals.length > 0) {
-          personalizedGreeting += `\n🎯 **Οι στόχοι σου:** ${userGoals.join(', ')}`;
-        }
-      }
-
-      personalizedGreeting += `\n\nΡώτα με ό,τι θέλεις και θα σου δώσω την καλύτερη δυνατή απάντηση! 🚀`;
-      
-      return personalizedGreeting;
-    }
-
-    return null;
-  }
-
-  // Αναλύει τις προπονήσεις του χρήστη
-  async analyzeUserWorkouts(userId: string) {
-    try {
-      // Φέρνει τα προγράμματα του χρήστη με διευκρίνιση της σχέσης
-      const { data: assignments } = await supabase
-        .from('program_assignments')
-        .select(`
-          *,
-          programs!program_assignments_program_id_fkey(
-            *,
-            program_weeks(
-              *,
-              program_days(
-                *,
-                program_blocks(
-                  *,
-                  program_exercises(
-                    *,
-                    exercises(name)
-                  )
-                )
-              )
-            )
-          )
-        `)
-        .eq('user_id', userId);
-
-      if (!assignments) return null;
-
-      const workoutAnalysis = {
-        strength_hours: 0,
-        endurance_hours: 0,
-        power_hours: 0,
-        speed_hours: 0
-      };
-
-      assignments.forEach(assignment => {
-        if (assignment.programs && typeof assignment.programs === 'object' && 'program_weeks' in assignment.programs) {
-          const programs = assignment.programs as any;
-          if (Array.isArray(programs.program_weeks)) {
-            programs.program_weeks.forEach((week: any) => {
-              week.program_days?.forEach((day: any) => {
-                day.program_blocks?.forEach((block: any) => {
-                  block.program_exercises?.forEach((exercise: any) => {
-                    const type = this.categorizeExerciseType(exercise);
-                    const duration = this.calculateExerciseDuration(exercise);
-                    workoutAnalysis[`${type}_hours`] += duration;
-                  });
-                });
-              });
-            });
-          }
-        }
-      });
-
-      return workoutAnalysis;
-    } catch (error) {
-      console.error('Σφάλμα ανάλυσης προπονήσεων:', error);
-      return null;
-    }
-  }
-
-  // Κατηγοριοποιεί τον τύπο άσκησης
-  categorizeExerciseType(exercise: any): 'strength' | 'endurance' | 'power' | 'speed' {
-    const reps = parseInt(exercise.reps) || 0;
-    const percentage = parseFloat(exercise.percentage_1rm) || 0;
-    const velocity = parseFloat(exercise.velocity_ms) || 0;
-
-    if (percentage > 85 || reps <= 5) return 'strength';
-    if (percentage < 65 || reps > 12) return 'endurance';
-    if (velocity > 0.8 && percentage < 60) return 'speed';
-    return 'power';
-  }
-
-  // Υπολογίζει τη διάρκεια άσκησης
-  calculateExerciseDuration(exercise: any): number {
-    const sets = parseInt(exercise.sets) || 1;
-    const reps = parseInt(exercise.reps) || 1;
-    const tempo = exercise.tempo || '2.1.2';
-    const rest = parseInt(exercise.rest) || 60;
-
-    // Υπολογίζει τον χρόνο του tempo
-    const tempoSeconds = tempo.split('.').reduce((sum: number, phase: string) => sum + parseInt(phase), 0);
-    
-    // Συνολικός χρόνος: (sets * reps * tempo) + (sets * rest)
-    const totalSeconds = (sets * reps * tempoSeconds) + (sets * rest);
-    return totalSeconds / 3600; // μετατροπή σε ώρες
-  }
-}
-
 export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   isOpen,
   onClose,
@@ -374,7 +36,6 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const smartLocalAI = SmartLocalAI.getInstance();
 
   useEffect(() => {
     if (isOpen && athleteId) {
@@ -455,15 +116,21 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   };
 
   const initializeChat = async () => {
-    const welcomeResponse = await smartLocalAI.getBasicResponse(
-      'γεια σου', 
-      athleteName, 
-      athleteId
-    );
-
     const welcomeMessage: Message = {
       id: 'welcome',
-      content: welcomeResponse || 'Γεια σου! Είμαι ο RidAI Προπονητής!',
+      content: `Γεια σου${athleteName ? ` ${athleteName}` : ''}! 👋
+
+Είμαι ο **RID AI Προπονητής** και είμαι εδώ για να σε βοηθήσω με:
+
+🏋️ Προπονητικές συμβουλές
+🥗 Διατροφή και σχεδιασμό γευμάτων  
+📊 Ανάλυση της προόδου σου
+💪 Ασκησιολογικές τεχνικές
+🔄 Αποκατάσταση και πρόληψη τραυματισμών
+
+Έχω πρόσβαση στο ιστορικό προόδου σου και μπορώ να σου δώσω εξατομικευμένες συμβουλές!
+
+Τι θα ήθελες να συζητήσουμε σήμερα;`,
       role: 'assistant',
       timestamp: new Date(),
       aiType: 'rid-smart'
@@ -475,26 +142,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     await saveMessageToDatabase(welcomeMessage);
   };
 
-  // Ελέγχει αν μια απάντηση είναι ικανοποιητική
-  const isGoodResponse = (response: string): boolean => {
-    const lowResponse = response.toLowerCase();
-    
-    if (response.length < 50) return false;
-    
-    const uncertainPhrases = [
-      'δεν είμαι σίγουρος',
-      'δεν γνωρίζω',
-      'δεν μπορώ να',
-      'λυπάμαι',
-      'δεν έχω πληροφορίες',
-      'δεν είμαι ειδικός'
-    ];
-    
-    return !uncertainPhrases.some(phrase => lowResponse.includes(phrase));
-  };
-
   const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !athleteId) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -505,86 +154,103 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
     setMessages(prev => [...prev, userMessage]);
     
-    // Αποθηκεύουμε το μήνυμα του χρήστη
-    await saveMessageToDatabase(userMessage);
-    
     const currentInput = input;
     setInput('');
     setIsLoading(true);
 
+    // Δημιουργία placeholder για το streaming message
+    const assistantMessageId = (Date.now() + 1).toString();
+    const placeholderMessage: Message = {
+      id: assistantMessageId,
+      content: '',
+      role: 'assistant',
+      timestamp: new Date(),
+      aiType: 'rid-smart'
+    };
+    
+    setMessages(prev => [...prev, placeholderMessage]);
+
     try {
-      let finalResponse = '';
+      // Κλήση rid-ai-coach με streaming
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rid-ai-coach`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: currentInput }],
+            userId: athleteId
+          }),
+        }
+      );
 
-      // Βήμα 1: Έλεγχος αν το Smart Local AI γνωρίζει την απάντηση
-      const localKnowledge = await smartLocalAI.hasKnowledge(currentInput, athleteId);
-      const basicResponse = await smartLocalAI.getBasicResponse(currentInput, athleteName, athleteId);
+      if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error('Υπερβήκατε το όριο αιτημάτων. Παρακαλώ δοκιμάστε αργότερα.');
+        }
+        if (response.status === 402) {
+          throw new Error('Απαιτείται πληρωμή. Παρακαλώ προσθέστε πιστώσεις στο Lovable AI workspace.');
+        }
+        throw new Error('Σφάλμα επικοινωνίας με το AI');
+      }
 
-      if (localKnowledge) {
-        finalResponse = localKnowledge;
-      } else if (basicResponse) {
-        finalResponse = basicResponse;
-      } else {
-        // Βήμα 2: Δοκιμάζουμε πρώτα το Gemini AI (δωρεάν)
-        try {
-          console.log('🔥 Δοκιμάζω Gemini AI πρώτα...');
-          const geminiResponse = await callGeminiAI(currentInput, athleteId, athleteName);
-          
-          if (isGoodResponse(geminiResponse)) {
-            finalResponse = geminiResponse;
-            
-            // Το Smart Local AI μαθαίνει από το Gemini
-            await smartLocalAI.learnFromResponse(currentInput, geminiResponse, 'gemini', athleteId);
-          } else {
-            throw new Error('Gemini response not satisfactory');
-          }
-        } catch (geminiError) {
-          console.log('⚠️ Gemini AI δεν μπόρεσε, δοκιμάζω OpenAI...');
-          
-          // Βήμα 3: Αν το Gemini αποτύχει, καλούμε το OpenAI
-          try {
-            const openaiResponse = await callOpenAI(currentInput);
-            finalResponse = openaiResponse;
-            
-            // Το Smart Local AI μαθαίνει από το OpenAI
-            await smartLocalAI.learnFromResponse(currentInput, openaiResponse, 'openai', athleteId);
-          } catch (openaiError) {
-            finalResponse = `❌ **Σφάλμα:**\nΔυστυχώς αντιμετωπίζω τεχνικά προβλήματα με όλα τα AI συστήματα.\n\nΠαρακαλώ δοκιμάστε ξανά σε λίγο.`;
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = '';
+
+      if (!reader) throw new Error('No response stream');
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') continue;
+
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) {
+                fullResponse += content;
+                // Update message in real-time
+                setMessages(prev => 
+                  prev.map(msg => 
+                    msg.id === assistantMessageId 
+                      ? { ...msg, content: fullResponse }
+                      : msg
+                  )
+                );
+              }
+            } catch (e) {
+              // Ignore parse errors for incomplete chunks
+            }
           }
         }
       }
 
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: finalResponse,
-        role: 'assistant',
-        timestamp: new Date(),
-        aiType: 'rid-smart'
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-      
-      // Αποθηκεύουμε την απάντηση του AI
-      await saveMessageToDatabase(assistantMessage);
-      
-      // Ξαναφορτώνουμε το conversation history για να είμαστε συγχρονισμένοι
-      await loadConversationHistory();
+      console.log('✅ Streaming completed');
       
     } catch (error) {
-      console.error('RidAI Error:', error);
-      toast.error('Σφάλμα στον RidAI Προπονητή');
+      console.error('RID AI Error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Σφάλμα στην επικοινωνία με το AI';
+      toast.error(errorMessage);
       
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: 'Λυπάμαι, αντιμετωπίζω τεχνικά προβλήματα. Παρακαλώ δοκιμάστε ξανά.',
-        role: 'assistant',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
-      await saveMessageToDatabase(errorMessage);
-      
-      // Ξαναφορτώνουμε το conversation history ακόμα και σε περίπτωση σφάλματος
-      await loadConversationHistory();
+      // Update placeholder with error message
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === assistantMessageId 
+            ? { ...msg, content: `Λυπάμαι, ${errorMessage}` }
+            : msg
+        )
+      );
     } finally {
       setIsLoading(false);
     }
