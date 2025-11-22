@@ -1,17 +1,23 @@
 import { Sidebar } from "@/components/Sidebar";
 import { useState, useEffect, useMemo } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProgressSection } from "@/components/user-profile/UserProgressSection";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { Combobox } from "@/components/ui/combobox";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const AthletesProgressWithSidebar = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const isMobile = useIsMobile();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(isMobile);
   const [users, setUsers] = useState<any[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setIsSidebarCollapsed(isMobile);
+  }, [isMobile]);
 
   useEffect(() => {
     loadUsers();
@@ -94,20 +100,21 @@ export const AthletesProgressWithSidebar = () => {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gray-50">
         <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
-        <div className="flex-1 flex flex-col">
-          <main className="flex-1 p-4 md:p-6 lg:p-8">
-            <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex-1 flex flex-col w-full">
+          <header className="h-14 md:h-16 flex items-center border-b bg-white px-4 md:px-6">
+            <SidebarTrigger className="mr-4" />
+            <h1 className="text-lg md:text-xl font-semibold">Πρόοδος Αθλητών</h1>
+          </header>
+          <main className="flex-1 p-3 md:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
               <Card className="rounded-none">
-                <CardHeader>
-                  <CardTitle className="text-2xl font-bold">Πρόοδος Αθλητών</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+                <CardContent className="pt-6">
+                  <div className="space-y-3 md:space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Επιλέξτε Αθλητή
                       </label>
-                      <div className="w-full md:w-96">
+                      <div className="w-full">
                         <Combobox
                           options={userOptions}
                           value={selectedUserId}
@@ -123,10 +130,10 @@ export const AthletesProgressWithSidebar = () => {
 
               {selectedUserId && (
                 <Card className="rounded-none">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-semibold">Πρόοδος</CardTitle>
+                  <CardHeader className="pb-3 md:pb-6">
+                    <CardTitle className="text-base md:text-xl font-semibold">Πρόοδος</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-0">
                     <UserProgressSection userId={selectedUserId} />
                   </CardContent>
                 </Card>
