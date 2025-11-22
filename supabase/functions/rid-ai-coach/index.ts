@@ -1075,9 +1075,15 @@ serve(async (req) => {
                   const kg = ex.kg || '-';
                   const rest = ex.rest || '-';
                   const tempo = ex.tempo || '-';
+                  const percentage1rm = ex.percentage_1rm ? `${ex.percentage_1rm}% 1RM` : null;
+                  const velocityMs = ex.velocity_ms ? `${ex.velocity_ms} m/s` : null;
                   
-                  // Δημιουργούμε λεπτομερή περιγραφή της άσκησης
-                  exercises.push(`${exName}: ${sets}x${reps} @ ${kg}kg, tempo: ${tempo}, rest: ${rest}`);
+                  // Δημιουργούμε λεπτομερή περιγραφή της άσκησης με όλα τα stats
+                  let exerciseDetails = `${exName}: ${sets}x${reps} @ ${kg}kg, tempo: ${tempo}, rest: ${rest}`;
+                  if (percentage1rm) exerciseDetails += `, ${percentage1rm}`;
+                  if (velocityMs) exerciseDetails += `, ${velocityMs}`;
+                  
+                  exercises.push(exerciseDetails);
                 }
               }
             }
