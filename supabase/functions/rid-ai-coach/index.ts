@@ -262,10 +262,9 @@ serve(async (req) => {
         workoutsByMonth[monthKey].push(workout);
       });
       
-      // Create monthly summary
+      // Create monthly summary (ALL months with workouts)
       const monthlyBreakdown = Object.entries(workoutsByMonth)
         .sort(([a], [b]) => b.localeCompare(a)) // Most recent first
-        .slice(0, 6) // Last 6 months
         .map(([monthKey, workouts]) => {
           const [year, month] = monthKey.split('-');
           const monthNames = ['Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος', 'Μάιος', 'Ιούνιος', 
@@ -290,7 +289,7 @@ serve(async (req) => {
         })
         .join('\n');
       
-      calendarContext = `\n\nΗμερολόγιο Προπονήσεων (Συνολικά):\n- Σύνολο προγραμματισμένων: ${calendarStats.totalScheduled}\n- Ολοκληρωμένες: ${calendarStats.completed}\n- Χαμένες: ${calendarStats.missed}\n- Προγραμματισμένες (εκκρεμείς): ${calendarStats.scheduled}\n\nΑνάλυση ανά μήνα (τελευταίοι 6 μήνες):${monthlyBreakdown}`;
+      calendarContext = `\n\nΗμερολόγιο Προπονήσεων (Συνολικά):\n- Σύνολο προγραμματισμένων: ${calendarStats.totalScheduled}\n- Ολοκληρωμένες: ${calendarStats.completed}\n- Χαμένες: ${calendarStats.missed}\n- Προγραμματισμένες (εκκρεμείς): ${calendarStats.scheduled}\n\nΑνάλυση ανά μήνα (όλοι οι μήνες με προπονήσεις):${monthlyBreakdown}`;
       
       
       if (todaysWorkouts.length > 0) {
