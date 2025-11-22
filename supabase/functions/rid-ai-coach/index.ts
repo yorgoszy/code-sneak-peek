@@ -103,7 +103,7 @@ serve(async (req) => {
         
         // 🏋️ Φόρτωση ΠΛΗΡΟΥΣ ΔΟΜΗΣ προγραμμάτων (weeks, days, blocks, exercises)
         const weeksResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/program_weeks?program_id=in.(${allProgramIds.join(',')})&select=*&order=week_order.asc`,
+          `${SUPABASE_URL}/rest/v1/program_weeks?program_id=in.(${allProgramIds.join(',')})&select=*&order=week_number.asc`,
           {
             headers: {
               "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -123,7 +123,7 @@ serve(async (req) => {
         const allWeekIds = allWeeksData.map((w: any) => w.id);
         
         const daysResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/program_days?week_id=in.(${allWeekIds.join(',')})&select=*&order=day_order.asc`,
+          `${SUPABASE_URL}/rest/v1/program_days?week_id=in.(${allWeekIds.join(',')})&select=*&order=day_number.asc`,
           {
             headers: {
               "apikey": SUPABASE_SERVICE_ROLE_KEY!,
