@@ -1063,14 +1063,21 @@ serve(async (req) => {
           );
           const status = completion?.status || 'scheduled';
           
-          // Φτιάχνουμε λίστα με τις ασκήσεις
+          // Φτιάχνουμε λίστα με τις ασκήσεις και τα details τους
           const exercises: string[] = [];
           if (dayProgram.program_blocks && Array.isArray(dayProgram.program_blocks)) {
             for (const block of dayProgram.program_blocks) {
               if (block.program_exercises && Array.isArray(block.program_exercises)) {
                 for (const ex of block.program_exercises) {
                   const exName = ex.exercises?.name || 'Άσκηση';
-                  exercises.push(exName);
+                  const sets = ex.sets || '-';
+                  const reps = ex.reps || '-';
+                  const kg = ex.kg || '-';
+                  const rest = ex.rest || '-';
+                  const tempo = ex.tempo || '-';
+                  
+                  // Δημιουργούμε λεπτομερή περιγραφή της άσκησης
+                  exercises.push(`${exName}: ${sets}x${reps} @ ${kg}kg, tempo: ${tempo}, rest: ${rest}`);
                 }
               }
             }
@@ -1098,7 +1105,10 @@ serve(async (req) => {
         
         const programsText = programs.map(p => {
           const statusEmoji = p.status === 'completed' ? '✅' : p.status === 'missed' ? '❌' : '📅';
-          const exercisesText = p.exercises.length > 0 ? `\n    Ασκήσεις: ${p.exercises.join(', ')}` : '';
+          let exercisesText = '';
+          if (p.exercises.length > 0) {
+            exercisesText = '\n    ' + p.exercises.join('\n    ');
+          }
           return `  ${statusEmoji} ${p.program} - ${p.day}${exercisesText}`;
         }).join('\n');
         
