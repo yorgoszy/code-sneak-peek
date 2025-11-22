@@ -152,17 +152,27 @@ serve(async (req) => {
         
         const allBlockIds = allBlocksData.length > 0 ? allBlocksData.map((b: any) => b.id) : [];
         
-        const programExercisesResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/program_exercises?block_id=in.(${allBlockIds.join(',')})&select=*&order=exercise_order.asc`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        // Χωρισμός σε batches για να αποφύγουμε πολύ μεγάλο URL
+        const allProgramExercisesData: any[] = [];
+        const batchSize = 50;
+        
+        for (let i = 0; i < allBlockIds.length; i += batchSize) {
+          const batchIds = allBlockIds.slice(i, i + batchSize);
+          const programExercisesResponse = await fetch(
+            `${SUPABASE_URL}/rest/v1/program_exercises?block_id=in.(${batchIds.join(',')})&select=*&order=exercise_order.asc`,
+            {
+              headers: {
+                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+              }
             }
+          );
+          const programExercisesJsonData = await programExercisesResponse.json();
+          if (Array.isArray(programExercisesJsonData)) {
+            allProgramExercisesData.push(...programExercisesJsonData);
           }
-        );
-        const programExercisesJsonData = await programExercisesResponse.json();
-        const allProgramExercisesData = Array.isArray(programExercisesJsonData) ? programExercisesJsonData : [];
+        }
+        
         console.log(`✅ Loaded ${allProgramExercisesData.length} program exercises`);
         
         const allExerciseIds = allProgramExercisesData.length > 0 
