@@ -158,7 +158,7 @@ serve(async (req) => {
     
     // Context για workout stats
     let workoutStatsContext = '';
-    if (Array.isArray(workoutStatsData) && workoutStatsData.length > 0) {
+    if (Array.isArray(workoutStatsData) && workoutStatsData.length > 0 && Array.isArray(workoutCompletions)) {
       const today = new Date();
       const last7Days = new Date(today);
       last7Days.setDate(today.getDate() - 7);
@@ -167,16 +167,16 @@ serve(async (req) => {
       
       // Υπολογισμός stats ανά περίοδο
       const completionsLast7 = workoutCompletions.filter((c: any) => 
-        c.status === 'completed' && new Date(c.completed_at) >= last7Days
+        c.status === 'completed' && c.completed_at && new Date(c.completed_at) >= last7Days
       ).length;
       const completionsLast30 = workoutCompletions.filter((c: any) => 
-        c.status === 'completed' && new Date(c.completed_at) >= last30Days
+        c.status === 'completed' && c.completed_at && new Date(c.completed_at) >= last30Days
       ).length;
       const missedLast7 = workoutCompletions.filter((c: any) => 
-        c.status === 'missed' && new Date(c.scheduled_date) >= last7Days
+        c.status === 'missed' && c.scheduled_date && new Date(c.scheduled_date) >= last7Days
       ).length;
       const missedLast30 = workoutCompletions.filter((c: any) => 
-        c.status === 'missed' && new Date(c.scheduled_date) >= last30Days
+        c.status === 'missed' && c.scheduled_date && new Date(c.scheduled_date) >= last30Days
       ).length;
       
       const statsList = workoutStatsData.map((assignment: any) => {
