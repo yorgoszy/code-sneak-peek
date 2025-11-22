@@ -72,10 +72,16 @@ serve(async (req) => {
         }
       }
     );
+    
+    if (!workoutCompletionsResponse.ok) {
+      console.error('❌ Workout completions fetch failed:', workoutCompletionsResponse.status, await workoutCompletionsResponse.text());
+    }
+    
     const workoutCompletionsData = await workoutCompletionsResponse.json();
     const workoutCompletions = Array.isArray(workoutCompletionsData) ? workoutCompletionsData : [];
     console.log('📊 Workout Stats:', JSON.stringify(workoutStatsData, null, 2));
-    console.log('📊 Workout Completions:', JSON.stringify(workoutCompletions, null, 2));
+    console.log('📊 Workout Completions Count:', workoutCompletions.length);
+    console.log('📊 Workout Completions Sample:', JSON.stringify(workoutCompletions.slice(0, 3), null, 2));
 
     // Φόρτωση ιστορικού δύναμης μέσω sessions
     const strengthResponse = await fetch(
