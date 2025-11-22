@@ -64,7 +64,7 @@ serve(async (req) => {
     
     // Φόρτωση workout completions για λεπτομερή στατιστικά
     const workoutCompletionsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/workout_completions?user_id=eq.${userId}&order=completed_at.desc&limit=100&select=*`,
+      `${SUPABASE_URL}/rest/v1/workout_completions?user_id=eq.${userId}&order=created_at.desc&limit=100&select=*`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -169,10 +169,10 @@ serve(async (req) => {
       
       // Υπολογισμός stats ανά περίοδο
       const completionsLast7 = workoutCompletions.filter((c: any) => 
-        c.status === 'completed' && c.completed_at && new Date(c.completed_at) >= last7Days
+        c.status === 'completed' && c.completed_date && new Date(c.completed_date) >= last7Days
       ).length;
       const completionsLast30 = workoutCompletions.filter((c: any) => 
-        c.status === 'completed' && c.completed_at && new Date(c.completed_at) >= last30Days
+        c.status === 'completed' && c.completed_date && new Date(c.completed_date) >= last30Days
       ).length;
       const missedLast7 = workoutCompletions.filter((c: any) => 
         c.status === 'missed' && c.scheduled_date && new Date(c.scheduled_date) >= last7Days
