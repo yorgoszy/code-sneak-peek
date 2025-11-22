@@ -1027,11 +1027,11 @@ serve(async (req) => {
 
     // Context για όλα τα προγράμματα ανά ημέρα (Calendar View)
     let allDaysContext = '';
-    if (Array.isArray(workoutStatsData) && workoutStatsData.length > 0) {
+    if (Array.isArray(enrichedAssignments) && enrichedAssignments.length > 0) {
       const daysMap: { [date: string]: Array<{program: string, day: string, exercises: string[], status: string}> } = {};
       
       // Συλλογή όλων των ημερών με προγράμματα
-      for (const assignment of workoutStatsData) {
+      for (const assignment of enrichedAssignments) {
         const trainingDates = assignment.training_dates || [];
         const program = assignment.programs;
         if (!program?.program_weeks) continue;
