@@ -38,9 +38,9 @@ serve(async (req) => {
     const userData = await userDataResponse.json();
     const userProfile = userData[0] || {};
 
-    // Φόρτωση ενεργών προγραμμάτων
+    // Φόρτωση ενεργών προγραμμάτων με τη σωστή δομή
     const programsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${userId}&status=eq.active&select=programs!fk_program_assignments_program_id(name,description,program_weeks(program_days(program_blocks(program_exercises(sets,reps,kg,exercises(id,name,description))))))&limit=3`,
+      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${userId}&order=created_at.desc&select=*,programs!fk_program_assignments_program_id(*,program_weeks(id,name,week_number,program_days(id,name,day_number,program_blocks(id,name,block_order,program_exercises(id,sets,reps,kg,tempo,rest,notes,exercises(id,name,description))))))`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -49,10 +49,11 @@ serve(async (req) => {
       }
     );
     const programsData = await programsResponse.json();
+    console.log('📊 Programs loaded:', Array.isArray(programsData) ? programsData.length : 0);
 
     // Φόρτωση workout completions και attendance stats
     const workoutStatsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${userId}&status=eq.active&select=id,training_dates,assignment_attendance(completed_workouts,missed_workouts,makeup_workouts,total_scheduled_workouts,attendance_percentage)`,
+      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${userId}&select=id,training_dates,status,start_date,end_date,programs!fk_program_assignments_program_id(name),assignment_attendance(completed_workouts,missed_workouts,makeup_workouts,total_scheduled_workouts,attendance_percentage)`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -61,6 +62,7 @@ serve(async (req) => {
       }
     );
     const workoutStatsData = await workoutStatsResponse.json();
+    console.log('📊 Workout Stats loaded:', Array.isArray(workoutStatsData) ? workoutStatsData.length : 0);
     
     // Φόρτωση workout completions για λεπτομερή στατιστικά
     const workoutCompletionsResponse = await fetch(
@@ -159,9 +161,13 @@ serve(async (req) => {
     if (Array.isArray(programsData) && programsData.length > 0) {
       const programsList = programsData.map((assignment: any) => {
         const program = assignment.programs;
-        return `- ${program?.name || 'Πρόγραμμα'}${program?.description ? `: ${program.description}` : ''}`;
+        const totalWeeks = program?.program_weeks?.length || 0;
+        const totalDays = program?.program_weeks?.reduce((sum: number, w: any) => sum + (w.program_days?.length || 0), 0) || 0;
+        const status = assignment.status || 'active';
+        const trainingDates = assignment.training_dates?.length || 0;
+        return `- ${program?.name || 'Πρόγραμμα'} (${status}): ${totalWeeks} εβδομάδες, ${totalDays} ημέρες προπόνησης, ${trainingDates} προγραμματισμένες ημερομηνίες${program?.description ? ` - ${program.description}` : ''}`;
       }).join('\n');
-      programContext = `\n\nΤα ενεργά προγράμματά σου:\n${programsList}`;
+      programContext = `\n\nΤα προγράμματά σου:\n${programsList}`;
     }
     
     // Context για workout stats
@@ -188,14 +194,17 @@ serve(async (req) => {
       ).length;
       
       const statsList = workoutStatsData.map((assignment: any) => {
+        const programName = assignment.programs?.name || 'Πρόγραμμα';
+        const trainingDates = assignment.training_dates?.length || 0;
         const attendance = assignment.assignment_attendance?.[0];
         if (attendance) {
-          return `\nΠρόγραμμα: ${attendance.completed_workouts}/${attendance.total_scheduled_workouts} προπονήσεις (${Math.round(attendance.attendance_percentage || 0)}% παρουσία)\n- Ολοκληρωμένες: ${attendance.completed_workouts}\n- Χαμένες: ${attendance.missed_workouts}\n- Αναπλήρωση: ${attendance.makeup_workouts}`;
+          const percentage = Math.round(attendance.attendance_percentage || 0);
+          return `\n${programName}:\n- Σύνολο προγραμματισμένων: ${trainingDates} ημέρες\n- Ολοκληρωμένες: ${attendance.completed_workouts}\n- Χαμένες: ${attendance.missed_workouts}\n- Αναπλήρωση: ${attendance.makeup_workouts}\n- Ποσοστό παρουσίας: ${percentage}%`;
         }
-        return '';
+        return `\n${programName}: ${trainingDates} προγραμματισμένες ημέρες`;
       }).filter(Boolean).join('\n');
       
-      workoutStatsContext = `\n\nΣτατιστικά Προπονήσεων:\n${statsList}\n\nΤελευταία 7 ημέρες:\n- Ολοκληρωμένες: ${completionsLast7}\n- Χαμένες: ${missedLast7}\n\nΤελευταίος μήνας (30 ημέρες):\n- Ολοκληρωμένες: ${completionsLast30}\n- Χαμένες: ${missedLast30}`;
+      workoutStatsContext = `\n\nΣτατιστικά Προπονήσεων:${statsList}\n\nΤελευταία 7 ημέρες:\n- Ολοκληρωμένες: ${completionsLast7}\n- Χαμένες: ${missedLast7}\n\nΤελευταίος μήνας (30 ημέρες):\n- Ολοκληρωμένες: ${completionsLast30}\n- Χαμένες: ${missedLast30}\n\nΣύνολο workout completions: ${workoutCompletions.length}`;
     }
 
     // Context για δύναμη
