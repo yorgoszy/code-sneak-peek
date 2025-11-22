@@ -355,7 +355,165 @@ serve(async (req) => {
         })
         .join('\n');
       
-      calendarContext = `\n\nΗμερολόγιο Προπονήσεων (Συνολικά):\n- Σύνολο προγραμματισμένων: ${calendarStats.totalScheduled}\n- Ολοκληρωμένες: ${calendarStats.completed}\n- Χαμένες: ${calendarStats.missed}\n- Προγραμματισμένες (εκκρεμείς): ${calendarStats.scheduled}\n- Συνολικές ώρες προπόνησης: ${Math.round(calendarStats.totalActualMinutes / 60 * 10) / 10}h\n\nΑνάλυση ανά μήνα (όλοι οι μήνες με προπονήσεις):${monthlyBreakdown}\n\nΑνάλυση ανά εβδομάδα (τελευταίες 8 εβδομάδες):\n${weeklyBreakdown}`;
+      // Υπολογισμός Ανάλυσης Τύπων Προπόνησης
+      const trainingTypesByMonth: Record<string, Record<string, number>> = {};
+      const TRAINING_TYPE_LABELS: Record<string, string> = {
+        str: 'Δύναμη',
+        'str/spd': 'Δύναμη/Ταχύτητα',
+        pwr: 'Ισχύς',
+        'spd/str': 'Ταχύτητα/Δύναμη',
+        spd: 'Ταχύτητα',
+        'str/end': 'Δύναμη/Αντοχή',
+        'pwr/end': 'Ισχύς/Αντοχή',
+        'spd/end': 'Ταχύτητα/Αντοχή',
+        end: 'Αντοχή',
+        hpr: 'Υπερτροφία'
+      };
+      
+      enrichedAssignments.forEach((assignment: any) => {
+        const program = assignment.programs;
+        if (!program?.program_weeks) return;
+        
+        assignment.training_dates?.forEach((dateStr: string, dateIndex: number) => {
+          const date = new Date(dateStr);
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          
+          if (!trainingTypesByMonth[monthKey]) {
+            trainingTypesByMonth[monthKey] = {};
+          }
+          
+          // Βρίσκουμε σε ποια εβδομάδα και ημέρα ανήκει
+          const daysPerWeek = program.program_weeks[0]?.program_days?.length || 1;
+          const weekIndex = Math.floor(dateIndex / daysPerWeek);
+          const dayIndex = dateIndex % daysPerWeek;
+          
+          const week = program.program_weeks[weekIndex];
+          if (!week) return;
+          
+          const day = week.program_days?.[dayIndex];
+          if (!day) return;
+          
+          // Για κάθε block, υπολογίζουμε τον χρόνο
+          day.program_blocks?.forEach((block: any) => {
+            if (!block.training_type) return;
+            
+            // Εξαίρεση τύπων που δεν εμφανίζονται στο pie chart
+            const excludedTypes = ['mobility', 'stability', 'activation', 'neural act', 'recovery'];
+            if (excludedTypes.includes(block.training_type)) return;
+            
+            let blockTime = 0;
+            block.program_exercises?.forEach((exercise: any) => {
+              const sets = exercise.sets || 0;
+              const reps = exercise.reps || '0';
+              const tempo = exercise.tempo || '';
+              const rest = exercise.rest || '';
+              const repsMode = exercise.reps_mode || '';
+              
+              // Parse reps
+              let repsSeconds = 0;
+              let repsCount = 0;
+              const isTimeMode = repsMode === 'time' || reps.includes(':') || reps.includes('s') || reps.includes("'");
+              
+              if (isTimeMode) {
+                // Time-based
+                if (reps.includes(':')) {
+                  const [min, sec] = reps.split(':');
+                  repsSeconds = (parseInt(min) || 0) * 60 + (parseInt(sec) || 0);
+                } else if (reps.includes("'")) {
+                  repsSeconds = (parseFloat(reps.replace("'", "")) || 0) * 60;
+                } else if (reps.includes('s')) {
+                  repsSeconds = parseFloat(reps.replace('s', '')) || 0;
+                } else {
+                  repsSeconds = parseFloat(reps) || 0;
+                }
+              } else {
+                // Rep-based
+                if (reps.includes('.')) {
+                  reps.split('.').forEach((part: string) => {
+                    repsCount += parseInt(part) || 0;
+                  });
+                } else {
+                  repsCount = parseInt(reps) || 0;
+                }
+              }
+              
+              // Parse tempo
+              let tempoSeconds = 3;
+              if (tempo) {
+                const parts = tempo.split('.');
+                tempoSeconds = 0;
+                parts.forEach((part: string) => {
+                  if (part === 'x' || part === 'X') {
+                    tempoSeconds += 0.5;
+                  } else {
+                    tempoSeconds += parseFloat(part) || 0;
+                  }
+                });
+              }
+              
+              // Parse rest
+              let restSeconds = 0;
+              if (rest.includes(':')) {
+                const [min, sec] = rest.split(':');
+                restSeconds = (parseInt(min) || 0) * 60 + (parseInt(sec) || 0);
+              } else if (rest.includes("'")) {
+                restSeconds = (parseFloat(rest.replace("'", "")) || 0) * 60;
+              } else if (rest.includes('s')) {
+                restSeconds = parseFloat(rest.replace('s', '')) || 0;
+              } else {
+                restSeconds = (parseFloat(rest) || 0) * 60;
+              }
+              
+              // Calculate total time
+              if (isTimeMode) {
+                blockTime += sets * repsSeconds + sets * restSeconds;
+              } else {
+                blockTime += sets * repsCount * tempoSeconds + sets * restSeconds;
+              }
+            });
+            
+            const timeMinutes = Math.round(blockTime / 60);
+            const typeLabel = block.training_type;
+            
+            if (!trainingTypesByMonth[monthKey][typeLabel]) {
+              trainingTypesByMonth[monthKey][typeLabel] = 0;
+            }
+            trainingTypesByMonth[monthKey][typeLabel] += timeMinutes;
+          });
+        });
+      });
+      
+      // Create training types summary
+      let trainingTypesContext = '';
+      const sortedMonths = Object.entries(trainingTypesByMonth).sort(([a], [b]) => b.localeCompare(a));
+      
+      if (sortedMonths.length > 0) {
+        const monthNames = ['Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος', 'Μάιος', 'Ιούνιος', 
+                           'Ιούλιος', 'Αύγουστος', 'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'];
+        
+        const monthlyBreakdowns = sortedMonths.map(([monthKey, types]) => {
+          const [year, month] = monthKey.split('-');
+          const monthName = monthNames[parseInt(month) - 1];
+          
+          const typesList = Object.entries(types)
+            .sort(([, a], [, b]) => (b as number) - (a as number))
+            .map(([type, minutes]) => {
+              const label = TRAINING_TYPE_LABELS[type] || type;
+              const hours = Math.round((minutes as number) / 60 * 10) / 10;
+              return `  - ${label}: ${hours}h (${minutes}λ)`;
+            })
+            .join('\n');
+          
+          const totalMinutes = Object.values(types).reduce((sum, m) => sum + (m as number), 0);
+          const totalHours = Math.round(totalMinutes / 60 * 10) / 10;
+          
+          return `\n${monthName} ${year} (Σύνολο: ${totalHours}h):\n${typesList}`;
+        }).join('\n');
+        
+        trainingTypesContext = `\n\nΑνάλυση Τύπων Προπόνησης ανά Μήνα:${monthlyBreakdowns}`;
+      }
+      
+      calendarContext = `\n\nΗμερολόγιο Προπονήσεων (Συνολικά):\n- Σύνολο προγραμματισμένων: ${calendarStats.totalScheduled}\n- Ολοκληρωμένες: ${calendarStats.completed}\n- Χαμένες: ${calendarStats.missed}\n- Προγραμματισμένες (εκκρεμείς): ${calendarStats.scheduled}\n- Συνολικές ώρες προπόνησης: ${Math.round(calendarStats.totalActualMinutes / 60 * 10) / 10}h\n\nΑνάλυση ανά μήνα (όλοι οι μήνες με προπονήσεις):${monthlyBreakdown}\n\nΑνάλυση ανά εβδομάδα (τελευταίες 8 εβδομάδες):\n${weeklyBreakdown}${trainingTypesContext}`;
       
       
       
