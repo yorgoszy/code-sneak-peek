@@ -270,6 +270,13 @@ export const UserProfileSidebar = forwardRef<
       visible: true
     },
     {
+      icon: User,
+      label: "Επεξεργασία Προφίλ",
+      key: "edit-profile",
+      badge: null,
+      visible: true
+    },
+    {
       icon: BookOpen,
       label: t('sidebar.schoolNotes'),
       key: "school-notes",

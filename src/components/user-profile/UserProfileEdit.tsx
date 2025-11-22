@@ -54,15 +54,46 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
     try {
       setUploading(true);
       
-      // Δημιουργία unique filename
+      // Έλεγχος αν το αρχείο είναι εικόνα και κάτω από 5MB
+      if (!file.type.startsWith('image/')) {
+        toast.error('Παρακαλώ επιλέξτε αρχείο εικόνας');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Το αρχείο πρέπει να είναι μικρότερο από 5MB');
+        return;
+      }
+
+      // Δημιουργία unique filename με το auth uid στο path
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
       const fileExt = file.name.split('.').pop();
-      const fileName = `${userProfile.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      // Διαγραφή παλιάς φωτογραφίας αν υπάρχει
+      if (photoUrl) {
+        try {
+          const oldPath = photoUrl.split('/profile-photos/')[1];
+          if (oldPath) {
+            await supabase.storage
+              .from('profile-photos')
+              .remove([oldPath]);
+          }
+        } catch (error) {
+          console.log('Could not delete old photo:', error);
+        }
+      }
 
       // Upload στο Supabase Storage
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
+        .from('profile-photos')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
         throw uploadError;
@@ -70,7 +101,7 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
 
       // Λήψη public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
+        .from('profile-photos')
         .getPublicUrl(filePath);
 
       setPhotoUrl(publicUrl);
