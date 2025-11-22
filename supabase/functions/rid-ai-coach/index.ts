@@ -72,8 +72,10 @@ serve(async (req) => {
         }
       }
     );
-    const workoutCompletions = await workoutCompletionsResponse.json();
+    const workoutCompletionsData = await workoutCompletionsResponse.json();
+    const workoutCompletions = Array.isArray(workoutCompletionsData) ? workoutCompletionsData : [];
     console.log('📊 Workout Stats:', JSON.stringify(workoutStatsData, null, 2));
+    console.log('📊 Workout Completions:', JSON.stringify(workoutCompletions, null, 2));
 
     // Φόρτωση ιστορικού δύναμης μέσω sessions
     const strengthResponse = await fetch(
@@ -158,7 +160,7 @@ serve(async (req) => {
     
     // Context για workout stats
     let workoutStatsContext = '';
-    if (Array.isArray(workoutStatsData) && workoutStatsData.length > 0 && Array.isArray(workoutCompletions)) {
+    if (Array.isArray(workoutStatsData) && workoutStatsData.length > 0) {
       const today = new Date();
       const last7Days = new Date(today);
       last7Days.setDate(today.getDate() - 7);
