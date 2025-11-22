@@ -130,9 +130,9 @@ serve(async (req) => {
     console.log('📊 Workout Completions Count:', workoutCompletions.length);
     console.log('📊 Workout Completions Sample:', JSON.stringify(workoutCompletions.slice(0, 3), null, 2));
 
-    // Φόρτωση ιστορικού δύναμης μέσω sessions - Πλήρες ιστορικό με όλες τις προσπάθειες
+    // Φόρτωση ιστορικού δύναμης μέσω sessions
     const strengthResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/strength_test_sessions?select=test_date,notes,strength_test_attempts(weight_kg,velocity_ms,reps,is_1rm,exercises(name,description))&user_id=eq.${userId}&order=test_date.desc&limit=50`,
+      `${SUPABASE_URL}/rest/v1/strength_test_sessions?select=test_date,strength_test_attempts(weight_kg,velocity_ms,is_1rm,exercises(name))&user_id=eq.${userId}&order=test_date.desc&limit=20`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -143,9 +143,9 @@ serve(async (req) => {
     const strengthHistory = await strengthResponse.json();
     console.log('✅ Strength History:', JSON.stringify(strengthHistory, null, 2));
 
-    // Φόρτωση ιστορικού αντοχής - Πλήρες ιστορικό με όλα τα πεδία
+    // Φόρτωση ιστορικού αντοχής
     const enduranceResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/endurance_test_data?select=id,created_at,vo2_max,mas_kmh,mas_ms,mas_minutes,mas_meters,sprint_watt,sprint_meters,sprint_seconds,sprint_resistance,push_ups,pull_ups,crunches,t2b,farmer_kg,farmer_meters,farmer_seconds,max_hr,resting_hr_1min,endurance_test_sessions!inner(user_id,test_date,notes)&endurance_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=30`,
+      `${SUPABASE_URL}/rest/v1/endurance_test_data?select=id,created_at,vo2_max,mas_kmh,sprint_watt,push_ups,pull_ups,crunches,endurance_test_sessions!inner(user_id,test_date)&endurance_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=10`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -155,9 +155,9 @@ serve(async (req) => {
     );
     const enduranceHistory = await enduranceResponse.json();
 
-    // Φόρτωση ιστορικού άλματος - Πλήρες ιστορικό με όλα τα πεδία
+    // Φόρτωση ιστορικού άλματος
     const jumpResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/jump_test_data?select=id,created_at,counter_movement_jump,non_counter_movement_jump,broad_jump,triple_jump_left,triple_jump_right,depth_jump,jump_test_sessions!inner(user_id,test_date,notes)&jump_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=30`,
+      `${SUPABASE_URL}/rest/v1/jump_test_data?select=id,created_at,counter_movement_jump,non_counter_movement_jump,broad_jump,triple_jump_left,triple_jump_right,jump_test_sessions!inner(user_id,test_date)&jump_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=10`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -167,9 +167,9 @@ serve(async (req) => {
     );
     const jumpHistory = await jumpResponse.json();
 
-    // Φόρτωση ανθρωπομετρικού ιστορικού - Πλήρες ιστορικό με όλα τα πεδία
+    // Φόρτωση ανθρωπομετρικού ιστορικού
     const anthropometricResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/anthropometric_test_data?select=id,created_at,height,weight,body_fat_percentage,muscle_mass_percentage,waist_circumference,chest_circumference,hip_circumference,arm_circumference,thigh_circumference,visceral_fat_percentage,bone_density,anthropometric_test_sessions!inner(user_id,test_date,notes)&anthropometric_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=30`,
+      `${SUPABASE_URL}/rest/v1/anthropometric_test_data?select=id,created_at,height,weight,body_fat_percentage,muscle_mass_percentage,waist_circumference,chest_circumference,anthropometric_test_sessions!inner(user_id,test_date)&anthropometric_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=10`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -894,7 +894,7 @@ serve(async (req) => {
       workoutStatsContext = `\n\nΣτατιστικά Προπονήσεων:${statsList}\n\nΤελευταία 7 ημέρες:\n- Ολοκληρωμένες: ${completionsLast7}\n- Χαμένες: ${missedLast7}\n\nΤελευταίος μήνας (30 ημέρες):\n- Ολοκληρωμένες: ${completionsLast30}\n- Χαμένες: ${missedLast30}\n\nΣύνολο workout completions: ${workoutCompletions.length}`;
     }
 
-    // Context για δύναμη - Βελτιωμένο με group by exercise
+    // Context για δύναμη
     let strengthContext = '';
     if (Array.isArray(strengthHistory) && strengthHistory.length > 0) {
       const attempts: any[] = [];
@@ -903,149 +903,64 @@ serve(async (req) => {
           session.strength_test_attempts.forEach((attempt: any) => {
             attempts.push({
               ...attempt,
-              test_date: session.test_date,
-              session_notes: session.notes
+              test_date: session.test_date
             });
           });
         }
       });
       
       if (attempts.length > 0) {
-        // Group by exercise
-        const exerciseGroups: Record<string, any[]> = {};
-        attempts.forEach((attempt: any) => {
-          const exerciseName = attempt.exercises?.name || 'Άσκηση';
-          if (!exerciseGroups[exerciseName]) {
-            exerciseGroups[exerciseName] = [];
-          }
-          exerciseGroups[exerciseName].push(attempt);
-        });
-        
-        const strengthList = Object.entries(exerciseGroups).map(([exerciseName, attempts]) => {
-          const attemptsText = attempts.map((attempt: any) => {
-            const is1rm = attempt.is_1rm ? ' 1RM' : '';
-            const reps = attempt.reps ? ` x${attempt.reps}reps` : '';
-            return `  ${new Date(attempt.test_date).toLocaleDateString('el-GR')}: ${attempt.weight_kg}kg @ ${attempt.velocity_ms}m/s${reps}${is1rm}`;
-          }).join('\n');
-          return `\n${exerciseName}:\n${attemptsText}`;
+        const strengthList = attempts.map((attempt: any) => {
+          const is1rm = attempt.is_1rm ? ' (1RM)' : '';
+          return `- ${attempt.exercises?.name || 'Άσκηση'}: ${attempt.weight_kg}kg, Ταχύτητα: ${attempt.velocity_ms}m/s${is1rm} (${new Date(attempt.test_date).toLocaleDateString('el-GR')})`;
         }).join('\n');
-        
-        strengthContext = `\n\n📊 ΙΣΤΟΡΙΚΟ FORCE/VELOCITY (Δύναμη & Ταχύτητα):${strengthList}\n\nΣύνολο μετρήσεων: ${attempts.length}`;
+        strengthContext = `\n\nΙστορικό Δύναμης:\n${strengthList}`;
       }
     }
 
-    // Context για αντοχή - Βελτιωμένο με περισσότερες λεπτομέρειες
+    // Context για αντοχή
     let enduranceContext = '';
     if (Array.isArray(enduranceHistory) && enduranceHistory.length > 0) {
       const enduranceList = enduranceHistory.map((test: any) => {
         const parts = [];
-        const date = test.endurance_test_sessions?.[0]?.test_date || test.created_at;
-        const notes = test.endurance_test_sessions?.[0]?.notes;
-        
-        // Αεροβική ικανότητα
-        if (test.vo2_max) parts.push(`VO2max: ${test.vo2_max}ml/kg/min`);
-        if (test.mas_kmh) parts.push(`MAS: ${test.mas_kmh}km/h`);
-        if (test.mas_meters && test.mas_minutes) parts.push(`MAS Test: ${test.mas_meters}m σε ${test.mas_minutes}'`);
-        
-        // Sprint
-        if (test.sprint_watt) parts.push(`Sprint Power: ${test.sprint_watt}W`);
-        if (test.sprint_meters && test.sprint_seconds) parts.push(`Sprint: ${test.sprint_meters}m σε ${test.sprint_seconds}s`);
-        if (test.sprint_resistance) parts.push(`Αντίσταση: ${test.sprint_resistance}`);
-        
-        // Μυϊκή αντοχή
+        if (test.vo2_max) parts.push(`VO2max: ${test.vo2_max}`);
+        if (test.mas_kmh) parts.push(`MAS: ${test.mas_kmh} km/h`);
+        if (test.sprint_watt) parts.push(`Sprint: ${test.sprint_watt}W`);
         if (test.push_ups) parts.push(`Push-ups: ${test.push_ups}`);
         if (test.pull_ups) parts.push(`Pull-ups: ${test.pull_ups}`);
-        if (test.crunches) parts.push(`Crunches: ${test.crunches}`);
-        if (test.t2b) parts.push(`Toes-to-Bar: ${test.t2b}`);
-        
-        // Farmer's walk
-        if (test.farmer_kg && test.farmer_meters) parts.push(`Farmer: ${test.farmer_kg}kg x ${test.farmer_meters}m σε ${test.farmer_seconds}s`);
-        
-        // Καρδιακός ρυθμός
-        if (test.max_hr) parts.push(`Max HR: ${test.max_hr}bpm`);
-        if (test.resting_hr_1min) parts.push(`Resting HR: ${test.resting_hr_1min}bpm`);
-        
-        let text = `${new Date(date).toLocaleDateString('el-GR')}:\n  ${parts.join('\n  ')}`;
-        if (notes) text += `\n  Σημειώσεις: ${notes}`;
-        return text;
-      }).join('\n\n');
-      enduranceContext = `\n\n🏃 ΙΣΤΟΡΙΚΟ ENDURANCE (Αντοχή):\n${enduranceList}\n\nΣύνολο tests: ${enduranceHistory.length}`;
+        const date = test.endurance_test_sessions?.[0]?.test_date || test.created_at;
+        return `- ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})`;
+      }).join('\n');
+      enduranceContext = `\n\nΙστορικό Αντοχής:\n${enduranceList}`;
     }
 
-    // Context για άλματα - Βελτιωμένο με ανάλυση συμμετρίας
+    // Context για άλματα
     let jumpContext = '';
     if (Array.isArray(jumpHistory) && jumpHistory.length > 0) {
       const jumpList = jumpHistory.map((test: any) => {
         const parts = [];
+        if (test.counter_movement_jump) parts.push(`CMJ: ${test.counter_movement_jump}cm`);
+        if (test.broad_jump) parts.push(`Broad: ${test.broad_jump}cm`);
+        if (test.triple_jump_left) parts.push(`Triple L: ${test.triple_jump_left}cm`);
+        if (test.triple_jump_right) parts.push(`Triple R: ${test.triple_jump_right}cm`);
         const date = test.jump_test_sessions?.[0]?.test_date || test.created_at;
-        const notes = test.jump_test_sessions?.[0]?.notes;
-        
-        if (test.counter_movement_jump) parts.push(`CMJ (Counter Movement Jump): ${test.counter_movement_jump}cm`);
-        if (test.non_counter_movement_jump) parts.push(`SJ (Squat Jump): ${test.non_counter_movement_jump}cm`);
-        if (test.depth_jump) parts.push(`Depth Jump: ${test.depth_jump}cm`);
-        if (test.broad_jump) parts.push(`Broad Jump: ${test.broad_jump}cm`);
-        
-        // Ανάλυση συμμετρίας
-        if (test.triple_jump_left && test.triple_jump_right) {
-          parts.push(`Triple Jump - Αριστερό: ${test.triple_jump_left}cm, Δεξί: ${test.triple_jump_right}cm`);
-          const diff = Math.abs(test.triple_jump_left - test.triple_jump_right);
-          const avgTriple = (test.triple_jump_left + test.triple_jump_right) / 2;
-          const asymmetryPercent = ((diff / avgTriple) * 100).toFixed(1);
-          parts.push(`  → Ασυμμετρία: ${asymmetryPercent}% (Διαφορά: ${diff}cm)`);
-        } else {
-          if (test.triple_jump_left) parts.push(`Triple Jump Αριστερό: ${test.triple_jump_left}cm`);
-          if (test.triple_jump_right) parts.push(`Triple Jump Δεξί: ${test.triple_jump_right}cm`);
-        }
-        
-        let text = `${new Date(date).toLocaleDateString('el-GR')}:\n  ${parts.join('\n  ')}`;
-        if (notes) text += `\n  Σημειώσεις: ${notes}`;
-        return text;
-      }).join('\n\n');
-      jumpContext = `\n\n🦘 ΙΣΤΟΡΙΚΟ JUMP PROFILE (Άλματα):\n${jumpList}\n\nΣύνολο tests: ${jumpHistory.length}`;
+        return `- ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})`;
+      }).join('\n');
+      jumpContext = `\n\nΙστορικό Άλματος:\n${jumpList}`;
     }
 
-    // Context για ανθρωπομετρικά - Βελτιωμένο με πλήρη ανάλυση
+    // Context για ανθρωπομετρικά
     let anthropometricContext = '';
     if (Array.isArray(anthropometricHistory) && anthropometricHistory.length > 0) {
       const anthropometricList = anthropometricHistory.map((test: any) => {
         const parts = [];
-        const date = test.anthropometric_test_sessions?.[0]?.test_date || test.created_at;
-        const notes = test.anthropometric_test_sessions?.[0]?.notes;
-        
-        // Βασικά στοιχεία
-        if (test.height) parts.push(`Ύψος: ${test.height}cm`);
         if (test.weight) parts.push(`Βάρος: ${test.weight}kg`);
-        
-        // Σύνθεση σώματος
         if (test.body_fat_percentage) parts.push(`Λίπος: ${test.body_fat_percentage}%`);
         if (test.muscle_mass_percentage) parts.push(`Μυϊκή Μάζα: ${test.muscle_mass_percentage}%`);
-        if (test.visceral_fat_percentage) parts.push(`Σπλαχνικό Λίπος: ${test.visceral_fat_percentage}%`);
-        if (test.bone_density) parts.push(`Οστική Πυκνότητα: ${test.bone_density}`);
-        
-        // Περιμετρικές μετρήσεις
-        if (test.waist_circumference) parts.push(`Περίμετρος Μέσης: ${test.waist_circumference}cm`);
-        if (test.chest_circumference) parts.push(`Περίμετρος Στήθους: ${test.chest_circumference}cm`);
-        if (test.hip_circumference) parts.push(`Περίμετρος Γλουτών: ${test.hip_circumference}cm`);
-        if (test.arm_circumference) parts.push(`Περίμετρος Βραχίονα: ${test.arm_circumference}cm`);
-        if (test.thigh_circumference) parts.push(`Περίμετρος Μηρού: ${test.thigh_circumference}cm`);
-        
-        // Υπολογισμός BMI αν υπάρχουν τα δεδομένα
-        if (test.weight && test.height) {
-          const bmi = (test.weight / ((test.height / 100) ** 2)).toFixed(1);
-          parts.push(`BMI: ${bmi}`);
-        }
-        
-        // Υπολογισμός Waist-to-Hip ratio
-        if (test.waist_circumference && test.hip_circumference) {
-          const whr = (test.waist_circumference / test.hip_circumference).toFixed(2);
-          parts.push(`Waist-to-Hip Ratio: ${whr}`);
-        }
-        
-        let text = `${new Date(date).toLocaleDateString('el-GR')}:\n  ${parts.join('\n  ')}`;
-        if (notes) text += `\n  Σημειώσεις: ${notes}`;
-        return text;
-      }).join('\n\n');
-      anthropometricContext = `\n\n📏 ΙΣΤΟΡΙΚΟ ΣΩΜΑΤΟΜΕΤΡΙΚΩΝ (Ανθρωπομετρία):\n${anthropometricList}\n\nΣύνολο μετρήσεων: ${anthropometricHistory.length}`;
+        const date = test.anthropometric_test_sessions?.[0]?.test_date || test.created_at;
+        return `- ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})`;
+      }).join('\n');
+      anthropometricContext = `\n\nΑνθρωπομετρικό Ιστορικό:\n${anthropometricList}`;
     }
 
     // Αποθήκευση μηνύματος χρήστη
