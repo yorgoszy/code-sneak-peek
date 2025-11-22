@@ -530,9 +530,9 @@ ${calendarDisplay}`;
     console.log('📊 Workout Completions Count:', workoutCompletions.length);
     console.log('📊 Workout Completions Sample:', JSON.stringify(workoutCompletions.slice(0, 3), null, 2));
 
-    // Φόρτωση ιστορικού δύναμης μέσω sessions
-    const strengthResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/strength_test_sessions?select=test_date,strength_test_attempts(weight_kg,velocity_ms,is_1rm,exercises(name))&user_id=eq.${effectiveUserId}&order=test_date.desc&limit=20`,
+    // Φόρτωση λεπτομερούς ιστορικού δύναμης (για Athletes Progress)
+    const strengthAttemptsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/strength_test_attempts?select=id,weight_kg,velocity_ms,exercise_id,test_session_id,strength_test_sessions!inner(user_id,test_date)&strength_test_sessions.user_id=eq.${effectiveUserId}&not.velocity_ms.is.null&order=strength_test_sessions.test_date.desc&limit=200`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -540,8 +540,20 @@ ${calendarDisplay}`;
         }
       }
     );
-    const strengthHistory = await strengthResponse.json();
-    console.log('✅ Strength History:', JSON.stringify(strengthHistory, null, 2));
+    const strengthAttemptsData = await strengthAttemptsResponse.json();
+    
+    // Φόρτωση exercises για να πάρουμε τα ονόματα
+    const exercisesResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/exercises?select=id,name`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const exercisesData = await exercisesResponse.json();
+    console.log('✅ Strength Attempts:', Array.isArray(strengthAttemptsData) ? strengthAttemptsData.length : 0);
 
     // Φόρτωση ιστορικού αντοχής
     const enduranceResponse = await fetch(
@@ -1362,6 +1374,97 @@ ${calendarDisplay}`;
       }).join('\n');
       anthropometricContext = `\n\nΑνθρωπομετρικό Ιστορικό:\n${anthropometricList}`;
     }
+    
+    // Context για Athletes Progress - Λεπτομερής ανάλυση δύναμης με 1RM
+    let athletesProgressContext = '';
+    if (Array.isArray(strengthAttemptsData) && strengthAttemptsData.length > 0 && Array.isArray(exercisesData)) {
+      athletesProgressContext = '\n\n📊 ATHLETES PROGRESS - Λεπτομερής Ανάλυση Δύναμης (1RM & Load-Velocity):\n\n';
+      
+      // Ομαδοποίηση δεδομένων ανά άσκηση
+      const exerciseMap = new Map<string, Array<{
+        weight: number;
+        velocity: number;
+        date: string;
+        sessionId: string;
+      }>>();
+      
+      strengthAttemptsData.forEach((attempt: any) => {
+        if (!attempt.exercise_id || !attempt.velocity_ms || !attempt.weight_kg) return;
+        
+        const exercise = Array.isArray(exercisesData) 
+          ? exercisesData.find((e: any) => e.id === attempt.exercise_id)
+          : null;
+        
+        if (!exercise) return;
+        
+        const exerciseName = exercise.name;
+        if (!exerciseMap.has(exerciseName)) {
+          exerciseMap.set(exerciseName, []);
+        }
+        
+        exerciseMap.get(exerciseName)!.push({
+          weight: attempt.weight_kg,
+          velocity: attempt.velocity_ms,
+          date: attempt.strength_test_sessions.test_date,
+          sessionId: attempt.test_session_id
+        });
+      });
+      
+      // Για κάθε άσκηση, βρες το 1RM και το ιστορικό
+      exerciseMap.forEach((attempts, exerciseName) => {
+        // Ομαδοποίηση ανά session
+        const sessionMap = new Map<string, Array<{ weight: number; velocity: number; date: string }>>();
+        attempts.forEach(att => {
+          if (!sessionMap.has(att.sessionId)) {
+            sessionMap.set(att.sessionId, []);
+          }
+          sessionMap.get(att.sessionId)!.push({
+            weight: att.weight,
+            velocity: att.velocity,
+            date: att.date
+          });
+        });
+        
+        // Ταξινόμηση sessions από νεότερο σε παλαιότερο
+        const sortedSessions = Array.from(sessionMap.entries())
+          .sort((a, b) => new Date(b[1][0].date).getTime() - new Date(a[1][0].date).getTime());
+        
+        if (sortedSessions.length === 0) return;
+        
+        // Τελευταία session - Βρες το μέγιστο βάρος (1RM)
+        const latestSession = sortedSessions[0][1];
+        const latest1RM = latestSession.reduce((max, curr) => 
+          curr.weight > max.weight ? curr : max
+        );
+        
+        athletesProgressContext += `🏋️ ${exerciseName}:\n`;
+        athletesProgressContext += `  📈 Τρέχον 1RM: ${latest1RM.weight}kg @ ${latest1RM.velocity.toFixed(2)}m/s (${new Date(latest1RM.date).toLocaleDateString('el-GR')})\n`;
+        
+        // Προηγούμενες sessions (ιστορικό)
+        if (sortedSessions.length > 1) {
+          const previous1RM = sortedSessions[1][1].reduce((max, curr) => 
+            curr.weight > max.weight ? curr : max
+          );
+          
+          const percentChange = ((latest1RM.weight - previous1RM.weight) / previous1RM.weight) * 100;
+          const changeIcon = percentChange >= 0 ? '📈' : '📉';
+          const changeColor = percentChange >= 0 ? '+' : '';
+          
+          athletesProgressContext += `  ${changeIcon} Αλλαγή από προηγούμενο: ${changeColor}${percentChange.toFixed(1)}% (${previous1RM.weight}kg)\n`;
+          
+          // Ιστορικό 1RM (μέχρι 3 προηγούμενες sessions)
+          athletesProgressContext += `  📜 Ιστορικό:\n`;
+          for (let i = 1; i < Math.min(sortedSessions.length, 4); i++) {
+            const session1RM = sortedSessions[i][1].reduce((max, curr) => 
+              curr.weight > max.weight ? curr : max
+            );
+            athletesProgressContext += `     ${i}. ${session1RM.weight}kg @ ${session1RM.velocity.toFixed(2)}m/s (${new Date(session1RM.date).toLocaleDateString('el-GR')})\n`;
+          }
+        }
+        
+        athletesProgressContext += '\n';
+      });
+    }
 
     // Context για το πρόγραμμα της σημερινής ημέρας
     let todayProgramContext = '';
@@ -1819,7 +1922,7 @@ ${calendarDisplay}`;
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}
 
 ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό και ημερολόγιο του χρήστη. Μπορείς να:
 - Αναλύσεις την πρόοδό του στη δύναμη (1RM, ταχύτητα)
