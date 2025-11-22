@@ -1377,7 +1377,6 @@ ${calendarDisplay}`;
     }
     
     // Context για Athletes Progress - Λεπτομερής ανάλυση δύναμης με 1RM
-    let athletesProgressContext = '';
     if (Array.isArray(strengthAttemptsData) && strengthAttemptsData.length > 0 && Array.isArray(exercisesData)) {
       athletesProgressContext = '\n\n📊 ATHLETES PROGRESS - Λεπτομερής Ανάλυση Δύναμης (1RM & Load-Velocity):\n\n';
       
