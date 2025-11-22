@@ -1091,7 +1091,7 @@ serve(async (req) => {
       
       // Δημιουργούμε το context text
       const sortedDates = Object.keys(daysMap).sort();
-      const daysList = sortedDates.slice(-30).map(dateStr => { // Τελευταίες 30 ημέρες
+      const daysList = sortedDates.map(dateStr => { // Όλες οι ημέρες από το ημερολόγιο
         const programs = daysMap[dateStr];
         const date = new Date(dateStr);
         const dayName = date.toLocaleDateString('el-GR', { weekday: 'short', day: '2-digit', month: '2-digit' });
@@ -1105,7 +1105,7 @@ serve(async (req) => {
         return `${dayName}:\n${programsText}`;
       }).join('\n\n');
       
-      allDaysContext = `\n\n📅 ΗΜΕΡΟΛΟΓΙΟ ΠΡΟΠΟΝΗΣΕΩΝ (Τελευταίες 30 ημέρες):\n\n${daysList}`;
+      allDaysContext = `\n\n📅 ΗΜΕΡΟΛΟΓΙΟ ΠΡΟΠΟΝΗΣΕΩΝ (Όλες οι προπονήσεις):\n\n${daysList}`;
     }
 
     // Αποθήκευση μηνύματος χρήστη
