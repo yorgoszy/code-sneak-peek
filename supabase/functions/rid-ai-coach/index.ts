@@ -1025,6 +1025,89 @@ serve(async (req) => {
       }
     }
 
+    // Context για όλα τα προγράμματα ανά ημέρα (Calendar View)
+    let allDaysContext = '';
+    if (Array.isArray(workoutStatsData) && workoutStatsData.length > 0) {
+      const daysMap: { [date: string]: Array<{program: string, day: string, exercises: string[], status: string}> } = {};
+      
+      // Συλλογή όλων των ημερών με προγράμματα
+      for (const assignment of workoutStatsData) {
+        const trainingDates = assignment.training_dates || [];
+        const program = assignment.programs;
+        if (!program?.program_weeks) continue;
+        
+        for (let dateIndex = 0; dateIndex < trainingDates.length; dateIndex++) {
+          const dateStr = trainingDates[dateIndex];
+          
+          // Βρίσκουμε το πρόγραμμα της ημέρας
+          let dayProgram: any = null;
+          let currentDayCount = 0;
+          
+          for (const week of program.program_weeks) {
+            const daysInWeek = week.program_days?.length || 0;
+            
+            if (dateIndex >= currentDayCount && dateIndex < currentDayCount + daysInWeek) {
+              const dayIndexInWeek = dateIndex - currentDayCount;
+              dayProgram = week.program_days?.[dayIndexInWeek] || null;
+              break;
+            }
+            
+            currentDayCount += daysInWeek;
+          }
+          
+          if (!dayProgram) continue;
+          
+          // Βρίσκουμε το completion status
+          const completion = workoutCompletions.find((c: any) => 
+            c.assignment_id === assignment.id && c.scheduled_date === dateStr
+          );
+          const status = completion?.status || 'scheduled';
+          
+          // Φτιάχνουμε λίστα με τις ασκήσεις
+          const exercises: string[] = [];
+          if (dayProgram.program_blocks && Array.isArray(dayProgram.program_blocks)) {
+            for (const block of dayProgram.program_blocks) {
+              if (block.program_exercises && Array.isArray(block.program_exercises)) {
+                for (const ex of block.program_exercises) {
+                  const exName = ex.exercises?.name || 'Άσκηση';
+                  exercises.push(exName);
+                }
+              }
+            }
+          }
+          
+          if (!daysMap[dateStr]) {
+            daysMap[dateStr] = [];
+          }
+          
+          daysMap[dateStr].push({
+            program: program.name || 'Πρόγραμμα',
+            day: dayProgram.name || 'Ημέρα',
+            exercises: exercises,
+            status: status
+          });
+        }
+      }
+      
+      // Δημιουργούμε το context text
+      const sortedDates = Object.keys(daysMap).sort();
+      const daysList = sortedDates.slice(-30).map(dateStr => { // Τελευταίες 30 ημέρες
+        const programs = daysMap[dateStr];
+        const date = new Date(dateStr);
+        const dayName = date.toLocaleDateString('el-GR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+        
+        const programsText = programs.map(p => {
+          const statusEmoji = p.status === 'completed' ? '✅' : p.status === 'missed' ? '❌' : '📅';
+          const exercisesText = p.exercises.length > 0 ? `\n    Ασκήσεις: ${p.exercises.join(', ')}` : '';
+          return `  ${statusEmoji} ${p.program} - ${p.day}${exercisesText}`;
+        }).join('\n');
+        
+        return `${dayName}:\n${programsText}`;
+      }).join('\n\n');
+      
+      allDaysContext = `\n\n📅 ΗΜΕΡΟΛΟΓΙΟ ΠΡΟΠΟΝΗΣΕΩΝ (Τελευταίες 30 ημέρες):\n\n${daysList}`;
+    }
+
     // Αποθήκευση μηνύματος χρήστη
     const userMessage = messages[messages.length - 1];
     if (userMessage.role === "user") {
@@ -1124,7 +1207,7 @@ serve(async (req) => {
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}${todayProgramContext}
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}${todayProgramContext}${allDaysContext}
 
 ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό και ημερολόγιο του χρήστη. Μπορείς να:
 - Αναλύσεις την πρόοδό του στη δύναμη (1RM, ταχύτητα)
