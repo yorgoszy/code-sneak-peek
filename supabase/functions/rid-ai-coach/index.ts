@@ -718,10 +718,32 @@ serve(async (req) => {
       content: msg.content
     }));
 
+    // Get current date for context
+    const currentDate = new Date();
+    const currentDateStr = currentDate.toLocaleDateString('el-GR', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      weekday: 'long'
+    });
+    const currentMonth = currentDate.toLocaleDateString('el-GR', { year: 'numeric', month: 'long' });
+    const currentYear = currentDate.getFullYear();
+
     // System prompt με πληροφορίες για τον χρήστη
     const systemPrompt = {
       role: "system",
       content: `Είσαι ο RID AI Προπονητής, ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, και το πλήρες ιστορικό προόδου του χρήστη.
+
+ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
+ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
+ΤΡΕΧΩΝ ΕΤΟΣ: ${currentYear}
+
+ΚΡΙΤΙΚΟ: Όταν αναφέρεσαι σε χρονικές περιόδους (μήνες, εβδομάδες), χρησιμοποίησε ΠΑΝΤΑ την ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ που δίνεται παραπάνω για να προσδιορίσεις σε ποιο μήνα/έτος είμαστε.
+
+ΟΡΘΟΓΡΑΦΙΑ: Γράφε πάντα με ΣΩΣΤΗ ελληνική ορθογραφία. Παραδείγματα:
+- "Σίγουρα" ΟΧΙ "Σγουρα"
+- "Προπόνηση" ΟΧΙ "Προπονηση"
+- Χρησιμοποίησε σωστούς τονισμούς και διπλά σύμφωνα
 
 ΣΗΜΑΝΤΙΚΟ: Όταν αναφέρεις ημερομηνίες στις απαντήσεις σου, χρησιμοποίησε ΠΑΝΤΑ τη μορφή "ηη/μμ/εεεε" (π.χ. 25/11/2024, 01/12/2024).
 
