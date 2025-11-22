@@ -418,6 +418,7 @@ ${calendarDisplay}`;
     let enduranceContext = '';
     let jumpContext = '';
     let anthropometricContext = '';
+    let athletesProgressContext = '';
     let todayProgramContext = '';
     let allDaysContext = '';
     let overviewStatsContext = '';
