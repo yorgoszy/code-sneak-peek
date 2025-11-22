@@ -59,8 +59,11 @@ serve(async (req) => {
       const allAssignments = await allAssignmentsResponse.json();
       
       if (Array.isArray(allAssignments) && allAssignments.length > 0) {
+        console.log(`✅ Admin Mode: Found ${allAssignments.length} active assignments`);
+        
         // Φόρτωση programs
         const allProgramIds = allAssignments.map((a: any) => a.program_id).filter(Boolean);
+        console.log(`📊 Loading ${allProgramIds.length} programs`);
         const allProgramsResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/programs?id=in.(${allProgramIds.join(',')})&select=id,name,description`,
           {
@@ -388,6 +391,9 @@ ${calendarDisplay}`;
         
         adminActiveProgramsContext += detailedWorkoutsContext;
         }
+        
+        console.log(`✅ Admin context length: ${adminActiveProgramsContext.length} characters`);
+        console.log(`📋 Admin context preview (first 500 chars): ${adminActiveProgramsContext.substring(0, 500)}`);
       }
     }
 
@@ -1715,7 +1721,28 @@ ${calendarDisplay}`;
     // System prompt με πληροφορίες για τον χρήστη
     const systemPrompt = {
       role: "system",
-      content: `Είσαι ο RID AI Προπονητής, ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, και το πλήρες ιστορικό προόδου του χρήστη.
+      content: `Είσαι ο RID AI Προπονητής, ένας εξειδικευμένος AI βοηθός για fitness και διατροφή.${isAdmin && !targetUserId ? `
+
+🔥 ΛΕΙΤΟΥΡΓΙΑ ADMIN MODE 🔥
+ΠΡΟΣΟΧΗ: Είσαι σε ADMIN MODE και έχεις ΠΛΗΡΗ πρόσβαση σε ΟΛΑ τα δεδομένα ΟΛΩΝ των χρηστών!
+
+ΚΡΙΤΙΚΟ: Έχεις πρόσβαση σε:
+✅ ΟΛΑ τα ενεργά προγράμματα όλων των αθλητών
+✅ ΟΛΑ τα ημερολόγια προπονήσεων
+✅ ΟΛΕΣ τις λεπτομέρειες ασκήσεων (sets, reps, kg, tempo, rest, notes)
+✅ ΟΛΑ τα workout completions (ολοκληρωμένες, χαμένες, προγραμματισμένες)
+✅ Πρόοδο και στατιστικά όλων των αθλητών
+
+Όταν σε ρωτούν για κάποιον συγκεκριμένο αθλητή (π.χ. "πως πάει η Αγγελική;" ή "ποιες ασκήσεις έχει ο Γιώργος σήμερα;"):
+1. ✅ ΜΠΟΡΕΙΣ και ΠΡΕΠΕΙ να απαντήσεις με βάση τα πραγματικά δεδομένα
+2. ✅ ΕΧΕΙΣ όλες τις πληροφορίες που χρειάζεσαι
+3. ✅ Χρησιμοποίησε το context που σου δίνεται παρακάτω για να βρεις τα στοιχεία του αθλητή
+4. ❌ ΜΗΝ πεις ποτέ "δεν έχω πρόσβαση" - ΕΧΕΙΣ πρόσβαση!
+
+Το context που έχεις περιλαμβάνει:
+- 📋 ΛΕΠΤΟΜΕΡΗΣ ΠΡΟΒΟΛΗ ΠΡΟΠΟΝΗΣΕΩΝ με όλες τις ασκήσεις κάθε ημέρας
+- 📅 ΗΜΕΡΟΛΟΓΙΟ ΠΡΟΠΟΝΗΣΕΩΝ με το status κάθε προπόνησης
+- 👥 ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ ΑΝΑ ΑΘΛΗΤΗ με πρόοδο και στατιστικά` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, και το πλήρες ιστορικό προόδου του χρήστη.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
@@ -1795,6 +1822,16 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
 
 Θυμάσαι όλες τις προηγούμενες συνομιλίες και χρησιμοποιείς αυτές τις πληροφορίες για να δίνεις καλύτερες συμβουλές.`
     };
+
+    // Log για debugging admin context
+    if (isAdmin && !targetUserId) {
+      console.log(`🔥 ADMIN MODE ACTIVE - System prompt includes admin context:`, {
+        hasAdminContext: adminActiveProgramsContext.length > 0,
+        contextLength: adminActiveProgramsContext.length,
+        previewFirst200: adminActiveProgramsContext.substring(0, 200),
+        previewLast200: adminActiveProgramsContext.substring(Math.max(0, adminActiveProgramsContext.length - 200))
+      });
+    }
 
     // Κλήση Lovable AI με όλο το ιστορικό
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
