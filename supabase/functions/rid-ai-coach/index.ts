@@ -43,6 +43,125 @@ serve(async (req) => {
     // Αλλιώς χρησιμοποιούμε το δικό του userId
     const effectiveUserId = (isAdmin && targetUserId) ? targetUserId : userId;
 
+    // 🔥 ADMIN CONTEXT: Φόρτωση ΟΛΩΝ των active programs αν είναι admin
+    let adminActiveProgramsContext = '';
+    if (isAdmin && !targetUserId) {
+      // Φόρτωση ΟΛΩΝ των active assignments (για όλους τους χρήστες)
+      const allAssignmentsResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/program_assignments?status=in.(active,completed)&end_date=gte.${new Date().toISOString().split('T')[0]}&select=*`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const allAssignments = await allAssignmentsResponse.json();
+      
+      if (Array.isArray(allAssignments) && allAssignments.length > 0) {
+        // Φόρτωση programs
+        const allProgramIds = allAssignments.map((a: any) => a.program_id).filter(Boolean);
+        const allProgramsResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/programs?id=in.(${allProgramIds.join(',')})&select=id,name,description`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const allProgramsData = await allProgramsResponse.json();
+        
+        // Φόρτωση users
+        const allUserIds = allAssignments.map((a: any) => a.user_id).filter(Boolean);
+        const allUsersResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/app_users?id=in.(${allUserIds.join(',')})&select=id,name,email`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const allUsersData = await allUsersResponse.json();
+        
+        // Φόρτωση workout completions για ΟΛΕΣ τις αναθέσεις
+        const allAssignmentIds = allAssignments.map((a: any) => a.id);
+        const allCompletionsResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/workout_completions?assignment_id=in.(${allAssignmentIds.join(',')})&select=*`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const allCompletions = await allCompletionsResponse.json();
+        
+        // Δημιουργία summary
+        const activeProgramsSummary = allAssignments.map((assignment: any) => {
+          const program = Array.isArray(allProgramsData) ? allProgramsData.find((p: any) => p.id === assignment.program_id) : null;
+          const user = Array.isArray(allUsersData) ? allUsersData.find((u: any) => u.id === assignment.user_id) : null;
+          
+          const assignmentCompletions = Array.isArray(allCompletions) 
+            ? allCompletions.filter((c: any) => c.assignment_id === assignment.id)
+            : [];
+          
+          const totalScheduled = assignment.training_dates?.length || 0;
+          const completed = assignmentCompletions.filter((c: any) => c.status === 'completed').length;
+          const missed = assignmentCompletions.filter((c: any) => c.status === 'missed').length;
+          
+          // Υπολογισμός σημερινών προπονήσεων
+          const today = new Date().toISOString().split('T')[0];
+          const hasTodayWorkout = assignment.training_dates?.includes(today);
+          const todayCompletion = assignmentCompletions.find((c: any) => c.scheduled_date === today);
+          const todayStatus = todayCompletion ? todayCompletion.status : (hasTodayWorkout ? 'scheduled' : null);
+          
+          return {
+            userName: user?.name || 'Unknown',
+            userEmail: user?.email || '',
+            programName: program?.name || 'Unknown Program',
+            status: assignment.status,
+            progress: `${completed}/${totalScheduled} προπονήσεις (${missed} χαμένες)`,
+            startDate: assignment.start_date,
+            endDate: assignment.end_date,
+            todayStatus: todayStatus
+          };
+        });
+        
+        // Group by status
+        const activePrograms = activeProgramsSummary.filter(p => p.status === 'active');
+        const completedPrograms = activeProgramsSummary.filter(p => p.status === 'completed');
+        
+        // Today's workouts
+        const todaysWorkouts = activeProgramsSummary.filter(p => p.todayStatus);
+        const todaysCompleted = todaysWorkouts.filter(p => p.todayStatus === 'completed');
+        const todaysPending = todaysWorkouts.filter(p => p.todayStatus === 'scheduled');
+        
+        adminActiveProgramsContext = `\n\n🎯 ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ (Admin Dashboard):
+        
+📊 Συνολική Επισκόπηση:
+- Ενεργά Προγράμματα: ${activePrograms.length}
+- Ολοκληρωμένα Προγράμματα: ${completedPrograms.length}
+- Σύνολο: ${activeProgramsSummary.length}
+
+📅 Σημερινές Προπονήσεις (${new Date().toLocaleDateString('el-GR')}):
+- Σύνολο: ${todaysWorkouts.length}
+- Ολοκληρωμένες: ${todaysCompleted.length}
+- Εκκρεμείς: ${todaysPending.length}
+
+👥 Ενεργά Προγράμματα Ανά Αθλητή:
+${activePrograms.map((p, i) => `${i + 1}. ${p.userName} (${p.userEmail})
+   - Πρόγραμμα: ${p.programName}
+   - Πρόοδος: ${p.progress}
+   - Περίοδος: ${p.startDate} έως ${p.endDate}
+   - Σήμερα: ${p.todayStatus === 'completed' ? '✅ Ολοκληρώθηκε' : p.todayStatus === 'scheduled' ? '⏳ Προγραμματισμένη' : '➖ Χωρίς προπόνηση'}`).join('\n\n')}
+
+${completedPrograms.length > 0 ? `\n✅ Πρόσφατα Ολοκληρωμένα:
+${completedPrograms.slice(0, 5).map((p, i) => `${i + 1}. ${p.userName} - ${p.programName} (${p.progress})`).join('\n')}` : ''}`;
+      }
+    }
+
     // Φόρτωση στοιχείων χρήστη (χρησιμοποιούμε effectiveUserId)
     const userDataResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/app_users?id=eq.${effectiveUserId}&select=*`,
@@ -1413,7 +1532,7 @@ serve(async (req) => {
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${strengthContext}${enduranceContext}${jumpContext}${anthropometricContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}
 
 ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό και ημερολόγιο του χρήστη. Μπορείς να:
 - Αναλύσεις την πρόοδό του στη δύναμη (1RM, ταχύτητα)
