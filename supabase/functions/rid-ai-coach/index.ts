@@ -397,18 +397,36 @@ ${calendarDisplay}`;
       }
     }
 
-    // Φόρτωση στοιχείων χρήστη (χρησιμοποιούμε effectiveUserId)
-    const userDataResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/app_users?id=eq.${effectiveUserId}&select=*`,
-      {
-        headers: {
-          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+    // 📊 Φόρτωση δεδομένων χρήστη (ΜΟΝΟ αν ΔΕΝ είμαστε σε admin overview mode)
+    // Αν είμαστε admin χωρίς targetUserId, δεν φορτώνουμε προσωπικά δεδομένα
+    let userProfile: any = {};
+    let exerciseContext = '';
+    let programContext = '';
+    let calendarContext = '';
+    let workoutStatsContext = '';
+    let strengthContext = '';
+    let enduranceContext = '';
+    let jumpContext = '';
+    let anthropometricContext = '';
+    let todayProgramContext = '';
+    let allDaysContext = '';
+    let overviewStatsContext = '';
+    
+    if (!(isAdmin && !targetUserId)) {
+      console.log(`📊 Loading personal data for userId: ${effectiveUserId}`);
+      
+      // Φόρτωση στοιχείων χρήστη (χρησιμοποιούμε effectiveUserId)
+      const userDataResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/app_users?id=eq.${effectiveUserId}&select=*`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
         }
-      }
-    );
-    const userData = await userDataResponse.json();
-    const userProfile = userData[0] || {};
+      );
+      const userData = await userDataResponse.json();
+      userProfile = userData[0] || {};
 
     // Φόρτωση ΟΛΩΝ των assignments για το ημερολόγιο (active και completed)
     const assignmentsResponse = await fetch(
@@ -1666,6 +1684,9 @@ ${calendarDisplay}`;
     
     if (subscriptionInfo || visitsInfo || videocallsInfo || bookingsInfo || testsInfo || offersInfo) {
       overviewStatsContext = `\n\n📊 ΓΕΝΙΚΑ ΣΤΑΤΙΣΤΙΚΑ (Επισκόπηση):${subscriptionInfo}${visitsInfo}${videocallsInfo}${bookingsInfo}${testsInfo}${offersInfo}`;
+    }
+    } else {
+      console.log(`🔥 Admin overview mode - skipping personal data loading`);
     }
 
     // Αποθήκευση μηνύματος χρήστη (πάντα για τον effectiveUserId)
