@@ -50,9 +50,9 @@ serve(async (req) => {
     );
     const programsData = await programsResponse.json();
 
-    // Φόρτωση ιστορικού δύναμης με σωστό join μέσω sessions
+    // Φόρτωση ιστορικού δύναμης μέσω sessions
     const strengthResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/strength_test_attempts?select=weight_kg,velocity_ms,estimated_1rm,exercises(name),strength_test_sessions!inner(user_id,test_date)&strength_test_sessions.user_id=eq.${userId}&order=strength_test_sessions(test_date).desc&limit=20`,
+      `${SUPABASE_URL}/rest/v1/strength_test_sessions?select=test_date,strength_test_attempts(weight_kg,velocity_ms,estimated_1rm,exercises(name))&user_id=eq.${userId}&order=test_date.desc&limit=20`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -61,7 +61,7 @@ serve(async (req) => {
       }
     );
     const strengthHistory = await strengthResponse.json();
-    console.log('Strength History:', JSON.stringify(strengthHistory, null, 2));
+    console.log('✅ Strength History:', JSON.stringify(strengthHistory, null, 2));
 
     // Φόρτωση ιστορικού αντοχής
     const enduranceResponse = await fetch(
@@ -134,11 +134,24 @@ serve(async (req) => {
     // Context για δύναμη
     let strengthContext = '';
     if (Array.isArray(strengthHistory) && strengthHistory.length > 0) {
-      const strengthList = strengthHistory.map((test: any) => {
-        const testDate = test.strength_test_sessions?.[0]?.test_date || 'N/A';
-        return `- ${test.exercises?.name || 'Άσκηση'}: ${test.weight_kg}kg, Ταχύτητα: ${test.velocity_ms}m/s, 1RM: ${test.estimated_1rm}kg (${new Date(testDate).toLocaleDateString('el-GR')})`;
-      }).join('\n');
-      strengthContext = `\n\nΙστορικό Δύναμης:\n${strengthList}`;
+      const attempts: any[] = [];
+      strengthHistory.forEach((session: any) => {
+        if (session.strength_test_attempts && Array.isArray(session.strength_test_attempts)) {
+          session.strength_test_attempts.forEach((attempt: any) => {
+            attempts.push({
+              ...attempt,
+              test_date: session.test_date
+            });
+          });
+        }
+      });
+      
+      if (attempts.length > 0) {
+        const strengthList = attempts.map((attempt: any) => {
+          return `- ${attempt.exercises?.name || 'Άσκηση'}: ${attempt.weight_kg}kg, Ταχύτητα: ${attempt.velocity_ms}m/s, 1RM: ${attempt.estimated_1rm}kg (${new Date(attempt.test_date).toLocaleDateString('el-GR')})`;
+        }).join('\n');
+        strengthContext = `\n\nΙστορικό Δύναμης:\n${strengthList}`;
+      }
     }
 
     // Context για αντοχή
