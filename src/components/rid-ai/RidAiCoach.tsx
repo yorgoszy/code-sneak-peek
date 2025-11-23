@@ -119,7 +119,7 @@ export const RidAiCoach = () => {
           body: JSON.stringify({
             messages: allMessages,
             userId: userProfile.id,
-            targetUserId: isAdmin && selectedUserId ? selectedUserId : undefined
+            ...(isAdmin && selectedUserId && { targetUserId: selectedUserId })
           })
         }
       );
