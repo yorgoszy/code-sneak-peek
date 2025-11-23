@@ -486,59 +486,57 @@ const Users = () => {
                 <div className="space-y-3">
                   {newRegistrations.map((user) => (
                     <Card key={user.id} className="p-4 border border-[#00ffba]/20 bg-[#00ffba]/5">
-                      <div className="flex items-start justify-between">
-                        {/* User Info */}
-                        <div className="flex items-center space-x-3 flex-1 min-w-0">
-                          <Avatar className="w-10 h-10 flex-shrink-0">
-                            <AvatarImage src={user.photo_url} alt={user.name} />
-                            <AvatarFallback>
-                              {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-medium text-sm text-gray-900 truncate">{user.name}</h3>
-                            <p className="text-xs text-gray-600 truncate">{user.email}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`px-2 py-1 text-xs rounded ${getRoleColor(user.role)}`}>
-                                {user.role}
-                              </span>
-                              <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
-                                {user.subscription_status}
-                              </span>
-                            </div>
+                      {/* User Info */}
+                      <div className="flex items-center space-x-3 mb-3">
+                        <Avatar className="w-10 h-10 flex-shrink-0">
+                          <AvatarImage src={user.photo_url} alt={user.name} />
+                          <AvatarFallback>
+                            {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-medium text-sm text-gray-900 truncate">{user.name}</h3>
+                          <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <span className={`px-2 py-1 text-xs rounded ${getRoleColor(user.role)}`}>
+                              {user.role}
+                            </span>
+                            <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
+                              {user.subscription_status}
+                            </span>
                           </div>
                         </div>
+                      </div>
 
-                        {/* Actions */}
-                        <div className="flex space-x-1 ml-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="rounded-none p-2"
-                            onClick={() => handleTestPasswordReset(user)}
-                            title="Αποστολή κωδικού"
-                          >
-                            <Mail className="h-3 w-3" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="rounded-none p-2"
-                            onClick={() => handleViewUser(user)}
-                            title="Προβολή προφίλ"
-                          >
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="rounded-none p-2"
-                            onClick={() => handleEditUser(user)}
-                            title="Επεξεργασία χρήστη"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                        </div>
+                      {/* Actions */}
+                      <div className="flex space-x-2 justify-end">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="rounded-none p-2"
+                          onClick={() => handleTestPasswordReset(user)}
+                          title="Αποστολή κωδικού"
+                        >
+                          <Mail className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="rounded-none p-2"
+                          onClick={() => handleViewUser(user)}
+                          title="Προβολή προφίλ"
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="rounded-none p-2"
+                          onClick={() => handleEditUser(user)}
+                          title="Επεξεργασία χρήστη"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
                       </div>
 
                       {/* Additional Info */}
@@ -718,68 +716,66 @@ const Users = () => {
                   <div className="lg:hidden space-y-3">
                     {filteredUsers.map((user) => (
                       <Card key={user.id} className="p-4 border border-gray-200">
-                        <div className="flex items-start justify-between">
-                          {/* User Info */}
-                          <div className="flex items-center space-x-3 flex-1 min-w-0">
-                            <Avatar className="w-10 h-10 flex-shrink-0">
-                              <AvatarImage src={user.photo_url} alt={user.name} />
-                              <AvatarFallback>
-                                {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0 flex-1">
-                              <h3 className="font-medium text-sm text-gray-900 truncate">{user.name}</h3>
-                              <p className="text-xs text-gray-600 truncate">{user.email}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className={`px-2 py-1 text-xs rounded ${getRoleColor(user.role)}`}>
-                                  {user.role}
-                                </span>
-                                <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
-                                  {user.subscription_status}
-                                </span>
-                              </div>
+                        {/* User Info */}
+                        <div className="flex items-center space-x-3 mb-3">
+                          <Avatar className="w-10 h-10 flex-shrink-0">
+                            <AvatarImage src={user.photo_url} alt={user.name} />
+                            <AvatarFallback>
+                              {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-medium text-sm text-gray-900 truncate">{user.name}</h3>
+                            <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              <span className={`px-2 py-1 text-xs rounded ${getRoleColor(user.role)}`}>
+                                {user.role}
+                              </span>
+                              <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
+                                {user.subscription_status}
+                              </span>
                             </div>
                           </div>
+                        </div>
 
-                          {/* Actions */}
-                          <div className="flex space-x-1 ml-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none p-2"
-                              onClick={() => handleViewUser(user)}
-                              title="Προβολή προφίλ"
-                            >
-                              <Eye className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none p-2"
-                              onClick={() => handleEditUser(user)}
-                              title="Επεξεργασία χρήστη"
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none text-blue-600 hover:text-blue-700 p-2"
-                              onClick={() => handleTestPasswordReset(user)}
-                              title="Test Password Reset"
-                            >
-                              <Mail className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="rounded-none text-red-600 hover:text-red-700 p-2"
-                              onClick={() => handleDeleteUser(user)}
-                              title="Διαγραφή χρήστη"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
+                        {/* Actions */}
+                        <div className="flex space-x-2 justify-end">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none p-2"
+                            onClick={() => handleViewUser(user)}
+                            title="Προβολή προφίλ"
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none p-2"
+                            onClick={() => handleEditUser(user)}
+                            title="Επεξεργασία χρήστη"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none text-blue-600 hover:text-blue-700 p-2"
+                            onClick={() => handleTestPasswordReset(user)}
+                            title="Test Password Reset"
+                          >
+                            <Mail className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none text-red-600 hover:text-red-700 p-2"
+                            onClick={() => handleDeleteUser(user)}
+                            title="Διαγραφή χρήστη"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
 
                         {/* Additional Info on mobile */}
