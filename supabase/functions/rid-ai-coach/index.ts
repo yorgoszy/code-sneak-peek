@@ -11,11 +11,21 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, userId, targetUserId } = await req.json();
+    const { messages, userId, targetUserId: rawTargetUserId } = await req.json();
     
     if (!userId) {
       throw new Error("User ID is required");
     }
+
+    // Normalize targetUserId: empty string -> undefined
+    const targetUserId = rawTargetUserId && rawTargetUserId.trim() !== '' ? rawTargetUserId : undefined;
+
+    console.log('📝 Request received:', { 
+      userId, 
+      targetUserId,
+      isTargetUserIdEmpty: !targetUserId,
+      messageCount: messages?.length 
+    });
 
     // Δήλωση environment variables ΠΡΩΤΑ
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
