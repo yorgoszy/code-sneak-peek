@@ -1944,7 +1944,7 @@ ${calendarDisplay}`;
               });
             }
             
-            if (session.jump_test_data && Array.isArray(session.jump_test_data)) {
+            if (session.jump_test_data && Array.isArray(session.jump_test_data) && session.jump_test_data.length > 0) {
               athleteProgressMap.get(user.id)!.jump.push({
                 date: session.test_date,
                 data: session.jump_test_data[0]
@@ -2034,23 +2034,25 @@ ${calendarDisplay}`;
             const sorted = athlete.jump.sort((a, b) => 
               new Date(b.date).getTime() - new Date(a.date).getTime()
             );
-            const latest = sorted[0].data;
-            const previous = sorted.length > 1 ? sorted[1].data : null;
+            const latest = sorted[0]?.data;
+            const previous = sorted.length > 1 ? sorted[1]?.data : null;
             
-            adminProgressContext += '\n  🦘 Άλματα:\n';
-            if (latest.counter_movement_jump) {
-              const change = previous?.counter_movement_jump ?
-                ((latest.counter_movement_jump - previous.counter_movement_jump) / previous.counter_movement_jump * 100).toFixed(1) : null;
-              adminProgressContext += `    • CMJ: ${latest.counter_movement_jump}cm${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
+            if (latest) {
+              adminProgressContext += '\n  🦘 Άλματα:\n';
+              if (latest.counter_movement_jump) {
+                const change = previous?.counter_movement_jump ?
+                  ((latest.counter_movement_jump - previous.counter_movement_jump) / previous.counter_movement_jump * 100).toFixed(1) : null;
+                adminProgressContext += `    • CMJ: ${latest.counter_movement_jump}cm${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
+              }
+              if (latest.broad_jump) {
+                const change = previous?.broad_jump ?
+                  ((latest.broad_jump - previous.broad_jump) / previous.broad_jump * 100).toFixed(1) : null;
+                adminProgressContext += `    • Broad Jump: ${latest.broad_jump}cm${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
+              }
+              if (latest.triple_jump_left) adminProgressContext += `    • Triple Jump L: ${latest.triple_jump_left}cm\n`;
+              if (latest.triple_jump_right) adminProgressContext += `    • Triple Jump R: ${latest.triple_jump_right}cm\n`;
+              adminProgressContext += `    • Τελευταία μέτρηση: ${new Date(sorted[0].date).toLocaleDateString('el-GR')}\n`;
             }
-            if (latest.broad_jump) {
-              const change = previous?.broad_jump ?
-                ((latest.broad_jump - previous.broad_jump) / previous.broad_jump * 100).toFixed(1) : null;
-              adminProgressContext += `    • Broad Jump: ${latest.broad_jump}cm${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
-            }
-            if (latest.triple_jump_left) adminProgressContext += `    • Triple Jump L: ${latest.triple_jump_left}cm\n`;
-            if (latest.triple_jump_right) adminProgressContext += `    • Triple Jump R: ${latest.triple_jump_right}cm\n`;
-            adminProgressContext += `    • Τελευταία μέτρηση: ${new Date(sorted[0].date).toLocaleDateString('el-GR')}\n`;
           }
         });
       }
