@@ -2497,11 +2497,19 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
     // Log για debugging admin context
     if (isAdmin && !targetUserId) {
       console.log(`🔥 ADMIN MODE ACTIVE - System prompt includes admin context:`, {
-        hasAdminContext: adminActiveProgramsContext.length > 0,
-        contextLength: adminActiveProgramsContext.length,
-        previewFirst200: adminActiveProgramsContext.substring(0, 200),
-        previewLast200: adminActiveProgramsContext.substring(Math.max(0, adminActiveProgramsContext.length - 200))
+        hasAdminActiveProgramsContext: adminActiveProgramsContext.length > 0,
+        adminActiveProgramsContextLength: adminActiveProgramsContext.length,
+        hasAdminProgressContext: adminProgressContext.length > 0,
+        adminProgressContextLength: adminProgressContext.length,
+        previewAdminProgress: adminProgressContext.substring(0, 500)
       });
+      
+      // Πιο αναλυτικό log για το adminProgressContext
+      if (adminProgressContext.length > 0) {
+        console.log(`✅ Admin Progress Context Preview (first 1000 chars):\n${adminProgressContext.substring(0, 1000)}`);
+      } else {
+        console.log(`⚠️ Admin Progress Context is EMPTY!`);
+      }
     }
 
     // Κλήση Lovable AI με όλο το ιστορικό
