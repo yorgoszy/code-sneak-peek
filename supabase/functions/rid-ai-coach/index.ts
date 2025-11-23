@@ -544,6 +544,12 @@ ${calendarDisplay}`;
         jump: Array.isArray(allJump) ? allJump.length : 0
       });
       
+      console.log('📊 Sample endurance data structure:', 
+        Array.isArray(allEndurance) && allEndurance.length > 0 
+          ? JSON.stringify(allEndurance[0], null, 2) 
+          : 'No endurance data'
+      );
+      
       // Δημιουργία context
       if ((Array.isArray(allAnthropometric) && allAnthropometric.length > 0) ||
           (Array.isArray(allEndurance) && allEndurance.length > 0) ||
@@ -669,40 +675,46 @@ ${calendarDisplay}`;
             adminProgressContext += `    • Τελευταία μέτρηση: ${new Date(sorted[0].date).toLocaleDateString('el-GR')}\n`;
           }
           
-          // Endurance - Latest values
+          // Endurance - Latest values από ΟΛΑ τα sessions
           if (athlete.endurance.length > 0) {
-            const sorted = athlete.endurance.sort((a, b) => 
-              new Date(b.date).getTime() - new Date(a.date).getTime()
-            );
-            const latestData = sorted[0].data;
-            const previousData = sorted.length > 1 ? sorted[1].data : null;
-            
             adminProgressContext += '\n  💪 Αντοχή:\n';
             
-            // Aggregate από πολλαπλά records στην ίδια session
-            const aggregated: any = {};
-            latestData.forEach((record: any) => {
-              if (record.vo2_max) aggregated.vo2_max = record.vo2_max;
-              if (record.mas_kmh) aggregated.mas_kmh = record.mas_kmh;
-              if (record.push_ups) aggregated.push_ups = record.push_ups;
-              if (record.pull_ups) aggregated.pull_ups = record.pull_ups;
-              if (record.t2b) aggregated.t2b = record.t2b;
-              if (record.farmer_kg) aggregated.farmer_kg = record.farmer_kg;
-              if (record.sprint_watt) aggregated.sprint_watt = record.sprint_watt;
-              if (record.max_hr) aggregated.max_hr = record.max_hr;
-              if (record.resting_hr_1min) aggregated.resting_hr_1min = record.resting_hr_1min;
+            // Συλλογή ΟΛων των πιο πρόσφατων τιμών από διαφορετικά sessions
+            const latestValues: any = {};
+            const valuesDates: any = {};
+            
+            athlete.endurance.forEach((sessionData: any) => {
+              if (!Array.isArray(sessionData.data)) return;
+              
+              sessionData.data.forEach((record: any) => {
+                // Για κάθε metric, κρατάμε την πιο πρόσφατη τιμή
+                const metrics = ['vo2_max', 'mas_kmh', 'push_ups', 'pull_ups', 't2b', 
+                                'farmer_kg', 'sprint_watt', 'max_hr', 'resting_hr_1min'];
+                
+                metrics.forEach(metric => {
+                  if (record[metric] !== null && record[metric] !== undefined) {
+                    const currentDate = new Date(sessionData.date);
+                    const existingDate = valuesDates[metric] ? new Date(valuesDates[metric]) : null;
+                    
+                    if (!existingDate || currentDate >= existingDate) {
+                      latestValues[metric] = record[metric];
+                      valuesDates[metric] = sessionData.date;
+                    }
+                  }
+                });
+              });
             });
             
-            if (aggregated.vo2_max) adminProgressContext += `    • VO2 Max: ${aggregated.vo2_max} ml/kg/min\n`;
-            if (aggregated.mas_kmh) adminProgressContext += `    • MAS: ${aggregated.mas_kmh} km/h\n`;
-            if (aggregated.push_ups) adminProgressContext += `    • Push-ups: ${aggregated.push_ups}\n`;
-            if (aggregated.pull_ups) adminProgressContext += `    • Pull-ups: ${aggregated.pull_ups}\n`;
-            if (aggregated.t2b) adminProgressContext += `    • T2B: ${aggregated.t2b}\n`;
-            if (aggregated.farmer_kg) adminProgressContext += `    • Farmer Walk: ${aggregated.farmer_kg}kg\n`;
-            if (aggregated.sprint_watt) adminProgressContext += `    • Sprint: ${aggregated.sprint_watt}W\n`;
-            if (aggregated.max_hr) adminProgressContext += `    • Max HR: ${aggregated.max_hr} bpm\n`;
-            if (aggregated.resting_hr_1min) adminProgressContext += `    • Resting HR: ${aggregated.resting_hr_1min} bpm\n`;
-            adminProgressContext += `    • Τελευταία μέτρηση: ${new Date(sorted[0].date).toLocaleDateString('el-GR')}\n`;
+            // Εμφάνιση των τιμών
+            if (latestValues.vo2_max) adminProgressContext += `    • VO2 Max: ${latestValues.vo2_max} ml/kg/min (${new Date(valuesDates.vo2_max).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.mas_kmh) adminProgressContext += `    • MAS: ${latestValues.mas_kmh} km/h (${new Date(valuesDates.mas_kmh).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.push_ups) adminProgressContext += `    • Push-ups: ${latestValues.push_ups} (${new Date(valuesDates.push_ups).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.pull_ups) adminProgressContext += `    • Pull-ups: ${latestValues.pull_ups} (${new Date(valuesDates.pull_ups).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.t2b) adminProgressContext += `    • T2B: ${latestValues.t2b} (${new Date(valuesDates.t2b).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.farmer_kg) adminProgressContext += `    • Farmer Walk: ${latestValues.farmer_kg}kg (${new Date(valuesDates.farmer_kg).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.sprint_watt) adminProgressContext += `    • Sprint: ${latestValues.sprint_watt}W (${new Date(valuesDates.sprint_watt).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.max_hr) adminProgressContext += `    • Max HR: ${latestValues.max_hr} bpm (${new Date(valuesDates.max_hr).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.resting_hr_1min) adminProgressContext += `    • Resting HR: ${latestValues.resting_hr_1min} bpm (${new Date(valuesDates.resting_hr_1min).toLocaleDateString('el-GR')})\n`;
           }
           
           // Jump - Latest values
