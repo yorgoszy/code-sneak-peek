@@ -497,252 +497,6 @@ ${calendarDisplay}`;
       usersData = await usersResponse.json();
       console.log('📊 Users loaded:', Array.isArray(usersData) ? usersData.length : 0);
     }
-    
-    // 📊 ADMIN PROGRESS CONTEXT: Φόρτωση δεδομένων προόδου για όλους τους αθλητές
-    if (isAdmin && !targetUserId) {
-      console.log('📊 Loading progress data for all athletes...');
-      
-      // 1. Anthropometric data για όλους
-      const allAnthropometricResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/anthropometric_test_sessions?select=*,anthropometric_test_data(*),app_users!anthropometric_test_sessions_user_id_fkey(id,name,email)&order=test_date.desc&limit=500`,
-        {
-          headers: {
-            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-          }
-        }
-      );
-      const allAnthropometric = await allAnthropometricResponse.json();
-      
-      // 2. Endurance test data για όλους
-      const allEnduranceResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/endurance_test_sessions?select=*,endurance_test_data(*,exercises(name)),app_users!endurance_test_sessions_user_id_fkey(id,name,email)&order=test_date.desc&limit=500`,
-        {
-          headers: {
-            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-          }
-        }
-      );
-      const allEndurance = await allEnduranceResponse.json();
-      
-      // 3. Jump test data για όλους
-      const allJumpResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/jump_test_sessions?select=*,jump_test_data(*),app_users!jump_test_sessions_user_id_fkey(id,name,email)&order=test_date.desc&limit=500`,
-        {
-          headers: {
-            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-          }
-        }
-      );
-      const allJump = await allJumpResponse.json();
-      
-      console.log('✅ Admin Progress Data:', {
-        anthropometric: Array.isArray(allAnthropometric) ? allAnthropometric.length : 0,
-        endurance: Array.isArray(allEndurance) ? allEndurance.length : 0,
-        jump: Array.isArray(allJump) ? allJump.length : 0
-      });
-      
-      console.log('📊 Sample endurance data structure:', 
-        Array.isArray(allEndurance) && allEndurance.length > 0 
-          ? JSON.stringify(allEndurance[0], null, 2) 
-          : 'No endurance data'
-      );
-      
-      // Δημιουργία context
-      if ((Array.isArray(allAnthropometric) && allAnthropometric.length > 0) ||
-          (Array.isArray(allEndurance) && allEndurance.length > 0) ||
-          (Array.isArray(allJump) && allJump.length > 0)) {
-        
-        adminProgressContext = '\n\n📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ (Athletes Progress Dashboard):\n\n';
-        
-        // Ομαδοποίηση δεδομένων ανά αθλητή
-        const athleteProgressMap = new Map<string, {
-          name: string;
-          email: string;
-          anthropometric: any[];
-          endurance: any[];
-          jump: any[];
-        }>();
-        
-        // Συλλογή anthropometric data
-        if (Array.isArray(allAnthropometric)) {
-          allAnthropometric.forEach((session: any) => {
-            const user = session.app_users;
-            if (!user) return;
-            
-            if (!athleteProgressMap.has(user.id)) {
-              athleteProgressMap.set(user.id, {
-                name: user.name,
-                email: user.email,
-                anthropometric: [],
-                endurance: [],
-                jump: []
-              });
-            }
-            
-            if (session.anthropometric_test_data && Array.isArray(session.anthropometric_test_data)) {
-              athleteProgressMap.get(user.id)!.anthropometric.push({
-                date: session.test_date,
-                data: session.anthropometric_test_data[0]
-              });
-            }
-          });
-        }
-        
-        // Συλλογή endurance data
-        if (Array.isArray(allEndurance)) {
-          allEndurance.forEach((session: any) => {
-            const user = session.app_users;
-            if (!user) return;
-            
-            if (!athleteProgressMap.has(user.id)) {
-              athleteProgressMap.set(user.id, {
-                name: user.name,
-                email: user.email,
-                anthropometric: [],
-                endurance: [],
-                jump: []
-              });
-            }
-            
-            if (session.endurance_test_data && Array.isArray(session.endurance_test_data)) {
-              athleteProgressMap.get(user.id)!.endurance.push({
-                date: session.test_date,
-                data: session.endurance_test_data
-              });
-            }
-          });
-        }
-        
-        // Συλλογή jump data
-        if (Array.isArray(allJump)) {
-          allJump.forEach((session: any) => {
-            const user = session.app_users;
-            if (!user) return;
-            
-            if (!athleteProgressMap.has(user.id)) {
-              athleteProgressMap.set(user.id, {
-                name: user.name,
-                email: user.email,
-                anthropometric: [],
-                endurance: [],
-                jump: []
-              });
-            }
-            
-            if (session.jump_test_data && Array.isArray(session.jump_test_data)) {
-              athleteProgressMap.get(user.id)!.jump.push({
-                date: session.test_date,
-                data: session.jump_test_data[0]
-              });
-            }
-          });
-        }
-        
-        // Δημιουργία formatted output
-        const sortedAthletes = Array.from(athleteProgressMap.entries())
-          .sort((a, b) => a[1].name.localeCompare(b[1].name, 'el'));
-        
-        sortedAthletes.forEach(([userId, athlete]) => {
-          adminProgressContext += `\n👤 ${athlete.name} (${athlete.email}):\n`;
-          
-          // Anthropometric - Latest και change
-          if (athlete.anthropometric.length > 0) {
-            const sorted = athlete.anthropometric.sort((a, b) => 
-              new Date(b.date).getTime() - new Date(a.date).getTime()
-            );
-            const latest = sorted[0].data;
-            const previous = sorted.length > 1 ? sorted[1].data : null;
-            
-            adminProgressContext += '\n  📏 Ανθρωπομετρικά:\n';
-            if (latest.weight) {
-              const change = previous?.weight ? 
-                ((latest.weight - previous.weight) / previous.weight * 100).toFixed(1) : null;
-              adminProgressContext += `    • Βάρος: ${latest.weight}kg${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
-            }
-            if (latest.body_fat_percentage) {
-              const change = previous?.body_fat_percentage ?
-                ((latest.body_fat_percentage - previous.body_fat_percentage) / previous.body_fat_percentage * 100).toFixed(1) : null;
-              adminProgressContext += `    • Λίπος: ${latest.body_fat_percentage}%${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
-            }
-            if (latest.muscle_mass_percentage) {
-              const change = previous?.muscle_mass_percentage ?
-                ((latest.muscle_mass_percentage - previous.muscle_mass_percentage) / previous.muscle_mass_percentage * 100).toFixed(1) : null;
-              adminProgressContext += `    • Μυϊκή Μάζα: ${latest.muscle_mass_percentage}%${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
-            }
-            adminProgressContext += `    • Τελευταία μέτρηση: ${new Date(sorted[0].date).toLocaleDateString('el-GR')}\n`;
-          }
-          
-          // Endurance - Latest values από ΟΛΑ τα sessions
-          if (athlete.endurance.length > 0) {
-            adminProgressContext += '\n  💪 Αντοχή:\n';
-            
-            // Συλλογή ΟΛων των πιο πρόσφατων τιμών από διαφορετικά sessions
-            const latestValues: any = {};
-            const valuesDates: any = {};
-            
-            athlete.endurance.forEach((sessionData: any) => {
-              if (!Array.isArray(sessionData.data)) return;
-              
-              sessionData.data.forEach((record: any) => {
-                // Για κάθε metric, κρατάμε την πιο πρόσφατη τιμή
-                const metrics = ['vo2_max', 'mas_kmh', 'push_ups', 'pull_ups', 't2b', 
-                                'farmer_kg', 'sprint_watt', 'max_hr', 'resting_hr_1min'];
-                
-                metrics.forEach(metric => {
-                  if (record[metric] !== null && record[metric] !== undefined) {
-                    const currentDate = new Date(sessionData.date);
-                    const existingDate = valuesDates[metric] ? new Date(valuesDates[metric]) : null;
-                    
-                    if (!existingDate || currentDate >= existingDate) {
-                      latestValues[metric] = record[metric];
-                      valuesDates[metric] = sessionData.date;
-                    }
-                  }
-                });
-              });
-            });
-            
-            // Εμφάνιση των τιμών
-            if (latestValues.vo2_max) adminProgressContext += `    • VO2 Max: ${latestValues.vo2_max} ml/kg/min (${new Date(valuesDates.vo2_max).toLocaleDateString('el-GR')})\n`;
-            if (latestValues.mas_kmh) adminProgressContext += `    • MAS: ${latestValues.mas_kmh} km/h (${new Date(valuesDates.mas_kmh).toLocaleDateString('el-GR')})\n`;
-            if (latestValues.push_ups) adminProgressContext += `    • Push-ups: ${latestValues.push_ups} (${new Date(valuesDates.push_ups).toLocaleDateString('el-GR')})\n`;
-            if (latestValues.pull_ups) adminProgressContext += `    • Pull-ups: ${latestValues.pull_ups} (${new Date(valuesDates.pull_ups).toLocaleDateString('el-GR')})\n`;
-            if (latestValues.t2b) adminProgressContext += `    • T2B: ${latestValues.t2b} (${new Date(valuesDates.t2b).toLocaleDateString('el-GR')})\n`;
-            if (latestValues.farmer_kg) adminProgressContext += `    • Farmer Walk: ${latestValues.farmer_kg}kg (${new Date(valuesDates.farmer_kg).toLocaleDateString('el-GR')})\n`;
-            if (latestValues.sprint_watt) adminProgressContext += `    • Sprint: ${latestValues.sprint_watt}W (${new Date(valuesDates.sprint_watt).toLocaleDateString('el-GR')})\n`;
-            if (latestValues.max_hr) adminProgressContext += `    • Max HR: ${latestValues.max_hr} bpm (${new Date(valuesDates.max_hr).toLocaleDateString('el-GR')})\n`;
-            if (latestValues.resting_hr_1min) adminProgressContext += `    • Resting HR: ${latestValues.resting_hr_1min} bpm (${new Date(valuesDates.resting_hr_1min).toLocaleDateString('el-GR')})\n`;
-          }
-          
-          // Jump - Latest values
-          if (athlete.jump.length > 0) {
-            const sorted = athlete.jump.sort((a, b) => 
-              new Date(b.date).getTime() - new Date(a.date).getTime()
-            );
-            const latest = sorted[0].data;
-            const previous = sorted.length > 1 ? sorted[1].data : null;
-            
-            adminProgressContext += '\n  🦘 Άλματα:\n';
-            if (latest.counter_movement_jump) {
-              const change = previous?.counter_movement_jump ?
-                ((latest.counter_movement_jump - previous.counter_movement_jump) / previous.counter_movement_jump * 100).toFixed(1) : null;
-              adminProgressContext += `    • CMJ: ${latest.counter_movement_jump}cm${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
-            }
-            if (latest.broad_jump) {
-              const change = previous?.broad_jump ?
-                ((latest.broad_jump - previous.broad_jump) / previous.broad_jump * 100).toFixed(1) : null;
-              adminProgressContext += `    • Broad Jump: ${latest.broad_jump}cm${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
-            }
-            if (latest.triple_jump_left) adminProgressContext += `    • Triple Jump L: ${latest.triple_jump_left}cm\n`;
-            if (latest.triple_jump_right) adminProgressContext += `    • Triple Jump R: ${latest.triple_jump_right}cm\n`;
-            adminProgressContext += `    • Τελευταία μέτρηση: ${new Date(sorted[0].date).toLocaleDateString('el-GR')}\n`;
-          }
-        });
-      }
-    }
 
     // Συνδυασμός assignments με programs και users
     const enrichedAssignments = Array.isArray(assignments) ? assignments.map((assignment: any) => {
@@ -2053,14 +1807,253 @@ ${calendarDisplay}`;
       offersInfo = `\nΔιαθέσιμα Κουπόνια: ${coupons.length}`;
     }
     
-    if (subscriptionInfo || visitsInfo || videocallsInfo || bookingsInfo || testsInfo || offersInfo) {
-      overviewStatsContext = `\n\n📊 ΓΕΝΙΚΑ ΣΤΑΤΙΣΤΙΚΑ (Επισκόπηση):${subscriptionInfo}${visitsInfo}${videocallsInfo}${bookingsInfo}${testsInfo}${offersInfo}`;
     }
-    } else {
-      console.log(`🔥 Admin overview mode - skipping personal data loading`);
+    
+    // 📊 ADMIN PROGRESS CONTEXT: Φόρτωση δεδομένων προόδου για όλους τους αθλητές
+    // (Εκτός από το personal data block γιατί εκτελείται πάντα σε admin mode)
+    if (isAdmin && !targetUserId) {
+      console.log('📊 Loading progress data for all athletes...');
+      
+      // 1. Anthropometric data για όλους
+      const allAnthropometricResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/anthropometric_test_sessions?select=*,anthropometric_test_data(*),app_users!anthropometric_test_sessions_user_id_fkey(id,name,email)&order=test_date.desc&limit=500`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const allAnthropometric = await allAnthropometricResponse.json();
+      
+      // 2. Endurance test data για όλους
+      const allEnduranceResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/endurance_test_sessions?select=*,endurance_test_data(*,exercises(name)),app_users!endurance_test_sessions_user_id_fkey(id,name,email)&order=test_date.desc&limit=500`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const allEndurance = await allEnduranceResponse.json();
+      
+      // 3. Jump test data για όλους
+      const allJumpResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/jump_test_sessions?select=*,jump_test_data(*),app_users!jump_test_sessions_user_id_fkey(id,name,email)&order=test_date.desc&limit=500`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      
+      console.log('✅ Admin Progress Data:', {
+        anthropometric: Array.isArray(allAnthropometric) ? allAnthropometric.length : 0,
+        endurance: Array.isArray(allEndurance) ? allEndurance.length : 0,
+        jump: Array.isArray(allJump) ? allJump.length : 0
+      });
+      
+      console.log('📊 Sample endurance data structure:', 
+        Array.isArray(allEndurance) && allEndurance.length > 0 
+          ? JSON.stringify(allEndurance[0], null, 2) 
+          : 'No endurance data'
+      );
+      
+      // Δημιουργία context
+      if ((Array.isArray(allAnthropometric) && allAnthropometric.length > 0) ||
+          (Array.isArray(allEndurance) && allEndurance.length > 0) ||
+          (Array.isArray(allJump) && allJump.length > 0)) {
+        
+        adminProgressContext = '\n\n📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ (Athletes Progress Dashboard):\n\n';
+        
+        // Ομαδοποίηση δεδομένων ανά αθλητή
+        const athleteProgressMap = new Map<string, {
+          name: string;
+          email: string;
+          anthropometric: any[];
+          endurance: any[];
+          jump: any[];
+        }>();
+        
+        // Συλλογή anthropometric data
+        if (Array.isArray(allAnthropometric)) {
+          allAnthropometric.forEach((session: any) => {
+            const user = session.app_users;
+            if (!user) return;
+            
+            if (!athleteProgressMap.has(user.id)) {
+              athleteProgressMap.set(user.id, {
+                name: user.name,
+                email: user.email,
+                anthropometric: [],
+                endurance: [],
+                jump: []
+              });
+            }
+            
+            if (session.anthropometric_test_data && Array.isArray(session.anthropometric_test_data)) {
+              athleteProgressMap.get(user.id)!.anthropometric.push({
+                date: session.test_date,
+                data: session.anthropometric_test_data[0]
+              });
+            }
+          });
+        }
+        
+        // Συλλογή endurance data
+        if (Array.isArray(allEndurance)) {
+          allEndurance.forEach((session: any) => {
+            const user = session.app_users;
+            if (!user) return;
+            
+            if (!athleteProgressMap.has(user.id)) {
+              athleteProgressMap.set(user.id, {
+                name: user.name,
+                email: user.email,
+                anthropometric: [],
+                endurance: [],
+                jump: []
+              });
+            }
+            
+            if (session.endurance_test_data && Array.isArray(session.endurance_test_data)) {
+              athleteProgressMap.get(user.id)!.endurance.push({
+                date: session.test_date,
+                data: session.endurance_test_data
+              });
+            }
+          });
+        }
+        
+        // Συλλογή jump data
+        if (Array.isArray(allJump)) {
+          allJump.forEach((session: any) => {
+            const user = session.app_users;
+            if (!user) return;
+            
+            if (!athleteProgressMap.has(user.id)) {
+              athleteProgressMap.set(user.id, {
+                name: user.name,
+                email: user.email,
+                anthropometric: [],
+                endurance: [],
+                jump: []
+              });
+            }
+            
+            if (session.jump_test_data && Array.isArray(session.jump_test_data)) {
+              athleteProgressMap.get(user.id)!.jump.push({
+                date: session.test_date,
+                data: session.jump_test_data[0]
+              });
+            }
+          });
+        }
+        
+        // Δημιουργία formatted output
+        const sortedAthletes = Array.from(athleteProgressMap.entries())
+          .sort((a, b) => a[1].name.localeCompare(b[1].name, 'el'));
+        
+        sortedAthletes.forEach(([userId, athlete]) => {
+          adminProgressContext += `\n👤 ${athlete.name} (${athlete.email}):\n`;
+          
+          // Anthropometric - Latest και change
+          if (athlete.anthropometric.length > 0) {
+            const sorted = athlete.anthropometric.sort((a, b) => 
+              new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+            const latest = sorted[0].data;
+            const previous = sorted.length > 1 ? sorted[1].data : null;
+            
+            adminProgressContext += '\n  📏 Ανθρωπομετρικά:\n';
+            if (latest.weight) {
+              const change = previous?.weight ? 
+                ((latest.weight - previous.weight) / previous.weight * 100).toFixed(1) : null;
+              adminProgressContext += `    • Βάρος: ${latest.weight}kg${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
+            }
+            if (latest.body_fat_percentage) {
+              const change = previous?.body_fat_percentage ?
+                ((latest.body_fat_percentage - previous.body_fat_percentage) / previous.body_fat_percentage * 100).toFixed(1) : null;
+              adminProgressContext += `    • Λίπος: ${latest.body_fat_percentage}%${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
+            }
+            if (latest.muscle_mass_percentage) {
+              const change = previous?.muscle_mass_percentage ?
+                ((latest.muscle_mass_percentage - previous.muscle_mass_percentage) / previous.muscle_mass_percentage * 100).toFixed(1) : null;
+              adminProgressContext += `    • Μυϊκή Μάζα: ${latest.muscle_mass_percentage}%${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
+            }
+            adminProgressContext += `    • Τελευταία μέτρηση: ${new Date(sorted[0].date).toLocaleDateString('el-GR')}\n`;
+          }
+          
+          // Endurance - Latest values από ΟΛΑ τα sessions
+          if (athlete.endurance.length > 0) {
+            adminProgressContext += '\n  💪 Αντοχή:\n';
+            
+            // Συλλογή ΟΛων των πιο πρόσφατων τιμών από διαφορετικά sessions
+            const latestValues: any = {};
+            const valuesDates: any = {};
+            
+            athlete.endurance.forEach((sessionData: any) => {
+              if (!Array.isArray(sessionData.data)) return;
+              
+              sessionData.data.forEach((record: any) => {
+                // Για κάθε metric, κρατάμε την πιο πρόσφατη τιμή
+                const metrics = ['vo2_max', 'mas_kmh', 'push_ups', 'pull_ups', 't2b', 
+                                'farmer_kg', 'sprint_watt', 'max_hr', 'resting_hr_1min'];
+                
+                metrics.forEach(metric => {
+                  if (record[metric] !== null && record[metric] !== undefined) {
+                    const currentDate = new Date(sessionData.date);
+                    const existingDate = valuesDates[metric] ? new Date(valuesDates[metric]) : null;
+                    
+                    if (!existingDate || currentDate >= existingDate) {
+                      latestValues[metric] = record[metric];
+                      valuesDates[metric] = sessionData.date;
+                    }
+                  }
+                });
+              });
+            });
+            
+            // Εμφάνιση των τιμών
+            if (latestValues.vo2_max) adminProgressContext += `    • VO2 Max: ${latestValues.vo2_max} ml/kg/min (${new Date(valuesDates.vo2_max).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.mas_kmh) adminProgressContext += `    • MAS: ${latestValues.mas_kmh} km/h (${new Date(valuesDates.mas_kmh).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.push_ups) adminProgressContext += `    • Push-ups: ${latestValues.push_ups} (${new Date(valuesDates.push_ups).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.pull_ups) adminProgressContext += `    • Pull-ups: ${latestValues.pull_ups} (${new Date(valuesDates.pull_ups).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.t2b) adminProgressContext += `    • T2B: ${latestValues.t2b} (${new Date(valuesDates.t2b).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.farmer_kg) adminProgressContext += `    • Farmer Walk: ${latestValues.farmer_kg}kg (${new Date(valuesDates.farmer_kg).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.sprint_watt) adminProgressContext += `    • Sprint: ${latestValues.sprint_watt}W (${new Date(valuesDates.sprint_watt).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.max_hr) adminProgressContext += `    • Max HR: ${latestValues.max_hr} bpm (${new Date(valuesDates.max_hr).toLocaleDateString('el-GR')})\n`;
+            if (latestValues.resting_hr_1min) adminProgressContext += `    • Resting HR: ${latestValues.resting_hr_1min} bpm (${new Date(valuesDates.resting_hr_1min).toLocaleDateString('el-GR')})\n`;
+          }
+          
+          // Jump - Latest values
+          if (athlete.jump.length > 0) {
+            const sorted = athlete.jump.sort((a, b) => 
+              new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+            const latest = sorted[0].data;
+            const previous = sorted.length > 1 ? sorted[1].data : null;
+            
+            adminProgressContext += '\n  🦘 Άλματα:\n';
+            if (latest.counter_movement_jump) {
+              const change = previous?.counter_movement_jump ?
+                ((latest.counter_movement_jump - previous.counter_movement_jump) / previous.counter_movement_jump * 100).toFixed(1) : null;
+              adminProgressContext += `    • CMJ: ${latest.counter_movement_jump}cm${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
+            }
+            if (latest.broad_jump) {
+              const change = previous?.broad_jump ?
+                ((latest.broad_jump - previous.broad_jump) / previous.broad_jump * 100).toFixed(1) : null;
+              adminProgressContext += `    • Broad Jump: ${latest.broad_jump}cm${change ? ` (${change > 0 ? '+' : ''}${change}%)` : ''}\n`;
+            }
+            if (latest.triple_jump_left) adminProgressContext += `    • Triple Jump L: ${latest.triple_jump_left}cm\n`;
+            if (latest.triple_jump_right) adminProgressContext += `    • Triple Jump R: ${latest.triple_jump_right}cm\n`;
+            adminProgressContext += `    • Τελευταία μέτρηση: ${new Date(sorted[0].date).toLocaleDateString('el-GR')}\n`;
+          }
+        });
+      }
     }
-
-    // Context για διαθέσιμους αθλητές στο Athletes Progress dropdown (μόνο σε Admin Mode)
     if (isAdmin && !targetUserId) {
       try {
         console.log('🔍 Loading available athletes with test data...');
