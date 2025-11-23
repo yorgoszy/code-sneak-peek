@@ -1830,6 +1830,7 @@ ${calendarDisplay}`;
         
         // Για κάθε χρήστη, φόρτωσε τα δεδομένα του
         for (const user of allUsers) {
+          console.log(`🔍 Loading data for user: ${user.name} (${user.email}, ID: ${user.id})`);
           adminProgressContext += `\n👤 ${user.name} (${user.email}):\n`;
           
           // Αντοχή
@@ -1843,6 +1844,16 @@ ${calendarDisplay}`;
             }
           );
           const enduranceData = await enduranceResponse.json();
+          
+          console.log(`📊 Endurance data for ${user.name}:`, {
+            count: Array.isArray(enduranceData) ? enduranceData.length : 0,
+            data: Array.isArray(enduranceData) ? enduranceData.map((t: any) => ({
+              vo2_max: t.vo2_max,
+              mas_kmh: t.mas_kmh,
+              push_ups: t.push_ups,
+              date: t.endurance_test_sessions?.[0]?.test_date
+            })) : 'Not an array'
+          });
           
           if (Array.isArray(enduranceData) && enduranceData.length > 0) {
             adminProgressContext += '  💪 Τεστ Αντοχής:\n';
