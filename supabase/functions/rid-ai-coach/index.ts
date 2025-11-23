@@ -423,6 +423,7 @@ ${calendarDisplay}`;
     let todayProgramContext = '';
     let allDaysContext = '';
     let overviewStatsContext = '';
+    let adminProgressContext = '';
     
     if (!(isAdmin && !targetUserId)) {
       console.log(`📊 Loading personal data for userId: ${effectiveUserId}`);
@@ -488,7 +489,6 @@ ${calendarDisplay}`;
     }
     
     // 📊 ADMIN PROGRESS CONTEXT: Φόρτωση δεδομένων προόδου για όλους τους αθλητές
-    let adminProgressContext = '';
     if (isAdmin && !targetUserId) {
       console.log('📊 Loading progress data for all athletes...');
       
