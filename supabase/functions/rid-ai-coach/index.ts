@@ -1856,21 +1856,37 @@ ${calendarDisplay}`;
         jump: Array.isArray(allJump) ? allJump.length : 0
       });
       
+      console.log('📊 Sample anthropometric data structure:', 
+        Array.isArray(allAnthropometric) && allAnthropometric.length > 0 
+          ? {
+              count: allAnthropometric.length,
+              firstUser: allAnthropometric[0]?.app_users,
+              firstData: allAnthropometric[0]?.anthropometric_test_data?.[0],
+              sample: JSON.stringify(allAnthropometric[0], null, 2).substring(0, 500)
+            }
+          : 'No anthropometric data'
+      );
+      
       console.log('📊 Sample endurance data structure:', 
         Array.isArray(allEndurance) && allEndurance.length > 0 
-          ? JSON.stringify(allEndurance[0], null, 2) 
+          ? {
+              count: allEndurance.length,
+              firstUser: allEndurance[0]?.app_users,
+              firstData: allEndurance[0]?.endurance_test_data?.[0],
+              sample: JSON.stringify(allEndurance[0], null, 2).substring(0, 500)
+            }
           : 'No endurance data'
       );
       
-      console.log('📊 Sample endurance test_data check:', 
-        Array.isArray(allEndurance) && allEndurance.length > 0 
+      console.log('📊 Sample jump data structure:', 
+        Array.isArray(allJump) && allJump.length > 0 
           ? {
-              hasData: !!allEndurance[0]?.endurance_test_data,
-              isArray: Array.isArray(allEndurance[0]?.endurance_test_data),
-              length: allEndurance[0]?.endurance_test_data?.length || 0,
-              firstRecord: allEndurance[0]?.endurance_test_data?.[0]
+              count: allJump.length,
+              firstUser: allJump[0]?.app_users,
+              firstData: allJump[0]?.jump_test_data?.[0],
+              sample: JSON.stringify(allJump[0], null, 2).substring(0, 500)
             }
-          : 'No endurance data'
+          : 'No jump data'
       );
       
       // Δημιουργία Map για athletes (έξω από το if για να είναι accessible)
@@ -2074,7 +2090,15 @@ ${calendarDisplay}`;
         totalLength: adminProgressContext.length,
         isEmpty: adminProgressContext.length === 0,
         athletesFound: athleteProgressMap.size,
-        preview: adminProgressContext.substring(0, 1000)
+        athletesList: Array.from(athleteProgressMap.entries()).map(([id, data]) => ({
+          id,
+          name: data.name,
+          email: data.email,
+          anthropometricCount: data.anthropometric.length,
+          enduranceCount: data.endurance.length,
+          jumpCount: data.jump.length
+        })),
+        preview: adminProgressContext.substring(0, 1500)
       });
     }
     if (isAdmin && !targetUserId) {
