@@ -1862,6 +1862,17 @@ ${calendarDisplay}`;
           : 'No endurance data'
       );
       
+      console.log('📊 Sample endurance test_data check:', 
+        Array.isArray(allEndurance) && allEndurance.length > 0 
+          ? {
+              hasData: !!allEndurance[0]?.endurance_test_data,
+              isArray: Array.isArray(allEndurance[0]?.endurance_test_data),
+              length: allEndurance[0]?.endurance_test_data?.length || 0,
+              firstRecord: allEndurance[0]?.endurance_test_data?.[0]
+            }
+          : 'No endurance data'
+      );
+      
       // Δημιουργία context
       if ((Array.isArray(allAnthropometric) && allAnthropometric.length > 0) ||
           (Array.isArray(allEndurance) && allEndurance.length > 0) ||
@@ -1919,7 +1930,7 @@ ${calendarDisplay}`;
               });
             }
             
-            if (session.endurance_test_data && Array.isArray(session.endurance_test_data)) {
+            if (session.endurance_test_data && Array.isArray(session.endurance_test_data) && session.endurance_test_data.length > 0) {
               athleteProgressMap.get(user.id)!.endurance.push({
                 date: session.test_date,
                 data: session.endurance_test_data
@@ -2056,6 +2067,14 @@ ${calendarDisplay}`;
           }
         });
       }
+      
+      // Log για το τελικό adminProgressContext
+      console.log('📋 Admin Progress Context Stats:', {
+        totalLength: adminProgressContext.length,
+        isEmpty: adminProgressContext.length === 0,
+        athletesFound: athleteProgressMap.size,
+        preview: adminProgressContext.substring(0, 1000)
+      });
     }
     if (isAdmin && !targetUserId) {
       try {
