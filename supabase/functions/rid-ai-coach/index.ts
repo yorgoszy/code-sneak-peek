@@ -1848,6 +1848,7 @@ ${calendarDisplay}`;
           }
         }
       );
+      const allJump = await allJumpResponse.json();
       
       console.log('✅ Admin Progress Data:', {
         anthropometric: Array.isArray(allAnthropometric) ? allAnthropometric.length : 0,
