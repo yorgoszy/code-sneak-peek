@@ -1873,6 +1873,15 @@ ${calendarDisplay}`;
           : 'No endurance data'
       );
       
+      // Δημιουργία Map για athletes (έξω από το if για να είναι accessible)
+      const athleteProgressMap = new Map<string, {
+        name: string;
+        email: string;
+        anthropometric: any[];
+        endurance: any[];
+        jump: any[];
+      }>();
+      
       // Δημιουργία context
       if ((Array.isArray(allAnthropometric) && allAnthropometric.length > 0) ||
           (Array.isArray(allEndurance) && allEndurance.length > 0) ||
@@ -1880,15 +1889,7 @@ ${calendarDisplay}`;
         
         adminProgressContext = '\n\n📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ (Athletes Progress Dashboard):\n\n';
         
-        // Ομαδοποίηση δεδομένων ανά αθλητή
-        const athleteProgressMap = new Map<string, {
-          name: string;
-          email: string;
-          anthropometric: any[];
-          endurance: any[];
-          jump: any[];
-        }>();
-        
+        // Συλλογή anthropometric data
         // Συλλογή anthropometric data
         if (Array.isArray(allAnthropometric)) {
           allAnthropometric.forEach((session: any) => {
