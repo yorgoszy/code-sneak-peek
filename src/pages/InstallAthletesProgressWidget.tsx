@@ -68,8 +68,8 @@ export default function InstallAthletesProgressWidget() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <CardHeader className="text-center pt-12">
-          <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-[#00ffba]/10 flex items-center justify-center">
-            <TrendingUp className="w-10 h-10 text-[#00ffba]" />
+          <div className="mx-auto mb-4 w-32 h-32 flex items-center justify-center">
+            <img src="/pwa-logo.jpg" alt="HYPERKIDS" className="w-full h-full object-contain" />
           </div>
           <CardTitle className="text-2xl">Πρόοδος Αθλητών Widget</CardTitle>
           <CardDescription>

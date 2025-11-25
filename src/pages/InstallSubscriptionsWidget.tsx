@@ -12,22 +12,22 @@ export default function InstallSubscriptionsWidget() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Button
-        onClick={() => navigate('/')}
-        variant="ghost"
-        className="absolute top-4 left-4 rounded-none"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Πίσω
-      </Button>
-      <Card className="w-full max-w-md rounded-none">
-        <CardHeader>
-          <div className="flex items-center gap-2 mb-2">
-            <Download className="w-6 h-6 text-[#00ffba]" />
-            <CardTitle>Widget Συνδρομών</CardTitle>
+      <Card className="w-full max-w-md rounded-none relative">
+        <Button
+          onClick={() => navigate('/dashboard')}
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 left-4 rounded-none"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <CardHeader className="text-center pt-12">
+          <div className="mx-auto mb-4 w-32 h-32 flex items-center justify-center">
+            <img src="/pwa-logo.jpg" alt="HYPERKIDS" className="w-full h-full object-contain" />
           </div>
+          <CardTitle className="text-2xl">Συνδρομές Widget</CardTitle>
           <CardDescription>
-            Εγκατάσταση του widget διαχείρισης συνδρομών και MyData
+            Εγκατάστησε το widget διαχείρισης συνδρομών και MyData
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
