@@ -25,7 +25,8 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     handleDateSelect,
     handleClearAllDates,
     isDateSelected,
-    isDateDisabled
+    isDateDisabled,
+    getDayInfoForDate
   } = useCalendarLogic(program, totalDays, onTrainingDatesChange);
 
   if (totalDays === 0) {
@@ -44,6 +45,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
             onClearAllDates={handleClearAllDates}
             isDateSelected={isDateSelected}
             isDateDisabled={isDateDisabled}
+            getDayInfoForDate={getDayInfoForDate}
           />
         </div>
         

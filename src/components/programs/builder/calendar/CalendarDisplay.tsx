@@ -15,6 +15,7 @@ interface CalendarDisplayProps {
   onClearAllDates: () => void;
   isDateSelected: (date: Date) => boolean;
   isDateDisabled: (date: Date) => boolean;
+  getDayInfoForDate: (date: Date) => { is_test_day: boolean; test_types: string[]; is_competition_day: boolean } | null;
 }
 
 export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
@@ -24,7 +25,8 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   onDateSelect,
   onClearAllDates,
   isDateSelected,
-  isDateDisabled
+  isDateDisabled,
+  getDayInfoForDate
 }) => {
   const calendarRef = useRef<HTMLDivElement>(null);
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
@@ -111,12 +113,28 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
               month={currentMonth}
               onMonthChange={setCurrentMonth}
               modifiers={{
-                selected: (date) => isDateSelected(date)
+                selected: (date) => isDateSelected(date),
+                testDay: (date) => {
+                  const dayInfo = getDayInfoForDate(date);
+                  return dayInfo?.is_test_day || false;
+                },
+                competitionDay: (date) => {
+                  const dayInfo = getDayInfoForDate(date);
+                  return dayInfo?.is_competition_day || false;
+                }
               }}
               modifiersStyles={{
                 selected: {
                   backgroundColor: '#00ffba',
                   color: '#000000'
+                },
+                testDay: {
+                  backgroundColor: '#9333ea',
+                  color: '#ffffff'
+                },
+                competitionDay: {
+                  backgroundColor: '#cb8954',
+                  color: '#ffffff'
                 }
               }}
             />
