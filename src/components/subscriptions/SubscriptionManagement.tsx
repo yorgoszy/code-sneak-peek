@@ -103,8 +103,7 @@ export const SubscriptionManagement: React.FC = () => {
       // Φόρτωση τύπων συνδρομών
       const { data: types, error: typesError } = await supabase
         .from('subscription_types')
-        .select('*')
-        .order('price');
+        .select('*');
 
       if (typesError) {
         console.error('Error loading subscription types:', typesError);
@@ -117,7 +116,39 @@ export const SubscriptionManagement: React.FC = () => {
         subscription_mode: (type.subscription_mode || 'time_based') as 'time_based' | 'visit_based'
       })) as SubscriptionType[];
       
-      setSubscriptionTypes(typedSubscriptionTypes);
+      // Προτεραιότητα ταξινόμησης
+      const priorityOrder = [
+        'hyperkids',
+        'hypergym',
+        'hyperathletes',
+        'hypergym 25%',
+        '12 hypergym',
+        '3 hyperathletes',
+        '12 hyperathletes'
+      ];
+      
+      // Ταξινόμηση με custom σειρά
+      const sortedTypes = typedSubscriptionTypes.sort((a, b) => {
+        const aIndex = priorityOrder.findIndex(name => 
+          a.name.toLowerCase().includes(name.toLowerCase())
+        );
+        const bIndex = priorityOrder.findIndex(name => 
+          b.name.toLowerCase().includes(name.toLowerCase())
+        );
+        
+        // Αν και τα δύο είναι στη λίστα προτεραιότητας
+        if (aIndex !== -1 && bIndex !== -1) {
+          return aIndex - bIndex;
+        }
+        // Αν μόνο το a είναι στη λίστα προτεραιότητας
+        if (aIndex !== -1) return -1;
+        // Αν μόνο το b είναι στη λίστα προτεραιότητας
+        if (bIndex !== -1) return 1;
+        // Αν κανένα δεν είναι στη λίστα, ταξινόμηση με τιμή
+        return a.price - b.price;
+      });
+      
+      setSubscriptionTypes(sortedTypes);
 
       // Ενημέρωση ληγμένων συνδρομών πρώτα
       await supabase.rpc('check_and_update_expired_subscriptions');
