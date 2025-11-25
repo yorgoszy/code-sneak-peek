@@ -182,6 +182,8 @@ serve(async (req) => {
     }
 
     console.log("🔗 Reset link generated successfully");
+    console.log("🔗 Action link:", linkData.properties.action_link);
+    console.log("🔗 Redirect URL:", redirect);
 
     // Initialize Resend
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
