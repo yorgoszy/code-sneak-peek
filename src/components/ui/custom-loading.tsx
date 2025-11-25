@@ -20,7 +20,7 @@ export const CustomLoading: React.FC<CustomLoadingProps> = ({
     <div className={`flex items-center justify-center ${className}`}>
       <div className={`${sizeClasses[size]} animate-pulse`}>
         <img 
-          src="/lovable-uploads/d30ec1b8-7fe4-430f-9382-61fea07c37f2.png" 
+          src="/pwa-logo.jpg" 
           alt="Loading..." 
           className="w-full h-full object-contain"
         />
