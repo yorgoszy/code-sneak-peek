@@ -57,7 +57,10 @@ export const ProgramCalendarDialog: React.FC<ProgramCalendarDialogProps> = ({
             program_days (
               id,
               name,
-              day_number
+              day_number,
+              is_test_day,
+              test_types,
+              is_competition_day
             )
           )
         `)
@@ -86,6 +89,9 @@ export const ProgramCalendarDialog: React.FC<ProgramCalendarDialogProps> = ({
           id: day.id,
           name: day.name,
           day_number: day.day_number,
+          is_test_day: day.is_test_day,
+          test_types: day.test_types,
+          is_competition_day: day.is_competition_day,
           program_blocks: []
         })) || []
       })) || [];

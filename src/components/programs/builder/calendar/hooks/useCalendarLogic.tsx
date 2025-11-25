@@ -154,6 +154,35 @@ export const useCalendarLogic = (
 
   const weekProgress = useMemo(() => getWeekProgress(), [selectedDatesAsStrings, weekStructure]);
 
+  // Συνάρτηση για να βρούμε τι τύπος ημέρας είναι (test/competition) μια επιλεγμένη ημερομηνία
+  const getDayInfoForDate = (date: Date) => {
+    const dateString = formatDateForStorage(date);
+    const dateIndex = selectedDatesAsStrings.indexOf(dateString);
+    
+    if (dateIndex === -1) return null;
+    
+    // Βρίσκουμε σε ποια εβδομάδα και ποια ημέρα αντιστοιχεί
+    let totalDaysAssigned = 0;
+    for (const week of program.weeks || []) {
+      const daysInWeek = week.program_days?.length || 0;
+      
+      if (dateIndex >= totalDaysAssigned && dateIndex < totalDaysAssigned + daysInWeek) {
+        const dayIndexInWeek = dateIndex - totalDaysAssigned;
+        const day = week.program_days?.[dayIndexInWeek];
+        
+        return {
+          is_test_day: day?.is_test_day || false,
+          test_types: day?.test_types || [],
+          is_competition_day: day?.is_competition_day || false
+        };
+      }
+      
+      totalDaysAssigned += daysInWeek;
+    }
+    
+    return null;
+  };
+
   return {
     weekStructure,
     selectedDatesAsStrings,
@@ -162,6 +191,7 @@ export const useCalendarLogic = (
     handleDateSelect,
     handleClearAllDates,
     isDateSelected,
-    isDateDisabled
+    isDateDisabled,
+    getDayInfoForDate
   };
 };

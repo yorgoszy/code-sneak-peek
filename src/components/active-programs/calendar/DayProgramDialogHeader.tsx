@@ -3,9 +3,17 @@ import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { Play, CheckCircle, X } from "lucide-react";
+import { Play, CheckCircle, X, FlaskConical, Trophy } from "lucide-react";
 import { WorkoutTimer } from "./WorkoutTimer";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+
+const TEST_TYPE_LABELS: Record<string, string> = {
+  anthropometric: 'Ανθρωπομετρικά',
+  functional: 'Λειτουργικά',
+  endurance: 'Αντοχή',
+  jump: 'Άλματα',
+  strength: 'Δύναμη'
+};
 
 interface DayProgramDialogHeaderProps {
   selectedDate: Date;
@@ -34,17 +42,70 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
 }) => {
   const isCompleted = workoutStatus === 'completed';
 
+  // Βρίσκουμε το day program για την επιλεγμένη ημερομηνία
+  const getDayProgram = () => {
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    const trainingDates = program.training_dates || [];
+    const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
+    
+    if (dateIndex === -1) return null;
+
+    const weeks = program.programs?.program_weeks || [];
+    const sortedWeeks = [...weeks].sort((a, b) => (a.week_number || 0) - (b.week_number || 0));
+    
+    let cumulativeDays = 0;
+    for (const week of sortedWeeks) {
+      const sortedDays = [...(week.program_days || [])].sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
+      const daysInWeek = sortedDays.length;
+      
+      if (dateIndex < cumulativeDays + daysInWeek) {
+        const dayIndexInWeek = dateIndex - cumulativeDays;
+        return sortedDays[dayIndexInWeek];
+      }
+      
+      cumulativeDays += daysInWeek;
+    }
+
+    return null;
+  };
+
+  const dayProgram = getDayProgram();
+  const isTestDay = dayProgram?.is_test_day || false;
+  const isCompetitionDay = dayProgram?.is_competition_day || false;
+  const testTypes = dayProgram?.test_types || [];
+
   return (
     <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 p-2">
       <div className="flex items-center justify-between gap-4">
         {/* Όνομα χρήστη και ημερομηνία */}
         <div className="text-left min-w-0 flex-1">
-          <h2 className="text-sm font-semibold text-gray-900 truncate">
-            {program.app_users?.name || 'Άγνωστος Αθλητής'}
-          </h2>
-          <p className="text-xs text-gray-600">
-            {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
-          </p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-gray-900 truncate">
+              {program.app_users?.name || 'Άγνωστος Αθλητής'}
+            </h2>
+            {isTestDay && (
+              <Badge className="bg-purple-100 text-purple-800 border-purple-200 rounded-none text-xs px-1.5 py-0">
+                <FlaskConical className="w-3 h-3 mr-1" />
+                Τεστ
+              </Badge>
+            )}
+            {isCompetitionDay && (
+              <Badge className="bg-amber-100 text-amber-800 border-amber-200 rounded-none text-xs px-1.5 py-0">
+                <Trophy className="w-3 h-3 mr-1" />
+                Αγώνας
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-gray-600">
+              {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
+            </p>
+            {isTestDay && testTypes.length > 0 && (
+              <p className="text-xs text-purple-600">
+                ({testTypes.map(type => TEST_TYPE_LABELS[type] || type).join(', ')})
+              </p>
+            )}
+          </div>
         </div>
         
         {/* Timer */}
