@@ -32,7 +32,7 @@ interface UserMagicBox {
     subscription_types?: {
       name: string;
       duration_months: number;
-    };
+    } | null;
   };
 }
 
@@ -124,7 +124,7 @@ export const MagicBoxGameV2: React.FC = () => {
           campaign_prizes(
             prize_type,
             subscription_type_id,
-            subscription_types(
+            subscription_types!campaign_prizes_subscription_type_id_fkey(
               name,
               duration_months
             )
