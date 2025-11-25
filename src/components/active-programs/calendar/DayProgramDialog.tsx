@@ -97,7 +97,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     return undefined;
   };
 
-  // ΚΥΡΙΑ ΔΙΟΡΘΩΣΗ: Απλή λογική εύρεσης προγράμματος ημέρας
+  // ΔΙΟΡΘΩΣΗ: Σωστή λογική εύρεσης προγράμματος ημέρας που υποστηρίζει πολλαπλές εβδομάδες
   const getDayProgram = () => {
     const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
     const trainingDates = program.training_dates || [];
@@ -106,7 +106,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     console.log('🔍 DayProgram search:', {
       selectedDateStr,
       dateIndex,
-      trainingDatesLength: trainingDates.length
+      trainingDatesLength: trainingDates.length,
+      programName: program.programs?.name
     });
     
     if (dateIndex === -1) {
@@ -120,30 +121,37 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
       return null;
     }
 
-    // Βρίσκουμε τη συνολική ημέρα στο πρόγραμμα
-    let dayProgram = null;
-    let currentDayCount = 0;
-
-    for (const week of weeks) {
-      const daysInWeek = week.program_days?.length || 0;
+    // Υπολογίζουμε σε ποια εβδομάδα και ποια ημέρα αντιστοιχεί το dateIndex
+    const sortedWeeks = [...weeks].sort((a, b) => (a.week_number || 0) - (b.week_number || 0));
+    
+    let cumulativeDays = 0;
+    for (const week of sortedWeeks) {
+      const sortedDays = [...(week.program_days || [])].sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
+      const daysInWeek = sortedDays.length;
       
-      if (dateIndex >= currentDayCount && dateIndex < currentDayCount + daysInWeek) {
-        const dayIndexInWeek = dateIndex - currentDayCount;
-        dayProgram = week.program_days?.[dayIndexInWeek] || null;
+      // Αν το dateIndex βρίσκεται σε αυτή την εβδομάδα
+      if (dateIndex < cumulativeDays + daysInWeek) {
+        const dayIndexInWeek = dateIndex - cumulativeDays;
+        const dayProgram = sortedDays[dayIndexInWeek];
         
         console.log('✅ Found program:', {
           weekName: week.name,
+          weekNumber: week.week_number,
           dayName: dayProgram?.name,
+          dayNumber: dayProgram?.day_number,
           dayIndexInWeek,
-          currentDayCount
+          cumulativeDays,
+          blocksCount: dayProgram?.program_blocks?.length
         });
-        break;
+        
+        return dayProgram;
       }
       
-      currentDayCount += daysInWeek;
+      cumulativeDays += daysInWeek;
     }
 
-    return dayProgram;
+    console.log('❌ Day program not found after iterating all weeks');
+    return null;
   };
 
   const dayProgram = getDayProgram();
