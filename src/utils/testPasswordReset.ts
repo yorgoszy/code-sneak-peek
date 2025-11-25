@@ -8,7 +8,7 @@ export const testPasswordReset = async (email: string) => {
     const { data, error } = await supabase.functions.invoke('send-password-reset', {
       body: {
         email: email,
-        redirectTo: `${window.location.origin}/auth/reset-password`
+        redirectTo: 'https://www.hyperkids.gr/auth/reset-password'
       }
     });
 

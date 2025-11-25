@@ -131,7 +131,7 @@ serve(async (req) => {
     console.log("✅ User found, generating reset link...");
 
     // Generate password reset link using Supabase with fallbacks
-    const redirect = redirectTo || `${new URL(req.url).origin}/auth/reset-password`;
+    const redirect = redirectTo || 'https://www.hyperkids.gr/auth/reset-password';
     let linkData: any = null;
     let genError: any = null;
 
