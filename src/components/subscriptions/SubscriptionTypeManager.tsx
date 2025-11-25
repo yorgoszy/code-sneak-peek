@@ -564,25 +564,6 @@ export const SubscriptionTypeManager: React.FC = () => {
     try {
       console.log('🗑️ Deleting subscription type:', typeToDelete.name);
       
-      // Έλεγχος αν υπάρχουν συνδρομές με αυτόν τον τύπο
-      const { data: existingSubscriptions, error: checkError } = await supabase
-        .from('user_subscriptions')
-        .select('id', { count: 'exact', head: true })
-        .eq('subscription_type_id', typeToDelete.id);
-
-      if (checkError) {
-        console.error('❌ Error checking existing subscriptions:', checkError);
-        throw checkError;
-      }
-
-      // Αν υπάρχουν συνδρομές, μην επιτρέπεις τη διαγραφή
-      if (existingSubscriptions && (existingSubscriptions as any).count > 0) {
-        toast.error('Δεν μπορείς να διαγράψεις αυτόν τον τύπο συνδρομής επειδή χρησιμοποιείται σε υπάρχουσες συνδρομές. Αντί να τον διαγράψεις, μπορείς να τον απενεργοποιήσεις.');
-        setDeleteConfirmOpen(false);
-        setTypeToDelete(null);
-        return;
-      }
-      
       const { error } = await supabase
         .from('subscription_types')
         .delete()
@@ -601,14 +582,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       await loadSubscriptionTypes();
     } catch (error) {
       console.error('💥 Error deleting subscription type:', error);
-      const errorMessage = (error as any).message || String(error);
-      
-      // Βελτιωμένο μήνυμα για foreign key constraint
-      if (errorMessage.includes('foreign key constraint') || errorMessage.includes('violates')) {
-        toast.error('Δεν μπορείς να διαγράψεις αυτόν τον τύπο συνδρομής επειδή χρησιμοποιείται σε υπάρχουσες συνδρομές. Απενεργοποίησέ τον αντί να τον διαγράψεις.');
-      } else {
-        toast.error('Σφάλμα κατά τη διαγραφή: ' + errorMessage);
-      }
+      toast.error('Σφάλμα κατά τη διαγραφή: ' + (error as Error).message);
     }
   };
 

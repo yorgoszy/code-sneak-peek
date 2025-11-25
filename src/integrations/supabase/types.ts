@@ -864,6 +864,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "campaign_prizes_subscription_type_id_fkey"
+            columns: ["subscription_type_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_types"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_campaign_prizes_subscription_types"
             columns: ["subscription_type_id"]
             isOneToOne: false
@@ -3929,7 +3936,7 @@ export type Database = {
           payment_id: string | null
           start_date: string
           status: string
-          subscription_type_id: string
+          subscription_type_id: string | null
           updated_at: string
           user_id: string
         }
@@ -3947,7 +3954,7 @@ export type Database = {
           payment_id?: string | null
           start_date?: string
           status?: string
-          subscription_type_id: string
+          subscription_type_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -3965,7 +3972,7 @@ export type Database = {
           payment_id?: string | null
           start_date?: string
           status?: string
-          subscription_type_id?: string
+          subscription_type_id?: string | null
           updated_at?: string
           user_id?: string
         }
