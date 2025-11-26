@@ -140,25 +140,6 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
             </div>
           )}
           
-          {latestData.body_fat_percentage && (
-            <div className="space-y-0.5">
-              <div className="text-[10px] text-gray-500">{t('progress.bodyFat')}</div>
-              <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
-                {latestData.body_fat_percentage}<span className="text-[9px] text-gray-400 ml-0.5">%</span>
-                {getPreviousValue('body_fat_percentage') && calculatePercentageChange(latestData.body_fat_percentage, getPreviousValue('body_fat_percentage')!) !== null && (
-                  <span className={`text-[9px] font-semibold ${
-                    calculatePercentageChange(latestData.body_fat_percentage, getPreviousValue('body_fat_percentage')!)! > 0 
-                      ? 'text-red-600' 
-                      : 'text-green-700'
-                  }`}>
-                    {calculatePercentageChange(latestData.body_fat_percentage, getPreviousValue('body_fat_percentage')!)! > 0 ? '+' : ''}
-                    {calculatePercentageChange(latestData.body_fat_percentage, getPreviousValue('body_fat_percentage')!)}%
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-          
           {latestData.muscle_mass_percentage && (
             <div className="space-y-0.5">
               <div className="text-[10px] text-gray-500">{t('progress.muscleMass')}</div>
@@ -172,6 +153,25 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
                   }`}>
                     {calculatePercentageChange(latestData.muscle_mass_percentage, getPreviousValue('muscle_mass_percentage')!)! > 0 ? '+' : ''}
                     {calculatePercentageChange(latestData.muscle_mass_percentage, getPreviousValue('muscle_mass_percentage')!)}%
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {latestData.body_fat_percentage && (
+            <div className="space-y-0.5">
+              <div className="text-[10px] text-gray-500">{t('progress.bodyFat')}</div>
+              <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                {latestData.body_fat_percentage}<span className="text-[9px] text-gray-400 ml-0.5">%</span>
+                {getPreviousValue('body_fat_percentage') && calculatePercentageChange(latestData.body_fat_percentage, getPreviousValue('body_fat_percentage')!) !== null && (
+                  <span className={`text-[9px] font-semibold ${
+                    calculatePercentageChange(latestData.body_fat_percentage, getPreviousValue('body_fat_percentage')!)! > 0 
+                      ? 'text-red-600' 
+                      : 'text-green-700'
+                  }`}>
+                    {calculatePercentageChange(latestData.body_fat_percentage, getPreviousValue('body_fat_percentage')!)! > 0 ? '+' : ''}
+                    {calculatePercentageChange(latestData.body_fat_percentage, getPreviousValue('body_fat_percentage')!)}%
                   </span>
                 )}
               </div>
