@@ -268,6 +268,12 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
                       <p className="text-[10px] sm:text-sm font-medium">{data.weight} kg</p>
                     </div>
                   )}
+                  {data.muscle_mass_percentage && (
+                    <div className="space-y-0">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground">Μυϊκή Μάζα</p>
+                      <p className="text-[10px] sm:text-sm font-medium">{data.muscle_mass_percentage}%</p>
+                    </div>
+                  )}
                   {data.body_fat_percentage && (
                     <div className="space-y-0">
                       <p className="text-[9px] sm:text-xs text-muted-foreground">Λίπος</p>
@@ -278,12 +284,6 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
                     <div className="space-y-0">
                       <p className="text-[9px] sm:text-xs text-muted-foreground">Σπλαχνικό Λίπος</p>
                       <p className="text-[10px] sm:text-sm font-medium">{data.visceral_fat_percentage}%</p>
-                    </div>
-                  )}
-                  {data.muscle_mass_percentage && (
-                    <div className="space-y-0">
-                      <p className="text-[9px] sm:text-xs text-muted-foreground">Μυϊκή Μάζα</p>
-                      <p className="text-[10px] sm:text-sm font-medium">{data.muscle_mass_percentage}%</p>
                     </div>
                   )}
                   {data.bone_density && (
