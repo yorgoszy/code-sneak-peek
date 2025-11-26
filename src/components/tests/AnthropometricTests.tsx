@@ -6,7 +6,8 @@ const anthropometricFields = [
   { key: 'height', label: 'Ύψος', type: 'number', step: '0.1', placeholder: 'cm' },
   { key: 'weight', label: 'Βάρος', type: 'number', step: '0.1', placeholder: 'kg' },
   { key: 'bodyFatPercentage', label: 'Ποσοστό Λίπους', type: 'number', step: '0.1', placeholder: '%' },
-  { key: 'muscleMassPercentage', label: 'Ποσοστό Μυϊκής Μάζας', type: 'number', step: '0.1', placeholder: '%' },
+  { key: 'muscleMassPercentage', label: 'Μυϊκή Μάζα', type: 'number', step: '0.1', placeholder: 'kg' },
+  { key: 'boneDensity', label: 'Οστική Πυκν.', type: 'number', step: '0.1', placeholder: 'kg' },
   { key: 'waistCircumference', label: 'Περίμετρος Μέσης', type: 'number', step: '0.1', placeholder: 'cm' },
   { key: 'hipCircumference', label: 'Περίμετρος Γοφών', type: 'number', step: '0.1', placeholder: 'cm' },
   { key: 'chestCircumference', label: 'Περίμετρος Στήθους', type: 'number', step: '0.1', placeholder: 'cm' },
@@ -19,6 +20,7 @@ interface AnthropometricData {
   weight: string;
   bodyFatPercentage: string;
   muscleMassPercentage: string;
+  boneDensity: string;
   waistCircumference: string;
   hipCircumference: string;
   chestCircumference: string;
