@@ -45,7 +45,8 @@ serve(async (req) => {
       const categoryLabels: Record<string, string> = {
         exercises: 'ΑΣΚΗΣΕΙΣ & ΤΕΧΝΙΚΗ',
         nutrition: 'ΔΙΑΤΡΟΦΗ',
-        philosophy: 'ΦΙΛΟΣΟΦΙΑ & ΠΡΟΣΕΓΓΙΣΗ'
+        philosophy: 'ΦΙΛΟΣΟΦΙΑ & ΠΡΟΣΕΓΓΙΣΗ',
+        other: 'ΛΟΙΠΑ'
       };
 
       const grouped = knowledge.reduce((acc, item) => {
