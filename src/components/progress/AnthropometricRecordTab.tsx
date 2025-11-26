@@ -213,11 +213,11 @@ export const AnthropometricRecordTab = ({ users, onRecordSaved }: Anthropometric
                   </div>
 
                   <div className="flex-1">
-                    <Label className="text-[10px]">Μυϊκή Μάζα (kg)</Label>
+                    <Label className="text-[10px]">Μυϊκή Μάζα (%)</Label>
                     <Input
                       type="number"
                       step="0.1"
-                      placeholder="kg"
+                      placeholder="%"
                       value={form.muscleMassPercentage}
                       onChange={(e) => updateForm(form.id, { muscleMassPercentage: e.target.value })}
                       className="rounded-none no-spinners h-5 text-[10px] px-1.5 py-0.5"
