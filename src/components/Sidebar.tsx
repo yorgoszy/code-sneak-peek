@@ -538,6 +538,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: Brain,
+      label: "AI Knowledge Base",
+      path: "/dashboard/ai-knowledge",
+      badge: null
+    },
+    {
       icon: TrendingUp,
       label: "Analytics",
       path: "/dashboard/analytics",

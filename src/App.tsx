@@ -51,6 +51,7 @@ import InstallSubscriptionsWidget from "@/pages/InstallSubscriptionsWidget";
 import AthletesProgressWidget from "@/pages/AthletesProgressWidget";
 import InstallAthletesProgressWidget from "@/pages/InstallAthletesProgressWidget";
 import RidAiCoachPage from "@/pages/RidAiCoachPage";
+import { AdminAIKnowledgeWithSidebar } from "@/pages/Dashboard/AdminAIKnowledgeWithSidebar";
 
 const queryClient = new QueryClient();
 
@@ -104,6 +105,7 @@ function App() {
                 <Route path="/dashboard/stretches" element={<ProtectedRoute requireAdmin><StretchesManagementWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/one-rm" element={<ProtectedRoute requireAdmin><OneRMManagementWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/rid-ai-coach" element={<ProtectedRoute><RidAiCoachPage /></ProtectedRoute>} />
+                <Route path="/dashboard/ai-knowledge" element={<ProtectedRoute requireAdmin><AdminAIKnowledgeWithSidebar /></ProtectedRoute>} />
                 <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
                 
                 {/* Protected user routes */}
