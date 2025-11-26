@@ -18,11 +18,12 @@ interface KnowledgeEntry {
   created_at: string;
 }
 
-const CATEGORIES = ['exercises', 'nutrition', 'philosophy'] as const;
+const CATEGORIES = ['exercises', 'nutrition', 'philosophy', 'other'] as const;
 const CATEGORY_LABELS = {
   exercises: 'Ασκήσεις',
   nutrition: 'Διατροφή',
-  philosophy: 'Φιλοσοφία'
+  philosophy: 'Φιλοσοφία',
+  other: 'Άλλα'
 };
 
 export const AdminAIKnowledge = () => {
@@ -222,7 +223,7 @@ export const AdminAIKnowledge = () => {
 
       {/* Tabs για κατηγορίες */}
       <Tabs defaultValue="exercises" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 rounded-none">
+        <TabsList className="grid w-full grid-cols-4 rounded-none">
           {CATEGORIES.map(cat => (
             <TabsTrigger key={cat} value={cat} className="rounded-none">
               {CATEGORY_LABELS[cat]} ({getEntriesByCategory(cat).length})
