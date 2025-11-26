@@ -24,6 +24,46 @@ serve(async (req) => {
 
     console.log('🚀 OpenAI GPT request for message:', message);
 
+    // Φορτώνουμε όλη τη γνώση από τη βάση
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.49.8');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: knowledge, error: knowledgeError } = await supabase
+      .from('ai_global_knowledge')
+      .select('category, original_info, corrected_info')
+      .order('created_at', { ascending: true });
+
+    if (knowledgeError) {
+      console.error('Error loading knowledge:', knowledgeError);
+    }
+
+    // Δημιουργούμε το knowledge context
+    let knowledgeContext = '';
+    if (knowledge && knowledge.length > 0) {
+      const categoryLabels: Record<string, string> = {
+        exercises: 'ΑΣΚΗΣΕΙΣ & ΤΕΧΝΙΚΗ',
+        nutrition: 'ΔΙΑΤΡΟΦΗ',
+        philosophy: 'ΦΙΛΟΣΟΦΙΑ & ΠΡΟΣΕΓΓΙΣΗ'
+      };
+
+      const grouped = knowledge.reduce((acc, item) => {
+        if (!acc[item.category]) {
+          acc[item.category] = [];
+        }
+        acc[item.category].push(item);
+        return acc;
+      }, {} as Record<string, typeof knowledge>);
+
+      for (const [category, items] of Object.entries(grouped)) {
+        knowledgeContext += `\n### ${categoryLabels[category] || category.toUpperCase()}\n\n`;
+        items.forEach(item => {
+          knowledgeContext += `**${item.original_info}**\n${item.corrected_info}\n\n`;
+        });
+      }
+    }
+
     // Δημιουργία system prompt για fitness και διατροφή
     const systemPrompt = `Είσαι ένας εξειδικευμένος AI βοηθός για fitness και διατροφή με το όνομα "RID AI Προπονητής". Βοηθάς προπονητές και αθλητές με:
 
@@ -43,7 +83,12 @@ serve(async (req) => {
 - Παραπέμπεις σε ειδικούς όταν χρειάζεται (γιατρούς, διατροφολόγους)
 - Δίνεις συγκεκριμένα παραδείγματα και αριθμούς όπου είναι δυνατό
 
-${athleteName ? `Αυτή τη στιγμή βοηθάς με ερωτήσεις για τον αθλητή: ${athleteName}` : ''}`;
+${athleteName ? `Αυτή τη στιγμή βοηθάς με ερωτήσεις για τον αθλητή: ${athleteName}` : ''}
+
+## Εξειδικευμένη Γνώση:
+
+${knowledgeContext}`;
+
 
     // Δημιουργία των μηνυμάτων για το OpenAI API
     const messages = [
