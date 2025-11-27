@@ -274,11 +274,14 @@ const Auth = () => {
     const email = formData.get("reset-email") as string;
 
     try {
+      const redirectUrl = `${window.location.origin}/auth/reset-password`;
+      console.log('🔗 Password reset redirect URL:', redirectUrl);
+      
       // Use our custom edge function instead of Supabase built-in
       const { error } = await supabase.functions.invoke('send-password-reset', {
         body: {
           email: email,
-          redirectTo: 'https://www.hyperkids.gr/auth/reset-password',
+          redirectTo: redirectUrl,
         }
       });
 
