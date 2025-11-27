@@ -11,6 +11,9 @@ import { Clock, Users, Plus, X } from 'lucide-react';
 export const SprintTimingMaster = () => {
   const [distances, setDistances] = useState<number[]>([10, 20, 30]);
   const [newDistance, setNewDistance] = useState<string>('');
+  const [numStartDevices, setNumStartDevices] = useState<number>(1);
+  const [numStopDevices, setNumStopDevices] = useState<number>(1);
+  const [numDistanceDevices, setNumDistanceDevices] = useState<number>(1);
   const [sessionCode, setSessionCode] = useState<string>();
   const { session, currentResult, createSession, isLoading } = useSprintTiming(sessionCode);
 
@@ -38,22 +41,26 @@ export const SprintTimingMaster = () => {
   if (!session) {
     return (
       <div className="min-h-screen bg-background p-4">
-        <Card className="max-w-md mx-auto rounded-none">
+        <Card className="max-w-2xl mx-auto rounded-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="w-5 h-5" />
-              Sprint Timer - Master Device
+              Sprint Timer - Ρύθμιση Session
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
+            {/* Αποστάσεις */}
             <div>
-              <Label>Αποστάσεις προς μέτρηση (μέτρα)</Label>
-              <div className="flex gap-2 flex-wrap mt-2 mb-3">
+              <Label className="text-base font-semibold">Αποστάσεις προς μέτρηση</Label>
+              <p className="text-sm text-muted-foreground mb-3">
+                Ορίστε τις αποστάσεις που θα μετρηθούν (π.χ. 10m, 20m, 30m)
+              </p>
+              <div className="flex gap-2 flex-wrap mb-3">
                 {distances.map(dist => (
-                  <Badge key={dist} variant="secondary" className="rounded-none">
+                  <Badge key={dist} variant="secondary" className="rounded-none text-base py-1 px-3">
                     {dist}m
                     <X 
-                      className="w-3 h-3 ml-2 cursor-pointer" 
+                      className="w-4 h-4 ml-2 cursor-pointer" 
                       onClick={() => handleRemoveDistance(dist)}
                     />
                   </Badge>
@@ -79,10 +86,79 @@ export const SprintTimingMaster = () => {
                 </Button>
               </div>
             </div>
+
+            {/* Αριθμός Συσκευών */}
+            <div className="space-y-4 border-t pt-4">
+              <Label className="text-base font-semibold">Αριθμός Συσκευών</Label>
+              <p className="text-sm text-muted-foreground mb-3">
+                Ορίστε πόσες συσκευές κάθε τύπου θα συνδεθούν
+              </p>
+
+              <div className="grid gap-4">
+                {/* START Devices */}
+                <div className="flex items-center justify-between p-3 bg-[#00ffba]/10 rounded-none border border-[#00ffba]/20">
+                  <div>
+                    <Label className="text-sm font-medium">START Devices</Label>
+                    <p className="text-xs text-muted-foreground">Συσκευές γραμμής εκκίνησης</p>
+                  </div>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={numStartDevices}
+                    onChange={(e) => setNumStartDevices(parseInt(e.target.value) || 1)}
+                    className="w-20 rounded-none text-center"
+                  />
+                </div>
+
+                {/* DISTANCE Devices */}
+                <div className="flex items-center justify-between p-3 bg-[#cb8954]/10 rounded-none border border-[#cb8954]/20">
+                  <div>
+                    <Label className="text-sm font-medium">DISTANCE Devices</Label>
+                    <p className="text-xs text-muted-foreground">Συσκευές ενδιάμεσων αποστάσεων</p>
+                  </div>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={numDistanceDevices}
+                    onChange={(e) => setNumDistanceDevices(parseInt(e.target.value) || 1)}
+                    className="w-20 rounded-none text-center"
+                  />
+                </div>
+
+                {/* STOP Devices */}
+                <div className="flex items-center justify-between p-3 bg-red-500/10 rounded-none border border-red-500/20">
+                  <div>
+                    <Label className="text-sm font-medium">STOP Devices</Label>
+                    <p className="text-xs text-muted-foreground">Συσκευές γραμμής τερματισμού</p>
+                  </div>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={numStopDevices}
+                    onChange={(e) => setNumStopDevices(parseInt(e.target.value) || 1)}
+                    className="w-20 rounded-none text-center"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Σύνολο Συσκευών */}
+            <div className="bg-muted p-4 rounded-none">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Σύνολο Συσκευών:</span>
+                <Badge className="rounded-none text-lg">
+                  {numStartDevices + numDistanceDevices + numStopDevices} συσκευές
+                </Badge>
+              </div>
+            </div>
+
             <Button
               onClick={handleCreateSession}
               disabled={isLoading || distances.length === 0}
-              className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-semibold text-base h-12"
             >
               Δημιουργία Session
             </Button>
@@ -130,6 +206,25 @@ export const SprintTimingMaster = () => {
             <p className="text-sm text-muted-foreground">
               Σκανάρετε το QR code για να συνδεθείτε
             </p>
+          </div>
+
+          {/* Αριθμός Συσκευών */}
+          <div className="border-t pt-4 space-y-3">
+            <p className="text-sm font-medium">Αναμενόμενες Συσκευές</p>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-[#00ffba]/10 p-3 rounded-none border border-[#00ffba]/20 text-center">
+                <div className="text-2xl font-bold text-[#00ffba]">{numStartDevices}</div>
+                <div className="text-xs text-muted-foreground">START</div>
+              </div>
+              <div className="bg-[#cb8954]/10 p-3 rounded-none border border-[#cb8954]/20 text-center">
+                <div className="text-2xl font-bold text-[#cb8954]">{numDistanceDevices}</div>
+                <div className="text-xs text-muted-foreground">DISTANCE</div>
+              </div>
+              <div className="bg-red-500/10 p-3 rounded-none border border-red-500/20 text-center">
+                <div className="text-2xl font-bold text-red-500">{numStopDevices}</div>
+                <div className="text-xs text-muted-foreground">STOP</div>
+              </div>
+            </div>
           </div>
 
           <div className="border-t pt-6">
