@@ -75,6 +75,48 @@ serve(async (req) => {
 
     console.log('🧠 AI Knowledge Base fetched:', aiKnowledge?.length || 0);
 
+    // Build AI Knowledge Base string FIRST - this will go at the TOP of the prompt
+    let aiKnowledgeString = '';
+    if (aiKnowledge && aiKnowledge.length > 0) {
+      aiKnowledgeString = '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      aiKnowledgeString += '🧠🧠🧠 AI KNOWLEDGE BASE - Η ΦΙΛΟΣΟΦΙΑ ΤΟΥ ΓΥΜΝΑΣΤΗΡΙΟΥ 🧠🧠🧠\n';
+      aiKnowledgeString += '⚠️⚠️⚠️ ΑΥΤΟ ΕΙΝΑΙ ΤΟ ΠΙΟ ΣΗΜΑΝΤΙΚΟ - ΔΙΑΒΑΣΕ ΠΡΟΣΕΚΤΙΚΑ ⚠️⚠️⚠️\n';
+      aiKnowledgeString += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      
+      const categoryLabels: Record<string, string> = {
+        nutrition: '🥗 ΔΙΑΤΡΟΦΗ',
+        training: '🏋️ ΠΡΟΠΟΝΗΣΗ',
+        exercise_technique: '💪 ΤΕΧΝΙΚΗ ΑΣΚΗΣΕΩΝ',
+        philosophy: '🎯 ΦΙΛΟΣΟΦΙΑ',
+        other: '📝 ΑΛΛΑ'
+      };
+
+      // Group knowledge by category
+      const knowledgeByCategory: Record<string, any[]> = {};
+      aiKnowledge.forEach(entry => {
+        const category = entry.category || 'other';
+        if (!knowledgeByCategory[category]) {
+          knowledgeByCategory[category] = [];
+        }
+        knowledgeByCategory[category].push(entry);
+      });
+
+      // Display knowledge grouped by category
+      Object.entries(knowledgeByCategory).forEach(([category, entries]) => {
+        const label = categoryLabels[category] || '📝 ΑΛΛΑ';
+        aiKnowledgeString += `\n\n${label}:`;
+        
+        entries.forEach(entry => {
+          aiKnowledgeString += `\n\n▸ ΘΕΜΑ: ${entry.original_info}`;
+          aiKnowledgeString += `\n  ΟΔΗΓΙΑ: ${entry.corrected_info}`;
+        });
+      });
+      
+      aiKnowledgeString += '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      aiKnowledgeString += '⚠️ ΠΡΕΠΕΙ ΝΑ ΑΚΟΛΟΥΘΗΣΕΙΣ ΤΙΣ ΠΑΡΑΠΑΝΩ ΟΔΗΓΙΕΣ ΑΥΣΤΗΡΑ! ⚠️\n';
+      aiKnowledgeString += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+    }
+
     // Create enhanced context with platform data
     let enhancedContext = '';
 
@@ -141,39 +183,8 @@ serve(async (req) => {
       });
     }
 
-    // Add AI Knowledge Base context
-    if (aiKnowledge && aiKnowledge.length > 0) {
-      enhancedContext += '\n\n🧠 AI KNOWLEDGE BASE - Η ΦΙΛΟΣΟΦΙΑ ΚΑΙ Η ΕΜΠΕΙΡΙΑ ΤΟΥ ΓΥΜΝΑΣΤΗΡΙΟΥ:';
-      
-      const categoryLabels: Record<string, string> = {
-        nutrition: '🥗 ΔΙΑΤΡΟΦΗ',
-        training: '🏋️ ΠΡΟΠΟΝΗΣΗ',
-        exercise_technique: '💪 ΤΕΧΝΙΚΗ ΑΣΚΗΣΕΩΝ',
-        philosophy: '🎯 ΦΙΛΟΣΟΦΙΑ',
-        other: '📝 ΑΛΛΑ'
-      };
-
-      // Group knowledge by category
-      const knowledgeByCategory: Record<string, any[]> = {};
-      aiKnowledge.forEach(entry => {
-        const category = entry.category || 'other';
-        if (!knowledgeByCategory[category]) {
-          knowledgeByCategory[category] = [];
-        }
-        knowledgeByCategory[category].push(entry);
-      });
-
-      // Display knowledge grouped by category
-      Object.entries(knowledgeByCategory).forEach(([category, entries]) => {
-        const label = categoryLabels[category] || '📝 ΑΛΛΑ';
-        enhancedContext += `\n\n${label}:`;
-        
-        entries.forEach(entry => {
-          enhancedContext += `\n\n▸ ${entry.original_info}`;
-          enhancedContext += `\n  ${entry.corrected_info}`;
-        });
-      });
-    }
+    // DON'T add AI Knowledge Base to enhancedContext - it goes separately at the top
+    
     
     // Add workout stats context
     if (aiProfile?.workout_stats) {
