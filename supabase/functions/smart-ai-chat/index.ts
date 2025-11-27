@@ -39,8 +39,99 @@ serve(async (req) => {
 
     console.log('🤖 AI Profile fetched:', aiProfile ? 'Yes' : 'No');
 
+    // Fetch all exercises with categories
+    const { data: allExercises } = await supabase
+      .from('exercises')
+      .select(`
+        id,
+        name,
+        description,
+        video_url,
+        exercise_to_category (
+          exercise_categories (
+            id,
+            name,
+            type
+          )
+        )
+      `)
+      .order('name', { ascending: true });
+
+    console.log('💪 Exercises fetched:', allExercises?.length || 0);
+
+    // Fetch all exercise categories
+    const { data: exerciseCategories } = await supabase
+      .from('exercise_categories')
+      .select('id, name, type')
+      .order('type, name', { ascending: true });
+
+    console.log('📋 Exercise categories fetched:', exerciseCategories?.length || 0);
+
     // Create enhanced context with platform data
     let enhancedContext = '';
+
+    // Add exercise database context
+    if (allExercises && allExercises.length > 0) {
+      enhancedContext += '\n\n📚 ΒΑΣΗ ΑΣΚΗΣΕΩΝ ΤΟΥ ΓΥΜΝΑΣΤΗΡΙΟΥ:';
+      
+      // Group exercises by category
+      const exercisesByCategory: Record<string, any[]> = {};
+      
+      allExercises.forEach(exercise => {
+        const categories = exercise.exercise_to_category || [];
+        if (categories.length === 0) {
+          if (!exercisesByCategory['Χωρίς Κατηγορία']) {
+            exercisesByCategory['Χωρίς Κατηγορία'] = [];
+          }
+          exercisesByCategory['Χωρίς Κατηγορία'].push(exercise);
+        } else {
+          categories.forEach((catLink: any) => {
+            const cat = catLink.exercise_categories;
+            if (cat) {
+              const categoryKey = `${cat.type} - ${cat.name}`;
+              if (!exercisesByCategory[categoryKey]) {
+                exercisesByCategory[categoryKey] = [];
+              }
+              exercisesByCategory[categoryKey].push(exercise);
+            }
+          });
+        }
+      });
+
+      // Display exercises grouped by category
+      Object.entries(exercisesByCategory).forEach(([categoryName, exercises]) => {
+        enhancedContext += `\n\n${categoryName}:`;
+        exercises.slice(0, 50).forEach(ex => {
+          enhancedContext += `\n  • ${ex.name}`;
+          if (ex.description) {
+            enhancedContext += ` - ${ex.description}`;
+          }
+        });
+        if (exercises.length > 50) {
+          enhancedContext += `\n  ... και ${exercises.length - 50} ακόμα ασκήσεις`;
+        }
+      });
+    }
+
+    // Add exercise categories context
+    if (exerciseCategories && exerciseCategories.length > 0) {
+      enhancedContext += '\n\n🏷️ ΚΑΤΗΓΟΡΙΕΣ ΑΣΚΗΣΕΩΝ:';
+      
+      const categoriesByType: Record<string, any[]> = {};
+      exerciseCategories.forEach(cat => {
+        if (!categoriesByType[cat.type]) {
+          categoriesByType[cat.type] = [];
+        }
+        categoriesByType[cat.type].push(cat);
+      });
+
+      Object.entries(categoriesByType).forEach(([type, categories]) => {
+        enhancedContext += `\n\n${type}:`;
+        categories.forEach(cat => {
+          enhancedContext += `\n  • ${cat.name}`;
+        });
+      });
+    }
     
     // Add workout stats context
     if (aiProfile?.workout_stats) {
@@ -351,41 +442,54 @@ ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
 Να παρέχεις ΕΞΑΤΟΜΙΚΕΥΜΕΝΕΣ διατροφικές και προπονητικές συμβουλές που βασίζονται στην ΤΡΕΧΟΥΣΑ κατάσταση του χρήστη.
 
 📊 ΔΕΔΟΜΕΝΑ ΣΤΗ ΔΙΑΘΕΣΗ ΣΟΥ:
-1. 🏋️ ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ με:
+1. 📚 ΒΑΣΗ ΑΣΚΗΣΕΩΝ:
+   - Πλήρης λίστα όλων των διαθέσιμων ασκήσεων του γυμναστηρίου
+   - Κατηγορίες ασκήσεων (τύποι και ομάδες μυών)
+   - Περιγραφές και λεπτομέρειες κάθε άσκησης
+
+2. 🏋️ ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ με:
    - Πλήρη δομή προπονήσεων (εβδομάδες, ημέρες, blocks, ασκήσεις)
    - Στατιστικά προόδου (ολοκληρωμένες/συνολικές/χαμένες προπονήσεις)
    - Επόμενες προπονήσεις και ημερομηνίες
    - Λεπτομέρειες ασκήσεων (sets, reps, kg, tempo, rest, velocity)
    
-2. 💪 ΙΣΤΟΡΙΚΟ ΔΥΝΑΜΗΣ:
+3. 💪 ΙΣΤΟΡΙΚΟ ΔΥΝΑΜΗΣ:
    - Force-Velocity δεδομένα
    - 1RM ιστορικό ανά άσκηση
    - Προοδος στη δύναμη
    
-3. 🏃 ΙΣΤΟΡΙΚΟ ΑΝΤΟΧΗΣ:
+4. 🏃 ΙΣΤΟΡΙΚΟ ΑΝΤΟΧΗΣ:
    - VO2 Max, MAS
    - Καρδιακός ρυθμός
    - Push-ups, Pull-ups, Crunches
    
-4. 🦘 ΙΣΤΟΡΙΚΟ ΑΛΜΑΤΩΝ:
+5. 🦘 ΙΣΤΟΡΙΚΟ ΑΛΜΑΤΩΝ:
    - CMJ, Non-CMJ, Depth Jump
    - Broad Jump, Triple Jump
    
-5. 📏 ΣΩΜΑΤΟΜΕΤΡΙΚΑ:
+6. 📏 ΣΩΜΑΤΟΜΕΤΡΙΚΑ:
    - Βάρος, Ύψος, Λίπος, Μυϊκή Μάζα
    - Περιμέτρους (μέση, γοφός, στήθος, χέρι, μηρός)
 
 💬 ΤΡΟΠΟΣ ΕΠΙΚΟΙΝΩΝΙΑΣ:
 - ΠΑΝΤΑ αναφέρεσαι στα ΣΥΓΚΕΚΡΙΜΕΝΑ δεδομένα που βλέπεις
+- Όταν ο χρήστης αναφέρει μια άσκηση, αναγνώρισέ την από τη βάση ασκήσεων
+- Μπορείς να προτείνεις ασκήσεις από τη βάση που ταιριάζουν στις ανάγκες του
 - Προτείνε διατροφή που ταιριάζει με την ένταση και τον τύπο προπόνησης
 - Αν έχει upper body σήμερα, διαφορετική διατροφή από legs day
 - Χρησιμοποίησε τα στατιστικά για να δώσεις συγκεκριμένες συμβουλές
 - Αναγνώρισε την πρόοδο και τις βελτιώσεις του
 - Προτείνε προσαρμογές στο πρόγραμμα βάσει των αποτελεσμάτων
+- Όταν προτείνεις ασκήσεις, χρησιμοποίησε τα ΑΚΡΙΒΗ ονόματα από τη βάση δεδομένων
 
 ${enhancedContext}
 
-ΣΗΜΑΝΤΙΚΟ: Όταν αναφέρεις ασκήσεις, γράφε τις ΑΚΡΙΒΩΣ όπως εμφανίζονται στα δεδομένα.
+ΣΗΜΑΝΤΙΚΟ ΣΧΕΤΙΚΑ ΜΕ ΑΣΚΗΣΕΙΣ:
+- Όταν αναφέρεις ασκήσεις, γράφε τις ΑΚΡΙΒΩΣ όπως εμφανίζονται στη βάση ασκήσεων
+- Όταν ο χρήστης ρωτάει για μια άσκηση, ψάξε στη βάση ασκήσεων
+- Μπορείς να προτείνεις εναλλακτικές ασκήσεις από την ίδια κατηγορία
+- Αν προτείνεις ασκήσεις για block (π.χ. warm-up, main, cool-down), χρησιμοποίησε τις σωστές από τη βάση
+- Κατανόησε τις κατηγορίες ασκήσεων για να δώσεις σωστές συμβουλές (π.χ. push, pull, legs, core)
 
 Όταν συζητάς:
 - Αναφέρου συγκεκριμένα στοιχεία από τα δεδομένα του χρήστη
@@ -393,11 +497,13 @@ ${enhancedContext}
 - Πρότεινε βελτιώσεις στα προγράμματά του
 - Ανάλυσε την πρόοδό του με βάση τα ιστορικά δεδομένα
 - Σχολίασε τα workout stats του (ποσοστό ολοκλήρωσης, missed workouts κλπ)
+- Όταν χρειάζεται, πρότεινε συγκεκριμένες ασκήσεις από τη βάση
 
 Πάντα:
 - Απαντάς στα ελληνικά
 - Δίνεις συγκεκριμένες, εξατομικευμένες συμβουλές
 - Αναφέρεις τα πραγματικά δεδομένα του χρήστη
+- Χρησιμοποιείς τα ακριβή ονόματα ασκήσεων από τη βάση
 - Είσαι φιλικός, υποστηρικτικός και motivational`;
 
     // Try Gemini first
