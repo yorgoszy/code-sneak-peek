@@ -21,7 +21,8 @@ import {
   Gauge,
   Download,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Timer
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -517,6 +518,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: BarChart3, 
       label: "Αποτελέσματα Τεστ", 
       path: "/dashboard/test-results",
+      badge: null
+    },
+    {
+      icon: Timer,
+      label: "Sprint Timer",
+      path: "/sprint-timing",
       badge: null
     },
     { 
