@@ -6,15 +6,25 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
-import { Clock, Users, Plus, X } from 'lucide-react';
+import { Clock, Users, Plus, X, Trash2, Play, Square, MapPin, Timer as TimerIcon } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface Device {
+  id: string;
+  role: 'start' | 'stop' | 'distance' | 'timer';
+  distance?: number;
+}
 
 export const SprintTimingMaster = () => {
   const [distances, setDistances] = useState<number[]>([10, 20, 30]);
   const [newDistance, setNewDistance] = useState<string>('');
-  const [numStartDevices, setNumStartDevices] = useState<number>(1);
-  const [numStopDevices, setNumStopDevices] = useState<number>(1);
-  const [numDistanceDevices, setNumDistanceDevices] = useState<number>(1);
-  const [numTimerDevices, setNumTimerDevices] = useState<number>(1);
+  const [devices, setDevices] = useState<Device[]>([
+    { id: '1', role: 'start' },
+    { id: '2', role: 'stop' },
+    { id: '3', role: 'timer' }
+  ]);
+  const [newDeviceRole, setNewDeviceRole] = useState<'start' | 'stop' | 'distance' | 'timer'>('start');
+  const [newDeviceDistance, setNewDeviceDistance] = useState<number | undefined>();
   const [sessionCode, setSessionCode] = useState<string>();
   const { session, currentResult, createSession, isLoading } = useSprintTiming(sessionCode);
 
@@ -33,6 +43,40 @@ export const SprintTimingMaster = () => {
 
   const handleRemoveDistance = (dist: number) => {
     setDistances(distances.filter(d => d !== dist));
+  };
+
+  const handleAddDevice = () => {
+    const newDevice: Device = {
+      id: Date.now().toString(),
+      role: newDeviceRole,
+      distance: newDeviceRole === 'distance' ? newDeviceDistance : undefined
+    };
+    setDevices([...devices, newDevice]);
+    setNewDeviceDistance(undefined);
+  };
+
+  const handleRemoveDevice = (id: string) => {
+    setDevices(devices.filter(d => d.id !== id));
+  };
+
+  const getDeviceIcon = (role: string) => {
+    switch (role) {
+      case 'start': return Play;
+      case 'stop': return Square;
+      case 'distance': return MapPin;
+      case 'timer': return TimerIcon;
+      default: return Clock;
+    }
+  };
+
+  const getDeviceColor = (role: string) => {
+    switch (role) {
+      case 'start': return { bg: 'bg-[#00ffba]/10', border: 'border-[#00ffba]/20', text: 'text-[#00ffba]' };
+      case 'stop': return { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-500' };
+      case 'distance': return { bg: 'bg-[#cb8954]/10', border: 'border-[#cb8954]/20', text: 'text-[#cb8954]' };
+      case 'timer': return { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-500' };
+      default: return { bg: 'bg-gray-100', border: 'border-gray-200', text: 'text-gray-600' };
+    }
   };
 
   const handleCreateSession = async () => {
@@ -88,87 +132,109 @@ export const SprintTimingMaster = () => {
               </div>
             </div>
 
-            {/* Αριθμός Συσκευών */}
+            {/* Συσκευές */}
             <div className="space-y-4 border-t pt-4">
-              <Label className="text-base font-semibold">Αριθμός Συσκευών</Label>
+              <Label className="text-base font-semibold">Συσκευές</Label>
               <p className="text-sm text-muted-foreground mb-3">
-                Ορίστε πόσες συσκευές κάθε τύπου θα συνδεθούν
+                Ορίστε τις συσκευές και τους ρόλους τους
               </p>
 
-              <div className="grid gap-4">
-                {/* START Devices */}
-                <div className="flex items-center justify-between p-3 bg-[#00ffba]/10 rounded-none border border-[#00ffba]/20">
-                  <div>
-                    <Label className="text-sm font-medium">START Devices</Label>
-                    <p className="text-xs text-muted-foreground">Συσκευές γραμμής εκκίνησης</p>
-                  </div>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={numStartDevices}
-                    onChange={(e) => setNumStartDevices(parseInt(e.target.value) || 1)}
-                    className="w-20 rounded-none text-center"
-                  />
-                </div>
+              {/* Device Cards */}
+              <div className="space-y-2">
+                {devices.map((device) => {
+                  const Icon = getDeviceIcon(device.role);
+                  const colors = getDeviceColor(device.role);
+                  
+                  return (
+                    <div 
+                      key={device.id}
+                      className={`flex items-center justify-between p-3 ${colors.bg} rounded-none border ${colors.border}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className={`w-5 h-5 ${colors.text}`} />
+                        <div>
+                          <p className="text-sm font-medium capitalize">
+                            {device.role === 'start' && 'START Device'}
+                            {device.role === 'stop' && 'STOP Device'}
+                            {device.role === 'timer' && 'TIMER Device'}
+                            {device.role === 'distance' && `DISTANCE Device - ${device.distance}m`}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {device.role === 'start' && 'Γραμμή εκκίνησης'}
+                            {device.role === 'stop' && 'Γραμμή τερματισμού'}
+                            {device.role === 'timer' && 'Χρονόμετρο'}
+                            {device.role === 'distance' && 'Ενδιάμεση απόσταση'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveDevice(device.id)}
+                        className="h-8 w-8"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
 
-                {/* DISTANCE Devices */}
-                <div className="flex items-center justify-between p-3 bg-[#cb8954]/10 rounded-none border border-[#cb8954]/20">
-                  <div>
-                    <Label className="text-sm font-medium">DISTANCE Devices</Label>
-                    <p className="text-xs text-muted-foreground">Συσκευές ενδιάμεσων αποστάσεων</p>
-                  </div>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={numDistanceDevices}
-                    onChange={(e) => setNumDistanceDevices(parseInt(e.target.value) || 1)}
-                    className="w-20 rounded-none text-center"
-                  />
-                </div>
+              {/* Add Device Form */}
+              <div className="border border-dashed border-gray-300 rounded-none p-4 space-y-3">
+                <Label className="text-sm font-medium">Προσθήκη Συσκευής</Label>
+                
+                <div className="space-y-2">
+                  <Select value={newDeviceRole} onValueChange={(value: any) => setNewDeviceRole(value)}>
+                    <SelectTrigger className="rounded-none">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-none">
+                      <SelectItem value="start" className="rounded-none">START Device</SelectItem>
+                      <SelectItem value="stop" className="rounded-none">STOP Device</SelectItem>
+                      <SelectItem value="distance" className="rounded-none">DISTANCE Device</SelectItem>
+                      <SelectItem value="timer" className="rounded-none">TIMER Device</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                {/* STOP Devices */}
-                <div className="flex items-center justify-between p-3 bg-red-500/10 rounded-none border border-red-500/20">
-                  <div>
-                    <Label className="text-sm font-medium">STOP Devices</Label>
-                    <p className="text-xs text-muted-foreground">Συσκευές γραμμής τερματισμού</p>
-                  </div>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={numStopDevices}
-                    onChange={(e) => setNumStopDevices(parseInt(e.target.value) || 1)}
-                    className="w-20 rounded-none text-center"
-                  />
-                </div>
+                  {newDeviceRole === 'distance' && (
+                    <Select 
+                      value={newDeviceDistance?.toString()} 
+                      onValueChange={(value) => setNewDeviceDistance(parseInt(value))}
+                    >
+                      <SelectTrigger className="rounded-none">
+                        <SelectValue placeholder="Επιλέξτε απόσταση" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-none">
+                        {distances.map(dist => (
+                          <SelectItem key={dist} value={dist.toString()} className="rounded-none">
+                            {dist}m
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {/* TIMER Devices */}
-                <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-none border border-blue-500/20">
-                  <div>
-                    <Label className="text-sm font-medium">TIMER Devices</Label>
-                    <p className="text-xs text-muted-foreground">Συσκευές χρονομέτρου</p>
-                  </div>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={numTimerDevices}
-                    onChange={(e) => setNumTimerDevices(parseInt(e.target.value) || 1)}
-                    className="w-20 rounded-none text-center"
-                  />
+                  <Button
+                    onClick={handleAddDevice}
+                    disabled={newDeviceRole === 'distance' && !newDeviceDistance}
+                    className="w-full rounded-none"
+                    variant="outline"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Προσθήκη
+                  </Button>
                 </div>
               </div>
-            </div>
 
-            {/* Σύνολο Συσκευών */}
-            <div className="bg-muted p-4 rounded-none">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Σύνολο Συσκευών:</span>
-                <Badge className="rounded-none text-lg">
-                  {numStartDevices + numDistanceDevices + numStopDevices + numTimerDevices} συσκευές
-                </Badge>
+              {/* Total Devices */}
+              <div className="bg-muted p-3 rounded-none">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Σύνολο Συσκευών:</span>
+                  <Badge className="rounded-none">
+                    {devices.length} συσκευές
+                  </Badge>
+                </div>
               </div>
             </div>
 
@@ -225,38 +291,34 @@ export const SprintTimingMaster = () => {
             </p>
           </div>
 
-          {/* Αριθμός Συσκευών */}
+          {/* Συσκευές */}
           <div className="border-t pt-4 space-y-3">
-            <p className="text-sm font-medium">Αναμενόμενες Συσκευές</p>
+            <p className="text-sm font-medium">Συσκευές ({devices.length})</p>
             <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => window.open(`/sprint-timing/join/${session.session_code}?role=start`, '_blank')}
-                className="bg-[#00ffba]/10 p-3 rounded-none border border-[#00ffba]/20 text-center hover:bg-[#00ffba]/20 transition-colors cursor-pointer"
-              >
-                <div className="text-2xl font-bold text-[#00ffba]">{numStartDevices}</div>
-                <div className="text-xs text-muted-foreground">START</div>
-              </button>
-              <button
-                onClick={() => window.open(`/sprint-timing/join/${session.session_code}?role=distance`, '_blank')}
-                className="bg-[#cb8954]/10 p-3 rounded-none border border-[#cb8954]/20 text-center hover:bg-[#cb8954]/20 transition-colors cursor-pointer"
-              >
-                <div className="text-2xl font-bold text-[#cb8954]">{numDistanceDevices}</div>
-                <div className="text-xs text-muted-foreground">DISTANCE</div>
-              </button>
-              <button
-                onClick={() => window.open(`/sprint-timing/join/${session.session_code}?role=stop`, '_blank')}
-                className="bg-red-500/10 p-3 rounded-none border border-red-500/20 text-center hover:bg-red-500/20 transition-colors cursor-pointer"
-              >
-                <div className="text-2xl font-bold text-red-500">{numStopDevices}</div>
-                <div className="text-xs text-muted-foreground">STOP</div>
-              </button>
-              <button
-                onClick={() => window.open(`/sprint-timing/join/${session.session_code}?role=timer`, '_blank')}
-                className="bg-blue-500/10 p-3 rounded-none border border-blue-500/20 text-center hover:bg-blue-500/20 transition-colors cursor-pointer"
-              >
-                <div className="text-2xl font-bold text-blue-500">{numTimerDevices}</div>
-                <div className="text-xs text-muted-foreground">TIMER</div>
-              </button>
+              {devices.map((device) => {
+                const Icon = getDeviceIcon(device.role);
+                const colors = getDeviceColor(device.role);
+                
+                return (
+                  <button
+                    key={device.id}
+                    onClick={() => {
+                      const role = device.role;
+                      const url = device.role === 'distance' && device.distance
+                        ? `/sprint-timing/join/${session.session_code}?role=${role}&distance=${device.distance}`
+                        : `/sprint-timing/join/${session.session_code}?role=${role}`;
+                      window.open(url, '_blank');
+                    }}
+                    className={`${colors.bg} p-3 rounded-none border ${colors.border} text-center hover:opacity-80 transition-opacity cursor-pointer`}
+                  >
+                    <Icon className={`w-6 h-6 mx-auto mb-1 ${colors.text}`} />
+                    <div className="text-xs font-medium text-foreground uppercase">
+                      {device.role}
+                      {device.role === 'distance' && ` ${device.distance}m`}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
