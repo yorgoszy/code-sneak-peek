@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
-import { Square, Camera, AlertCircle } from 'lucide-react';
+import { MapPin, Camera, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-export const SprintTimingStop = () => {
+export const SprintTimingDistance = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
+  const [searchParams] = useSearchParams();
+  const distance = searchParams.get('distance');
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
@@ -44,17 +47,17 @@ export const SprintTimingStop = () => {
   };
 
   const handleActivate = () => {
-    if (!motionDetector || !videoRef.current || !currentResult) return;
+    if (!motionDetector || !videoRef.current || !currentResult?.id) return;
 
     setIsActive(true);
     
     motionDetector.start(async () => {
-      console.log('🏁 STOP TRIGGERED BY MOTION!');
+      console.log(`📍 DISTANCE ${distance}m TRIGGERED BY MOTION!`);
       
       motionDetector.stop();
       setIsActive(false);
       
-      // Σταματάμε το χρονόμετρο
+      // Σταματάμε το χρονόμετρο για αυτή την απόσταση
       await stopTiming(currentResult.id);
     });
   };
@@ -93,17 +96,24 @@ export const SprintTimingStop = () => {
     <div className="min-h-screen bg-background p-4">
       <Card className="max-w-2xl mx-auto rounded-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Square className="w-5 h-5 text-red-500" />
-            STOP Device - {session.session_code}
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-[#cb8954]" />
+              DISTANCE Device - {session.session_code}
+            </div>
+            {distance && (
+              <Badge className="rounded-none text-lg bg-[#cb8954] hover:bg-[#cb8954]/90">
+                {distance}m
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {currentResult && !currentResult.end_time && (
-            <Alert className="rounded-none bg-green-500/10 border-green-500">
-              <AlertCircle className="h-4 w-4 text-green-500" />
-              <AlertDescription className="text-green-500">
-                Χρονόμετρο σε εξέλιξη...
+          {currentResult && !currentResult.end_time && currentResult.distance_meters === parseInt(distance || '0') && (
+            <Alert className="rounded-none bg-blue-500/10 border-blue-500">
+              <AlertCircle className="h-4 w-4 text-blue-500" />
+              <AlertDescription className="text-blue-500">
+                Χρονόμετρο σε εξέλιξη για {distance}m...
               </AlertDescription>
             </Alert>
           )}
@@ -111,7 +121,7 @@ export const SprintTimingStop = () => {
           {!stream ? (
             <Button
               onClick={handleStartCamera}
-              className="w-full rounded-none bg-red-500 hover:bg-red-600 text-white"
+              className="w-full rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
             >
               <Camera className="w-4 h-4 mr-2" />
               Έναρξη Κάμερας
@@ -126,50 +136,48 @@ export const SprintTimingStop = () => {
                   playsInline
                   muted
                 />
-                {isActive && (
-                  <div className="absolute inset-0 border-4 border-red-500 pointer-events-none animate-pulse" />
-                )}
               </div>
 
-              {isActive && (
-                <Alert className="rounded-none bg-red-500/10 border-red-500">
-                  <AlertCircle className="h-4 w-4 text-red-500" />
-                  <AlertDescription className="text-red-500">
-                    Αναμονή για κίνηση... Περάστε μπροστά από την κάμερα για τερματισμό!
+              {isReady && !isActive && (
+                <Alert className="rounded-none">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Περάστε μπροστά από την κάμερα στα {distance}m για να καταγραφεί ο χρόνος
                   </AlertDescription>
                 </Alert>
               )}
 
-              <div className="flex gap-2">
-                {!isActive ? (
-                  <Button
-                    onClick={handleActivate}
-                    disabled={!isReady || !currentResult || !!currentResult.end_time}
-                    className="flex-1 rounded-none bg-red-500 hover:bg-red-600 text-white"
-                  >
-                    Ενεργοποίηση Motion Detection
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleStop}
-                    variant="secondary"
-                    className="flex-1 rounded-none"
-                  >
-                    Απενεργοποίηση
-                  </Button>
-                )}
-              </div>
-
-              {currentResult?.duration_ms && (
-                <div className="bg-muted p-6 rounded-none text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Τελικός Χρόνος</p>
-                  <p className="text-5xl font-bold text-[#00ffba]">
-                    {(currentResult.duration_ms / 1000).toFixed(3)}
-                  </p>
-                  <p className="text-xl text-muted-foreground mt-1">δευτερόλεπτα</p>
+              {isReady && (
+                <div className="flex gap-2">
+                  {!isActive ? (
+                    <Button
+                      onClick={handleActivate}
+                      disabled={!currentResult || !!currentResult.end_time}
+                      className="flex-1 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
+                    >
+                      Ενεργοποίηση Motion Detection
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleStop}
+                      variant="destructive"
+                      className="flex-1 rounded-none"
+                    >
+                      Απενεργοποίηση
+                    </Button>
+                  )}
                 </div>
               )}
             </>
+          )}
+
+          {currentResult?.end_time && currentResult?.distance_meters === parseInt(distance || '0') && (
+            <div className="bg-[#cb8954]/10 p-6 rounded-none border-2 border-[#cb8954]">
+              <p className="text-sm text-muted-foreground mb-1">Χρόνος στα {distance}m</p>
+              <p className="text-4xl font-bold text-[#cb8954]">
+                {(currentResult.duration_ms! / 1000).toFixed(3)}s
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>

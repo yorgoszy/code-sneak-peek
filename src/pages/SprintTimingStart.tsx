@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { Play, Camera, AlertCircle } from 'lucide-react';
@@ -10,8 +9,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const SprintTimingStart = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
-  const [searchParams] = useSearchParams();
-  const distance = searchParams.get('distance');
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
@@ -59,8 +56,8 @@ export const SprintTimingStart = () => {
       motionDetector.stop();
       setIsActive(false);
       
-      // Ξεκινάμε το χρονόμετρο
-      await startTiming(distance ? parseInt(distance) : undefined);
+      // Ξεκινάμε το χρονόμετρο (χωρίς απόσταση - αυτό είναι START)
+      await startTiming();
     });
   };
 
@@ -98,16 +95,9 @@ export const SprintTimingStart = () => {
     <div className="min-h-screen bg-background p-4">
       <Card className="max-w-2xl mx-auto rounded-none">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Play className="w-5 h-5 text-[#00ffba]" />
-              START Device - {session.session_code}
-            </div>
-            {distance && (
-              <Badge variant="secondary" className="rounded-none text-lg">
-                {distance}m
-              </Badge>
-            )}
+          <CardTitle className="flex items-center gap-2">
+            <Play className="w-5 h-5 text-[#00ffba]" />
+            START Device - {session.session_code}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
