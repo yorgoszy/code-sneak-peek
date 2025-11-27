@@ -2197,26 +2197,6 @@ ${athletesList}
       }
     }
 
-    // Αποθήκευση μηνύματος χρήστη (πάντα για τον effectiveUserId)
-    const userMessage = messages[messages.length - 1];
-    if (userMessage.role === "user") {
-      await fetch(`${SUPABASE_URL}/rest/v1/ai_conversations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          "Prefer": "return=minimal"
-        },
-        body: JSON.stringify({
-          user_id: effectiveUserId,
-          content: userMessage.content,
-          message_type: "user",
-          metadata: isAdmin && targetUserId ? { viewed_by_admin: userId } : {}
-        })
-      });
-    }
-
     // Φόρτωση ιστορικού συνομιλιών (για τον effectiveUserId)
     const historyResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/ai_conversations?user_id=eq.${effectiveUserId}&order=created_at.asc&limit=50`,
@@ -2525,6 +2505,26 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
             }
           }
 
+          // Αποθήκευση user message (ΤΩΡΑ, μετά το AI call)
+          const userMessage = messages[messages.length - 1];
+          if (userMessage.role === "user") {
+            await fetch(`${SUPABASE_URL}/rest/v1/ai_conversations`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                "Prefer": "return=minimal"
+              },
+              body: JSON.stringify({
+                user_id: effectiveUserId,
+                content: userMessage.content,
+                message_type: "user",
+                metadata: isAdmin && targetUserId ? { viewed_by_admin: userId } : {}
+              })
+            });
+          }
+
           // Αποθήκευση απάντησης AI
           await fetch(`${SUPABASE_URL}/rest/v1/ai_conversations`, {
             method: "POST",
@@ -2535,7 +2535,7 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
               "Prefer": "return=minimal"
             },
             body: JSON.stringify({
-              user_id: userId,
+              user_id: effectiveUserId,
               content: fullResponse,
               message_type: "assistant",
               metadata: {}
