@@ -216,8 +216,8 @@ export const RidAiCoach = () => {
         }
       }
 
-      // After streaming is complete, reload from database to ensure sync
-      await loadHistory(isAdmin && selectedUserId ? selectedUserId : undefined);
+      // ✅ ΔΕΝ χρειάζεται reload - τα messages είναι ήδη στο state και αποθηκεύονται στη βάση από το edge function
+      // Το reload προκαλούσε διπλασιασμό των μηνυμάτων
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Σφάλμα κατά την αποστολή μηνύματος');
