@@ -21,6 +21,7 @@ export const RidAiCoach = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const { userProfile } = useRoleCheck();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isProcessingRef = useRef(false);
   
   // Admin features
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -96,7 +97,14 @@ export const RidAiCoach = () => {
 
   const sendMessage = async () => {
     if (!input.trim() || !userProfile?.id) return;
-
+    
+    // Prevent double-calls
+    if (isProcessingRef.current) {
+      console.log('⚠️ Already processing a message, ignoring duplicate call');
+      return;
+    }
+    
+    isProcessingRef.current = true;
     const userMessage: Message = { role: 'user', content: input };
     const currentInput = input;
     setInput('');
@@ -179,6 +187,7 @@ export const RidAiCoach = () => {
       setInput(currentInput);
     } finally {
       setIsLoading(false);
+      isProcessingRef.current = false;
     }
   };
 
