@@ -67,6 +67,14 @@ serve(async (req) => {
 
     console.log('📋 Exercise categories fetched:', exerciseCategories?.length || 0);
 
+    // Fetch AI Global Knowledge Base
+    const { data: aiKnowledge } = await supabase
+      .from('ai_global_knowledge')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    console.log('🧠 AI Knowledge Base fetched:', aiKnowledge?.length || 0);
+
     // Create enhanced context with platform data
     let enhancedContext = '';
 
@@ -129,6 +137,40 @@ serve(async (req) => {
         enhancedContext += `\n\n${type}:`;
         categories.forEach(cat => {
           enhancedContext += `\n  • ${cat.name}`;
+        });
+      });
+    }
+
+    // Add AI Knowledge Base context
+    if (aiKnowledge && aiKnowledge.length > 0) {
+      enhancedContext += '\n\n🧠 AI KNOWLEDGE BASE - Η ΦΙΛΟΣΟΦΙΑ ΚΑΙ Η ΕΜΠΕΙΡΙΑ ΤΟΥ ΓΥΜΝΑΣΤΗΡΙΟΥ:';
+      
+      const categoryLabels: Record<string, string> = {
+        nutrition: '🥗 ΔΙΑΤΡΟΦΗ',
+        training: '🏋️ ΠΡΟΠΟΝΗΣΗ',
+        exercise_technique: '💪 ΤΕΧΝΙΚΗ ΑΣΚΗΣΕΩΝ',
+        philosophy: '🎯 ΦΙΛΟΣΟΦΙΑ',
+        other: '📝 ΑΛΛΑ'
+      };
+
+      // Group knowledge by category
+      const knowledgeByCategory: Record<string, any[]> = {};
+      aiKnowledge.forEach(entry => {
+        const category = entry.category || 'other';
+        if (!knowledgeByCategory[category]) {
+          knowledgeByCategory[category] = [];
+        }
+        knowledgeByCategory[category].push(entry);
+      });
+
+      // Display knowledge grouped by category
+      Object.entries(knowledgeByCategory).forEach(([category, entries]) => {
+        const label = categoryLabels[category] || '📝 ΑΛΛΑ';
+        enhancedContext += `\n\n${label}:`;
+        
+        entries.forEach(entry => {
+          enhancedContext += `\n\n▸ ${entry.original_info}`;
+          enhancedContext += `\n  ${entry.corrected_info}`;
         });
       });
     }
@@ -443,15 +485,23 @@ ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
 
 📊 ΔΕΔΟΜΕΝΑ ΣΤΗ ΔΙΑΘΕΣΗ ΣΟΥ:
 
-1. 📚 ΒΑΣΗ ΑΣΚΗΣΕΩΝ ΤΟΥ ΓΥΜΝΑΣΤΗΡΙΟΥ (Γενική Τράπεζα):
+1. 🧠 AI KNOWLEDGE BASE - Η ΦΙΛΟΣΟΦΙΑ & ΕΜΠΕΙΡΙΑ ΤΟΥ ΓΥΜΝΑΣΤΗΡΙΟΥ:
+   - Αυτή είναι η ΒΑΣΙΚΗ γνώση και φιλοσοφία του γυμναστηρίου
+   - Περιέχει εξειδικευμένες γνώσεις για διατροφή, προπόνηση, τεχνική ασκήσεων
+   - **ΠΡΟΤΕΡΑΙΟΤΗΤΑ #1**: Χρησιμοποίησε ΠΑΝΤΑ αυτή τη γνώση πρώτα
+   - Όταν ρωτάει για οτιδήποτε σχετικό με την προπόνηση/διατροφή, ΕΛΕΓΞΕ εδώ πρώτα
+   - Αυτές οι πληροφορίες έχουν προτεραιότητα από γενικές γνώσεις
+   - ⚠️ ΠΡΟΣΟΧΗ: Αυτή η γνώση είναι η "ταυτότητα" του γυμναστηρίου - ΑΚΟΛΟΥΘΗΣΕ ΤΗΝ!
+
+2. 📚 ΒΑΣΗ ΑΣΚΗΣΕΩΝ ΤΟΥ ΓΥΜΝΑΣΤΗΡΙΟΥ (Γενική Τράπεζα):
    - Αυτή είναι η ΓΕΝΙΚΗ λίστα με ΟΛΕΣ τις διαθέσιμες ασκήσεις του γυμναστηρίου
    - Περιέχει εκατοντάδες ασκήσεις ομαδοποιημένες σε κατηγορίες
    - Χρησιμοποίησε την για να αναγνωρίσεις ασκήσεις που αναφέρει ο χρήστης
    - Χρησιμοποίησε την για να προτείνεις νέες ασκήσεις
    - Χρησιμοποίησε την για να βρεις εναλλακτικές ασκήσεις
-   ⚠️ ΠΡΟΣΟΧΗ: Αυτές ΔΕΝ είναι όλες οι ασκήσεις του χρήστη - είναι η διαθέσιμη τράπεζα!
+   - ⚠️ ΠΡΟΣΟΧΗ: Αυτές ΔΕΝ είναι όλες οι ασκήσεις του χρήστη - είναι η διαθέσιμη τράπεζα!
 
-2. 🏋️ ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ ΤΟΥ ΧΡΗΣΤΗ:
+3. 🏋️ ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ ΤΟΥ ΧΡΗΣΤΗ:
    - Εδώ βλέπεις τα συγκεκριμένα προγράμματα που ακολουθεί ο χρήστης
    - Κάθε πρόγραμμα έχει εβδομάδες → ημέρες → blocks → ΑΣΚΗΣΕΙΣ
    - Οι ασκήσεις που αναφέρονται ΕΔΩ είναι οι ασκήσεις που ΕΧΕΙ ο χρήστης στο πρόγραμμά του
@@ -460,21 +510,21 @@ ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
    - Επόμενες προπονήσεις και ημερομηνίες
    - Λεπτομέρειες ασκήσεων (sets, reps, kg, tempo, rest, velocity)
    
-3. 💪 ΙΣΤΟΡΙΚΟ ΔΥΝΑΜΗΣ:
+4. 💪 ΙΣΤΟΡΙΚΟ ΔΥΝΑΜΗΣ:
    - Force-Velocity δεδομένα
    - 1RM ιστορικό ανά άσκηση
    - Πρόοδος στη δύναμη με συγκεκριμένα νούμερα
    
-4. 🏃 ΙΣΤΟΡΙΚΟ ΑΝΤΟΧΗΣ:
+5. 🏃 ΙΣΤΟΡΙΚΟ ΑΝΤΟΧΗΣ:
    - VO2 Max, MAS
    - Καρδιακός ρυθμός
    - Push-ups, Pull-ups, Crunches
    
-5. 🦘 ΙΣΤΟΡΙΚΟ ΑΛΜΑΤΩΝ:
+6. 🦘 ΙΣΤΟΡΙΚΟ ΑΛΜΑΤΩΝ:
    - CMJ, Non-CMJ, Depth Jump
    - Broad Jump, Triple Jump
    
-6. 📏 ΣΩΜΑΤΟΜΕΤΡΙΚΑ:
+7. 📏 ΣΩΜΑΤΟΜΕΤΡΙΚΑ:
    - Βάρος, Ύψος, Λίπος, Μυϊκή Μάζα
    - Περιμέτρους (μέση, γοφός, στήθος, χέρι, μηρός)
 
