@@ -2197,24 +2197,10 @@ ${athletesList}
       }
     }
 
-    // Φόρτωση ιστορικού συνομιλιών (για τον effectiveUserId)
-    // ΣΗΜΕΙΩΣΗ: Το frontend στέλνει ήδη όλο το conversation history στο messages array,
-    // οπότε ΔΕΝ χρειάζεται να το φορτώσουμε ξανά από τη βάση για το AI call.
-    // Το φορτώνουμε μόνο για logging/debugging purposes.
-    const historyResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/ai_conversations?user_id=eq.${effectiveUserId}&order=created_at.asc&limit=50`,
-      {
-        headers: {
-          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-        }
-      }
-    );
-
-    const conversationHistory = await historyResponse.json();
-    console.log(`📝 Loaded ${Array.isArray(conversationHistory) ? conversationHistory.length : 0} messages from history (for reference only)`);
-
-    // ΔΕΝ μετατρέπουμε το history σε messages - χρησιμοποιούμε το messages που στέλνει το frontend
+    // ✅ ΣΗΜΑΝΤΙΚΟ: ΔΕΝ φορτώνουμε history από τη βάση!
+    // Το frontend στέλνει ΗΔΗ όλο το conversation history στο messages array.
+    // Αν φορτώσουμε και από τη βάση, θα έχουμε διπλά μηνύματα ΚΑΙ θα μπερδευτεί 
+    // με τα μηνύματα από το smart-ai-chat που χρησιμοποιεί το ίδιο table!
 
     // 🧠 Fetch AI Global Knowledge Base
     const aiKnowledgeResponse = await fetch(
@@ -2536,7 +2522,10 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
                   user_id: effectiveUserId,
                   content: userMessage.content,
                   message_type: "user",
-                  metadata: isAdmin && targetUserId ? { viewed_by_admin: userId } : {}
+                  metadata: { 
+                    conversation_type: "rid-ai-coach", // 🔥 Ξεχωρίζουμε από smart-ai-chat
+                    ...(isAdmin && targetUserId ? { viewed_by_admin: userId } : {})
+                  }
                 })
               });
               console.log('✅ User message saved to database');
@@ -2558,7 +2547,9 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
               user_id: effectiveUserId,
               content: fullResponse,
               message_type: "assistant",
-              metadata: {}
+              metadata: {
+                conversation_type: "rid-ai-coach" // 🔥 Ξεχωρίζουμε από smart-ai-chat
+              }
             })
           });
 

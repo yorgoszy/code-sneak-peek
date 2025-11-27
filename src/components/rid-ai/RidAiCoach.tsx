@@ -49,7 +49,7 @@ export const RidAiCoach = () => {
     }
   };
 
-  // Load conversation history
+  // Load conversation history - ΜΟΝΟ ΓΙΑ RID AI COACH
   const loadHistory = async (targetUserId?: string) => {
     const userId = targetUserId || userProfile?.id;
     if (!userId) return;
@@ -59,6 +59,7 @@ export const RidAiCoach = () => {
         .from('ai_conversations')
         .select('*')
         .eq('user_id', userId)
+        .contains('metadata', { conversation_type: 'rid-ai-coach' }) // 🔥 Φιλτράρουμε μόνο rid-ai-coach
         .order('created_at', { ascending: true })
         .limit(50);
 
