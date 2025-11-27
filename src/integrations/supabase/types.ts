@@ -3086,6 +3086,7 @@ export type Database = {
       sprint_timing_results: {
         Row: {
           created_at: string
+          distance_meters: number | null
           duration_ms: number | null
           end_time: string | null
           id: string
@@ -3094,6 +3095,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          distance_meters?: number | null
           duration_ms?: number | null
           end_time?: string | null
           id?: string
@@ -3102,6 +3104,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          distance_meters?: number | null
           duration_ms?: number | null
           end_time?: string | null
           id?: string
@@ -3123,6 +3126,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           distance_meters: number | null
+          distances: number[] | null
           id: string
           session_code: string
           status: string
@@ -3132,6 +3136,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           distance_meters?: number | null
+          distances?: number[] | null
           id?: string
           session_code: string
           status?: string
@@ -3141,6 +3146,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           distance_meters?: number | null
+          distances?: number[] | null
           id?: string
           session_code?: string
           status?: string
