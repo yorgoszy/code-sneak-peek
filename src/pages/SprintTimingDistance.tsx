@@ -11,7 +11,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 export const SprintTimingDistance = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
   const [searchParams] = useSearchParams();
-  const distance = searchParams.get('distance');
+  const distancesParam = searchParams.get('distances');
+  const distances = distancesParam ? distancesParam.split(',').map(Number) : [];
+  const [completedDistances, setCompletedDistances] = useState<number[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
@@ -52,13 +54,26 @@ export const SprintTimingDistance = () => {
     setIsActive(true);
     
     motionDetector.start(async () => {
-      console.log(`📍 DISTANCE ${distance}m TRIGGERED BY MOTION!`);
+      // Βρίσκουμε την επόμενη απόσταση που δεν έχει ολοκληρωθεί
+      const nextDistance = distances.find(d => !completedDistances.includes(d));
+      
+      if (!nextDistance) {
+        console.log('⚠️ Όλες οι αποστάσεις έχουν ολοκληρωθεί');
+        motionDetector.stop();
+        setIsActive(false);
+        return;
+      }
+      
+      console.log(`📍 DISTANCE ${nextDistance}m TRIGGERED BY MOTION!`);
       
       motionDetector.stop();
       setIsActive(false);
       
       // Σταματάμε το χρονόμετρο για αυτή την απόσταση
       await stopTiming(currentResult.id);
+      
+      // Σημειώνουμε ότι αυτή η απόσταση ολοκληρώθηκε
+      setCompletedDistances(prev => [...prev, nextDistance]);
     });
   };
 
@@ -101,21 +116,43 @@ export const SprintTimingDistance = () => {
               <MapPin className="w-5 h-5 text-[#cb8954]" />
               DISTANCE Device - {session.session_code}
             </div>
-            {distance && (
-              <Badge className="rounded-none text-lg bg-[#cb8954] hover:bg-[#cb8954]/90">
-                {distance}m
-              </Badge>
-            )}
+            <div className="flex gap-2 flex-wrap">
+              {distances.map(dist => (
+                <Badge 
+                  key={dist} 
+                  className={`rounded-none ${
+                    completedDistances.includes(dist)
+                      ? 'bg-green-500 hover:bg-green-500'
+                      : 'bg-[#cb8954] hover:bg-[#cb8954]/90'
+                  }`}
+                >
+                  {dist}m {completedDistances.includes(dist) && '✓'}
+                </Badge>
+              ))}
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {currentResult && !currentResult.end_time && currentResult.distance_meters === parseInt(distance || '0') && (
+          {currentResult && !currentResult.end_time && (
             <Alert className="rounded-none bg-blue-500/10 border-blue-500">
               <AlertCircle className="h-4 w-4 text-blue-500" />
               <AlertDescription className="text-blue-500">
-                Χρονόμετρο σε εξέλιξη για {distance}m...
+                Χρονόμετρο σε εξέλιξη... Επόμενη απόσταση: {distances.find(d => !completedDistances.includes(d))}m
               </AlertDescription>
             </Alert>
+          )}
+          
+          {completedDistances.length > 0 && (
+            <div className="bg-[#cb8954]/10 p-4 rounded-none border border-[#cb8954]">
+              <p className="text-sm text-muted-foreground mb-2">Ολοκληρωμένες Αποστάσεις</p>
+              <div className="flex gap-2 flex-wrap">
+                {completedDistances.map(dist => (
+                  <Badge key={dist} className="rounded-none bg-green-500">
+                    {dist}m ✓
+                  </Badge>
+                ))}
+              </div>
+            </div>
           )}
 
           {!stream ? (
@@ -138,11 +175,20 @@ export const SprintTimingDistance = () => {
                 />
               </div>
 
-              {isReady && !isActive && (
+              {isReady && !isActive && completedDistances.length < distances.length && (
                 <Alert className="rounded-none">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Περάστε μπροστά από την κάμερα στα {distance}m για να καταγραφεί ο χρόνος
+                    Περάστε μπροστά από την κάμερα στα {distances.find(d => !completedDistances.includes(d))}m για να καταγραφεί ο χρόνος
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {completedDistances.length === distances.length && (
+                <Alert className="rounded-none bg-green-500/10 border-green-500">
+                  <AlertCircle className="h-4 w-4 text-green-500" />
+                  <AlertDescription className="text-green-500">
+                    ✓ Όλες οι αποστάσεις ολοκληρώθηκαν!
                   </AlertDescription>
                 </Alert>
               )}
@@ -152,10 +198,11 @@ export const SprintTimingDistance = () => {
                   {!isActive ? (
                     <Button
                       onClick={handleActivate}
-                      disabled={!currentResult || !!currentResult.end_time}
+                      disabled={!currentResult || !!currentResult.end_time || completedDistances.length === distances.length}
                       className="flex-1 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
                     >
                       Ενεργοποίηση Motion Detection
+                      {completedDistances.length < distances.length && ` (${distances.find(d => !completedDistances.includes(d))}m)`}
                     </Button>
                   ) : (
                     <Button
@@ -171,14 +218,6 @@ export const SprintTimingDistance = () => {
             </>
           )}
 
-          {currentResult?.end_time && currentResult?.distance_meters === parseInt(distance || '0') && (
-            <div className="bg-[#cb8954]/10 p-6 rounded-none border-2 border-[#cb8954]">
-              <p className="text-sm text-muted-foreground mb-1">Χρόνος στα {distance}m</p>
-              <p className="text-4xl font-bold text-[#cb8954]">
-                {(currentResult.duration_ms! / 1000).toFixed(3)}s
-              </p>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

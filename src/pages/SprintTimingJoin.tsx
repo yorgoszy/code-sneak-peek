@@ -11,7 +11,7 @@ export const SprintTimingJoin = () => {
   const navigate = useNavigate();
   const { session, joinSession, isLoading } = useSprintTiming(sessionCode);
   const [selectedRole, setSelectedRole] = useState<'start' | 'distance' | 'stop' | 'master' | null>(null);
-  const [selectedDistance, setSelectedDistance] = useState<number | null>(null);
+  const [selectedDistances, setSelectedDistances] = useState<number[]>([]);
 
   // Join session on mount
   useEffect(() => {
@@ -20,7 +20,7 @@ export const SprintTimingJoin = () => {
     }
   }, [sessionCode]);
 
-  // Navigate when both role and distance are selected (if needed)
+  // Navigate when both role and distances are selected (if needed)
   useEffect(() => {
     if (selectedRole && sessionCode) {
       if (selectedRole === 'master') {
@@ -28,12 +28,12 @@ export const SprintTimingJoin = () => {
       } else if (selectedRole === 'start' || selectedRole === 'stop') {
         // START και STOP δεν χρειάζονται απόσταση
         navigate(`/sprint-timing/${selectedRole}/${sessionCode}`);
-      } else if (selectedRole === 'distance' && selectedDistance !== null) {
-        // DISTANCE χρειάζεται απόσταση
-        navigate(`/sprint-timing/distance/${sessionCode}?distance=${selectedDistance}`);
+      } else if (selectedRole === 'distance' && selectedDistances.length > 0) {
+        // DISTANCE χρειάζεται αποστάσεις
+        navigate(`/sprint-timing/distance/${sessionCode}?distances=${selectedDistances.join(',')}`);
       }
     }
-  }, [selectedRole, selectedDistance, sessionCode, navigate]);
+  }, [selectedRole, selectedDistances, sessionCode, navigate]);
 
   const handleRoleSelect = (role: 'start' | 'distance' | 'stop' | 'master') => {
     setSelectedRole(role);
@@ -44,8 +44,19 @@ export const SprintTimingJoin = () => {
     // If distance, wait for distance selection
   };
 
-  const handleDistanceSelect = (distance: number) => {
-    setSelectedDistance(distance);
+  const handleDistanceToggle = (distance: number) => {
+    setSelectedDistances(prev => 
+      prev.includes(distance) 
+        ? prev.filter(d => d !== distance)
+        : [...prev, distance].sort((a, b) => a - b)
+    );
+  };
+
+  const handleContinue = () => {
+    if (selectedDistances.length > 0) {
+      // Trigger navigation via useEffect
+      setSelectedRole('distance');
+    }
   };
 
   if (isLoading || !session) {
@@ -125,42 +136,61 @@ export const SprintTimingJoin = () => {
     );
   }
 
-  // If distance role selected but distance not selected, show distance selection
+  // If distance role selected but distances not selected, show distance selection
   return (
     <div className="min-h-screen bg-background p-4 flex items-center justify-center">
       <Card className="max-w-md w-full rounded-none">
         <CardHeader>
           <CardTitle className="text-center">
-            Επιλέξτε Απόσταση
+            Επιλέξτε Αποστάσεις
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-center text-sm text-muted-foreground mb-4">
-            Για ποια απόσταση θα λειτουργεί αυτή η συσκευή DISTANCE?
+            Για ποιες αποστάσεις θα λειτουργεί αυτή η συσκευή DISTANCE? (Επιλέξτε πολλαπλές)
           </p>
 
           <div className="grid grid-cols-2 gap-3">
-            {session.distances?.map(distance => (
-              <Button
-                key={distance}
-                onClick={() => handleDistanceSelect(distance)}
-                className="h-20 rounded-none bg-muted hover:bg-muted/80 text-foreground"
-              >
-                <div className="text-center">
-                  <div className="text-3xl font-bold">{distance}</div>
-                  <div className="text-xs">μέτρα</div>
-                </div>
-              </Button>
-            ))}
+            {session.distances?.map(distance => {
+              const isSelected = selectedDistances.includes(distance);
+              return (
+                <Button
+                  key={distance}
+                  onClick={() => handleDistanceToggle(distance)}
+                  className={`h-20 rounded-none transition-all ${
+                    isSelected 
+                      ? 'bg-[#cb8954] hover:bg-[#cb8954]/90 text-white' 
+                      : 'bg-muted hover:bg-muted/80 text-foreground'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-3xl font-bold">{distance}</div>
+                    <div className="text-xs">μέτρα</div>
+                  </div>
+                </Button>
+              );
+            })}
           </div>
 
-          <Button
-            variant="outline"
-            onClick={() => setSelectedRole(null)}
-            className="w-full rounded-none"
-          >
-            Επιστροφή
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSelectedRole(null);
+                setSelectedDistances([]);
+              }}
+              className="flex-1 rounded-none"
+            >
+              Επιστροφή
+            </Button>
+            <Button
+              onClick={handleContinue}
+              disabled={selectedDistances.length === 0}
+              className="flex-1 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
+            >
+              Συνέχεια ({selectedDistances.length})
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
