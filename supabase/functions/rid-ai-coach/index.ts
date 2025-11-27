@@ -2198,6 +2198,9 @@ ${athletesList}
     }
 
     // Φόρτωση ιστορικού συνομιλιών (για τον effectiveUserId)
+    // ΣΗΜΕΙΩΣΗ: Το frontend στέλνει ήδη όλο το conversation history στο messages array,
+    // οπότε ΔΕΝ χρειάζεται να το φορτώσουμε ξανά από τη βάση για το AI call.
+    // Το φορτώνουμε μόνο για logging/debugging purposes.
     const historyResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/ai_conversations?user_id=eq.${effectiveUserId}&order=created_at.asc&limit=50`,
       {
@@ -2209,12 +2212,9 @@ ${athletesList}
     );
 
     const conversationHistory = await historyResponse.json();
+    console.log(`📝 Loaded ${Array.isArray(conversationHistory) ? conversationHistory.length : 0} messages from history (for reference only)`);
 
-    // Μετατροπή ιστορικού σε μορφή για το AI
-    const historyMessages = conversationHistory.map((msg: any) => ({
-      role: msg.message_type === "user" ? "user" : "assistant",
-      content: msg.content
-    }));
+    // ΔΕΝ μετατρέπουμε το history σε messages - χρησιμοποιούμε το messages που στέλνει το frontend
 
     // 🧠 Fetch AI Global Knowledge Base
     const aiKnowledgeResponse = await fetch(
@@ -2425,7 +2425,8 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
       }
     }
 
-    // Κλήση Lovable AI με όλο το ιστορικό
+    // Κλήση Lovable AI - χρησιμοποιούμε ΜΟΝΟ το messages που στέλνει το frontend
+    // (το οποίο ήδη περιέχει όλο το conversation history)
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -2434,7 +2435,7 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: [systemPrompt, ...historyMessages, ...messages],
+        messages: [systemPrompt, ...messages],
         stream: true,
       }),
     });
