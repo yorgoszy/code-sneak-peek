@@ -486,7 +486,7 @@ serve(async (req) => {
       }
     }
 
-    // Enhanced system prompt with real user data
+    // Enhanced system prompt with real user data - AI KNOWLEDGE BASE FIRST!
     const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις ΠΛΗΡΗ και ΠΡΑΓΜΑΤΙΚΗ πρόσβαση στα δεδομένα του χρήστη από την πλατφόρμα.
 
 ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
@@ -494,6 +494,8 @@ ${userName ? `Μιλάς με τον χρήστη: ${userName}` : ''}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️ ΚΡΙΤΙΚΟΙ ΚΑΝΟΝΕΣ - ΔΙΑΒΑΣΕ ΠΡΟΣΕΚΤΙΚΑ! ⚠️
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${aiKnowledgeString}
 
 🚨 ΚΑΝΟΝΑΣ #1 - AI KNOWLEDGE BASE ΕΧΕΙ ΑΠΟΛΥΤΗ ΠΡΟΤΕΡΑΙΟΤΗΤΑ:
    - ΤΟ AI KNOWLEDGE BASE ΕΙΝΑΙ Ο ΝΟΜΟΣ ΣΟΥ
