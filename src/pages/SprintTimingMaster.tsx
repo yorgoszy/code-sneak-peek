@@ -25,6 +25,7 @@ export const SprintTimingMaster = () => {
   ]);
   const [newDeviceRole, setNewDeviceRole] = useState<'start' | 'stop' | 'distance' | 'timer'>('start');
   const [newDeviceDistance, setNewDeviceDistance] = useState<number | undefined>();
+  const [customDistance, setCustomDistance] = useState<string>('');
   const [sessionCode, setSessionCode] = useState<string>();
   const { session, currentResult, createSession, isLoading } = useSprintTiming(sessionCode);
 
@@ -53,6 +54,16 @@ export const SprintTimingMaster = () => {
     };
     setDevices([...devices, newDevice]);
     setNewDeviceDistance(undefined);
+    setCustomDistance('');
+  };
+
+  const handleAddCustomDistance = () => {
+    const dist = parseFloat(customDistance);
+    if (dist && dist > 0 && !distances.includes(dist)) {
+      setDistances([...distances, dist].sort((a, b) => a - b));
+      setNewDeviceDistance(dist);
+      setCustomDistance('');
+    }
   };
 
   const handleRemoveDevice = (id: string) => {
@@ -198,21 +209,44 @@ export const SprintTimingMaster = () => {
                   </Select>
 
                   {newDeviceRole === 'distance' && (
-                    <Select 
-                      value={newDeviceDistance?.toString()} 
-                      onValueChange={(value) => setNewDeviceDistance(parseInt(value))}
-                    >
-                      <SelectTrigger className="rounded-none">
-                        <SelectValue placeholder="Επιλέξτε απόσταση" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-none">
-                        {distances.map(dist => (
-                          <SelectItem key={dist} value={dist.toString()} className="rounded-none">
-                            {dist}m
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-2">
+                      <Select 
+                        value={newDeviceDistance?.toString()} 
+                        onValueChange={(value) => setNewDeviceDistance(parseInt(value))}
+                      >
+                        <SelectTrigger className="rounded-none">
+                          <SelectValue placeholder="Επιλέξτε απόσταση" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-none">
+                          {distances.map(dist => (
+                            <SelectItem key={dist} value={dist.toString()} className="rounded-none">
+                              {dist}m
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          step="1"
+                          value={customDistance}
+                          onChange={(e) => setCustomDistance(e.target.value)}
+                          placeholder="Νέα απόσταση (π.χ. 40)"
+                          className="rounded-none"
+                          onKeyPress={(e) => e.key === 'Enter' && handleAddCustomDistance()}
+                        />
+                        <Button
+                          onClick={handleAddCustomDistance}
+                          size="icon"
+                          variant="outline"
+                          className="rounded-none"
+                          type="button"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   )}
 
                   <Button
