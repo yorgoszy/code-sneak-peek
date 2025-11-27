@@ -3083,6 +3083,79 @@ export type Database = {
         }
         Relationships: []
       }
+      sprint_timing_results: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          end_time: string | null
+          id: string
+          session_id: string
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          end_time?: string | null
+          id?: string
+          session_id: string
+          start_time: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          end_time?: string | null
+          id?: string
+          session_id?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sprint_timing_results_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sprint_timing_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sprint_timing_sessions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          distance_meters: number | null
+          id: string
+          session_code: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          distance_meters?: number | null
+          id?: string
+          session_code: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          distance_meters?: number | null
+          id?: string
+          session_code?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sprint_timing_sessions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       strength_test_attempts: {
         Row: {
           attempt_number: number

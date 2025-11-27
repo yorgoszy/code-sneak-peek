@@ -52,6 +52,11 @@ import AthletesProgressWidget from "@/pages/AthletesProgressWidget";
 import InstallAthletesProgressWidget from "@/pages/InstallAthletesProgressWidget";
 import RidAiCoachPage from "@/pages/RidAiCoachPage";
 import { AdminAIKnowledgeWithSidebar } from "@/pages/Dashboard/AdminAIKnowledgeWithSidebar";
+import { SprintTimingLanding } from "@/pages/SprintTimingLanding";
+import { SprintTimingMaster } from "@/pages/SprintTimingMaster";
+import { SprintTimingJoin } from "@/pages/SprintTimingJoin";
+import { SprintTimingStart } from "@/pages/SprintTimingStart";
+import { SprintTimingStop } from "@/pages/SprintTimingStop";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +83,14 @@ function App() {
                 <Route path="/subscriptions-widget" element={<ProtectedRoute><SubscriptionsWidget /></ProtectedRoute>} />
                 <Route path="/install-athletes-progress" element={<ProtectedRoute><InstallAthletesProgressWidget /></ProtectedRoute>} />
                 <Route path="/athletes-progress-widget" element={<ProtectedRoute><AthletesProgressWidget /></ProtectedRoute>} />
+                
+                {/* Sprint Timing System */}
+                <Route path="/sprint-timing" element={<SprintTimingLanding />} />
+                <Route path="/sprint-timing/master" element={<SprintTimingMaster />} />
+                <Route path="/sprint-timing/master/:sessionCode" element={<SprintTimingMaster />} />
+                <Route path="/sprint-timing/join/:sessionCode" element={<SprintTimingJoin />} />
+                <Route path="/sprint-timing/start/:sessionCode" element={<SprintTimingStart />} />
+                <Route path="/sprint-timing/stop/:sessionCode" element={<SprintTimingStop />} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
