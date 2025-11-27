@@ -142,7 +142,11 @@ serve(async (req) => {
       const { data, error } = await supabase.auth.admin.generateLink({
         type: 'recovery',
         email: target,
-        options: { redirectTo: redirect }
+        options: { 
+          redirectTo: redirect,
+          // 7 ημέρες διάρκεια (604800 δευτερόλεπτα)
+          expiresIn: 604800
+        }
       });
       return { data, error };
     };
@@ -234,7 +238,7 @@ serve(async (req) => {
             <div class="warning">
               <strong>⚠️ Σημαντικό:</strong>
               <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Αυτό το link θα λήξει σε 1 ώρα</li>
+                <li>Αυτό το link θα λήξει σε 7 ημέρες</li>
                 <li>Μπορεί να χρησιμοποιηθεί μόνο μία φορά</li>
                 <li>Αν δεν ζητήσατε αυτή την επαναφορά, αγνοήστε αυτό το email</li>
               </ul>
