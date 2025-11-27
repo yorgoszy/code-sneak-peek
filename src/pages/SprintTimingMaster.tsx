@@ -27,6 +27,7 @@ export const SprintTimingMaster = () => {
   const [newDeviceDistance, setNewDeviceDistance] = useState<number | undefined>();
   const [customDistance, setCustomDistance] = useState<string>('');
   const [sessionCode, setSessionCode] = useState<string>();
+  const [selectedDeviceForQR, setSelectedDeviceForQR] = useState<Device | null>(null);
   const { session, currentResult, createSession, isLoading } = useSprintTiming(sessionCode);
 
   // Update session code when session is created
@@ -92,6 +93,15 @@ export const SprintTimingMaster = () => {
 
   const handleCreateSession = async () => {
     await createSession(distances);
+  };
+
+  const handleCloseSession = () => {
+    setSessionCode(undefined);
+    setDevices([
+      { id: '1', role: 'start' },
+      { id: '2', role: 'stop' },
+      { id: '3', role: 'timer' }
+    ]);
   };
 
   if (!session) {
@@ -287,14 +297,32 @@ export const SprintTimingMaster = () => {
 
   const qrUrl = `${window.location.origin}/sprint-timing/join/${session.session_code}`;
 
+  const getDeviceQRUrl = (device: Device) => {
+    const baseUrl = `${window.location.origin}/sprint-timing/join/${session.session_code}`;
+    if (device.role === 'distance' && device.distance) {
+      return `${baseUrl}?role=${device.role}&distance=${device.distance}`;
+    }
+    return `${baseUrl}?role=${device.role}`;
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <Card className="max-w-2xl mx-auto rounded-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Session Active
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Session Active
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCloseSession}
+              className="rounded-none"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center space-y-4">
@@ -336,13 +364,7 @@ export const SprintTimingMaster = () => {
                 return (
                   <button
                     key={device.id}
-                    onClick={() => {
-                      const role = device.role;
-                      const url = device.role === 'distance' && device.distance
-                        ? `/sprint-timing/join/${session.session_code}?role=${role}&distance=${device.distance}`
-                        : `/sprint-timing/join/${session.session_code}?role=${role}`;
-                      window.open(url, '_blank');
-                    }}
+                    onClick={() => setSelectedDeviceForQR(device)}
                     className={`${colors.bg} p-3 rounded-none border ${colors.border} text-center hover:opacity-80 transition-opacity cursor-pointer`}
                   >
                     <Icon className={`w-6 h-6 mx-auto mb-1 ${colors.text}`} />
@@ -385,6 +407,61 @@ export const SprintTimingMaster = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Device QR Code Dialog */}
+      {selectedDeviceForQR && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedDeviceForQR(null)}
+        >
+          <Card 
+            className="max-w-md w-full rounded-none"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 capitalize">
+                  {(() => {
+                    const Icon = getDeviceIcon(selectedDeviceForQR.role);
+                    const colors = getDeviceColor(selectedDeviceForQR.role);
+                    return <Icon className={`w-5 h-5 ${colors.text}`} />;
+                  })()}
+                  {selectedDeviceForQR.role === 'start' && 'START Device'}
+                  {selectedDeviceForQR.role === 'stop' && 'STOP Device'}
+                  {selectedDeviceForQR.role === 'timer' && 'TIMER Device'}
+                  {selectedDeviceForQR.role === 'distance' && `DISTANCE ${selectedDeviceForQR.distance}m`}
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedDeviceForQR(null)}
+                  className="rounded-none"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Σκανάρετε το QR code για να συνδέσετε αυτή τη συσκευή
+                </p>
+                <div className="p-6 bg-white rounded-none inline-block">
+                  <QRCodeSVG 
+                    value={getDeviceQRUrl(selectedDeviceForQR)} 
+                    size={200} 
+                    level="H" 
+                  />
+                </div>
+                <div className="mt-4 p-3 bg-muted rounded-none">
+                  <p className="text-xs text-muted-foreground">Session Code</p>
+                  <p className="text-lg font-bold text-[#00ffba]">{session.session_code}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
