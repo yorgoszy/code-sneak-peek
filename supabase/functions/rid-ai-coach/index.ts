@@ -2236,6 +2236,62 @@ ${athletesList}
       content: msg.content
     }));
 
+    // 🧠 Fetch AI Global Knowledge Base
+    const aiKnowledgeResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/ai_global_knowledge?order=created_at.desc`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const aiKnowledge = await aiKnowledgeResponse.json();
+    console.log('🧠 AI Knowledge Base fetched:', Array.isArray(aiKnowledge) ? aiKnowledge.length : 0);
+
+    // Build AI Knowledge Base string FIRST - this will go at the TOP of the prompt
+    let aiKnowledgeString = '';
+    if (Array.isArray(aiKnowledge) && aiKnowledge.length > 0) {
+      aiKnowledgeString = '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      aiKnowledgeString += '🧠🧠🧠 AI KNOWLEDGE BASE - Η ΦΙΛΟΣΟΦΙΑ ΤΟΥ ΓΥΜΝΑΣΤΗΡΙΟΥ 🧠🧠🧠\n';
+      aiKnowledgeString += '⚠️⚠️⚠️ ΑΥΤΟ ΕΙΝΑΙ ΤΟ ΠΙΟ ΣΗΜΑΝΤΙΚΟ - ΔΙΑΒΑΣΕ ΠΡΟΣΕΚΤΙΚΑ ⚠️⚠️⚠️\n';
+      aiKnowledgeString += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      
+      const categoryLabels: Record<string, string> = {
+        nutrition: '🥗 ΔΙΑΤΡΟΦΗ',
+        training: '🏋️ ΠΡΟΠΟΝΗΣΗ',
+        exercise_technique: '💪 ΤΕΧΝΙΚΗ ΑΣΚΗΣΕΩΝ',
+        exercises: '💪 ΑΣΚΗΣΕΙΣ',
+        philosophy: '🎯 ΦΙΛΟΣΟΦΙΑ',
+        other: '📝 ΑΛΛΑ'
+      };
+
+      // Group knowledge by category
+      const knowledgeByCategory: Record<string, any[]> = {};
+      aiKnowledge.forEach((entry: any) => {
+        const category = entry.category || 'other';
+        if (!knowledgeByCategory[category]) {
+          knowledgeByCategory[category] = [];
+        }
+        knowledgeByCategory[category].push(entry);
+      });
+
+      // Display knowledge grouped by category
+      Object.entries(knowledgeByCategory).forEach(([category, entries]) => {
+        const label = categoryLabels[category] || '📝 ΑΛΛΑ';
+        aiKnowledgeString += `\n\n${label}:`;
+        
+        entries.forEach((entry: any) => {
+          aiKnowledgeString += `\n\n▸ ΘΕΜΑ: ${entry.original_info}`;
+          aiKnowledgeString += `\n  ΟΔΗΓΙΑ: ${entry.corrected_info}`;
+        });
+      });
+      
+      aiKnowledgeString += '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      aiKnowledgeString += '⚠️ ΠΡΕΠΕΙ ΝΑ ΑΚΟΛΟΥΘΗΣΕΙΣ ΤΙΣ ΠΑΡΑΠΑΝΩ ΟΔΗΓΙΕΣ ΑΥΣΤΗΡΑ! ⚠️\n';
+      aiKnowledgeString += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+    }
+
     // Get current date for context
     const currentDate = new Date();
     const currentDateStr = currentDate.toLocaleDateString('el-GR', { 
@@ -2247,10 +2303,20 @@ ${athletesList}
     const currentMonth = currentDate.toLocaleDateString('el-GR', { year: 'numeric', month: 'long' });
     const currentYear = currentDate.getFullYear();
 
-    // System prompt με πληροφορίες για τον χρήστη
+    // System prompt με πληροφορίες για τον χρήστη - AI KNOWLEDGE BASE FIRST!
     const systemPrompt = {
       role: "system",
-      content: `Είσαι ο RID AI Προπονητής, ένας εξειδικευμένος AI βοηθός για fitness και διατροφή.${isAdmin && !targetUserId ? `
+      content: `Είσαι ο RID AI Προπονητής, ένας εξειδικευμένος AI βοηθός για fitness και διατροφή.
+
+${aiKnowledgeString}
+
+⚠️ ΚΡΙΤΙΚΟΣ ΚΑΝΟΝΑΣ #1: ΤΟ AI KNOWLEDGE BASE ΕΧΕΙ ΑΠΟΛΥΤΗ ΠΡΟΤΕΡΑΙΟΤΗΤΑ
+- ΠΡΩΤΑ ελέγχεις το AI Knowledge Base για τυχόν σχετικές οδηγίες
+- ΑΝ υπάρχει σχετική πληροφορία, ΑΚΟΛΟΥΘΕΙΣ ΤΗΝ ΚΑΤΑ ΓΡΑΜΜΑ
+- ΜΗΝ προσθέσεις δική σου γνώση που αντιφάσκει με το Knowledge Base
+- Το Knowledge Base είναι η "ταυτότητα" του γυμναστηρίου - ΣΕΒΕ ΤΗΝ ΑΥΣΤΗΡΑ!
+
+${isAdmin && !targetUserId ? `
 
 🔥 ΛΕΙΤΟΥΡΓΙΑ ADMIN MODE 🔥
 ΠΡΟΣΟΧΗ: Είσαι σε ADMIN MODE και έχεις ΠΛΗΡΗ πρόσβαση σε ΟΛΑ τα δεδομένα ΟΛΩΝ των χρηστών!
