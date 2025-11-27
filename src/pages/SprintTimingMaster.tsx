@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
-import { Clock, Users } from 'lucide-react';
+import { Clock, Users, Plus, X } from 'lucide-react';
 
 export const SprintTimingMaster = () => {
-  const [distance, setDistance] = useState<string>('');
+  const [distances, setDistances] = useState<number[]>([10, 20, 30]);
+  const [newDistance, setNewDistance] = useState<string>('');
   const [sessionCode, setSessionCode] = useState<string>();
   const { session, currentResult, createSession, isLoading } = useSprintTiming(sessionCode);
 
@@ -17,9 +19,20 @@ export const SprintTimingMaster = () => {
     setSessionCode(session.session_code);
   }
 
+  const handleAddDistance = () => {
+    const dist = parseFloat(newDistance);
+    if (dist && dist > 0 && !distances.includes(dist)) {
+      setDistances([...distances, dist].sort((a, b) => a - b));
+      setNewDistance('');
+    }
+  };
+
+  const handleRemoveDistance = (dist: number) => {
+    setDistances(distances.filter(d => d !== dist));
+  };
+
   const handleCreateSession = async () => {
-    const distanceMeters = distance ? parseFloat(distance) : undefined;
-    await createSession(distanceMeters);
+    await createSession(distances);
   };
 
   if (!session) {
@@ -34,19 +47,41 @@ export const SprintTimingMaster = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Απόσταση (μέτρα) - Προαιρετικό</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={distance}
-                onChange={(e) => setDistance(e.target.value)}
-                placeholder="π.χ. 100"
-                className="rounded-none"
-              />
+              <Label>Αποστάσεις προς μέτρηση (μέτρα)</Label>
+              <div className="flex gap-2 flex-wrap mt-2 mb-3">
+                {distances.map(dist => (
+                  <Badge key={dist} variant="secondary" className="rounded-none">
+                    {dist}m
+                    <X 
+                      className="w-3 h-3 ml-2 cursor-pointer" 
+                      onClick={() => handleRemoveDistance(dist)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  step="1"
+                  value={newDistance}
+                  onChange={(e) => setNewDistance(e.target.value)}
+                  placeholder="Προσθήκη απόστασης..."
+                  className="rounded-none"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddDistance()}
+                />
+                <Button
+                  onClick={handleAddDistance}
+                  size="icon"
+                  variant="outline"
+                  className="rounded-none"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
             <Button
               onClick={handleCreateSession}
-              disabled={isLoading}
+              disabled={isLoading || distances.length === 0}
               className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
             >
               Δημιουργία Session
@@ -75,10 +110,16 @@ export const SprintTimingMaster = () => {
               <p className="text-4xl font-bold text-[#00ffba]">{session.session_code}</p>
             </div>
 
-            {session.distance_meters && (
+            {session.distances && session.distances.length > 0 && (
               <div>
-                <p className="text-sm text-muted-foreground">Απόσταση</p>
-                <p className="text-2xl font-bold">{session.distance_meters}m</p>
+                <p className="text-sm text-muted-foreground">Αποστάσεις</p>
+                <div className="flex gap-2 justify-center flex-wrap">
+                  {session.distances.map(dist => (
+                    <Badge key={dist} variant="outline" className="rounded-none text-lg">
+                      {dist}m
+                    </Badge>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -105,7 +146,14 @@ export const SprintTimingMaster = () => {
 
           {currentResult?.duration_ms && (
             <div className="bg-muted p-4 rounded-none">
-              <p className="text-sm text-muted-foreground mb-1">Τελευταίος Χρόνος</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm text-muted-foreground">Τελευταίος Χρόνος</p>
+                {currentResult.distance_meters && (
+                  <Badge variant="secondary" className="rounded-none">
+                    {currentResult.distance_meters}m
+                  </Badge>
+                )}
+              </div>
               <p className="text-3xl font-bold text-[#00ffba]">
                 {(currentResult.duration_ms / 1000).toFixed(3)}s
               </p>

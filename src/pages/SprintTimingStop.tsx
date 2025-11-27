@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { Square, Camera, AlertCircle } from 'lucide-react';
@@ -9,6 +10,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const SprintTimingStop = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
+  const [searchParams] = useSearchParams();
+  const distance = searchParams.get('distance');
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
@@ -93,9 +96,16 @@ export const SprintTimingStop = () => {
     <div className="min-h-screen bg-background p-4">
       <Card className="max-w-2xl mx-auto rounded-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Square className="w-5 h-5 text-red-500" />
-            STOP Device - {session.session_code}
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Square className="w-5 h-5 text-red-500" />
+              STOP Device - {session.session_code}
+            </div>
+            {distance && (
+              <Badge variant="secondary" className="rounded-none text-lg">
+                {distance}m
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

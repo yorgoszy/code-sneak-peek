@@ -6,13 +6,14 @@ interface SprintSession {
   id: string;
   session_code: string;
   status: 'waiting' | 'active' | 'completed';
-  distance_meters?: number;
+  distances?: number[];
   created_at: string;
 }
 
 interface SprintResult {
   id: string;
   session_id: string;
+  distance_meters?: number;
   start_time: string;
   end_time?: string;
   duration_ms?: number;
@@ -26,7 +27,7 @@ export const useSprintTiming = (sessionCode?: string) => {
   const { toast } = useToast();
 
   // Δημιουργία νέου session
-  const createSession = useCallback(async (distanceMeters?: number) => {
+  const createSession = useCallback(async (distances?: number[]) => {
     setIsLoading(true);
     try {
       const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -35,7 +36,7 @@ export const useSprintTiming = (sessionCode?: string) => {
         .from('sprint_timing_sessions')
         .insert({
           session_code: code,
-          distance_meters: distanceMeters,
+          distances: distances || [10, 20, 30],
           status: 'waiting'
         })
         .select()
@@ -100,7 +101,7 @@ export const useSprintTiming = (sessionCode?: string) => {
   }, [toast]);
 
   // Έναρξη χρονομέτρησης
-  const startTiming = useCallback(async () => {
+  const startTiming = useCallback(async (distanceMeters?: number) => {
     if (!session) return null;
 
     try {
@@ -115,6 +116,7 @@ export const useSprintTiming = (sessionCode?: string) => {
         .from('sprint_timing_results')
         .insert({
           session_id: session.id,
+          distance_meters: distanceMeters,
           start_time: new Date().toISOString()
         })
         .select()

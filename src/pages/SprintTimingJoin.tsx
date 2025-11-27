@@ -2,67 +2,149 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Square, Monitor } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Play, Square, Monitor, Loader2 } from 'lucide-react';
+import { useSprintTiming } from '@/hooks/useSprintTiming';
 
 export const SprintTimingJoin = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
   const navigate = useNavigate();
-  const [selectedDevice, setSelectedDevice] = useState<'start' | 'stop' | 'master' | null>(null);
+  const { session, joinSession, isLoading } = useSprintTiming(sessionCode);
+  const [selectedRole, setSelectedRole] = useState<'start' | 'stop' | 'master' | null>(null);
+  const [selectedDistance, setSelectedDistance] = useState<number | null>(null);
 
+  // Join session on mount
   useEffect(() => {
-    if (selectedDevice && sessionCode) {
-      if (selectedDevice === 'master') {
+    if (sessionCode) {
+      joinSession(sessionCode);
+    }
+  }, [sessionCode]);
+
+  // Navigate when both role and distance are selected (if needed)
+  useEffect(() => {
+    if (selectedRole && sessionCode) {
+      if (selectedRole === 'master') {
         navigate(`/sprint-timing/master/${sessionCode}`);
-      } else {
-        navigate(`/sprint-timing/${selectedDevice}/${sessionCode}`);
+      } else if (selectedDistance !== null) {
+        navigate(`/sprint-timing/${selectedRole}/${sessionCode}?distance=${selectedDistance}`);
       }
     }
-  }, [selectedDevice, sessionCode, navigate]);
+  }, [selectedRole, selectedDistance, sessionCode, navigate]);
 
+  const handleRoleSelect = (role: 'start' | 'stop' | 'master') => {
+    setSelectedRole(role);
+    // If master, navigate immediately
+    if (role === 'master') {
+      return;
+    }
+    // Otherwise, wait for distance selection
+  };
+
+  const handleDistanceSelect = (distance: number) => {
+    setSelectedDistance(distance);
+  };
+
+  if (isLoading || !session) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <Card className="max-w-md w-full rounded-none">
+          <CardContent className="py-8 text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+            <p>Φόρτωση session...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // If role not selected, show role selection
+  if (!selectedRole) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <Card className="max-w-md w-full rounded-none">
+          <CardHeader>
+            <CardTitle className="text-center">
+              Session: {sessionCode}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-center text-sm text-muted-foreground mb-6">
+              Επιλέξτε τον ρόλο αυτής της συσκευής
+            </p>
+
+            <Button
+              onClick={() => handleRoleSelect('master')}
+              className="w-full rounded-none h-20 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              <Monitor className="w-6 h-6 mr-3" />
+              <div className="text-left">
+                <div className="font-bold">Master Device</div>
+                <div className="text-xs opacity-90">Εμφάνιση αποτελεσμάτων</div>
+              </div>
+            </Button>
+
+            <Button
+              onClick={() => handleRoleSelect('start')}
+              className="w-full rounded-none h-20 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+            >
+              <Play className="w-6 h-6 mr-3" />
+              <div className="text-left">
+                <div className="font-bold">START Device</div>
+                <div className="text-xs opacity-90">Ανίχνευση έναρξης</div>
+              </div>
+            </Button>
+
+            <Button
+              onClick={() => handleRoleSelect('stop')}
+              className="w-full rounded-none h-20 bg-red-500 hover:bg-red-600 text-white"
+            >
+              <Square className="w-6 h-6 mr-3" />
+              <div className="text-left">
+                <div className="font-bold">STOP Device</div>
+                <div className="text-xs opacity-90">Ανίχνευση τερματισμού</div>
+              </div>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // If role selected but distance not selected, show distance selection
   return (
     <div className="min-h-screen bg-background p-4 flex items-center justify-center">
       <Card className="max-w-md w-full rounded-none">
         <CardHeader>
           <CardTitle className="text-center">
-            Joining Session: {sessionCode}
+            Επιλέξτε Απόσταση
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-center text-sm text-muted-foreground mb-6">
-            Επιλέξτε τον ρόλο αυτής της συσκευής
+          <p className="text-center text-sm text-muted-foreground mb-4">
+            Για ποια απόσταση θα λειτουργεί αυτή η συσκευή {selectedRole === 'start' ? 'START' : 'STOP'}?
           </p>
 
-          <Button
-            onClick={() => setSelectedDevice('master')}
-            className="w-full rounded-none h-20 bg-blue-500 hover:bg-blue-600 text-white"
-          >
-            <Monitor className="w-6 h-6 mr-3" />
-            <div className="text-left">
-              <div className="font-bold">Master Device</div>
-              <div className="text-xs opacity-90">Εμφάνιση αποτελεσμάτων</div>
-            </div>
-          </Button>
+          <div className="grid grid-cols-2 gap-3">
+            {session.distances?.map(distance => (
+              <Button
+                key={distance}
+                onClick={() => handleDistanceSelect(distance)}
+                className="h-20 rounded-none bg-muted hover:bg-muted/80 text-foreground"
+              >
+                <div className="text-center">
+                  <div className="text-3xl font-bold">{distance}</div>
+                  <div className="text-xs">μέτρα</div>
+                </div>
+              </Button>
+            ))}
+          </div>
 
           <Button
-            onClick={() => setSelectedDevice('start')}
-            className="w-full rounded-none h-20 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+            variant="outline"
+            onClick={() => setSelectedRole(null)}
+            className="w-full rounded-none"
           >
-            <Play className="w-6 h-6 mr-3" />
-            <div className="text-left">
-              <div className="font-bold">START Device</div>
-              <div className="text-xs opacity-90">Ανίχνευση έναρξης</div>
-            </div>
-          </Button>
-
-          <Button
-            onClick={() => setSelectedDevice('stop')}
-            className="w-full rounded-none h-20 bg-red-500 hover:bg-red-600 text-white"
-          >
-            <Square className="w-6 h-6 mr-3" />
-            <div className="text-left">
-              <div className="font-bold">STOP Device</div>
-              <div className="text-xs opacity-90">Ανίχνευση τερματισμού</div>
-            </div>
+            Επιστροφή
           </Button>
         </CardContent>
       </Card>
