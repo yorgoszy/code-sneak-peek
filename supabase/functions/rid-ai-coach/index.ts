@@ -2506,24 +2506,43 @@ ${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfi
             }
           }
 
-          // Αποθήκευση user message (ΤΩΡΑ, μετά το AI call)
+          // Αποθήκευση user message (μόνο αν δεν υπάρχει ήδη)
           const userMessage = messages[messages.length - 1];
           if (userMessage.role === "user") {
-            await fetch(`${SUPABASE_URL}/rest/v1/ai_conversations`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-                "Prefer": "return=minimal"
-              },
-              body: JSON.stringify({
-                user_id: effectiveUserId,
-                content: userMessage.content,
-                message_type: "user",
-                metadata: isAdmin && targetUserId ? { viewed_by_admin: userId } : {}
-              })
-            });
+            // Έλεγχος αν το message υπάρχει ήδη στη βάση
+            const existingMessageResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/ai_conversations?user_id=eq.${effectiveUserId}&content=eq.${encodeURIComponent(userMessage.content)}&message_type=eq.user&order=created_at.desc&limit=1`,
+              {
+                headers: {
+                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+                }
+              }
+            );
+            
+            const existingMessages = await existingMessageResponse.json();
+            
+            // Αποθήκευση μόνο αν ΔΕΝ υπάρχει ήδη
+            if (!Array.isArray(existingMessages) || existingMessages.length === 0) {
+              await fetch(`${SUPABASE_URL}/rest/v1/ai_conversations`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                  "Prefer": "return=minimal"
+                },
+                body: JSON.stringify({
+                  user_id: effectiveUserId,
+                  content: userMessage.content,
+                  message_type: "user",
+                  metadata: isAdmin && targetUserId ? { viewed_by_admin: userId } : {}
+                })
+              });
+              console.log('✅ User message saved to database');
+            } else {
+              console.log('⚠️ User message already exists in database, skipping save');
+            }
           }
 
           // Αποθήκευση απάντησης AI
