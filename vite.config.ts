@@ -16,11 +16,11 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['lovable-uploads/50032971-abc1-489c-af48-27aacdb66ec3.png'],
+      includeAssets: ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'HYPERKIDS',
         short_name: 'HYPERKIDS',
-        description: 'HYPERKIDS - Προπονητική και Διατροφή για Παιδιά',
+        description: 'HYPERKIDS - Athletic Training & Nutrition',
         theme_color: '#00ffba',
         background_color: '#ffffff',
         display: 'standalone',
@@ -29,13 +29,13 @@ export default defineConfig(({ mode }) => ({
         scope: '/',
         icons: [
           {
-            src: '/lovable-uploads/50032971-abc1-489c-af48-27aacdb66ec3.png',
+            src: '/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/lovable-uploads/50032971-abc1-489c-af48-27aacdb66ec3.png',
+            src: '/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

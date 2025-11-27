@@ -43,7 +43,7 @@ import { AthletesProgressWithSidebar } from "@/pages/Dashboard/AthletesProgressW
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Offers from "@/pages/Offers";
 import ProfileEdit from "@/pages/ProfileEdit";
-import InstallApp from "@/pages/InstallApp";
+import InstallPWA from "@/pages/InstallPWA";
 import CalendarWidget from "@/pages/CalendarWidget";
 import InstallCalendarWidget from "@/pages/InstallCalendarWidget";
 import SubscriptionsWidget from "@/pages/SubscriptionsWidget";
@@ -71,7 +71,7 @@ function App() {
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/online-coaching" element={<OnlineCoaching />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
-                <Route path="/install" element={<InstallApp />} />
+                <Route path="/install" element={<InstallPWA />} />
                 <Route path="/install-calendar" element={<ProtectedRoute><InstallCalendarWidget /></ProtectedRoute>} />
                 <Route path="/calendar-widget" element={<ProtectedRoute><CalendarWidget /></ProtectedRoute>} />
                 <Route path="/install-subscriptions" element={<ProtectedRoute><InstallSubscriptionsWidget /></ProtectedRoute>} />
