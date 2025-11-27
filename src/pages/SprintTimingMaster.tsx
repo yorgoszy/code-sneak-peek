@@ -112,10 +112,20 @@ export const SprintTimingMaster = () => {
       <div className="min-h-screen bg-background p-4">
         <Card className="max-w-2xl mx-auto rounded-none">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Sprint Timer - Ρύθμιση Session
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Sprint Timer - Ρύθμιση Session
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => window.history.back()}
+                className="rounded-none"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Αποστάσεις */}
