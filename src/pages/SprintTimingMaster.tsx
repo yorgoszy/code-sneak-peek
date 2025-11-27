@@ -28,14 +28,7 @@ export const SprintTimingMaster = () => {
   const [customDistance, setCustomDistance] = useState<string>('');
   const [sessionCode, setSessionCode] = useState<string>();
   const [selectedDeviceForQR, setSelectedDeviceForQR] = useState<Device | null>(null);
-  const [showSession, setShowSession] = useState(false);
   const { session, currentResult, createSession, isLoading } = useSprintTiming(sessionCode);
-
-  // Update session code when session is created
-  if (session && !sessionCode) {
-    setSessionCode(session.session_code);
-    setShowSession(true);
-  }
 
   const handleAddDistance = () => {
     const dist = parseFloat(newDistance);
@@ -94,11 +87,13 @@ export const SprintTimingMaster = () => {
   };
 
   const handleCreateSession = async () => {
-    await createSession(distances);
+    const newSession = await createSession(distances);
+    if (newSession) {
+      setSessionCode(newSession.session_code);
+    }
   };
 
   const handleCloseSession = () => {
-    setShowSession(false);
     setSessionCode(undefined);
     setDevices([
       { id: '1', role: 'start' },
@@ -107,7 +102,7 @@ export const SprintTimingMaster = () => {
     ]);
   };
 
-  if (!session || !showSession) {
+  if (!session) {
     return (
       <div className="min-h-screen bg-background p-4">
         <Card className="max-w-2xl mx-auto rounded-none">
