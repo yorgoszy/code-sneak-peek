@@ -3,14 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Square, Monitor, Loader2 } from 'lucide-react';
+import { Play, Square, Monitor, Loader2, MapPin } from 'lucide-react';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
 
 export const SprintTimingJoin = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
   const navigate = useNavigate();
   const { session, joinSession, isLoading } = useSprintTiming(sessionCode);
-  const [selectedRole, setSelectedRole] = useState<'start' | 'stop' | 'master' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'start' | 'distance' | 'stop' | 'master' | null>(null);
   const [selectedDistance, setSelectedDistance] = useState<number | null>(null);
 
   // Join session on mount
@@ -25,19 +25,23 @@ export const SprintTimingJoin = () => {
     if (selectedRole && sessionCode) {
       if (selectedRole === 'master') {
         navigate(`/sprint-timing/master/${sessionCode}`);
-      } else if (selectedDistance !== null) {
-        navigate(`/sprint-timing/${selectedRole}/${sessionCode}?distance=${selectedDistance}`);
+      } else if (selectedRole === 'start' || selectedRole === 'stop') {
+        // START και STOP δεν χρειάζονται απόσταση
+        navigate(`/sprint-timing/${selectedRole}/${sessionCode}`);
+      } else if (selectedRole === 'distance' && selectedDistance !== null) {
+        // DISTANCE χρειάζεται απόσταση
+        navigate(`/sprint-timing/distance/${sessionCode}?distance=${selectedDistance}`);
       }
     }
   }, [selectedRole, selectedDistance, sessionCode, navigate]);
 
-  const handleRoleSelect = (role: 'start' | 'stop' | 'master') => {
+  const handleRoleSelect = (role: 'start' | 'distance' | 'stop' | 'master') => {
     setSelectedRole(role);
-    // If master, navigate immediately
-    if (role === 'master') {
+    // If master, start, or stop, navigate immediately (no distance needed)
+    if (role === 'master' || role === 'start' || role === 'stop') {
       return;
     }
-    // Otherwise, wait for distance selection
+    // If distance, wait for distance selection
   };
 
   const handleDistanceSelect = (distance: number) => {
@@ -90,7 +94,18 @@ export const SprintTimingJoin = () => {
               <Play className="w-6 h-6 mr-3" />
               <div className="text-left">
                 <div className="font-bold">START Device</div>
-                <div className="text-xs opacity-90">Ανίχνευση έναρξης</div>
+                <div className="text-xs opacity-90">Ανίχνευση έναρξης (γραμμή εκκίνησης)</div>
+              </div>
+            </Button>
+
+            <Button
+              onClick={() => handleRoleSelect('distance')}
+              className="w-full rounded-none h-20 bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
+            >
+              <MapPin className="w-6 h-6 mr-3" />
+              <div className="text-left">
+                <div className="font-bold">DISTANCE Device</div>
+                <div className="text-xs opacity-90">Ενδιάμεσες αποστάσεις (10m, 20m, κτλ)</div>
               </div>
             </Button>
 
@@ -101,7 +116,7 @@ export const SprintTimingJoin = () => {
               <Square className="w-6 h-6 mr-3" />
               <div className="text-left">
                 <div className="font-bold">STOP Device</div>
-                <div className="text-xs opacity-90">Ανίχνευση τερματισμού</div>
+                <div className="text-xs opacity-90">Τελική γραμμή (τερματισμός)</div>
               </div>
             </Button>
           </CardContent>
@@ -110,7 +125,7 @@ export const SprintTimingJoin = () => {
     );
   }
 
-  // If role selected but distance not selected, show distance selection
+  // If distance role selected but distance not selected, show distance selection
   return (
     <div className="min-h-screen bg-background p-4 flex items-center justify-center">
       <Card className="max-w-md w-full rounded-none">
@@ -121,7 +136,7 @@ export const SprintTimingJoin = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-center text-sm text-muted-foreground mb-4">
-            Για ποια απόσταση θα λειτουργεί αυτή η συσκευή {selectedRole === 'start' ? 'START' : 'STOP'}?
+            Για ποια απόσταση θα λειτουργεί αυτή η συσκευή DISTANCE?
           </p>
 
           <div className="grid grid-cols-2 gap-3">
