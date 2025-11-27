@@ -58,6 +58,7 @@ import { SprintTimingJoin } from "@/pages/SprintTimingJoin";
 import { SprintTimingStart } from "@/pages/SprintTimingStart";
 import { SprintTimingDistance } from "@/pages/SprintTimingDistance";
 import { SprintTimingStop } from "@/pages/SprintTimingStop";
+import { SprintTimingTimer } from "@/pages/SprintTimingTimer";
 
 const queryClient = new QueryClient();
 
@@ -90,9 +91,10 @@ function App() {
                 <Route path="/sprint-timing/master" element={<SprintTimingMaster />} />
                 <Route path="/sprint-timing/master/:sessionCode" element={<SprintTimingMaster />} />
                 <Route path="/sprint-timing/join/:sessionCode" element={<SprintTimingJoin />} />
-                <Route path="/sprint-timing/start/:sessionCode" element={<SprintTimingStart />} />
-                <Route path="/sprint-timing/distance/:sessionCode" element={<SprintTimingDistance />} />
-                <Route path="/sprint-timing/stop/:sessionCode" element={<SprintTimingStop />} />
+          <Route path="/sprint-timing/start/:sessionCode" element={<SprintTimingStart />} />
+          <Route path="/sprint-timing/distance/:sessionCode" element={<SprintTimingDistance />} />
+          <Route path="/sprint-timing/stop/:sessionCode" element={<SprintTimingStop />} />
+          <Route path="/sprint-timing/timer/:sessionCode" element={<SprintTimingTimer />} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />

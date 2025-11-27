@@ -3,14 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Square, Monitor, Loader2, MapPin } from 'lucide-react';
+import { Play, Square, Monitor, Loader2, MapPin, Clock } from 'lucide-react';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
 
 export const SprintTimingJoin = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
   const navigate = useNavigate();
   const { session, joinSession, isLoading } = useSprintTiming(sessionCode);
-  const [selectedRole, setSelectedRole] = useState<'start' | 'distance' | 'stop' | 'master' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'start' | 'distance' | 'stop' | 'timer' | 'master' | null>(null);
   const [selectedDistances, setSelectedDistances] = useState<number[]>([]);
 
   // Join session on mount
@@ -25,8 +25,8 @@ export const SprintTimingJoin = () => {
     if (selectedRole && sessionCode) {
       if (selectedRole === 'master') {
         navigate(`/sprint-timing/master/${sessionCode}`);
-      } else if (selectedRole === 'start' || selectedRole === 'stop') {
-        // START και STOP δεν χρειάζονται απόσταση
+      } else if (selectedRole === 'start' || selectedRole === 'stop' || selectedRole === 'timer') {
+        // START, STOP και TIMER δεν χρειάζονται απόσταση
         navigate(`/sprint-timing/${selectedRole}/${sessionCode}`);
       } else if (selectedRole === 'distance' && selectedDistances.length > 0) {
         // DISTANCE χρειάζεται αποστάσεις
@@ -35,10 +35,10 @@ export const SprintTimingJoin = () => {
     }
   }, [selectedRole, selectedDistances, sessionCode, navigate]);
 
-  const handleRoleSelect = (role: 'start' | 'distance' | 'stop' | 'master') => {
+  const handleRoleSelect = (role: 'start' | 'distance' | 'stop' | 'timer' | 'master') => {
     setSelectedRole(role);
-    // If master, start, or stop, navigate immediately (no distance needed)
-    if (role === 'master' || role === 'start' || role === 'stop') {
+    // If master, start, stop, or timer, navigate immediately (no distance needed)
+    if (role === 'master' || role === 'start' || role === 'stop' || role === 'timer') {
       return;
     }
     // If distance, wait for distance selection
@@ -128,6 +128,17 @@ export const SprintTimingJoin = () => {
               <div className="text-left">
                 <div className="font-bold">STOP Device</div>
                 <div className="text-xs opacity-90">Τελική γραμμή (τερματισμός)</div>
+              </div>
+            </Button>
+
+            <Button
+              onClick={() => handleRoleSelect('timer')}
+              className="w-full rounded-none h-20 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              <Clock className="w-6 h-6 mr-3" />
+              <div className="text-left">
+                <div className="font-bold">TIMER Device</div>
+                <div className="text-xs opacity-90">Εμφάνιση χρονομέτρου</div>
               </div>
             </Button>
           </CardContent>

@@ -14,6 +14,7 @@ export const SprintTimingMaster = () => {
   const [numStartDevices, setNumStartDevices] = useState<number>(1);
   const [numStopDevices, setNumStopDevices] = useState<number>(1);
   const [numDistanceDevices, setNumDistanceDevices] = useState<number>(1);
+  const [numTimerDevices, setNumTimerDevices] = useState<number>(1);
   const [sessionCode, setSessionCode] = useState<string>();
   const { session, currentResult, createSession, isLoading } = useSprintTiming(sessionCode);
 
@@ -142,6 +143,22 @@ export const SprintTimingMaster = () => {
                     className="w-20 rounded-none text-center"
                   />
                 </div>
+
+                {/* TIMER Devices */}
+                <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-none border border-blue-500/20">
+                  <div>
+                    <Label className="text-sm font-medium">TIMER Devices</Label>
+                    <p className="text-xs text-muted-foreground">Συσκευές χρονομέτρου</p>
+                  </div>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={numTimerDevices}
+                    onChange={(e) => setNumTimerDevices(parseInt(e.target.value) || 1)}
+                    className="w-20 rounded-none text-center"
+                  />
+                </div>
               </div>
             </div>
 
@@ -150,7 +167,7 @@ export const SprintTimingMaster = () => {
               <div className="flex items-center justify-between">
                 <span className="font-medium">Σύνολο Συσκευών:</span>
                 <Badge className="rounded-none text-lg">
-                  {numStartDevices + numDistanceDevices + numStopDevices} συσκευές
+                  {numStartDevices + numDistanceDevices + numStopDevices + numTimerDevices} συσκευές
                 </Badge>
               </div>
             </div>
@@ -211,19 +228,35 @@ export const SprintTimingMaster = () => {
           {/* Αριθμός Συσκευών */}
           <div className="border-t pt-4 space-y-3">
             <p className="text-sm font-medium">Αναμενόμενες Συσκευές</p>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-[#00ffba]/10 p-3 rounded-none border border-[#00ffba]/20 text-center">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => window.open(`/sprint-timing/join/${session.session_code}?role=start`, '_blank')}
+                className="bg-[#00ffba]/10 p-3 rounded-none border border-[#00ffba]/20 text-center hover:bg-[#00ffba]/20 transition-colors cursor-pointer"
+              >
                 <div className="text-2xl font-bold text-[#00ffba]">{numStartDevices}</div>
                 <div className="text-xs text-muted-foreground">START</div>
-              </div>
-              <div className="bg-[#cb8954]/10 p-3 rounded-none border border-[#cb8954]/20 text-center">
+              </button>
+              <button
+                onClick={() => window.open(`/sprint-timing/join/${session.session_code}?role=distance`, '_blank')}
+                className="bg-[#cb8954]/10 p-3 rounded-none border border-[#cb8954]/20 text-center hover:bg-[#cb8954]/20 transition-colors cursor-pointer"
+              >
                 <div className="text-2xl font-bold text-[#cb8954]">{numDistanceDevices}</div>
                 <div className="text-xs text-muted-foreground">DISTANCE</div>
-              </div>
-              <div className="bg-red-500/10 p-3 rounded-none border border-red-500/20 text-center">
+              </button>
+              <button
+                onClick={() => window.open(`/sprint-timing/join/${session.session_code}?role=stop`, '_blank')}
+                className="bg-red-500/10 p-3 rounded-none border border-red-500/20 text-center hover:bg-red-500/20 transition-colors cursor-pointer"
+              >
                 <div className="text-2xl font-bold text-red-500">{numStopDevices}</div>
                 <div className="text-xs text-muted-foreground">STOP</div>
-              </div>
+              </button>
+              <button
+                onClick={() => window.open(`/sprint-timing/join/${session.session_code}?role=timer`, '_blank')}
+                className="bg-blue-500/10 p-3 rounded-none border border-blue-500/20 text-center hover:bg-blue-500/20 transition-colors cursor-pointer"
+              >
+                <div className="text-2xl font-bold text-blue-500">{numTimerDevices}</div>
+                <div className="text-xs text-muted-foreground">TIMER</div>
+              </button>
             </div>
           </div>
 
