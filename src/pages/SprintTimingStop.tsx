@@ -6,6 +6,7 @@ import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { Square, Camera, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 export const SprintTimingStop = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
@@ -15,6 +16,31 @@ export const SprintTimingStop = () => {
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const { session, currentResult, joinSession, stopTiming } = useSprintTiming(sessionCode);
+
+  // Listen for broadcast activation
+  useEffect(() => {
+    if (!sessionCode) return;
+
+    const channel = supabase
+      .channel(`sprint-session-${sessionCode}`)
+      .on('broadcast', { event: 'activate_motion_detection' }, () => {
+        console.log('📡 Received: Activate motion detection (STOP)');
+        if (isReady && stream && !isActive && currentResult && !currentResult.end_time && motionDetector && videoRef.current) {
+          setIsActive(true);
+          motionDetector.start(async () => {
+            console.log('🏁 STOP TRIGGERED BY MOTION (Broadcast)!');
+            motionDetector.stop();
+            setIsActive(false);
+            await stopTiming(currentResult.id);
+          });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionCode, isReady, stream, isActive, currentResult, motionDetector, stopTiming]);
 
   useEffect(() => {
     if (sessionCode) {

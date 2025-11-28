@@ -186,6 +186,21 @@ export const useSprintTiming = (sessionCode?: string) => {
     }
   }, [toast]);
 
+  // Broadcast έναρξης motion detection σε όλες τις συσκευές
+  const broadcastActivateMotion = useCallback(async () => {
+    if (!session?.session_code) return;
+
+    const channel = supabase.channel(`sprint-session-${session.session_code}`);
+    
+    await channel.send({
+      type: 'broadcast',
+      event: 'activate_motion_detection',
+      payload: { timestamp: new Date().toISOString() }
+    });
+
+    console.log('📡 Broadcast: Activate motion detection');
+  }, [session]);
+
   // Subscribe to realtime changes
   useEffect(() => {
     if (!sessionCode) return;
@@ -235,6 +250,7 @@ export const useSprintTiming = (sessionCode?: string) => {
     createSession,
     joinSession,
     startTiming,
-    stopTiming
+    stopTiming,
+    broadcastActivateMotion
   };
 };
