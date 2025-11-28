@@ -16,7 +16,7 @@ export const SprintTimingStart = () => {
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { session, joinSession, startTiming } = useSprintTiming(sessionCode);
+  const { session, joinSession, startTiming, broadcastActivateMotion } = useSprintTiming(sessionCode);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -90,6 +90,25 @@ export const SprintTimingStart = () => {
       
       // Ξεκινάμε το χρονόμετρο (χωρίς απόσταση - αυτό είναι START)
       await startTiming();
+    });
+  };
+
+  const handleBroadcastActivate = async () => {
+    if (!isReady || !stream) {
+      toast({
+        title: "Σφάλμα",
+        description: "Η κάμερα δεν είναι έτοιμη",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await broadcastActivateMotion();
+    handleActivate();
+    
+    toast({
+      title: "Έναρξη Motion Detection",
+      description: "Όλες οι συσκευές ενεργοποιήθηκαν!",
     });
   };
 
@@ -176,24 +195,35 @@ export const SprintTimingStart = () => {
                 </Alert>
               )}
 
-              <div className="flex gap-2">
-                {!isActive ? (
-                  <Button
-                    onClick={handleActivate}
-                    disabled={!isReady}
-                    className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-                  >
-                    Ενεργοποίηση Motion Detection
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleStop}
-                    variant="destructive"
-                    className="flex-1 rounded-none"
-                  >
-                    Απενεργοποίηση
-                  </Button>
-                )}
+              <div className="space-y-2">
+                <Button
+                  onClick={handleBroadcastActivate}
+                  disabled={!isReady || isActive}
+                  className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold"
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  Έναρξη Όλων των Συσκευών
+                </Button>
+
+                <div className="flex gap-2">
+                  {!isActive ? (
+                    <Button
+                      onClick={handleActivate}
+                      disabled={!isReady}
+                      className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                    >
+                      Ενεργοποίηση Μόνο START
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleStop}
+                      variant="destructive"
+                      className="flex-1 rounded-none"
+                    >
+                      Απενεργοποίηση
+                    </Button>
+                  )}
+                </div>
               </div>
             </>
           )}

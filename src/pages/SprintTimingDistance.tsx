@@ -7,6 +7,7 @@ import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { MapPin, Camera, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 export const SprintTimingDistance = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
@@ -20,6 +21,35 @@ export const SprintTimingDistance = () => {
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const { session, currentResult, joinSession, stopTiming } = useSprintTiming(sessionCode);
+
+  // Listen for broadcast activation
+  useEffect(() => {
+    if (!sessionCode) return;
+
+    const channel = supabase
+      .channel(`sprint-session-${sessionCode}`)
+      .on('broadcast', { event: 'activate_motion_detection' }, () => {
+        console.log('📡 Received: Activate motion detection (DISTANCE)');
+        if (isReady && stream && !isActive && currentResult && !currentResult.end_time && completedDistances.length < distances.length && motionDetector && videoRef.current) {
+          const nextDistance = distances.find(d => !completedDistances.includes(d));
+          if (nextDistance) {
+            setIsActive(true);
+            motionDetector.start(async () => {
+              console.log(`📍 DISTANCE ${nextDistance}m TRIGGERED BY MOTION (Broadcast)!`);
+              motionDetector.stop();
+              setIsActive(false);
+              await stopTiming(currentResult.id);
+              setCompletedDistances(prev => [...prev, nextDistance]);
+            });
+          }
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionCode, isReady, stream, isActive, currentResult, completedDistances, distances, motionDetector, stopTiming]);
 
   useEffect(() => {
     if (sessionCode) {
