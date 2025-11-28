@@ -156,10 +156,7 @@ export const SprintTimingStart = () => {
       return;
     }
 
-    // Ενεργοποιούμε την τοπική συσκευή START πρώτα
-    handleActivate();
-    
-    // Στέλνουμε το broadcast στις άλλες συσκευές
+    // Στέλνουμε broadcast - όλες οι συσκευές (συμπεριλαμβανομένης της START) θα ενεργοποιηθούν
     await broadcastActivateMotion();
     
     toast({
