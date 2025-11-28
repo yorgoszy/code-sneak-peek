@@ -69,7 +69,10 @@ export const SprintTimingTimer = () => {
 
   // Listen for results only for this session - REALTIME
   useEffect(() => {
-    if (!session?.id) return;
+    if (!session?.id) {
+      console.warn('⚠️ TIMER: No session ID, skipping realtime setup');
+      return;
+    }
 
     console.log('🎧 TIMER: Setting up realtime listener for session:', session.id);
 
@@ -85,6 +88,13 @@ export const SprintTimingTimer = () => {
         },
         (payload) => {
           console.log('⏱️ TIMER: Result update received:', payload);
+          console.log('📊 TIMER: Payload details:', {
+            eventType: payload.eventType,
+            table: payload.table,
+            schema: payload.schema,
+            new: payload.new
+          });
+          
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             console.log('✅ TIMER: Setting currentResult:', payload.new);
             setCurrentResult(payload.new as any);
@@ -92,18 +102,21 @@ export const SprintTimingTimer = () => {
         }
       )
       .subscribe((status) => {
-        console.log('🎧 TIMER: Results channel status:', status);
+        console.log('🎧 TIMER: Results channel status:', status, 'for session:', session.id);
       });
 
     return () => {
-      console.log('🎧 TIMER: Cleaning up realtime listener');
+      console.log('🎧 TIMER: Cleaning up realtime listener for session:', session.id);
       supabase.removeChannel(channel);
     };
   }, [session?.id]);
 
   // Monitor currentResult for timing
   useEffect(() => {
+    console.log('🔄 TIMER: currentResult changed:', currentResult);
+    
     if (!currentResult) {
+      console.log('⚠️ TIMER: No currentResult, resetting timer');
       setIsRunning(false);
       setElapsedTime(0);
       return;
@@ -111,6 +124,7 @@ export const SprintTimingTimer = () => {
 
     // If result has duration (completed), show final time
     if (currentResult.duration_ms) {
+      console.log('✅ TIMER: Result completed, showing final time:', currentResult.duration_ms);
       setElapsedTime(currentResult.duration_ms);
       setIsRunning(false);
       return;
@@ -118,15 +132,23 @@ export const SprintTimingTimer = () => {
 
     // If result has start_time but no end_time, start counting
     if (currentResult.start_time && !currentResult.end_time) {
+      console.log('▶️ TIMER: Starting timer with start_time:', currentResult.start_time);
       setIsRunning(true);
       const startTime = new Date(currentResult.start_time).getTime();
+      console.log('🕐 TIMER: Start timestamp:', startTime);
       
       const interval = setInterval(() => {
         const now = Date.now();
-        setElapsedTime(now - startTime);
+        const elapsed = now - startTime;
+        setElapsedTime(elapsed);
       }, 10); // Update every 10ms for smooth display
 
-      return () => clearInterval(interval);
+      return () => {
+        console.log('⏹️ TIMER: Clearing interval');
+        clearInterval(interval);
+      };
+    } else {
+      console.log('⚠️ TIMER: Unexpected state - start_time:', currentResult.start_time, 'end_time:', currentResult.end_time);
     }
   }, [currentResult]);
 
