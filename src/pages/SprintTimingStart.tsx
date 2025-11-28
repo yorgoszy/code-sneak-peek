@@ -7,6 +7,7 @@ import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDete
 import { Play, Camera, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const SprintTimingStart = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
@@ -16,7 +17,7 @@ export const SprintTimingStart = () => {
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { session, joinSession, startTiming, broadcastActivateMotion } = useSprintTiming(sessionCode);
+  const { session, joinSession, startTiming, broadcastActivateMotion, trackDevicePresence } = useSprintTiming(sessionCode);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -24,6 +25,25 @@ export const SprintTimingStart = () => {
       joinSession(sessionCode);
     }
   }, [sessionCode, joinSession]);
+
+  // Track presence as Start device
+  useEffect(() => {
+    if (!sessionCode) return;
+    
+    let channel: any;
+    
+    const setupPresence = async () => {
+      channel = await trackDevicePresence(sessionCode, 'start');
+    };
+    
+    setupPresence();
+    
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [sessionCode, trackDevicePresence]);
 
   const handleStartCamera = async () => {
     try {
