@@ -135,6 +135,20 @@ export const SprintTimingStart = () => {
             </Alert>
           )}
           
+          {/* Video element πάντα στο DOM για το ref */}
+          <div className="relative bg-black rounded-none overflow-hidden">
+            <video
+              ref={videoRef}
+              className={`w-full ${!stream ? 'hidden' : ''}`}
+              autoPlay
+              playsInline
+              muted
+            />
+            {isActive && stream && (
+              <div className="absolute inset-0 border-4 border-[#00ffba] pointer-events-none animate-pulse" />
+            )}
+          </div>
+
           {!stream ? (
             <Button
               onClick={handleStartCamera}
@@ -145,19 +159,6 @@ export const SprintTimingStart = () => {
             </Button>
           ) : (
             <>
-              <div className="relative bg-black rounded-none overflow-hidden">
-                <video
-                  ref={videoRef}
-                  className="w-full"
-                  autoPlay
-                  playsInline
-                  muted
-                />
-                {isActive && (
-                  <div className="absolute inset-0 border-4 border-[#00ffba] pointer-events-none animate-pulse" />
-                )}
-              </div>
-
               {isActive && (
                 <Alert className="rounded-none bg-[#00ffba]/10 border-[#00ffba]">
                   <AlertCircle className="h-4 w-4 text-[#00ffba]" />
