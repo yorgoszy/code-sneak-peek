@@ -40,8 +40,13 @@ export const SprintTimingStart = () => {
       console.log('✅ Camera stream obtained:', mediaStream);
       setStream(mediaStream);
 
-      // Περιμένουμε λίγο και μετά δημιουργούμε το detector
-      setTimeout(() => {
+      // Αναδρομική συνάρτηση που περιμένει το video να είναι έτοιμο
+      let attempts = 0;
+      const maxAttempts = 50; // 5 δευτερόλεπτα max (50 * 100ms)
+      
+      const waitForVideo = () => {
+        attempts++;
+        
         if (videoRef.current && videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
           console.log('📹 Video ready, dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
           const detector = new MotionDetector(
@@ -56,10 +61,17 @@ export const SprintTimingStart = () => {
             title: "Κάμερα ενεργοποιήθηκε",
             description: "Μπορείτε να ενεργοποιήσετε το motion detection",
           });
+        } else if (attempts < maxAttempts) {
+          console.log('⏳ Waiting for video to be ready... attempt', attempts);
+          setTimeout(waitForVideo, 100);
         } else {
-          console.log('⚠️ Video not ready yet');
+          console.error('❌ Video failed to initialize after', maxAttempts, 'attempts');
+          setError('Το video δεν ενεργοποιήθηκε σωστά');
         }
-      }, 1000);
+      };
+      
+      // Ξεκινάμε την αναμονή μετά από μικρή καθυστέρηση
+      setTimeout(waitForVideo, 200);
     } catch (error) {
       console.error('❌ Camera error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
