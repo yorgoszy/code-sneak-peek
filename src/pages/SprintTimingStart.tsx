@@ -147,7 +147,10 @@ export const SprintTimingStart = () => {
   }, [motionDetector, session, startTiming, toast]);
 
   const handleBroadcastActivate = async () => {
+    console.log('🔘 START: Broadcast button clicked!', { isReady, stream: !!stream, isActive });
+    
     if (!isReady || !stream) {
+      console.log('⚠️ START: Not ready to broadcast', { isReady, stream: !!stream });
       toast({
         title: "Σφάλμα",
         description: "Η κάμερα δεν είναι έτοιμη",
@@ -156,9 +159,11 @@ export const SprintTimingStart = () => {
       return;
     }
 
+    console.log('📡 START: Sending broadcast activation...');
     // Στέλνουμε broadcast - όλες οι συσκευές (συμπεριλαμβανομένης της START) θα ενεργοποιηθούν
     await broadcastActivateMotion();
     
+    console.log('✅ START: Broadcast sent successfully!');
     toast({
       title: "Έναρξη Motion Detection",
       description: "Όλες οι συσκευές ενεργοποιήθηκαν!",
