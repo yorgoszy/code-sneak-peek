@@ -3,11 +3,13 @@ import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
+import { supabase } from '@/integrations/supabase/client';
 import { Clock, Timer as TimerIcon } from 'lucide-react';
 
 export const SprintTimingTimer = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
-  const { session, currentResult, joinSession } = useSprintTiming(sessionCode);
+  const { session, currentResult: hookResult, joinSession } = useSprintTiming(sessionCode);
+  const [currentResult, setCurrentResult] = useState<any>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isRunning, setIsRunning] = useState(false);
 
@@ -16,6 +18,44 @@ export const SprintTimingTimer = () => {
       joinSession(sessionCode);
     }
   }, [sessionCode, joinSession]);
+
+  // Sync with hook result initially
+  useEffect(() => {
+    if (hookResult) {
+      setCurrentResult(hookResult);
+    }
+  }, [hookResult]);
+
+  // Listen for results only for this session
+  useEffect(() => {
+    if (!session?.id) return;
+
+    console.log('🎧 TIMER: Setting up realtime listener for session:', session.id);
+
+    const channel = supabase
+      .channel('sprint-timing-results')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sprint_timing_results',
+          filter: `session_id=eq.${session.id}`
+        },
+        (payload) => {
+          console.log('⏱️ TIMER: Result update received:', payload);
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            setCurrentResult(payload.new as any);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🎧 TIMER: Cleaning up realtime listener');
+      supabase.removeChannel(channel);
+    };
+  }, [session?.id]);
 
   // Monitor currentResult for timing
   useEffect(() => {
