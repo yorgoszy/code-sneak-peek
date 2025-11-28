@@ -190,7 +190,15 @@ export const useSprintTiming = (sessionCode?: string) => {
   const broadcastActivateMotion = useCallback(async () => {
     if (!session?.session_code) return;
 
-    const channel = supabase.channel(`sprint-session-${session.session_code}`);
+    console.log('📡 Broadcasting activate motion detection to all devices...');
+    
+    const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
+      config: {
+        broadcast: { self: false }
+      }
+    });
+    
+    await channel.subscribe();
     
     await channel.send({
       type: 'broadcast',
@@ -198,7 +206,12 @@ export const useSprintTiming = (sessionCode?: string) => {
       payload: { timestamp: new Date().toISOString() }
     });
 
-    console.log('📡 Broadcast: Activate motion detection');
+    console.log('✅ Broadcast sent successfully');
+    
+    // Cleanup after a short delay
+    setTimeout(() => {
+      supabase.removeChannel(channel);
+    }, 1000);
   }, [session]);
 
   // Subscribe to realtime changes
