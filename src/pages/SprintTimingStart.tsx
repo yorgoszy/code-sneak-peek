@@ -28,42 +28,24 @@ export const SprintTimingStart = () => {
 
   // Track presence as Start device
   useEffect(() => {
-    if (!sessionCode) {
-      console.log('❌ Start: No sessionCode, skipping presence setup');
-      return;
-    }
+    if (!sessionCode) return;
     
     console.log('🔌 Start: Setting up presence channel for:', sessionCode);
-    const channelName = `presence-${sessionCode}`;
-    console.log('📡 Start: Channel name:', channelName);
-    
-    const channel = supabase.channel(channelName, {
-      config: {
-        presence: {
-          key: sessionCode,
-        },
-      },
-    });
+    const channel = supabase.channel(`presence-${sessionCode}`);
     
     channel.subscribe(async (status) => {
-      console.log('📡 Start: Channel subscription status:', status);
+      console.log('📡 Start: Channel status:', status);
       if (status === 'SUBSCRIBED') {
-        console.log('✅ Start: Channel subscribed, tracking presence...');
         const trackStatus = await channel.track({
           device: 'start',
           timestamp: new Date().toISOString()
         });
         console.log('✅ Start: Track status:', trackStatus);
-      } else if (status === 'CHANNEL_ERROR') {
-        console.error('❌ Start: Channel error');
-      } else if (status === 'TIMED_OUT') {
-        console.error('❌ Start: Channel timed out');
       }
     });
     
     return () => {
       console.log('🔌 Start: Cleaning up presence channel');
-      channel.untrack();
       supabase.removeChannel(channel);
     };
   }, [sessionCode]);

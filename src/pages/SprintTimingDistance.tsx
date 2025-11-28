@@ -24,43 +24,25 @@ export const SprintTimingDistance = () => {
 
   // Track presence as Distance device with distances info
   useEffect(() => {
-    if (!sessionCode || distances.length === 0) {
-      console.log('❌ Distance: No sessionCode or distances, skipping presence setup');
-      return;
-    }
+    if (!sessionCode || distances.length === 0) return;
     
     console.log('🔌 Distance: Setting up presence channel for:', sessionCode);
     const distanceLabel = distances.join(',') + 'm';
-    const channelName = `presence-${sessionCode}`;
-    console.log('📡 Distance: Channel name:', channelName, 'Label:', distanceLabel);
-    
-    const channel = supabase.channel(channelName, {
-      config: {
-        presence: {
-          key: sessionCode,
-        },
-      },
-    });
+    const channel = supabase.channel(`presence-${sessionCode}`);
     
     channel.subscribe(async (status) => {
-      console.log('📡 Distance: Channel subscription status:', status);
+      console.log('📡 Distance: Channel status:', status);
       if (status === 'SUBSCRIBED') {
-        console.log('✅ Distance: Channel subscribed, tracking presence...');
         const trackStatus = await channel.track({
           device: `distance-${distanceLabel}`,
           timestamp: new Date().toISOString()
         });
         console.log('✅ Distance: Track status:', trackStatus);
-      } else if (status === 'CHANNEL_ERROR') {
-        console.error('❌ Distance: Channel error');
-      } else if (status === 'TIMED_OUT') {
-        console.error('❌ Distance: Channel timed out');
       }
     });
     
     return () => {
       console.log('🔌 Distance: Cleaning up presence channel');
-      channel.untrack();
       supabase.removeChannel(channel);
     };
   }, [sessionCode, distances]);

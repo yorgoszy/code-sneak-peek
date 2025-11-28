@@ -22,61 +22,40 @@ export const SprintTimingTimer = () => {
 
   // Track presence as Timer device και ακούει για αλλαγές realtime
   useEffect(() => {
-    if (!sessionCode) {
-      console.log('❌ Timer: No sessionCode, skipping presence setup');
-      return;
-    }
+    if (!sessionCode) return;
     
     console.log('🔌 Timer: Setting up presence channel for:', sessionCode);
-    const channelName = `presence-${sessionCode}`;
-    console.log('📡 Timer: Channel name:', channelName);
-    
-    const channel = supabase.channel(channelName, {
-      config: {
-        presence: {
-          key: sessionCode, // Use sessionCode as key so all subscriptions see each other
-        },
-      },
-    });
+    const channel = supabase.channel(`presence-${sessionCode}`);
     
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        console.log('👥 Timer: Presence sync, state:', state);
-        console.log('👥 Timer: State keys:', Object.keys(state));
+        console.log('👥 Timer: Presence sync:', state);
         setConnectedDevices(state as any);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.log('✅ Timer: Device joined:', key, newPresences);
         const state = channel.presenceState();
-        console.log('👥 Timer: Updated state after join:', state);
         setConnectedDevices(state as any);
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         console.log('👋 Timer: Device left:', key, leftPresences);
         const state = channel.presenceState();
-        console.log('👥 Timer: Updated state after leave:', state);
         setConnectedDevices(state as any);
       })
       .subscribe(async (status) => {
-        console.log('📡 Timer: Channel subscription status:', status);
+        console.log('📡 Timer: Channel status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Timer: Channel subscribed, tracking presence...');
           const trackStatus = await channel.track({
             device: 'timer',
             timestamp: new Date().toISOString()
           });
           console.log('✅ Timer: Track status:', trackStatus);
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Timer: Channel error');
-        } else if (status === 'TIMED_OUT') {
-          console.error('❌ Timer: Channel timed out');
         }
       });
     
     return () => {
       console.log('🔌 Timer: Cleaning up presence channel');
-      channel.untrack();
       supabase.removeChannel(channel);
     };
   }, [sessionCode]);
