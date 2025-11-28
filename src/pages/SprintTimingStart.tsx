@@ -6,6 +6,7 @@ import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { Play, Camera, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 
 export const SprintTimingStart = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
@@ -14,7 +15,9 @@ export const SprintTimingStart = () => {
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { session, joinSession, startTiming } = useSprintTiming(sessionCode);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (sessionCode) {
@@ -24,13 +27,22 @@ export const SprintTimingStart = () => {
 
   const handleStartCamera = async () => {
     try {
-      if (!videoRef.current) return;
+      setError(null);
+      
+      if (!videoRef.current) {
+        console.error('Video element not found');
+        setError('Video element not found');
+        return;
+      }
 
+      console.log('🎥 Starting camera...');
       const mediaStream = await initializeCamera(videoRef.current, 'environment');
+      console.log('✅ Camera stream obtained:', mediaStream);
       setStream(mediaStream);
 
       // Περιμένουμε να φορτώσει το video
       videoRef.current.onloadedmetadata = () => {
+        console.log('📹 Video metadata loaded');
         const detector = new MotionDetector(
           videoRef.current!,
           40, // threshold
@@ -38,9 +50,22 @@ export const SprintTimingStart = () => {
         );
         setMotionDetector(detector);
         setIsReady(true);
+        
+        toast({
+          title: "Κάμερα ενεργοποιήθηκε",
+          description: "Μπορείτε να ενεργοποιήσετε το motion detection",
+        });
       };
     } catch (error) {
-      console.error('Camera error:', error);
+      console.error('❌ Camera error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError(errorMessage);
+      
+      toast({
+        title: "Σφάλμα κάμερας",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -101,6 +126,15 @@ export const SprintTimingStart = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {error && (
+            <Alert className="rounded-none bg-destructive/10 border-destructive">
+              <AlertCircle className="h-4 w-4 text-destructive" />
+              <AlertDescription className="text-destructive">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
+          
           {!stream ? (
             <Button
               onClick={handleStartCamera}
