@@ -147,13 +147,23 @@ export const SprintTimingStart = () => {
   }, [motionDetector, session, startTiming, toast]);
 
   const handleBroadcastActivate = async () => {
-    console.log('🔘 START: Broadcast button clicked!', { isReady, stream: !!stream, isActive });
+    console.log('🔘 START: Broadcast button clicked!', { stream: !!stream, isActive, session: !!session });
     
-    if (!isReady || !stream) {
-      console.log('⚠️ START: Not ready to broadcast', { isReady, stream: !!stream });
+    if (!stream) {
+      console.log('⚠️ START: No camera stream available');
       toast({
         title: "Σφάλμα",
-        description: "Η κάμερα δεν είναι έτοιμη",
+        description: "Η κάμερα δεν είναι ενεργή",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!session) {
+      console.log('⚠️ START: No session found');
+      toast({
+        title: "Σφάλμα",
+        description: "Δεν υπάρχει ενεργό session",
         variant: "destructive",
       });
       return;
@@ -294,10 +304,10 @@ export const SprintTimingStart = () => {
 
               <Button
                 onClick={handleBroadcastActivate}
-                disabled={!isReady || isActive}
-                className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6 pointer-events-auto"
+                disabled={isActive}
+                className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6"
               >
-                <Play className="w-6 h-6 mr-2 pointer-events-none" />
+                <Play className="w-6 h-6 mr-2" />
                 Έναρξη
               </Button>
             </>
