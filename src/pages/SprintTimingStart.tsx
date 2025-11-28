@@ -283,13 +283,24 @@ export const SprintTimingStart = () => {
             )}
           </div>
 
+          {/* DEBUG: Πάντα εμφανίζουμε το κουμπί broadcast για testing */}
+          <button
+            onClick={handleBroadcastActivate}
+            disabled={isActive}
+            className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 border-0"
+            type="button"
+          >
+            <Play className="w-6 h-6" />
+            ΕΝΑΡΞΗ (Broadcast to all devices)
+          </button>
+
           {!stream ? (
             <Button
               onClick={handleStartCamera}
-              className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              className="w-full rounded-none bg-gray-500 hover:bg-gray-600 text-white"
             >
               <Camera className="w-4 h-4 mr-2" />
-              Έναρξη Κάμερας
+              Έναρξη Κάμερας (Optional)
             </Button>
           ) : (
             <>
@@ -301,16 +312,6 @@ export const SprintTimingStart = () => {
                   </AlertDescription>
                 </Alert>
               )}
-
-              <button
-                onClick={handleBroadcastActivate}
-                disabled={isActive}
-                className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 border-0"
-                type="button"
-              >
-                <Play className="w-6 h-6" />
-                Έναρξη
-              </button>
             </>
           )}
         </CardContent>
