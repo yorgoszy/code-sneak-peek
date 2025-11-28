@@ -302,14 +302,15 @@ export const SprintTimingStart = () => {
                 </Alert>
               )}
 
-              <Button
+              <button
                 onClick={handleBroadcastActivate}
                 disabled={isActive}
-                className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6"
+                className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 border-0"
+                type="button"
               >
-                <Play className="w-6 h-6 mr-2" />
+                <Play className="w-6 h-6" />
                 Έναρξη
-              </Button>
+              </button>
             </>
           )}
         </CardContent>
