@@ -8,10 +8,11 @@ import { Clock, Timer as TimerIcon } from 'lucide-react';
 
 export const SprintTimingTimer = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
-  const { session, currentResult: hookResult, joinSession, connectedDevices, trackDevicePresence } = useSprintTiming(sessionCode);
+  const { session, currentResult: hookResult, joinSession } = useSprintTiming(sessionCode);
   const [currentResult, setCurrentResult] = useState<any>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [connectedDevices, setConnectedDevices] = useState<{ [key: string]: { device: string, timestamp: string }[] }>({});
 
   useEffect(() => {
     if (sessionCode) {
@@ -19,24 +20,41 @@ export const SprintTimingTimer = () => {
     }
   }, [sessionCode, joinSession]);
 
-  // Track presence as Timer device
+  // Track presence as Timer device και ακούει για αλλαγές realtime
   useEffect(() => {
     if (!sessionCode) return;
     
-    let channel: any;
+    const channel = supabase.channel(`presence-${sessionCode}`);
     
-    const setupPresence = async () => {
-      channel = await trackDevicePresence(sessionCode, 'timer');
-    };
-    
-    setupPresence();
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        console.log('👥 Timer: Presence sync:', state);
+        setConnectedDevices(state as any);
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        console.log('✅ Timer: Device joined:', key, newPresences);
+        const state = channel.presenceState();
+        setConnectedDevices(state as any);
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        console.log('👋 Timer: Device left:', key, leftPresences);
+        const state = channel.presenceState();
+        setConnectedDevices(state as any);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({
+            device: 'timer',
+            timestamp: new Date().toISOString()
+          });
+        }
+      });
     
     return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      supabase.removeChannel(channel);
     };
-  }, [sessionCode, trackDevicePresence]);
+  }, [sessionCode]);
 
   // Sync with hook result initially
   useEffect(() => {
