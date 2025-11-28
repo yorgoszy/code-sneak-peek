@@ -94,12 +94,8 @@ export const SprintTimingMaster = () => {
   };
 
   const handleCloseSession = () => {
-    setSessionCode(undefined);
-    setDevices([
-      { id: '1', role: 'start' },
-      { id: '2', role: 'stop' },
-      { id: '3', role: 'timer' }
-    ]);
+    // Reload της σελίδας για να επαναφέρει όλα τα states
+    window.location.reload();
   };
 
   if (!session) {
