@@ -259,7 +259,7 @@ export const SprintTimingDistance = () => {
               muted
             />
             {isActive && stream && (
-              <div className="absolute inset-0 border-4 border-[#cb8954] pointer-events-none animate-pulse" />
+              <div className="absolute inset-0 border-4 border-[#00ffba] pointer-events-none animate-pulse" />
             )}
           </div>
 
