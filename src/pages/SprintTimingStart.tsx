@@ -104,17 +104,33 @@ export const SprintTimingStart = () => {
   const handleActivate = () => {
     if (!motionDetector || !videoRef.current) return;
 
+    console.log('🟢 START: Activating motion detection...');
     setIsActive(true);
     
     motionDetector.start(async () => {
-      console.log('🏁 START TRIGGERED BY MOTION!');
+      console.log('🏁 START: MOTION DETECTED! Starting timing...');
       
       // Σταματάμε την ανίχνευση
       motionDetector.stop();
       setIsActive(false);
       
       // Ξεκινάμε το χρονόμετρο (χωρίς απόσταση - αυτό είναι START)
-      await startTiming();
+      const result = await startTiming();
+      
+      if (result) {
+        console.log('✅ START: Timing started successfully:', result);
+        toast({
+          title: "Χρονόμετρο ξεκίνησε!",
+          description: "Το timing άρχισε",
+        });
+      } else {
+        console.error('❌ START: Failed to start timing');
+        toast({
+          title: "Σφάλμα",
+          description: "Αποτυχία έναρξης χρονομέτρου",
+          variant: "destructive",
+        });
+      }
     });
   };
 
