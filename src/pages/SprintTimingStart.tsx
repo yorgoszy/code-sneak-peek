@@ -157,7 +157,6 @@ export const SprintTimingStart = () => {
     }
 
     await broadcastActivateMotion();
-    handleActivate();
     
     toast({
       title: "Έναρξη Motion Detection",
@@ -171,6 +170,34 @@ export const SprintTimingStart = () => {
     }
     setIsActive(false);
   };
+
+  // Listen for broadcast activate command
+  useEffect(() => {
+    if (!sessionCode) return;
+
+    console.log('🎧 START Device: Setting up broadcast listener...');
+    
+    const channel = supabase
+      .channel(`sprint-broadcast-${sessionCode}`, {
+        config: {
+          broadcast: { ack: false }
+        }
+      })
+      .on('broadcast', { event: 'activate_motion_detection' }, (payload) => {
+        console.log('📡 START Device: Received broadcast!', payload);
+        if (isReady && !isActive && motionDetector && videoRef.current) {
+          console.log('✅ START Device: Activating motion detection');
+          handleActivate();
+        }
+      })
+      .subscribe();
+
+    return () => {
+      console.log('🔌 START Device: Cleaning up broadcast listener');
+      supabase.removeChannel(channel);
+    };
+  }, [sessionCode, isReady, isActive, motionDetector, handleActivate]);
+
 
   useEffect(() => {
     return () => {

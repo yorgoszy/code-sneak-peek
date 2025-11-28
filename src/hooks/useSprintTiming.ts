@@ -223,24 +223,28 @@ export const useSprintTiming = (sessionCode?: string) => {
     
     const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
       config: {
-        broadcast: { self: false }
+        broadcast: { ack: false }
       }
     });
     
-    await channel.subscribe();
-    
-    await channel.send({
-      type: 'broadcast',
-      event: 'activate_motion_detection',
-      payload: { timestamp: new Date().toISOString() }
+    await channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ Broadcast channel subscribed, sending message...');
+        
+        await channel.send({
+          type: 'broadcast',
+          event: 'activate_motion_detection',
+          payload: { timestamp: new Date().toISOString() }
+        });
+        
+        console.log('✅ Broadcast sent successfully');
+        
+        // Cleanup after a short delay
+        setTimeout(() => {
+          supabase.removeChannel(channel);
+        }, 1000);
+      }
     });
-
-    console.log('✅ Broadcast sent successfully');
-    
-    // Cleanup after a short delay
-    setTimeout(() => {
-      supabase.removeChannel(channel);
-    }, 1000);
   }, [session]);
 
   // Subscribe to realtime changes for sessions only
