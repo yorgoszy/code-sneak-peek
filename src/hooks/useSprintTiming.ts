@@ -24,6 +24,7 @@ export const useSprintTiming = (sessionCode?: string) => {
   const [session, setSession] = useState<SprintSession | null>(null);
   const [currentResult, setCurrentResult] = useState<SprintResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [connectedDevices, setConnectedDevices] = useState<{ [key: string]: { device: string, timestamp: string }[] }>({});
   const { toast } = useToast();
 
   // Δημιουργία νέου session
@@ -186,6 +187,34 @@ export const useSprintTiming = (sessionCode?: string) => {
     }
   }, [toast]);
 
+  // Track device presence
+  const trackDevicePresence = useCallback(async (sessionCode: string, deviceType: string) => {
+    const channel = supabase.channel(`presence-${sessionCode}`);
+    
+    await channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        console.log('👥 Presence sync:', state);
+        setConnectedDevices(state as any);
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        console.log('✅ Device joined:', key, newPresences);
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        console.log('👋 Device left:', key, leftPresences);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({
+            device: deviceType,
+            timestamp: new Date().toISOString()
+          });
+        }
+      });
+
+    return channel;
+  }, []);
+
   // Broadcast έναρξης motion detection σε όλες τις συσκευές
   const broadcastActivateMotion = useCallback(async () => {
     if (!session?.session_code) return;
@@ -246,10 +275,12 @@ export const useSprintTiming = (sessionCode?: string) => {
     session,
     currentResult,
     isLoading,
+    connectedDevices,
     createSession,
     joinSession,
     startTiming,
     stopTiming,
-    broadcastActivateMotion
+    broadcastActivateMotion,
+    trackDevicePresence
   };
 };

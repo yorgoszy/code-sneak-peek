@@ -8,7 +8,7 @@ import { Clock, Timer as TimerIcon } from 'lucide-react';
 
 export const SprintTimingTimer = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
-  const { session, currentResult: hookResult, joinSession } = useSprintTiming(sessionCode);
+  const { session, currentResult: hookResult, joinSession, connectedDevices, trackDevicePresence } = useSprintTiming(sessionCode);
   const [currentResult, setCurrentResult] = useState<any>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -18,6 +18,25 @@ export const SprintTimingTimer = () => {
       joinSession(sessionCode);
     }
   }, [sessionCode, joinSession]);
+
+  // Track presence as Timer device
+  useEffect(() => {
+    if (!sessionCode) return;
+    
+    let channel: any;
+    
+    const setupPresence = async () => {
+      channel = await trackDevicePresence(sessionCode, 'timer');
+    };
+    
+    setupPresence();
+    
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [sessionCode, trackDevicePresence]);
 
   // Sync with hook result initially
   useEffect(() => {
@@ -104,6 +123,14 @@ export const SprintTimingTimer = () => {
     );
   }
 
+  const getDeviceIcon = (device: string) => {
+    if (device === 'start') return '🟢';
+    if (device === 'stop') return '🔴';
+    if (device === 'timer') return '⏱️';
+    if (device.startsWith('distance')) return '📍';
+    return '🔵';
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 flex items-center justify-center">
       <Card className="max-w-2xl w-full rounded-none">
@@ -114,6 +141,28 @@ export const SprintTimingTimer = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Connected Devices */}
+          <div className="bg-muted p-4 rounded-none">
+            <h3 className="text-sm font-semibold mb-3">Συνδεδεμένες Συσκευές</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(connectedDevices).map(([key, data]: [string, any]) => (
+                <Badge 
+                  key={key}
+                  variant="outline" 
+                  className="rounded-none justify-start py-2"
+                >
+                  <span className="mr-2">{getDeviceIcon(data[0]?.device)}</span>
+                  <span className="capitalize">{data[0]?.device}</span>
+                  <span className="ml-auto text-xs text-green-500">● Connected</span>
+                </Badge>
+              ))}
+              {Object.keys(connectedDevices).length === 0 && (
+                <p className="text-sm text-muted-foreground col-span-2">
+                  Καμία συσκευή δεν είναι συνδεδεμένη ακόμα
+                </p>
+              )}
+            </div>
+          </div>
           {/* Status Badge */}
           <div className="text-center">
             <Badge 
