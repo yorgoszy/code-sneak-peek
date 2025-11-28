@@ -24,6 +24,7 @@ export const SprintTimingTimer = () => {
   useEffect(() => {
     if (!sessionCode) return;
     
+    console.log('🔌 Timer: Setting up presence channel for:', sessionCode);
     const channel = supabase.channel(`presence-${sessionCode}`);
     
     channel
@@ -43,15 +44,18 @@ export const SprintTimingTimer = () => {
         setConnectedDevices(state as any);
       })
       .subscribe(async (status) => {
+        console.log('📡 Timer: Channel status:', status);
         if (status === 'SUBSCRIBED') {
-          await channel.track({
+          const trackStatus = await channel.track({
             device: 'timer',
             timestamp: new Date().toISOString()
           });
+          console.log('✅ Timer: Track status:', trackStatus);
         }
       });
     
     return () => {
+      console.log('🔌 Timer: Cleaning up presence channel');
       supabase.removeChannel(channel);
     };
   }, [sessionCode]);

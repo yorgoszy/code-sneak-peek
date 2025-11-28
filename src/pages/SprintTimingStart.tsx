@@ -17,7 +17,7 @@ export const SprintTimingStart = () => {
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { session, joinSession, startTiming, broadcastActivateMotion, trackDevicePresence } = useSprintTiming(sessionCode);
+  const { session, currentResult: hookResult, joinSession, startTiming, broadcastActivateMotion } = useSprintTiming(sessionCode);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -30,20 +30,25 @@ export const SprintTimingStart = () => {
   useEffect(() => {
     if (!sessionCode) return;
     
-    let channel: any;
+    console.log('🔌 Start: Setting up presence channel for:', sessionCode);
+    const channel = supabase.channel(`presence-${sessionCode}`);
     
-    const setupPresence = async () => {
-      channel = await trackDevicePresence(sessionCode, 'start');
-    };
-    
-    setupPresence();
+    channel.subscribe(async (status) => {
+      console.log('📡 Start: Channel status:', status);
+      if (status === 'SUBSCRIBED') {
+        const trackStatus = await channel.track({
+          device: 'start',
+          timestamp: new Date().toISOString()
+        });
+        console.log('✅ Start: Track status:', trackStatus);
+      }
+    });
     
     return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      console.log('🔌 Start: Cleaning up presence channel');
+      supabase.removeChannel(channel);
     };
-  }, [sessionCode, trackDevicePresence]);
+  }, [sessionCode]);
 
   const handleStartCamera = async () => {
     try {

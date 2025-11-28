@@ -20,27 +20,32 @@ export const SprintTimingDistance = () => {
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
-  const { session, currentResult, joinSession, stopTiming, trackDevicePresence } = useSprintTiming(sessionCode);
+  const { session, currentResult, joinSession, stopTiming } = useSprintTiming(sessionCode);
 
   // Track presence as Distance device with distances info
   useEffect(() => {
     if (!sessionCode || distances.length === 0) return;
     
-    let channel: any;
+    console.log('🔌 Distance: Setting up presence channel for:', sessionCode);
+    const distanceLabel = distances.join(',') + 'm';
+    const channel = supabase.channel(`presence-${sessionCode}`);
     
-    const setupPresence = async () => {
-      const distanceLabel = distances.join(',') + 'm';
-      channel = await trackDevicePresence(sessionCode, `distance-${distanceLabel}`);
-    };
-    
-    setupPresence();
+    channel.subscribe(async (status) => {
+      console.log('📡 Distance: Channel status:', status);
+      if (status === 'SUBSCRIBED') {
+        const trackStatus = await channel.track({
+          device: `distance-${distanceLabel}`,
+          timestamp: new Date().toISOString()
+        });
+        console.log('✅ Distance: Track status:', trackStatus);
+      }
+    });
     
     return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      console.log('🔌 Distance: Cleaning up presence channel');
+      supabase.removeChannel(channel);
     };
-  }, [sessionCode, distances, trackDevicePresence]);
+  }, [sessionCode, distances]);
 
   // Listen for broadcast activation
   useEffect(() => {
