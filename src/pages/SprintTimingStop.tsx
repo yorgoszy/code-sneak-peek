@@ -24,22 +24,42 @@ export const SprintTimingStop = () => {
 
   const handleStartCamera = async () => {
     try {
-      if (!videoRef.current) return;
+      if (!videoRef.current) {
+        console.error('Video element not found');
+        return;
+      }
 
+      console.log('🎥 Starting camera...');
       const mediaStream = await initializeCamera(videoRef.current, 'environment');
+      console.log('✅ Camera stream obtained:', mediaStream);
       setStream(mediaStream);
 
-      videoRef.current.onloadedmetadata = () => {
-        const detector = new MotionDetector(
-          videoRef.current!,
-          40,
-          3000
-        );
-        setMotionDetector(detector);
-        setIsReady(true);
+      // Περιμένουμε το video να έχει διαστάσεις πριν δημιουργήσουμε το detector
+      const waitForVideo = async (): Promise<void> => {
+        return new Promise((resolve) => {
+          const checkVideo = () => {
+            if (videoRef.current && videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
+              console.log('📹 Video ready, dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+              resolve();
+            } else {
+              setTimeout(checkVideo, 100);
+            }
+          };
+          checkVideo();
+        });
       };
+      
+      await waitForVideo();
+      
+      const detector = new MotionDetector(
+        videoRef.current,
+        40, // threshold
+        3000 // min motion pixels
+      );
+      setMotionDetector(detector);
+      setIsReady(true);
     } catch (error) {
-      console.error('Camera error:', error);
+      console.error('❌ Camera error:', error);
     }
   };
 
@@ -108,6 +128,21 @@ export const SprintTimingStop = () => {
             </Alert>
           )}
 
+          {/* Video element πάντα στο DOM για το ref */}
+          <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: stream ? 'auto' : '0' }}>
+            <video
+              ref={videoRef}
+              className="w-full"
+              style={{ display: stream ? 'block' : 'none' }}
+              autoPlay
+              playsInline
+              muted
+            />
+            {isActive && stream && (
+              <div className="absolute inset-0 border-4 border-red-500 pointer-events-none animate-pulse" />
+            )}
+          </div>
+
           {!stream ? (
             <Button
               onClick={handleStartCamera}
@@ -118,59 +153,47 @@ export const SprintTimingStop = () => {
             </Button>
           ) : (
             <>
-              <div className="relative bg-black rounded-none overflow-hidden">
-                <video
-                  ref={videoRef}
-                  className="w-full"
-                  autoPlay
-                  playsInline
-                  muted
-                />
-                {isActive && (
-                  <div className="absolute inset-0 border-4 border-red-500 pointer-events-none animate-pulse" />
-                )}
-              </div>
 
-              {isActive && (
-                <Alert className="rounded-none bg-red-500/10 border-red-500">
-                  <AlertCircle className="h-4 w-4 text-red-500" />
-                  <AlertDescription className="text-red-500">
-                    Αναμονή για κίνηση... Περάστε μπροστά από την κάμερα για τερματισμό!
-                  </AlertDescription>
-                </Alert>
+            {isActive && (
+              <Alert className="rounded-none bg-red-500/10 border-red-500">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-500">
+                  Αναμονή για κίνηση... Περάστε μπροστά από την κάμερα για τερματισμό!
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex gap-2">
+              {!isActive ? (
+                <Button
+                  onClick={handleActivate}
+                  disabled={!isReady || !currentResult || !!currentResult.end_time}
+                  className="flex-1 rounded-none bg-red-500 hover:bg-red-600 text-white"
+                >
+                  Ενεργοποίηση Motion Detection
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleStop}
+                  variant="secondary"
+                  className="flex-1 rounded-none"
+                >
+                  Απενεργοποίηση
+                </Button>
               )}
+            </div>
 
-              <div className="flex gap-2">
-                {!isActive ? (
-                  <Button
-                    onClick={handleActivate}
-                    disabled={!isReady || !currentResult || !!currentResult.end_time}
-                    className="flex-1 rounded-none bg-red-500 hover:bg-red-600 text-white"
-                  >
-                    Ενεργοποίηση Motion Detection
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleStop}
-                    variant="secondary"
-                    className="flex-1 rounded-none"
-                  >
-                    Απενεργοποίηση
-                  </Button>
-                )}
+            {currentResult?.duration_ms && (
+              <div className="bg-muted p-6 rounded-none text-center">
+                <p className="text-sm text-muted-foreground mb-2">Τελικός Χρόνος</p>
+                <p className="text-5xl font-bold text-[#00ffba]">
+                  {(currentResult.duration_ms / 1000).toFixed(3)}
+                </p>
+                <p className="text-xl text-muted-foreground mt-1">δευτερόλεπτα</p>
               </div>
-
-              {currentResult?.duration_ms && (
-                <div className="bg-muted p-6 rounded-none text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Τελικός Χρόνος</p>
-                  <p className="text-5xl font-bold text-[#00ffba]">
-                    {(currentResult.duration_ms / 1000).toFixed(3)}
-                  </p>
-                  <p className="text-xl text-muted-foreground mt-1">δευτερόλεπτα</p>
-                </div>
-              )}
-            </>
-          )}
+            )}
+          </>
+        )}
         </CardContent>
       </Card>
     </div>

@@ -29,22 +29,42 @@ export const SprintTimingDistance = () => {
 
   const handleStartCamera = async () => {
     try {
-      if (!videoRef.current) return;
+      if (!videoRef.current) {
+        console.error('Video element not found');
+        return;
+      }
 
+      console.log('🎥 Starting camera...');
       const mediaStream = await initializeCamera(videoRef.current, 'environment');
+      console.log('✅ Camera stream obtained:', mediaStream);
       setStream(mediaStream);
 
-      videoRef.current.onloadedmetadata = () => {
-        const detector = new MotionDetector(
-          videoRef.current!,
-          40,
-          3000
-        );
-        setMotionDetector(detector);
-        setIsReady(true);
+      // Περιμένουμε το video να έχει διαστάσεις πριν δημιουργήσουμε το detector
+      const waitForVideo = async (): Promise<void> => {
+        return new Promise((resolve) => {
+          const checkVideo = () => {
+            if (videoRef.current && videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
+              console.log('📹 Video ready, dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+              resolve();
+            } else {
+              setTimeout(checkVideo, 100);
+            }
+          };
+          checkVideo();
+        });
       };
+      
+      await waitForVideo();
+      
+      const detector = new MotionDetector(
+        videoRef.current,
+        40, // threshold
+        3000 // min motion pixels
+      );
+      setMotionDetector(detector);
+      setIsReady(true);
     } catch (error) {
-      console.error('Camera error:', error);
+      console.error('❌ Camera error:', error);
     }
   };
 
@@ -155,6 +175,21 @@ export const SprintTimingDistance = () => {
             </div>
           )}
 
+          {/* Video element πάντα στο DOM για το ref */}
+          <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: stream ? 'auto' : '0' }}>
+            <video
+              ref={videoRef}
+              className="w-full"
+              style={{ display: stream ? 'block' : 'none' }}
+              autoPlay
+              playsInline
+              muted
+            />
+            {isActive && stream && (
+              <div className="absolute inset-0 border-4 border-[#cb8954] pointer-events-none animate-pulse" />
+            )}
+          </div>
+
           {!stream ? (
             <Button
               onClick={handleStartCamera}
@@ -165,58 +200,49 @@ export const SprintTimingDistance = () => {
             </Button>
           ) : (
             <>
-              <div className="relative bg-black rounded-none overflow-hidden">
-                <video
-                  ref={videoRef}
-                  className="w-full"
-                  autoPlay
-                  playsInline
-                  muted
-                />
+
+            {isReady && !isActive && completedDistances.length < distances.length && (
+              <Alert className="rounded-none">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Περάστε μπροστά από την κάμερα στα {distances.find(d => !completedDistances.includes(d))}m για να καταγραφεί ο χρόνος
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {completedDistances.length === distances.length && (
+              <Alert className="rounded-none bg-green-500/10 border-green-500">
+                <AlertCircle className="h-4 w-4 text-green-500" />
+                <AlertDescription className="text-green-500">
+                  ✓ Όλες οι αποστάσεις ολοκληρώθηκαν!
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {isReady && (
+              <div className="flex gap-2">
+                {!isActive ? (
+                  <Button
+                    onClick={handleActivate}
+                    disabled={!currentResult || !!currentResult.end_time || completedDistances.length === distances.length}
+                    className="flex-1 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
+                  >
+                    Ενεργοποίηση Motion Detection
+                    {completedDistances.length < distances.length && ` (${distances.find(d => !completedDistances.includes(d))}m)`}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleStop}
+                    variant="destructive"
+                    className="flex-1 rounded-none"
+                  >
+                    Απενεργοποίηση
+                  </Button>
+                )}
               </div>
-
-              {isReady && !isActive && completedDistances.length < distances.length && (
-                <Alert className="rounded-none">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Περάστε μπροστά από την κάμερα στα {distances.find(d => !completedDistances.includes(d))}m για να καταγραφεί ο χρόνος
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {completedDistances.length === distances.length && (
-                <Alert className="rounded-none bg-green-500/10 border-green-500">
-                  <AlertCircle className="h-4 w-4 text-green-500" />
-                  <AlertDescription className="text-green-500">
-                    ✓ Όλες οι αποστάσεις ολοκληρώθηκαν!
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {isReady && (
-                <div className="flex gap-2">
-                  {!isActive ? (
-                    <Button
-                      onClick={handleActivate}
-                      disabled={!currentResult || !!currentResult.end_time || completedDistances.length === distances.length}
-                      className="flex-1 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
-                    >
-                      Ενεργοποίηση Motion Detection
-                      {completedDistances.length < distances.length && ` (${distances.find(d => !completedDistances.includes(d))}m)`}
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleStop}
-                      variant="destructive"
-                      className="flex-1 rounded-none"
-                    >
-                      Απενεργοποίηση
-                    </Button>
-                  )}
-                </div>
-              )}
-            </>
-          )}
+            )}
+          </>
+        )}
 
         </CardContent>
       </Card>
