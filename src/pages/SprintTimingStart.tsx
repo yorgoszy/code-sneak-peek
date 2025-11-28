@@ -39,20 +39,37 @@ export const SprintTimingStart = () => {
       const mediaStream = await initializeCamera(videoRef.current, 'environment');
       console.log('✅ Camera stream obtained:', mediaStream);
       setStream(mediaStream);
-
-      // Αναδρομική συνάρτηση που περιμένει το video να είναι έτοιμο
-      let attempts = 0;
-      const maxAttempts = 50; // 5 δευτερόλεπτα max (50 * 100ms)
       
-      const waitForVideo = () => {
+      // Βεβαιωνόμαστε ότι το video παίζει
+      if (videoRef.current.paused) {
+        await videoRef.current.play();
+      }
+
+      // Περιμένουμε το video να έχει διαστάσεις
+      let attempts = 0;
+      const maxAttempts = 50;
+      
+      const checkVideoReady = () => {
         attempts++;
         
-        if (videoRef.current && videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
+        if (!videoRef.current || !mediaStream) {
+          console.error('❌ Video ref or stream lost');
+          return;
+        }
+        
+        // Εξασφαλίζουμε ότι το srcObject είναι ακόμα set
+        if (!videoRef.current.srcObject) {
+          console.log('🔄 Re-setting srcObject');
+          videoRef.current.srcObject = mediaStream;
+        }
+        
+        if (videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
           console.log('📹 Video ready, dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+          
           const detector = new MotionDetector(
             videoRef.current,
-            40, // threshold
-            3000 // min motion pixels
+            40,
+            3000
           );
           setMotionDetector(detector);
           setIsReady(true);
@@ -62,16 +79,15 @@ export const SprintTimingStart = () => {
             description: "Μπορείτε να ενεργοποιήσετε το motion detection",
           });
         } else if (attempts < maxAttempts) {
-          console.log('⏳ Waiting for video to be ready... attempt', attempts);
-          setTimeout(waitForVideo, 100);
+          console.log('⏳ Waiting for video... attempt', attempts);
+          setTimeout(checkVideoReady, 100);
         } else {
-          console.error('❌ Video failed to initialize after', maxAttempts, 'attempts');
+          console.error('❌ Video initialization timeout');
           setError('Το video δεν ενεργοποιήθηκε σωστά');
         }
       };
       
-      // Ξεκινάμε την αναμονή μετά από μικρή καθυστέρηση
-      setTimeout(waitForVideo, 200);
+      setTimeout(checkVideoReady, 300);
     } catch (error) {
       console.error('❌ Camera error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
