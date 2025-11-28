@@ -40,22 +40,25 @@ export const SprintTimingStart = () => {
       console.log('✅ Camera stream obtained:', mediaStream);
       setStream(mediaStream);
 
-      // Περιμένουμε να φορτώσει το video
-      videoRef.current.onloadedmetadata = () => {
-        console.log('📹 Video metadata loaded');
-        const detector = new MotionDetector(
-          videoRef.current!,
-          40, // threshold
-          3000 // min motion pixels
-        );
-        setMotionDetector(detector);
-        setIsReady(true);
-        
-        toast({
-          title: "Κάμερα ενεργοποιήθηκε",
-          description: "Μπορείτε να ενεργοποιήσετε το motion detection",
-        });
-      };
+      // Το initializeCamera ήδη περιμένει το video να παίξει
+      // Δημιουργούμε το detector αμέσως
+      setTimeout(() => {
+        if (videoRef.current && videoRef.current.videoWidth > 0) {
+          console.log('📹 Video ready, dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+          const detector = new MotionDetector(
+            videoRef.current,
+            40, // threshold
+            3000 // min motion pixels
+          );
+          setMotionDetector(detector);
+          setIsReady(true);
+          
+          toast({
+            title: "Κάμερα ενεργοποιήθηκε",
+            description: "Μπορείτε να ενεργοποιήσετε το motion detection",
+          });
+        }
+      }, 500);
     } catch (error) {
       console.error('❌ Camera error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -136,10 +139,11 @@ export const SprintTimingStart = () => {
           )}
           
           {/* Video element πάντα στο DOM για το ref */}
-          <div className="relative bg-black rounded-none overflow-hidden">
+          <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: stream ? 'auto' : '0' }}>
             <video
               ref={videoRef}
-              className={`w-full ${!stream ? 'hidden' : ''}`}
+              className="w-full"
+              style={{ display: stream ? 'block' : 'none' }}
               autoPlay
               playsInline
               muted
