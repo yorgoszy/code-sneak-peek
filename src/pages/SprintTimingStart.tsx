@@ -290,9 +290,9 @@ export const SprintTimingStart = () => {
               <Button
                 onClick={handleBroadcastActivate}
                 disabled={!isReady || isActive}
-                className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6"
+                className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6 pointer-events-auto"
               >
-                <Play className="w-6 h-6 mr-2" />
+                <Play className="w-6 h-6 mr-2 pointer-events-none" />
                 Έναρξη
               </Button>
             </>
