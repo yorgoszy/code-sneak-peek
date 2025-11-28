@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -101,7 +101,7 @@ export const SprintTimingStart = () => {
     }
   };
 
-  const handleActivate = () => {
+  const handleActivate = useCallback(() => {
     if (!motionDetector || !videoRef.current) {
       console.error('❌ START: Motion detector or video ref not ready');
       return;
@@ -144,7 +144,7 @@ export const SprintTimingStart = () => {
         });
       }
     });
-  };
+  }, [motionDetector, session, startTiming, toast]);
 
   const handleBroadcastActivate = async () => {
     if (!isReady || !stream) {
@@ -173,7 +173,7 @@ export const SprintTimingStart = () => {
 
   // Listen for broadcast activate command
   useEffect(() => {
-    if (!sessionCode) return;
+    if (!sessionCode || !isReady || isActive) return;
 
     console.log('🎧 START Device: Setting up broadcast listener...');
     
@@ -185,7 +185,7 @@ export const SprintTimingStart = () => {
       })
       .on('broadcast', { event: 'activate_motion_detection' }, (payload) => {
         console.log('📡 START Device: Received broadcast!', payload);
-        if (isReady && !isActive && motionDetector && videoRef.current) {
+        if (motionDetector && videoRef.current) {
           console.log('✅ START Device: Activating motion detection');
           handleActivate();
         }
@@ -197,7 +197,6 @@ export const SprintTimingStart = () => {
       supabase.removeChannel(channel);
     };
   }, [sessionCode, isReady, isActive, motionDetector, handleActivate]);
-
 
   useEffect(() => {
     return () => {
