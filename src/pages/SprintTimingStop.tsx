@@ -15,7 +15,26 @@ export const SprintTimingStop = () => {
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
-  const { session, currentResult, joinSession, stopTiming } = useSprintTiming(sessionCode);
+  const { session, currentResult, joinSession, stopTiming, trackDevicePresence } = useSprintTiming(sessionCode);
+
+  // Track presence as Stop device
+  useEffect(() => {
+    if (!sessionCode) return;
+    
+    let channel: any;
+    
+    const setupPresence = async () => {
+      channel = await trackDevicePresence(sessionCode, 'stop');
+    };
+    
+    setupPresence();
+    
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [sessionCode, trackDevicePresence]);
 
   // Listen for broadcast activation
   useEffect(() => {

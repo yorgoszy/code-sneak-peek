@@ -20,7 +20,27 @@ export const SprintTimingDistance = () => {
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
-  const { session, currentResult, joinSession, stopTiming } = useSprintTiming(sessionCode);
+  const { session, currentResult, joinSession, stopTiming, trackDevicePresence } = useSprintTiming(sessionCode);
+
+  // Track presence as Distance device with distances info
+  useEffect(() => {
+    if (!sessionCode || distances.length === 0) return;
+    
+    let channel: any;
+    
+    const setupPresence = async () => {
+      const distanceLabel = distances.join(',') + 'm';
+      channel = await trackDevicePresence(sessionCode, `distance-${distanceLabel}`);
+    };
+    
+    setupPresence();
+    
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [sessionCode, distances, trackDevicePresence]);
 
   // Listen for broadcast activation
   useEffect(() => {
