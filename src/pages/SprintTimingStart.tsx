@@ -39,37 +39,15 @@ export const SprintTimingStart = () => {
       const mediaStream = await initializeCamera(videoRef.current, 'environment');
       console.log('✅ Camera stream obtained:', mediaStream);
       setStream(mediaStream);
-      
-      // Βεβαιωνόμαστε ότι το video παίζει
-      if (videoRef.current.paused) {
-        await videoRef.current.play();
-      }
 
-      // Περιμένουμε το video να έχει διαστάσεις
-      let attempts = 0;
-      const maxAttempts = 50;
-      
-      const checkVideoReady = () => {
-        attempts++;
-        
-        if (!videoRef.current || !mediaStream) {
-          console.error('❌ Video ref or stream lost');
-          return;
-        }
-        
-        // Εξασφαλίζουμε ότι το srcObject είναι ακόμα set
-        if (!videoRef.current.srcObject) {
-          console.log('🔄 Re-setting srcObject');
-          videoRef.current.srcObject = mediaStream;
-        }
-        
-        if (videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
+      // Απλό timeout που δούλευε
+      setTimeout(() => {
+        if (videoRef.current && videoRef.current.videoWidth > 0) {
           console.log('📹 Video ready, dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
-          
           const detector = new MotionDetector(
             videoRef.current,
-            40,
-            3000
+            40, // threshold
+            3000 // min motion pixels
           );
           setMotionDetector(detector);
           setIsReady(true);
@@ -78,16 +56,8 @@ export const SprintTimingStart = () => {
             title: "Κάμερα ενεργοποιήθηκε",
             description: "Μπορείτε να ενεργοποιήσετε το motion detection",
           });
-        } else if (attempts < maxAttempts) {
-          console.log('⏳ Waiting for video... attempt', attempts);
-          setTimeout(checkVideoReady, 100);
-        } else {
-          console.error('❌ Video initialization timeout');
-          setError('Το video δεν ενεργοποιήθηκε σωστά');
         }
-      };
-      
-      setTimeout(checkVideoReady, 300);
+      }, 500);
     } catch (error) {
       console.error('❌ Camera error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
