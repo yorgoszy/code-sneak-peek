@@ -26,13 +26,20 @@ export const SprintTimingDistance = () => {
   useEffect(() => {
     if (!sessionCode) return;
 
+    console.log('🎧 DISTANCE Device: Setting up broadcast listener...');
+    
     const channel = supabase
-      .channel(`sprint-session-${sessionCode}`)
-      .on('broadcast', { event: 'activate_motion_detection' }, () => {
-        console.log('📡 Received: Activate motion detection (DISTANCE)');
+      .channel(`sprint-broadcast-${sessionCode}`, {
+        config: {
+          broadcast: { ack: false }
+        }
+      })
+      .on('broadcast', { event: 'activate_motion_detection' }, (payload) => {
+        console.log('📡 DISTANCE Device: Received broadcast!', payload);
         if (isReady && stream && !isActive && currentResult && !currentResult.end_time && completedDistances.length < distances.length && motionDetector && videoRef.current) {
           const nextDistance = distances.find(d => !completedDistances.includes(d));
           if (nextDistance) {
+            console.log(`✅ DISTANCE Device: Activating for ${nextDistance}m`);
             setIsActive(true);
             motionDetector.start(async () => {
               console.log(`📍 DISTANCE ${nextDistance}m TRIGGERED BY MOTION (Broadcast)!`);
@@ -42,6 +49,17 @@ export const SprintTimingDistance = () => {
               setCompletedDistances(prev => [...prev, nextDistance]);
             });
           }
+        } else {
+          console.log('⚠️ DISTANCE Device: Conditions not met', {
+            isReady,
+            hasStream: !!stream,
+            isActive,
+            hasResult: !!currentResult,
+            resultEnded: currentResult?.end_time,
+            hasDetector: !!motionDetector,
+            completed: completedDistances.length,
+            total: distances.length
+          });
         }
       })
       .subscribe();

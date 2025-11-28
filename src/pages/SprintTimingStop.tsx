@@ -21,17 +21,33 @@ export const SprintTimingStop = () => {
   useEffect(() => {
     if (!sessionCode) return;
 
+    console.log('🎧 STOP Device: Setting up broadcast listener...');
+    
     const channel = supabase
-      .channel(`sprint-session-${sessionCode}`)
-      .on('broadcast', { event: 'activate_motion_detection' }, () => {
-        console.log('📡 Received: Activate motion detection (STOP)');
+      .channel(`sprint-broadcast-${sessionCode}`, {
+        config: {
+          broadcast: { ack: false }
+        }
+      })
+      .on('broadcast', { event: 'activate_motion_detection' }, (payload) => {
+        console.log('📡 STOP Device: Received broadcast!', payload);
         if (isReady && stream && !isActive && currentResult && !currentResult.end_time && motionDetector && videoRef.current) {
+          console.log('✅ STOP Device: Conditions met, activating motion detection');
           setIsActive(true);
           motionDetector.start(async () => {
             console.log('🏁 STOP TRIGGERED BY MOTION (Broadcast)!');
             motionDetector.stop();
             setIsActive(false);
             await stopTiming(currentResult.id);
+          });
+        } else {
+          console.log('⚠️ STOP Device: Conditions not met', {
+            isReady,
+            hasStream: !!stream,
+            isActive,
+            hasResult: !!currentResult,
+            resultEnded: currentResult?.end_time,
+            hasDetector: !!motionDetector
           });
         }
       })
