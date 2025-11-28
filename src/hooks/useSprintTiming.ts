@@ -214,7 +214,7 @@ export const useSprintTiming = (sessionCode?: string) => {
     }, 1000);
   }, [session]);
 
-  // Subscribe to realtime changes
+  // Subscribe to realtime changes for sessions only
   useEffect(() => {
     if (!sessionCode) return;
 
@@ -232,20 +232,6 @@ export const useSprintTiming = (sessionCode?: string) => {
           console.log('Session update:', payload);
           if (payload.eventType === 'UPDATE' && payload.new) {
             setSession(payload.new as SprintSession);
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'sprint_timing_results'
-        },
-        (payload) => {
-          console.log('Result update:', payload);
-          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            setCurrentResult(payload.new as SprintResult);
           }
         }
       )
