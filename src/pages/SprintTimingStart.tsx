@@ -174,7 +174,7 @@ export const SprintTimingStart = () => {
 
   // Listen for broadcast activate command
   useEffect(() => {
-    if (!sessionCode || !isReady || isActive) return;
+    if (!sessionCode) return;
 
     console.log('🎧 START Device: Setting up broadcast listener...');
     
@@ -186,9 +186,21 @@ export const SprintTimingStart = () => {
       })
       .on('broadcast', { event: 'activate_motion_detection' }, (payload) => {
         console.log('📡 START Device: Received broadcast!', payload);
+        
+        // Ελέγχουμε τις συνθήκες μέσα στον handler
+        if (!isReady || isActive) {
+          console.log('⚠️ START Device: Not ready or already active', { isReady, isActive });
+          return;
+        }
+        
         if (motionDetector && videoRef.current) {
           console.log('✅ START Device: Activating motion detection');
           handleActivate();
+        } else {
+          console.log('⚠️ START Device: Missing detector or video', { 
+            hasDetector: !!motionDetector, 
+            hasVideo: !!videoRef.current 
+          });
         }
       })
       .subscribe();

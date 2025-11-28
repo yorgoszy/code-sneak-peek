@@ -205,7 +205,7 @@ export const SprintTimingStop = () => {
               muted
             />
             {isActive && stream && (
-              <div className="absolute inset-0 border-4 border-red-500 pointer-events-none animate-pulse" />
+              <div className="absolute inset-0 border-4 border-[#00ffba] pointer-events-none animate-pulse" />
             )}
           </div>
 
