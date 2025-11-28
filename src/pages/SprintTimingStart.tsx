@@ -275,36 +275,14 @@ export const SprintTimingStart = () => {
                 </Alert>
               )}
 
-              <div className="space-y-2">
-                <Button
-                  onClick={handleBroadcastActivate}
-                  disabled={!isReady || isActive}
-                  className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6 [&_*]:pointer-events-none"
-                >
-                  <Play className="w-6 h-6 mr-2" />
-                  Έναρξη Όλων των Συσκευών
-                </Button>
-
-                <div className="flex gap-2">
-                  {!isActive ? (
-                    <Button
-                      onClick={handleActivate}
-                      disabled={!isReady}
-                      className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-                    >
-                      Ενεργοποίηση Μόνο START
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleStop}
-                      variant="destructive"
-                      className="flex-1 rounded-none"
-                    >
-                      Απενεργοποίηση
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <Button
+                onClick={handleBroadcastActivate}
+                disabled={!isReady || isActive}
+                className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6"
+              >
+                <Play className="w-6 h-6 mr-2" />
+                Έναρξη
+              </Button>
             </>
           )}
         </CardContent>
