@@ -67,14 +67,14 @@ export const SprintTimingTimer = () => {
     }
   }, [hookResult]);
 
-  // Listen for results only for this session
+  // Listen for results only for this session - REALTIME
   useEffect(() => {
     if (!session?.id) return;
 
     console.log('🎧 TIMER: Setting up realtime listener for session:', session.id);
 
     const channel = supabase
-      .channel('sprint-timing-results')
+      .channel(`sprint-results-${session.id}`)
       .on(
         'postgres_changes',
         {
@@ -86,11 +86,14 @@ export const SprintTimingTimer = () => {
         (payload) => {
           console.log('⏱️ TIMER: Result update received:', payload);
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            console.log('✅ TIMER: Setting currentResult:', payload.new);
             setCurrentResult(payload.new as any);
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🎧 TIMER: Results channel status:', status);
+      });
 
     return () => {
       console.log('🎧 TIMER: Cleaning up realtime listener');
