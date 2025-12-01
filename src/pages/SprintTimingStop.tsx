@@ -76,28 +76,53 @@ export const SprintTimingStop = () => {
     };
   }, [session?.id]);
 
-  // Listen for PREPARE broadcast
+  // Listen for START ALL broadcast
   useEffect(() => {
     if (!sessionCode) return;
 
-    console.log('🎧 STOP Device: Setting up PREPARE listener...');
+    console.log('🎧 STOP Device: Setting up START ALL listener...');
     
     const channel = supabase
-      .channel(`sprint-prepare-${sessionCode}`, {
+      .channel(`sprint-start-all-${sessionCode}`, {
         config: {
           broadcast: { ack: false }
         }
       })
-      .on('broadcast', { event: 'prepare_devices' }, (payload: any) => {
-        console.log('📡 STOP Device: Received PREPARE broadcast!', payload);
-        console.log('✅ STOP Device: Device is now READY and waiting for activation!');
+      .on('broadcast', { event: 'start_all_devices' }, async (payload: any) => {
+        console.log('📡 STOP Device: Received START ALL broadcast!', payload);
+        
+        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+          console.log('⚠️ STOP Device: Camera not ready');
+          return;
+        }
+        
+        if (isActive) {
+          console.log('⚠️ STOP Device: Already active');
+          return;
+        }
+        
+        // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
+        console.log('✅ STOP Device: AUTO-ACTIVATING motion detection from START ALL!');
+        setIsActive(true);
+        
+        motionDetector.start(async () => {
+          console.log('🏁 STOP: MOTION DETECTED!');
+          motionDetector.stop();
+          setIsActive(false);
+          
+          if (localResultRef.current?.id) {
+            await stopTiming(localResultRef.current.id);
+          } else {
+            console.error('❌ STOP: No localResult id available!');
+          }
+        });
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionCode]);
+  }, [sessionCode, isReady, stream, motionDetector, isActive, stopTiming]);
 
   // Listen for broadcast activation - ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ
   useEffect(() => {
