@@ -5,11 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { supabase } from '@/integrations/supabase/client';
-import { Clock, Timer as TimerIcon, Play, Square, RotateCcw } from 'lucide-react';
+import { Clock, Timer as TimerIcon, Play, Square, RotateCcw, Radar } from 'lucide-react';
 
 export const SprintTimingTimer = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
-  const { session, currentResult: hookResult, joinSession } = useSprintTiming(sessionCode);
+  const { session, currentResult: hookResult, joinSession, broadcastStartAll } = useSprintTiming(sessionCode);
   const [currentResult, setCurrentResult] = useState<any>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -274,6 +274,18 @@ export const SprintTimingTimer = () => {
               </div>
             </div>
           </div>
+
+          {/* Motion Detection Button */}
+          <Button
+            onClick={async () => {
+              console.log('🎬 TIMER: Broadcasting START ALL from Timer Device...');
+              await broadcastStartAll();
+            }}
+            className="w-full rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white h-16 text-lg font-bold"
+          >
+            <Radar className="w-6 h-6 mr-2" />
+            ΑΝΙΧΝΕΥΣΗ ΚΙΝΗΣΗΣ
+          </Button>
 
           {/* Manual Controls */}
           <div className="flex gap-4">
