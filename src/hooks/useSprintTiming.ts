@@ -253,13 +253,13 @@ export const useSprintTiming = (sessionCode?: string) => {
 
     console.log('📡 [TIMER] Broadcasting START ALL DEVICES...');
     
-    // Unique channel name με timestamp για να αποφύγουμε conflicts
-    const channelName = `sprint-start-all-${session.session_code}-${Date.now()}`;
-    console.log('📡 [TIMER] Creating channel:', channelName);
+    // Χρησιμοποιούμε σταθερό channel name που ταιριάζει με τα listeners
+    const channelName = `sprint-start-all-${session.session_code}`;
+    console.log('📡 [TIMER] Using channel:', channelName);
     
     const channel = supabase.channel(channelName, {
       config: {
-        broadcast: { ack: false }
+        broadcast: { ack: false, self: true }
       }
     });
     
@@ -279,11 +279,10 @@ export const useSprintTiming = (sessionCode?: string) => {
         
         console.log('✅ [TIMER] Start all broadcast sent');
         
-        // Cleanup immediately after sending
+        // Cleanup after broadcast
         setTimeout(async () => {
-          console.log('🧹 [TIMER] Cleaning up channel:', channelName);
+          console.log('🧹 [TIMER] Cleaning up broadcast channel');
           await supabase.removeChannel(channel);
-          console.log('✅ [TIMER] Channel cleaned up');
         }, 500);
       }
     });

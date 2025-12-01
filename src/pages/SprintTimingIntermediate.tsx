@@ -80,33 +80,36 @@ export const SprintTimingIntermediate = () => {
   useEffect(() => {
     if (!sessionCode || !distance) return;
 
-    console.log(`🎧 Intermediate ${distance}m: Setting up START ALL listener...`);
+    console.log(`🎧 [INTERMEDIATE ${distance}m] Setting up START ALL listener for session:`, sessionCode);
+    
+    const channelName = `sprint-start-all-${sessionCode}`;
+    console.log(`🎧 [INTERMEDIATE ${distance}m] Listening on channel:`, channelName);
     
     const channel = supabase
-      .channel(`sprint-start-all-${sessionCode}`, {
+      .channel(channelName, {
         config: {
           broadcast: { ack: false }
         }
       })
       .on('broadcast', { event: 'start_all_devices' }, async (payload: any) => {
-        console.log(`📡 Intermediate ${distance}m: Received START ALL broadcast!`, payload);
+        console.log(`📡 [INTERMEDIATE ${distance}m] Received START ALL broadcast!`, payload);
         
         if (!isReady || !stream || !motionDetector || !videoRef.current) {
-          console.log(`⚠️ Intermediate ${distance}m: Camera not ready`);
+          console.log(`⚠️ [INTERMEDIATE ${distance}m] Camera not ready`);
           return;
         }
         
         if (isActive) {
-          console.log(`⚠️ Intermediate ${distance}m: Already active`);
+          console.log(`⚠️ [INTERMEDIATE ${distance}m] Already active`);
           return;
         }
         
         // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
-        console.log(`✅ Intermediate ${distance}m: AUTO-ACTIVATING motion detection from START ALL!`);
+        console.log(`✅ [INTERMEDIATE ${distance}m] AUTO-ACTIVATING motion detection from START ALL!`);
         setIsActive(true);
         
         motionDetector.start(async () => {
-          console.log(`🏁 Intermediate ${distance}m: MOTION DETECTED!`);
+          console.log(`🏁 [INTERMEDIATE ${distance}m] MOTION DETECTED!`);
           motionDetector.stop();
           setIsActive(false);
           
@@ -117,13 +120,16 @@ export const SprintTimingIntermediate = () => {
             ? distances[currentIndex + 1].toString() 
             : 'stop';
           
-          console.log(`📡 Intermediate ${distance}m: Activating next device: ${nextDevice}`);
+          console.log(`📡 [INTERMEDIATE ${distance}m] Activating next device: ${nextDevice}`);
           await broadcastActivateNext(nextDevice);
         });
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`🎧 [INTERMEDIATE ${distance}m] Listener subscription status:`, status);
+      });
 
     return () => {
+      console.log(`🧹 [INTERMEDIATE ${distance}m] Cleaning up listener channel`);
       supabase.removeChannel(channel);
     };
   }, [sessionCode, distance, isReady, stream, motionDetector, isActive, session, broadcastActivateNext]);
