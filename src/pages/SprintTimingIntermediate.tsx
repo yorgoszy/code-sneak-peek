@@ -76,6 +76,40 @@ export const SprintTimingIntermediate = () => {
     };
   }, [session?.id, distance]);
 
+  // Listen for ACTIVATE MOTION DETECTION broadcast - RESET state
+  useEffect(() => {
+    if (!sessionCode || !distance) return;
+
+    console.log(`🎧 [INTERMEDIATE ${distance}m] Setting up ACTIVATE MOTION listener...`);
+    
+    const channel = supabase
+      .channel(`sprint-broadcast-reset-${sessionCode}`, {
+        config: {
+          broadcast: { ack: false }
+        }
+      })
+      .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
+        console.log(`🔄 [INTERMEDIATE ${distance}m] Received ACTIVATE MOTION broadcast - RESETTING!`, payload);
+        
+        // RESET του localResult και localResultRef για νέα μέτρηση
+        console.log(`🧹 [INTERMEDIATE ${distance}m] Clearing localResult and localResultRef`);
+        localResultRef.current = null;
+        setLocalResult(null);
+        
+        // Σταματάμε το motion detection αν είναι ενεργό
+        if (isActive && motionDetector) {
+          console.log(`🛑 [INTERMEDIATE ${distance}m] Stopping active motion detection`);
+          motionDetector.stop();
+          setIsActive(false);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionCode, distance, isActive, motionDetector]);
+
   // Listen for START ALL broadcast
   useEffect(() => {
     if (!sessionCode || !distance) return;

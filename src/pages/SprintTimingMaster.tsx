@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
-import { Clock, Users, Plus, X, Trash2, Play, Square, MapPin, Timer as TimerIcon, Menu, Smartphone } from 'lucide-react';
+import { Clock, Users, Plus, X, Trash2, Play, Square, MapPin, Timer as TimerIcon, Menu, Smartphone, Camera } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sidebar } from '@/components/Sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -33,7 +33,7 @@ export const SprintTimingMaster = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
-  const { session, currentResult, createSession, broadcastStartAll, isLoading } = useSprintTiming(sessionCode);
+  const { session, currentResult, createSession, broadcastStartAll, broadcastActivateMotion, isLoading } = useSprintTiming(sessionCode);
   const isMobile = useIsMobile();
 
   // Check for tablet size
@@ -508,6 +508,18 @@ export const SprintTimingMaster = () => {
                   </p>
                 </div>
               )}
+
+              {/* Κουμπί Ανίχνευσης Κίνησης */}
+              <Button
+                onClick={async () => {
+                  console.log('🔄 MASTER: Broadcasting ACTIVATE MOTION DETECTION...');
+                  await broadcastActivateMotion();
+                }}
+                className="w-full rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white font-bold h-14 text-base"
+              >
+                <Camera className="w-5 h-5 mr-2" />
+                ΑΝΙΧΝΕΥΣΗ ΚΙΝΗΣΗΣ
+              </Button>
 
               {/* Κουμπί Έναρξης */}
               <Button

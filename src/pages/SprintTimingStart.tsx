@@ -20,6 +20,35 @@ export const SprintTimingStart = () => {
   const { session, joinSession, startTiming, broadcastActivateNext } = useSprintTiming(sessionCode);
   const { toast } = useToast();
 
+  // Listen for ACTIVATE MOTION DETECTION broadcast - RESET state
+  useEffect(() => {
+    if (!sessionCode) return;
+
+    console.log('🎧 [START] Setting up ACTIVATE MOTION listener...');
+    
+    const channel = supabase
+      .channel(`sprint-broadcast-reset-${sessionCode}`, {
+        config: {
+          broadcast: { ack: false }
+        }
+      })
+      .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
+        console.log('🔄 [START] Received ACTIVATE MOTION broadcast - RESETTING!', payload);
+        
+        // Σταματάμε το motion detection αν είναι ενεργό
+        if (isActive && motionDetector) {
+          console.log('🛑 [START] Stopping active motion detection');
+          motionDetector.stop();
+          setIsActive(false);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionCode, isActive, motionDetector]);
+
   // Listen for START ALL broadcast
   useEffect(() => {
     if (!sessionCode) return;
