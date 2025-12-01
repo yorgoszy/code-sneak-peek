@@ -112,10 +112,12 @@ export const SprintTimingMaster = () => {
   };
 
   const handleCloseSession = async () => {
-    // Στέλνουμε broadcast σε όλες τις συσκευές να μηδενιστούν
+    console.log('🔄 MASTER: Sending RESET to all devices...');
+    // Στέλνουμε broadcast σε όλες τις συσκευές να μηδενιστούν και να σταματήσουν motion detection
     await broadcastResetDevices();
-    // Περιμένουμε λίγο για να φτάσει το broadcast
+    // Περιμένουμε λίγο για να φτάσει το broadcast και μετά κάνουμε reload
     setTimeout(() => {
+      console.log('🔄 MASTER: Reloading page...');
       window.location.reload();
     }, 500);
   };
