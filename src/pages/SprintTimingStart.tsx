@@ -114,25 +114,32 @@ export const SprintTimingStart = () => {
     setIsActive(true);
     
     motionDetector.start(async () => {
-      console.log('🏁 START: MOTION DETECTED! Starting timing...', { sessionId: session?.id });
+      console.log('🏁 START: ⚡ MOTION DETECTED! ⚡');
+      console.log('🔴 START: Green border should disappear now');
+      console.log('📍 START: Session ID:', session?.id);
       
       // Σταματάμε την ανίχνευση
       motionDetector.stop();
       setIsActive(false);
       
-      // Ξεκινάμε το χρονόμετρο (χωρίς απόσταση - αυτό είναι START)
-      console.log('🔄 START: Calling startTiming()...');
+      // Ξεκινάμε το χρονόμετρο
+      console.log('🔄 START: Calling startTiming() to create database record...');
       const result = await startTiming();
       
       if (result) {
-        console.log('✅ START: Timing started successfully:', result);
-        console.log('📊 START: Result will be picked up by TIMER device via realtime');
+        console.log('✅ START: SUCCESS! Timing record created:', {
+          id: result.id,
+          session_id: result.session_id,
+          start_time: result.start_time
+        });
+        console.log('📡 START: TIMER device should now pick this up via realtime!');
+        
         toast({
-          title: "Χρονόμετρο ξεκίνησε!",
+          title: "✅ Χρονόμετρο ξεκίνησε!",
           description: `Timing ID: ${result.id}`,
         });
       } else {
-        console.error('❌ START: Failed to start timing - no result returned');
+        console.error('❌ START: FAILED - startTiming() returned null');
         toast({
           title: "Σφάλμα",
           description: "Αποτυχία έναρξης χρονομέτρου",

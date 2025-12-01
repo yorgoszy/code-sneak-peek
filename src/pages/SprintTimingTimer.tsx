@@ -77,7 +77,7 @@ export const SprintTimingTimer = () => {
     console.log('🎧 TIMER: Setting up realtime listener for session:', session.id);
 
     const channel = supabase
-      .channel(`sprint-results-${session.id}`)
+      .channel('sprint-results')
       .on(
         'postgres_changes',
         {
@@ -88,25 +88,27 @@ export const SprintTimingTimer = () => {
         },
         (payload) => {
           console.log('⏱️ TIMER: Result update received:', payload);
-          console.log('📊 TIMER: Payload details:', {
-            eventType: payload.eventType,
-            table: payload.table,
-            schema: payload.schema,
-            new: payload.new
-          });
+          console.log('📊 TIMER: Payload event:', payload.eventType);
+          console.log('📊 TIMER: Payload new data:', payload.new);
           
-          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            console.log('✅ TIMER: Setting currentResult:', payload.new);
+          if (payload.eventType === 'INSERT') {
+            console.log('🆕 TIMER: New result inserted - starting timer!');
+            setCurrentResult(payload.new as any);
+          } else if (payload.eventType === 'UPDATE') {
+            console.log('🔄 TIMER: Result updated');
             setCurrentResult(payload.new as any);
           }
         }
       )
       .subscribe((status) => {
-        console.log('🎧 TIMER: Results channel status:', status, 'for session:', session.id);
+        console.log('🎧 TIMER: Channel subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ TIMER: Successfully subscribed to realtime updates for session:', session.id);
+        }
       });
 
     return () => {
-      console.log('🎧 TIMER: Cleaning up realtime listener for session:', session.id);
+      console.log('🎧 TIMER: Cleaning up realtime listener');
       supabase.removeChannel(channel);
     };
   }, [session?.id]);
