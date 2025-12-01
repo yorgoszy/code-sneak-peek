@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,8 +32,21 @@ export const SprintTimingMaster = () => {
   const [selectedDeviceForQR, setSelectedDeviceForQR] = useState<Device | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const { session, currentResult, createSession, isLoading } = useSprintTiming(sessionCode);
   const isMobile = useIsMobile();
+
+  // Check for tablet size
+  useEffect(() => {
+    const checkTabletSize = () => {
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+    
+    checkTabletSize();
+    window.addEventListener('resize', checkTabletSize);
+    
+    return () => window.removeEventListener('resize', checkTabletSize);
+  }, []);
 
   const handleAddDistance = () => {
     const dist = parseFloat(newDistance);
@@ -126,8 +139,8 @@ export const SprintTimingMaster = () => {
 
         {/* Main Content */}
         <div className="flex-1 overflow-auto">
-          {/* Mobile Header */}
-          {isMobile && (
+          {/* Mobile/Tablet Header */}
+          {(isMobile || isTablet) && (
             <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-3 py-2 lg:hidden flex items-center justify-between">
               <Button 
                 variant="outline" 
@@ -370,8 +383,8 @@ export const SprintTimingMaster = () => {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {/* Mobile Header */}
-        {isMobile && (
+        {/* Mobile/Tablet Header */}
+        {(isMobile || isTablet) && (
           <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-3 py-2 lg:hidden flex items-center justify-between">
             <Button 
               variant="outline" 
