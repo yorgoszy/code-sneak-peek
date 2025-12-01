@@ -109,14 +109,6 @@ export const SprintTimingStop = () => {
           return;
         }
         
-        if (!localResult || localResult.end_time) {
-          console.log('⚠️ STOP Device: No active result', {
-            hasResult: !!localResult,
-            resultEnded: localResult?.end_time
-          });
-          return;
-        }
-        
         // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
         console.log('✅ STOP Device: AUTO-ACTIVATING motion detection!');
         setIsActive(true);
