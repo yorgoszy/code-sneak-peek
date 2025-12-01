@@ -109,14 +109,6 @@ export const SprintTimingIntermediate = () => {
           return;
         }
         
-        if (!localResult || localResult.end_time) {
-          console.log(`⚠️ Intermediate ${distance}m: No active result`, {
-            hasResult: !!localResult,
-            resultEnded: localResult?.end_time
-          });
-          return;
-        }
-        
         // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
         console.log(`✅ Intermediate ${distance}m: AUTO-ACTIVATING motion detection!`);
         setIsActive(true);
