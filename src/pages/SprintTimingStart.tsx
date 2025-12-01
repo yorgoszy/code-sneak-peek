@@ -22,22 +22,32 @@ export const SprintTimingStart = () => {
 
   // Listen for ACTIVATE MOTION DETECTION broadcast - RESET and ACTIVATE
   useEffect(() => {
-    if (!sessionCode) return;
+    if (!sessionCode) {
+      console.log('❌ [START] No sessionCode, cannot setup listener');
+      return;
+    }
 
-    console.log('🎧 [START] Setting up ACTIVATE MOTION listener...');
+    console.log('🎧 🎧 🎧 [START] Setting up ACTIVATE MOTION listener for channel:', `sprint-broadcast-${sessionCode}`);
     
     const channel = supabase
       .channel(`sprint-broadcast-${sessionCode}`, {
         config: {
-          broadcast: { ack: false }
+          broadcast: { self: true }
         }
       })
       .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
-        console.log('🔄 [START] Received ACTIVATE MOTION broadcast!', payload);
+        console.log('🔄 🔄 🔄 [START] Received ACTIVATE MOTION broadcast! 🔄 🔄 🔄', payload);
+        console.log('📊 [START] Camera status:', { 
+          isReady, 
+          hasStream: !!stream, 
+          hasDetector: !!motionDetector,
+          hasVideoRef: !!videoRef.current,
+          isActive 
+        });
         
         // Έλεγχος αν η κάμερα είναι έτοιμη
         if (!isReady || !stream || !motionDetector || !videoRef.current) {
-          console.log('⚠️ [START] Camera not ready, ignoring');
+          console.error('❌ ❌ ❌ [START] Camera NOT READY - Cannot activate motion detection! ❌ ❌ ❌');
           return;
         }
         
@@ -48,7 +58,7 @@ export const SprintTimingStart = () => {
         }
         
         // ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection ΑΜΕΣΩΣ
-        console.log('✅ [START] ACTIVATING motion detection NOW!');
+        console.log('✅ ✅ ✅ [START] ACTIVATING motion detection NOW! ✅ ✅ ✅');
         setIsActive(true);
         
         motionDetector.start(async () => {
@@ -70,12 +80,18 @@ export const SprintTimingStart = () => {
           }
         });
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🎧 🎧 🎧 [START] Broadcast listener subscription status:', status, '🎧 🎧 🎧');
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ ✅ ✅ [START] Successfully SUBSCRIBED to broadcast channel! ✅ ✅ ✅');
+        }
+      });
 
     return () => {
+      console.log('🧹 [START] Cleaning up broadcast listener');
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, isReady, stream, motionDetector, videoRef, isActive, startTiming, session, broadcastActivateNext]);
+  }, [sessionCode]); // Μόνο το sessionCode στο dependency array
 
   // Listen for START ALL broadcast
   useEffect(() => {
