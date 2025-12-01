@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { supabase } from '@/integrations/supabase/client';
-import { Clock, Timer as TimerIcon, Play, Square } from 'lucide-react';
+import { Clock, Timer as TimerIcon, Play, Square, RotateCcw } from 'lucide-react';
 
 export const SprintTimingTimer = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
@@ -169,6 +169,14 @@ export const SprintTimingTimer = () => {
     setStartTime(null);
   };
 
+  const handleRefresh = () => {
+    console.log('🔄 TIMER: Refresh/Reset');
+    setIsRunning(false);
+    setStartTime(null);
+    setElapsedTime(0);
+    setCurrentResult(null);
+  };
+
   // Manual timer interval
   useEffect(() => {
     if (!isRunning || !startTime) return;
@@ -283,6 +291,13 @@ export const SprintTimingTimer = () => {
             >
               <Square className="w-6 h-6 mr-2" />
               Stop
+            </Button>
+            <Button
+              onClick={handleRefresh}
+              className="flex-1 rounded-none bg-gray-500 hover:bg-gray-600 text-white h-16 text-lg"
+            >
+              <RotateCcw className="w-6 h-6 mr-2" />
+              Refresh
             </Button>
           </div>
 
