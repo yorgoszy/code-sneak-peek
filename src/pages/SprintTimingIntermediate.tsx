@@ -76,6 +76,29 @@ export const SprintTimingIntermediate = () => {
     };
   }, [session?.id, distance]);
 
+  // Listen for PREPARE broadcast
+  useEffect(() => {
+    if (!sessionCode || !distance) return;
+
+    console.log(`🎧 Intermediate ${distance}m: Setting up PREPARE listener...`);
+    
+    const channel = supabase
+      .channel(`sprint-prepare-${sessionCode}`, {
+        config: {
+          broadcast: { ack: false }
+        }
+      })
+      .on('broadcast', { event: 'prepare_devices' }, (payload: any) => {
+        console.log(`📡 Intermediate ${distance}m: Received PREPARE broadcast!`, payload);
+        console.log(`✅ Intermediate ${distance}m: Device is now READY and waiting for activation!`);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionCode, distance]);
+
   // Listen for broadcast activation - ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ
   useEffect(() => {
     if (!sessionCode || !distance) return;
