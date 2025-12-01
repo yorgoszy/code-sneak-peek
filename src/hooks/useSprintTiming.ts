@@ -251,17 +251,23 @@ export const useSprintTiming = (sessionCode?: string) => {
   const broadcastStartAll = useCallback(async () => {
     if (!session?.session_code) return;
 
-    console.log('📡 Broadcasting START ALL DEVICES...');
+    console.log('📡 [TIMER] Broadcasting START ALL DEVICES...');
     
-    const channel = supabase.channel(`sprint-start-all-${session.session_code}`, {
+    // Unique channel name με timestamp για να αποφύγουμε conflicts
+    const channelName = `sprint-start-all-${session.session_code}-${Date.now()}`;
+    console.log('📡 [TIMER] Creating channel:', channelName);
+    
+    const channel = supabase.channel(channelName, {
       config: {
         broadcast: { ack: false }
       }
     });
     
     await channel.subscribe(async (status) => {
+      console.log('📡 [TIMER] Channel status:', status);
+      
       if (status === 'SUBSCRIBED') {
-        console.log('✅ Broadcast channel subscribed, sending start all message...');
+        console.log('✅ [TIMER] Channel subscribed, sending start all message...');
         
         await channel.send({
           type: 'broadcast',
@@ -271,12 +277,14 @@ export const useSprintTiming = (sessionCode?: string) => {
           }
         });
         
-        console.log('✅ Start all broadcast sent');
+        console.log('✅ [TIMER] Start all broadcast sent');
         
-        // Cleanup after a short delay
-        setTimeout(() => {
-          supabase.removeChannel(channel);
-        }, 1000);
+        // Cleanup immediately after sending
+        setTimeout(async () => {
+          console.log('🧹 [TIMER] Cleaning up channel:', channelName);
+          await supabase.removeChannel(channel);
+          console.log('✅ [TIMER] Channel cleaned up');
+        }, 500);
       }
     });
   }, [session]);
