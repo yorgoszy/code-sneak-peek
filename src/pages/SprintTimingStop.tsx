@@ -145,25 +145,24 @@ export const SprintTimingStop = () => {
     };
   }, [sessionCode, isReady, stream, motionDetector, isActive, stopTiming]);
 
-  // Listen for broadcast events - UNIFIED LISTENER
+  // Listen for ACTIVATE MOTION DETECTION broadcast - RESET and ACTIVATE
   useEffect(() => {
     if (!sessionCode) {
-      console.log('❌ STOP Device: No sessionCode, cannot setup listener');
+      console.log('❌ [STOP] No sessionCode, cannot setup listener');
       return;
     }
 
-    console.log('🎧 🎧 🎧 STOP Device: Setting up unified broadcast listener for channel:', `sprint-broadcast-${sessionCode}`);
+    console.log('🎧 🎧 🎧 [STOP] Setting up ACTIVATE MOTION listener for channel:', `sprint-broadcast-${sessionCode}`);
     
     const channel = supabase
       .channel(`sprint-broadcast-${sessionCode}`, {
         config: {
-          broadcast: { self: true } // Να λαμβάνει και τα δικά του broadcasts
+          broadcast: { self: true }
         }
       })
-      // Event 1: Activate Motion Detection - Reset and Activate ALL devices
       .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
-        console.log('🔄 🔄 🔄 STOP Device: Received ACTIVATE MOTION broadcast! 🔄 🔄 🔄', payload);
-        console.log('📊 STOP Device: Camera status:', { 
+        console.log('🔄 🔄 🔄 [STOP] Received ACTIVATE MOTION broadcast! 🔄 🔄 🔄', payload);
+        console.log('📊 [STOP] Camera status:', { 
           isReady, 
           hasStream: !!stream, 
           hasDetector: !!motionDetector,
@@ -172,90 +171,41 @@ export const SprintTimingStop = () => {
         });
         
         // RESET του localResult και localResultRef για νέα μέτρηση
-        console.log('🧹 STOP Device: Clearing localResult and localResultRef');
+        console.log('🧹 [STOP] Clearing localResult and localResultRef');
         localResultRef.current = null;
         setLocalResult(null);
         
         // Σταματάμε το motion detection αν είναι ενεργό
         if (isActive && motionDetector) {
-          console.log('🛑 STOP Device: Stopping previous motion detection');
+          console.log('🛑 [STOP] Stopping previous motion detection');
           motionDetector.stop();
-          setIsActive(false);
         }
         
         // Έλεγχος αν η κάμερα είναι έτοιμη
         if (!isReady || !stream || !motionDetector || !videoRef.current) {
-          console.error('❌ ❌ ❌ STOP Device: Camera NOT READY - Cannot activate motion detection! ❌ ❌ ❌');
-          console.error('❌ STOP Device: Please start the camera first by clicking "Έναρξη Κάμερας"');
+          console.error('❌ ❌ ❌ [STOP] Camera NOT READY - Cannot activate motion detection! ❌ ❌ ❌');
+          console.error('❌ [STOP] Please start the camera first by clicking "Έναρξη Κάμερας"');
           return;
         }
         
         // ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection ΑΜΕΣΩΣ
-        console.log('✅ ✅ ✅ STOP Device: ACTIVATING motion detection NOW! ✅ ✅ ✅');
+        console.log('✅ ✅ ✅ [STOP] ACTIVATING motion detection NOW! ✅ ✅ ✅');
         setIsActive(true);
         
         motionDetector.start(async () => {
-          console.log('🏁 STOP TRIGGERED BY MOTION!');
+          console.log('🏁 [STOP] MOTION DETECTED!');
           const currentLocalResult = localResultRef.current;
-          console.log('🏁 STOP: localResultRef.current at motion:', currentLocalResult);
+          console.log('🏁 [STOP] localResultRef.current at motion:', currentLocalResult);
           motionDetector.stop();
           setIsActive(false);
           
           if (!currentLocalResult?.id) {
-            console.error('❌ STOP: No localResult id available!');
+            console.error('❌ [STOP] No localResult id available!');
             return;
           }
           
           if (currentLocalResult.end_time) {
-            console.error('❌ STOP: Result already has end_time, skipping!');
-            return;
-          }
-          
-          await stopTiming(currentLocalResult.id);
-        });
-      })
-      // Event 2: Activate Next Device - Sequential activation after START
-      .on('broadcast', { event: 'activate_next_device' }, (payload: any) => {
-        console.log('📡 STOP Device: Received activate_next_device broadcast!', payload);
-        
-        // Ελέγχουμε αν το μήνυμα είναι για εμάς
-        if (payload.target !== 'stop') {
-          console.log('⚠️ STOP Device: Message not for us, ignoring');
-          return;
-        }
-        
-        if (!isReady || !stream || !motionDetector || !videoRef.current) {
-          console.log('⚠️ STOP Device: Camera not ready', {
-            isReady,
-            hasStream: !!stream,
-            hasDetector: !!motionDetector
-          });
-          return;
-        }
-        
-        if (isActive) {
-          console.log('⚠️ STOP Device: Already active');
-          return;
-        }
-        
-        // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
-        console.log('✅ STOP Device: AUTO-ACTIVATING motion detection from next device!');
-        console.log('✅ STOP Device: localResultRef.current:', localResultRef.current);
-        setIsActive(true);
-        motionDetector.start(async () => {
-          console.log('🏁 STOP TRIGGERED BY MOTION!');
-          const currentLocalResult = localResultRef.current;
-          console.log('🏁 STOP: localResultRef.current at motion:', currentLocalResult);
-          motionDetector.stop();
-          setIsActive(false);
-          
-          if (!currentLocalResult?.id) {
-            console.error('❌ STOP: No localResult id available!');
-            return;
-          }
-          
-          if (currentLocalResult.end_time) {
-            console.error('❌ STOP: Result already has end_time, skipping!');
+            console.error('❌ [STOP] Result already has end_time, skipping!');
             return;
           }
           
@@ -263,14 +213,14 @@ export const SprintTimingStop = () => {
         });
       })
       .subscribe((status) => {
-        console.log('🎧 🎧 🎧 STOP Device: Broadcast listener subscription status:', status, '🎧 🎧 🎧');
+        console.log('🎧 🎧 🎧 [STOP] Broadcast listener subscription status:', status, '🎧 🎧 🎧');
         if (status === 'SUBSCRIBED') {
-          console.log('✅ ✅ ✅ STOP Device: Successfully SUBSCRIBED to broadcast channel! ✅ ✅ ✅');
+          console.log('✅ ✅ ✅ [STOP] Successfully SUBSCRIBED to broadcast channel! ✅ ✅ ✅');
         }
       });
 
     return () => {
-      console.log('🧹 STOP Device: Cleaning up broadcast listener');
+      console.log('🧹 [STOP] Cleaning up broadcast listener');
       supabase.removeChannel(channel);
     };
   }, [sessionCode]); // Μόνο το sessionCode στο dependency array

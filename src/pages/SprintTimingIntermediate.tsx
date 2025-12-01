@@ -16,7 +16,7 @@ export const SprintTimingIntermediate = () => {
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
-  const { session, joinSession, broadcastActivateNext } = useSprintTiming(sessionCode);
+  const { session, joinSession, stopTiming, broadcastActivateNext } = useSprintTiming(sessionCode);
   const [localResult, setLocalResult] = useState<any>(null);
 
   // Track presence as Intermediate device
@@ -76,14 +76,14 @@ export const SprintTimingIntermediate = () => {
     };
   }, [session?.id, distance]);
 
-  // Listen for broadcast events - UNIFIED LISTENER
+  // Listen for ACTIVATE MOTION DETECTION broadcast - RESET and ACTIVATE
   useEffect(() => {
     if (!sessionCode || !distance) {
       console.log(`❌ [INTERMEDIATE ${distance}m] No sessionCode or distance, cannot setup listener`);
       return;
     }
 
-    console.log(`🎧 🎧 🎧 [INTERMEDIATE ${distance}m] Setting up unified broadcast listener for channel:`, `sprint-broadcast-${sessionCode}`);
+    console.log(`🎧 🎧 🎧 [INTERMEDIATE ${distance}m] Setting up ACTIVATE MOTION listener for channel:`, `sprint-broadcast-${sessionCode}`);
     
     const channel = supabase
       .channel(`sprint-broadcast-${sessionCode}`, {
@@ -91,7 +91,6 @@ export const SprintTimingIntermediate = () => {
           broadcast: { self: true }
         }
       })
-      // Event 1: Activate Motion Detection - Reset and Activate ALL devices
       .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
         console.log(`🔄 🔄 🔄 [INTERMEDIATE ${distance}m] Received ACTIVATE MOTION broadcast! 🔄 🔄 🔄`, payload);
         console.log(`📊 [INTERMEDIATE ${distance}m] Camera status:`, { 
@@ -102,22 +101,23 @@ export const SprintTimingIntermediate = () => {
           isActive 
         });
         
-        // Έλεγχος αν η κάμερα είναι έτοιμη
-        if (!isReady || !stream || !motionDetector || !videoRef.current) {
-          console.error(`❌ ❌ ❌ [INTERMEDIATE ${distance}m] Camera NOT READY - Cannot activate motion detection! ❌ ❌ ❌`);
-          return;
-        }
+        // RESET του localResult και localResultRef για νέα μέτρηση
+        console.log(`🧹 [INTERMEDIATE ${distance}m] Clearing localResult and localResultRef`);
+        localResultRef.current = null;
+        setLocalResult(null);
         
-        // Σταματάμε το motion detection αν είναι ήδη ενεργό
+        // Σταματάμε το motion detection αν είναι ενεργό
         if (isActive && motionDetector) {
           console.log(`🛑 [INTERMEDIATE ${distance}m] Stopping previous motion detection`);
           motionDetector.stop();
         }
         
-        // RESET του localResult και localResultRef για νέα μέτρηση
-        console.log(`🧹 [INTERMEDIATE ${distance}m] Clearing localResult and localResultRef`);
-        localResultRef.current = null;
-        setLocalResult(null);
+        // Έλεγχος αν η κάμερα είναι έτοιμη
+        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+          console.error(`❌ ❌ ❌ [INTERMEDIATE ${distance}m] Camera NOT READY - Cannot activate motion detection! ❌ ❌ ❌`);
+          console.error(`❌ [INTERMEDIATE ${distance}m] Please start the camera first`);
+          return;
+        }
         
         // ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection ΑΜΕΣΩΣ
         console.log(`✅ ✅ ✅ [INTERMEDIATE ${distance}m] ACTIVATING motion detection NOW! ✅ ✅ ✅`);
@@ -125,63 +125,36 @@ export const SprintTimingIntermediate = () => {
         
         motionDetector.start(async () => {
           console.log(`🏁 [INTERMEDIATE ${distance}m] MOTION DETECTED!`);
+          const currentLocalResult = localResultRef.current;
+          console.log(`🏁 [INTERMEDIATE ${distance}m] localResultRef.current at motion:`, currentLocalResult);
           motionDetector.stop();
           setIsActive(false);
           
-          // Βρίσκουμε την επόμενη συσκευή
+          if (!currentLocalResult?.id) {
+            console.error(`❌ [INTERMEDIATE ${distance}m] No localResult id available!`);
+            return;
+          }
+          
+          if (currentLocalResult.end_time) {
+            console.error(`❌ [INTERMEDIATE ${distance}m] Result already has end_time, skipping!`);
+            return;
+          }
+          
+          await stopTiming(currentLocalResult.id);
+          
+          // Ενεργοποίηση επόμενης συσκευής
           const distances = session?.distances || [];
           const currentIndex = distances.indexOf(parseInt(distance));
-          const nextDevice = currentIndex < distances.length - 1 
-            ? distances[currentIndex + 1].toString() 
-            : 'stop';
+          const nextIndex = currentIndex + 1;
           
-          console.log(`📡 [INTERMEDIATE ${distance}m] Activating next device: ${nextDevice}`);
-          await broadcastActivateNext(nextDevice);
-        });
-      })
-      // Event 2: Activate Next Device - Sequential activation after START
-      .on('broadcast', { event: 'activate_next_device' }, (payload: any) => {
-        console.log(`📡 [INTERMEDIATE ${distance}m] Received activate_next_device broadcast!`, payload);
-        
-        // Ελέγχουμε αν το μήνυμα είναι για εμάς
-        if (payload.target !== distance) {
-          console.log(`⚠️ [INTERMEDIATE ${distance}m] Message not for us (target: ${payload.target}), ignoring`);
-          return;
-        }
-        
-        if (!isReady || !stream || !motionDetector || !videoRef.current) {
-          console.log(`⚠️ [INTERMEDIATE ${distance}m] Camera not ready`, {
-            isReady,
-            hasStream: !!stream,
-            hasDetector: !!motionDetector
-          });
-          return;
-        }
-        
-        if (isActive) {
-          console.log(`⚠️ [INTERMEDIATE ${distance}m] Already active`);
-          return;
-        }
-        
-        // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
-        console.log(`✅ [INTERMEDIATE ${distance}m] AUTO-ACTIVATING motion detection from next device!`);
-        setIsActive(true);
-        
-        motionDetector.start(async () => {
-          console.log(`🏁 [INTERMEDIATE ${distance}m] MOTION DETECTED!`);
-          motionDetector.stop();
-          setIsActive(false);
-          
-          // Βρίσκουμε την επόμενη συσκευή
-          const distances = session?.distances || [];
-          const currentIndex = distances.indexOf(parseInt(distance));
-          const nextDevice = currentIndex < distances.length - 1 
-            ? distances[currentIndex + 1].toString() 
-            : 'stop';
-          
-          console.log(`📡 [INTERMEDIATE ${distance}m] Activating next device: ${nextDevice}`);
-          console.log(`📡 [INTERMEDIATE ${distance}m] localResultRef.current:`, localResultRef.current);
-          await broadcastActivateNext(nextDevice);
+          if (nextIndex < distances.length) {
+            const nextDevice = distances[nextIndex].toString();
+            console.log(`📡 [INTERMEDIATE ${distance}m] Activating next device: ${nextDevice}`);
+            await broadcastActivateNext(nextDevice);
+          } else {
+            console.log(`📡 [INTERMEDIATE ${distance}m] Activating STOP device`);
+            await broadcastActivateNext('stop');
+          }
         });
       })
       .subscribe((status) => {
@@ -195,7 +168,7 @@ export const SprintTimingIntermediate = () => {
       console.log(`🧹 [INTERMEDIATE ${distance}m] Cleaning up broadcast listener`);
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, distance]); // Μόνο sessionCode και distance στο dependency array
+  }, [sessionCode, distance]); // sessionCode και distance στο dependency array
 
   useEffect(() => {
     if (sessionCode) {
