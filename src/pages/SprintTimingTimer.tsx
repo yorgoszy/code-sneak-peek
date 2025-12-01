@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { supabase } from '@/integrations/supabase/client';
-import { Clock, Timer as TimerIcon } from 'lucide-react';
+import { Clock, Timer as TimerIcon, Play, Square } from 'lucide-react';
 
 export const SprintTimingTimer = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
@@ -13,6 +14,7 @@ export const SprintTimingTimer = () => {
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isRunning, setIsRunning] = useState(false);
   const [connectedDevices, setConnectedDevices] = useState<{ [key: string]: { device: string, timestamp: string }[] }>({});
+  const [startTime, setStartTime] = useState<number | null>(null);
 
   useEffect(() => {
     if (sessionCode) {
@@ -154,6 +156,32 @@ export const SprintTimingTimer = () => {
     }
   }, [currentResult]);
 
+  const handleManualStart = () => {
+    console.log('▶️ TIMER: Manual start');
+    setStartTime(Date.now());
+    setIsRunning(true);
+    setElapsedTime(0);
+  };
+
+  const handleManualStop = () => {
+    console.log('⏹️ TIMER: Manual stop');
+    setIsRunning(false);
+    setStartTime(null);
+  };
+
+  // Manual timer interval
+  useEffect(() => {
+    if (!isRunning || !startTime) return;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const elapsed = now - startTime;
+      setElapsedTime(elapsed);
+    }, 10); // Update every 10ms
+
+    return () => clearInterval(interval);
+  }, [isRunning, startTime]);
+
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
     const milliseconds = Math.floor((ms % 1000) / 10);
@@ -236,6 +264,26 @@ export const SprintTimingTimer = () => {
                  'Αναμονή για έναρξη...'}
               </div>
             </div>
+          </div>
+
+          {/* Manual Controls */}
+          <div className="flex gap-4">
+            <Button
+              onClick={handleManualStart}
+              disabled={isRunning}
+              className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-16 text-lg"
+            >
+              <Play className="w-6 h-6 mr-2" />
+              Start
+            </Button>
+            <Button
+              onClick={handleManualStop}
+              disabled={!isRunning}
+              className="flex-1 rounded-none bg-red-500 hover:bg-red-600 text-white h-16 text-lg"
+            >
+              <Square className="w-6 h-6 mr-2" />
+              Stop
+            </Button>
           </div>
 
           {/* Distance Info */}
