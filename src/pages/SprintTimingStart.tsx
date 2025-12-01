@@ -26,9 +26,8 @@ export const SprintTimingStart = () => {
 
     console.log('🎧 [START] Setting up START ALL listener for session:', sessionCode);
     
-    // Unique channel per session - όχι dependencies που αλλάζουν
-    const channelName = `sprint-start-all-listener-${sessionCode}`;
-    console.log('🎧 [START] Creating listener channel:', channelName);
+    const channelName = `sprint-start-all-${sessionCode}`;
+    console.log('🎧 [START] Listening on channel:', channelName);
     
     const channel = supabase
       .channel(channelName, {
@@ -78,9 +77,8 @@ export const SprintTimingStart = () => {
       });
 
     return () => {
-      console.log('🧹 [START] Cleaning up listener channel:', channelName);
+      console.log('🧹 [START] Cleaning up listener channel');
       supabase.removeChannel(channel);
-      console.log('✅ [START] Listener cleaned up');
     };
   }, [sessionCode, isReady, stream, motionDetector, isActive, startTiming, broadcastActivateNext, session]);
 
