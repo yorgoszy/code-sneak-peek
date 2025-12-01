@@ -74,7 +74,7 @@ export const SprintTimingIntermediate = () => {
     };
   }, [session?.id, distance]);
 
-  // Listen for broadcast activation
+  // Listen for broadcast activation - ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ
   useEffect(() => {
     if (!sessionCode || !distance) return;
 
@@ -95,35 +95,47 @@ export const SprintTimingIntermediate = () => {
           return;
         }
         
-        if (isReady && stream && !isActive && localResult && !localResult.end_time && motionDetector && videoRef.current) {
-          console.log(`✅ Intermediate ${distance}m: Conditions met, activating motion detection`);
-          setIsActive(true);
-          
-          motionDetector.start(async () => {
-            console.log(`🏁 Intermediate ${distance}m: MOTION DETECTED!`);
-            motionDetector.stop();
-            setIsActive(false);
-            
-            // Βρίσκουμε την επόμενη συσκευή
-            const distances = session?.distances || [];
-            const currentIndex = distances.indexOf(parseInt(distance));
-            const nextDevice = currentIndex < distances.length - 1 
-              ? distances[currentIndex + 1].toString() 
-              : 'stop';
-            
-            console.log(`📡 Intermediate ${distance}m: Activating next device: ${nextDevice}`);
-            await broadcastActivateNext(nextDevice);
-          });
-        } else {
-          console.log(`⚠️ Intermediate ${distance}m: Conditions not met`, {
+        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+          console.log(`⚠️ Intermediate ${distance}m: Camera not ready`, {
             isReady,
             hasStream: !!stream,
-            isActive,
-            hasResult: !!localResult,
-            resultEnded: localResult?.end_time,
             hasDetector: !!motionDetector
           });
+          return;
         }
+        
+        if (isActive) {
+          console.log(`⚠️ Intermediate ${distance}m: Already active`);
+          return;
+        }
+        
+        if (!localResult || localResult.end_time) {
+          console.log(`⚠️ Intermediate ${distance}m: No active result`, {
+            hasResult: !!localResult,
+            resultEnded: localResult?.end_time
+          });
+          return;
+        }
+        
+        // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
+        console.log(`✅ Intermediate ${distance}m: AUTO-ACTIVATING motion detection!`);
+        setIsActive(true);
+        
+        motionDetector.start(async () => {
+          console.log(`🏁 Intermediate ${distance}m: MOTION DETECTED!`);
+          motionDetector.stop();
+          setIsActive(false);
+          
+          // Βρίσκουμε την επόμενη συσκευή
+          const distances = session?.distances || [];
+          const currentIndex = distances.indexOf(parseInt(distance));
+          const nextDevice = currentIndex < distances.length - 1 
+            ? distances[currentIndex + 1].toString() 
+            : 'stop';
+          
+          console.log(`📡 Intermediate ${distance}m: Activating next device: ${nextDevice}`);
+          await broadcastActivateNext(nextDevice);
+        });
       })
       .subscribe();
 
