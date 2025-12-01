@@ -76,28 +76,57 @@ export const SprintTimingIntermediate = () => {
     };
   }, [session?.id, distance]);
 
-  // Listen for PREPARE broadcast
+  // Listen for START ALL broadcast
   useEffect(() => {
     if (!sessionCode || !distance) return;
 
-    console.log(`🎧 Intermediate ${distance}m: Setting up PREPARE listener...`);
+    console.log(`🎧 Intermediate ${distance}m: Setting up START ALL listener...`);
     
     const channel = supabase
-      .channel(`sprint-prepare-${sessionCode}`, {
+      .channel(`sprint-start-all-${sessionCode}`, {
         config: {
           broadcast: { ack: false }
         }
       })
-      .on('broadcast', { event: 'prepare_devices' }, (payload: any) => {
-        console.log(`📡 Intermediate ${distance}m: Received PREPARE broadcast!`, payload);
-        console.log(`✅ Intermediate ${distance}m: Device is now READY and waiting for activation!`);
+      .on('broadcast', { event: 'start_all_devices' }, async (payload: any) => {
+        console.log(`📡 Intermediate ${distance}m: Received START ALL broadcast!`, payload);
+        
+        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+          console.log(`⚠️ Intermediate ${distance}m: Camera not ready`);
+          return;
+        }
+        
+        if (isActive) {
+          console.log(`⚠️ Intermediate ${distance}m: Already active`);
+          return;
+        }
+        
+        // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
+        console.log(`✅ Intermediate ${distance}m: AUTO-ACTIVATING motion detection from START ALL!`);
+        setIsActive(true);
+        
+        motionDetector.start(async () => {
+          console.log(`🏁 Intermediate ${distance}m: MOTION DETECTED!`);
+          motionDetector.stop();
+          setIsActive(false);
+          
+          // Βρίσκουμε την επόμενη συσκευή
+          const distances = session?.distances || [];
+          const currentIndex = distances.indexOf(parseInt(distance));
+          const nextDevice = currentIndex < distances.length - 1 
+            ? distances[currentIndex + 1].toString() 
+            : 'stop';
+          
+          console.log(`📡 Intermediate ${distance}m: Activating next device: ${nextDevice}`);
+          await broadcastActivateNext(nextDevice);
+        });
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, distance]);
+  }, [sessionCode, distance, isReady, stream, motionDetector, isActive, session, broadcastActivateNext]);
 
   // Listen for broadcast activation - ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ
   useEffect(() => {
