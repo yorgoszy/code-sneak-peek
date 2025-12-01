@@ -147,13 +147,19 @@ export const SprintTimingStart = () => {
   }, [motionDetector, session, startTiming, toast]);
 
   const handleBroadcastActivate = async () => {
-    console.log('🔘 START: Broadcast button clicked!', { stream: !!stream, isActive, session: !!session });
+    console.log('🔘 START: Broadcast button clicked!', { 
+      stream: !!stream, 
+      isActive, 
+      session: !!session,
+      motionDetector: !!motionDetector,
+      isReady
+    });
     
     if (!stream) {
       console.log('⚠️ START: No camera stream available');
       toast({
         title: "Σφάλμα",
-        description: "Η κάμερα δεν είναι ενεργή",
+        description: "Ενεργοποιήστε πρώτα την κάμερα",
         variant: "destructive",
       });
       return;
@@ -169,15 +175,40 @@ export const SprintTimingStart = () => {
       return;
     }
 
+    if (!motionDetector) {
+      console.log('⚠️ START: Motion detector not ready');
+      toast({
+        title: "Σφάλμα",
+        description: "Περιμένετε να φορτώσει η κάμερα",
+        variant: "destructive",
+      });
+      return;
+    }
+
     console.log('📡 START: Sending broadcast activation...');
-    // Στέλνουμε broadcast - όλες οι συσκευές (συμπεριλαμβανομένης της START) θα ενεργοποιηθούν
-    await broadcastActivateMotion();
     
-    console.log('✅ START: Broadcast sent successfully!');
-    toast({
-      title: "Έναρξη Motion Detection",
-      description: "Όλες οι συσκευές ενεργοποιήθηκαν!",
-    });
+    try {
+      // Στέλνουμε broadcast - όλες οι συσκευές θα ενεργοποιηθούν
+      await broadcastActivateMotion();
+      
+      console.log('✅ START: Broadcast sent successfully!');
+      
+      // Ενεργοποιούμε και την δική μας συσκευή
+      console.log('🎬 START: Activating local motion detection...');
+      handleActivate();
+      
+      toast({
+        title: "Motion Detection Ενεργοποιήθηκε",
+        description: "Περιμένετε για κίνηση...",
+      });
+    } catch (error) {
+      console.error('❌ START: Error activating motion detection:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία ενεργοποίησης",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleStop = () => {
@@ -283,15 +314,15 @@ export const SprintTimingStart = () => {
             )}
           </div>
 
-          {/* DEBUG: Πάντα εμφανίζουμε το κουμπί broadcast για testing */}
+          {/* Κουμπί έναρξης motion detection */}
           <button
             onClick={handleBroadcastActivate}
-            disabled={isActive}
+            disabled={isActive || !stream}
             className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 border-0"
             type="button"
           >
             <Play className="w-6 h-6" />
-            ΕΝΑΡΞΗ (Broadcast to all devices)
+            Έναρξη
           </button>
 
           {!stream ? (
