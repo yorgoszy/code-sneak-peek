@@ -333,6 +333,26 @@ export const SprintTimingStart = () => {
             Έναρξη
           </button>
 
+          {/* Test button για direct start χωρίς motion detection */}
+          <Button
+            onClick={async () => {
+              console.log('🧪 TEST: Direct startTiming call');
+              const result = await startTiming();
+              if (result) {
+                console.log('✅ TEST: Success!', result);
+                toast({
+                  title: "Test Success",
+                  description: `Created result: ${result.id}`,
+                });
+              } else {
+                console.log('❌ TEST: Failed');
+              }
+            }}
+            className="w-full rounded-none bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            🧪 Test Direct Start (No Motion Detection)
+          </Button>
+
           {!stream ? (
             <Button
               onClick={handleStartCamera}

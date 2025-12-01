@@ -77,6 +77,11 @@ export const SprintTimingTimer = () => {
     }
 
     console.log('🎧 TIMER: Setting up realtime listener for session:', session.id);
+    console.log('📍 TIMER: Current state before subscription:', { 
+      isRunning, 
+      startTime, 
+      elapsedTime 
+    });
 
     const channel = supabase
       .channel('sprint-results')
@@ -89,26 +94,35 @@ export const SprintTimingTimer = () => {
           filter: `session_id=eq.${session.id}`
         },
         (payload) => {
-          console.log('⏱️ TIMER: Result update received:', payload);
-          console.log('📊 TIMER: Payload event:', payload.eventType);
-          console.log('📊 TIMER: Payload new data:', payload.new);
+          console.log('📡 TIMER: ========== REALTIME EVENT RECEIVED ==========');
+          console.log('⏱️ TIMER: Event type:', payload.eventType);
+          console.log('⏱️ TIMER: Table:', payload.table);
+          console.log('⏱️ TIMER: Full payload:', JSON.stringify(payload, null, 2));
           
           if (payload.eventType === 'INSERT') {
-            console.log('🆕 TIMER: New result inserted - AUTO STARTING TIMER!');
+            console.log('🆕 TIMER: NEW INSERT EVENT - STARTING TIMER NOW!');
             const newResult = payload.new as any;
+            console.log('📊 TIMER: New result data:', newResult);
             
             // Αυτόματη εκκίνηση του χρονομέτρου
             if (newResult.start_time) {
               const startTimeMs = new Date(newResult.start_time).getTime();
-              console.log('▶️ TIMER: Auto-starting with start_time:', newResult.start_time);
+              console.log('▶️ TIMER: Setting startTime to:', startTimeMs);
+              console.log('▶️ TIMER: Setting isRunning to: true');
+              console.log('▶️ TIMER: Setting elapsedTime to: 0');
+              
               setStartTime(startTimeMs);
               setIsRunning(true);
               setElapsedTime(0);
+              
+              console.log('✅ TIMER: Timer should now be running!');
+            } else {
+              console.warn('⚠️ TIMER: No start_time in result!', newResult);
             }
             
             setCurrentResult(newResult);
           } else if (payload.eventType === 'UPDATE') {
-            console.log('🔄 TIMER: Result updated');
+            console.log('🔄 TIMER: UPDATE EVENT');
             const updatedResult = payload.new as any;
             
             // Αν το result ολοκληρώθηκε, σταματάμε το χρονόμετρο
@@ -120,12 +134,18 @@ export const SprintTimingTimer = () => {
             
             setCurrentResult(updatedResult);
           }
+          
+          console.log('📡 TIMER: ========== EVENT PROCESSING COMPLETE ==========');
         }
       )
       .subscribe((status) => {
         console.log('🎧 TIMER: Channel subscription status:', status);
         if (status === 'SUBSCRIBED') {
           console.log('✅ TIMER: Successfully subscribed to realtime updates for session:', session.id);
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ TIMER: Channel error!');
+        } else if (status === 'TIMED_OUT') {
+          console.error('❌ TIMER: Channel timed out!');
         }
       });
 
