@@ -160,23 +160,25 @@ export const SprintTimingStop = () => {
       // Event 1: Activate Motion Detection - Reset and Activate ALL devices
       .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
         console.log('🔄 STOP Device: Received ACTIVATE MOTION broadcast!', payload);
-        
-        // Έλεγχος αν η κάμερα είναι έτοιμη
-        if (!isReady || !stream || !motionDetector || !videoRef.current) {
-          console.log('⚠️ STOP Device: Camera not ready, ignoring');
-          return;
-        }
-        
-        // Σταματάμε το motion detection αν είναι ήδη ενεργό
-        if (isActive && motionDetector) {
-          console.log('🛑 STOP Device: Stopping previous motion detection');
-          motionDetector.stop();
-        }
+        console.log('🔄 STOP Device: Camera ready status:', { isReady, hasStream: !!stream, hasDetector: !!motionDetector });
         
         // RESET του localResult και localResultRef για νέα μέτρηση
         console.log('🧹 STOP Device: Clearing localResult and localResultRef');
         localResultRef.current = null;
         setLocalResult(null);
+        
+        // Σταματάμε το motion detection αν είναι ενεργό
+        if (isActive && motionDetector) {
+          console.log('🛑 STOP Device: Stopping previous motion detection');
+          motionDetector.stop();
+          setIsActive(false);
+        }
+        
+        // Έλεγχος αν η κάμερα είναι έτοιμη
+        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+          console.log('⚠️ STOP Device: Camera not ready, waiting for camera...');
+          return;
+        }
         
         // ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection ΑΜΕΣΩΣ
         console.log('✅ STOP Device: ACTIVATING motion detection NOW!');
