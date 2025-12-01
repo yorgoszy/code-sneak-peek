@@ -145,6 +145,40 @@ export const SprintTimingStop = () => {
     };
   }, [sessionCode, isReady, stream, motionDetector, isActive, stopTiming]);
 
+  // Listen for ACTIVATE MOTION DETECTION broadcast - RESET localResult
+  useEffect(() => {
+    if (!sessionCode) return;
+
+    console.log('🎧 STOP Device: Setting up ACTIVATE MOTION listener...');
+    
+    const channel = supabase
+      .channel(`sprint-broadcast-reset-${sessionCode}`, {
+        config: {
+          broadcast: { ack: false }
+        }
+      })
+      .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
+        console.log('🔄 STOP Device: Received ACTIVATE MOTION broadcast - RESETTING!', payload);
+        
+        // RESET του localResult και localResultRef για νέα μέτρηση
+        console.log('🧹 STOP Device: Clearing localResult and localResultRef');
+        localResultRef.current = null;
+        setLocalResult(null);
+        
+        // Σταματάμε το motion detection αν είναι ενεργό
+        if (isActive && motionDetector) {
+          console.log('🛑 STOP Device: Stopping active motion detection');
+          motionDetector.stop();
+          setIsActive(false);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionCode, isActive, motionDetector]);
+
   // Listen for broadcast activation - ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ
   useEffect(() => {
     if (!sessionCode) return;
@@ -209,7 +243,7 @@ export const SprintTimingStop = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, isReady, stream, motionDetector, stopTiming]);
+  }, [sessionCode, isReady, stream, motionDetector, stopTiming, isActive]);
 
   useEffect(() => {
     if (sessionCode) {
