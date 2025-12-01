@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const SprintTimingStop = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const localResultRef = useRef<any>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -63,6 +64,7 @@ export const SprintTimingStop = () => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const result = payload.new as any;
             console.log('✅ STOP: Setting localResult:', result);
+            localResultRef.current = result;
             setLocalResult(result);
           }
         }
@@ -111,12 +113,18 @@ export const SprintTimingStop = () => {
         
         // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
         console.log('✅ STOP Device: AUTO-ACTIVATING motion detection!');
+        console.log('✅ STOP Device: localResultRef.current:', localResultRef.current);
         setIsActive(true);
         motionDetector.start(async () => {
           console.log('🏁 STOP TRIGGERED BY MOTION!');
+          console.log('🏁 STOP: localResultRef.current at motion:', localResultRef.current);
           motionDetector.stop();
           setIsActive(false);
-          await stopTiming(localResult.id);
+          if (localResultRef.current?.id) {
+            await stopTiming(localResultRef.current.id);
+          } else {
+            console.error('❌ STOP: No localResult id available!');
+          }
         });
       })
       .subscribe();
@@ -124,7 +132,7 @@ export const SprintTimingStop = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, isReady, stream, isActive, localResult, motionDetector, stopTiming]);
+  }, [sessionCode, isReady, stream, motionDetector, stopTiming]);
 
   useEffect(() => {
     if (sessionCode) {

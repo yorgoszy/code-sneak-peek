@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const SprintTimingIntermediate = () => {
   const { sessionCode, distance } = useParams<{ sessionCode: string; distance: string }>();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const localResultRef = useRef<any>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -63,6 +64,7 @@ export const SprintTimingIntermediate = () => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const result = payload.new as any;
             console.log(`✅ Intermediate ${distance}m: Setting localResult:`, result);
+            localResultRef.current = result;
             setLocalResult(result);
           }
         }
@@ -126,6 +128,7 @@ export const SprintTimingIntermediate = () => {
             : 'stop';
           
           console.log(`📡 Intermediate ${distance}m: Activating next device: ${nextDevice}`);
+          console.log(`📡 Intermediate ${distance}m: localResultRef.current:`, localResultRef.current);
           await broadcastActivateNext(nextDevice);
         });
       })
@@ -134,7 +137,7 @@ export const SprintTimingIntermediate = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, distance, isReady, stream, isActive, localResult, motionDetector, broadcastActivateNext, session]);
+  }, [sessionCode, distance, isReady, stream, motionDetector, broadcastActivateNext, session]);
 
   useEffect(() => {
     if (sessionCode) {
