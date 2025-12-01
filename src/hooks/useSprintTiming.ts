@@ -236,30 +236,40 @@ export const useSprintTiming = (sessionCode?: string) => {
   const broadcastActivateMotion = useCallback(async () => {
     if (!session?.session_code) return;
 
-    console.log('📡 Broadcasting activate motion detection to all devices...');
+    console.log('📡 📡 📡 Broadcasting ACTIVATE MOTION DETECTION to all devices! 📡 📡 📡');
+    console.log('📡 Channel name:', `sprint-broadcast-${session.session_code}`);
     
+    // Χρησιμοποιούμε το ίδιο channel name που ακούν οι listeners
     const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
       config: {
-        broadcast: { ack: false }
+        broadcast: { self: true } // Να στείλει και στον εαυτό του
       }
     });
     
     await channel.subscribe(async (status) => {
+      console.log('📡 Broadcast channel status:', status);
       if (status === 'SUBSCRIBED') {
-        console.log('✅ Broadcast channel subscribed, sending message...');
+        console.log('✅ ✅ ✅ Broadcast channel SUBSCRIBED, sending message NOW! ✅ ✅ ✅');
+        
+        // Περιμένουμε λίγο για να βεβαιωθούμε ότι όλοι οι listeners είναι έτοιμοι
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         await channel.send({
           type: 'broadcast',
           event: 'activate_motion_detection',
-          payload: { timestamp: new Date().toISOString() }
+          payload: { 
+            timestamp: new Date().toISOString(),
+            sessionCode: session.session_code
+          }
         });
         
-        console.log('✅ Broadcast sent successfully');
+        console.log('✅ ✅ ✅ Broadcast SENT successfully! ✅ ✅ ✅');
         
-        // Cleanup after a short delay
+        // Cleanup after a delay
         setTimeout(() => {
+          console.log('🧹 Cleaning up broadcast channel');
           supabase.removeChannel(channel);
-        }, 1000);
+        }, 2000);
       }
     });
   }, [session]);
