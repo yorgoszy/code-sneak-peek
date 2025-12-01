@@ -350,6 +350,13 @@ export const SprintTimingTimer = () => {
               </Badge>
             </div>
           )}
+
+          {/* Εμφάνιση session info */}
+          <div className="text-xs text-muted-foreground p-2 bg-muted rounded-none mt-4">
+            <p><strong>TIMER Device Session:</strong> {session?.session_code || 'Loading...'}</p>
+            <p><strong>Session ID:</strong> {session?.id || 'N/A'}</p>
+            <p><strong>Listening to:</strong> sprint_timing_results where session_id={session?.id}</p>
+          </div>
         </CardContent>
       </Card>
     </div>
