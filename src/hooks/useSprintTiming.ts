@@ -386,12 +386,16 @@ export const useSprintTiming = (sessionCode?: string) => {
 
   // Broadcast για reset όλων των συσκευών
   const broadcastResetDevices = useCallback(async () => {
-    if (!session?.session_code) return;
+    if (!sessionCode) {
+      console.error('❌ No sessionCode available for reset broadcast!');
+      return;
+    }
 
     console.log('🔄 🔄 🔄 Broadcasting RESET to all devices! 🔄 🔄 🔄');
-    console.log('🔄 Channel name:', `sprint-broadcast-${session.session_code}`);
+    console.log('🔄 Session Code:', sessionCode);
+    console.log('🔄 Channel name:', `sprint-broadcast-${sessionCode}`);
     
-    const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
+    const channel = supabase.channel(`sprint-broadcast-${sessionCode}`, {
       config: {
         broadcast: { self: true }
       }
@@ -407,7 +411,7 @@ export const useSprintTiming = (sessionCode?: string) => {
           event: 'reset_all_devices',
           payload: { 
             timestamp: new Date().toISOString(),
-            sessionCode: session.session_code
+            sessionCode: sessionCode
           }
         });
         
@@ -420,7 +424,7 @@ export const useSprintTiming = (sessionCode?: string) => {
         }, 1000);
       }
     });
-  }, [session]);
+  }, [sessionCode]);
 
   // Subscribe to realtime changes for sessions only
   useEffect(() => {
