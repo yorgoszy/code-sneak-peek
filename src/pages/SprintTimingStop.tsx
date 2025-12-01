@@ -149,7 +149,7 @@ export const SprintTimingStop = () => {
   useEffect(() => {
     if (!sessionCode) return;
 
-    console.log('🎧 STOP Device: Setting up unified broadcast listener...');
+    console.log('🎧 STOP Device: Setting up unified broadcast listener for channel:', `sprint-broadcast-${sessionCode}`);
     
     const channel = supabase
       .channel(`sprint-broadcast-${sessionCode}`, {
@@ -159,8 +159,14 @@ export const SprintTimingStop = () => {
       })
       // Event 1: Activate Motion Detection - Reset and Activate ALL devices
       .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
-        console.log('🔄 STOP Device: Received ACTIVATE MOTION broadcast!', payload);
-        console.log('🔄 STOP Device: Camera ready status:', { isReady, hasStream: !!stream, hasDetector: !!motionDetector });
+        console.log('🔄 🔄 🔄 STOP Device: Received ACTIVATE MOTION broadcast! 🔄 🔄 🔄', payload);
+        console.log('📊 STOP Device: Camera status:', { 
+          isReady, 
+          hasStream: !!stream, 
+          hasDetector: !!motionDetector,
+          hasVideoRef: !!videoRef.current,
+          isActive 
+        });
         
         // RESET του localResult και localResultRef για νέα μέτρηση
         console.log('🧹 STOP Device: Clearing localResult and localResultRef');
@@ -176,12 +182,13 @@ export const SprintTimingStop = () => {
         
         // Έλεγχος αν η κάμερα είναι έτοιμη
         if (!isReady || !stream || !motionDetector || !videoRef.current) {
-          console.log('⚠️ STOP Device: Camera not ready, waiting for camera...');
+          console.error('❌ ❌ ❌ STOP Device: Camera NOT READY - Cannot activate motion detection! ❌ ❌ ❌');
+          console.error('❌ STOP Device: Please start the camera first by clicking "Έναρξη Κάμερας"');
           return;
         }
         
         // ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection ΑΜΕΣΩΣ
-        console.log('✅ STOP Device: ACTIVATING motion detection NOW!');
+        console.log('✅ ✅ ✅ STOP Device: ACTIVATING motion detection NOW! ✅ ✅ ✅');
         setIsActive(true);
         
         motionDetector.start(async () => {
@@ -252,7 +259,9 @@ export const SprintTimingStop = () => {
           await stopTiming(currentLocalResult.id);
         });
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🎧 STOP Device: Broadcast listener subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
