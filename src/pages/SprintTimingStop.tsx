@@ -16,6 +16,7 @@ export const SprintTimingStop = () => {
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const { session, currentResult, joinSession, stopTiming } = useSprintTiming(sessionCode);
+  const [localResult, setLocalResult] = useState<any>(null);
 
   // Track presence as Stop device
   useEffect(() => {
@@ -41,6 +42,38 @@ export const SprintTimingStop = () => {
     };
   }, [sessionCode]);
 
+  // Listen for sprint results realtime - ΠΑΡΑΚΟΛΟΥΘΗΣΗ currentResult
+  useEffect(() => {
+    if (!session?.id) return;
+
+    console.log('🎧 STOP: Setting up realtime listener for session:', session.id);
+
+    const channel = supabase
+      .channel('sprint-results-stop')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sprint_timing_results',
+          filter: `session_id=eq.${session.id}`
+        },
+        (payload) => {
+          console.log('📡 STOP: Realtime event:', payload.eventType);
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const result = payload.new as any;
+            console.log('✅ STOP: Setting localResult:', result);
+            setLocalResult(result);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.id]);
+
   // Listen for broadcast activation
   useEffect(() => {
     if (!sessionCode) return;
@@ -55,22 +88,22 @@ export const SprintTimingStop = () => {
       })
       .on('broadcast', { event: 'activate_motion_detection' }, (payload) => {
         console.log('📡 STOP Device: Received broadcast!', payload);
-        if (isReady && stream && !isActive && currentResult && !currentResult.end_time && motionDetector && videoRef.current) {
+        if (isReady && stream && !isActive && localResult && !localResult.end_time && motionDetector && videoRef.current) {
           console.log('✅ STOP Device: Conditions met, activating motion detection');
           setIsActive(true);
           motionDetector.start(async () => {
             console.log('🏁 STOP TRIGGERED BY MOTION (Broadcast)!');
             motionDetector.stop();
             setIsActive(false);
-            await stopTiming(currentResult.id);
+            await stopTiming(localResult.id);
           });
         } else {
           console.log('⚠️ STOP Device: Conditions not met', {
             isReady,
             hasStream: !!stream,
             isActive,
-            hasResult: !!currentResult,
-            resultEnded: currentResult?.end_time,
+            hasResult: !!localResult,
+            resultEnded: localResult?.end_time,
             hasDetector: !!motionDetector
           });
         }
@@ -80,7 +113,7 @@ export const SprintTimingStop = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, isReady, stream, isActive, currentResult, motionDetector, stopTiming]);
+  }, [sessionCode, isReady, stream, isActive, localResult, motionDetector, stopTiming]);
 
   useEffect(() => {
     if (sessionCode) {
@@ -130,7 +163,7 @@ export const SprintTimingStop = () => {
   };
 
   const handleActivate = () => {
-    if (!motionDetector || !videoRef.current || !currentResult) return;
+    if (!motionDetector || !videoRef.current || !localResult) return;
 
     setIsActive(true);
     
@@ -141,7 +174,7 @@ export const SprintTimingStop = () => {
       setIsActive(false);
       
       // Σταματάμε το χρονόμετρο
-      await stopTiming(currentResult.id);
+      await stopTiming(localResult.id);
     });
   };
 
@@ -185,13 +218,36 @@ export const SprintTimingStop = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {currentResult && !currentResult.end_time && (
+          {localResult && !localResult.end_time && (
             <Alert className="rounded-none bg-green-500/10 border-green-500">
               <AlertCircle className="h-4 w-4 text-green-500" />
               <AlertDescription className="text-green-500">
-                Χρονόμετρο σε εξέλιξη...
+                Χρονόμετρο σε εξέλιξη... Result ID: {localResult.id}
               </AlertDescription>
             </Alert>
+          )}
+
+          {/* Test button για direct stop χωρίς motion detection */}
+          {localResult && !localResult.end_time && (
+            <Button
+              onClick={async () => {
+                console.log('🧪 TEST STOP DEVICE: ==================');
+                console.log('🧪 TEST: localResult:', localResult);
+                console.log('🧪 TEST: Calling stopTiming()...');
+                
+                const result = await stopTiming(localResult.id);
+                
+                if (result) {
+                  console.log('✅ TEST: SUCCESS! Stopped:', result);
+                } else {
+                  console.error('❌ TEST: stopTiming() failed');
+                }
+                console.log('🧪 TEST STOP DEVICE: ==================');
+              }}
+              className="w-full rounded-none bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              🧪 Test Direct Stop (No Motion Detection)
+            </Button>
           )}
 
           {/* Video element πάντα στο DOM για το ref */}
@@ -233,7 +289,7 @@ export const SprintTimingStop = () => {
               {!isActive ? (
                 <Button
                   onClick={handleActivate}
-                  disabled={!isReady || !currentResult || !!currentResult.end_time}
+                  disabled={!isReady || !localResult || !!localResult?.end_time}
                   className="flex-1 rounded-none bg-red-500 hover:bg-red-600 text-white"
                 >
                   Ενεργοποίηση Motion Detection
@@ -249,15 +305,23 @@ export const SprintTimingStop = () => {
               )}
             </div>
 
-            {currentResult?.duration_ms && (
+            {localResult?.duration_ms && (
               <div className="bg-muted p-6 rounded-none text-center">
                 <p className="text-sm text-muted-foreground mb-2">Τελικός Χρόνος</p>
                 <p className="text-5xl font-bold text-[#00ffba]">
-                  {(currentResult.duration_ms / 1000).toFixed(3)}
+                  {(localResult.duration_ms / 1000).toFixed(3)}
                 </p>
                 <p className="text-xl text-muted-foreground mt-1">δευτερόλεπτα</p>
               </div>
             )}
+
+            {/* Session info */}
+            <div className="text-xs text-muted-foreground p-2 bg-muted rounded-none">
+              <p><strong>STOP Device Session:</strong> {session?.session_code || 'Loading...'}</p>
+              <p><strong>Session ID:</strong> {session?.id || 'N/A'}</p>
+              <p><strong>Current Result:</strong> {localResult?.id || 'N/A'}</p>
+              <p><strong>Result Status:</strong> {localResult?.end_time ? 'Completed' : 'Running'}</p>
+            </div>
           </>
         )}
         </CardContent>
