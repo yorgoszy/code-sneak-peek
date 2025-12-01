@@ -126,11 +126,7 @@ export const SprintTimingStart = () => {
       
       if (result) {
         console.log('✅ START: Timing started successfully:', result);
-        console.log('📊 START: Result details:', {
-          id: result.id,
-          session_id: result.session_id,
-          start_time: result.start_time
-        });
+        console.log('📊 START: Result will be picked up by TIMER device via realtime');
         toast({
           title: "Χρονόμετρο ξεκίνησε!",
           description: `Timing ID: ${result.id}`,
@@ -143,6 +139,11 @@ export const SprintTimingStart = () => {
           variant: "destructive",
         });
       }
+    });
+    
+    toast({
+      title: "Motion Detection Ενεργό",
+      description: "Περιμένει για κίνηση...",
     });
   }, [motionDetector, session, startTiming, toast]);
 
