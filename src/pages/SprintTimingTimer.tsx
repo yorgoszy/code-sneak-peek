@@ -70,6 +70,7 @@ export const SprintTimingTimer = () => {
   }, [hookResult]);
 
   // Listen for results only for this session - REALTIME
+  // Το μόνο που κάνει: ενημερώνει το currentResult
   useEffect(() => {
     if (!session?.id) {
       console.warn('⚠️ TIMER: No session ID, skipping realtime setup');
@@ -77,11 +78,6 @@ export const SprintTimingTimer = () => {
     }
 
     console.log('🎧 TIMER: Setting up realtime listener for session:', session.id);
-    console.log('📍 TIMER: Current state before subscription:', { 
-      isRunning, 
-      startTime, 
-      elapsedTime 
-    });
 
     const channel = supabase
       .channel('sprint-results')
@@ -94,59 +90,21 @@ export const SprintTimingTimer = () => {
           filter: `session_id=eq.${session.id}`
         },
         (payload) => {
-          console.log('📡 TIMER: ========== REALTIME EVENT RECEIVED ==========');
-          console.log('⏱️ TIMER: Event type:', payload.eventType);
-          console.log('⏱️ TIMER: Table:', payload.table);
-          console.log('⏱️ TIMER: Full payload:', JSON.stringify(payload, null, 2));
+          console.log('📡 TIMER: ========== REALTIME EVENT ==========');
+          console.log('📡 TIMER: Event type:', payload.eventType);
+          console.log('📡 TIMER: Payload:', payload.new);
           
-          if (payload.eventType === 'INSERT') {
-            console.log('🆕 TIMER: NEW INSERT EVENT - STARTING TIMER NOW!');
-            const newResult = payload.new as any;
-            console.log('📊 TIMER: New result data:', newResult);
-            
-            // Αυτόματη εκκίνηση του χρονομέτρου
-            if (newResult.start_time) {
-              const startTimeMs = new Date(newResult.start_time).getTime();
-              console.log('▶️ TIMER: Setting startTime to:', startTimeMs);
-              console.log('▶️ TIMER: Setting isRunning to: true');
-              console.log('▶️ TIMER: Setting elapsedTime to: 0');
-              
-              setStartTime(startTimeMs);
-              setIsRunning(true);
-              setElapsedTime(0);
-              
-              console.log('✅ TIMER: Timer should now be running!');
-            } else {
-              console.warn('⚠️ TIMER: No start_time in result!', newResult);
-            }
-            
-            setCurrentResult(newResult);
-          } else if (payload.eventType === 'UPDATE') {
-            console.log('🔄 TIMER: UPDATE EVENT');
-            const updatedResult = payload.new as any;
-            
-            // Αν το result ολοκληρώθηκε, σταματάμε το χρονόμετρο
-            if (updatedResult.end_time && updatedResult.duration_ms) {
-              console.log('⏹️ TIMER: Result completed, stopping timer');
-              setIsRunning(false);
-              setElapsedTime(updatedResult.duration_ms);
-            }
-            
-            setCurrentResult(updatedResult);
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const result = payload.new as any;
+            console.log('✅ TIMER: Setting currentResult, the other useEffect will handle the rest');
+            setCurrentResult(result);
           }
           
-          console.log('📡 TIMER: ========== EVENT PROCESSING COMPLETE ==========');
+          console.log('📡 TIMER: ========== END ==========');
         }
       )
       .subscribe((status) => {
-        console.log('🎧 TIMER: Channel subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ TIMER: Successfully subscribed to realtime updates for session:', session.id);
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ TIMER: Channel error!');
-        } else if (status === 'TIMED_OUT') {
-          console.error('❌ TIMER: Channel timed out!');
-        }
+        console.log('🎧 TIMER: Subscription status:', status);
       });
 
     return () => {
@@ -155,7 +113,7 @@ export const SprintTimingTimer = () => {
     };
   }, [session?.id]);
 
-  // Monitor currentResult for timing
+  // Monitor currentResult and start/stop timer accordingly
   useEffect(() => {
     console.log('🔄 TIMER: currentResult changed:', currentResult);
     
@@ -163,6 +121,7 @@ export const SprintTimingTimer = () => {
       console.log('⚠️ TIMER: No currentResult, resetting timer');
       setIsRunning(false);
       setElapsedTime(0);
+      setStartTime(null);
       return;
     }
 
@@ -171,28 +130,22 @@ export const SprintTimingTimer = () => {
       console.log('✅ TIMER: Result completed, showing final time:', currentResult.duration_ms);
       setElapsedTime(currentResult.duration_ms);
       setIsRunning(false);
+      setStartTime(null);
       return;
     }
 
     // If result has start_time but no end_time, start counting
     if (currentResult.start_time && !currentResult.end_time) {
-      console.log('▶️ TIMER: Starting timer with start_time:', currentResult.start_time);
-      setIsRunning(true);
-      const startTime = new Date(currentResult.start_time).getTime();
-      console.log('🕐 TIMER: Start timestamp:', startTime);
+      const startTimeMs = new Date(currentResult.start_time).getTime();
+      console.log('▶️ TIMER: Starting timer! Start time:', startTimeMs);
       
-      const interval = setInterval(() => {
-        const now = Date.now();
-        const elapsed = now - startTime;
-        setElapsedTime(elapsed);
-      }, 10); // Update every 10ms for smooth display
-
-      return () => {
-        console.log('⏹️ TIMER: Clearing interval');
-        clearInterval(interval);
-      };
+      setStartTime(startTimeMs);
+      setIsRunning(true);
+      setElapsedTime(0);
+      
+      console.log('✅ TIMER: Timer should now be running!');
     } else {
-      console.log('⚠️ TIMER: Unexpected state - start_time:', currentResult.start_time, 'end_time:', currentResult.end_time);
+      console.log('⚠️ TIMER: Unexpected state', currentResult);
     }
   }, [currentResult]);
 
@@ -217,9 +170,14 @@ export const SprintTimingTimer = () => {
     setCurrentResult(null);
   };
 
-  // Manual timer interval
+  // Timer interval - updates elapsed time every 10ms when running
   useEffect(() => {
-    if (!isRunning || !startTime) return;
+    if (!isRunning || !startTime) {
+      console.log('⏸️ TIMER: Timer interval not running', { isRunning, startTime });
+      return;
+    }
+
+    console.log('⏱️ TIMER: Starting interval with startTime:', startTime);
 
     const interval = setInterval(() => {
       const now = Date.now();
@@ -227,7 +185,10 @@ export const SprintTimingTimer = () => {
       setElapsedTime(elapsed);
     }, 10); // Update every 10ms
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log('🛑 TIMER: Clearing interval');
+      clearInterval(interval);
+    };
   }, [isRunning, startTime]);
 
   const formatTime = (ms: number) => {
