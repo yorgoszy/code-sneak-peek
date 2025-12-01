@@ -76,6 +76,29 @@ export const SprintTimingStop = () => {
     };
   }, [session?.id]);
 
+  // Listen for PREPARE broadcast
+  useEffect(() => {
+    if (!sessionCode) return;
+
+    console.log('🎧 STOP Device: Setting up PREPARE listener...');
+    
+    const channel = supabase
+      .channel(`sprint-prepare-${sessionCode}`, {
+        config: {
+          broadcast: { ack: false }
+        }
+      })
+      .on('broadcast', { event: 'prepare_devices' }, (payload: any) => {
+        console.log('📡 STOP Device: Received PREPARE broadcast!', payload);
+        console.log('✅ STOP Device: Device is now READY and waiting for activation!');
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionCode]);
+
   // Listen for broadcast activation - ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ
   useEffect(() => {
     if (!sessionCode) return;

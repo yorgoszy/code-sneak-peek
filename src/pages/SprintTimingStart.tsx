@@ -17,7 +17,7 @@ export const SprintTimingStart = () => {
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { session, currentResult: hookResult, joinSession, startTiming, broadcastActivateMotion, broadcastActivateNext } = useSprintTiming(sessionCode);
+  const { session, currentResult: hookResult, joinSession, startTiming, broadcastActivateMotion, broadcastActivateNext, broadcastPrepareDevices } = useSprintTiming(sessionCode);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -200,13 +200,17 @@ export const SprintTimingStart = () => {
     }
     
     try {
-      // Ενεργοποιούμε ΜΟΝΟ το motion detection του START device
+      // Στέλνουμε broadcast για να ετοιμάσουμε όλες τις συσκευές
+      console.log('📡 START: Broadcasting PREPARE to all devices...');
+      await broadcastPrepareDevices();
+      
+      // Ενεργοποιούμε το motion detection του START device
       console.log('🎬 START: Activating START motion detection...');
       handleActivate();
       
       toast({
         title: "Motion Detection Ενεργό",
-        description: "Περιμένετε για κίνηση στο START...",
+        description: "Όλες οι συσκευές ετοιμάστηκαν!",
       });
     } catch (error) {
       console.error('❌ START: Error activating motion detection:', error);
