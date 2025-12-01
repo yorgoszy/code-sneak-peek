@@ -16,7 +16,7 @@ export const SprintTimingStop = () => {
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
-  const { session, currentResult, joinSession, stopTiming } = useSprintTiming(sessionCode);
+  const { session, joinSession, stopTiming } = useSprintTiming(sessionCode);
   const [localResult, setLocalResult] = useState<any>(null);
 
   // Track presence as Stop device
@@ -317,55 +317,23 @@ export const SprintTimingStop = () => {
             </Button>
           ) : (
             <>
-
-            {isActive && (
-              <Alert className="rounded-none bg-red-500/10 border-red-500">
-                <AlertCircle className="h-4 w-4 text-red-500" />
-                <AlertDescription className="text-red-500">
-                  Αναμονή για κίνηση... Περάστε μπροστά από την κάμερα για τερματισμό!
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <div className="flex gap-2">
-              {!isActive ? (
-                <Button
-                  onClick={handleActivate}
-                  disabled={!isReady || !localResult || !!localResult?.end_time}
-                  className="flex-1 rounded-none bg-red-500 hover:bg-red-600 text-white"
-                >
-                  Ενεργοποίηση Motion Detection
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleStop}
-                  variant="secondary"
-                  className="flex-1 rounded-none"
-                >
-                  Απενεργοποίηση
-                </Button>
+              {isActive && (
+                <Alert className="rounded-none bg-red-500/10 border-red-500">
+                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <AlertDescription className="text-red-500">
+                    Αναμονή για κίνηση... Περάστε μπροστά από την κάμερα για τερματισμό!
+                  </AlertDescription>
+                </Alert>
               )}
-            </div>
 
-            {localResult?.duration_ms && (
-              <div className="bg-muted p-6 rounded-none text-center">
-                <p className="text-sm text-muted-foreground mb-2">Τελικός Χρόνος</p>
-                <p className="text-5xl font-bold text-[#00ffba]">
-                  {(localResult.duration_ms / 1000).toFixed(3)}
-                </p>
-                <p className="text-xl text-muted-foreground mt-1">δευτερόλεπτα</p>
+              {/* Session info */}
+              <div className="text-xs text-muted-foreground p-2 bg-muted rounded-none">
+                <p><strong>STOP Device Session:</strong> {session?.session_code || 'Loading...'}</p>
+                <p><strong>Session ID:</strong> {session?.id || 'N/A'}</p>
+                <p><strong>Status:</strong> {isActive ? 'Ενεργό - Αναμονή κίνησης' : 'Περιμένει σήμα'}</p>
               </div>
-            )}
-
-            {/* Session info */}
-            <div className="text-xs text-muted-foreground p-2 bg-muted rounded-none">
-              <p><strong>STOP Device Session:</strong> {session?.session_code || 'Loading...'}</p>
-              <p><strong>Session ID:</strong> {session?.id || 'N/A'}</p>
-              <p><strong>Current Result:</strong> {localResult?.id || 'N/A'}</p>
-              <p><strong>Result Status:</strong> {localResult?.end_time ? 'Completed' : 'Running'}</p>
-            </div>
-          </>
-        )}
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

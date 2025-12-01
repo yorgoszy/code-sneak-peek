@@ -17,8 +17,63 @@ export const SprintTimingStart = () => {
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { session, currentResult: hookResult, joinSession, startTiming, broadcastActivateMotion, broadcastActivateNext, broadcastPrepareDevices } = useSprintTiming(sessionCode);
+  const { session, joinSession, startTiming, broadcastActivateNext } = useSprintTiming(sessionCode);
   const { toast } = useToast();
+
+  // Listen for START ALL broadcast
+  useEffect(() => {
+    if (!sessionCode) return;
+
+    console.log('🎧 START Device: Setting up START ALL listener...');
+    
+    const channel = supabase
+      .channel(`sprint-start-all-${sessionCode}`, {
+        config: {
+          broadcast: { ack: false }
+        }
+      })
+      .on('broadcast', { event: 'start_all_devices' }, async (payload: any) => {
+        console.log('📡 START Device: Received START ALL broadcast!', payload);
+        
+        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+          console.log('⚠️ START Device: Camera not ready');
+          return;
+        }
+        
+        if (isActive) {
+          console.log('⚠️ START Device: Already active');
+          return;
+        }
+        
+        // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
+        console.log('✅ START Device: AUTO-ACTIVATING motion detection!');
+        setIsActive(true);
+        
+        motionDetector.start(async () => {
+          console.log('🏁 START: MOTION DETECTED!');
+          motionDetector.stop();
+          setIsActive(false);
+          
+          // Ξεκινάμε το χρονόμετρο
+          const result = await startTiming();
+          
+          if (result) {
+            console.log('✅ START: Timer started:', result.id);
+            
+            // Ενεργοποίηση επόμενης συσκευής
+            const distances = session?.distances || [];
+            const nextDevice = distances.length > 0 ? distances[0].toString() : 'stop';
+            console.log(`📡 START: Activating next device: ${nextDevice}`);
+            await broadcastActivateNext(nextDevice);
+          }
+        });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionCode, isReady, stream, motionDetector, isActive, startTiming, broadcastActivateNext, session]);
 
   useEffect(() => {
     if (sessionCode) {
@@ -71,18 +126,17 @@ export const SprintTimingStart = () => {
           console.log('📹 Video ready, dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
           const detector = new MotionDetector(
             videoRef.current,
-            40, // threshold
-            3000 // min motion pixels
+            40,
+            3000
           );
           setMotionDetector(detector);
           setIsReady(true);
           
           toast({
             title: "Κάμερα ενεργοποιήθηκε",
-            description: "Μπορείτε να ενεργοποιήσετε το motion detection",
+            description: "Περιμένετε το σήμα έναρξης από το TIMER",
           });
         } else {
-          // Δοκιμάζουμε ξανά σε 100ms
           setTimeout(waitForVideo, 100);
         }
       };
@@ -100,137 +154,6 @@ export const SprintTimingStart = () => {
       });
     }
   };
-
-  const handleActivate = useCallback(() => {
-    if (!motionDetector || !videoRef.current) {
-      console.error('❌ START: Motion detector or video ref not ready');
-      return;
-    }
-
-    console.log('🟢 START: Activating motion detection...', { 
-      session: session?.id, 
-      sessionCode: session?.session_code 
-    });
-    setIsActive(true);
-    
-    motionDetector.start(async () => {
-      console.log('🏁 START: ⚡ MOTION DETECTED! ⚡');
-      console.log('🔴 START: Green border should disappear now');
-      console.log('📍 START: Session ID:', session?.id);
-      
-      // Σταματάμε την ανίχνευση
-      motionDetector.stop();
-      setIsActive(false);
-      
-      // Ξεκινάμε το χρονόμετρο
-      console.log('🔄 START: Calling startTiming() to create database record...');
-      const result = await startTiming();
-      
-      if (result) {
-        console.log('✅ START: SUCCESS! Timing record created:', {
-          id: result.id,
-          session_id: result.session_id,
-          start_time: result.start_time
-        });
-        console.log('📡 START: TIMER device should now pick this up via realtime!');
-        
-        // Ενεργοποίηση επόμενης συσκευής
-        const distances = session?.distances || [];
-        const nextDevice = distances.length > 0 ? distances[0].toString() : 'stop';
-        console.log(`📡 START: Activating next device: ${nextDevice}`);
-        await broadcastActivateNext(nextDevice);
-        
-        toast({
-          title: "✅ Χρονόμετρο ξεκίνησε!",
-          description: `Timing ID: ${result.id}`,
-        });
-      } else {
-        console.error('❌ START: FAILED - startTiming() returned null');
-        toast({
-          title: "Σφάλμα",
-          description: "Αποτυχία έναρξης χρονομέτρου",
-          variant: "destructive",
-        });
-      }
-    });
-    
-    toast({
-      title: "Motion Detection Ενεργό",
-      description: "Περιμένει για κίνηση...",
-    });
-  }, [motionDetector, session, startTiming, toast]);
-
-  const handleStartActivate = async () => {
-    console.log('🔘 START: Start button clicked!', { 
-      stream: !!stream, 
-      isActive, 
-      session: !!session,
-      motionDetector: !!motionDetector,
-      isReady
-    });
-    
-    if (!stream) {
-      console.log('⚠️ START: No camera stream available');
-      toast({
-        title: "Σφάλμα",
-        description: "Ενεργοποιήστε πρώτα την κάμερα",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!session) {
-      console.log('⚠️ START: No session found');
-      toast({
-        title: "Σφάλμα",
-        description: "Δεν υπάρχει ενεργό session",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!motionDetector) {
-      console.log('⚠️ START: Motion detector not ready');
-      toast({
-        title: "Σφάλμα",
-        description: "Περιμένετε να φορτώσει η κάμερα",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    try {
-      // Στέλνουμε broadcast για να ετοιμάσουμε όλες τις συσκευές
-      console.log('📡 START: Broadcasting PREPARE to all devices...');
-      await broadcastPrepareDevices();
-      
-      // Ενεργοποιούμε το motion detection του START device
-      console.log('🎬 START: Activating START motion detection...');
-      handleActivate();
-      
-      toast({
-        title: "Motion Detection Ενεργό",
-        description: "Όλες οι συσκευές ετοιμάστηκαν!",
-      });
-    } catch (error) {
-      console.error('❌ START: Error activating motion detection:', error);
-      toast({
-        title: "Σφάλμα",
-        description: "Αποτυχία ενεργοποίησης",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleStop = () => {
-    if (motionDetector) {
-      motionDetector.stop();
-    }
-    setIsActive(false);
-  };
-
-  // Αφαιρέθηκε το broadcast listener από το START device
-  // Το START device ενεργοποιείται μόνο μέσω του κουμπιού "Έναρξη"
 
   useEffect(() => {
     return () => {
@@ -289,67 +212,11 @@ export const SprintTimingStart = () => {
             )}
           </div>
 
-          {/* Κουμπί έναρξης motion detection */}
-          <button
-            onClick={handleStartActivate}
-            disabled={isActive || !stream}
-            className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 border-0"
-            type="button"
-          >
-            <Play className="w-6 h-6" />
-            Έναρξη
-          </button>
-
-          {/* Test button για direct start χωρίς motion detection */}
-          <Button
-            onClick={async () => {
-              console.log('🧪 TEST START DEVICE: ==================');
-              console.log('🧪 TEST: Session Code:', sessionCode);
-              console.log('🧪 TEST: Session Object:', session);
-              console.log('🧪 TEST: Session ID:', session?.id);
-              
-              if (!session) {
-                console.error('❌ TEST: NO SESSION FOUND!');
-                toast({
-                  title: "❌ Error",
-                  description: "No session found! Refresh and try again.",
-                  variant: "destructive",
-                });
-                return;
-              }
-              
-              console.log('🧪 TEST: Calling startTiming()...');
-              const result = await startTiming();
-              
-              if (result) {
-                console.log('✅ TEST: SUCCESS! Created record:', {
-                  id: result.id,
-                  session_id: result.session_id,
-                  start_time: result.start_time
-                });
-                toast({
-                  title: "✅ Test Success",
-                  description: `Result ID: ${result.id}\nSession: ${session.session_code}`,
-                });
-              } else {
-                console.error('❌ TEST: startTiming() returned null');
-                toast({
-                  title: "❌ Test Failed",
-                  description: "startTiming() returned null",
-                  variant: "destructive",
-                });
-              }
-              console.log('🧪 TEST START DEVICE: ==================');
-            }}
-            className="w-full rounded-none bg-blue-500 hover:bg-blue-600 text-white"
-          >
-            🧪 Test Direct Start (No Motion Detection)
-          </Button>
-
           {/* Εμφάνιση session info */}
           <div className="text-xs text-muted-foreground p-2 bg-muted rounded-none">
             <p><strong>START Device Session:</strong> {session?.session_code || 'Loading...'}</p>
             <p><strong>Session ID:</strong> {session?.id || 'N/A'}</p>
+            <p><strong>Status:</strong> {isActive ? 'Ενεργό - Αναμονή κίνησης' : 'Περιμένει σήμα από TIMER'}</p>
           </div>
 
           {!stream ? (
@@ -358,7 +225,7 @@ export const SprintTimingStart = () => {
               className="w-full rounded-none bg-gray-500 hover:bg-gray-600 text-white"
             >
               <Camera className="w-4 h-4 mr-2" />
-              Έναρξη Κάμερας (Optional)
+              Έναρξη Κάμερας
             </Button>
           ) : (
             <>

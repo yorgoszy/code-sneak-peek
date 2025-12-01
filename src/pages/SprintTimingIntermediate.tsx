@@ -286,7 +286,7 @@ export const SprintTimingIntermediate = () => {
               <div className="text-xs text-muted-foreground p-2 bg-muted rounded-none">
                 <p><strong>{distance}μ Device Session:</strong> {session?.session_code || 'Loading...'}</p>
                 <p><strong>Session ID:</strong> {session?.id || 'N/A'}</p>
-                <p><strong>Status:</strong> {isActive ? 'Ενεργό' : 'Αναμονή'}</p>
+                <p><strong>Status:</strong> {isActive ? 'Ενεργό - Αναμονή κίνησης' : 'Περιμένει σήμα'}</p>
               </div>
             </>
           )}
