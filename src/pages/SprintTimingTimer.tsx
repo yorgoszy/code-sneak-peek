@@ -94,11 +94,31 @@ export const SprintTimingTimer = () => {
           console.log('📊 TIMER: Payload new data:', payload.new);
           
           if (payload.eventType === 'INSERT') {
-            console.log('🆕 TIMER: New result inserted - starting timer!');
-            setCurrentResult(payload.new as any);
+            console.log('🆕 TIMER: New result inserted - AUTO STARTING TIMER!');
+            const newResult = payload.new as any;
+            
+            // Αυτόματη εκκίνηση του χρονομέτρου
+            if (newResult.start_time) {
+              const startTimeMs = new Date(newResult.start_time).getTime();
+              console.log('▶️ TIMER: Auto-starting with start_time:', newResult.start_time);
+              setStartTime(startTimeMs);
+              setIsRunning(true);
+              setElapsedTime(0);
+            }
+            
+            setCurrentResult(newResult);
           } else if (payload.eventType === 'UPDATE') {
             console.log('🔄 TIMER: Result updated');
-            setCurrentResult(payload.new as any);
+            const updatedResult = payload.new as any;
+            
+            // Αν το result ολοκληρώθηκε, σταματάμε το χρονόμετρο
+            if (updatedResult.end_time && updatedResult.duration_ms) {
+              console.log('⏹️ TIMER: Result completed, stopping timer');
+              setIsRunning(false);
+              setElapsedTime(updatedResult.duration_ms);
+            }
+            
+            setCurrentResult(updatedResult);
           }
         }
       )
