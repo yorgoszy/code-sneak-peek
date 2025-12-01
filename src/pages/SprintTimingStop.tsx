@@ -61,11 +61,16 @@ export const SprintTimingStop = () => {
         },
         (payload) => {
           console.log('📡 STOP: Realtime event:', payload.eventType);
-          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          if (payload.eventType === 'INSERT') {
             const result = payload.new as any;
-            console.log('✅ STOP: Setting localResult:', result);
-            localResultRef.current = result;
-            setLocalResult(result);
+            // Ενημερώνουμε ΜΟΝΟ αν είναι νέο result χωρίς end_time
+            if (!result.end_time) {
+              console.log('✅ STOP: New result without end_time, updating localResult:', result);
+              localResultRef.current = result;
+              setLocalResult(result);
+            } else {
+              console.log('⚠️ STOP: Result already has end_time, ignoring');
+            }
           }
         }
       )
@@ -106,6 +111,7 @@ export const SprintTimingStop = () => {
         
         // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
         console.log('✅ [STOP] AUTO-ACTIVATING motion detection from START ALL!');
+        console.log('✅ [STOP] Current localResultRef:', localResultRef.current);
         setIsActive(true);
         
         motionDetector.start(async () => {
@@ -113,11 +119,20 @@ export const SprintTimingStop = () => {
           motionDetector.stop();
           setIsActive(false);
           
-          if (localResultRef.current?.id) {
-            await stopTiming(localResultRef.current.id);
-          } else {
+          const currentLocalResult = localResultRef.current;
+          console.log('🏁 [STOP] localResultRef at motion:', currentLocalResult);
+          
+          if (!currentLocalResult?.id) {
             console.error('❌ [STOP] No localResult id available!');
+            return;
           }
+          
+          if (currentLocalResult.end_time) {
+            console.error('❌ [STOP] Result already has end_time, skipping!');
+            return;
+          }
+          
+          await stopTiming(currentLocalResult.id);
         });
       })
       .subscribe((status) => {
@@ -171,14 +186,22 @@ export const SprintTimingStop = () => {
         setIsActive(true);
         motionDetector.start(async () => {
           console.log('🏁 STOP TRIGGERED BY MOTION!');
-          console.log('🏁 STOP: localResultRef.current at motion:', localResultRef.current);
+          const currentLocalResult = localResultRef.current;
+          console.log('🏁 STOP: localResultRef.current at motion:', currentLocalResult);
           motionDetector.stop();
           setIsActive(false);
-          if (localResultRef.current?.id) {
-            await stopTiming(localResultRef.current.id);
-          } else {
+          
+          if (!currentLocalResult?.id) {
             console.error('❌ STOP: No localResult id available!');
+            return;
           }
+          
+          if (currentLocalResult.end_time) {
+            console.error('❌ STOP: Result already has end_time, skipping!');
+            return;
+          }
+          
+          await stopTiming(currentLocalResult.id);
         });
       })
       .subscribe();

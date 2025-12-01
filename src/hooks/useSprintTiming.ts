@@ -144,14 +144,20 @@ export const useSprintTiming = (sessionCode?: string) => {
     try {
       const endTime = new Date();
       
-      // Fetch το result για να πάρουμε το start_time
+      // Fetch το result για να πάρουμε το start_time και να ελέγξουμε αν έχει ήδη end_time
       const { data: result } = await supabase
         .from('sprint_timing_results')
-        .select('start_time')
+        .select('start_time, end_time')
         .eq('id', resultId)
         .single();
 
       if (!result) throw new Error('Result not found');
+      
+      // Αν το result έχει ήδη end_time, δεν κάνουμε τίποτα
+      if (result.end_time) {
+        console.warn('⚠️ stopTiming: Result already has end_time, skipping update');
+        return null;
+      }
 
       const startTime = new Date(result.start_time);
       const durationMs = endTime.getTime() - startTime.getTime();
@@ -170,9 +176,20 @@ export const useSprintTiming = (sessionCode?: string) => {
       if (error) throw error;
 
       console.log('⏱️ Timing stopped:', data);
+      
+      // Μορφοποίηση χρόνου: λεπτά:δευτερόλεπτα.εκατοστά
+      const totalSeconds = Math.floor(durationMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const centiseconds = Math.floor((durationMs % 1000) / 10);
+      
+      const formattedTime = minutes > 0 
+        ? `${minutes}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`
+        : `${seconds}.${centiseconds.toString().padStart(2, '0')}`;
+      
       toast({
         title: 'Completed!',
-        description: `Time: ${(durationMs / 1000).toFixed(3)}s`,
+        description: `Time: ${formattedTime}`,
       });
 
       return data;
