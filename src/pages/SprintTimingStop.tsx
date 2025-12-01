@@ -86,13 +86,20 @@ export const SprintTimingStop = () => {
           broadcast: { ack: false }
         }
       })
-      .on('broadcast', { event: 'activate_motion_detection' }, (payload) => {
+      .on('broadcast', { event: 'activate_next_device' }, (payload: any) => {
         console.log('📡 STOP Device: Received broadcast!', payload);
+        
+        // Ελέγχουμε αν το μήνυμα είναι για εμάς
+        if (payload.target !== 'stop') {
+          console.log('⚠️ STOP Device: Message not for us, ignoring');
+          return;
+        }
+        
         if (isReady && stream && !isActive && localResult && !localResult.end_time && motionDetector && videoRef.current) {
           console.log('✅ STOP Device: Conditions met, activating motion detection');
           setIsActive(true);
           motionDetector.start(async () => {
-            console.log('🏁 STOP TRIGGERED BY MOTION (Broadcast)!');
+            console.log('🏁 STOP TRIGGERED BY MOTION!');
             motionDetector.stop();
             setIsActive(false);
             await stopTiming(localResult.id);
