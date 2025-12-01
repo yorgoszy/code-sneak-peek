@@ -160,8 +160,8 @@ export const SprintTimingStart = () => {
     });
   }, [motionDetector, session, startTiming, toast]);
 
-  const handleBroadcastActivate = async () => {
-    console.log('🔘 START: Broadcast button clicked!', { 
+  const handleStartActivate = async () => {
+    console.log('🔘 START: Start button clicked!', { 
       stream: !!stream, 
       isActive, 
       session: !!session,
@@ -198,22 +198,15 @@ export const SprintTimingStart = () => {
       });
       return;
     }
-
-    console.log('📡 START: Sending broadcast activation...');
     
     try {
-      // Στέλνουμε broadcast - όλες οι συσκευές θα ενεργοποιηθούν
-      await broadcastActivateMotion();
-      
-      console.log('✅ START: Broadcast sent successfully!');
-      
-      // Ενεργοποιούμε και την δική μας συσκευή
-      console.log('🎬 START: Activating local motion detection...');
+      // Ενεργοποιούμε ΜΟΝΟ το motion detection του START device
+      console.log('🎬 START: Activating START motion detection...');
       handleActivate();
       
       toast({
-        title: "Motion Detection Ενεργοποιήθηκε",
-        description: "Περιμένετε για κίνηση...",
+        title: "Motion Detection Ενεργό",
+        description: "Περιμένετε για κίνηση στο START...",
       });
     } catch (error) {
       console.error('❌ START: Error activating motion detection:', error);
@@ -232,44 +225,8 @@ export const SprintTimingStart = () => {
     setIsActive(false);
   };
 
-  // Listen for broadcast activate command
-  useEffect(() => {
-    if (!sessionCode) return;
-
-    console.log('🎧 START Device: Setting up broadcast listener...');
-    
-    const channel = supabase
-      .channel(`sprint-broadcast-${sessionCode}`, {
-        config: {
-          broadcast: { ack: false }
-        }
-      })
-      .on('broadcast', { event: 'activate_motion_detection' }, (payload) => {
-        console.log('📡 START Device: Received broadcast!', payload);
-        
-        // Ελέγχουμε τις συνθήκες μέσα στον handler
-        if (!isReady || isActive) {
-          console.log('⚠️ START Device: Not ready or already active', { isReady, isActive });
-          return;
-        }
-        
-        if (motionDetector && videoRef.current) {
-          console.log('✅ START Device: Activating motion detection');
-          handleActivate();
-        } else {
-          console.log('⚠️ START Device: Missing detector or video', { 
-            hasDetector: !!motionDetector, 
-            hasVideo: !!videoRef.current 
-          });
-        }
-      })
-      .subscribe();
-
-    return () => {
-      console.log('🔌 START Device: Cleaning up broadcast listener');
-      supabase.removeChannel(channel);
-    };
-  }, [sessionCode, isReady, isActive, motionDetector, handleActivate]);
+  // Αφαιρέθηκε το broadcast listener από το START device
+  // Το START device ενεργοποιείται μόνο μέσω του κουμπιού "Έναρξη"
 
   useEffect(() => {
     return () => {
@@ -330,7 +287,7 @@ export const SprintTimingStart = () => {
 
           {/* Κουμπί έναρξης motion detection */}
           <button
-            onClick={handleBroadcastActivate}
+            onClick={handleStartActivate}
             disabled={isActive || !stream}
             className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg px-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 border-0"
             type="button"
