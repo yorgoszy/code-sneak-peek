@@ -74,7 +74,7 @@ export const SprintTimingStop = () => {
     };
   }, [session?.id]);
 
-  // Listen for broadcast activation
+  // Listen for broadcast activation - ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ
   useEffect(() => {
     if (!sessionCode) return;
 
@@ -95,25 +95,37 @@ export const SprintTimingStop = () => {
           return;
         }
         
-        if (isReady && stream && !isActive && localResult && !localResult.end_time && motionDetector && videoRef.current) {
-          console.log('✅ STOP Device: Conditions met, activating motion detection');
-          setIsActive(true);
-          motionDetector.start(async () => {
-            console.log('🏁 STOP TRIGGERED BY MOTION!');
-            motionDetector.stop();
-            setIsActive(false);
-            await stopTiming(localResult.id);
-          });
-        } else {
-          console.log('⚠️ STOP Device: Conditions not met', {
+        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+          console.log('⚠️ STOP Device: Camera not ready', {
             isReady,
             hasStream: !!stream,
-            isActive,
-            hasResult: !!localResult,
-            resultEnded: localResult?.end_time,
             hasDetector: !!motionDetector
           });
+          return;
         }
+        
+        if (isActive) {
+          console.log('⚠️ STOP Device: Already active');
+          return;
+        }
+        
+        if (!localResult || localResult.end_time) {
+          console.log('⚠️ STOP Device: No active result', {
+            hasResult: !!localResult,
+            resultEnded: localResult?.end_time
+          });
+          return;
+        }
+        
+        // ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection
+        console.log('✅ STOP Device: AUTO-ACTIVATING motion detection!');
+        setIsActive(true);
+        motionDetector.start(async () => {
+          console.log('🏁 STOP TRIGGERED BY MOTION!');
+          motionDetector.stop();
+          setIsActive(false);
+          await stopTiming(localResult.id);
+        });
       })
       .subscribe();
 
