@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const SprintTimingStart = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const shouldDetectRef = useRef<boolean>(false); // Flag για έλεγχο αν πρέπει να ανιχνεύει
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -45,11 +46,7 @@ export const SprintTimingStart = () => {
           isActive 
         });
         
-        // Έλεγχος αν η κάμερα είναι έτοιμη
-        if (!isReady || !stream || !motionDetector || !videoRef.current) {
-          console.error('❌ ❌ ❌ [START] Camera NOT READY - Cannot activate motion detection! ❌ ❌ ❌');
-          return;
-        }
+        shouldDetectRef.current = false; // Reset detection flag
         
         // Σταματάμε το motion detection αν είναι ήδη ενεργό
         if (isActive && motionDetector) {
@@ -57,14 +54,29 @@ export const SprintTimingStart = () => {
           motionDetector.stop();
         }
         
+        // Έλεγχος αν η κάμερα είναι έτοιμη
+        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+          console.error('❌ ❌ ❌ [START] Camera NOT READY - Cannot activate motion detection! ❌ ❌ ❌');
+          return;
+        }
+        
         // ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection ΑΜΕΣΩΣ
         console.log('✅ ✅ ✅ [START] ACTIVATING motion detection NOW! ✅ ✅ ✅');
+        shouldDetectRef.current = true; // Ενεργοποιούμε την ανίχνευση
         setIsActive(true);
         
         motionDetector.start(async () => {
           console.log('🏁 [START] MOTION DETECTED!');
+          
+          // Έλεγχος αν πρέπει να ανιχνεύει (μπορεί να έχει γίνει reset)
+          if (!shouldDetectRef.current) {
+            console.log('❌ [START] Detection cancelled - device was reset');
+            return;
+          }
+          
           motionDetector.stop();
           setIsActive(false);
+          shouldDetectRef.current = false;
           
           // Ξεκινάμε το χρονόμετρο
           const result = await startTiming();
@@ -82,6 +94,9 @@ export const SprintTimingStart = () => {
       })
       .on('broadcast', { event: 'reset_all_devices' }, (payload: any) => {
         console.log('🔄 🔄 🔄 [START] Received RESET broadcast! 🔄 🔄 🔄', payload);
+        
+        // ΠΡΩΤΑ απενεργοποιούμε το detection flag
+        shouldDetectRef.current = false;
         
         // Σταματάμε το motion detection αν είναι ενεργό
         if (motionDetector) {

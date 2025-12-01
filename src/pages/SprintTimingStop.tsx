@@ -12,6 +12,7 @@ export const SprintTimingStop = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
   const videoRef = useRef<HTMLVideoElement>(null);
   const localResultRef = useRef<any>(null);
+  const shouldDetectRef = useRef<boolean>(false); // Flag για έλεγχο αν πρέπει να ανιχνεύει
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -174,6 +175,7 @@ export const SprintTimingStop = () => {
         console.log('🧹 [STOP] Clearing localResult and localResultRef');
         localResultRef.current = null;
         setLocalResult(null);
+        shouldDetectRef.current = false; // Σταματάμε την ανίχνευση
         
         // Σταματάμε το motion detection αν είναι ενεργό
         if (isActive && motionDetector) {
@@ -190,14 +192,23 @@ export const SprintTimingStop = () => {
         
         // ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection ΑΜΕΣΩΣ
         console.log('✅ ✅ ✅ [STOP] ACTIVATING motion detection NOW! ✅ ✅ ✅');
+        shouldDetectRef.current = true; // Ενεργοποιούμε την ανίχνευση
         setIsActive(true);
         
         motionDetector.start(async () => {
           console.log('🏁 [STOP] MOTION DETECTED!');
+          
+          // Έλεγχος αν πρέπει να ανιχνεύει (μπορεί να έχει γίνει reset)
+          if (!shouldDetectRef.current) {
+            console.log('❌ [STOP] Detection cancelled - device was reset');
+            return;
+          }
+          
           const currentLocalResult = localResultRef.current;
           console.log('🏁 [STOP] localResultRef.current at motion:', currentLocalResult);
           motionDetector.stop();
           setIsActive(false);
+          shouldDetectRef.current = false;
           
           if (!currentLocalResult?.id) {
             console.error('❌ [STOP] No localResult id available!');
@@ -214,6 +225,9 @@ export const SprintTimingStop = () => {
       })
       .on('broadcast', { event: 'reset_all_devices' }, (payload: any) => {
         console.log('🔄 🔄 🔄 [STOP] Received RESET broadcast! 🔄 🔄 🔄', payload);
+        
+        // ΠΡΩΤΑ απενεργοποιούμε το detection flag
+        shouldDetectRef.current = false;
         
         // Σταματάμε το motion detection αν είναι ενεργό
         if (motionDetector) {
