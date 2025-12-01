@@ -20,34 +20,62 @@ export const SprintTimingStart = () => {
   const { session, joinSession, startTiming, broadcastActivateNext } = useSprintTiming(sessionCode);
   const { toast } = useToast();
 
-  // Listen for ACTIVATE MOTION DETECTION broadcast - RESET state
+  // Listen for ACTIVATE MOTION DETECTION broadcast - RESET and ACTIVATE
   useEffect(() => {
     if (!sessionCode) return;
 
     console.log('🎧 [START] Setting up ACTIVATE MOTION listener...');
     
     const channel = supabase
-      .channel(`sprint-broadcast-reset-${sessionCode}`, {
+      .channel(`sprint-broadcast-${sessionCode}`, {
         config: {
           broadcast: { ack: false }
         }
       })
       .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
-        console.log('🔄 [START] Received ACTIVATE MOTION broadcast - RESETTING!', payload);
+        console.log('🔄 [START] Received ACTIVATE MOTION broadcast!', payload);
         
-        // Σταματάμε το motion detection αν είναι ενεργό
+        // Έλεγχος αν η κάμερα είναι έτοιμη
+        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+          console.log('⚠️ [START] Camera not ready, ignoring');
+          return;
+        }
+        
+        // Σταματάμε το motion detection αν είναι ήδη ενεργό
         if (isActive && motionDetector) {
-          console.log('🛑 [START] Stopping active motion detection');
+          console.log('🛑 [START] Stopping previous motion detection');
+          motionDetector.stop();
+        }
+        
+        // ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection ΑΜΕΣΩΣ
+        console.log('✅ [START] ACTIVATING motion detection NOW!');
+        setIsActive(true);
+        
+        motionDetector.start(async () => {
+          console.log('🏁 [START] MOTION DETECTED!');
           motionDetector.stop();
           setIsActive(false);
-        }
+          
+          // Ξεκινάμε το χρονόμετρο
+          const result = await startTiming();
+          
+          if (result) {
+            console.log('✅ [START] Timer started:', result.id);
+            
+            // Ενεργοποίηση επόμενης συσκευής
+            const distances = session?.distances || [];
+            const nextDevice = distances.length > 0 ? distances[0].toString() : 'stop';
+            console.log(`📡 [START] Activating next device: ${nextDevice}`);
+            await broadcastActivateNext(nextDevice);
+          }
+        });
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, isActive, motionDetector]);
+  }, [sessionCode, isReady, stream, motionDetector, videoRef, isActive, startTiming, session, broadcastActivateNext]);
 
   // Listen for START ALL broadcast
   useEffect(() => {
