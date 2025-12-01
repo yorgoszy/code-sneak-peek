@@ -33,7 +33,7 @@ export const SprintTimingMaster = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
-  const { session, currentResult, createSession, isLoading } = useSprintTiming(sessionCode);
+  const { session, currentResult, createSession, broadcastStartAll, isLoading } = useSprintTiming(sessionCode);
   const isMobile = useIsMobile();
 
   // Check for tablet size
@@ -508,6 +508,18 @@ export const SprintTimingMaster = () => {
                   </p>
                 </div>
               )}
+
+              {/* Κουμπί Έναρξης */}
+              <Button
+                onClick={async () => {
+                  console.log('🎬 TIMER: Broadcasting START ALL...');
+                  await broadcastStartAll();
+                }}
+                className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-bold h-16 text-lg"
+              >
+                <Play className="w-6 h-6 mr-2" />
+                ΕΝΑΡΞΗ ΟΛΩΝ ΤΩΝ ΣΥΣΚΕΥΩΝ
+              </Button>
             </CardContent>
           </Card>
         </div>

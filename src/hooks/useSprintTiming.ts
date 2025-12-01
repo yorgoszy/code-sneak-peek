@@ -247,6 +247,40 @@ export const useSprintTiming = (sessionCode?: string) => {
     });
   }, [session]);
 
+  // Broadcast για έναρξη ΟΛΩΝ των συσκευών
+  const broadcastStartAll = useCallback(async () => {
+    if (!session?.session_code) return;
+
+    console.log('📡 Broadcasting START ALL DEVICES...');
+    
+    const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
+      config: {
+        broadcast: { ack: false }
+      }
+    });
+    
+    await channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ Broadcast channel subscribed, sending start all message...');
+        
+        await channel.send({
+          type: 'broadcast',
+          event: 'start_all_devices',
+          payload: { 
+            timestamp: new Date().toISOString() 
+          }
+        });
+        
+        console.log('✅ Start all broadcast sent');
+        
+        // Cleanup after a short delay
+        setTimeout(() => {
+          supabase.removeChannel(channel);
+        }, 1000);
+      }
+    });
+  }, [session]);
+
   // Broadcast για ετοιμασία όλων των συσκευών
   const broadcastPrepareDevices = useCallback(async () => {
     if (!session?.session_code) return;
@@ -356,6 +390,7 @@ export const useSprintTiming = (sessionCode?: string) => {
     broadcastActivateMotion,
     broadcastActivateNext,
     broadcastPrepareDevices,
+    broadcastStartAll,
     trackDevicePresence
   };
 };
