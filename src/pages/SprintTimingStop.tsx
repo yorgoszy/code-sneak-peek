@@ -147,14 +147,17 @@ export const SprintTimingStop = () => {
 
   // Listen for broadcast events - UNIFIED LISTENER
   useEffect(() => {
-    if (!sessionCode) return;
+    if (!sessionCode) {
+      console.log('❌ STOP Device: No sessionCode, cannot setup listener');
+      return;
+    }
 
-    console.log('🎧 STOP Device: Setting up unified broadcast listener for channel:', `sprint-broadcast-${sessionCode}`);
+    console.log('🎧 🎧 🎧 STOP Device: Setting up unified broadcast listener for channel:', `sprint-broadcast-${sessionCode}`);
     
     const channel = supabase
       .channel(`sprint-broadcast-${sessionCode}`, {
         config: {
-          broadcast: { ack: false }
+          broadcast: { self: true } // Να λαμβάνει και τα δικά του broadcasts
         }
       })
       // Event 1: Activate Motion Detection - Reset and Activate ALL devices
@@ -260,13 +263,17 @@ export const SprintTimingStop = () => {
         });
       })
       .subscribe((status) => {
-        console.log('🎧 STOP Device: Broadcast listener subscription status:', status);
+        console.log('🎧 🎧 🎧 STOP Device: Broadcast listener subscription status:', status, '🎧 🎧 🎧');
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ ✅ ✅ STOP Device: Successfully SUBSCRIBED to broadcast channel! ✅ ✅ ✅');
+        }
       });
 
     return () => {
+      console.log('🧹 STOP Device: Cleaning up broadcast listener');
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, isReady, stream, motionDetector, videoRef, isActive, stopTiming]);
+  }, [sessionCode]); // Μόνο το sessionCode στο dependency array
 
   useEffect(() => {
     if (sessionCode) {

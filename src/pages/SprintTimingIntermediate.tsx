@@ -78,23 +78,33 @@ export const SprintTimingIntermediate = () => {
 
   // Listen for broadcast events - UNIFIED LISTENER
   useEffect(() => {
-    if (!sessionCode || !distance) return;
+    if (!sessionCode || !distance) {
+      console.log(`❌ [INTERMEDIATE ${distance}m] No sessionCode or distance, cannot setup listener`);
+      return;
+    }
 
-    console.log(`🎧 [INTERMEDIATE ${distance}m] Setting up unified broadcast listener...`);
+    console.log(`🎧 🎧 🎧 [INTERMEDIATE ${distance}m] Setting up unified broadcast listener for channel:`, `sprint-broadcast-${sessionCode}`);
     
     const channel = supabase
       .channel(`sprint-broadcast-${sessionCode}`, {
         config: {
-          broadcast: { ack: false }
+          broadcast: { self: true }
         }
       })
       // Event 1: Activate Motion Detection - Reset and Activate ALL devices
       .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
-        console.log(`🔄 [INTERMEDIATE ${distance}m] Received ACTIVATE MOTION broadcast!`, payload);
+        console.log(`🔄 🔄 🔄 [INTERMEDIATE ${distance}m] Received ACTIVATE MOTION broadcast! 🔄 🔄 🔄`, payload);
+        console.log(`📊 [INTERMEDIATE ${distance}m] Camera status:`, { 
+          isReady, 
+          hasStream: !!stream, 
+          hasDetector: !!motionDetector,
+          hasVideoRef: !!videoRef.current,
+          isActive 
+        });
         
         // Έλεγχος αν η κάμερα είναι έτοιμη
         if (!isReady || !stream || !motionDetector || !videoRef.current) {
-          console.log(`⚠️ [INTERMEDIATE ${distance}m] Camera not ready, ignoring`);
+          console.error(`❌ ❌ ❌ [INTERMEDIATE ${distance}m] Camera NOT READY - Cannot activate motion detection! ❌ ❌ ❌`);
           return;
         }
         
@@ -110,7 +120,7 @@ export const SprintTimingIntermediate = () => {
         setLocalResult(null);
         
         // ΕΝΕΡΓΟΠΟΙΗΣΗ motion detection ΑΜΕΣΩΣ
-        console.log(`✅ [INTERMEDIATE ${distance}m] ACTIVATING motion detection NOW!`);
+        console.log(`✅ ✅ ✅ [INTERMEDIATE ${distance}m] ACTIVATING motion detection NOW! ✅ ✅ ✅`);
         setIsActive(true);
         
         motionDetector.start(async () => {
@@ -174,12 +184,18 @@ export const SprintTimingIntermediate = () => {
           await broadcastActivateNext(nextDevice);
         });
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`🎧 🎧 🎧 [INTERMEDIATE ${distance}m] Broadcast listener subscription status:`, status, `🎧 🎧 🎧`);
+        if (status === 'SUBSCRIBED') {
+          console.log(`✅ ✅ ✅ [INTERMEDIATE ${distance}m] Successfully SUBSCRIBED to broadcast channel! ✅ ✅ ✅`);
+        }
+      });
 
     return () => {
+      console.log(`🧹 [INTERMEDIATE ${distance}m] Cleaning up broadcast listener`);
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, distance, isReady, stream, motionDetector, videoRef, isActive, session, broadcastActivateNext]);
+  }, [sessionCode, distance]); // Μόνο sessionCode και distance στο dependency array
 
   useEffect(() => {
     if (sessionCode) {
