@@ -362,38 +362,6 @@ export const SprintTimingStop = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {localResult && !localResult.end_time && (
-            <Alert className="rounded-none bg-green-500/10 border-green-500">
-              <AlertCircle className="h-4 w-4 text-green-500" />
-              <AlertDescription className="text-green-500">
-                Χρονόμετρο σε εξέλιξη... Result ID: {localResult.id}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Test button για direct stop χωρίς motion detection */}
-          {localResult && !localResult.end_time && (
-            <Button
-              onClick={async () => {
-                console.log('🧪 TEST STOP DEVICE: ==================');
-                console.log('🧪 TEST: localResult:', localResult);
-                console.log('🧪 TEST: Calling stopTiming()...');
-                
-                const result = await stopTiming(localResult.id);
-                
-                if (result) {
-                  console.log('✅ TEST: SUCCESS! Stopped:', result);
-                } else {
-                  console.error('❌ TEST: stopTiming() failed');
-                }
-                console.log('🧪 TEST STOP DEVICE: ==================');
-              }}
-              className="w-full rounded-none bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              🧪 Test Direct Stop (No Motion Detection)
-            </Button>
-          )}
-
           {/* Video element πάντα στο DOM για το ref */}
           <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: stream ? 'auto' : '0' }}>
             <video
