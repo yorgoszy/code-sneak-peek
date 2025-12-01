@@ -260,15 +260,6 @@ export const SprintTimingIntermediate = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {localResult && !localResult.end_time && (
-            <Alert className="rounded-none bg-[#cb8954]/10 border-[#cb8954]">
-              <AlertCircle className="h-4 w-4 text-[#cb8954]" />
-              <AlertDescription className="text-[#cb8954]">
-                Χρονόμετρο σε εξέλιξη...
-              </AlertDescription>
-            </Alert>
-          )}
-
           <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: stream ? 'auto' : '0' }}>
             <video
               ref={videoRef}
