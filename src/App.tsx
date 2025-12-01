@@ -57,6 +57,7 @@ import { SprintTimingMaster } from "@/pages/SprintTimingMaster";
 import { SprintTimingJoin } from "@/pages/SprintTimingJoin";
 import { SprintTimingStart } from "@/pages/SprintTimingStart";
 import { SprintTimingDistance } from "@/pages/SprintTimingDistance";
+import { SprintTimingIntermediate } from "@/pages/SprintTimingIntermediate";
 import { SprintTimingStop } from "@/pages/SprintTimingStop";
 import { SprintTimingTimer } from "@/pages/SprintTimingTimer";
 
@@ -93,6 +94,7 @@ function App() {
                 <Route path="/sprint-timing/join/:sessionCode" element={<SprintTimingJoin />} />
           <Route path="/sprint-timing/start/:sessionCode" element={<SprintTimingStart />} />
           <Route path="/sprint-timing/distance/:sessionCode" element={<SprintTimingDistance />} />
+          <Route path="/sprint-timing/:distance/:sessionCode" element={<SprintTimingIntermediate />} />
           <Route path="/sprint-timing/stop/:sessionCode" element={<SprintTimingStop />} />
           <Route path="/sprint-timing/timer/:sessionCode" element={<SprintTimingTimer />} />
                 

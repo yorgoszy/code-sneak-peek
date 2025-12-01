@@ -17,7 +17,7 @@ export const SprintTimingStart = () => {
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { session, currentResult: hookResult, joinSession, startTiming, broadcastActivateMotion } = useSprintTiming(sessionCode);
+  const { session, currentResult: hookResult, joinSession, startTiming, broadcastActivateMotion, broadcastActivateNext } = useSprintTiming(sessionCode);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -133,6 +133,12 @@ export const SprintTimingStart = () => {
           start_time: result.start_time
         });
         console.log('📡 START: TIMER device should now pick this up via realtime!');
+        
+        // Ενεργοποίηση επόμενης συσκευής
+        const distances = session?.distances || [];
+        const nextDevice = distances.length > 0 ? distances[0].toString() : 'stop';
+        console.log(`📡 START: Activating next device: ${nextDevice}`);
+        await broadcastActivateNext(nextDevice);
         
         toast({
           title: "✅ Χρονόμετρο ξεκίνησε!",

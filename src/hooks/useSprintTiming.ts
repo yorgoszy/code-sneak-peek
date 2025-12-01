@@ -247,6 +247,41 @@ export const useSprintTiming = (sessionCode?: string) => {
     });
   }, [session]);
 
+  // Broadcast στην επόμενη συσκευή
+  const broadcastActivateNext = useCallback(async (nextDevice: string) => {
+    if (!session?.session_code) return;
+
+    console.log(`📡 Broadcasting activate to NEXT device: ${nextDevice}...`);
+    
+    const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
+      config: {
+        broadcast: { ack: false }
+      }
+    });
+    
+    await channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log(`✅ Broadcast channel subscribed, sending to ${nextDevice}...`);
+        
+        await channel.send({
+          type: 'broadcast',
+          event: 'activate_next_device',
+          payload: { 
+            target: nextDevice,
+            timestamp: new Date().toISOString() 
+          }
+        });
+        
+        console.log(`✅ Broadcast sent to ${nextDevice}`);
+        
+        // Cleanup after a short delay
+        setTimeout(() => {
+          supabase.removeChannel(channel);
+        }, 1000);
+      }
+    });
+  }, [session]);
+
   // Subscribe to realtime changes for sessions only
   useEffect(() => {
     if (!sessionCode) return;
@@ -285,6 +320,7 @@ export const useSprintTiming = (sessionCode?: string) => {
     startTiming,
     stopTiming,
     broadcastActivateMotion,
+    broadcastActivateNext,
     trackDevicePresence
   };
 };
