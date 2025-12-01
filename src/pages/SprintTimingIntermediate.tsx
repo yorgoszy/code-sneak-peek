@@ -157,6 +157,23 @@ export const SprintTimingIntermediate = () => {
           }
         });
       })
+      .on('broadcast', { event: 'reset_all_devices' }, (payload: any) => {
+        console.log(`🔄 🔄 🔄 [INTERMEDIATE ${distance}m] Received RESET broadcast! 🔄 🔄 🔄`, payload);
+        
+        // Σταματάμε το motion detection αν είναι ενεργό
+        if (motionDetector) {
+          console.log(`🛑 [INTERMEDIATE ${distance}m] Stopping motion detection`);
+          motionDetector.stop();
+        }
+        
+        // Μηδενίζουμε όλα τα states
+        console.log(`🧹 [INTERMEDIATE ${distance}m] Resetting all states`);
+        setIsActive(false);
+        localResultRef.current = null;
+        setLocalResult(null);
+        
+        console.log(`✅ [INTERMEDIATE ${distance}m] Reset complete!`);
+      })
       .subscribe((status) => {
         console.log(`🎧 🎧 🎧 [INTERMEDIATE ${distance}m] Broadcast listener subscription status:`, status, `🎧 🎧 🎧`);
         if (status === 'SUBSCRIBED') {

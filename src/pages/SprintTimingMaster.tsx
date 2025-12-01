@@ -33,7 +33,7 @@ export const SprintTimingMaster = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
-  const { session, currentResult, createSession, broadcastStartAll, broadcastActivateMotion, isLoading } = useSprintTiming(sessionCode);
+  const { session, currentResult, createSession, broadcastStartAll, broadcastActivateMotion, broadcastResetDevices, isLoading } = useSprintTiming(sessionCode);
   const isMobile = useIsMobile();
 
   // Check for tablet size
@@ -111,9 +111,13 @@ export const SprintTimingMaster = () => {
     }
   };
 
-  const handleCloseSession = () => {
-    // Reload της σελίδας για να επαναφέρει όλα τα states
-    window.location.reload();
+  const handleCloseSession = async () => {
+    // Στέλνουμε broadcast σε όλες τις συσκευές να μηδενιστούν
+    await broadcastResetDevices();
+    // Περιμένουμε λίγο για να φτάσει το broadcast
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   };
 
   if (!session) {

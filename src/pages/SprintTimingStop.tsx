@@ -212,6 +212,23 @@ export const SprintTimingStop = () => {
           await stopTiming(currentLocalResult.id);
         });
       })
+      .on('broadcast', { event: 'reset_all_devices' }, (payload: any) => {
+        console.log('🔄 🔄 🔄 [STOP] Received RESET broadcast! 🔄 🔄 🔄', payload);
+        
+        // Σταματάμε το motion detection αν είναι ενεργό
+        if (motionDetector) {
+          console.log('🛑 [STOP] Stopping motion detection');
+          motionDetector.stop();
+        }
+        
+        // Μηδενίζουμε όλα τα states
+        console.log('🧹 [STOP] Resetting all states');
+        setIsActive(false);
+        localResultRef.current = null;
+        setLocalResult(null);
+        
+        console.log('✅ [STOP] Reset complete!');
+      })
       .subscribe((status) => {
         console.log('🎧 🎧 🎧 [STOP] Broadcast listener subscription status:', status, '🎧 🎧 🎧');
         if (status === 'SUBSCRIBED') {

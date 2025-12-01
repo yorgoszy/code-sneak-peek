@@ -80,6 +80,21 @@ export const SprintTimingStart = () => {
           }
         });
       })
+      .on('broadcast', { event: 'reset_all_devices' }, (payload: any) => {
+        console.log('🔄 🔄 🔄 [START] Received RESET broadcast! 🔄 🔄 🔄', payload);
+        
+        // Σταματάμε το motion detection αν είναι ενεργό
+        if (motionDetector) {
+          console.log('🛑 [START] Stopping motion detection');
+          motionDetector.stop();
+        }
+        
+        // Μηδενίζουμε όλα τα states
+        console.log('🧹 [START] Resetting all states');
+        setIsActive(false);
+        
+        console.log('✅ [START] Reset complete!');
+      })
       .subscribe((status) => {
         console.log('🎧 🎧 🎧 [START] Broadcast listener subscription status:', status, '🎧 🎧 🎧');
         if (status === 'SUBSCRIBED') {

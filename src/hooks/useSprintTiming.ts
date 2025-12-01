@@ -384,6 +384,44 @@ export const useSprintTiming = (sessionCode?: string) => {
     });
   }, [session]);
 
+  // Broadcast για reset όλων των συσκευών
+  const broadcastResetDevices = useCallback(async () => {
+    if (!session?.session_code) return;
+
+    console.log('🔄 🔄 🔄 Broadcasting RESET to all devices! 🔄 🔄 🔄');
+    console.log('🔄 Channel name:', `sprint-broadcast-${session.session_code}`);
+    
+    const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
+      config: {
+        broadcast: { self: true }
+      }
+    });
+    
+    await channel.subscribe(async (status) => {
+      console.log('🔄 Reset broadcast channel status:', status);
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ ✅ ✅ Reset channel SUBSCRIBED, sending RESET message! ✅ ✅ ✅');
+        
+        await channel.send({
+          type: 'broadcast',
+          event: 'reset_all_devices',
+          payload: { 
+            timestamp: new Date().toISOString(),
+            sessionCode: session.session_code
+          }
+        });
+        
+        console.log('✅ ✅ ✅ RESET Broadcast SENT successfully! ✅ ✅ ✅');
+        
+        // Cleanup
+        setTimeout(() => {
+          console.log('🧹 Cleaning up reset broadcast channel');
+          supabase.removeChannel(channel);
+        }, 1000);
+      }
+    });
+  }, [session]);
+
   // Subscribe to realtime changes for sessions only
   useEffect(() => {
     if (!sessionCode) return;
@@ -425,6 +463,7 @@ export const useSprintTiming = (sessionCode?: string) => {
     broadcastActivateNext,
     broadcastPrepareDevices,
     broadcastStartAll,
+    broadcastResetDevices,
     trackDevicePresence
   };
 };
