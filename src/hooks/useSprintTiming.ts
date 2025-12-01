@@ -253,7 +253,7 @@ export const useSprintTiming = (sessionCode?: string) => {
 
     console.log('📡 Broadcasting START ALL DEVICES...');
     
-    const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
+    const channel = supabase.channel(`sprint-start-all-${session.session_code}`, {
       config: {
         broadcast: { ack: false }
       }
