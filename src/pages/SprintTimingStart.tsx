@@ -336,22 +336,54 @@ export const SprintTimingStart = () => {
           {/* Test button για direct start χωρίς motion detection */}
           <Button
             onClick={async () => {
-              console.log('🧪 TEST: Direct startTiming call');
-              const result = await startTiming();
-              if (result) {
-                console.log('✅ TEST: Success!', result);
+              console.log('🧪 TEST START DEVICE: ==================');
+              console.log('🧪 TEST: Session Code:', sessionCode);
+              console.log('🧪 TEST: Session Object:', session);
+              console.log('🧪 TEST: Session ID:', session?.id);
+              
+              if (!session) {
+                console.error('❌ TEST: NO SESSION FOUND!');
                 toast({
-                  title: "Test Success",
-                  description: `Created result: ${result.id}`,
+                  title: "❌ Error",
+                  description: "No session found! Refresh and try again.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              
+              console.log('🧪 TEST: Calling startTiming()...');
+              const result = await startTiming();
+              
+              if (result) {
+                console.log('✅ TEST: SUCCESS! Created record:', {
+                  id: result.id,
+                  session_id: result.session_id,
+                  start_time: result.start_time
+                });
+                toast({
+                  title: "✅ Test Success",
+                  description: `Result ID: ${result.id}\nSession: ${session.session_code}`,
                 });
               } else {
-                console.log('❌ TEST: Failed');
+                console.error('❌ TEST: startTiming() returned null');
+                toast({
+                  title: "❌ Test Failed",
+                  description: "startTiming() returned null",
+                  variant: "destructive",
+                });
               }
+              console.log('🧪 TEST START DEVICE: ==================');
             }}
             className="w-full rounded-none bg-blue-500 hover:bg-blue-600 text-white"
           >
             🧪 Test Direct Start (No Motion Detection)
           </Button>
+
+          {/* Εμφάνιση session info */}
+          <div className="text-xs text-muted-foreground p-2 bg-muted rounded-none">
+            <p><strong>START Device Session:</strong> {session?.session_code || 'Loading...'}</p>
+            <p><strong>Session ID:</strong> {session?.id || 'N/A'}</p>
+          </div>
 
           {!stream ? (
             <Button
