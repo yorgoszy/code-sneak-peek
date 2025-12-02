@@ -146,6 +146,11 @@ export const RidAiCoach = () => {
         }));
       }
       
+      console.log('🎯 RID AI: Sending context for user:', targetUserId);
+      console.log('🎯 Competitions:', competitions);
+      console.log('🎯 Tests:', tests);
+      console.log('🎯 UserContext:', userContext);
+      
       const response = await fetch(
         'https://dicwdviufetibnafzipa.supabase.co/functions/v1/rid-ai-coach',
         {
