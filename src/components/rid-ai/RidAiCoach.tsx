@@ -8,6 +8,9 @@ import { Send, Bot, User, Loader2, Users } from "lucide-react";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useUserUpcomingEvents } from "@/hooks/useUserUpcomingEvents";
+import { format } from "date-fns";
+import { el } from "date-fns/locale";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -27,6 +30,10 @@ export const RidAiCoach = () => {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const isAdmin = userProfile?.role === 'admin';
+
+  // Fetch upcoming events για τον χρήστη
+  const targetUserId = isAdmin && selectedUserId ? selectedUserId : userProfile?.id;
+  const { competitions, tests } = useUserUpcomingEvents(targetUserId);
 
   // Load all users for admin
   useEffect(() => {
@@ -118,6 +125,27 @@ export const RidAiCoach = () => {
       // Prepare all messages including the new one for full conversation context
       const allMessages = [...messages, userMessage];
       
+      // Prepare user context με upcoming events
+      const userContext: any = {};
+      
+      if (competitions.length > 0) {
+        userContext.upcomingCompetitions = competitions.map(comp => ({
+          date: format(new Date(comp.date), 'EEEE, d MMMM yyyy', { locale: el }),
+          daysUntil: comp.daysUntil,
+          programName: comp.programName,
+          dayName: comp.dayName
+        }));
+      }
+      
+      if (tests.length > 0) {
+        userContext.upcomingTests = tests.map(test => ({
+          date: format(new Date(test.date), 'EEEE, d MMMM yyyy', { locale: el }),
+          daysUntil: test.daysUntil,
+          type: test.type === 'scheduled' ? 'προγραμματισμένο' : 'από πρόγραμμα',
+          testTypes: test.testTypes?.join(', ')
+        }));
+      }
+      
       const response = await fetch(
         'https://dicwdviufetibnafzipa.supabase.co/functions/v1/rid-ai-coach',
         {
@@ -128,6 +156,7 @@ export const RidAiCoach = () => {
           body: JSON.stringify({
             messages: allMessages,
             userId: userProfile.id,
+            userContext: Object.keys(userContext).length > 0 ? userContext : undefined,
             ...(isAdmin && selectedUserId && { targetUserId: selectedUserId })
           })
         }
