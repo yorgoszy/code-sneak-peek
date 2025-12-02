@@ -9,7 +9,7 @@ import { Clock, Timer as TimerIcon, Play, Square, RotateCcw, Radar } from 'lucid
 
 export const SprintTimingTimer = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
-  const { session, currentResult: hookResult, joinSession, broadcastStartAll } = useSprintTiming(sessionCode);
+  const { session, currentResult: hookResult, joinSession, broadcastActivateMotion, broadcastResetDevices } = useSprintTiming(sessionCode);
   const [currentResult, setCurrentResult] = useState<any>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -162,12 +162,19 @@ export const SprintTimingTimer = () => {
     setStartTime(null);
   };
 
-  const handleRefresh = () => {
-    console.log('🔄 TIMER: Refresh/Reset');
-    setIsRunning(false);
-    setStartTime(null);
-    setElapsedTime(0);
-    setCurrentResult(null);
+  const handleRefresh = async () => {
+    console.log('🔄 TIMER: Broadcasting RESET to all devices...');
+    // Στέλνουμε broadcast σε όλες τις συσκευές να μηδενιστούν
+    await broadcastResetDevices();
+    
+    // Περιμένουμε λίγο για να φτάσει το broadcast και μετά κάνουμε local reset
+    setTimeout(() => {
+      console.log('🔄 TIMER: Local reset');
+      setIsRunning(false);
+      setStartTime(null);
+      setElapsedTime(0);
+      setCurrentResult(null);
+    }, 300);
   };
 
   // Timer interval - updates elapsed time every 10ms when running
@@ -284,8 +291,8 @@ export const SprintTimingTimer = () => {
           {/* Motion Detection Button */}
           <Button
             onClick={async () => {
-              console.log('🎬 TIMER: Broadcasting START ALL from Timer Device...');
-              await broadcastStartAll();
+              console.log('🎬 TIMER: Broadcasting ACTIVATE MOTION DETECTION...');
+              await broadcastActivateMotion();
             }}
             className="w-full rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white h-16 text-lg font-bold"
           >
