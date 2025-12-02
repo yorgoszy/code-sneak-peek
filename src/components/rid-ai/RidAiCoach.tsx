@@ -125,25 +125,53 @@ export const RidAiCoach = () => {
       // Prepare all messages including the new one for full conversation context
       const allMessages = [...messages, userMessage];
       
-      // Prepare user context με upcoming events
+      // Prepare user context με competitions και tests (παρελθόντα και μελλοντικά)
       const userContext: any = {};
       
       if (competitions.length > 0) {
-        userContext.upcomingCompetitions = competitions.map(comp => ({
-          date: format(new Date(comp.date), 'EEEE, d MMMM yyyy', { locale: el }),
-          daysUntil: comp.daysUntil,
-          programName: comp.programName,
-          dayName: comp.dayName
-        }));
+        const pastComps = competitions.filter(c => c.isPast);
+        const futureComps = competitions.filter(c => !c.isPast);
+        
+        if (pastComps.length > 0) {
+          userContext.pastCompetitions = pastComps.map(comp => ({
+            date: format(new Date(comp.date), 'EEEE, d MMMM yyyy', { locale: el }),
+            daysAgo: Math.abs(comp.daysUntil),
+            programName: comp.programName,
+            dayName: comp.dayName
+          }));
+        }
+        
+        if (futureComps.length > 0) {
+          userContext.upcomingCompetitions = futureComps.map(comp => ({
+            date: format(new Date(comp.date), 'EEEE, d MMMM yyyy', { locale: el }),
+            daysUntil: comp.daysUntil,
+            programName: comp.programName,
+            dayName: comp.dayName
+          }));
+        }
       }
       
       if (tests.length > 0) {
-        userContext.upcomingTests = tests.map(test => ({
-          date: format(new Date(test.date), 'EEEE, d MMMM yyyy', { locale: el }),
-          daysUntil: test.daysUntil,
-          type: test.type === 'scheduled' ? 'προγραμματισμένο' : 'από πρόγραμμα',
-          testTypes: test.testTypes?.join(', ')
-        }));
+        const pastTests = tests.filter(t => t.isPast);
+        const futureTests = tests.filter(t => !t.isPast);
+        
+        if (pastTests.length > 0) {
+          userContext.pastTests = pastTests.map(test => ({
+            date: format(new Date(test.date), 'EEEE, d MMMM yyyy', { locale: el }),
+            daysAgo: Math.abs(test.daysUntil),
+            type: test.type === 'scheduled' ? 'προγραμματισμένο' : 'από πρόγραμμα',
+            testTypes: test.testTypes?.join(', ')
+          }));
+        }
+        
+        if (futureTests.length > 0) {
+          userContext.upcomingTests = futureTests.map(test => ({
+            date: format(new Date(test.date), 'EEEE, d MMMM yyyy', { locale: el }),
+            daysUntil: test.daysUntil,
+            type: test.type === 'scheduled' ? 'προγραμματισμένο' : 'από πρόγραμμα',
+            testTypes: test.testTypes?.join(', ')
+          }));
+        }
       }
       
       console.log('🎯 RID AI: Sending context for user:', targetUserId);
