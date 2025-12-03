@@ -87,10 +87,10 @@ serve(async (req) => {
         );
         const allProgramsData = await allProgramsResponse.json();
         
-        // Φόρτωση users
+        // Φόρτωση users με ημερομηνία εγγραφής
         const allUserIds = allAssignments.map((a: any) => a.user_id).filter(Boolean);
         const allUsersResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/app_users?id=in.(${allUserIds.join(',')})&select=id,name,email`,
+          `${SUPABASE_URL}/rest/v1/app_users?id=in.(${allUserIds.join(',')})&select=id,name,email,created_at`,
           {
             headers: {
               "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -416,6 +416,118 @@ ${calendarDisplay}`;
         
         console.log(`✅ Admin context length: ${adminActiveProgramsContext.length} characters`);
         console.log(`📋 Admin context preview (first 500 chars): ${adminActiveProgramsContext.substring(0, 500)}`);
+      }
+    }
+
+    // 👥 ADMIN MODE: Φόρτωση ΟΛΩΝ των χρηστών με εγγραφή και συνδρομές
+    let adminAllUsersContext = '';
+    if (isAdmin && !targetUserId) {
+      console.log('📊 Admin mode: Loading ALL users with registration dates and subscriptions...');
+      
+      // Φόρτωση ΟΛΩΝ των χρηστών
+      const allUsersFullResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/app_users?select=id,name,email,created_at&order=name.asc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const allUsersFull = await allUsersFullResponse.json();
+      
+      // Φόρτωση ΟΛΩΝ των πληρωμών
+      const allPaymentsResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/payments?select=*&order=payment_date.desc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const allPayments = await allPaymentsResponse.json();
+      
+      // Φόρτωση τύπων συνδρομών
+      const allSubTypesResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/subscription_types?select=id,name,duration_months`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const allSubTypes = await allSubTypesResponse.json();
+      
+      if (Array.isArray(allUsersFull) && allUsersFull.length > 0) {
+        console.log(`✅ Loaded ${allUsersFull.length} users, ${Array.isArray(allPayments) ? allPayments.length : 0} payments`);
+        
+        adminAllUsersContext = '\n\n👥 ΛΙΣΤΑ ΧΡΗΣΤΩΝ (Dashboard/Users) - Ημερομηνίες Εγγραφής:\n';
+        
+        allUsersFull.forEach((user: any) => {
+          const regDate = user.created_at ? new Date(user.created_at).toLocaleDateString('el-GR') : 'Άγνωστη';
+          adminAllUsersContext += `- ${user.name} (${user.email}): Εγγράφηκε ${regDate}\n`;
+        });
+        
+        // Συνδρομές ανά χρήστη
+        adminAllUsersContext += '\n\n💳 ΣΥΝΔΡΟΜΕΣ ΧΡΗΣΤΩΝ (Dashboard/Subscriptions):\n';
+        
+        const usersWithPayments = allUsersFull.filter((user: any) => {
+          if (!Array.isArray(allPayments)) return false;
+          return allPayments.some((p: any) => p.user_id === user.id);
+        });
+        
+        usersWithPayments.forEach((user: any) => {
+          const userPayments = Array.isArray(allPayments) 
+            ? allPayments.filter((p: any) => p.user_id === user.id)
+            : [];
+          
+          if (userPayments.length > 0) {
+            adminAllUsersContext += `\n👤 ${user.name} (${user.email}):\n`;
+            
+            userPayments.forEach((payment: any) => {
+              const subType = Array.isArray(allSubTypes) 
+                ? allSubTypes.find((st: any) => st.id === payment.subscription_type_id)
+                : null;
+              const subName = subType?.name || 'Άγνωστος τύπος';
+              const duration = subType?.duration_months || 1;
+              
+              const paymentDate = payment.payment_date 
+                ? new Date(payment.payment_date).toLocaleDateString('el-GR')
+                : 'Άγνωστη';
+              
+              let expiryDate = 'Άγνωστη';
+              let isActive = false;
+              let daysRemaining = 0;
+              
+              if (payment.payment_date) {
+                const expiry = new Date(payment.payment_date);
+                expiry.setMonth(expiry.getMonth() + duration);
+                expiryDate = expiry.toLocaleDateString('el-GR');
+                isActive = expiry > new Date();
+                daysRemaining = Math.ceil((expiry.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+              }
+              
+              const statusEmoji = isActive ? '✅' : '⏰';
+              const statusText = isActive ? `Ενεργή (${daysRemaining} ημέρες)` : 'Έληξε';
+              
+              adminAllUsersContext += `  ${statusEmoji} ${subName}: ${payment.amount}€ | ${paymentDate} → ${expiryDate} | ${statusText}\n`;
+            });
+          }
+        });
+        
+        // Χρήστες χωρίς συνδρομές
+        const usersWithoutPayments = allUsersFull.filter((user: any) => {
+          if (!Array.isArray(allPayments)) return true;
+          return !allPayments.some((p: any) => p.user_id === user.id);
+        });
+        
+        if (usersWithoutPayments.length > 0) {
+          adminAllUsersContext += `\n⚠️ Χρήστες ΧΩΡΙΣ συνδρομή: ${usersWithoutPayments.length}\n`;
+        }
+        
+        console.log(`✅ Admin all users context length: ${adminAllUsersContext.length} chars`);
       }
     }
 
@@ -2441,7 +2553,7 @@ ${isAdmin && !targetUserId ? `
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
