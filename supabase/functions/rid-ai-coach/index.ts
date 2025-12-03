@@ -436,9 +436,9 @@ ${calendarDisplay}`;
       );
       const allUsersFull = await allUsersFullResponse.json();
       
-      // Φόρτωση ΟΛΩΝ των πληρωμών
-      const allPaymentsResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/payments?select=*&order=payment_date.desc`,
+      // Φόρτωση ΟΛΩΝ των συνδρομών (από user_subscriptions - το σωστό table!)
+      const allSubscriptionsResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_subscriptions?select=*&order=start_date.desc`,
         {
           headers: {
             "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -446,7 +446,7 @@ ${calendarDisplay}`;
           }
         }
       );
-      const allPayments = await allPaymentsResponse.json();
+      const allSubscriptions = await allSubscriptionsResponse.json();
       
       // Φόρτωση τύπων συνδρομών
       const allSubTypesResponse = await fetch(
@@ -461,7 +461,7 @@ ${calendarDisplay}`;
       const allSubTypes = await allSubTypesResponse.json();
       
       if (Array.isArray(allUsersFull) && allUsersFull.length > 0) {
-        console.log(`✅ Loaded ${allUsersFull.length} users, ${Array.isArray(allPayments) ? allPayments.length : 0} payments`);
+        console.log(`✅ Loaded ${allUsersFull.length} users, ${Array.isArray(allSubscriptions) ? allSubscriptions.length : 0} subscriptions`);
         
         adminAllUsersContext = '\n\n👥 ΛΙΣΤΑ ΧΡΗΣΤΩΝ (Dashboard/Users) - Ημερομηνίες Εγγραφής:\n';
         
@@ -470,61 +470,93 @@ ${calendarDisplay}`;
           adminAllUsersContext += `- ${user.name} (${user.email}): Εγγράφηκε ${regDate}\n`;
         });
         
-        // Συνδρομές ανά χρήστη
-        adminAllUsersContext += '\n\n💳 ΣΥΝΔΡΟΜΕΣ ΧΡΗΣΤΩΝ (Dashboard/Subscriptions):\n';
+        // Συνδρομές ανά χρήστη (από user_subscriptions)
+        adminAllUsersContext += '\n\n💳 ΣΥΝΔΡΟΜΕΣ ΧΡΗΣΤΩΝ (Dashboard/Subscriptions/Tab Συνδρομές):\n';
+        adminAllUsersContext += '⚠️ ΣΗΜΑΝΤΙΚΟ: start_date = ΕΝΑΡΞΗ συνδρομής, end_date = ΛΗΞΗ συνδρομής\n\n';
         
-        const usersWithPayments = allUsersFull.filter((user: any) => {
-          if (!Array.isArray(allPayments)) return false;
-          return allPayments.some((p: any) => p.user_id === user.id);
+        const usersWithSubs = allUsersFull.filter((user: any) => {
+          if (!Array.isArray(allSubscriptions)) return false;
+          return allSubscriptions.some((s: any) => s.user_id === user.id);
         });
         
-        usersWithPayments.forEach((user: any) => {
-          const userPayments = Array.isArray(allPayments) 
-            ? allPayments.filter((p: any) => p.user_id === user.id)
+        usersWithSubs.forEach((user: any) => {
+          const userSubs = Array.isArray(allSubscriptions) 
+            ? allSubscriptions.filter((s: any) => s.user_id === user.id)
             : [];
           
-          if (userPayments.length > 0) {
+          if (userSubs.length > 0) {
             adminAllUsersContext += `\n👤 ${user.name} (${user.email}):\n`;
             
-            userPayments.forEach((payment: any) => {
+            // Ταξινόμηση κατά start_date desc
+            userSubs.sort((a: any, b: any) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
+            
+            userSubs.forEach((sub: any, index: number) => {
               const subType = Array.isArray(allSubTypes) 
-                ? allSubTypes.find((st: any) => st.id === payment.subscription_type_id)
+                ? allSubTypes.find((st: any) => st.id === sub.subscription_type_id)
                 : null;
               const subName = subType?.name || 'Άγνωστος τύπος';
-              const duration = subType?.duration_months || 1;
               
-              const paymentDate = payment.payment_date 
-                ? new Date(payment.payment_date).toLocaleDateString('el-GR')
+              const startDate = sub.start_date 
+                ? new Date(sub.start_date).toLocaleDateString('el-GR')
                 : 'Άγνωστη';
               
-              let expiryDate = 'Άγνωστη';
+              const endDate = sub.end_date 
+                ? new Date(sub.end_date).toLocaleDateString('el-GR')
+                : 'Άγνωστη';
+              
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              
+              const endDateObj = sub.end_date ? new Date(sub.end_date) : null;
+              const startDateObj = sub.start_date ? new Date(sub.start_date) : null;
+              
               let isActive = false;
               let daysRemaining = 0;
+              let statusText = 'Άγνωστη κατάσταση';
+              let statusEmoji = '❓';
               
-              if (payment.payment_date) {
-                const expiry = new Date(payment.payment_date);
-                expiry.setMonth(expiry.getMonth() + duration);
-                expiryDate = expiry.toLocaleDateString('el-GR');
-                isActive = expiry > new Date();
-                daysRemaining = Math.ceil((expiry.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+              if (endDateObj && startDateObj) {
+                endDateObj.setHours(0, 0, 0, 0);
+                startDateObj.setHours(0, 0, 0, 0);
+                
+                if (sub.status === 'active' && endDateObj >= today && startDateObj <= today) {
+                  isActive = true;
+                  daysRemaining = Math.ceil((endDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                  statusEmoji = '✅';
+                  statusText = `ΕΝΕΡΓΗ - Λήγει σε ${daysRemaining} ημέρες`;
+                } else if (startDateObj > today) {
+                  statusEmoji = '📅';
+                  statusText = 'ΜΕΛΛΟΝΤΙΚΗ - Δεν έχει ξεκινήσει ακόμα';
+                } else if (endDateObj < today) {
+                  statusEmoji = '⏰';
+                  statusText = 'ΕΛΗΞΕ';
+                } else if (sub.is_paused) {
+                  statusEmoji = '⏸️';
+                  statusText = 'ΣΕ ΠΑΥΣΗ';
+                } else {
+                  statusEmoji = '❌';
+                  statusText = sub.status === 'cancelled' ? 'ΑΚΥΡΩΜΕΝΗ' : 'ΑΝΕΝΕΡΓΗ';
+                }
               }
               
-              const statusEmoji = isActive ? '✅' : '⏰';
-              const statusText = isActive ? `Ενεργή (${daysRemaining} ημέρες)` : 'Έληξε';
-              
-              adminAllUsersContext += `  ${statusEmoji} ${subName}: ${payment.amount}€ | ${paymentDate} → ${expiryDate} | ${statusText}\n`;
+              adminAllUsersContext += `  ${index + 1}. ${statusEmoji} ${subName}\n`;
+              adminAllUsersContext += `     📆 Έναρξη: ${startDate} | Λήξη: ${endDate}\n`;
+              adminAllUsersContext += `     📊 Κατάσταση: ${statusText}\n`;
+              if (sub.status) {
+                adminAllUsersContext += `     🏷️ DB Status: ${sub.status}\n`;
+              }
             });
           }
         });
         
         // Χρήστες χωρίς συνδρομές
-        const usersWithoutPayments = allUsersFull.filter((user: any) => {
-          if (!Array.isArray(allPayments)) return true;
-          return !allPayments.some((p: any) => p.user_id === user.id);
+        const usersWithoutSubs = allUsersFull.filter((user: any) => {
+          if (!Array.isArray(allSubscriptions)) return true;
+          return !allSubscriptions.some((s: any) => s.user_id === user.id);
         });
         
-        if (usersWithoutPayments.length > 0) {
-          adminAllUsersContext += `\n⚠️ Χρήστες ΧΩΡΙΣ συνδρομή: ${usersWithoutPayments.length}\n`;
+        if (usersWithoutSubs.length > 0) {
+          adminAllUsersContext += `\n⚠️ Χρήστες ΧΩΡΙΣ συνδρομή: ${usersWithoutSubs.length}\n`;
         }
         
         console.log(`✅ Admin all users context length: ${adminAllUsersContext.length} chars`);
