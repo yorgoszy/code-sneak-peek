@@ -8,11 +8,12 @@ import { Play, Camera, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export const SprintTimingStart = () => {
   const { sessionCode } = useParams<{ sessionCode: string }>();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const shouldDetectRef = useRef<boolean>(false); // Flag για έλεγχο αν πρέπει να ανιχνεύει
+  const shouldDetectRef = useRef<boolean>(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -20,6 +21,9 @@ export const SprintTimingStart = () => {
   const [error, setError] = useState<string | null>(null);
   const { session, joinSession, startTiming, broadcastActivateNext } = useSprintTiming(sessionCode);
   const { toast } = useToast();
+
+  // ΜΟΝΙΜΟ CHANNEL για να στέλνουμε broadcasts στο Timer
+  const timerChannelRef = useRef<RealtimeChannel | null>(null);
 
   // Refs για να έχουμε πρόσβαση στις τρέχουσες τιμές μέσα στο broadcast callback
   const motionDetectorRef = useRef<MotionDetector | null>(null);
@@ -34,6 +38,31 @@ export const SprintTimingStart = () => {
   useEffect(() => { streamRef.current = stream; }, [stream]);
   useEffect(() => { isActiveRef.current = isActive; }, [isActive]);
   useEffect(() => { sessionRef.current = session; }, [session]);
+
+  // ΔΗΜΙΟΥΡΓΙΑ ΜΟΝΙΜΟΥ CHANNEL για επικοινωνία με το Timer
+  useEffect(() => {
+    if (!sessionCode) return;
+
+    console.log('🔌 [START] Creating PERSISTENT timer channel:', `sprint-timer-control-${sessionCode}`);
+    
+    const channel = supabase.channel(`sprint-timer-control-${sessionCode}`, {
+      config: { broadcast: { self: true } }
+    });
+    
+    channel.subscribe((status) => {
+      console.log('🔌 [START] Timer channel status:', status);
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ [START] Timer channel READY to send broadcasts!');
+        timerChannelRef.current = channel;
+      }
+    });
+
+    return () => {
+      console.log('🧹 [START] Cleaning up timer channel');
+      supabase.removeChannel(channel);
+      timerChannelRef.current = null;
+    };
+  }, [sessionCode]);
 
   // Listen for ACTIVATE MOTION DETECTION broadcast - RESET and ACTIVATE
   useEffect(() => {
@@ -90,7 +119,6 @@ export const SprintTimingStart = () => {
         currentMotionDetector.start(async () => {
           console.log('🏁 [START] MOTION DETECTED!');
           
-          // Έλεγχος αν πρέπει να ανιχνεύει (μπορεί να έχει γίνει reset)
           if (!shouldDetectRef.current) {
             console.log('❌ [START] Detection cancelled - device was reset');
             return;
@@ -100,21 +128,21 @@ export const SprintTimingStart = () => {
           setIsActive(false);
           shouldDetectRef.current = false;
           
-          // ΑΠΛΟ: Στέλνουμε broadcast start_timer
-          console.log('📡 [START] Sending START_TIMER broadcast to channel: sprint-timer-control-' + sessionCode);
-          
-          const timerChannel = supabase.channel(`sprint-timer-control-${sessionCode}`);
-          timerChannel.subscribe((status) => {
-            if (status === 'SUBSCRIBED') {
-              timerChannel.send({
-                type: 'broadcast',
-                event: 'start_timer',
-                payload: { timestamp: Date.now() }
-              }).then(() => {
-                console.log('✅ [START] START_TIMER broadcast sent!');
-              });
-            }
-          });
+          // ΣΤΕΛΝΟΥΜΕ BROADCAST μέσω του ΜΟΝΙΜΟΥ channel
+          if (timerChannelRef.current) {
+            console.log('📡 [START] Sending START_TIMER via persistent channel!');
+            timerChannelRef.current.send({
+              type: 'broadcast',
+              event: 'start_timer',
+              payload: { timestamp: Date.now() }
+            }).then(() => {
+              console.log('✅ [START] START_TIMER broadcast SENT!');
+            }).catch((err) => {
+              console.error('❌ [START] Failed to send broadcast:', err);
+            });
+          } else {
+            console.error('❌ [START] Timer channel not ready!');
+          }
         });
       })
       .on('broadcast', { event: 'reset_all_devices' }, (payload: any) => {
@@ -200,21 +228,21 @@ export const SprintTimingStart = () => {
           currentMotionDetector.stop();
           setIsActive(false);
           
-          // ΑΠΛΟ: Στέλνουμε broadcast start_timer
-          console.log('📡 [START] Sending START_TIMER broadcast to channel: sprint-timer-control-' + sessionCode);
-          
-          const timerChannel = supabase.channel(`sprint-timer-control-${sessionCode}`);
-          timerChannel.subscribe((status) => {
-            if (status === 'SUBSCRIBED') {
-              timerChannel.send({
-                type: 'broadcast',
-                event: 'start_timer',
-                payload: { timestamp: Date.now() }
-              }).then(() => {
-                console.log('✅ [START] START_TIMER broadcast sent!');
-              });
-            }
-          });
+          // ΣΤΕΛΝΟΥΜΕ BROADCAST μέσω του ΜΟΝΙΜΟΥ channel
+          if (timerChannelRef.current) {
+            console.log('📡 [START] Sending START_TIMER via persistent channel!');
+            timerChannelRef.current.send({
+              type: 'broadcast',
+              event: 'start_timer',
+              payload: { timestamp: Date.now() }
+            }).then(() => {
+              console.log('✅ [START] START_TIMER broadcast SENT!');
+            }).catch((err) => {
+              console.error('❌ [START] Failed to send broadcast:', err);
+            });
+          } else {
+            console.error('❌ [START] Timer channel not ready!');
+          }
         });
       })
       .subscribe((status) => {
