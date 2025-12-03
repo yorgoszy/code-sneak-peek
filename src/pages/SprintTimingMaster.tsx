@@ -35,6 +35,9 @@ export const SprintTimingMaster = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   
+  // Sprint distance for speed calculation
+  const [sprintDistance, setSprintDistance] = useState<number>(30);
+  
   // Timer state
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -43,6 +46,13 @@ export const SprintTimingMaster = () => {
   
   const { session, currentResult, createSession, broadcastStartAll, broadcastActivateMotion, broadcastResetDevices, isLoading } = useSprintTiming(sessionCode);
   const isMobile = useIsMobile();
+
+  // Auto-select first distance when session loads
+  useEffect(() => {
+    if (session?.distances && session.distances.length > 0) {
+      setSprintDistance(session.distances[0]);
+    }
+  }, [session?.distances]);
 
   // Check for tablet size
   useEffect(() => {
@@ -598,16 +608,39 @@ export const SprintTimingMaster = () => {
                 </div>
               </div>
 
+              {/* Sprint Distance Selection */}
+              <div className="border border-[#cb8954]/30 bg-[#cb8954]/5 p-3 rounded-none">
+                <Label className="text-sm font-semibold text-[#cb8954]">Απόσταση Sprint</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Επιλέξτε την απόσταση για υπολογισμό ταχύτητας
+                </p>
+                <Select 
+                  value={sprintDistance.toString()} 
+                  onValueChange={(value) => setSprintDistance(parseInt(value))}
+                >
+                  <SelectTrigger className="rounded-none h-10 text-base font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-none">
+                    {session.distances && session.distances.map(dist => (
+                      <SelectItem key={dist} value={dist.toString()} className="rounded-none text-base">
+                        {dist}m
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Κουμπί Ανίχνευσης Κίνησης */}
               <Button
                 onClick={async () => {
-                  console.log('🔄 MASTER: Broadcasting ACTIVATE MOTION DETECTION...');
-                  await broadcastActivateMotion();
+                  console.log('🔄 MASTER: Broadcasting ACTIVATE MOTION DETECTION with distance:', sprintDistance);
+                  await broadcastActivateMotion(sprintDistance);
                 }}
                 className="w-full rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white font-bold h-14 text-base"
               >
                 <Camera className="w-5 h-5 mr-2" />
-                ΑΝΙΧΝΕΥΣΗ ΚΙΝΗΣΗΣ
+                ΑΝΙΧΝΕΥΣΗ ΚΙΝΗΣΗΣ ({sprintDistance}m)
               </Button>
 
               {/* Κουμπί Έναρξης */}

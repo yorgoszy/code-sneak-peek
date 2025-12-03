@@ -282,11 +282,12 @@ export const useSprintTiming = (sessionCode?: string) => {
   }, []);
 
   // Broadcast έναρξης motion detection σε όλες τις συσκευές
-  const broadcastActivateMotion = useCallback(async () => {
+  const broadcastActivateMotion = useCallback(async (distanceMeters?: number) => {
     if (!session?.session_code) return;
 
     console.log('📡 📡 📡 Broadcasting ACTIVATE MOTION DETECTION to all devices! 📡 📡 📡');
     console.log('📡 Channel name:', `sprint-broadcast-${session.session_code}`);
+    console.log('📡 Distance meters:', distanceMeters);
     
     // Χρησιμοποιούμε το ίδιο channel name που ακούν οι listeners
     const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
@@ -308,7 +309,8 @@ export const useSprintTiming = (sessionCode?: string) => {
           event: 'activate_motion_detection',
           payload: { 
             timestamp: new Date().toISOString(),
-            sessionCode: session.session_code
+            sessionCode: session.session_code,
+            distanceMeters: distanceMeters
           }
         });
         
