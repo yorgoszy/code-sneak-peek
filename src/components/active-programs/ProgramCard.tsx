@@ -11,6 +11,7 @@ interface ProgramCardProps {
   selectedDate?: Date;
   onRefresh?: () => void;
   onDelete?: (assignmentId: string) => void;
+  onForceComplete?: (assignmentId: string) => void;
   userMode?: boolean;
   workoutStats?: {
     completed: number;
@@ -24,6 +25,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
   selectedDate,
   onRefresh,
   onDelete,
+  onForceComplete,
   userMode = false,
   workoutStats
 }) => {
@@ -45,6 +47,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
             selectedDate={selectedDate}
             onRefresh={onRefresh} 
             onDelete={onDelete}
+            onForceComplete={onForceComplete}
             userMode={userMode}
             workoutStats={stats}
           />
