@@ -22,14 +22,36 @@ export const SprintTimingTimer = () => {
     }
   }, [sessionCode, joinSession]);
 
-  // Listen for reset broadcasts
+  // Listen for START/STOP/RESET broadcasts from other devices
   useEffect(() => {
     if (!sessionCode) return;
 
-    const channel = supabase
+    console.log('🎧 TIMER: Setting up broadcast listeners for:', sessionCode);
+
+    // Channel για start_timer και stop_timer
+    const controlChannel = supabase
+      .channel(`sprint-timer-control-${sessionCode}`)
+      .on('broadcast', { event: 'start_timer' }, (payload) => {
+        console.log('▶️▶️▶️ TIMER: Received START_TIMER broadcast!', payload);
+        const now = Date.now();
+        setStartTime(now);
+        setIsRunning(true);
+        setElapsedTime(0);
+      })
+      .on('broadcast', { event: 'stop_timer' }, (payload) => {
+        console.log('⏹️⏹️⏹️ TIMER: Received STOP_TIMER broadcast!', payload);
+        setIsRunning(false);
+        // Κρατάμε το τελικό elapsed time
+      })
+      .subscribe((status) => {
+        console.log('🎧 TIMER: Control channel status:', status);
+      });
+
+    // Channel για reset
+    const resetChannel = supabase
       .channel(`timer-reset-${sessionCode}`)
       .on('broadcast', { event: 'reset_all_devices' }, () => {
-        console.log('🔄 🔄 🔄 TIMER: Received RESET broadcast!');
+        console.log('🔄🔄🔄 TIMER: Received RESET broadcast!');
         setIsRunning(false);
         setStartTime(null);
         setElapsedTime(0);
@@ -38,7 +60,8 @@ export const SprintTimingTimer = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(controlChannel);
+      supabase.removeChannel(resetChannel);
     };
   }, [sessionCode]);
 
