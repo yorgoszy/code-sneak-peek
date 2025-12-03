@@ -15,6 +15,7 @@ export const SprintTimingTimer = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [connectedDevices, setConnectedDevices] = useState<{ [key: string]: { device: string, timestamp: string }[] }>({});
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [sprintDistance, setSprintDistance] = useState<number | null>(null);
 
   useEffect(() => {
     if (sessionCode) {
@@ -22,7 +23,7 @@ export const SprintTimingTimer = () => {
     }
   }, [sessionCode, joinSession]);
 
-  // Listen for START/STOP/RESET broadcasts from other devices
+  // Listen for START/STOP/RESET/ACTIVATE_MOTION broadcasts from other devices
   useEffect(() => {
     if (!sessionCode) return;
 
@@ -56,12 +57,29 @@ export const SprintTimingTimer = () => {
         setStartTime(null);
         setElapsedTime(0);
         setCurrentResult(null);
+        setSprintDistance(null);
       })
       .subscribe();
+
+    // Channel για activate_motion_detection (με απόσταση)
+    const motionChannel = supabase
+      .channel(`sprint-broadcast-${sessionCode}`)
+      .on('broadcast', { event: 'activate_motion_detection' }, (payload) => {
+        console.log('📍📍📍 TIMER: Received ACTIVATE_MOTION with distance!', payload);
+        const distance = payload.payload?.distanceMeters;
+        if (distance) {
+          console.log('📍 TIMER: Setting sprint distance to:', distance);
+          setSprintDistance(distance);
+        }
+      })
+      .subscribe((status) => {
+        console.log('🎧 TIMER: Motion channel status:', status);
+      });
 
     return () => {
       supabase.removeChannel(controlChannel);
       supabase.removeChannel(resetChannel);
+      supabase.removeChannel(motionChannel);
     };
   }, [sessionCode]);
 
@@ -253,6 +271,15 @@ export const SprintTimingTimer = () => {
     return `${seconds}.${centiseconds.toString().padStart(2, '0')}`;
   };
 
+  // Calculate speed in km/h
+  const calculateSpeed = (distanceMeters: number, timeMs: number): number => {
+    if (timeMs <= 0) return 0;
+    const timeSeconds = timeMs / 1000;
+    const speedMps = distanceMeters / timeSeconds; // meters per second
+    const speedKmh = speedMps * 3.6; // convert to km/h
+    return speedKmh;
+  };
+
   if (!session) {
     return (
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
@@ -330,6 +357,19 @@ export const SprintTimingTimer = () => {
               </div>
             </div>
           </div>
+
+          {/* Speed Display */}
+          {sprintDistance && elapsedTime > 0 && !isRunning && (
+            <div className="bg-[#cb8954]/10 border border-[#cb8954]/30 p-6 rounded-none">
+              <div className="text-center">
+                <p className="text-sm text-[#cb8954] mb-2">Ταχύτητα ({sprintDistance}m)</p>
+                <div className="font-mono text-5xl font-bold text-[#cb8954]">
+                  {calculateSpeed(sprintDistance, elapsedTime).toFixed(2)}
+                  <span className="text-2xl ml-2">km/h</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Motion Detection Button */}
           <Button
