@@ -29,7 +29,7 @@ export const SprintTimingTimer = () => {
     console.log('🎧 TIMER: Setting up broadcast listener for channel:', `sprint-broadcast-${sessionCode}`);
     
     const channel = supabase
-      .channel(`sprint-broadcast-timer-${sessionCode}`, {
+      .channel(`sprint-broadcast-${sessionCode}`, {
         config: {
           broadcast: { self: true }
         }
