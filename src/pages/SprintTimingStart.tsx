@@ -101,17 +101,18 @@ export const SprintTimingStart = () => {
           shouldDetectRef.current = false;
           
           // ΑΠΛΟ: Στέλνουμε broadcast start_timer
-          console.log('📡 [START] Sending START_TIMER broadcast!');
+          console.log('📡 [START] Sending START_TIMER broadcast to channel: sprint-timer-control-' + sessionCode);
+          
           const timerChannel = supabase.channel(`sprint-timer-control-${sessionCode}`);
-          await timerChannel.subscribe(async (status) => {
+          timerChannel.subscribe((status) => {
             if (status === 'SUBSCRIBED') {
-              await timerChannel.send({
+              timerChannel.send({
                 type: 'broadcast',
                 event: 'start_timer',
                 payload: { timestamp: Date.now() }
+              }).then(() => {
+                console.log('✅ [START] START_TIMER broadcast sent!');
               });
-              console.log('✅ [START] START_TIMER broadcast sent!');
-              setTimeout(() => supabase.removeChannel(timerChannel), 500);
             }
           });
         });
@@ -200,17 +201,18 @@ export const SprintTimingStart = () => {
           setIsActive(false);
           
           // ΑΠΛΟ: Στέλνουμε broadcast start_timer
-          console.log('📡 [START] Sending START_TIMER broadcast!');
+          console.log('📡 [START] Sending START_TIMER broadcast to channel: sprint-timer-control-' + sessionCode);
+          
           const timerChannel = supabase.channel(`sprint-timer-control-${sessionCode}`);
-          await timerChannel.subscribe(async (status) => {
+          timerChannel.subscribe((status) => {
             if (status === 'SUBSCRIBED') {
-              await timerChannel.send({
+              timerChannel.send({
                 type: 'broadcast',
                 event: 'start_timer',
                 payload: { timestamp: Date.now() }
+              }).then(() => {
+                console.log('✅ [START] START_TIMER broadcast sent!');
               });
-              console.log('✅ [START] START_TIMER broadcast sent!');
-              setTimeout(() => supabase.removeChannel(timerChannel), 500);
             }
           });
         });
