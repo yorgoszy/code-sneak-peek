@@ -524,8 +524,8 @@ ${calendarDisplay}`;
         }
 
         if (pastSubscriptions.length > 0) {
-          subscriptionContext += `\n\n📜 ΙΣΤΟΡΙΚΟ ΣΥΝΔΡΟΜΩΝ:`;
-          pastSubscriptions.slice(0, 5).forEach((sub: any) => {
+          subscriptionContext += `\n\n📜 ΙΣΤΟΡΙΚΟ ΣΥΝΔΡΟΜΩΝ (${pastSubscriptions.length} συνολικά):`;
+          pastSubscriptions.forEach((sub: any) => {
             subscriptionContext += `\n- ${sub.subscriptionName}: ${sub.amount}€ (${sub.paymentDate} - ${sub.expiryDate})`;
           });
         }
