@@ -56,6 +56,10 @@ export const SprintTimingMaster = () => {
     return () => window.removeEventListener('resize', checkTabletSize);
   }, []);
 
+  // Ref για το startTime για χρήση μέσα στο callback
+  const startTimeRef = useRef<number | null>(null);
+  useEffect(() => { startTimeRef.current = startTime; }, [startTime]);
+
   // Listen for timer control broadcasts (start_timer, stop_timer)
   useEffect(() => {
     if (!session?.session_code) return;
@@ -74,9 +78,10 @@ export const SprintTimingMaster = () => {
       })
       .on('broadcast', { event: 'stop_timer' }, (payload: any) => {
         console.log('⏹️ ⏹️ ⏹️ MASTER: Received STOP_TIMER!', payload);
-        // Υπολογίζουμε τον χρόνο από το startTime
-        if (startTime) {
-          const elapsed = Date.now() - startTime;
+        // Υπολογίζουμε τον χρόνο από το startTimeRef
+        const currentStartTime = startTimeRef.current;
+        if (currentStartTime) {
+          const elapsed = Date.now() - currentStartTime;
           setFinalTime(elapsed);
           setElapsedTime(elapsed);
         }
@@ -97,7 +102,7 @@ export const SprintTimingMaster = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session?.session_code, startTime]);
+  }, [session?.session_code]); // ΧΩΡΙΣ startTime!
 
   // Timer interval
   useEffect(() => {
