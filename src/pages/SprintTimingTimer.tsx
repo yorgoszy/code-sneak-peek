@@ -22,7 +22,60 @@ export const SprintTimingTimer = () => {
     }
   }, [sessionCode, joinSession]);
 
-  // Track presence as Timer device και ακούει για αλλαγές realtime
+  // Listen for broadcast events (same channel as cameras)
+  useEffect(() => {
+    if (!sessionCode) return;
+
+    console.log('🎧 TIMER: Setting up broadcast listener for channel:', `sprint-broadcast-${sessionCode}`);
+    
+    const channel = supabase
+      .channel(`sprint-broadcast-timer-${sessionCode}`, {
+        config: {
+          broadcast: { self: true }
+        }
+      })
+      .on('broadcast', { event: 'timing_started' }, (payload: any) => {
+        console.log('🏁 🏁 🏁 TIMER: Received TIMING STARTED broadcast!', payload);
+        
+        // Ξεκινάμε το ρολόι με το start_time από το broadcast
+        if (payload.payload?.start_time) {
+          const startTimeMs = new Date(payload.payload.start_time).getTime();
+          console.log('▶️ TIMER: Starting from broadcast! Start time:', startTimeMs);
+          setStartTime(startTimeMs);
+          setIsRunning(true);
+          setElapsedTime(0);
+        }
+      })
+      .on('broadcast', { event: 'timing_stopped' }, (payload: any) => {
+        console.log('⏹️ ⏹️ ⏹️ TIMER: Received TIMING STOPPED broadcast!', payload);
+        
+        // Σταματάμε το ρολόι και δείχνουμε τον τελικό χρόνο
+        if (payload.payload?.duration_ms) {
+          console.log('⏹️ TIMER: Stopping from broadcast! Duration:', payload.payload.duration_ms);
+          setElapsedTime(payload.payload.duration_ms);
+          setIsRunning(false);
+          setStartTime(null);
+          setCurrentResult(payload.payload);
+        }
+      })
+      .on('broadcast', { event: 'reset_all_devices' }, (payload: any) => {
+        console.log('🔄 🔄 🔄 TIMER: Received RESET broadcast!');
+        setIsRunning(false);
+        setStartTime(null);
+        setElapsedTime(0);
+        setCurrentResult(null);
+      })
+      .subscribe((status) => {
+        console.log('🎧 TIMER: Broadcast subscription status:', status);
+      });
+
+    return () => {
+      console.log('🧹 TIMER: Cleaning up broadcast listener');
+      supabase.removeChannel(channel);
+    };
+  }, [sessionCode]);
+
+  // Track presence as Timer device
   useEffect(() => {
     if (!sessionCode) return;
     

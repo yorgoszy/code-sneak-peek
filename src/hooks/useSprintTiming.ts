@@ -106,6 +106,8 @@ export const useSprintTiming = (sessionCode?: string) => {
     if (!session) return null;
 
     try {
+      const startTime = new Date().toISOString();
+      
       // Ενημέρωση session status σε active
       await supabase
         .from('sprint_timing_sessions')
@@ -118,7 +120,7 @@ export const useSprintTiming = (sessionCode?: string) => {
         .insert({
           session_id: session.id,
           distance_meters: distanceMeters,
-          start_time: new Date().toISOString()
+          start_time: startTime
         })
         .select()
         .single();
@@ -127,6 +129,29 @@ export const useSprintTiming = (sessionCode?: string) => {
 
       setCurrentResult(data);
       console.log('⏱️ Timing started:', data);
+      
+      // Broadcast timing_started στο Timer
+      console.log('📡 Broadcasting TIMING STARTED to Timer...');
+      const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
+        config: { broadcast: { self: true } }
+      });
+      
+      await channel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.send({
+            type: 'broadcast',
+            event: 'timing_started',
+            payload: { 
+              result_id: data.id,
+              start_time: startTime,
+              distance_meters: distanceMeters
+            }
+          });
+          console.log('✅ TIMING STARTED broadcast sent!');
+          setTimeout(() => supabase.removeChannel(channel), 500);
+        }
+      });
+      
       return data;
     } catch (error) {
       console.error('Error starting timing:', error);
@@ -141,6 +166,8 @@ export const useSprintTiming = (sessionCode?: string) => {
 
   // Τερματισμός χρονομέτρησης
   const stopTiming = useCallback(async (resultId: string) => {
+    if (!session) return null;
+    
     try {
       const endTime = new Date();
       
@@ -177,6 +204,28 @@ export const useSprintTiming = (sessionCode?: string) => {
 
       console.log('⏱️ Timing stopped:', data);
       
+      // Broadcast timing_stopped στο Timer
+      console.log('📡 Broadcasting TIMING STOPPED to Timer...');
+      const channel = supabase.channel(`sprint-broadcast-${session.session_code}`, {
+        config: { broadcast: { self: true } }
+      });
+      
+      await channel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.send({
+            type: 'broadcast',
+            event: 'timing_stopped',
+            payload: { 
+              result_id: data.id,
+              duration_ms: durationMs,
+              end_time: endTime.toISOString()
+            }
+          });
+          console.log('✅ TIMING STOPPED broadcast sent!');
+          setTimeout(() => supabase.removeChannel(channel), 500);
+        }
+      });
+      
       // Μορφοποίηση χρόνου: λεπτά:δευτερόλεπτα.εκατοστά
       const totalSeconds = Math.floor(durationMs / 1000);
       const minutes = Math.floor(totalSeconds / 60);
@@ -202,7 +251,7 @@ export const useSprintTiming = (sessionCode?: string) => {
       });
       return null;
     }
-  }, [toast]);
+  }, [session, toast]);
 
   // Track device presence
   const trackDevicePresence = useCallback(async (sessionCode: string, deviceType: string) => {
