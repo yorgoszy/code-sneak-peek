@@ -21,6 +21,20 @@ export const SprintTimingStart = () => {
   const { session, joinSession, startTiming, broadcastActivateNext } = useSprintTiming(sessionCode);
   const { toast } = useToast();
 
+  // Refs για να έχουμε πρόσβαση στις τρέχουσες τιμές μέσα στο broadcast callback
+  const motionDetectorRef = useRef<MotionDetector | null>(null);
+  const isReadyRef = useRef(false);
+  const streamRef = useRef<MediaStream | null>(null);
+  const isActiveRef = useRef(false);
+  const sessionRef = useRef<any>(null);
+
+  // Sync refs with state
+  useEffect(() => { motionDetectorRef.current = motionDetector; }, [motionDetector]);
+  useEffect(() => { isReadyRef.current = isReady; }, [isReady]);
+  useEffect(() => { streamRef.current = stream; }, [stream]);
+  useEffect(() => { isActiveRef.current = isActive; }, [isActive]);
+  useEffect(() => { sessionRef.current = session; }, [session]);
+
   // Listen for ACTIVATE MOTION DETECTION broadcast - RESET and ACTIVATE
   useEffect(() => {
     if (!sessionCode) {
@@ -38,24 +52,32 @@ export const SprintTimingStart = () => {
       })
       .on('broadcast', { event: 'activate_motion_detection' }, (payload: any) => {
         console.log('🔄 🔄 🔄 [START] Received ACTIVATE MOTION broadcast! 🔄 🔄 🔄', payload);
-        console.log('📊 [START] Camera status:', { 
-          isReady, 
-          hasStream: !!stream, 
-          hasDetector: !!motionDetector,
+        
+        // Χρησιμοποιούμε refs για να έχουμε τις τρέχουσες τιμές
+        const currentMotionDetector = motionDetectorRef.current;
+        const currentIsReady = isReadyRef.current;
+        const currentStream = streamRef.current;
+        const currentIsActive = isActiveRef.current;
+        const currentSession = sessionRef.current;
+        
+        console.log('📊 [START] Camera status (from refs):', { 
+          isReady: currentIsReady, 
+          hasStream: !!currentStream, 
+          hasDetector: !!currentMotionDetector,
           hasVideoRef: !!videoRef.current,
-          isActive 
+          isActive: currentIsActive 
         });
         
         shouldDetectRef.current = false; // Reset detection flag
         
         // Σταματάμε το motion detection αν είναι ήδη ενεργό
-        if (isActive && motionDetector) {
+        if (currentIsActive && currentMotionDetector) {
           console.log('🛑 [START] Stopping previous motion detection');
-          motionDetector.stop();
+          currentMotionDetector.stop();
         }
         
         // Έλεγχος αν η κάμερα είναι έτοιμη
-        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+        if (!currentIsReady || !currentStream || !currentMotionDetector || !videoRef.current) {
           console.error('❌ ❌ ❌ [START] Camera NOT READY - Cannot activate motion detection! ❌ ❌ ❌');
           return;
         }
@@ -65,7 +87,7 @@ export const SprintTimingStart = () => {
         shouldDetectRef.current = true; // Ενεργοποιούμε την ανίχνευση
         setIsActive(true);
         
-        motionDetector.start(async () => {
+        currentMotionDetector.start(async () => {
           console.log('🏁 [START] MOTION DETECTED!');
           
           // Έλεγχος αν πρέπει να ανιχνεύει (μπορεί να έχει γίνει reset)
@@ -74,7 +96,7 @@ export const SprintTimingStart = () => {
             return;
           }
           
-          motionDetector.stop();
+          currentMotionDetector.stop();
           setIsActive(false);
           shouldDetectRef.current = false;
           
@@ -85,7 +107,7 @@ export const SprintTimingStart = () => {
             console.log('✅ [START] Timer started:', result.id);
             
             // Ενεργοποίηση επόμενης συσκευής
-            const distances = session?.distances || [];
+            const distances = currentSession?.distances || [];
             const nextDevice = distances.length > 0 ? distances[0].toString() : 'stop';
             console.log(`📡 [START] Activating next device: ${nextDevice}`);
             await broadcastActivateNext(nextDevice);
@@ -99,9 +121,10 @@ export const SprintTimingStart = () => {
         shouldDetectRef.current = false;
         
         // Σταματάμε το motion detection αν είναι ενεργό
-        if (motionDetector) {
+        const currentMotionDetector = motionDetectorRef.current;
+        if (currentMotionDetector) {
           console.log('🛑 [START] Stopping motion detection');
-          motionDetector.stop();
+          currentMotionDetector.stop();
         }
         
         // Μηδενίζουμε όλα τα states
@@ -140,14 +163,27 @@ export const SprintTimingStart = () => {
       })
       .on('broadcast', { event: 'start_all_devices' }, async (payload: any) => {
         console.log('📡 [START] Received START ALL broadcast!', payload);
-        console.log('📡 [START] Current state:', { isReady, hasStream: !!stream, hasDetector: !!motionDetector, isActive });
         
-        if (!isReady || !stream || !motionDetector || !videoRef.current) {
+        // Χρησιμοποιούμε refs για να έχουμε τις τρέχουσες τιμές
+        const currentMotionDetector = motionDetectorRef.current;
+        const currentIsReady = isReadyRef.current;
+        const currentStream = streamRef.current;
+        const currentIsActive = isActiveRef.current;
+        const currentSession = sessionRef.current;
+        
+        console.log('📡 [START] Current state (from refs):', { 
+          isReady: currentIsReady, 
+          hasStream: !!currentStream, 
+          hasDetector: !!currentMotionDetector, 
+          isActive: currentIsActive 
+        });
+        
+        if (!currentIsReady || !currentStream || !currentMotionDetector || !videoRef.current) {
           console.log('⚠️ [START] Camera not ready - ignoring broadcast');
           return;
         }
         
-        if (isActive) {
+        if (currentIsActive) {
           console.log('⚠️ [START] Already active - ignoring broadcast');
           return;
         }
@@ -156,9 +192,9 @@ export const SprintTimingStart = () => {
         console.log('✅ [START] AUTO-ACTIVATING motion detection!');
         setIsActive(true);
         
-        motionDetector.start(async () => {
+        currentMotionDetector.start(async () => {
           console.log('🏁 [START] MOTION DETECTED!');
-          motionDetector.stop();
+          currentMotionDetector.stop();
           setIsActive(false);
           
           // Ξεκινάμε το χρονόμετρο
@@ -168,7 +204,7 @@ export const SprintTimingStart = () => {
             console.log('✅ [START] Timer started:', result.id);
             
             // Ενεργοποίηση επόμενης συσκευής
-            const distances = session?.distances || [];
+            const distances = currentSession?.distances || [];
             const nextDevice = distances.length > 0 ? distances[0].toString() : 'stop';
             console.log(`📡 [START] Activating next device: ${nextDevice}`);
             await broadcastActivateNext(nextDevice);
@@ -183,7 +219,7 @@ export const SprintTimingStart = () => {
       console.log('🧹 [START] Cleaning up listener channel');
       supabase.removeChannel(channel);
     };
-  }, [sessionCode, isReady, stream, motionDetector, isActive, startTiming, broadcastActivateNext, session]);
+  }, [sessionCode, startTiming, broadcastActivateNext]);
 
   useEffect(() => {
     if (sessionCode) {
