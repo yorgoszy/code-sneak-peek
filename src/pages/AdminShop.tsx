@@ -64,7 +64,8 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
 
   const fetchPurchases = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch all completed payments
+      const { data: paymentsData, error: paymentsError } = await supabase
         .from('payments')
         .select(`
           *,
@@ -86,9 +87,20 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
         .eq('status', 'completed')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (paymentsError) throw paymentsError;
 
-      const formattedPurchases: Purchase[] = (data || []).map(item => ({
+      // Fetch acknowledged payment IDs from database
+      const { data: acknowledgedData, error: acknowledgedError } = await supabase
+        .from('acknowledged_payments')
+        .select('payment_id');
+
+      if (acknowledgedError) throw acknowledgedError;
+
+      const acknowledgedPaymentIds = new Set(
+        (acknowledgedData || []).map(item => item.payment_id)
+      );
+
+      const formattedPurchases: Purchase[] = (paymentsData || []).map(item => ({
         id: item.id,
         amount: item.amount,
         payment_date: item.payment_date,
@@ -114,10 +126,6 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
         }
       }));
 
-      // Παίρνουμε τα acknowledged payment IDs από localStorage
-      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
-      const acknowledgedPaymentIds = new Set(acknowledgedIds);
-
       // Διαχωρισμός αγορών με βάση το αν έχουν επισημανθεί ως "ενημερώθηκα"
       const newPurchasesData = formattedPurchases.filter(purchase => 
         !acknowledgedPaymentIds.has(purchase.id)
@@ -138,18 +146,25 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
   };
 
   const handleMarkAsRead = async () => {
+    if (!userProfile?.id) {
+      toast.error('Δεν βρέθηκε ο χρήστης');
+      return;
+    }
+
     setMarkingAsRead(true);
     
     try {
-      // Παίρνουμε τα υπάρχοντα acknowledged payment IDs
-      const existingAcknowledged = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
-      
-      // Προσθέτουμε τα IDs των νέων αγορών
-      const newAcknowledgedIds = newPurchases.map(purchase => purchase.id);
-      const updatedAcknowledged = [...existingAcknowledged, ...newAcknowledgedIds];
-      
-      // Αποθηκεύουμε στο localStorage
-      localStorage.setItem('acknowledgedPayments', JSON.stringify(updatedAcknowledged));
+      // Insert acknowledged payments to database
+      const acknowledgeRecords = newPurchases.map(purchase => ({
+        payment_id: purchase.id,
+        admin_user_id: userProfile.id
+      }));
+
+      const { error } = await supabase
+        .from('acknowledged_payments')
+        .insert(acknowledgeRecords);
+
+      if (error) throw error;
       
       // Μεταφορά νέων αγορών στο "Ενημερώθηκα"
       setReadPurchases(prev => [...prev, ...newPurchases]);
