@@ -470,8 +470,60 @@ ${calendarDisplay}`;
           adminAllUsersContext += `- ${user.name} (${user.email}): Εγγράφηκε ${regDate}\n`;
         });
         
+        // ΥΠΟΛΟΓΙΣΜΟΣ ΣΤΑΤΙΣΤΙΚΩΝ ΣΥΝΔΡΟΜΩΝ
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        let activeCount = 0;
+        let pausedCount = 0;
+        let expiringSoonCount = 0; // λήγουν σε 7 ημέρες
+        let expiredCount = 0;
+        let futureCount = 0;
+        
+        if (Array.isArray(allSubscriptions)) {
+          allSubscriptions.forEach((sub: any) => {
+            const endDateObj = sub.end_date ? new Date(sub.end_date) : null;
+            const startDateObj = sub.start_date ? new Date(sub.start_date) : null;
+            
+            if (endDateObj && startDateObj) {
+              endDateObj.setHours(0, 0, 0, 0);
+              startDateObj.setHours(0, 0, 0, 0);
+              
+              // Σε παύση
+              if (sub.is_paused) {
+                pausedCount++;
+              }
+              // Ενεργή (status=active, start<=today<=end)
+              else if (sub.status === 'active' && startDateObj <= today && endDateObj >= today) {
+                activeCount++;
+                // Λήγει σύντομα (σε 7 ημέρες ή λιγότερο)
+                const daysUntilExpiry = Math.ceil((endDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                if (daysUntilExpiry <= 7) {
+                  expiringSoonCount++;
+                }
+              }
+              // Μελλοντική
+              else if (startDateObj > today) {
+                futureCount++;
+              }
+              // Έληξε
+              else if (endDateObj < today) {
+                expiredCount++;
+              }
+            }
+          });
+        }
+        
         // Συνδρομές ανά χρήστη (από user_subscriptions)
         adminAllUsersContext += '\n\n💳 ΣΥΝΔΡΟΜΕΣ ΧΡΗΣΤΩΝ (Dashboard/Subscriptions/Tab Συνδρομές):\n';
+        adminAllUsersContext += '═══════════════════════════════════════════════════\n';
+        adminAllUsersContext += `📊 ΣΤΑΤΙΣΤΙΚΑ ΣΥΝΔΡΟΜΩΝ:\n`;
+        adminAllUsersContext += `   ✅ Ενεργές συνδρομές: ${activeCount}\n`;
+        adminAllUsersContext += `   ⚠️ Λήγουν σε 7 ημέρες: ${expiringSoonCount}\n`;
+        adminAllUsersContext += `   ⏸️ Σε παύση: ${pausedCount}\n`;
+        adminAllUsersContext += `   ⏰ Ληγμένες: ${expiredCount}\n`;
+        adminAllUsersContext += `   📅 Μελλοντικές: ${futureCount}\n`;
+        adminAllUsersContext += '═══════════════════════════════════════════════════\n\n';
         adminAllUsersContext += '⚠️ ΣΗΜΑΝΤΙΚΟ: start_date = ΕΝΑΡΞΗ συνδρομής, end_date = ΛΗΞΗ συνδρομής\n\n';
         
         const usersWithSubs = allUsersFull.filter((user: any) => {
@@ -504,13 +556,9 @@ ${calendarDisplay}`;
                 ? new Date(sub.end_date).toLocaleDateString('el-GR')
                 : 'Άγνωστη';
               
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              
               const endDateObj = sub.end_date ? new Date(sub.end_date) : null;
               const startDateObj = sub.start_date ? new Date(sub.start_date) : null;
               
-              let isActive = false;
               let daysRemaining = 0;
               let statusText = 'Άγνωστη κατάσταση';
               let statusEmoji = '❓';
@@ -519,8 +567,10 @@ ${calendarDisplay}`;
                 endDateObj.setHours(0, 0, 0, 0);
                 startDateObj.setHours(0, 0, 0, 0);
                 
-                if (sub.status === 'active' && endDateObj >= today && startDateObj <= today) {
-                  isActive = true;
+                if (sub.is_paused) {
+                  statusEmoji = '⏸️';
+                  statusText = 'ΣΕ ΠΑΥΣΗ';
+                } else if (sub.status === 'active' && endDateObj >= today && startDateObj <= today) {
                   daysRemaining = Math.ceil((endDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
                   statusEmoji = '✅';
                   statusText = `ΕΝΕΡΓΗ - Λήγει σε ${daysRemaining} ημέρες`;
@@ -530,9 +580,6 @@ ${calendarDisplay}`;
                 } else if (endDateObj < today) {
                   statusEmoji = '⏰';
                   statusText = 'ΕΛΗΞΕ';
-                } else if (sub.is_paused) {
-                  statusEmoji = '⏸️';
-                  statusText = 'ΣΕ ΠΑΥΣΗ';
                 } else {
                   statusEmoji = '❌';
                   statusText = sub.status === 'cancelled' ? 'ΑΚΥΡΩΜΕΝΗ' : 'ΑΝΕΝΕΡΓΗ';
