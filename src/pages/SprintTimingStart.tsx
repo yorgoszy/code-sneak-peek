@@ -129,19 +129,32 @@ export const SprintTimingStart = () => {
           shouldDetectRef.current = false;
           
           // ΣΤΕΛΝΟΥΜΕ BROADCAST μέσω του ΜΟΝΙΜΟΥ channel
+          console.log('📡📡📡 [START] MOTION DETECTED - Preparing to send START_TIMER...');
+          console.log('📡 [START] timerChannelRef.current:', timerChannelRef.current);
+          
           if (timerChannelRef.current) {
-            console.log('📡 [START] Sending START_TIMER via persistent channel!');
-            timerChannelRef.current.send({
+            console.log('📡 [START] Channel exists, sending broadcast NOW!');
+            const result = await timerChannelRef.current.send({
               type: 'broadcast',
               event: 'start_timer',
-              payload: { timestamp: Date.now() }
-            }).then(() => {
-              console.log('✅ [START] START_TIMER broadcast SENT!');
-            }).catch((err) => {
-              console.error('❌ [START] Failed to send broadcast:', err);
+              payload: { timestamp: Date.now(), source: 'start_device' }
             });
+            console.log('✅✅✅ [START] START_TIMER broadcast result:', result);
           } else {
-            console.error('❌ [START] Timer channel not ready!');
+            console.error('❌❌❌ [START] Timer channel NOT READY! Cannot send broadcast!');
+            // Fallback: δημιουργούμε νέο channel και στέλνουμε
+            console.log('🔄 [START] Creating emergency channel...');
+            const emergencyChannel = supabase.channel(`sprint-timer-control-${sessionCode}`);
+            emergencyChannel.subscribe(async (status) => {
+              if (status === 'SUBSCRIBED') {
+                const result = await emergencyChannel.send({
+                  type: 'broadcast',
+                  event: 'start_timer',
+                  payload: { timestamp: Date.now(), source: 'start_device_emergency' }
+                });
+                console.log('✅ [START] Emergency broadcast result:', result);
+              }
+            });
           }
         });
       })
@@ -229,19 +242,18 @@ export const SprintTimingStart = () => {
           setIsActive(false);
           
           // ΣΤΕΛΝΟΥΜΕ BROADCAST μέσω του ΜΟΝΙΜΟΥ channel
+          console.log('📡📡📡 [START] START_ALL MOTION DETECTED - Preparing to send START_TIMER...');
+          
           if (timerChannelRef.current) {
-            console.log('📡 [START] Sending START_TIMER via persistent channel!');
-            timerChannelRef.current.send({
+            console.log('📡 [START] Channel exists, sending broadcast NOW!');
+            const result = await timerChannelRef.current.send({
               type: 'broadcast',
               event: 'start_timer',
-              payload: { timestamp: Date.now() }
-            }).then(() => {
-              console.log('✅ [START] START_TIMER broadcast SENT!');
-            }).catch((err) => {
-              console.error('❌ [START] Failed to send broadcast:', err);
+              payload: { timestamp: Date.now(), source: 'start_device_start_all' }
             });
+            console.log('✅✅✅ [START] START_TIMER broadcast result:', result);
           } else {
-            console.error('❌ [START] Timer channel not ready!');
+            console.error('❌❌❌ [START] Timer channel NOT READY!');
           }
         });
       })
