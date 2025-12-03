@@ -56,64 +56,33 @@ export const SprintTimingMaster = () => {
     return () => window.removeEventListener('resize', checkTabletSize);
   }, []);
 
-  // Listen for database changes (most reliable method)
-  useEffect(() => {
-    if (!session?.id) return;
-
-    console.log('🎧 MASTER: Setting up REALTIME listener for sprint_timing_results, session:', session.id);
-    
-    const channel = supabase
-      .channel('master-results-listener')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'sprint_timing_results',
-          filter: `session_id=eq.${session.id}`
-        },
-        (payload) => {
-          console.log('📡 MASTER: Database change received:', payload.eventType, payload.new);
-          
-          if (payload.eventType === 'INSERT') {
-            const result = payload.new as any;
-            if (result.start_time && !result.end_time) {
-              console.log('🏁 🏁 🏁 MASTER: NEW TIMING - Starting timer!');
-              const startTimeMs = new Date(result.start_time).getTime();
-              setStartTime(startTimeMs);
-              setIsRunning(true);
-              setElapsedTime(0);
-              setFinalTime(null);
-            }
-          }
-          
-          if (payload.eventType === 'UPDATE') {
-            const result = payload.new as any;
-            if (result.duration_ms) {
-              console.log('⏹️ ⏹️ ⏹️ MASTER: TIMING COMPLETED - Stopping timer!');
-              setFinalTime(result.duration_ms);
-              setElapsedTime(result.duration_ms);
-              setIsRunning(false);
-              setStartTime(null);
-            }
-          }
-        }
-      )
-      .subscribe((status) => {
-        console.log('🎧 MASTER: Realtime subscription status:', status);
-      });
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [session?.id]);
-
-  // Also listen for reset broadcasts
+  // Listen for timer control broadcasts (start_timer, stop_timer)
   useEffect(() => {
     if (!session?.session_code) return;
 
+    console.log('🎧 MASTER: Setting up timer control listener for:', `sprint-timer-control-${session.session_code}`);
+    
     const channel = supabase
-      .channel(`master-reset-${session.session_code}`)
+      .channel(`sprint-timer-control-${session.session_code}`)
+      .on('broadcast', { event: 'start_timer' }, (payload: any) => {
+        console.log('🏁 🏁 🏁 MASTER: Received START_TIMER!', payload);
+        const startTimeMs = payload.payload?.timestamp || Date.now();
+        setStartTime(startTimeMs);
+        setIsRunning(true);
+        setElapsedTime(0);
+        setFinalTime(null);
+      })
+      .on('broadcast', { event: 'stop_timer' }, (payload: any) => {
+        console.log('⏹️ ⏹️ ⏹️ MASTER: Received STOP_TIMER!', payload);
+        // Υπολογίζουμε τον χρόνο από το startTime
+        if (startTime) {
+          const elapsed = Date.now() - startTime;
+          setFinalTime(elapsed);
+          setElapsedTime(elapsed);
+        }
+        setIsRunning(false);
+        setStartTime(null);
+      })
       .on('broadcast', { event: 'reset_all_devices' }, () => {
         console.log('🔄 MASTER: Received RESET!');
         setIsRunning(false);
@@ -121,12 +90,14 @@ export const SprintTimingMaster = () => {
         setElapsedTime(0);
         setFinalTime(null);
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🎧 MASTER: Timer control subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session?.session_code]);
+  }, [session?.session_code, startTime]);
 
   // Timer interval
   useEffect(() => {

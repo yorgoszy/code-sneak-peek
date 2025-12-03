@@ -229,23 +229,24 @@ export const SprintTimingStop = () => {
             return;
           }
           
-          const currentLocalResult = localResultRef.current;
-          console.log('🏁 [STOP] localResultRef.current at motion:', currentLocalResult);
           currentMotionDetector.stop();
           setIsActive(false);
           shouldDetectRef.current = false;
           
-          if (!currentLocalResult?.id) {
-            console.error('❌ [STOP] No localResult id available!');
-            return;
-          }
-          
-          if (currentLocalResult.end_time) {
-            console.error('❌ [STOP] Result already has end_time, skipping!');
-            return;
-          }
-          
-          await stopTiming(currentLocalResult.id);
+          // ΑΠΛΟ: Στέλνουμε broadcast stop_timer
+          console.log('📡 [STOP] Sending STOP_TIMER broadcast!');
+          const timerChannel = supabase.channel(`sprint-timer-control-${sessionCode}`);
+          await timerChannel.subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+              await timerChannel.send({
+                type: 'broadcast',
+                event: 'stop_timer',
+                payload: { timestamp: Date.now() }
+              });
+              console.log('✅ [STOP] STOP_TIMER broadcast sent!');
+              setTimeout(() => supabase.removeChannel(timerChannel), 500);
+            }
+          });
         });
       })
       .on('broadcast', { event: 'reset_all_devices' }, (payload: any) => {

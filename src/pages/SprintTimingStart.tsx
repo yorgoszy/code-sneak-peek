@@ -100,18 +100,20 @@ export const SprintTimingStart = () => {
           setIsActive(false);
           shouldDetectRef.current = false;
           
-          // Ξεκινάμε το χρονόμετρο
-          const result = await startTiming();
-          
-          if (result) {
-            console.log('✅ [START] Timer started:', result.id);
-            
-            // Ενεργοποίηση επόμενης συσκευής
-            const distances = currentSession?.distances || [];
-            const nextDevice = distances.length > 0 ? distances[0].toString() : 'stop';
-            console.log(`📡 [START] Activating next device: ${nextDevice}`);
-            await broadcastActivateNext(nextDevice);
-          }
+          // ΑΠΛΟ: Στέλνουμε broadcast start_timer
+          console.log('📡 [START] Sending START_TIMER broadcast!');
+          const timerChannel = supabase.channel(`sprint-timer-control-${sessionCode}`);
+          await timerChannel.subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+              await timerChannel.send({
+                type: 'broadcast',
+                event: 'start_timer',
+                payload: { timestamp: Date.now() }
+              });
+              console.log('✅ [START] START_TIMER broadcast sent!');
+              setTimeout(() => supabase.removeChannel(timerChannel), 500);
+            }
+          });
         });
       })
       .on('broadcast', { event: 'reset_all_devices' }, (payload: any) => {
@@ -197,18 +199,20 @@ export const SprintTimingStart = () => {
           currentMotionDetector.stop();
           setIsActive(false);
           
-          // Ξεκινάμε το χρονόμετρο
-          const result = await startTiming();
-          
-          if (result) {
-            console.log('✅ [START] Timer started:', result.id);
-            
-            // Ενεργοποίηση επόμενης συσκευής
-            const distances = currentSession?.distances || [];
-            const nextDevice = distances.length > 0 ? distances[0].toString() : 'stop';
-            console.log(`📡 [START] Activating next device: ${nextDevice}`);
-            await broadcastActivateNext(nextDevice);
-          }
+          // ΑΠΛΟ: Στέλνουμε broadcast start_timer
+          console.log('📡 [START] Sending START_TIMER broadcast!');
+          const timerChannel = supabase.channel(`sprint-timer-control-${sessionCode}`);
+          await timerChannel.subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+              await timerChannel.send({
+                type: 'broadcast',
+                event: 'start_timer',
+                payload: { timestamp: Date.now() }
+              });
+              console.log('✅ [START] START_TIMER broadcast sent!');
+              setTimeout(() => supabase.removeChannel(timerChannel), 500);
+            }
+          });
         });
       })
       .subscribe((status) => {
