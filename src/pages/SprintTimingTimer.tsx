@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { supabase } from '@/integrations/supabase/client';
 import { Clock, Timer as TimerIcon, Play, Square, RotateCcw, Radar } from 'lucide-react';
@@ -15,7 +17,7 @@ export const SprintTimingTimer = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [connectedDevices, setConnectedDevices] = useState<{ [key: string]: { device: string, timestamp: string }[] }>({});
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [sprintDistance, setSprintDistance] = useState<number | null>(null);
+  const [sprintDistance, setSprintDistance] = useState<number>(30);
 
   useEffect(() => {
     if (sessionCode) {
@@ -358,24 +360,31 @@ export const SprintTimingTimer = () => {
             </div>
           </div>
 
-          {/* Speed Display - Always visible */}
-          <div className="bg-[#cb8954]/10 border border-[#cb8954]/30 p-6 rounded-none">
-            <div className="text-center">
-              <p className="text-sm text-[#cb8954] mb-2">
-                Ταχύτητα {sprintDistance ? `(${sprintDistance}m)` : ''}
-              </p>
+          {/* Distance Input & Speed Display */}
+          <div className="bg-[#cb8954]/10 border border-[#cb8954]/30 p-4 rounded-none space-y-4">
+            {/* Distance Input */}
+            <div className="flex items-center gap-3">
+              <Label className="text-sm text-[#cb8954] whitespace-nowrap">Απόσταση:</Label>
+              <Input
+                type="number"
+                value={sprintDistance}
+                onChange={(e) => setSprintDistance(parseInt(e.target.value) || 0)}
+                className="rounded-none h-10 text-lg font-bold text-center w-24 bg-white"
+                min={1}
+              />
+              <span className="text-[#cb8954] font-semibold">μέτρα</span>
+            </div>
+            
+            {/* Speed Display */}
+            <div className="text-center border-t border-[#cb8954]/20 pt-4">
+              <p className="text-sm text-[#cb8954] mb-2">Ταχύτητα</p>
               <div className="font-mono text-5xl font-bold text-[#cb8954]">
-                {sprintDistance && elapsedTime > 0 && !isRunning 
+                {sprintDistance > 0 && elapsedTime > 0 && !isRunning 
                   ? calculateSpeed(sprintDistance, elapsedTime).toFixed(2)
                   : '--'
                 }
                 <span className="text-2xl ml-2">km/h</span>
               </div>
-              {!sprintDistance && (
-                <p className="text-xs text-[#cb8954]/60 mt-2">
-                  Πατήστε "Ανίχνευση Κίνησης" στο Master για να οριστεί η απόσταση
-                </p>
-              )}
             </div>
           </div>
 
