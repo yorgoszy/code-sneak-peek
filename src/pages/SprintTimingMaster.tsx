@@ -56,35 +56,64 @@ export const SprintTimingMaster = () => {
     return () => window.removeEventListener('resize', checkTabletSize);
   }, []);
 
-  // Listen for timing broadcasts
+  // Listen for database changes (most reliable method)
+  useEffect(() => {
+    if (!session?.id) return;
+
+    console.log('🎧 MASTER: Setting up REALTIME listener for sprint_timing_results, session:', session.id);
+    
+    const channel = supabase
+      .channel('master-results-listener')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sprint_timing_results',
+          filter: `session_id=eq.${session.id}`
+        },
+        (payload) => {
+          console.log('📡 MASTER: Database change received:', payload.eventType, payload.new);
+          
+          if (payload.eventType === 'INSERT') {
+            const result = payload.new as any;
+            if (result.start_time && !result.end_time) {
+              console.log('🏁 🏁 🏁 MASTER: NEW TIMING - Starting timer!');
+              const startTimeMs = new Date(result.start_time).getTime();
+              setStartTime(startTimeMs);
+              setIsRunning(true);
+              setElapsedTime(0);
+              setFinalTime(null);
+            }
+          }
+          
+          if (payload.eventType === 'UPDATE') {
+            const result = payload.new as any;
+            if (result.duration_ms) {
+              console.log('⏹️ ⏹️ ⏹️ MASTER: TIMING COMPLETED - Stopping timer!');
+              setFinalTime(result.duration_ms);
+              setElapsedTime(result.duration_ms);
+              setIsRunning(false);
+              setStartTime(null);
+            }
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('🎧 MASTER: Realtime subscription status:', status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.id]);
+
+  // Also listen for reset broadcasts
   useEffect(() => {
     if (!session?.session_code) return;
 
-    console.log('🎧 MASTER: Setting up broadcast listener for channel:', `sprint-broadcast-${session.session_code}`);
-    
     const channel = supabase
-      .channel(`sprint-broadcast-${session.session_code}`, {
-        config: { broadcast: { self: true } }
-      })
-      .on('broadcast', { event: 'timing_started' }, (payload: any) => {
-        console.log('🏁 🏁 🏁 MASTER: Received TIMING STARTED!', payload);
-        if (payload.payload?.start_time) {
-          const startTimeMs = new Date(payload.payload.start_time).getTime();
-          setStartTime(startTimeMs);
-          setIsRunning(true);
-          setElapsedTime(0);
-          setFinalTime(null);
-        }
-      })
-      .on('broadcast', { event: 'timing_stopped' }, (payload: any) => {
-        console.log('⏹️ ⏹️ ⏹️ MASTER: Received TIMING STOPPED!', payload);
-        if (payload.payload?.duration_ms) {
-          setFinalTime(payload.payload.duration_ms);
-          setElapsedTime(payload.payload.duration_ms);
-          setIsRunning(false);
-          setStartTime(null);
-        }
-      })
+      .channel(`master-reset-${session.session_code}`)
       .on('broadcast', { event: 'reset_all_devices' }, () => {
         console.log('🔄 MASTER: Received RESET!');
         setIsRunning(false);
@@ -92,9 +121,7 @@ export const SprintTimingMaster = () => {
         setElapsedTime(0);
         setFinalTime(null);
       })
-      .subscribe((status) => {
-        console.log('🎧 MASTER: Broadcast subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
