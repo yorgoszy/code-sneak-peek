@@ -453,6 +453,87 @@ ${calendarDisplay}`;
       const userData = await userDataResponse.json();
       userProfile = userData[0] || {};
 
+      // 💳 Φόρτωση συνδρομών χρήστη
+      const userPaymentsResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/payments?user_id=eq.${effectiveUserId}&order=payment_date.desc&select=*`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const userPayments = await userPaymentsResponse.json();
+      console.log('💳 User payments loaded:', Array.isArray(userPayments) ? userPayments.length : 0);
+
+      // Φόρτωση subscription types
+      const subscriptionTypesResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/subscription_types?select=id,name,duration_months,price`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const subscriptionTypes = await subscriptionTypesResponse.json();
+
+      // Δημιουργία subscription context
+      let subscriptionContext = '';
+      if (Array.isArray(userPayments) && userPayments.length > 0) {
+        const subscriptionsInfo = userPayments.map((payment: any) => {
+          const subscriptionType = Array.isArray(subscriptionTypes) 
+            ? subscriptionTypes.find((st: any) => st.id === payment.subscription_type_id) 
+            : null;
+          
+          const paymentDate = payment.payment_date ? new Date(payment.payment_date) : null;
+          const durationMonths = payment.subscription_duration_months || subscriptionType?.duration_months || 1;
+          const expiryDate = paymentDate ? new Date(paymentDate) : null;
+          if (expiryDate) {
+            expiryDate.setMonth(expiryDate.getMonth() + durationMonths);
+          }
+          
+          const today = new Date();
+          const isActive = expiryDate && expiryDate > today;
+          const daysRemaining = expiryDate ? Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+          
+          return {
+            subscriptionName: subscriptionType?.name || 'Συνδρομή',
+            amount: payment.amount,
+            paymentDate: paymentDate ? paymentDate.toLocaleDateString('el-GR') : 'N/A',
+            expiryDate: expiryDate ? expiryDate.toLocaleDateString('el-GR') : 'N/A',
+            isActive,
+            daysRemaining: isActive ? daysRemaining : 0,
+            status: payment.status
+          };
+        });
+
+        const activeSubscription = subscriptionsInfo.find(s => s.isActive);
+        const pastSubscriptions = subscriptionsInfo.filter(s => !s.isActive);
+
+        subscriptionContext = `\n\n💳 ΣΥΝΔΡΟΜΕΣ ΧΡΗΣΤΗ:`;
+        
+        if (activeSubscription) {
+          subscriptionContext += `\n✅ ΕΝΕΡΓΗ ΣΥΝΔΡΟΜΗ:
+- Τύπος: ${activeSubscription.subscriptionName}
+- Ποσό: ${activeSubscription.amount}€
+- Ημ/νία αγοράς: ${activeSubscription.paymentDate}
+- Λήγει: ${activeSubscription.expiryDate} (σε ${activeSubscription.daysRemaining} ημέρες)`;
+        } else {
+          subscriptionContext += `\n⚠️ ΔΕΝ ΥΠΑΡΧΕΙ ΕΝΕΡΓΗ ΣΥΝΔΡΟΜΗ`;
+        }
+
+        if (pastSubscriptions.length > 0) {
+          subscriptionContext += `\n\n📜 ΙΣΤΟΡΙΚΟ ΣΥΝΔΡΟΜΩΝ:`;
+          pastSubscriptions.slice(0, 5).forEach((sub: any) => {
+            subscriptionContext += `\n- ${sub.subscriptionName}: ${sub.amount}€ (${sub.paymentDate} - ${sub.expiryDate})`;
+          });
+        }
+      }
+
+      // Προσθήκη subscription context στο userProfile για χρήση αργότερα
+      (userProfile as any).subscriptionContext = subscriptionContext;
+
     // Φόρτωση ΟΛΩΝ των assignments για το ημερολόγιο (active και completed)
     const assignmentsResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${effectiveUserId}&status=in.(active,completed)&select=*`,
@@ -2360,7 +2441,7 @@ ${isAdmin && !targetUserId ? `
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
