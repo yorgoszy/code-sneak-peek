@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Eye, Edit, CheckCircle, Trash2 } from "lucide-react";
+import { Play, Eye, Edit, CheckCircle, Trash2, CheckCircle2 } from "lucide-react";
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
 import { format } from "date-fns";
@@ -14,6 +14,7 @@ interface ProgramCardActionsProps {
   selectedDate?: Date;
   onRefresh?: () => void;
   onDelete?: (assignmentId: string) => void;
+  onForceComplete?: (assignmentId: string) => void;
   userMode?: boolean;
   workoutStats?: {
     completed: number;
@@ -27,6 +28,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   selectedDate,
   onRefresh,
   onDelete,
+  onForceComplete,
   userMode = false,
   workoutStats
 }) => {
@@ -57,12 +59,21 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
     }
   };
 
+  const handleForceCompleteClick = () => {
+    if (onForceComplete) {
+      onForceComplete(assignment.id);
+    }
+  };
+
   // Calculate workout status for selected date
   const workoutStatus = selectedDate ? (() => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     // This would need to be implemented based on your workout completion logic
     return 'pending'; // or 'completed', 'missed', etc.
   })() : 'pending';
+
+  // Only show force complete button for active programs
+  const showForceComplete = !userMode && onForceComplete && assignment.status === 'active';
 
   return (
     <>
@@ -104,6 +115,18 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
               title={t('programs.startWorkout')}
             >
               <Play className="h-3 w-3 text-blue-600" />
+            </Button>
+          )}
+
+          {showForceComplete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-[#00ffba]/20"
+              onClick={handleForceCompleteClick}
+              title="Ολοκλήρωση Προγράμματος"
+            >
+              <CheckCircle2 className="h-3 w-3 text-[#00ffba]" />
             </Button>
           )}
 

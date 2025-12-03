@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { format } from "date-fns";
 import { 
   AlertDialog, 
   AlertDialogContent, 
@@ -105,6 +106,89 @@ const ProgramCards = () => {
 
   const handleDeleteProgram = async (assignmentId: string) => {
     setDeleteDialog({ open: true, assignmentId });
+  };
+
+  // Force complete a program - marks future workouts as missed and sets status to completed
+  const handleForceComplete = async (assignmentId: string) => {
+    try {
+      console.log('🏁 Force completing assignment:', assignmentId);
+      
+      const assignment = activePrograms.find(a => a.id === assignmentId);
+      if (!assignment) {
+        console.error('Assignment not found');
+        return;
+      }
+
+      const trainingDates = assignment.training_dates || [];
+      const today = new Date();
+      const todayStr = format(today, 'yyyy-MM-dd');
+      
+      // Get existing completions for this assignment
+      const { data: existingCompletions } = await supabase
+        .from('workout_completions')
+        .select('scheduled_date')
+        .eq('assignment_id', assignmentId);
+      
+      const existingDates = new Set(existingCompletions?.map(c => c.scheduled_date) || []);
+      
+      // Find dates that don't have completions yet and mark them as missed
+      const missedDates = trainingDates.filter(date => !existingDates.has(date));
+      
+      // Get program info for required fields
+      const programId = assignment.program_id;
+      const daysPerWeek = assignment.programs?.program_weeks?.[0]?.program_days?.length || 1;
+      
+      // Create missed workout completions for remaining dates
+      if (missedDates.length > 0) {
+        const missedCompletions = missedDates.map((date, idx) => {
+          // Calculate week and day number based on position in training dates
+          const dateIndex = trainingDates.indexOf(date);
+          const weekNumber = Math.floor(dateIndex / daysPerWeek) + 1;
+          const dayNumber = (dateIndex % daysPerWeek) + 1;
+          
+          return {
+            assignment_id: assignmentId,
+            user_id: assignment.user_id,
+            program_id: programId,
+            scheduled_date: date,
+            status: 'missed',
+            completed_at: new Date().toISOString(),
+            week_number: weekNumber,
+            day_number: dayNumber
+          };
+        });
+
+        const { error: insertError } = await supabase
+          .from('workout_completions')
+          .insert(missedCompletions);
+
+        if (insertError) {
+          console.error('Error creating missed completions:', insertError);
+        } else {
+          console.log(`✅ Created ${missedCompletions.length} missed workout completions`);
+        }
+      }
+
+      // Update assignment status to completed
+      const { error: updateError } = await supabase
+        .from('program_assignments')
+        .update({ status: 'completed' })
+        .eq('id', assignmentId);
+
+      if (updateError) {
+        console.error('Error updating assignment status:', updateError);
+        alert('Σφάλμα κατά την ολοκλήρωση του προγράμματος');
+        return;
+      }
+
+      console.log('✅ Assignment force completed successfully');
+      completionsCache.clearCache();
+      setRealtimeKey(prev => prev + 1);
+      refetch();
+    } catch (error) {
+      console.error('Error force completing program:', error);
+      alert('Σφάλμα κατά την ολοκλήρωση του προγράμματος');
+    }
   };
 
   const confirmDelete = async () => {
@@ -358,6 +442,7 @@ const ProgramCards = () => {
                           workoutStats={item.stats}
                           onRefresh={refetch}
                           onDelete={handleDeleteProgram}
+                          onForceComplete={handleForceComplete}
                         />
                       </div>
                     ))}
