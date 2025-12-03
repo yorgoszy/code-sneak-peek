@@ -358,18 +358,26 @@ export const SprintTimingTimer = () => {
             </div>
           </div>
 
-          {/* Speed Display */}
-          {sprintDistance && elapsedTime > 0 && !isRunning && (
-            <div className="bg-[#cb8954]/10 border border-[#cb8954]/30 p-6 rounded-none">
-              <div className="text-center">
-                <p className="text-sm text-[#cb8954] mb-2">Ταχύτητα ({sprintDistance}m)</p>
-                <div className="font-mono text-5xl font-bold text-[#cb8954]">
-                  {calculateSpeed(sprintDistance, elapsedTime).toFixed(2)}
-                  <span className="text-2xl ml-2">km/h</span>
-                </div>
+          {/* Speed Display - Always visible */}
+          <div className="bg-[#cb8954]/10 border border-[#cb8954]/30 p-6 rounded-none">
+            <div className="text-center">
+              <p className="text-sm text-[#cb8954] mb-2">
+                Ταχύτητα {sprintDistance ? `(${sprintDistance}m)` : ''}
+              </p>
+              <div className="font-mono text-5xl font-bold text-[#cb8954]">
+                {sprintDistance && elapsedTime > 0 && !isRunning 
+                  ? calculateSpeed(sprintDistance, elapsedTime).toFixed(2)
+                  : '--'
+                }
+                <span className="text-2xl ml-2">km/h</span>
               </div>
+              {!sprintDistance && (
+                <p className="text-xs text-[#cb8954]/60 mt-2">
+                  Πατήστε "Ανίχνευση Κίνησης" στο Master για να οριστεί η απόσταση
+                </p>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Motion Detection Button */}
           <Button
