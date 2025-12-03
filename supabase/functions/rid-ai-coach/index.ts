@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, userId, targetUserId: rawTargetUserId } = await req.json();
+    const { messages, userId, targetUserId: rawTargetUserId, userContext } = await req.json();
     
     if (!userId) {
       throw new Error("User ID is required");
@@ -24,7 +24,9 @@ serve(async (req) => {
       userId, 
       targetUserId,
       isTargetUserIdEmpty: !targetUserId,
-      messageCount: messages?.length 
+      messageCount: messages?.length,
+      hasUserContext: !!userContext,
+      userContext: userContext
     });
 
     // Δήλωση environment variables ΠΡΩΤΑ
@@ -2358,7 +2360,14 @@ ${isAdmin && !targetUserId ? `
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${userContext ? `
+
+🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
+${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
+${userContext.upcomingCompetitions?.length > 0 ? `\n🎯 ΕΠΕΡΧΟΜΕΝΟΙ ΑΓΩΝΕΣ:\n${userContext.upcomingCompetitions.map((c: any) => `- ${c.date} (σε ${c.daysUntil} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
+${userContext.pastTests?.length > 0 ? `\n📊 ΠΑΡΕΛΘΟΝΤΑ ΤΕΣΤ:\n${userContext.pastTests.map((t: any) => `- ${t.date} (πριν ${t.daysAgo} ημέρες) - ${t.type} ${t.testTypes || ''}`).join('\n')}` : ''}
+${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:\n${userContext.upcomingTests.map((t: any) => `- ${t.date} (σε ${t.daysUntil} ημέρες) - ${t.type} ${t.testTypes || ''}`).join('\n')}` : ''}
+` : ''}
 
 ΣΗΜΑΝΤΙΚΟ: Έχεις πρόσβαση στο ΠΛΗΡΕΣ ιστορικό και ημερολόγιο του χρήστη. Μπορείς να:
 - Αναλύσεις την πρόοδό του στη δύναμη (1RM, ταχύτητα)
