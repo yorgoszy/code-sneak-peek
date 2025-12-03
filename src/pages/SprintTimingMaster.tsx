@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
+import { supabase } from '@/integrations/supabase/client';
 import { Clock, Users, Plus, X, Trash2, Play, Square, MapPin, Timer as TimerIcon, Menu, Smartphone, Camera } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sidebar } from '@/components/Sidebar';
@@ -33,6 +34,13 @@ export const SprintTimingMaster = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  
+  // Timer state
+  const [isRunning, setIsRunning] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [finalTime, setFinalTime] = useState<number | null>(null);
+  
   const { session, currentResult, createSession, broadcastStartAll, broadcastActivateMotion, broadcastResetDevices, isLoading } = useSprintTiming(sessionCode);
   const isMobile = useIsMobile();
 
@@ -47,6 +55,74 @@ export const SprintTimingMaster = () => {
     
     return () => window.removeEventListener('resize', checkTabletSize);
   }, []);
+
+  // Listen for timing broadcasts
+  useEffect(() => {
+    if (!session?.session_code) return;
+
+    console.log('🎧 MASTER: Setting up broadcast listener for channel:', `sprint-broadcast-${session.session_code}`);
+    
+    const channel = supabase
+      .channel(`sprint-broadcast-${session.session_code}`, {
+        config: { broadcast: { self: true } }
+      })
+      .on('broadcast', { event: 'timing_started' }, (payload: any) => {
+        console.log('🏁 🏁 🏁 MASTER: Received TIMING STARTED!', payload);
+        if (payload.payload?.start_time) {
+          const startTimeMs = new Date(payload.payload.start_time).getTime();
+          setStartTime(startTimeMs);
+          setIsRunning(true);
+          setElapsedTime(0);
+          setFinalTime(null);
+        }
+      })
+      .on('broadcast', { event: 'timing_stopped' }, (payload: any) => {
+        console.log('⏹️ ⏹️ ⏹️ MASTER: Received TIMING STOPPED!', payload);
+        if (payload.payload?.duration_ms) {
+          setFinalTime(payload.payload.duration_ms);
+          setElapsedTime(payload.payload.duration_ms);
+          setIsRunning(false);
+          setStartTime(null);
+        }
+      })
+      .on('broadcast', { event: 'reset_all_devices' }, () => {
+        console.log('🔄 MASTER: Received RESET!');
+        setIsRunning(false);
+        setStartTime(null);
+        setElapsedTime(0);
+        setFinalTime(null);
+      })
+      .subscribe((status) => {
+        console.log('🎧 MASTER: Broadcast subscription status:', status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.session_code]);
+
+  // Timer interval
+  useEffect(() => {
+    if (!isRunning || !startTime) return;
+
+    const interval = setInterval(() => {
+      setElapsedTime(Date.now() - startTime);
+    }, 10);
+
+    return () => clearInterval(interval);
+  }, [isRunning, startTime]);
+
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const centiseconds = Math.floor((ms % 1000) / 10);
+    
+    if (minutes > 0) {
+      return `${minutes}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
+    }
+    return `${seconds}.${centiseconds.toString().padStart(2, '0')}`;
+  };
 
   const handleAddDistance = () => {
     const dist = parseFloat(newDistance);
@@ -491,29 +567,33 @@ export const SprintTimingMaster = () => {
                 <p className="text-xs font-medium mb-1.5">Status</p>
                 <div className="flex items-center gap-2">
                   <div className={`w-2.5 h-2.5 rounded-full ${
+                    isRunning ? 'bg-[#00ffba] animate-pulse' :
+                    finalTime ? 'bg-blue-500' :
                     session.status === 'active' ? 'bg-[#00ffba]' : 
                     session.status === 'completed' ? 'bg-blue-500' : 
                     'bg-yellow-500'
                   }`} />
-                  <span className="capitalize text-sm">{session.status}</span>
+                  <span className="capitalize text-sm">
+                    {isRunning ? 'Running...' : finalTime ? 'Completed' : session.status}
+                  </span>
                 </div>
               </div>
 
-              {currentResult?.duration_ms && (
-                <div className="bg-muted p-3 rounded-none">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs text-muted-foreground">Τελευταίος Χρόνος</p>
-                    {currentResult.distance_meters && (
-                      <Badge variant="secondary" className="rounded-none text-xs">
-                        {currentResult.distance_meters}m
-                      </Badge>
-                    )}
+              {/* Live Timer Display */}
+              <div className="bg-black/90 p-6 rounded-none">
+                <div className="text-center">
+                  <div className={`font-mono text-5xl font-bold ${
+                    isRunning ? 'text-[#00ffba]' : finalTime ? 'text-blue-500' : 'text-gray-500'
+                  }`}>
+                    {formatTime(elapsedTime)}
                   </div>
-                  <p className="text-2xl font-bold text-[#00ffba]">
-                    {(currentResult.duration_ms / 1000).toFixed(3)}s
-                  </p>
+                  <div className="text-gray-400 text-xs mt-2">
+                    {isRunning ? 'Χρονομέτρηση σε εξέλιξη...' : 
+                     finalTime ? 'Ολοκληρώθηκε!' : 
+                     'Αναμονή για έναρξη...'}
+                  </div>
                 </div>
-              )}
+              </div>
 
               {/* Κουμπί Ανίχνευσης Κίνησης */}
               <Button
