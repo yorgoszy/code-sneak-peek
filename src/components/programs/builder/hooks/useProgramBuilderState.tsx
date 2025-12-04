@@ -58,35 +58,8 @@ export interface ProgramStructure {
   weeks: Week[];
 }
 
-// Helper για δημιουργία default blocks
-const createDefaultBlocks = (generateId: () => string) => [
-  { id: generateId(), name: 'warm up', training_type: 'warm up' as const, block_order: 1, program_exercises: [] },
-  { id: generateId(), name: 'str', training_type: 'str' as const, block_order: 2, program_exercises: [] },
-  { id: generateId(), name: 'end', training_type: 'end' as const, block_order: 3, program_exercises: [] },
-  { id: generateId(), name: 'rotational', training_type: 'rotational' as const, block_order: 4, program_exercises: [] },
-  { id: generateId(), name: 'accessory', training_type: 'accessory' as const, block_order: 5, program_exercises: [] },
-  { id: generateId(), name: 'recovery', training_type: 'recovery' as const, block_order: 6, program_exercises: [] }
-];
-
-// Helper για δημιουργία initial week με 3 ημέρες
-const createInitialWeek = (generateId: () => string): Week => ({
-  id: generateId(),
-  name: 'Εβδομάδα 1',
-  week_number: 1,
-  program_days: [1, 2, 3].map(dayNum => ({
-    id: generateId(),
-    name: `Ημέρα ${dayNum}`,
-    day_number: dayNum,
-    program_blocks: createDefaultBlocks(generateId)
-  }))
-});
-
 export const useProgramBuilderState = (exercises: Exercise[]) => {
-  const generateId = useCallback(() => {
-    return Math.random().toString(36).substr(2, 9);
-  }, []);
-
-  const [program, setProgram] = useState<ProgramStructure>(() => ({
+  const [program, setProgram] = useState<ProgramStructure>({
     name: '',
     description: '',
     user_id: '',
@@ -94,8 +67,12 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     selected_group_id: '',
     is_multiple_assignment: true,
     training_dates: [],
-    weeks: [createInitialWeek(() => Math.random().toString(36).substr(2, 9))]
-  }));
+    weeks: []
+  });
+
+  const generateId = useCallback(() => {
+    return Math.random().toString(36).substr(2, 9);
+  }, []);
 
   const updateProgram = useCallback((updates: Partial<ProgramStructure>) => {
     console.log('🔄 [useProgramBuilderState] Updating program with:', updates);
@@ -107,40 +84,6 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   }, []);
 
   const resetProgram = useCallback(() => {
-    // Inline δημιουργία για αποφυγή προβλημάτων με closures
-    const genId = () => Math.random().toString(36).substr(2, 9);
-    
-    const defaultBlocks = [
-      { id: genId(), name: 'warm up', training_type: 'warm up' as const, block_order: 1, program_exercises: [] as ProgramExercise[] },
-      { id: genId(), name: 'str', training_type: 'str' as const, block_order: 2, program_exercises: [] as ProgramExercise[] },
-      { id: genId(), name: 'end', training_type: 'end' as const, block_order: 3, program_exercises: [] as ProgramExercise[] },
-      { id: genId(), name: 'rotational', training_type: 'rotational' as const, block_order: 4, program_exercises: [] as ProgramExercise[] },
-      { id: genId(), name: 'accessory', training_type: 'accessory' as const, block_order: 5, program_exercises: [] as ProgramExercise[] },
-      { id: genId(), name: 'recovery', training_type: 'recovery' as const, block_order: 6, program_exercises: [] as ProgramExercise[] }
-    ];
-    
-    const initialWeek: Week = {
-      id: genId(),
-      name: 'Εβδομάδα 1',
-      week_number: 1,
-      program_days: [1, 2, 3].map(dayNum => ({
-        id: genId(),
-        name: `Ημέρα ${dayNum}`,
-        day_number: dayNum,
-        program_blocks: [
-          { id: genId(), name: 'warm up', training_type: 'warm up' as const, block_order: 1, program_exercises: [] },
-          { id: genId(), name: 'str', training_type: 'str' as const, block_order: 2, program_exercises: [] },
-          { id: genId(), name: 'end', training_type: 'end' as const, block_order: 3, program_exercises: [] },
-          { id: genId(), name: 'rotational', training_type: 'rotational' as const, block_order: 4, program_exercises: [] },
-          { id: genId(), name: 'accessory', training_type: 'accessory' as const, block_order: 5, program_exercises: [] },
-          { id: genId(), name: 'recovery', training_type: 'recovery' as const, block_order: 6, program_exercises: [] }
-        ]
-      }))
-    };
-    
-    console.log('🔄 [resetProgram] Initial week created:', initialWeek);
-    console.log('🔄 [resetProgram] Days:', initialWeek.program_days.length);
-    
     setProgram({
       name: '',
       description: '',
@@ -149,7 +92,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
       selected_group_id: '',
       is_multiple_assignment: true,
       training_dates: [],
-      weeks: [initialWeek]
+      weeks: []
     });
   }, []);
 
