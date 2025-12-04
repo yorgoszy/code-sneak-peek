@@ -11,27 +11,48 @@ export const useDayActions = (
     console.log('🔵 addDay called with weekId:', weekId);
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
-        // Δημιουργούμε τα 3 προκαθορισμένα blocks που θα υπάρχουν πάντα
+        // Δημιουργούμε τα 6 προκαθορισμένα blocks με τη σωστή σειρά
         const defaultBlocks = [
+          {
+            id: generateId(),
+            name: 'warm up',
+            training_type: 'warm up' as const,
+            block_order: 1,
+            program_exercises: []
+          },
           {
             id: generateId(),
             name: 'str',
             training_type: 'str' as const,
-            block_order: 1,
+            block_order: 2,
             program_exercises: []
           },
           {
             id: generateId(),
             name: 'end',
             training_type: 'end' as const,
-            block_order: 2,
+            block_order: 3,
             program_exercises: []
           },
           {
             id: generateId(),
-            name: 'hpr',
-            training_type: 'hpr' as const,
-            block_order: 3,
+            name: 'rotational',
+            training_type: 'rotational' as const,
+            block_order: 4,
+            program_exercises: []
+          },
+          {
+            id: generateId(),
+            name: 'accessory',
+            training_type: 'accessory' as const,
+            block_order: 5,
+            program_exercises: []
+          },
+          {
+            id: generateId(),
+            name: 'recovery',
+            training_type: 'recovery' as const,
+            block_order: 6,
             program_exercises: []
           }
         ];
@@ -43,7 +64,7 @@ export const useDayActions = (
           program_blocks: defaultBlocks
         };
         
-        console.log('✅ Created new day with 3 default blocks:', newDay);
+        console.log('✅ Created new day with 6 default blocks:', newDay);
         
         return {
           ...week,
