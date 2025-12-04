@@ -37,7 +37,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onRemoveDay
 }) => {
   return (
-    <CardHeader className="pb-2">
+    <CardHeader className="py-1 px-2">
       <div className="flex justify-between items-center">
         <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded">
           {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
