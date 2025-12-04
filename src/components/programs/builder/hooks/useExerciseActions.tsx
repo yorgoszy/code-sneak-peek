@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Σειρά προτεραιότητας για τα warm up exercises
 const WARM_UP_ORDER = ['mobility', 'stability', 'activation', 'neural act'];
+// Recovery relationship type
+const RECOVERY_TYPE = 'recovery';
 
 export const useExerciseActions = (
   program: ProgramStructure,
@@ -88,7 +90,10 @@ export const useExerciseActions = (
               });
 
               // Προσθήκη σχετικών ασκήσεων στο warm up block (μόνο αν δεν υπάρχουν ήδη)
-              if (relationships.length > 0) {
+              const warmUpRelationships = relationships.filter(rel => WARM_UP_ORDER.includes(rel.relationship_type));
+              const recoveryRelationships = relationships.filter(rel => rel.relationship_type === RECOVERY_TYPE);
+
+              if (warmUpRelationships.length > 0) {
                 updatedBlocks = updatedBlocks.map(block => {
                   // Βρίσκουμε το warm up block
                   if (block.training_type === 'warm up') {
@@ -98,7 +103,7 @@ export const useExerciseActions = (
                     );
 
                     // Ταξινομούμε τα relationships με βάση τη σειρά WARM_UP_ORDER
-                    const sortedRelationships = [...relationships].sort((a, b) => {
+                    const sortedRelationships = [...warmUpRelationships].sort((a, b) => {
                       const orderA = WARM_UP_ORDER.indexOf(a.relationship_type);
                       const orderB = WARM_UP_ORDER.indexOf(b.relationship_type);
                       const finalOrderA = orderA === -1 ? 999 : orderA;
@@ -142,6 +147,59 @@ export const useExerciseActions = (
                     return {
                       ...block,
                       program_exercises: [...(block.program_exercises || []), ...newWarmUpExercises]
+                    };
+                  }
+
+                  return block;
+                });
+              }
+
+              // Προσθήκη σχετικών ασκήσεων στο recovery block (μόνο αν δεν υπάρχουν ήδη)
+              if (recoveryRelationships.length > 0) {
+                updatedBlocks = updatedBlocks.map(block => {
+                  // Βρίσκουμε το recovery block
+                  if (block.training_type === 'recovery') {
+                    // Παίρνουμε τα υπάρχοντα exercise_ids στο recovery block
+                    const existingExerciseIds = new Set(
+                      (block.program_exercises || []).map(ex => ex.exercise_id)
+                    );
+
+                    // Φιλτράρουμε μόνο τις ασκήσεις που ΔΕΝ υπάρχουν ήδη
+                    const newRecoveryRelationships = recoveryRelationships.filter(
+                      rel => !existingExerciseIds.has(rel.related_exercise_id)
+                    );
+
+                    if (newRecoveryRelationships.length === 0) {
+                      console.log('⏭️ All recovery exercises already exist, skipping');
+                      return block;
+                    }
+
+                    const newRecoveryExercises = newRecoveryRelationships.map((rel, index) => ({
+                      id: generateId(),
+                      exercise_id: rel.related_exercise_id,
+                      sets: 1,
+                      reps: '',
+                      reps_mode: 'reps' as const,
+                      kg: '',
+                      kg_mode: 'kg' as const,
+                      percentage_1rm: 0,
+                      velocity_ms: 0,
+                      tempo: '',
+                      rest: '',
+                      notes: '',
+                      exercise_order: (block.program_exercises?.length || 0) + index + 1,
+                      exercises: {
+                        id: rel.related_exercise_id,
+                        name: findExerciseName(rel.related_exercise_id),
+                        description: ''
+                      }
+                    }));
+                    
+                    console.log('➕ Adding recovery exercises:', newRecoveryExercises.length, '(skipped duplicates:', recoveryRelationships.length - newRecoveryRelationships.length, ')');
+                    
+                    return {
+                      ...block,
+                      program_exercises: [...(block.program_exercises || []), ...newRecoveryExercises]
                     };
                   }
 
