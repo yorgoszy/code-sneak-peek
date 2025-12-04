@@ -43,6 +43,11 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   hpr: 'hpr',
   accessory: 'accessory',
   rotational: 'rotational',
+  mobility: 'mobility',
+  stability: 'stability',
+  activation: 'activation',
+  'neural act': 'neural act',
+  recovery: 'recovery',
 };
 
 const WORKOUT_FORMAT_LABELS: Record<string, string> = {
