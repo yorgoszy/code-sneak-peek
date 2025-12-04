@@ -87,22 +87,36 @@ export const useExerciseActions = (
                 return block;
               });
 
-              // Προσθήκη σχετικών ασκήσεων στο warm up block
+              // Προσθήκη σχετικών ασκήσεων στο warm up block (μόνο αν δεν υπάρχουν ήδη)
               if (relationships.length > 0) {
                 updatedBlocks = updatedBlocks.map(block => {
                   // Βρίσκουμε το warm up block
                   if (block.training_type === 'warm up') {
+                    // Παίρνουμε τα υπάρχοντα exercise_ids στο warm up block
+                    const existingExerciseIds = new Set(
+                      (block.program_exercises || []).map(ex => ex.exercise_id)
+                    );
+
                     // Ταξινομούμε τα relationships με βάση τη σειρά WARM_UP_ORDER
                     const sortedRelationships = [...relationships].sort((a, b) => {
                       const orderA = WARM_UP_ORDER.indexOf(a.relationship_type);
                       const orderB = WARM_UP_ORDER.indexOf(b.relationship_type);
-                      // Αν δεν βρεθεί στη λίστα, βάζουμε στο τέλος
                       const finalOrderA = orderA === -1 ? 999 : orderA;
                       const finalOrderB = orderB === -1 ? 999 : orderB;
                       return finalOrderA - finalOrderB;
                     });
 
-                    const newWarmUpExercises = sortedRelationships.map((rel, index) => ({
+                    // Φιλτράρουμε μόνο τις ασκήσεις που ΔΕΝ υπάρχουν ήδη
+                    const newRelationships = sortedRelationships.filter(
+                      rel => !existingExerciseIds.has(rel.related_exercise_id)
+                    );
+
+                    if (newRelationships.length === 0) {
+                      console.log('⏭️ All warm up exercises already exist, skipping');
+                      return block;
+                    }
+
+                    const newWarmUpExercises = newRelationships.map((rel, index) => ({
                       id: generateId(),
                       exercise_id: rel.related_exercise_id,
                       sets: 1,
@@ -123,8 +137,7 @@ export const useExerciseActions = (
                       }
                     }));
                     
-                    console.log('➕ Adding warm up exercises to warm up block:', newWarmUpExercises.length);
-                    console.log('📋 Order:', sortedRelationships.map(r => r.relationship_type));
+                    console.log('➕ Adding warm up exercises:', newWarmUpExercises.length, '(skipped duplicates:', sortedRelationships.length - newRelationships.length, ')');
                     
                     return {
                       ...block,
