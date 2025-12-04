@@ -10,6 +10,18 @@ interface DayCalculationsProps {
 }
 
 export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exercises }) => {
+  // Helper function to parse workout_duration (format: "MM:SS" or "M:SS")
+  const parseWorkoutDuration = (duration: string): number => {
+    if (!duration) return 0;
+    const parts = duration.split(':');
+    if (parts.length === 2) {
+      const minutes = parseInt(parts[0]) || 0;
+      const seconds = parseInt(parts[1]) || 0;
+      return minutes * 60 + seconds;
+    }
+    return 0;
+  };
+
   const calculateDayMetrics = () => {
     let totalVolume = 0; // in kg
     let totalIntensitySum = 0;
@@ -18,74 +30,93 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
     let totalTimeSeconds = 0;
 
     blocks.forEach(block => {
-      block.program_exercises.forEach(exercise => {
-        if (exercise.exercise_id) {
-          const sets = exercise.sets || 0;
-          const repsData = parseRepsToTime(exercise.reps);
-          const kg = parseNumberWithComma(exercise.kg || '0');
+      // Αν το block έχει workout_format και workout_duration, χρησιμοποιούμε τη διάρκεια του format
+      if (block.workout_format && block.workout_duration) {
+        const blockDurationSeconds = parseWorkoutDuration(block.workout_duration);
+        totalTimeSeconds += blockDurationSeconds;
+        
+        // Υπολογίζουμε μόνο volume, intensity, watts για τις ασκήσεις
+        block.program_exercises.forEach(exercise => {
+          if (exercise.exercise_id) {
+            const sets = exercise.sets || 0;
+            const repsData = parseRepsToTime(exercise.reps);
+            const kg = parseNumberWithComma(exercise.kg || '0');
+            const isTimeMode = exercise.reps_mode === 'time' || repsData.isTime;
 
-          // Έλεγχος αν το reps_mode είναι 'time' ή αν το string reps περιέχει χρόνο
-          const isTimeMode = exercise.reps_mode === 'time' || repsData.isTime;
-
-          if (isTimeMode) {
-            // Αν το reps είναι χρόνος, προσθέτουμε τον χρόνο απευθείας
-            // Time calculation for time-based reps: sets × time_per_set + sets × rest
-            const workTime = sets * repsData.seconds;
-            const restSeconds = parseRestTime(exercise.rest || '');
-            const totalRestTime = sets * restSeconds;
-            totalTimeSeconds += workTime + totalRestTime;
-            
-            // Δεν υπολογίζουμε όγκο για χρονικές ασκήσεις
-          } else {
-            // Κανονική άσκηση με επαναλήψεις
-            const reps = repsData.count;
-            
-            // Volume calculation (sets × reps × kg) in kg
-            // Only calculate if kg_mode is 'kg' or undefined
-            if ((!exercise.kg_mode || exercise.kg_mode === 'kg') && kg > 0) {
-              const volumeKg = sets * reps * kg;
+            // Volume calculation
+            if (!isTimeMode && (!exercise.kg_mode || exercise.kg_mode === 'kg') && kg > 0) {
+              const volumeKg = sets * repsData.count * kg;
               totalVolume += volumeKg;
             }
 
-            // Time calculation: (sets × reps × tempo) + (sets - 1) × rest
-            const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
-            const restSeconds = parseRestTime(exercise.rest || '');
-            
-            // Work time: sets × reps × tempo (in seconds)
-            const workTime = sets * reps * tempoSeconds;
-            
-            // Rest time: sets × rest time between sets
-            const totalRestTime = sets * restSeconds;
-            
-            totalTimeSeconds += workTime + totalRestTime;
-          }
+            // Intensity calculation
+            const intensity = parseNumberWithComma(exercise.percentage_1rm || '0');
+            if (intensity > 0) {
+              totalIntensitySum += intensity;
+              intensityCount++;
+            }
 
-          // Intensity calculation - μέσος όρος όλων των εντάσεων
-          const intensity = parseNumberWithComma(exercise.percentage_1rm || '0');
-          if (intensity > 0) {
-            totalIntensitySum += intensity;
-            intensityCount++;
+            // Watts calculation
+            const velocity = parseNumberWithComma(exercise.velocity_ms || '0');
+            if (kg > 0 && velocity > 0 && !isTimeMode) {
+              const force = kg * 9.81;
+              const watts = force * velocity;
+              totalWatts += watts * sets * repsData.count;
+            }
           }
+        });
+      } else {
+        // Κανονικός υπολογισμός χρόνου από tempo/reps/rest
+        block.program_exercises.forEach(exercise => {
+          if (exercise.exercise_id) {
+            const sets = exercise.sets || 0;
+            const repsData = parseRepsToTime(exercise.reps);
+            const kg = parseNumberWithComma(exercise.kg || '0');
 
-          // Watts calculation - Force × Velocity (μόνο για ασκήσεις με βάρος)
-          const velocity = parseNumberWithComma(exercise.velocity_ms || '0');
-          if (kg > 0 && velocity > 0 && !isTimeMode) {
-            // Force = mass × acceleration (9.81 m/s²)
-            const force = kg * 9.81; // in Newtons
-            // Power = Force × Velocity
-            const watts = force * velocity;
-            // Συνολική ισχύς για όλα τα sets και reps
-            totalWatts += watts * sets * repsData.count;
+            const isTimeMode = exercise.reps_mode === 'time' || repsData.isTime;
+
+            if (isTimeMode) {
+              const workTime = sets * repsData.seconds;
+              const restSeconds = parseRestTime(exercise.rest || '');
+              const totalRestTime = sets * restSeconds;
+              totalTimeSeconds += workTime + totalRestTime;
+            } else {
+              const reps = repsData.count;
+              
+              if ((!exercise.kg_mode || exercise.kg_mode === 'kg') && kg > 0) {
+                const volumeKg = sets * reps * kg;
+                totalVolume += volumeKg;
+              }
+
+              const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
+              const restSeconds = parseRestTime(exercise.rest || '');
+              const workTime = sets * reps * tempoSeconds;
+              const totalRestTime = sets * restSeconds;
+              totalTimeSeconds += workTime + totalRestTime;
+            }
+
+            const intensity = parseNumberWithComma(exercise.percentage_1rm || '0');
+            if (intensity > 0) {
+              totalIntensitySum += intensity;
+              intensityCount++;
+            }
+
+            const velocity = parseNumberWithComma(exercise.velocity_ms || '0');
+            if (kg > 0 && velocity > 0 && !isTimeMode) {
+              const force = kg * 9.81;
+              const watts = force * velocity;
+              totalWatts += watts * sets * repsData.count;
+            }
           }
-        }
-      });
+        });
+      }
     });
 
     return {
-      volume: (totalVolume / 1000).toFixed(2), // Convert kg to tons with 2 decimal places
-      intensity: intensityCount > 0 ? Math.round(totalIntensitySum / intensityCount).toFixed(0) : '0', // Μέσος όρος - ακέραιος
-      watts: (totalWatts / 1000).toFixed(1), // Convert watts to kilowatts with 1 decimal place
-      time: Math.round(totalTimeSeconds / 60), // Convert to minutes
+      volume: (totalVolume / 1000).toFixed(2),
+      intensity: intensityCount > 0 ? Math.round(totalIntensitySum / intensityCount).toFixed(0) : '0',
+      watts: (totalWatts / 1000).toFixed(1),
+      time: Math.round(totalTimeSeconds / 60),
       exerciseCount: blocks.reduce((total, block) => 
         total + (block.program_exercises?.filter(ex => ex.exercise_id).length || 0), 0)
     };
