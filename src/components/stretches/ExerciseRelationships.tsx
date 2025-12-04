@@ -26,7 +26,7 @@ interface ExerciseRelationship {
 }
 
 // Σειρά προτεραιότητας για εμφάνιση
-const RELATIONSHIP_ORDER = ['mobility', 'stability', 'activation', 'neural act'];
+const RELATIONSHIP_ORDER = ['mobility', 'stability', 'activation', 'neural act', 'recovery'];
 
 export const ExerciseRelationships: React.FC = () => {
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
@@ -39,6 +39,8 @@ export const ExerciseRelationships: React.FC = () => {
   const [selectedActivationName, setSelectedActivationName] = useState<string>('');
   const [selectedNeuralActId, setSelectedNeuralActId] = useState<string>('');
   const [selectedNeuralActName, setSelectedNeuralActName] = useState<string>('');
+  const [selectedRecoveryId, setSelectedRecoveryId] = useState<string>('');
+  const [selectedRecoveryName, setSelectedRecoveryName] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   
   // Dialog states
@@ -47,6 +49,7 @@ export const ExerciseRelationships: React.FC = () => {
   const [stabilityDialogOpen, setStabilityDialogOpen] = useState(false);
   const [activationDialogOpen, setActivationDialogOpen] = useState(false);
   const [neuralActDialogOpen, setNeuralActDialogOpen] = useState(false);
+  const [recoveryDialogOpen, setRecoveryDialogOpen] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -109,6 +112,12 @@ export const ExerciseRelationships: React.FC = () => {
     queryFn: () => fetchExercisesByCategory('neural act')
   });
 
+  // Fetch recovery exercises
+  const { data: recoveryExercises } = useQuery({
+    queryKey: ['recovery-exercises'],
+    queryFn: () => fetchExercisesByCategory('recovery')
+  });
+
   // Fetch exercise relationships
   const { data: relationships, isLoading } = useQuery({
     queryKey: ['exercise-relationships'],
@@ -149,13 +158,14 @@ export const ExerciseRelationships: React.FC = () => {
 
   // Create relationship mutation
   const createRelationshipMutation = useMutation({
-    mutationFn: async (type: 'mobility' | 'stability' | 'activation' | 'neural act') => {
+    mutationFn: async (type: 'mobility' | 'stability' | 'activation' | 'neural act' | 'recovery') => {
       let relatedId = '';
       switch (type) {
         case 'mobility': relatedId = selectedMobilityId; break;
         case 'stability': relatedId = selectedStabilityId; break;
         case 'activation': relatedId = selectedActivationId; break;
         case 'neural act': relatedId = selectedNeuralActId; break;
+        case 'recovery': relatedId = selectedRecoveryId; break;
       }
       
       if (!selectedExerciseId || !relatedId) {
@@ -199,6 +209,10 @@ export const ExerciseRelationships: React.FC = () => {
         case 'neural act':
           setSelectedNeuralActId('');
           setSelectedNeuralActName('');
+          break;
+        case 'recovery':
+          setSelectedRecoveryId('');
+          setSelectedRecoveryName('');
           break;
       }
     },
@@ -271,6 +285,7 @@ export const ExerciseRelationships: React.FC = () => {
     { type: 'stability' as const, label: 'Stability', selectedId: selectedStabilityId, selectedName: selectedStabilityName, exercises: stabilityExercises, dialogOpen: stabilityDialogOpen, setDialogOpen: setStabilityDialogOpen, setId: setSelectedStabilityId, setName: setSelectedStabilityName },
     { type: 'activation' as const, label: 'Activation', selectedId: selectedActivationId, selectedName: selectedActivationName, exercises: activationExercises, dialogOpen: activationDialogOpen, setDialogOpen: setActivationDialogOpen, setId: setSelectedActivationId, setName: setSelectedActivationName },
     { type: 'neural act' as const, label: 'Neural Act', selectedId: selectedNeuralActId, selectedName: selectedNeuralActName, exercises: neuralActExercises, dialogOpen: neuralActDialogOpen, setDialogOpen: setNeuralActDialogOpen, setId: setSelectedNeuralActId, setName: setSelectedNeuralActName },
+    { type: 'recovery' as const, label: 'Recovery', selectedId: selectedRecoveryId, selectedName: selectedRecoveryName, exercises: recoveryExercises, dialogOpen: recoveryDialogOpen, setDialogOpen: setRecoveryDialogOpen, setId: setSelectedRecoveryId, setName: setSelectedRecoveryName },
   ];
 
   return (
