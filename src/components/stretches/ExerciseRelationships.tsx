@@ -25,6 +25,9 @@ interface ExerciseRelationship {
   related_exercise: { name: string };
 }
 
+// Σειρά προτεραιότητας για εμφάνιση
+const RELATIONSHIP_ORDER = ['mobility', 'stability', 'activation', 'neural act'];
+
 export const ExerciseRelationships: React.FC = () => {
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
   const [selectedExerciseName, setSelectedExerciseName] = useState<string>('');
@@ -32,12 +35,18 @@ export const ExerciseRelationships: React.FC = () => {
   const [selectedMobilityName, setSelectedMobilityName] = useState<string>('');
   const [selectedStabilityId, setSelectedStabilityId] = useState<string>('');
   const [selectedStabilityName, setSelectedStabilityName] = useState<string>('');
+  const [selectedActivationId, setSelectedActivationId] = useState<string>('');
+  const [selectedActivationName, setSelectedActivationName] = useState<string>('');
+  const [selectedNeuralActId, setSelectedNeuralActId] = useState<string>('');
+  const [selectedNeuralActName, setSelectedNeuralActName] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   
   // Dialog states
   const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
   const [mobilityDialogOpen, setMobilityDialogOpen] = useState(false);
   const [stabilityDialogOpen, setStabilityDialogOpen] = useState(false);
+  const [activationDialogOpen, setActivationDialogOpen] = useState(false);
+  const [neuralActDialogOpen, setNeuralActDialogOpen] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -55,59 +64,55 @@ export const ExerciseRelationships: React.FC = () => {
     }
   });
 
+  // Fetch exercises by category
+  const fetchExercisesByCategory = async (categoryName: string) => {
+    const { data, error } = await supabase
+      .from('exercises')
+      .select(`
+        id,
+        name,
+        video_url,
+        exercise_to_category!inner(
+          exercise_categories!inner(
+            name
+          )
+        )
+      `)
+      .eq('exercise_to_category.exercise_categories.name', categoryName)
+      .order('name');
+    
+    if (error) throw error;
+    return data as Exercise[];
+  };
+
   // Fetch mobility exercises
   const { data: mobilityExercises } = useQuery({
     queryKey: ['mobility-exercises'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('exercises')
-        .select(`
-          id,
-          name,
-          video_url,
-          exercise_to_category!inner(
-            exercise_categories!inner(
-              name
-            )
-          )
-        `)
-        .eq('exercise_to_category.exercise_categories.name', 'mobility')
-        .order('name');
-      
-      if (error) throw error;
-      return data as Exercise[];
-    }
+    queryFn: () => fetchExercisesByCategory('mobility')
   });
 
   // Fetch stability exercises
   const { data: stabilityExercises } = useQuery({
     queryKey: ['stability-exercises'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('exercises')
-        .select(`
-          id,
-          name,
-          video_url,
-          exercise_to_category!inner(
-            exercise_categories!inner(
-              name
-            )
-          )
-        `)
-        .eq('exercise_to_category.exercise_categories.name', 'stability')
-        .order('name');
-      
-      if (error) throw error;
-      return data as Exercise[];
-    }
+    queryFn: () => fetchExercisesByCategory('stability')
+  });
+
+  // Fetch activation exercises
+  const { data: activationExercises } = useQuery({
+    queryKey: ['activation-exercises'],
+    queryFn: () => fetchExercisesByCategory('activation')
+  });
+
+  // Fetch neural act exercises
+  const { data: neuralActExercises } = useQuery({
+    queryKey: ['neural-act-exercises'],
+    queryFn: () => fetchExercisesByCategory('neural act')
   });
 
   // Fetch exercise relationships
   const { data: relationships, isLoading } = useQuery({
     queryKey: ['exercise-relationships'],
     queryFn: async () => {
-      // First get the relationships
       const { data: rels, error: relsError } = await supabase
         .from('exercise_relationships')
         .select('*')
@@ -116,13 +121,11 @@ export const ExerciseRelationships: React.FC = () => {
       if (relsError) throw relsError;
       if (!rels || rels.length === 0) return [];
       
-      // Get all unique exercise IDs
       const exerciseIds = [...new Set([
         ...rels.map(r => r.exercise_id),
         ...rels.map(r => r.related_exercise_id)
       ])];
       
-      // Fetch exercise names
       const { data: exerciseNames, error: namesError } = await supabase
         .from('exercises')
         .select('id, name')
@@ -130,10 +133,8 @@ export const ExerciseRelationships: React.FC = () => {
       
       if (namesError) throw namesError;
       
-      // Create a map for quick lookup
       const exerciseMap = new Map(exerciseNames?.map(e => [e.id, e.name]) || []);
       
-      // Combine the data
       return rels.map(rel => ({
         id: rel.id,
         exercise_id: rel.exercise_id,
@@ -148,11 +149,17 @@ export const ExerciseRelationships: React.FC = () => {
 
   // Create relationship mutation
   const createRelationshipMutation = useMutation({
-    mutationFn: async (type: 'mobility' | 'stability') => {
-      const relatedId = type === 'mobility' ? selectedMobilityId : selectedStabilityId;
+    mutationFn: async (type: 'mobility' | 'stability' | 'activation' | 'neural act') => {
+      let relatedId = '';
+      switch (type) {
+        case 'mobility': relatedId = selectedMobilityId; break;
+        case 'stability': relatedId = selectedStabilityId; break;
+        case 'activation': relatedId = selectedActivationId; break;
+        case 'neural act': relatedId = selectedNeuralActId; break;
+      }
       
       if (!selectedExerciseId || !relatedId) {
-        throw new Error('Επιλέξτε άσκηση και ' + (type === 'mobility' ? 'mobility' : 'stability'));
+        throw new Error(`Επιλέξτε άσκηση και ${type}`);
       }
 
       if (selectedExerciseId === relatedId) {
@@ -165,7 +172,7 @@ export const ExerciseRelationships: React.FC = () => {
           exercise_id: selectedExerciseId,
           related_exercise_id: relatedId,
           relationship_type: type,
-          order_index: 0
+          order_index: RELATIONSHIP_ORDER.indexOf(type)
         }])
         .select()
         .single();
@@ -176,12 +183,23 @@ export const ExerciseRelationships: React.FC = () => {
     onSuccess: (_, type) => {
       queryClient.invalidateQueries({ queryKey: ['exercise-relationships'] });
       toast.success('Η σύνδεση δημιουργήθηκε επιτυχώς');
-      if (type === 'mobility') {
-        setSelectedMobilityId('');
-        setSelectedMobilityName('');
-      } else {
-        setSelectedStabilityId('');
-        setSelectedStabilityName('');
+      switch (type) {
+        case 'mobility':
+          setSelectedMobilityId('');
+          setSelectedMobilityName('');
+          break;
+        case 'stability':
+          setSelectedStabilityId('');
+          setSelectedStabilityName('');
+          break;
+        case 'activation':
+          setSelectedActivationId('');
+          setSelectedActivationName('');
+          break;
+        case 'neural act':
+          setSelectedNeuralActId('');
+          setSelectedNeuralActName('');
+          break;
       }
     },
     onError: (error: any) => {
@@ -220,7 +238,7 @@ export const ExerciseRelationships: React.FC = () => {
     rel.related_exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Group relationships by exercise
+  // Group relationships by exercise and sort by type order
   const groupedRelationships = filteredRelationships?.reduce((acc, rel) => {
     const exerciseId = rel.exercise_id;
     if (!acc[exerciseId]) {
@@ -233,9 +251,27 @@ export const ExerciseRelationships: React.FC = () => {
     return acc;
   }, {} as Record<string, { exerciseName: string; relationships: ExerciseRelationship[] }>);
 
+  // Sort relationships within each group
+  if (groupedRelationships) {
+    Object.values(groupedRelationships).forEach(group => {
+      group.relationships.sort((a, b) => {
+        const orderA = RELATIONSHIP_ORDER.indexOf(a.relationship_type);
+        const orderB = RELATIONSHIP_ORDER.indexOf(b.relationship_type);
+        return (orderA === -1 ? 999 : orderA) - (orderB === -1 ? 999 : orderB);
+      });
+    });
+  }
+
   if (isLoading) {
     return <div className="text-center py-8">Φόρτωση...</div>;
   }
+
+  const relationshipTypes = [
+    { type: 'mobility' as const, label: 'Mobility', selectedId: selectedMobilityId, selectedName: selectedMobilityName, exercises: mobilityExercises, dialogOpen: mobilityDialogOpen, setDialogOpen: setMobilityDialogOpen, setId: setSelectedMobilityId, setName: setSelectedMobilityName },
+    { type: 'stability' as const, label: 'Stability', selectedId: selectedStabilityId, selectedName: selectedStabilityName, exercises: stabilityExercises, dialogOpen: stabilityDialogOpen, setDialogOpen: setStabilityDialogOpen, setId: setSelectedStabilityId, setName: setSelectedStabilityName },
+    { type: 'activation' as const, label: 'Activation', selectedId: selectedActivationId, selectedName: selectedActivationName, exercises: activationExercises, dialogOpen: activationDialogOpen, setDialogOpen: setActivationDialogOpen, setId: setSelectedActivationId, setName: setSelectedActivationName },
+    { type: 'neural act' as const, label: 'Neural Act', selectedId: selectedNeuralActId, selectedName: selectedNeuralActName, exercises: neuralActExercises, dialogOpen: neuralActDialogOpen, setDialogOpen: setNeuralActDialogOpen, setId: setSelectedNeuralActId, setName: setSelectedNeuralActName },
+  ];
 
   return (
     <div className="space-y-4 md:space-y-6 p-4 md:p-0">
@@ -244,7 +280,7 @@ export const ExerciseRelationships: React.FC = () => {
         <CardHeader className="pb-3 pt-4 px-4 md:px-6">
           <CardTitle className="text-lg md:text-base">Νέα Σύνδεση Άσκησης</CardTitle>
           <p className="text-sm md:text-xs text-gray-500 mt-1">
-            Επιλέξτε άσκηση και συνδέστε την με mobility ή/και stability ασκήσεις
+            Επιλέξτε άσκηση και συνδέστε την με mobility, stability, activation ή/και neural act ασκήσεις
           </p>
         </CardHeader>
         <CardContent className="space-y-4 md:space-y-3 px-4 pb-4 md:px-6 md:pb-4">
@@ -262,53 +298,31 @@ export const ExerciseRelationships: React.FC = () => {
             </div>
           </div>
 
-          {/* Mobility and Stability */}
+          {/* Relationship Types Grid */}
           <div className="grid gap-4 md:gap-3 grid-cols-1 sm:grid-cols-2">
-            {/* Mobility */}
-            <div className="space-y-1.5 md:space-y-1">
-              <label className="text-sm md:text-xs font-medium mb-1.5 md:mb-1 block">Mobility</label>
-              <div className="flex gap-2">
-                <div
-                  onClick={() => setMobilityDialogOpen(true)}
-                  className="flex-1 flex items-center justify-between p-3 md:p-2 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <span className={selectedMobilityName ? 'text-sm md:text-xs' : 'text-sm md:text-xs text-gray-500'}>
-                    {selectedMobilityName || 'Επιλέξτε mobility'}
-                  </span>
-                  <ChevronRight className="h-4 w-4 md:h-3 md:w-3 text-gray-400" />
+            {relationshipTypes.map(({ type, label, selectedId, selectedName, dialogOpen, setDialogOpen, setId, setName }) => (
+              <div key={type} className="space-y-1.5 md:space-y-1">
+                <label className="text-sm md:text-xs font-medium mb-1.5 md:mb-1 block">{label}</label>
+                <div className="flex gap-2">
+                  <div
+                    onClick={() => setDialogOpen(true)}
+                    className="flex-1 flex items-center justify-between p-3 md:p-2 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
+                  >
+                    <span className={selectedName ? 'text-sm md:text-xs' : 'text-sm md:text-xs text-gray-500'}>
+                      {selectedName || `Επιλέξτε ${label.toLowerCase()}`}
+                    </span>
+                    <ChevronRight className="h-4 w-4 md:h-3 md:w-3 text-gray-400" />
+                  </div>
+                  <Button
+                    onClick={() => createRelationshipMutation.mutate(type)}
+                    className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0 h-10 w-10 md:h-8 md:w-8 p-0"
+                    disabled={!selectedExerciseId || !selectedId}
+                  >
+                    <Plus className="h-4 w-4 md:h-3 md:w-3" />
+                  </Button>
                 </div>
-                <Button
-                  onClick={() => createRelationshipMutation.mutate('mobility')}
-                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0 h-10 w-10 md:h-8 md:w-8 p-0"
-                  disabled={!selectedExerciseId || !selectedMobilityId}
-                >
-                  <Plus className="h-4 w-4 md:h-3 md:w-3" />
-                </Button>
               </div>
-            </div>
-
-            {/* Stability */}
-            <div className="space-y-1.5 md:space-y-1">
-              <label className="text-sm md:text-xs font-medium mb-1.5 md:mb-1 block">Stability</label>
-              <div className="flex gap-2">
-                <div
-                  onClick={() => setStabilityDialogOpen(true)}
-                  className="flex-1 flex items-center justify-between p-3 md:p-2 border border-gray-300 rounded-none cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <span className={selectedStabilityName ? 'text-sm md:text-xs' : 'text-sm md:text-xs text-gray-500'}>
-                    {selectedStabilityName || 'Επιλέξτε stability'}
-                  </span>
-                  <ChevronRight className="h-4 w-4 md:h-3 md:w-3 text-gray-400" />
-                </div>
-                <Button
-                  onClick={() => createRelationshipMutation.mutate('stability')}
-                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black shrink-0 h-10 w-10 md:h-8 md:w-8 p-0"
-                  disabled={!selectedExerciseId || !selectedStabilityId}
-                >
-                  <Plus className="h-4 w-4 md:h-3 md:w-3" />
-                </Button>
-              </div>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -380,31 +394,21 @@ export const ExerciseRelationships: React.FC = () => {
         }}
       />
 
-      <ExerciseSelectionDialog
-        open={mobilityDialogOpen}
-        onOpenChange={setMobilityDialogOpen}
-        exercises={mobilityExercises || []}
-        onSelectExercise={(id) => {
-          const exercise = mobilityExercises?.find(e => e.id === id);
-          if (exercise) {
-            setSelectedMobilityId(id);
-            setSelectedMobilityName(exercise.name);
-          }
-        }}
-      />
-
-      <ExerciseSelectionDialog
-        open={stabilityDialogOpen}
-        onOpenChange={setStabilityDialogOpen}
-        exercises={stabilityExercises || []}
-        onSelectExercise={(id) => {
-          const exercise = stabilityExercises?.find(e => e.id === id);
-          if (exercise) {
-            setSelectedStabilityId(id);
-            setSelectedStabilityName(exercise.name);
-          }
-        }}
-      />
+      {relationshipTypes.map(({ type, exercises: typeExercises, dialogOpen, setDialogOpen, setId, setName }) => (
+        <ExerciseSelectionDialog
+          key={type}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          exercises={typeExercises || []}
+          onSelectExercise={(id) => {
+            const exercise = typeExercises?.find(e => e.id === id);
+            if (exercise) {
+              setId(id);
+              setName(exercise.name);
+            }
+          }}
+        />
+      ))}
     </div>
   );
 };

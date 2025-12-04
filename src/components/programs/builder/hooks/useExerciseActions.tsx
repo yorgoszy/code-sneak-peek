@@ -2,6 +2,9 @@
 import { ProgramStructure } from './useProgramBuilderState';
 import { supabase } from '@/integrations/supabase/client';
 
+// Σειρά προτεραιότητας για τα warm up exercises
+const WARM_UP_ORDER = ['mobility', 'stability', 'activation', 'neural act'];
+
 export const useExerciseActions = (
   program: ProgramStructure,
   updateProgram: (updates: Partial<ProgramStructure>) => void,
@@ -14,7 +17,7 @@ export const useExerciseActions = (
     return exercise ? exercise.name : 'Unknown Exercise';
   };
 
-  // Fetch related exercises (mobility, stability) for a given exercise
+  // Fetch related exercises (mobility, stability, activation, neural act) for a given exercise
   const fetchExerciseRelationships = async (exerciseId: string) => {
     try {
       const { data, error } = await supabase
@@ -84,45 +87,22 @@ export const useExerciseActions = (
                 return block;
               });
 
-              // Προσθήκη σχετικών ασκήσεων στα mobility/stability blocks
+              // Προσθήκη σχετικών ασκήσεων στο warm up block
               if (relationships.length > 0) {
                 updatedBlocks = updatedBlocks.map(block => {
-                  // Mobility relationships
-                  const mobilityRelationships = relationships.filter(r => r.relationship_type === 'mobility');
-                  if (block.training_type === 'mobility' && mobilityRelationships.length > 0) {
-                    const newMobilityExercises = mobilityRelationships.map(rel => ({
-                      id: generateId(),
-                      exercise_id: rel.related_exercise_id,
-                      sets: 1,
-                      reps: '',
-                      reps_mode: 'reps' as const,
-                      kg: '',
-                      kg_mode: 'kg' as const,
-                      percentage_1rm: 0,
-                      velocity_ms: 0,
-                      tempo: '',
-                      rest: '',
-                      notes: '',
-                      exercise_order: (block.program_exercises?.length || 0) + 1,
-                      exercises: {
-                        id: rel.related_exercise_id,
-                        name: findExerciseName(rel.related_exercise_id),
-                        description: ''
-                      }
-                    }));
-                    
-                    console.log('➕ Adding mobility exercises to mobility block:', newMobilityExercises.length);
-                    
-                    return {
-                      ...block,
-                      program_exercises: [...(block.program_exercises || []), ...newMobilityExercises]
-                    };
-                  }
+                  // Βρίσκουμε το warm up block
+                  if (block.training_type === 'warm up') {
+                    // Ταξινομούμε τα relationships με βάση τη σειρά WARM_UP_ORDER
+                    const sortedRelationships = [...relationships].sort((a, b) => {
+                      const orderA = WARM_UP_ORDER.indexOf(a.relationship_type);
+                      const orderB = WARM_UP_ORDER.indexOf(b.relationship_type);
+                      // Αν δεν βρεθεί στη λίστα, βάζουμε στο τέλος
+                      const finalOrderA = orderA === -1 ? 999 : orderA;
+                      const finalOrderB = orderB === -1 ? 999 : orderB;
+                      return finalOrderA - finalOrderB;
+                    });
 
-                  // Stability relationships
-                  const stabilityRelationships = relationships.filter(r => r.relationship_type === 'stability');
-                  if (block.training_type === 'stability' && stabilityRelationships.length > 0) {
-                    const newStabilityExercises = stabilityRelationships.map(rel => ({
+                    const newWarmUpExercises = sortedRelationships.map((rel, index) => ({
                       id: generateId(),
                       exercise_id: rel.related_exercise_id,
                       sets: 1,
@@ -135,7 +115,7 @@ export const useExerciseActions = (
                       tempo: '',
                       rest: '',
                       notes: '',
-                      exercise_order: (block.program_exercises?.length || 0) + 1,
+                      exercise_order: (block.program_exercises?.length || 0) + index + 1,
                       exercises: {
                         id: rel.related_exercise_id,
                         name: findExerciseName(rel.related_exercise_id),
@@ -143,11 +123,12 @@ export const useExerciseActions = (
                       }
                     }));
                     
-                    console.log('➕ Adding stability exercises to stability block:', newStabilityExercises.length);
+                    console.log('➕ Adding warm up exercises to warm up block:', newWarmUpExercises.length);
+                    console.log('📋 Order:', sortedRelationships.map(r => r.relationship_type));
                     
                     return {
                       ...block,
-                      program_exercises: [...(block.program_exercises || []), ...newStabilityExercises]
+                      program_exercises: [...(block.program_exercises || []), ...newWarmUpExercises]
                     };
                   }
 
