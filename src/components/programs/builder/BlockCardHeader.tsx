@@ -31,6 +31,7 @@ interface BlockCardHeaderProps {
 
 // Training types που εμφανίζονται στο dropdown
 const TRAINING_TYPE_LABELS: Record<string, string> = {
+  'warm up': 'warm up',
   str: 'str',
   'str/spd': 'str/spd',
   pwr: 'pwr',
@@ -43,10 +44,6 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   hpr: 'hpr',
   accessory: 'accessory',
   rotational: 'rotational',
-  mobility: 'mobility',
-  stability: 'stability',
-  activation: 'activation',
-  'neural act': 'neural act',
   recovery: 'recovery',
 };
 
