@@ -7,12 +7,31 @@ export const useWeekActions = (
   generateId: () => string,
   saveProgram?: (programData: any) => Promise<any>
 ) => {
+  const createDefaultBlocks = () => [
+    { id: generateId(), name: 'warm up', training_type: 'warm up' as const, block_order: 1, program_exercises: [] },
+    { id: generateId(), name: 'str', training_type: 'str' as const, block_order: 2, program_exercises: [] },
+    { id: generateId(), name: 'end', training_type: 'end' as const, block_order: 3, program_exercises: [] },
+    { id: generateId(), name: 'rotational', training_type: 'rotational' as const, block_order: 4, program_exercises: [] },
+    { id: generateId(), name: 'accessory', training_type: 'accessory' as const, block_order: 5, program_exercises: [] },
+    { id: generateId(), name: 'recovery', training_type: 'recovery' as const, block_order: 6, program_exercises: [] }
+  ];
+
   const addWeek = () => {
+    const weekNumber = (program.weeks?.length || 0) + 1;
+    
+    // Δημιουργούμε 3 ημέρες με τα default blocks
+    const defaultDays = [1, 2, 3].map(dayNum => ({
+      id: generateId(),
+      name: `Ημέρα ${dayNum}`,
+      day_number: dayNum,
+      program_blocks: createDefaultBlocks()
+    }));
+
     const newWeek = {
       id: generateId(),
-      name: `Εβδομάδα ${(program.weeks?.length || 0) + 1}`,
-      week_number: (program.weeks?.length || 0) + 1,
-      program_days: []
+      name: `Εβδομάδα ${weekNumber}`,
+      week_number: weekNumber,
+      program_days: defaultDays
     };
 
     const updatedWeeks = [...(program.weeks || []), newWeek];
