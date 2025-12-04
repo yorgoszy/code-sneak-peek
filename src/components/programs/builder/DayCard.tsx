@@ -90,7 +90,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   const blocksCount = day.program_blocks?.length || 0;
 
   return (
-    <Card className="rounded-none relative w-full" style={{ minHeight: '30px' }}>
+    <Card className="rounded-none relative w-full" style={{ minHeight: '24px' }}>
       <div 
         {...(dragHandleProps?.attributes || {})}
         {...(dragHandleProps?.listeners || {})}
