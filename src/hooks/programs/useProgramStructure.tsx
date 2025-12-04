@@ -145,13 +145,15 @@ export const useProgramStructure = () => {
               exercise_id: exercise.exercise_id,
               sets: exercise.sets || 1,
               reps: exercise.reps || '',
+              reps_mode: exercise.reps_mode || 'reps',
               kg: exercise.kg || '',
+              kg_mode: exercise.kg_mode || 'kg',
               percentage_1rm: exercise.percentage_1rm ? parseFloat(exercise.percentage_1rm.toString()) : null,
               velocity_ms: exercise.velocity_ms ? parseFloat(exercise.velocity_ms.toString()) : null,
               tempo: exercise.tempo || '',
               rest: exercise.rest || '',
               notes: exercise.notes || '',
-              exercise_order: exercise.exercise_order || 1 // 🚨 ΚΡΙΤΙΚΟ: Διατηρούμε τη σειρά
+              exercise_order: exercise.exercise_order || 1
             };
 
             console.log('🚨 [FIXED] Insert data for exercise:', exercise.exercises?.name, insertData);
