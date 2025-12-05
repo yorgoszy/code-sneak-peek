@@ -95,7 +95,8 @@ export const useProgramStructure = () => {
               block_order: block.block_order || 1,
               training_type: block.training_type && block.training_type !== '' ? block.training_type : null,
               workout_format: block.workout_format && block.workout_format !== '' && block.workout_format !== 'none' ? block.workout_format : null,
-              workout_duration: block.workout_duration && block.workout_duration !== '' ? block.workout_duration : null
+              workout_duration: block.workout_duration && block.workout_duration !== '' ? block.workout_duration : null,
+              block_sets: block.block_sets || 1
             };
             
             const { data: blockData, error: blockError } = await supabase

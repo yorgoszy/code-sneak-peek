@@ -23,6 +23,7 @@ interface SortableDayProps {
   onUpdateBlockTrainingType: (blockId: string, trainingType: string) => void;
   onUpdateBlockWorkoutFormat: (blockId: string, format: string) => void;
   onUpdateBlockWorkoutDuration: (blockId: string, duration: string) => void;
+  onUpdateBlockSets: (blockId: string, sets: number) => void;
   onUpdateExercise: (blockId: string, exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (blockId: string, exerciseId: string) => void;
   onDuplicateExercise: (blockId: string, exerciseId: string) => void;

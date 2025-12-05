@@ -26,6 +26,7 @@ export const useBlockActions = (
                 training_type: undefined,
                 workout_format: '',
                 workout_duration: '',
+                block_sets: 1,
                 program_exercises: []
               };
               
@@ -217,6 +218,29 @@ export const useBlockActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
+  const updateBlockSets = (weekId: string, dayId: string, blockId: string, blockSets: number) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          program_days: (week.program_days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                program_blocks: (day.program_blocks || []).map(block =>
+                  block.id === blockId ? { ...block, block_sets: blockSets } : block
+                )
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
   return {
     addBlock,
     removeBlock,
@@ -224,6 +248,7 @@ export const useBlockActions = (
     updateBlockName,
     updateBlockTrainingType,
     updateBlockWorkoutFormat,
-    updateBlockWorkoutDuration
+    updateBlockWorkoutDuration,
+    updateBlockSets
   };
 };

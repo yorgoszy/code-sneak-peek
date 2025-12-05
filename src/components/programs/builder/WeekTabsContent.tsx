@@ -27,6 +27,7 @@ interface WeekTabsContentProps {
   onUpdateBlockTrainingType: (weekId: string, dayId: string, blockId: string, trainingType: string) => void;
   onUpdateBlockWorkoutFormat: (weekId: string, dayId: string, blockId: string, format: string) => void;
   onUpdateBlockWorkoutDuration: (weekId: string, dayId: string, blockId: string, duration: string) => void;
+  onUpdateBlockSets: (weekId: string, dayId: string, blockId: string, sets: number) => void;
   onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onDuplicateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
@@ -54,6 +55,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   onUpdateBlockTrainingType,
   onUpdateBlockWorkoutFormat,
   onUpdateBlockWorkoutDuration,
+  onUpdateBlockSets,
   onUpdateExercise,
   onRemoveExercise,
   onDuplicateExercise,
@@ -122,7 +124,8 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                         }
                         onUpdateBlockWorkoutFormat={(blockId, format) => onUpdateBlockWorkoutFormat(week.id, day.id, blockId, format)}
                         onUpdateBlockWorkoutDuration={(blockId, duration) => onUpdateBlockWorkoutDuration(week.id, day.id, blockId, duration)}
-                        onUpdateDayCompetitionDay={(isCompetitionDay) => 
+                        onUpdateBlockSets={(blockId, sets) => onUpdateBlockSets(week.id, day.id, blockId, sets)}
+                        onUpdateDayCompetitionDay={(isCompetitionDay) =>
                           onUpdateDayCompetitionDay(week.id, day.id, isCompetitionDay)
                         }
                         onAddExercise={(blockId, exerciseId) =>

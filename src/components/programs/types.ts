@@ -39,9 +39,10 @@ export interface Block {
   id: string;
   name: string;
   block_order: number;
-  training_type?: 'str' | 'str/spd' | 'pwr' | 'spd/str' | 'spd' | 'str/end' | 'pwr/end' | 'spd/end' | 'end' | 'hpr' | 'mobility' | 'stability' | 'activation' | 'neural act' | 'recovery' | 'accessory' | 'rotational';
+  training_type?: 'str' | 'str/spd' | 'pwr' | 'spd/str' | 'spd' | 'str/end' | 'pwr/end' | 'spd/end' | 'end' | 'hpr' | 'mobility' | 'stability' | 'activation' | 'neural act' | 'recovery' | 'accessory' | 'rotational' | 'warm up';
   workout_format?: 'time_cap' | 'emom' | 'for_time' | 'amrap';
   workout_duration?: string;
+  block_sets?: number;
   program_exercises: ProgramExercise[];
 }
 
