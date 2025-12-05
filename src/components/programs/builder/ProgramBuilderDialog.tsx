@@ -53,14 +53,15 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (editingProgram) {
-        console.log('Loading program for editing:', editingProgram);
+        console.log('🔄 Loading program for editing:', editingProgram.id, editingProgram.name);
+        console.log('🔄 Program weeks:', editingProgram.program_weeks?.length || 0);
         loadProgramFromData(editingProgram);
       } else {
-        console.log('Resetting program for new creation');
+        console.log('🔄 Resetting program for new creation');
         resetProgram();
       }
     }
-  }, [editingProgram, isOpen]);
+  }, [editingProgram, isOpen, loadProgramFromData, resetProgram]);
 
   const handleTrainingDatesChange = (dates: Date[]) => {
     updateProgram({ training_dates: dates });

@@ -17,12 +17,14 @@ export const useProgramBuilderActions = (
   const updateProgramWithPreservation = (updates: Partial<ProgramStructure>) => {
     const preservedUpdates = {
       ...updates,
+      id: program.id, // ΚΡΙΤΙΚΟ: Διατήρηση του ID για editing
       user_id: program.user_id, // Διατήρηση του επιλεγμένου χρήστη
       user_ids: program.user_ids, // Διατήρηση των επιλεγμένων χρηστών
       is_multiple_assignment: program.is_multiple_assignment, // Διατήρηση της λειτουργίας πολλαπλής ανάθεσης
       name: program.name, // Διατήρηση του ονόματος
       description: program.description, // Διατήρηση της περιγραφής
-      training_dates: program.training_dates // Διατήρηση των επιλεγμένων ημερομηνιών
+      training_dates: program.training_dates, // Διατήρηση των επιλεγμένων ημερομηνιών
+      is_template: program.is_template // Διατήρηση του template flag
     };
     updateProgram(preservedUpdates);
   };
