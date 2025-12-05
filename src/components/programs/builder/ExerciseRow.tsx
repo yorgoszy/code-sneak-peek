@@ -34,12 +34,12 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   const { handleVelocityChange, handleKgChange, handlePercentageChange } = useExerciseInputHandlers({ onUpdate });
 
   // Fetch 1RM for selected user and exercise
-  const { oneRM } = useExercise1RM({
+  const { oneRM, loading: oneRMLoading } = useExercise1RM({
     userId: selectedUserId || null,
     exerciseId: exercise.exercise_id || null
   });
 
-  console.log('🎯 ExerciseRow - selectedUserId:', selectedUserId, 'exercise_id:', exercise.exercise_id, 'oneRM:', oneRM, 'current kg:', exercise.kg);
+  console.log('🎯 ExerciseRow - selectedUserId:', selectedUserId, 'exercise_id:', exercise.exercise_id, 'oneRM:', oneRM, 'loading:', oneRMLoading, 'current kg:', exercise.kg);
 
   // Auto-fill kg field with 1RM when exercise is selected and kg is empty
   useEffect(() => {
@@ -50,7 +50,14 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   }, [oneRM, exercise.exercise_id, exercise.kg]);
 
   // Auto-calculate kg based on %1RM - ALWAYS recalculate when user changes or 1RM changes
+  // Περιμένουμε το loading να ολοκληρωθεί για να έχουμε σωστό 1RM
   useEffect(() => {
+    // Δεν κάνουμε τίποτα όσο το 1RM φορτώνει
+    if (oneRMLoading) {
+      console.log('⏳ Waiting for 1RM to load for user:', selectedUserId);
+      return;
+    }
+    
     if (exercise.percentage_1rm) {
       const percentage = parseFloat(exercise.percentage_1rm.toString().replace(',', '.'));
       if (!isNaN(percentage) && percentage > 0) {
@@ -80,7 +87,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
         }
       }
     }
-  }, [oneRM, exercise.percentage_1rm, selectedUserId]);
+  }, [oneRM, oneRMLoading, exercise.percentage_1rm, selectedUserId]);
 
   const handleExerciseSelect = (exerciseId: string) => {
     onUpdate('exercise_id', exerciseId);
