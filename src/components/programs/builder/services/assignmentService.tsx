@@ -325,7 +325,8 @@ export const assignmentService = {
                     block_order: block.block_order,
                     training_type: block.training_type || null,
                     workout_format: block.workout_format || null,
-                    workout_duration: block.workout_duration || null
+                    workout_duration: block.workout_duration || null,
+                    block_sets: block.block_sets || 1
                   }])
                   .select()
                   .single();

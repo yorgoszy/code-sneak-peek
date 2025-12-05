@@ -80,6 +80,8 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
 
   week.program_days.forEach(day => {
     day.program_blocks.forEach(block => {
+      const blockMultiplier = block.block_sets || 1;
+      
       block.program_exercises.forEach(exercise => {
         if (exercise.exercise_id) {
           const sets = exercise.sets || 0;
@@ -89,7 +91,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
           // Volume calculation (sets × reps × kg) in kg
           // Only calculate if kg_mode is 'kg' or undefined
           if ((!exercise.kg_mode || exercise.kg_mode === 'kg') && kg > 0) {
-            const volumeKg = sets * reps * kg;
+            const volumeKg = sets * reps * kg * blockMultiplier;
             totalVolume += volumeKg;
           }
 
@@ -104,7 +106,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
           if (kg > 0 && velocity > 0) {
             const force = kg * 9.81; // Convert to Newtons
             const watts = force * velocity;
-            totalWatts += watts * sets * reps;
+            totalWatts += watts * sets * reps * blockMultiplier;
           }
 
           // Time calculation: (sets × reps × tempo) + (sets - 1) × rest
@@ -117,7 +119,7 @@ const calculateWeekMetrics = (week: Week): WeekStats => {
           // Rest time: sets × rest time between sets
           const totalRestTime = sets * restSeconds;
           
-          totalTimeSeconds += workTime + totalRestTime;
+          totalTimeSeconds += (workTime + totalRestTime) * blockMultiplier;
         }
       });
     });
