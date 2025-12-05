@@ -13,6 +13,7 @@ interface UseProgramBuilderDialogLogicProps {
   editingAssignment?: any;
   isOpen: boolean;
   program: ProgramStructure;
+  updateProgram?: (updates: Partial<ProgramStructure>) => void;
 }
 
 export const useProgramBuilderDialogLogic = ({
@@ -23,7 +24,8 @@ export const useProgramBuilderDialogLogic = ({
   editingProgram,
   editingAssignment,
   isOpen,
-  program
+  program,
+  updateProgram
 }: UseProgramBuilderDialogLogicProps) => {
   const availableUsers = useMemo(() => {
     return users.filter(user => 
@@ -48,6 +50,12 @@ export const useProgramBuilderDialogLogic = ({
 
       const savedProgram = await onCreateProgram(program);
       console.log('✅ Program saved:', savedProgram);
+      
+      // Ενημέρωση του program state με το νέο ID
+      if (savedProgram?.id && updateProgram) {
+        updateProgram({ id: savedProgram.id });
+        console.log('✅ Program ID updated in state:', savedProgram.id);
+      }
       
       toast.success('Το πρόγραμμα αποθηκεύτηκε επιτυχώς!');
       

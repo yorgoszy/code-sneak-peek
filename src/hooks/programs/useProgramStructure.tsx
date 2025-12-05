@@ -84,21 +84,26 @@ export const useProgramStructure = () => {
         for (const block of sortedBlocks) {
           console.log('🧱 [useProgramStructure] Creating block:', block.name, 'with', block.program_exercises?.length || 0, 'exercises');
           
+          // Καθαρισμός τιμών για το block
+          const blockInsertData = {
+            day_id: dayData.id,
+            name: block.name || `Block ${block.block_order}`,
+            block_order: block.block_order || 1,
+            training_type: block.training_type && block.training_type !== '' ? block.training_type : null,
+            workout_format: block.workout_format && block.workout_format !== '' && block.workout_format !== 'none' ? block.workout_format : null,
+            workout_duration: block.workout_duration && block.workout_duration !== '' ? block.workout_duration : null
+          };
+          
+          console.log('📦 [useProgramStructure] Block insert data:', blockInsertData);
+          
           const { data: blockData, error: blockError } = await supabase
             .from('program_blocks')
-            .insert([{
-              day_id: dayData.id,
-              name: block.name,
-              block_order: block.block_order,
-              training_type: block.training_type || null,
-              workout_format: block.workout_format || null,
-              workout_duration: block.workout_duration || null
-            }])
+            .insert([blockInsertData])
             .select()
             .single();
 
           if (blockError) {
-            console.error('❌ [useProgramStructure] Error creating block:', blockError);
+            console.error('❌ [useProgramStructure] Error creating block:', blockError, 'Data:', blockInsertData);
             throw blockError;
           }
 
