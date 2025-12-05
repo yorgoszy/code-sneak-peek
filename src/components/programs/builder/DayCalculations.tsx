@@ -30,10 +30,12 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
     let totalTimeSeconds = 0;
 
     blocks.forEach(block => {
+      const blockMultiplier = block.block_sets || 1;
+      
       // Αν το block έχει workout_format και workout_duration, χρησιμοποιούμε τη διάρκεια του format
       if (block.workout_format && block.workout_duration) {
         const blockDurationSeconds = parseWorkoutDuration(block.workout_duration);
-        totalTimeSeconds += blockDurationSeconds;
+        totalTimeSeconds += blockDurationSeconds * blockMultiplier;
         
         // Υπολογίζουμε μόνο volume, intensity, watts για τις ασκήσεις
         block.program_exercises.forEach(exercise => {
@@ -45,7 +47,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
 
             // Volume calculation
             if (!isTimeMode && (!exercise.kg_mode || exercise.kg_mode === 'kg') && kg > 0) {
-              const volumeKg = sets * repsData.count * kg;
+              const volumeKg = sets * repsData.count * kg * blockMultiplier;
               totalVolume += volumeKg;
             }
 
@@ -61,7 +63,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
             if (kg > 0 && velocity > 0 && !isTimeMode) {
               const force = kg * 9.81;
               const watts = force * velocity;
-              totalWatts += watts * sets * repsData.count;
+              totalWatts += watts * sets * repsData.count * blockMultiplier;
             }
           }
         });
@@ -79,12 +81,12 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
               const workTime = sets * repsData.seconds;
               const restSeconds = parseRestTime(exercise.rest || '');
               const totalRestTime = sets * restSeconds;
-              totalTimeSeconds += workTime + totalRestTime;
+              totalTimeSeconds += (workTime + totalRestTime) * blockMultiplier;
             } else {
               const reps = repsData.count;
               
               if ((!exercise.kg_mode || exercise.kg_mode === 'kg') && kg > 0) {
-                const volumeKg = sets * reps * kg;
+                const volumeKg = sets * reps * kg * blockMultiplier;
                 totalVolume += volumeKg;
               }
 
@@ -92,7 +94,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
               const restSeconds = parseRestTime(exercise.rest || '');
               const workTime = sets * reps * tempoSeconds;
               const totalRestTime = sets * restSeconds;
-              totalTimeSeconds += workTime + totalRestTime;
+              totalTimeSeconds += (workTime + totalRestTime) * blockMultiplier;
             }
 
             const intensity = parseNumberWithComma(exercise.percentage_1rm || '0');
@@ -105,7 +107,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks, exerci
             if (kg > 0 && velocity > 0 && !isTimeMode) {
               const force = kg * 9.81;
               const watts = force * velocity;
-              totalWatts += watts * sets * repsData.count;
+              totalWatts += watts * sets * repsData.count * blockMultiplier;
             }
           }
         });

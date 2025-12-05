@@ -113,6 +113,7 @@ export const calculateProgramStats = (program: any): ProgramStats => {
           let blockWatts = 0;
           let blockTime = 0;
           let blockExerciseCount = 0;
+          const blockMultiplier = block.block_sets || 1;
 
           block.program_exercises?.forEach((exercise: any) => {
             if (exercise.exercise_id) {
@@ -128,7 +129,7 @@ export const calculateProgramStats = (program: any): ProgramStats => {
                 const workTime = sets * repsData.seconds;
                 const restSeconds = parseRestTime(exercise.rest || '');
                 const totalRestTime = sets * restSeconds;
-                const exerciseTime = workTime + totalRestTime;
+                const exerciseTime = (workTime + totalRestTime) * blockMultiplier;
                 blockTime += exerciseTime;
                 totalTimeSeconds += exerciseTime;
                 
@@ -139,7 +140,7 @@ export const calculateProgramStats = (program: any): ProgramStats => {
 
                 // Volume
                 if ((!exercise.kg_mode || exercise.kg_mode === 'kg') && kg > 0) {
-                  const volumeKg = sets * reps * kg;
+                  const volumeKg = sets * reps * kg * blockMultiplier;
                   blockVolume += volumeKg;
                   totalVolume += volumeKg;
                 }
@@ -157,7 +158,7 @@ export const calculateProgramStats = (program: any): ProgramStats => {
                 if (kg > 0 && velocity > 0) {
                   const force = kg * 9.81;
                   const watts = force * velocity;
-                  const exerciseWatts = watts * sets * reps;
+                  const exerciseWatts = watts * sets * reps * blockMultiplier;
                   blockWatts += exerciseWatts;
                   totalWatts += exerciseWatts;
                 }
@@ -167,7 +168,7 @@ export const calculateProgramStats = (program: any): ProgramStats => {
                 const restSeconds = parseRestTime(exercise.rest || '');
                 const workTime = sets * reps * tempoSeconds;
                 const totalRestTime = sets * restSeconds;
-                const exerciseTime = workTime + totalRestTime;
+                const exerciseTime = (workTime + totalRestTime) * blockMultiplier;
                 blockTime += exerciseTime;
                 totalTimeSeconds += exerciseTime;
               }

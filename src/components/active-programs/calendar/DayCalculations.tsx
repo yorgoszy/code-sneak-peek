@@ -16,6 +16,8 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks }) => {
     let totalTimeSeconds = 0;
 
     blocks?.forEach(block => {
+      const blockMultiplier = block.block_sets || 1;
+      
       block.program_exercises?.forEach((exercise: any) => {
         if (exercise.exercise_id) {
           const sets = exercise.sets || 0;
@@ -31,7 +33,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks }) => {
             const workTime = sets * repsData.seconds;
             const restSeconds = parseRestTime(exercise.rest || '');
             const totalRestTime = sets * restSeconds;
-            totalTimeSeconds += workTime + totalRestTime;
+            totalTimeSeconds += (workTime + totalRestTime) * blockMultiplier;
             
             // Δεν υπολογίζουμε όγκο για χρονικές ασκήσεις
           } else {
@@ -39,7 +41,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks }) => {
             const reps = repsData.count;
             
             // Volume calculation (sets × reps × kg) in kg
-            const volumeKg = sets * reps * kg;
+            const volumeKg = sets * reps * kg * blockMultiplier;
             totalVolume += volumeKg;
 
             // Time calculation: (sets × reps × tempo) + (sets - 1) × rest
@@ -52,7 +54,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks }) => {
             // Rest time: sets × rest time between sets
             const totalRestTime = sets * restSeconds;
             
-            totalTimeSeconds += workTime + totalRestTime;
+            totalTimeSeconds += (workTime + totalRestTime) * blockMultiplier;
           }
 
           // Intensity calculation - μέσος όρος όλων των εντάσεων
@@ -70,7 +72,7 @@ export const DayCalculations: React.FC<DayCalculationsProps> = ({ blocks }) => {
             // Power = Force × Velocity
             const watts = force * velocity;
             // Συνολική ισχύς για όλα τα sets και reps
-            totalWatts += watts * sets * repsData.count;
+            totalWatts += watts * sets * repsData.count * blockMultiplier;
           }
         }
       });
