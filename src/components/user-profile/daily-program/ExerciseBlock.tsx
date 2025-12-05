@@ -35,6 +35,7 @@ interface Block {
   training_type?: string;
   workout_format?: string;
   workout_duration?: string;
+  block_sets?: number;
   program_exercises: Exercise[];
 }
 
