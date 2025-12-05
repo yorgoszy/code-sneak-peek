@@ -8,7 +8,9 @@ interface ExerciseDetailsGridProps {
     id: string;
     sets: number;
     reps: string;
+    reps_mode?: string;
     kg?: string;
+    kg_mode?: string;
     percentage_1rm?: number;
     velocity_ms?: number;
     tempo?: string;
@@ -23,6 +25,20 @@ interface ExerciseDetailsGridProps {
     velocity?: string;
   };
 }
+
+const REPS_MODE_LABELS: Record<string, string> = {
+  'reps': 'Reps',
+  'time': 'Time',
+  'meter': 'Meter'
+};
+
+const KG_MODE_LABELS: Record<string, string> = {
+  'kg': 'Kg',
+  'rpm': 'RPM',
+  'meter': 'Meter',
+  's/m': 's/m',
+  'km/h': 'km/h'
+};
 
 export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
   exercise,
@@ -43,7 +59,7 @@ export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
         <Separator orientation="vertical" className="h-10 mx-1" />
         
         <div className="flex-1 text-center">
-          <div className="font-medium text-gray-600 mb-1">Reps</div>
+          <div className="font-medium text-gray-600 mb-1">{REPS_MODE_LABELS[exercise.reps_mode || 'reps']}</div>
           <div className="text-gray-900">{exercise.reps || '-'}</div>
           {actualValues?.reps && (
             <div className="text-xs text-green-600 font-medium">{actualValues.reps}</div>
@@ -60,7 +76,7 @@ export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
         <Separator orientation="vertical" className="h-10 mx-1" />
         
         <div className="flex-1 text-center">
-          <div className="font-medium text-gray-600 mb-1">Kg</div>
+          <div className="font-medium text-gray-600 mb-1">{KG_MODE_LABELS[exercise.kg_mode || 'kg']}</div>
           <div className="text-gray-900">{exercise.kg || '-'}</div>
           {actualValues?.kg && (
             <div className="text-xs text-green-600 font-medium">{actualValues.kg}</div>

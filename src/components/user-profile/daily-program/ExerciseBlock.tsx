@@ -11,7 +11,9 @@ interface Exercise {
   exercise_id: string;
   sets: number;
   reps: string;
+  reps_mode?: string;
   kg?: string;
+  kg_mode?: string;
   percentage_1rm?: number;
   velocity_ms?: number;
   tempo?: string;

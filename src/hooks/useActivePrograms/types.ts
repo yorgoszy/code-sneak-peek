@@ -36,12 +36,17 @@ export interface EnrichedAssignment {
           id: string;
           name: string;
           block_order: number;
+          training_type?: string;
+          workout_format?: string;
+          workout_duration?: string;
           program_exercises: Array<{
             id: string;
             exercise_id: string;
             sets: number;
             reps: string;
+            reps_mode?: string;
             kg?: string;
+            kg_mode?: string;
             percentage_1rm?: number;
             velocity_ms?: number;
             tempo?: string;
@@ -52,6 +57,7 @@ export interface EnrichedAssignment {
               id: string;
               name: string;
               description?: string;
+              video_url?: string;
             };
           }>;
         }>;
