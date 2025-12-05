@@ -119,6 +119,10 @@ export const assignmentService = {
               id,
               name,
               block_order,
+              training_type,
+              workout_format,
+              workout_duration,
+              block_sets,
               program_exercises!fk_program_exercises_block_id(
                 id,
                 sets,
@@ -130,6 +134,9 @@ export const assignmentService = {
                 rest,
                 notes,
                 exercise_order,
+                reps_mode,
+                kg_mode,
+                exercise_id,
                 exercises!fk_program_exercises_exercise_id(id, name, description, video_url)
               )
             )

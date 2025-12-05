@@ -150,12 +150,18 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
               id,
               name,
               block_order,
+              training_type,
+              workout_format,
+              workout_duration,
+              block_sets,
               program_exercises(
                 id,
                 exercise_id,
                 sets,
                 reps,
+                reps_mode,
                 kg,
+                kg_mode,
                 percentage_1rm,
                 velocity_ms,
                 tempo,
@@ -218,12 +224,18 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
               id: block.id,
               name: block.name,
               block_order: block.block_order,
+              training_type: block.training_type || undefined,
+              workout_format: block.workout_format || undefined,
+              workout_duration: block.workout_duration || undefined,
+              block_sets: block.block_sets || 1,
               program_exercises: (block.program_exercises || []).map((exercise: any) => ({
                 id: exercise.id,
                 exercise_id: exercise.exercise_id,
                 sets: exercise.sets,
                 reps: exercise.reps,
+                reps_mode: exercise.reps_mode || 'reps',
                 kg: exercise.kg || undefined,
+                kg_mode: exercise.kg_mode || 'kg',
                 percentage_1rm: exercise.percentage_1rm || undefined,
                 velocity_ms: exercise.velocity_ms || undefined,
                 tempo: exercise.tempo || undefined,
@@ -235,7 +247,8 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
                   ? {
                       id: exercise.exercises.id,
                       name: exercise.exercises.name,
-                      description: exercise.exercises.description || undefined
+                      description: exercise.exercises.description || undefined,
+                      video_url: exercise.exercises.video_url || undefined
                     }
                   : undefined
               }))

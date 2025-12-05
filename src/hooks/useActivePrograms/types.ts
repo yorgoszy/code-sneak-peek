@@ -39,6 +39,7 @@ export interface EnrichedAssignment {
           training_type?: string;
           workout_format?: string;
           workout_duration?: string;
+          block_sets?: number;
           program_exercises: Array<{
             id: string;
             exercise_id: string;
