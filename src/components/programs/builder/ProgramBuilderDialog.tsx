@@ -46,7 +46,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     editingProgram,
     editingAssignment,
     isOpen,
-    program
+    program,
+    updateProgram
   });
 
   useEffect(() => {

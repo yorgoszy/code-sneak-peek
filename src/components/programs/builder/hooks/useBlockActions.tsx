@@ -23,6 +23,9 @@ export const useBlockActions = (
                 id: generateId(),
                 name: `Μπλοκ ${currentBlocks.length + 1}`,
                 block_order: currentBlocks.length + 1,
+                training_type: undefined,
+                workout_format: '',
+                workout_duration: '',
                 program_exercises: []
               };
               
