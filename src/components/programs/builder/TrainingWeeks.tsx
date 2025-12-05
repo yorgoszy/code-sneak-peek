@@ -32,6 +32,7 @@ interface TrainingWeeksProps {
   onUpdateBlockTrainingType: (weekId: string, dayId: string, blockId: string, trainingType: string) => void;
   onUpdateBlockWorkoutFormat: (weekId: string, dayId: string, blockId: string, format: string) => void;
   onUpdateBlockWorkoutDuration: (weekId: string, dayId: string, blockId: string, duration: string) => void;
+  onUpdateBlockSets: (weekId: string, dayId: string, blockId: string, sets: number) => void;
   onAddExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
@@ -63,6 +64,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onUpdateBlockTrainingType,
   onUpdateBlockWorkoutFormat,
   onUpdateBlockWorkoutDuration,
+  onUpdateBlockSets,
   onAddExercise,
   onRemoveExercise,
   onUpdateExercise,
@@ -173,6 +175,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                 onUpdateBlockTrainingType={onUpdateBlockTrainingType}
                 onUpdateBlockWorkoutFormat={onUpdateBlockWorkoutFormat}
                 onUpdateBlockWorkoutDuration={onUpdateBlockWorkoutDuration}
+                onUpdateBlockSets={onUpdateBlockSets}
                 onUpdateExercise={onUpdateExercise}
                 onRemoveExercise={onRemoveExercise}
                 onDuplicateExercise={onDuplicateExercise}

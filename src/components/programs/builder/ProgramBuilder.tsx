@@ -33,6 +33,7 @@ interface ProgramBuilderProps {
   onUpdateBlockTrainingType: (weekId: string, dayId: string, blockId: string, trainingType: string) => void;
   onUpdateBlockWorkoutFormat: (weekId: string, dayId: string, blockId: string, format: string) => void;
   onUpdateBlockWorkoutDuration: (weekId: string, dayId: string, blockId: string, duration: string) => void;
+  onUpdateBlockSets: (weekId: string, dayId: string, blockId: string, sets: number) => void;
   onAddExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onRemoveExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onUpdateExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => void;
@@ -71,6 +72,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onUpdateBlockTrainingType,
   onUpdateBlockWorkoutFormat,
   onUpdateBlockWorkoutDuration,
+  onUpdateBlockSets,
   onAddExercise,
   onRemoveExercise,
   onUpdateExercise,
@@ -125,6 +127,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onUpdateBlockTrainingType={onUpdateBlockTrainingType}
         onUpdateBlockWorkoutFormat={onUpdateBlockWorkoutFormat}
         onUpdateBlockWorkoutDuration={onUpdateBlockWorkoutDuration}
+        onUpdateBlockSets={onUpdateBlockSets}
         onAddExercise={onAddExercise}
         onRemoveExercise={onRemoveExercise}
         onUpdateExercise={onUpdateExercise}

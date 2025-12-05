@@ -13,12 +13,12 @@ export const useDayActions = (
       if (week.id === weekId) {
         // Δημιουργούμε τα 6 προκαθορισμένα blocks με τη σωστή σειρά
         const defaultBlocks = [
-          { id: generateId(), name: 'warm up', training_type: 'warm up' as Block['training_type'], block_order: 1, program_exercises: [] },
-          { id: generateId(), name: 'str', training_type: 'str' as Block['training_type'], block_order: 2, program_exercises: [] },
-          { id: generateId(), name: 'end', training_type: 'end' as Block['training_type'], block_order: 3, program_exercises: [] },
-          { id: generateId(), name: 'rotational', training_type: 'rotational' as Block['training_type'], block_order: 4, program_exercises: [] },
-          { id: generateId(), name: 'accessory', training_type: 'accessory' as Block['training_type'], block_order: 5, program_exercises: [] },
-          { id: generateId(), name: 'recovery', training_type: 'recovery' as Block['training_type'], block_order: 6, program_exercises: [] }
+          { id: generateId(), name: 'warm up', training_type: 'warm up' as Block['training_type'], block_order: 1, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'str', training_type: 'str' as Block['training_type'], block_order: 2, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'end', training_type: 'end' as Block['training_type'], block_order: 3, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'rotational', training_type: 'rotational' as Block['training_type'], block_order: 4, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'accessory', training_type: 'accessory' as Block['training_type'], block_order: 5, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'recovery', training_type: 'recovery' as Block['training_type'], block_order: 6, block_sets: 1, program_exercises: [] }
         ];
 
         const newDay = {

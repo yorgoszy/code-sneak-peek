@@ -122,6 +122,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onUpdateBlockTrainingType={actions.updateBlockTrainingType}
         onUpdateBlockWorkoutFormat={actions.updateBlockWorkoutFormat}
         onUpdateBlockWorkoutDuration={actions.updateBlockWorkoutDuration}
+        onUpdateBlockSets={actions.updateBlockSets}
         onAddExercise={actions.addExercise}
         onRemoveExercise={actions.removeExercise}
         onUpdateExercise={actions.updateExercise}
