@@ -49,35 +49,38 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
     }
   }, [oneRM, exercise.exercise_id, exercise.kg]);
 
-  // Auto-calculate kg based on %1RM
+  // Auto-calculate kg based on %1RM - ALWAYS recalculate when user changes or 1RM changes
   useEffect(() => {
-    if (oneRM && exercise.percentage_1rm) {
+    if (exercise.percentage_1rm) {
       const percentage = parseFloat(exercise.percentage_1rm.toString().replace(',', '.'));
       if (!isNaN(percentage) && percentage > 0) {
-        const calculatedKg = (oneRM * percentage) / 100;
-        
-        // Κλασική στρογγυλοποίηση (0.5+ πάνω, <0.5 κάτω)
-        let roundedWeight = Math.round(calculatedKg);
-        
-        // Διασφάλιση ότι είναι άρτιος αριθμός
-        if (roundedWeight % 2 !== 0) {
-          // Βρες τον πιο κοντινό άρτιο
-          const lowerEven = roundedWeight - 1;
-          const upperEven = roundedWeight + 1;
+        if (oneRM) {
+          const calculatedKg = (oneRM * percentage) / 100;
           
-          // Επέλεξε τον άρτιο που είναι πιο κοντά στο calculatedKg
-          if (Math.abs(calculatedKg - lowerEven) < Math.abs(calculatedKg - upperEven)) {
-            roundedWeight = lowerEven;
-          } else {
-            roundedWeight = upperEven;
+          // Κλασική στρογγυλοποίηση (0.5+ πάνω, <0.5 κάτω)
+          let roundedWeight = Math.round(calculatedKg);
+          
+          // Διασφάλιση ότι είναι άρτιος αριθμός
+          if (roundedWeight % 2 !== 0) {
+            const lowerEven = roundedWeight - 1;
+            const upperEven = roundedWeight + 1;
+            if (Math.abs(calculatedKg - lowerEven) < Math.abs(calculatedKg - upperEven)) {
+              roundedWeight = lowerEven;
+            } else {
+              roundedWeight = upperEven;
+            }
           }
+          
+          console.log('📊 Auto-calculating kg from %1RM:', percentage, '% of', oneRM, '=', calculatedKg, 'kg → rounded to', roundedWeight, 'kg (user:', selectedUserId, ')');
+          onUpdate('kg', roundedWeight.toString().replace('.', ','));
+        } else {
+          // Αν δεν υπάρχει 1RM για τον νέο χρήστη, καθαρίζουμε το kg
+          console.log('📊 No 1RM found for user:', selectedUserId, '- clearing kg');
+          onUpdate('kg', '');
         }
-        
-        console.log('📊 Auto-calculating kg from %1RM:', percentage, '% of', oneRM, '=', calculatedKg, 'kg → rounded to', roundedWeight, 'kg');
-        onUpdate('kg', roundedWeight.toString().replace('.', ','));
       }
     }
-  }, [oneRM, exercise.percentage_1rm]);
+  }, [oneRM, exercise.percentage_1rm, selectedUserId]);
 
   const handleExerciseSelect = (exerciseId: string) => {
     onUpdate('exercise_id', exerciseId);
