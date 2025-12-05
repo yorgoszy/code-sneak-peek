@@ -11,12 +11,16 @@ export const useExercise1RM = ({ userId, exerciseId }: UseExercise1RMProps) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // ΑΜΕΣΑ reset το 1RM όταν αλλάζουν τα dependencies
+    // Αυτό διασφαλίζει ότι το παλιό 1RM δεν χρησιμοποιείται
+    setOneRM(null);
+    
     const fetch1RM = async () => {
       console.log('🔍 useExercise1RM - userId:', userId, 'exerciseId:', exerciseId);
       
       if (!userId || !exerciseId) {
         console.log('⚠️ useExercise1RM - Missing userId or exerciseId');
-        setOneRM(null);
+        setLoading(false);
         return;
       }
 
