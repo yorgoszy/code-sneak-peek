@@ -82,8 +82,8 @@ export const useProgramSave = () => {
         is_template: programData.is_template || false,
         status: programData.status || 'draft',
         type: programData.type || 'strength',
-        duration: (programData.weeks || programData.program_weeks)?.length || null,
-        training_days: (programData.weeks || programData.program_weeks)?.[0]?.program_days?.length || null
+        duration: weeks?.length || null,
+        training_days: weeks?.[0]?.program_days?.length || null
       };
 
       console.log('💾 [useProgramSave] Program payload:', programPayload);
@@ -127,7 +127,8 @@ export const useProgramSave = () => {
               .eq('program_id', programData.id);
           }
 
-          // Διαγραφή υπάρχουσας δομής πριν την αναδημιουργία
+          // ΠΑΝΤΑ διαγράφουμε την υπάρχουσα δομή πριν δημιουργήσουμε νέα
+          console.log('🔄 Deleting existing structure before recreation...');
           await deleteExistingStructure(programData.id);
         } else {
           // Το πρόγραμμα δεν υπάρχει, δημιουργούμε νέο
@@ -155,7 +156,6 @@ export const useProgramSave = () => {
         if (error) throw error;
         savedProgram = data;
       }
-
       console.log('✅ [useProgramSave] Program saved:', savedProgram);
 
       // ΚΡΙΤΙΚΟ: Δημιουργία δομής προγράμματος (weeks, days, blocks, exercises)

@@ -8,12 +8,12 @@ export const useWeekActions = (
   saveProgram?: (programData: any) => Promise<any>
 ) => {
   const createDefaultBlocks = () => [
-    { id: generateId(), name: 'warm up', training_type: 'warm up' as const, block_order: 1, program_exercises: [] },
-    { id: generateId(), name: 'str', training_type: 'str' as const, block_order: 2, program_exercises: [] },
-    { id: generateId(), name: 'end', training_type: 'end' as const, block_order: 3, program_exercises: [] },
-    { id: generateId(), name: 'rotational', training_type: 'rotational' as const, block_order: 4, program_exercises: [] },
-    { id: generateId(), name: 'accessory', training_type: 'accessory' as const, block_order: 5, program_exercises: [] },
-    { id: generateId(), name: 'recovery', training_type: 'recovery' as const, block_order: 6, program_exercises: [] }
+    { id: generateId(), name: 'warm up', training_type: 'warm up' as const, block_order: 1, workout_format: '', workout_duration: '', program_exercises: [] },
+    { id: generateId(), name: 'str', training_type: 'str' as const, block_order: 2, workout_format: '', workout_duration: '', program_exercises: [] },
+    { id: generateId(), name: 'end', training_type: 'end' as const, block_order: 3, workout_format: '', workout_duration: '', program_exercises: [] },
+    { id: generateId(), name: 'rotational', training_type: 'rotational' as const, block_order: 4, workout_format: '', workout_duration: '', program_exercises: [] },
+    { id: generateId(), name: 'accessory', training_type: 'accessory' as const, block_order: 5, workout_format: '', workout_duration: '', program_exercises: [] },
+    { id: generateId(), name: 'recovery', training_type: 'recovery' as const, block_order: 6, workout_format: '', workout_duration: '', program_exercises: [] }
   ];
 
   const addWeek = () => {
