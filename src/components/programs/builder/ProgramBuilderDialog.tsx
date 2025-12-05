@@ -68,19 +68,69 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   };
 
   const handleAthleteChange = (userId: string) => {
+    // 🔄 Καθαρισμός kg για ασκήσεις με percentage_1rm
+    const clearKgForPercentageExercises = (weeks: any[]) => {
+      return weeks.map(week => ({
+        ...week,
+        program_days: week.program_days?.map((day: any) => ({
+          ...day,
+          program_blocks: day.program_blocks?.map((block: any) => ({
+            ...block,
+            program_exercises: block.program_exercises?.map((exercise: any) => {
+              if (exercise.percentage_1rm && parseFloat(exercise.percentage_1rm.toString().replace(',', '.')) > 0) {
+                console.log('🔄 Clearing kg for exercise with %1RM:', exercise.exercise_id);
+                return { ...exercise, kg: '' };
+              }
+              return exercise;
+            }) || []
+          })) || []
+        })) || []
+      }));
+    };
+    
+    const updatedWeeks = clearKgForPercentageExercises(program.weeks);
+    
     updateProgram({ 
       user_id: userId,
       is_multiple_assignment: false,
-      user_ids: []
+      user_ids: [],
+      weeks: updatedWeeks
     });
   };
 
   const handleMultipleAthleteChange = (userIds: string[]) => {
     console.log('🔄 ProgramBuilderDialog - handleMultipleAthleteChange called with:', userIds);
+    
+    // 🔄 Καθαρισμός kg για ασκήσεις με percentage_1rm ώστε να επαναυπολογιστούν
+    // με βάση το 1RM του νέου χρήστη
+    const clearKgForPercentageExercises = (weeks: any[]) => {
+      return weeks.map(week => ({
+        ...week,
+        program_days: week.program_days?.map((day: any) => ({
+          ...day,
+          program_blocks: day.program_blocks?.map((block: any) => ({
+            ...block,
+            program_exercises: block.program_exercises?.map((exercise: any) => {
+              // Αν η άσκηση έχει percentage_1rm, καθαρίζουμε το kg
+              // για να επαναυπολογιστεί με το 1RM του νέου χρήστη
+              if (exercise.percentage_1rm && parseFloat(exercise.percentage_1rm.toString().replace(',', '.')) > 0) {
+                console.log('🔄 Clearing kg for exercise with %1RM:', exercise.exercise_id);
+                return { ...exercise, kg: '' };
+              }
+              return exercise;
+            }) || []
+          })) || []
+        })) || []
+      }));
+    };
+    
+    const updatedWeeks = clearKgForPercentageExercises(program.weeks);
+    
     updateProgram({ 
       user_ids: userIds,
       is_multiple_assignment: true,
-      user_id: ''
+      user_id: '',
+      weeks: updatedWeeks
     });
   };
 
