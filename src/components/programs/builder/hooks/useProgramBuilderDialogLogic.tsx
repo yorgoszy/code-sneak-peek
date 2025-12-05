@@ -47,18 +47,28 @@ export const useProgramBuilderDialogLogic = ({
       console.log('💾 [handleSave] Weeks count:', program.weeks?.length || 0);
       
       // Λεπτομερές logging της δομής
+      let totalExercises = 0;
       program.weeks?.forEach((week, wi) => {
         console.log(`💾 [handleSave] Week ${wi + 1}: ${week.name}, Days: ${week.program_days?.length || 0}`);
         week.program_days?.forEach((day, di) => {
           console.log(`💾 [handleSave]   Day ${di + 1}: ${day.name}, Blocks: ${day.program_blocks?.length || 0}`);
           day.program_blocks?.forEach((block, bi) => {
-            console.log(`💾 [handleSave]     Block ${bi + 1}: ${block.name}, Exercises: ${block.program_exercises?.length || 0}`);
+            const exerciseCount = block.program_exercises?.length || 0;
+            totalExercises += exerciseCount;
+            console.log(`💾 [handleSave]     Block ${bi + 1}: ${block.name}, Exercises: ${exerciseCount}`);
           });
         });
       });
       
+      console.log(`💾 [handleSave] Total exercises to save: ${totalExercises}`);
+      
       if (!program.name?.trim()) {
         toast.error('Το όνομα του προγράμματος είναι υποχρεωτικό');
+        return;
+      }
+
+      if (program.weeks?.length === 0) {
+        toast.error('Προσθέστε τουλάχιστον μία εβδομάδα στο πρόγραμμα');
         return;
       }
 
@@ -76,7 +86,7 @@ export const useProgramBuilderDialogLogic = ({
       // Don't close dialog, keep it open for assignments
     } catch (error) {
       console.error('❌ Error saving program:', error);
-      toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
+      toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά.');
     }
   };
 
