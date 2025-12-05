@@ -42,12 +42,17 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
   console.log('🎯 ExerciseRow - selectedUserId:', selectedUserId, 'exercise_id:', exercise.exercise_id, 'oneRM:', oneRM, 'loading:', oneRMLoading, 'current kg:', exercise.kg);
 
   // Auto-fill kg field with 1RM when exercise is selected and kg is empty
+  // ΔΕΝ τρέχει αν υπάρχει percentage_1rm (θα υπολογιστεί από το δεύτερο useEffect)
   useEffect(() => {
-    if (oneRM && exercise.exercise_id && !exercise.kg) {
+    // Αν υπάρχει percentage_1rm, αφήνουμε το δεύτερο useEffect να κάνει τον υπολογισμό
+    const hasPercentage = exercise.percentage_1rm && 
+      parseFloat(exercise.percentage_1rm.toString().replace(',', '.')) > 0;
+    
+    if (oneRM && exercise.exercise_id && !exercise.kg && !hasPercentage) {
       console.log('🏋️ Auto-filling 1RM:', oneRM, 'kg for exercise:', exercise.exercise_id);
       onUpdate('kg', oneRM.toString().replace('.', ','));
     }
-  }, [oneRM, exercise.exercise_id, exercise.kg]);
+  }, [oneRM, exercise.exercise_id, exercise.kg, exercise.percentage_1rm]);
 
   // Auto-calculate kg based on %1RM - ALWAYS recalculate when user changes or 1RM changes
   // Περιμένουμε το loading να ολοκληρωθεί για να έχουμε σωστό 1RM
