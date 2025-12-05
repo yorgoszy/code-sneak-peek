@@ -19,7 +19,13 @@ export const useProgramSave = () => {
       });
 
       // 🔍 ΑΝΑΛΥΣΗ ΑΣΚΗΣΕΩΝ ΠΡΙΝ ΤΗΝ ΑΠΟΘΗΚΕΥΣΗ
-      const weeks = programData.weeks || programData.program_weeks || [];
+      // Χρησιμοποιούμε το weeks αν έχει στοιχεία, αλλιώς το program_weeks
+      const weeks = (programData.weeks && programData.weeks.length > 0) 
+        ? programData.weeks 
+        : (programData.program_weeks || []);
+      
+      console.log('🔍 [SAVE] Using weeks source:', programData.weeks?.length > 0 ? 'weeks' : 'program_weeks');
+      console.log('🔍 [SAVE] Weeks count:', weeks.length);
       console.log('🔍 [SAVE ANALYSIS] Program structure before save:');
       weeks.forEach((week, weekIndex) => {
         console.log(`🔍 [SAVE] Week ${weekIndex + 1}: ${week.name}`);

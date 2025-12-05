@@ -41,7 +41,21 @@ export const useProgramBuilderDialogLogic = ({
 
   const handleSave = async () => {
     try {
-      console.log('💾 Saving program:', program);
+      console.log('💾 [handleSave] Starting save...');
+      console.log('💾 [handleSave] Program name:', program.name);
+      console.log('💾 [handleSave] Program ID:', program.id);
+      console.log('💾 [handleSave] Weeks count:', program.weeks?.length || 0);
+      
+      // Λεπτομερές logging της δομής
+      program.weeks?.forEach((week, wi) => {
+        console.log(`💾 [handleSave] Week ${wi + 1}: ${week.name}, Days: ${week.program_days?.length || 0}`);
+        week.program_days?.forEach((day, di) => {
+          console.log(`💾 [handleSave]   Day ${di + 1}: ${day.name}, Blocks: ${day.program_blocks?.length || 0}`);
+          day.program_blocks?.forEach((block, bi) => {
+            console.log(`💾 [handleSave]     Block ${bi + 1}: ${block.name}, Exercises: ${block.program_exercises?.length || 0}`);
+          });
+        });
+      });
       
       if (!program.name?.trim()) {
         toast.error('Το όνομα του προγράμματος είναι υποχρεωτικό');
