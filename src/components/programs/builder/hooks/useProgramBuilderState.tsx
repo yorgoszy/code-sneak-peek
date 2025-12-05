@@ -27,6 +27,7 @@ export interface Block {
   training_type?: 'warm up' | 'activation' | 'str' | 'str/spd' | 'pwr' | 'spd/str' | 'spd' | 'str/end' | 'pwr/end' | 'spd/end' | 'end' | 'hpr' | 'mobility' | 'neural act' | 'stability' | 'recovery' | 'accessory' | 'rotational';
   workout_format?: string;
   workout_duration?: string;
+  block_sets?: number;
   program_exercises: ProgramExercise[];
 }
 
@@ -131,6 +132,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
               training_type: block.training_type,
               workout_format: block.workout_format || '',
               workout_duration: block.workout_duration || '',
+              block_sets: block.block_sets || 1,
               program_exercises: block.program_exercises
                 ?.sort((a: any, b: any) => (a.exercise_order || 0) - (b.exercise_order || 0))
                 ?.map((pe: any) => {

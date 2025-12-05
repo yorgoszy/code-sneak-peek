@@ -2483,6 +2483,7 @@ export type Database = {
       program_blocks: {
         Row: {
           block_order: number
+          block_sets: number | null
           created_at: string | null
           day_id: string | null
           id: string
@@ -2494,6 +2495,7 @@ export type Database = {
         }
         Insert: {
           block_order: number
+          block_sets?: number | null
           created_at?: string | null
           day_id?: string | null
           id?: string
@@ -2505,6 +2507,7 @@ export type Database = {
         }
         Update: {
           block_order?: number
+          block_sets?: number | null
           created_at?: string | null
           day_id?: string | null
           id?: string

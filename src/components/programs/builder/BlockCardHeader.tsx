@@ -13,6 +13,7 @@ interface BlockCardHeaderProps {
   trainingType?: string;
   workoutFormat?: string;
   workoutDuration?: string;
+  blockSets?: number;
   isOpen: boolean;
   isEditing: boolean;
   editingName: string;
@@ -27,6 +28,7 @@ interface BlockCardHeaderProps {
   onTrainingTypeChange: (type: string) => void;
   onWorkoutFormatChange: (format: string) => void;
   onWorkoutDurationChange: (duration: string) => void;
+  onBlockSetsChange: (sets: number) => void;
 }
 
 // Training types που εμφανίζονται στο dropdown
@@ -63,6 +65,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   trainingType,
   workoutFormat,
   workoutDuration,
+  blockSets,
   isOpen,
   isEditing,
   editingName,
@@ -76,7 +79,8 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onRemoveBlock,
   onTrainingTypeChange,
   onWorkoutFormatChange,
-  onWorkoutDurationChange
+  onWorkoutDurationChange,
+  onBlockSetsChange
 }) => {
   return (
     <CardHeader className="pb-2 space-y-2">
@@ -196,6 +200,24 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
                 onClick={(e) => e.stopPropagation()}
               />
             </>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-white">Set:</span>
+          <Input
+            type="number"
+            min="1"
+            value={blockSets || 1}
+            onChange={(e) => {
+              const value = parseInt(e.target.value) || 1;
+              onBlockSetsChange(Math.max(1, value));
+            }}
+            className="h-6 w-[50px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
+            onClick={(e) => e.stopPropagation()}
+          />
+          {(blockSets || 1) > 1 && (
+            <span className="text-xs text-[#00ffba]">x{blockSets}</span>
           )}
         </div>
       </div>
