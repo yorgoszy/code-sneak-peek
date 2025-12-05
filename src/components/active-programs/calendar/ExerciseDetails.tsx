@@ -6,6 +6,20 @@ import { VideoThumbnail } from '@/components/user-profile/daily-program/VideoThu
 import { getWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 import { formatVelocityMs } from '@/utils/timeCalculations';
 
+const REPS_MODE_LABELS: Record<string, string> = {
+  'reps': 'Reps',
+  'time': 'Time',
+  'meter': 'Meter'
+};
+
+const KG_MODE_LABELS: Record<string, string> = {
+  'kg': 'Kg',
+  'rpm': 'RPM',
+  'meter': 'Meter',
+  's/m': 's/m',
+  'km/h': 'km/h'
+};
+
 interface ExerciseDetailsProps {
   exercise: any;
   onVideoClick?: (exercise: any) => void;
@@ -95,7 +109,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">Reps</div>
+            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">{REPS_MODE_LABELS[exercise.reps_mode || 'reps']}</div>
             <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
               {exercise.reps || '-'}
             </div>
@@ -107,7 +121,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">Kg</div>
+            <div className="text-gray-600 text-[8px] md:text-[9px] leading-tight">{KG_MODE_LABELS[exercise.kg_mode || 'kg']}</div>
             <div className="bg-gray-100 px-0.5 py-1 rounded-none text-[9px] md:text-[10px] text-center w-full h-4 flex items-center justify-center">
               {exercise.kg || '-'}
             </div>
