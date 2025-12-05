@@ -95,8 +95,8 @@ export const useExerciseActions = (
 
               if (warmUpRelationships.length > 0) {
                 updatedBlocks = updatedBlocks.map(block => {
-                  // Βρίσκουμε το warm up block
-                  if (block.training_type === 'warm up') {
+                  // Βρίσκουμε το activation block (πρώην warm up)
+                  if (block.training_type === 'activation') {
                     // Παίρνουμε τα υπάρχοντα exercise_ids στο warm up block
                     const existingExerciseIds = new Set(
                       (block.program_exercises || []).map(ex => ex.exercise_id)
