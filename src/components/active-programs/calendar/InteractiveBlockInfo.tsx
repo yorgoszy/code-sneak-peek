@@ -210,6 +210,24 @@ export const InteractiveBlockInfo: React.FC<InteractiveBlockInfoProps> = ({
   const isSetComplete = completedSets >= blockSets;
   const hasFormat = workoutFormat || workoutDuration;
   const hasSets = blockSets > 1;
+  
+  // Determine timer color based on state
+  const isFinished = remainingSeconds === 0 && initialSeconds > 0;
+  const isUnderOneMinute = remainingSeconds > 0 && remainingSeconds <= 60;
+  
+  const getTimerColor = () => {
+    if (isFinished) return 'text-[#00ffba]';
+    if (isUnderOneMinute) return 'text-red-500';
+    if (timerActive) return 'text-[#cb8954]';
+    return 'text-[#cb8954]';
+  };
+  
+  const getBorderColor = () => {
+    if (isFinished) return 'border-[#00ffba] bg-[#00ffba]/20';
+    if (isUnderOneMinute) return 'border-red-500 bg-red-500/10';
+    if (timerActive) return 'border-[#cb8954] bg-[#cb8954]/10';
+    return 'border-[#cb8954]';
+  };
 
   if (!hasFormat && !hasSets) return null;
 
@@ -221,33 +239,21 @@ export const InteractiveBlockInfo: React.FC<InteractiveBlockInfoProps> = ({
             workoutInProgress 
               ? 'cursor-pointer hover:bg-[#cb8954]/10 active:scale-95' 
               : ''
-          } ${
-            timerActive 
-              ? 'border-[#00ffba] bg-[#00ffba]/10' 
-              : remainingSeconds === 0 && initialSeconds > 0
-                ? 'border-[#00ffba] bg-[#00ffba]/20'
-                : 'border-[#cb8954]'
-          }`}
+          } ${getBorderColor()}`}
           onClick={handleTimerClick}
           onDoubleClick={handleTimerDoubleClick}
           title={workoutInProgress ? 'Click: Start/Pause | Double-click: Reset' : ''}
         >
           {workoutFormat && (
-            <span className={timerActive ? 'text-[#00ffba]' : 'text-[#cb8954]'}>
+            <span className={getTimerColor()}>
               {workoutFormat}
             </span>
           )}
           {workoutFormat && workoutDuration && (
-            <span className={timerActive ? 'text-[#00ffba]' : 'text-[#cb8954]'}>-</span>
+            <span className={getTimerColor()}>-</span>
           )}
           {workoutDuration && (
-            <span className={`font-mono ${
-              timerActive 
-                ? 'text-[#00ffba] animate-pulse' 
-                : remainingSeconds === 0 && initialSeconds > 0
-                  ? 'text-[#00ffba]'
-                  : 'text-[#cb8954]'
-            }`}>
+            <span className={`font-mono ${getTimerColor()} ${timerActive && !isFinished ? 'animate-pulse' : ''}`}>
               {workoutInProgress && initialSeconds > 0
                 ? formatSecondsToDisplay(remainingSeconds)
                 : workoutDuration
