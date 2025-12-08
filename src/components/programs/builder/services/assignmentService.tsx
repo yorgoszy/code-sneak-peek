@@ -104,171 +104,89 @@ export const assignmentService = {
     console.log('🏗️ [AssignmentService] Checking program structure for:', program.id);
     
     try {
-      // Χρησιμοποιούμε το σωστό foreign key για program_days -> week_id
-      const { data: existingWeeks, error: weeksError } = await supabase
-        .from('program_weeks')
-        .select(`
-          id,
-          name,
-          week_number,
-          program_days!fk_program_days_week_id(
-            id,
-            name,
-            day_number,
-            program_blocks!fk_program_blocks_day_id(
-              id,
-              name,
-              block_order,
-              training_type,
-              workout_format,
-              workout_duration,
-              block_sets,
-              program_exercises!fk_program_exercises_block_id(
-                id,
-                sets,
-                reps,
-                kg,
-                percentage_1rm,
-                velocity_ms,
-                tempo,
-                rest,
-                notes,
-                exercise_order,
-                reps_mode,
-                kg_mode,
-                exercise_id,
-                exercises!fk_program_exercises_exercise_id(id, name, description, video_url)
-              )
-            )
-          )
-        `)
-        .eq('program_id', program.id);
-
-      if (weeksError) {
-        console.error('❌ [AssignmentService] Error checking program weeks:', weeksError);
-        throw new Error(`Σφάλμα ελέγχου δομής προγράμματος: ${weeksError.message}`);
-      }
-
-      if (!existingWeeks || existingWeeks.length === 0) {
-        console.log('⚠️ [AssignmentService] No program structure found, creating...');
-        
-        if (program.weeks && program.weeks.length > 0) {
-          await this.createProgramStructure(program.id, program.weeks);
-        } else {
-          throw new Error('Το πρόγραμμα δεν έχει δομή εβδομάδων');
-        }
+      // ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Πάντα διαγράφουμε και ξαναδημιουργούμε τη δομή
+      // για να διασφαλίσουμε ότι οι αλλαγές αποθηκεύονται σωστά
+      console.log('🗑️ [AssignmentService] Deleting existing structure and recreating...');
+      
+      // Διαγραφή υπάρχουσας δομής
+      await this.deleteExistingStructure(program.id);
+      
+      // Δημιουργία νέας δομής από τον builder
+      if (program.weeks && program.weeks.length > 0) {
+        console.log('🏗️ [AssignmentService] Creating new structure with', program.weeks.length, 'weeks');
+        await this.createProgramStructure(program.id, program.weeks);
+        console.log('✅ [AssignmentService] Program structure recreated successfully');
       } else {
-        console.log('✅ [AssignmentService] Program structure exists:', existingWeeks.length, 'weeks');
-        
-        // 🚨 ΚΡΙΤΙΚΟΣ ΕΛΕΓΧΟΣ: Έλεγχος σειράς ασκήσεων στη βάση
-        console.log('🚨 [ASSIGNMENT CHECK] Verifying exercise order in database:');
-        
-        // ΝΕΟ: Ετοιμάζουμε map από τη δομή του builder για γρήγορη αντιστοίχιση
-        const builderWeeks = (program.weeks || []) as any[];
-        const updates: any[] = [];
-        
-        existingWeeks.forEach((week, wIndex) => {
-          console.log(`🚨 [ASSIGNMENT] Week ${wIndex + 1}: ${week.name}`);
-
-          const builderWeek = builderWeeks.find(w => Number(w.week_number) === Number(week.week_number));
-          week.program_days?.forEach((day, dIndex) => {
-            console.log(`🚨 [ASSIGNMENT] Day ${dIndex + 1}: ${day.name}`);
-            const builderDay = builderWeek?.program_days?.find((bd: any) => Number(bd.day_number) === Number(day.day_number));
-
-            day.program_blocks?.forEach((block, bIndex) => {
-              console.log(`🚨 [ASSIGNMENT] Block ${bIndex + 1}: ${block.name} - ${block.program_exercises?.length || 0} exercises`);
-              const builderBlock = builderDay?.program_blocks?.find((bb: any) => Number(bb.block_order) === Number(block.block_order));
-              const exercises = block.program_exercises || [];
-              
-              // Έλεγχος αν οι ασκήσεις είναι σε σωστή σειρά στη βάση
-              console.log(`🚨 [ASSIGNMENT] Current order in database:`);
-              exercises.forEach((ex, eIndex) => {
-                console.log(`🚨 [ASSIGNMENT]   ${eIndex + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
-              });
-              
-              // Ταξινόμηση με βάση το exercise_order
-              const sortedExercises = [...exercises].sort((a, b) => {
-                const orderA = Number(a.exercise_order) || 0;
-                const orderB = Number(b.exercise_order) || 0;
-                return orderA - orderB;
-              });
-              
-              console.log(`🚨 [ASSIGNMENT] Should be in this order:`);
-              sortedExercises.forEach((ex, eIndex) => {
-                console.log(`🚨 [ASSIGNMENT]   ${eIndex + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
-              });
-              
-              // Έλεγχος αν η σειρά είναι λάθος
-              const isOrderWrong = exercises.some((ex, index) => {
-                const sortedEx = sortedExercises[index];
-                return ex.id !== sortedEx.id;
-              });
-              
-              if (isOrderWrong) {
-                console.error(`🚨 [ASSIGNMENT ERROR] Exercise order is WRONG in block: ${block.name}`);
-                console.error(`🚨 [ASSIGNMENT ERROR] Database has wrong order, but we won't fix it here to avoid infinite loops`);
-              } else {
-                console.log(`✅ [ASSIGNMENT OK] Exercise order is correct in block: ${block.name}`);
-              }
-
-              // ΝΕΟ: Ενημέρωση τιμών από τον Builder
-              exercises.forEach((dbEx: any) => {
-                const builderExercise = builderBlock?.program_exercises?.find((be: any) => Number(be.exercise_order) === Number(dbEx.exercise_order));
-                if (!builderExercise) return;
-
-                // Υποστήριξη ελληνικού δεκαδικού
-                const velocityValue = (builderExercise.velocity_ms !== undefined && builderExercise.velocity_ms !== null && builderExercise.velocity_ms !== '')
-                  ? parseNumberWithComma(builderExercise.velocity_ms)
-                  : null;
-
-                // Ενημέρωση reps_mode και kg_mode
-                const repsMode = builderExercise.reps_mode || 'reps';
-                const kgMode = builderExercise.kg_mode || 'kg';
-
-                // Αν στη βάση είναι διαφορετικό, ενημέρωσέ το
-                const currentDbVelocity = dbEx.velocity_ms as number | null;
-                const normalizedNew = Number.isFinite(velocityValue as number) ? (velocityValue as number) : null;
-
-                const isDifferent = (currentDbVelocity ?? null) !== (normalizedNew ?? null) ||
-                                   dbEx.reps_mode !== repsMode ||
-                                   dbEx.kg_mode !== kgMode;
-                
-                if (isDifferent) {
-                  console.log('📝 [ASSIGNMENT UPDATE] Updating exercise fields', {
-                    exercise_name: dbEx.exercises?.name,
-                    order: dbEx.exercise_order,
-                    velocity: { from: currentDbVelocity, to: normalizedNew },
-                    reps_mode: { from: dbEx.reps_mode, to: repsMode },
-                    kg_mode: { from: dbEx.kg_mode, to: kgMode }
-                  });
-                  updates.push(
-                    supabase.from('program_exercises')
-                      .update({ 
-                        velocity_ms: normalizedNew,
-                        reps_mode: repsMode,
-                        kg_mode: kgMode
-                      })
-                      .eq('id', dbEx.id)
-                      .select()
-                  );
-                }
-              });
-            });
-          });
-        });
-
-        // Εκτέλεση όλων των ενημερώσεων μαζί
-        if (updates.length > 0) {
-          console.log(`💾 [ASSIGNMENT UPDATE] Applying ${updates.length} updates for exercise modes...`);
-          await Promise.all(updates as any);
-          console.log('✅ [ASSIGNMENT UPDATE] Exercise modes and velocity updated successfully');
-        } else {
-          console.log('ℹ️ [ASSIGNMENT UPDATE] No updates needed');
-        }
+        throw new Error('Το πρόγραμμα δεν έχει δομή εβδομάδων');
       }
     } catch (error) {
       console.error('❌ [AssignmentService] Error in ensureProgramStructureExists:', error);
       throw error;
+    }
+  },
+
+  async deleteExistingStructure(programId: string) {
+    console.log('🗑️ [AssignmentService] Deleting existing structure for program:', programId);
+    
+    try {
+      // 1. Βρίσκουμε όλα τα weeks
+      const { data: weeks } = await supabase
+        .from('program_weeks')
+        .select('id')
+        .eq('program_id', programId);
+
+      if (weeks && weeks.length > 0) {
+        const weekIds = weeks.map(w => w.id);
+        
+        // 2. Βρίσκουμε τις days
+        const { data: days } = await supabase
+          .from('program_days')
+          .select('id')
+          .in('week_id', weekIds);
+
+        if (days && days.length > 0) {
+          const dayIds = days.map(d => d.id);
+          
+          // 3. Βρίσκουμε τα blocks
+          const { data: blocks } = await supabase
+            .from('program_blocks')
+            .select('id')
+            .in('day_id', dayIds);
+
+          if (blocks && blocks.length > 0) {
+            const blockIds = blocks.map(b => b.id);
+            
+            // 4. Διαγράφουμε exercises
+            await supabase
+              .from('program_exercises')
+              .delete()
+              .in('block_id', blockIds);
+          }
+          
+          // 5. Διαγράφουμε blocks
+          await supabase
+            .from('program_blocks')
+            .delete()
+            .in('day_id', dayIds);
+        }
+        
+        // 6. Διαγράφουμε days
+        await supabase
+          .from('program_days')
+          .delete()
+          .in('week_id', weekIds);
+      }
+      
+      // 7. Διαγράφουμε weeks
+      await supabase
+        .from('program_weeks')
+        .delete()
+        .eq('program_id', programId);
+      
+      console.log('✅ [AssignmentService] Existing structure deleted');
+    } catch (error) {
+      console.error('❌ [AssignmentService] Error deleting structure:', error);
+      // Δεν πετάμε error για να συνεχίσει η διαδικασία
     }
   },
 
