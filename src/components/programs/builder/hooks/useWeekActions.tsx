@@ -83,6 +83,9 @@ export const useWeekActions = (
               name: block.name,
               block_order: block.block_order,
               training_type: block.training_type,
+              workout_format: block.workout_format || '',
+              workout_duration: block.workout_duration || '',
+              block_sets: block.block_sets || 1,
               program_exercises: sortedExercises.map((exercise) => {
                 const newExercise = {
                   id: generateId(),
