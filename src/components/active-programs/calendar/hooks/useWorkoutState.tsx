@@ -5,6 +5,7 @@ import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import { saveWorkoutData, getWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
 import { useSharedExerciseNotes } from '@/hooks/useSharedExerciseNotes';
+import { useBlockTimer } from '@/contexts/BlockTimerContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
@@ -27,6 +28,7 @@ export const useWorkoutState = (
 
   const { updateWorkoutStatus } = useWorkoutCompletions();
   const { startWorkout, completeWorkout: removeFromActiveWorkouts, getWorkout } = useMultipleWorkouts();
+  const { clearAllStates: clearBlockTimerStates } = useBlockTimer();
   
   // Use shared exercise notes hook
   const sharedNotes = useSharedExerciseNotes(program?.id);
@@ -155,6 +157,9 @@ export const useWorkoutState = (
         removeFromActiveWorkouts(workoutId);
       }
       
+      // Clear block timer states
+      clearBlockTimerStates();
+      
       toast.success(`Προπόνηση ολοκληρώθηκε για ${program.app_users?.name}! Διάρκεια: ${actualDurationMinutes} λεπτά`);
       
       // ΑΜΕΣΗ ανανέωση
@@ -186,8 +191,11 @@ export const useWorkoutState = (
     // Αφαίρεση από τις ενεργές προπονήσεις
     removeFromActiveWorkouts(workoutId);
     
+    // Clear block timer states
+    clearBlockTimerStates();
+    
     toast.info(`Προπόνηση ακυρώθηκε για ${program.app_users?.name}`);
-  }, [program, selectedDate, workoutId, removeFromActiveWorkouts]);
+  }, [program, selectedDate, workoutId, removeFromActiveWorkouts, clearBlockTimerStates]);
 
   // Exercise completion functions - FIXED signatures to match component expectations
   const exerciseCompletion = {
