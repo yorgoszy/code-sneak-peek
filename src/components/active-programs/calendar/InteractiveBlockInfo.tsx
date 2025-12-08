@@ -1,5 +1,5 @@
 
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { useBlockTimer } from '@/contexts/BlockTimerContext';
 
@@ -15,10 +15,8 @@ interface InteractiveBlockInfoProps {
 const parseDurationToSeconds = (duration: string): number => {
   if (!duration) return 0;
   
-  // Remove any whitespace
   const cleaned = duration.trim();
   
-  // Check if it's in MM:SS format
   if (cleaned.includes(':')) {
     const parts = cleaned.split(':');
     const minutes = parseInt(parts[0]) || 0;
@@ -26,7 +24,6 @@ const parseDurationToSeconds = (duration: string): number => {
     return minutes * 60 + seconds;
   }
   
-  // Check if it ends with 'm' or 'min' for minutes
   if (cleaned.toLowerCase().endsWith('min')) {
     return parseInt(cleaned) * 60;
   }
@@ -34,15 +31,12 @@ const parseDurationToSeconds = (duration: string): number => {
     return parseInt(cleaned) * 60;
   }
   
-  // Check if it ends with 's' or 'sec' for seconds
   if (cleaned.toLowerCase().endsWith('sec') || cleaned.toLowerCase().endsWith('s')) {
     return parseInt(cleaned);
   }
   
-  // Default: assume it's seconds if just a number
   const num = parseInt(cleaned);
   if (!isNaN(num)) {
-    // If number is small (< 10), assume minutes
     if (num < 10) return num * 60;
     return num;
   }
@@ -57,53 +51,6 @@ const formatSecondsToDisplay = (seconds: number): string => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-// Boxing ring bell sound using Web Audio API
-const playBoxingBell = () => {
-  try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
-    // Create oscillator for bell sound
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    // Bell-like frequency
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.3);
-    
-    // Envelope for bell ring
-    gainNode.gain.setValueAtTime(0.8, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-    
-    oscillator.type = 'sine';
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 1);
-    
-    // Second ring (boxing bell rings twice)
-    setTimeout(() => {
-      const osc2 = audioContext.createOscillator();
-      const gain2 = audioContext.createGain();
-      
-      osc2.connect(gain2);
-      gain2.connect(audioContext.destination);
-      
-      osc2.frequency.setValueAtTime(800, audioContext.currentTime);
-      osc2.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.3);
-      
-      gain2.gain.setValueAtTime(0.8, audioContext.currentTime);
-      gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-      
-      osc2.type = 'sine';
-      osc2.start(audioContext.currentTime);
-      osc2.stop(audioContext.currentTime + 1);
-    }, 200);
-  } catch (e) {
-    console.log('Could not play bell sound:', e);
-  }
-};
-
 export const InteractiveBlockInfo: React.FC<InteractiveBlockInfoProps> = ({
   blockId,
   workoutFormat,
@@ -112,7 +59,6 @@ export const InteractiveBlockInfo: React.FC<InteractiveBlockInfoProps> = ({
   workoutInProgress
 }) => {
   const { getBlockState, setBlockTimer, setBlockSets, initializeBlock } = useBlockTimer();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Get persisted state from context
   const blockState = getBlockState(blockId);
@@ -128,37 +74,6 @@ export const InteractiveBlockInfo: React.FC<InteractiveBlockInfoProps> = ({
       initializeBlock(blockId, seconds, blockSets);
     }
   }, [blockId, workoutDuration, blockSets, initializeBlock]);
-
-  // Timer countdown logic - runs globally
-  useEffect(() => {
-    if (timerActive && remainingSeconds > 0) {
-      intervalRef.current = setInterval(() => {
-        const currentState = getBlockState(blockId);
-        if (!currentState) return;
-        
-        const newRemaining = currentState.remainingSeconds - 1;
-        
-        if (newRemaining <= 0) {
-          // Timer finished
-          setBlockTimer(blockId, 0, currentState.initialSeconds, false);
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-          }
-          playBoxingBell();
-        } else {
-          setBlockTimer(blockId, newRemaining, currentState.initialSeconds, true);
-        }
-      }, 1000);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [timerActive, blockId, getBlockState, setBlockTimer]);
 
   // Handle format/timer click
   const handleTimerClick = useCallback(() => {
