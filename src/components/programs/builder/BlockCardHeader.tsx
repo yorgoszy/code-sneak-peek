@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Copy } from "lucide-react";
 import { formatTimeInput } from '@/utils/timeFormatting';
 
 interface BlockCardHeaderProps {
@@ -203,19 +203,25 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <span className="text-xs text-white">Set:</span>
-          <Input
-            type="number"
-            min="1"
-            value={blockSets || 1}
-            onChange={(e) => {
-              const value = parseInt(e.target.value) || 1;
-              onBlockSetsChange(Math.max(1, value));
-            }}
-            className="h-6 w-[50px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
-            onClick={(e) => e.stopPropagation()}
-          />
+          <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => onBlockSetsChange(Math.max(1, (blockSets || 1) - 1))}
+              className="p-0.5 text-gray-400 hover:text-white transition-colors"
+            >
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <span className="text-xs text-white min-w-[20px] text-center">{blockSets || 1}</span>
+            <button
+              type="button"
+              onClick={() => onBlockSetsChange((blockSets || 1) + 1)}
+              className="p-0.5 text-gray-400 hover:text-white transition-colors"
+            >
+              <ChevronUp className="h-4 w-4" />
+            </button>
+          </div>
           {(blockSets || 1) > 1 && (
             <span className="text-xs text-[#00ffba]">x{blockSets}</span>
           )}
