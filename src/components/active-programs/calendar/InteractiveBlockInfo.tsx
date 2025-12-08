@@ -1,6 +1,7 @@
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { Check } from 'lucide-react';
+import { useBlockTimer } from '@/contexts/BlockTimerContext';
 
 interface InteractiveBlockInfoProps {
   blockId: string;
@@ -110,57 +111,44 @@ export const InteractiveBlockInfo: React.FC<InteractiveBlockInfoProps> = ({
   blockSets = 1,
   workoutInProgress
 }) => {
-  // Timer state
-  const [timerActive, setTimerActive] = useState(false);
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
-  const [initialSeconds, setInitialSeconds] = useState<number>(0);
+  const { getBlockState, setBlockTimer, setBlockSets, initializeBlock } = useBlockTimer();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Sets counter state
-  const [completedSets, setCompletedSets] = useState(0);
+  // Get persisted state from context
+  const blockState = getBlockState(blockId);
+  const timerActive = blockState?.timerActive || false;
+  const remainingSeconds = blockState?.remainingSeconds ?? parseDurationToSeconds(workoutDuration || '');
+  const initialSeconds = blockState?.initialSeconds ?? parseDurationToSeconds(workoutDuration || '');
+  const completedSets = blockState?.completedSets || 0;
 
-  // Initialize timer seconds from duration
+  // Initialize block state on mount
   useEffect(() => {
     if (workoutDuration) {
       const seconds = parseDurationToSeconds(workoutDuration);
-      setInitialSeconds(seconds);
-      setRemainingSeconds(seconds);
+      initializeBlock(blockId, seconds, blockSets);
     }
-  }, [workoutDuration]);
+  }, [blockId, workoutDuration, blockSets, initializeBlock]);
 
-  // Reset states when workout ends
-  useEffect(() => {
-    if (!workoutInProgress) {
-      setTimerActive(false);
-      setCompletedSets(0);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      if (workoutDuration) {
-        const seconds = parseDurationToSeconds(workoutDuration);
-        setRemainingSeconds(seconds);
-      }
-    }
-  }, [workoutInProgress, workoutDuration]);
-
-  // Timer countdown logic
+  // Timer countdown logic - runs globally
   useEffect(() => {
     if (timerActive && remainingSeconds > 0) {
       intervalRef.current = setInterval(() => {
-        setRemainingSeconds(prev => {
-          if (prev <= 1) {
-            // Timer finished
-            setTimerActive(false);
-            if (intervalRef.current) {
-              clearInterval(intervalRef.current);
-              intervalRef.current = null;
-            }
-            playBoxingBell();
-            return 0;
+        const currentState = getBlockState(blockId);
+        if (!currentState) return;
+        
+        const newRemaining = currentState.remainingSeconds - 1;
+        
+        if (newRemaining <= 0) {
+          // Timer finished
+          setBlockTimer(blockId, 0, currentState.initialSeconds, false);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
           }
-          return prev - 1;
-        });
+          playBoxingBell();
+        } else {
+          setBlockTimer(blockId, newRemaining, currentState.initialSeconds, true);
+        }
       }, 1000);
     }
 
@@ -170,7 +158,7 @@ export const InteractiveBlockInfo: React.FC<InteractiveBlockInfoProps> = ({
         intervalRef.current = null;
       }
     };
-  }, [timerActive, remainingSeconds]);
+  }, [timerActive, blockId, getBlockState, setBlockTimer]);
 
   // Handle format/timer click
   const handleTimerClick = useCallback(() => {
@@ -178,34 +166,34 @@ export const InteractiveBlockInfo: React.FC<InteractiveBlockInfoProps> = ({
     
     if (timerActive) {
       // Pause
-      setTimerActive(false);
+      setBlockTimer(blockId, remainingSeconds, initialSeconds, false);
     } else {
       // Start/Resume
       if (remainingSeconds === 0 && initialSeconds > 0) {
         // Reset if finished
-        setRemainingSeconds(initialSeconds);
+        setBlockTimer(blockId, initialSeconds, initialSeconds, true);
+      } else {
+        setBlockTimer(blockId, remainingSeconds, initialSeconds, true);
       }
-      setTimerActive(true);
     }
-  }, [workoutInProgress, timerActive, remainingSeconds, initialSeconds]);
+  }, [workoutInProgress, timerActive, remainingSeconds, initialSeconds, blockId, setBlockTimer]);
 
   // Handle double click - reset timer
   const handleTimerDoubleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     if (!workoutInProgress) return;
     
-    setRemainingSeconds(initialSeconds);
-    setTimerActive(true);
-  }, [workoutInProgress, initialSeconds]);
+    setBlockTimer(blockId, initialSeconds, initialSeconds, true);
+  }, [workoutInProgress, initialSeconds, blockId, setBlockTimer]);
 
   // Handle set click - complete one set
   const handleSetClick = useCallback(() => {
     if (!workoutInProgress) return;
     
     if (completedSets < blockSets) {
-      setCompletedSets(prev => prev + 1);
+      setBlockSets(blockId, completedSets + 1);
     }
-  }, [workoutInProgress, completedSets, blockSets]);
+  }, [workoutInProgress, completedSets, blockSets, blockId, setBlockSets]);
 
   const isSetComplete = completedSets >= blockSets;
   const hasFormat = workoutFormat || workoutDuration;

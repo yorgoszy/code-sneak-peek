@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
+import { BlockTimerProvider } from "@/contexts/BlockTimerContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RootRedirect } from "@/components/RootRedirect";
 import Auth from "@/pages/Auth";
@@ -68,9 +69,10 @@ function App() {
     <Router>
       <AnalyticsProvider>
         <QueryClientProvider client={queryClient}>
-          <div className="min-h-screen bg-gray-50">
-            <Toaster />
-            <Suspense fallback={<CustomLoadingScreen />}>
+          <BlockTimerProvider>
+            <div className="min-h-screen bg-gray-50">
+              <Toaster />
+              <Suspense fallback={<CustomLoadingScreen />}>
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<RootRedirect />} />
@@ -137,8 +139,9 @@ function App() {
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </Suspense>
-          </div>
+              </Suspense>
+            </div>
+          </BlockTimerProvider>
         </QueryClientProvider>
       </AnalyticsProvider>
     </Router>
