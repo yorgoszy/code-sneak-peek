@@ -66,9 +66,14 @@ export const useDayActions = (
           name: `${dayToDuplicate.name} (Αντίγραφο)`,
           day_number: (week.program_days?.length || 0) + 1,
           program_blocks: dayToDuplicate.program_blocks.map(block => ({
-            ...block,
             id: generateId(),
-            program_exercises: block.program_exercises.map(exercise => ({
+            name: block.name,
+            block_order: block.block_order,
+            training_type: block.training_type,
+            workout_format: block.workout_format || '',
+            workout_duration: block.workout_duration || '',
+            block_sets: block.block_sets || 1,
+            program_exercises: (block.program_exercises || []).map(exercise => ({
               ...exercise,
               id: generateId()
             }))

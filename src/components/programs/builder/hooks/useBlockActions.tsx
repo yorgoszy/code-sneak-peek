@@ -102,10 +102,13 @@ export const useBlockActions = (
               });
 
               const newBlock = {
-                ...JSON.parse(JSON.stringify(blockToDuplicate)),
                 id: generateId(),
                 name: `${blockToDuplicate.name} (Αντίγραφο)`,
                 block_order: (day.program_blocks?.length || 0) + 1,
+                training_type: blockToDuplicate.training_type,
+                workout_format: blockToDuplicate.workout_format || '',
+                workout_duration: blockToDuplicate.workout_duration || '',
+                block_sets: blockToDuplicate.block_sets || 1,
                 program_exercises: sortedExercises.map(exercise => ({
                   ...exercise,
                   id: generateId()
