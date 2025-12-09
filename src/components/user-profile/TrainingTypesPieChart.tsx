@@ -47,6 +47,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   const [data, setData] = useState<any[]>([]);
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
+  // Ξεχωριστές μεταβλητές για navigation στο ημερολόγιο (activeTab)
+  const [activeTabWeek, setActiveTabWeek] = useState<Date>(new Date());
+  const [activeTabMonth, setActiveTabMonth] = useState<Date>(new Date());
+  const [activeTabYear, setActiveTabYear] = useState<Date>(new Date());
   
   // Συγχρονίζουμε το timeFilter με το activeTab αν υπάρχει
   useEffect(() => {
@@ -95,17 +99,18 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         let endDate: string;
 
         if (activeTab === 'day') {
-          // Για ημέρα: φέρνουμε δεδομένα ολόκληρης της εβδομάδας
-          startDate = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
-          endDate = format(endOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+          // Για ημέρα: φέρνουμε δεδομένα ολόκληρης της επιλεγμένης εβδομάδας (με navigation)
+          startDate = format(startOfWeek(activeTabWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+          endDate = format(endOfWeek(activeTabWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
         } else if (activeTab === 'week') {
-          // Για εβδομάδα: φέρνουμε δεδομένα ολόκληρου του μήνα
-          startDate = format(startOfMonth(today), 'yyyy-MM-dd');
-          endDate = format(endOfMonth(today), 'yyyy-MM-dd');
-        } else if (activeTab === 'month' || timeFilter === 'week') {
-          // Για μήνα: φέρνουμε δεδομένα ολόκληρου του έτους
-          startDate = format(startOfYear(today), 'yyyy-MM-dd');
-          endDate = format(endOfYear(today), 'yyyy-MM-dd');
+          // Για εβδομάδα: φέρνουμε δεδομένα ολόκληρου του επιλεγμένου μήνα (με navigation)
+          startDate = format(startOfMonth(activeTabMonth), 'yyyy-MM-dd');
+          endDate = format(endOfMonth(activeTabMonth), 'yyyy-MM-dd');
+        } else if (activeTab === 'month') {
+          // Για μήνα: φέρνουμε δεδομένα ολόκληρου του επιλεγμένου έτους (με navigation)
+          startDate = format(startOfYear(activeTabYear), 'yyyy-MM-dd');
+          endDate = format(endOfYear(activeTabYear), 'yyyy-MM-dd');
+        } else if (timeFilter === 'week') {
         } else if (timeFilter === 'month') {
           startDate = format(startOfYear(currentYear), 'yyyy-MM-dd');
           endDate = format(endOfYear(currentYear), 'yyyy-MM-dd');
@@ -147,7 +152,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     };
 
     loadDbStats();
-  }, [userId, activeTab, timeFilter, currentWeek, currentMonth, currentYear]);
+  }, [userId, activeTab, timeFilter, currentWeek, currentMonth, currentYear, activeTabWeek, activeTabMonth, activeTabYear]);
 
   // Αρχικοποίηση επιλεγμένης ημέρας όταν αλλάζει το timeFilter
   useEffect(() => {
@@ -577,6 +582,35 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         ) : activeTab && Object.keys(dbStatsByPeriod).length > 0 ? (
           // Εμφάνιση πολλαπλών γραφημάτων βάσει περιόδου
           <div className="w-full">
+            {activeTab === 'day' && (
+              // Navigation για εβδομάδα στο tab 'day'
+              <div className="mb-2 flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTabWeek(subWeeks(activeTabWeek, 1))}
+                  className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </Button>
+                <div className={`text-[10px] md:text-sm font-medium ${
+                  format(startOfWeek(activeTabWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd') === 
+                  format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd')
+                    ? 'text-[#cb8954]' 
+                    : ''
+                }`}>
+                  {format(startOfWeek(activeTabWeek, { weekStartsOn: 1 }), 'dd MMM', { locale: el })} - {format(endOfWeek(activeTabWeek, { weekStartsOn: 1 }), 'dd MMM yyyy', { locale: el })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTabWeek(addWeeks(activeTabWeek, 1))}
+                  className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
+                >
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
             {activeTab === 'day' ? (
               // Ημέρες - Οριζόντια διάταξη χωρίς carousel
               <div className="flex gap-2 overflow-x-auto pb-2">
@@ -641,8 +675,191 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     );
                   })}
               </div>
+            ) : activeTab === 'week' ? (
+              // Εβδομάδες - Οριζόντια side by side με navigation μήνα
+              <div className="w-full">
+                <div className="mb-2 flex items-center justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveTabMonth(subMonths(activeTabMonth, 1))}
+                    className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
+                  >
+                    <ChevronLeft className="h-3 w-3" />
+                  </Button>
+                  <div className={`text-[10px] md:text-sm font-medium ${
+                    format(activeTabMonth, 'yyyy-MM') === format(new Date(), 'yyyy-MM')
+                      ? 'text-[#cb8954]' 
+                      : ''
+                  }`}>
+                    {format(activeTabMonth, 'MMMM yyyy', { locale: el })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveTabMonth(addMonths(activeTabMonth, 1))}
+                    className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
+                  >
+                    <ChevronRight className="h-3 w-3" />
+                  </Button>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {Object.entries(dbStatsByPeriod)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([periodKey, typeStats]) => {
+                      const periodChartData = Object.entries(typeStats).map(([name, value]) => ({
+                        name,
+                        value: value as number,
+                      }));
+                      
+                      const periodTotalMinutes = periodChartData.reduce((sum, item) => sum + item.value, 0);
+                      const date = parseISO(periodKey);
+                      const periodLabel = `${format(date, 'dd/MM', { locale: el })} - ${format(endOfWeek(date, { weekStartsOn: 1 }), 'dd/MM', { locale: el })}`;
+                      
+                      return (
+                        <div key={periodKey} className="flex-shrink-0 w-[100px] border border-gray-200 rounded-none p-1.5">
+                          <div className="mb-1">
+                            <h4 className="text-[9px] font-semibold text-gray-900 truncate capitalize">{periodLabel}</h4>
+                            <div className="text-[9px] text-gray-600">
+                              <span className="font-semibold">{formatMinutes(periodTotalMinutes)}</span>
+                            </div>
+                          </div>
+                          
+                          {periodChartData.length === 0 || periodTotalMinutes === 0 ? (
+                            <div className="flex items-center justify-center h-[80px]">
+                              <span className="text-[8px] text-gray-400">-</span>
+                            </div>
+                          ) : (
+                            <ResponsiveContainer width="100%" height={80}>
+                              <PieChart>
+                                <Pie
+                                  data={periodChartData}
+                                  cx="50%"
+                                  cy="50%"
+                                  labelLine={false}
+                                  outerRadius={28}
+                                  innerRadius={15}
+                                  fill="#8884d8"
+                                  dataKey="value"
+                                >
+                                  {periodChartData.map((entry, index) => (
+                                    <Cell 
+                                      key={`cell-${index}`} 
+                                      fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                                    />
+                                  ))}
+                                </Pie>
+                                <Tooltip 
+                                  formatter={(value: any) => formatMinutes(value)}
+                                  contentStyle={{ 
+                                    backgroundColor: 'white', 
+                                    border: '1px solid #ccc',
+                                    borderRadius: '0px',
+                                    fontSize: '8px'
+                                  }}
+                                />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            ) : activeTab === 'month' ? (
+              // Μήνες - Οριζόντια side by side με navigation έτους
+              <div className="w-full">
+                <div className="mb-2 flex items-center justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveTabYear(subYears(activeTabYear, 1))}
+                    className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
+                  >
+                    <ChevronLeft className="h-3 w-3" />
+                  </Button>
+                  <div className={`text-[10px] md:text-sm font-medium ${
+                    format(activeTabYear, 'yyyy') === format(new Date(), 'yyyy')
+                      ? 'text-[#cb8954]' 
+                      : ''
+                  }`}>
+                    {format(activeTabYear, 'yyyy')}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveTabYear(addYears(activeTabYear, 1))}
+                    className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
+                  >
+                    <ChevronRight className="h-3 w-3" />
+                  </Button>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {Object.entries(dbStatsByPeriod)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([periodKey, typeStats]) => {
+                      const periodChartData = Object.entries(typeStats).map(([name, value]) => ({
+                        name,
+                        value: value as number,
+                      }));
+                      
+                      const periodTotalMinutes = periodChartData.reduce((sum, item) => sum + item.value, 0);
+                      const [year, month] = periodKey.split('-');
+                      const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+                      const periodLabel = format(date, 'MMMM', { locale: el });
+                      
+                      return (
+                        <div key={periodKey} className="flex-shrink-0 w-[100px] border border-gray-200 rounded-none p-1.5">
+                          <div className="mb-1">
+                            <h4 className="text-[9px] font-semibold text-gray-900 truncate capitalize">{periodLabel}</h4>
+                            <div className="text-[9px] text-gray-600">
+                              <span className="font-semibold">{formatMinutes(periodTotalMinutes)}</span>
+                            </div>
+                          </div>
+                          
+                          {periodChartData.length === 0 || periodTotalMinutes === 0 ? (
+                            <div className="flex items-center justify-center h-[80px]">
+                              <span className="text-[8px] text-gray-400">-</span>
+                            </div>
+                          ) : (
+                            <ResponsiveContainer width="100%" height={80}>
+                              <PieChart>
+                                <Pie
+                                  data={periodChartData}
+                                  cx="50%"
+                                  cy="50%"
+                                  labelLine={false}
+                                  outerRadius={28}
+                                  innerRadius={15}
+                                  fill="#8884d8"
+                                  dataKey="value"
+                                >
+                                  {periodChartData.map((entry, index) => (
+                                    <Cell 
+                                      key={`cell-${index}`} 
+                                      fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                                    />
+                                  ))}
+                                </Pie>
+                                <Tooltip 
+                                  formatter={(value: any) => formatMinutes(value)}
+                                  contentStyle={{ 
+                                    backgroundColor: 'white', 
+                                    border: '1px solid #ccc',
+                                    borderRadius: '0px',
+                                    fontSize: '8px'
+                                  }}
+                                />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
             ) : (
-              // Εβδομάδες/Μήνες - Οριζόντια side by side
+              // Fallback
               <div className="flex gap-2 overflow-x-auto pb-2">
                   {Object.entries(dbStatsByPeriod)
                     .sort(([a], [b]) => a.localeCompare(b))
