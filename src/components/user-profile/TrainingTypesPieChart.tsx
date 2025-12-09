@@ -136,9 +136,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         if (activeTab === 'day') {
           periodStats = aggregateStatsByDay(stats, startDate, endDate);
         } else if (activeTab === 'week') {
-          periodStats = aggregateStatsByWeek(stats);
+          periodStats = aggregateStatsByWeek(stats, startDate, endDate);
         } else if (activeTab === 'month') {
-          periodStats = aggregateStatsByMonth(stats);
+          periodStats = aggregateStatsByMonth(stats, startDate, endDate);
         }
         console.log('📊 DB stats by period:', periodStats);
         setDbStatsByPeriod(periodStats);
@@ -615,63 +615,69 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                       periodLabel = format(date, 'MMMM yyyy', { locale: el });
                     }
                     
-                    if (periodChartData.length === 0) return null;
-                    
                     return (
                       <CarouselItem key={periodKey} className="pl-0 basis-1/2 sm:basis-1/3 md:basis-1/4">
-                        <div className="border border-gray-200 rounded-none p-2">
+                        <div className="border border-gray-200 rounded-none p-2 min-h-[180px]">
                           <div className="mb-2">
-                            <h4 className="text-[10px] font-semibold text-gray-900 truncate">{periodLabel}</h4>
+                            <h4 className="text-[10px] font-semibold text-gray-900 truncate capitalize">{periodLabel}</h4>
                             <div className="text-[10px] text-gray-600">
                               <span className="font-semibold">{formatMinutes(periodTotalMinutes)}</span>
                             </div>
                           </div>
                           
-                          <ResponsiveContainer width="100%" height={120}>
-                            <PieChart>
-                              <Pie
-                                data={periodChartData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                outerRadius={35}
-                                innerRadius={20}
-                                fill="#8884d8"
-                                dataKey="value"
-                              >
-                                {periodChartData.map((entry, index) => (
-                                  <Cell 
-                                    key={`cell-${index}`} 
-                                    fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                          {periodChartData.length === 0 ? (
+                            <div className="flex items-center justify-center h-[120px]">
+                              <span className="text-[10px] text-gray-400">Χωρίς δεδομένα</span>
+                            </div>
+                          ) : (
+                            <>
+                              <ResponsiveContainer width="100%" height={120}>
+                                <PieChart>
+                                  <Pie
+                                    data={periodChartData}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    outerRadius={35}
+                                    innerRadius={20}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                  >
+                                    {periodChartData.map((entry, index) => (
+                                      <Cell 
+                                        key={`cell-${index}`} 
+                                        fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                                      />
+                                    ))}
+                                  </Pie>
+                                  <Tooltip 
+                                    formatter={(value: any) => formatMinutes(value)}
+                                    contentStyle={{ 
+                                      backgroundColor: 'white', 
+                                      border: '1px solid #ccc',
+                                      borderRadius: '0px',
+                                      fontSize: '9px'
+                                    }}
                                   />
+                                </PieChart>
+                              </ResponsiveContainer>
+                              
+                              {/* Legend μικρό */}
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {periodChartData.map((entry, index) => (
+                                  <div key={index} className="flex items-center gap-0.5">
+                                    <div 
+                                      className="w-2 h-2 rounded-none" 
+                                      style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
+                                    />
+                                    <span className="text-[8px] text-gray-600">
+                                      {TRAINING_TYPE_LABELS[entry.name] || entry.name}
+                                    </span>
+                                  </div>
                                 ))}
-                              </Pie>
-                              <Tooltip 
-                                formatter={(value: any) => formatMinutes(value)}
-                                contentStyle={{ 
-                                  backgroundColor: 'white', 
-                                  border: '1px solid #ccc',
-                                  borderRadius: '0px',
-                                  fontSize: '9px'
-                                }}
-                              />
-                            </PieChart>
-                          </ResponsiveContainer>
-                          
-                          {/* Legend μικρό */}
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {periodChartData.map((entry, index) => (
-                              <div key={index} className="flex items-center gap-0.5">
-                                <div 
-                                  className="w-2 h-2 rounded-none" 
-                                  style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
-                                />
-                                <span className="text-[8px] text-gray-600">
-                                  {TRAINING_TYPE_LABELS[entry.name] || entry.name}
-                                </span>
                               </div>
-                            ))}
-                          </div>
+                            </>
+                          )}
                         </div>
                       </CarouselItem>
                     );
