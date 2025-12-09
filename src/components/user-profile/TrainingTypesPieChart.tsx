@@ -134,7 +134,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         // Stats ανά περίοδο
         let periodStats: Record<string, Record<string, number>> = {};
         if (activeTab === 'day') {
-          periodStats = aggregateStatsByDay(stats);
+          periodStats = aggregateStatsByDay(stats, startDate, endDate);
         } else if (activeTab === 'week') {
           periodStats = aggregateStatsByWeek(stats);
         } else if (activeTab === 'month') {
