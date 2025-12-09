@@ -211,9 +211,23 @@ export const aggregateStatsByMonth = (stats: any[]) => {
 
 /**
  * Αθροίζει τα stats ανά ημέρα και training type
+ * Επιστρέφει όλες τις ημέρες της τρέχουσας εβδομάδας, ακόμα και χωρίς δεδομένα
  */
-export const aggregateStatsByDay = (stats: any[]) => {
+export const aggregateStatsByDay = (stats: any[], startDate?: string, endDate?: string) => {
   const dailyStats: Record<string, Record<string, number>> = {};
+  
+  // Αν έχουμε startDate και endDate, δημιουργούμε entries για όλες τις ημέρες
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const current = new Date(start);
+    
+    while (current <= end) {
+      const dayKey = current.toISOString().split('T')[0];
+      dailyStats[dayKey] = {};
+      current.setDate(current.getDate() + 1);
+    }
+  }
 
   stats.forEach(stat => {
     const dayKey = stat.training_date; // Χρησιμοποιούμε απευθείας το training_date (yyyy-MM-dd)
