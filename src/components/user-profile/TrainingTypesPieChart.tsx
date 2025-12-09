@@ -10,7 +10,7 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { calculateProgramStats } from "@/hooks/useProgramStats";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { parseRepsToTime, parseTempoToSeconds, parseRestTime } from '@/utils/timeCalculations';
-import { fetchTrainingTypeStats, aggregateStatsByType } from '@/services/trainingTypeStatsService';
+import { fetchTrainingTypeStats, aggregateStatsByType, calculateStatsFromCompletedWorkouts } from '@/services/trainingTypeStatsService';
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -78,6 +78,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     }
   }, [userPrograms, timeFilter, isLoading, currentWeek, currentMonth, currentYear, activeTab]);
 
+  // Ref για να ξέρουμε αν έχει γίνει ήδη το retroactive calculation
+  const retroCalculationDoneRef = React.useRef(false);
+
   // Φόρτωση δεδομένων από τη βάση για completed workouts
   useEffect(() => {
     const loadDbStats = async () => {
@@ -85,6 +88,13 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       
       setDbStatsLoading(true);
       try {
+        // Πρώτα, αν δεν έχει γίνει, κάνουμε retroactive calculation
+        if (!retroCalculationDoneRef.current) {
+          console.log('📊 Running retroactive calculation for completed workouts...');
+          await calculateStatsFromCompletedWorkouts(userId);
+          retroCalculationDoneRef.current = true;
+        }
+
         const today = new Date();
         let startDate: string;
         let endDate: string;

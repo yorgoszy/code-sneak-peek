@@ -1,11 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { 
   fetchTrainingTypeStats, 
   aggregateStatsByType, 
   aggregateStatsByWeek, 
-  aggregateStatsByMonth 
+  aggregateStatsByMonth,
+  calculateStatsFromCompletedWorkouts
 } from '@/services/trainingTypeStatsService';
 
 interface UseTrainingTypeStatsProps {
@@ -55,6 +56,9 @@ export const useTrainingTypeStats = ({ userId, timeFilter, currentDate = new Dat
     }
   }, [timeFilter, currentDate]);
 
+  // Ref για να ξέρουμε αν έχει γίνει ήδη το retroactive calculation
+  const retroCalculationDone = useRef(false);
+
   useEffect(() => {
     const loadStats = async () => {
       if (!userId) {
@@ -66,6 +70,13 @@ export const useTrainingTypeStats = ({ userId, timeFilter, currentDate = new Dat
       setLoading(true);
       try {
         console.log('📊 Loading training type stats:', { userId, ...dateRange });
+        
+        // Πρώτα, αν δεν έχει γίνει, κάνουμε retroactive calculation
+        if (!retroCalculationDone.current) {
+          console.log('📊 Running retroactive calculation...');
+          await calculateStatsFromCompletedWorkouts(userId);
+          retroCalculationDone.current = true;
+        }
         
         const stats = await fetchTrainingTypeStats(userId, dateRange.start, dateRange.end);
         console.log('📊 Fetched stats:', stats);
