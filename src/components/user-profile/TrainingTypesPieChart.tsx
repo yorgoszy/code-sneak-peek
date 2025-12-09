@@ -647,15 +647,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   })}
               </div>
             ) : (
-              // Εβδομάδες/Μήνες - Carousel
-              <Carousel
-                opts={{
-                  align: "start",
-                  slidesToScroll: 1,
-                }}
-                className="w-full"
-              >
-                <CarouselContent className="-ml-0">
+              // Εβδομάδες/Μήνες - Οριζόντια side by side
+              <div className="flex gap-2 overflow-x-auto pb-2">
                   {Object.entries(dbStatsByPeriod)
                     .sort(([a], [b]) => a.localeCompare(b))
                     .map(([periodKey, typeStats]) => {
@@ -670,7 +663,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                       if (activeTab === 'week') {
                         const date = parseISO(periodKey);
                         const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
-                        periodLabel = `${format(date, 'dd/MM', { locale: el })} - ${format(weekEnd, 'dd/MM', { locale: el })}`;
+                        periodLabel = `Εβδ ${format(date, 'dd/MM', { locale: el })}`;
                       } else if (activeTab === 'month') {
                         const [year, month] = periodKey.split('-');
                         const date = new Date(parseInt(year), parseInt(month) - 1, 1);
@@ -678,76 +671,54 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                       }
                       
                       return (
-                        <CarouselItem key={periodKey} className="pl-0 basis-1/2 sm:basis-1/3 md:basis-1/4">
-                          <div className="border border-gray-200 rounded-none p-2 min-h-[180px]">
-                            <div className="mb-2">
-                              <h4 className="text-[10px] font-semibold text-gray-900 truncate capitalize">{periodLabel}</h4>
-                              <div className="text-[10px] text-gray-600">
-                                <span className="font-semibold">{formatMinutes(periodTotalMinutes)}</span>
-                              </div>
+                        <div key={periodKey} className="flex-shrink-0 w-[100px] border border-gray-200 rounded-none p-1.5">
+                          <div className="mb-1">
+                            <h4 className="text-[9px] font-semibold text-gray-900 truncate capitalize">{periodLabel}</h4>
+                            <div className="text-[9px] text-gray-600">
+                              <span className="font-semibold">{formatMinutes(periodTotalMinutes)}</span>
                             </div>
-                            
-                            {periodChartData.length === 0 ? (
-                              <div className="flex items-center justify-center h-[120px]">
-                                <span className="text-[10px] text-gray-400">Χωρίς δεδομένα</span>
-                              </div>
-                            ) : (
-                              <>
-                                <ResponsiveContainer width="100%" height={120}>
-                                  <PieChart>
-                                    <Pie
-                                      data={periodChartData}
-                                      cx="50%"
-                                      cy="50%"
-                                      labelLine={false}
-                                      outerRadius={35}
-                                      innerRadius={20}
-                                      fill="#8884d8"
-                                      dataKey="value"
-                                    >
-                                      {periodChartData.map((entry, index) => (
-                                        <Cell 
-                                          key={`cell-${index}`} 
-                                          fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                                        />
-                                      ))}
-                                    </Pie>
-                                    <Tooltip 
-                                      formatter={(value: any) => formatMinutes(value)}
-                                      contentStyle={{ 
-                                        backgroundColor: 'white', 
-                                        border: '1px solid #ccc',
-                                        borderRadius: '0px',
-                                        fontSize: '9px'
-                                      }}
-                                    />
-                                  </PieChart>
-                                </ResponsiveContainer>
-                                
-                                {/* Legend μικρό */}
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {periodChartData.map((entry, index) => (
-                                    <div key={index} className="flex items-center gap-0.5">
-                                      <div 
-                                        className="w-2 h-2 rounded-none" 
-                                        style={{ backgroundColor: COLORS[entry.name as keyof typeof COLORS] || '#aca097' }}
-                                      />
-                                      <span className="text-[8px] text-gray-600">
-                                        {TRAINING_TYPE_LABELS[entry.name] || entry.name}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </>
-                            )}
                           </div>
-                        </CarouselItem>
+                          
+                          {periodChartData.length === 0 || periodTotalMinutes === 0 ? (
+                            <div className="flex items-center justify-center h-[80px]">
+                              <span className="text-[8px] text-gray-400">-</span>
+                            </div>
+                          ) : (
+                            <ResponsiveContainer width="100%" height={80}>
+                              <PieChart>
+                                <Pie
+                                  data={periodChartData}
+                                  cx="50%"
+                                  cy="50%"
+                                  labelLine={false}
+                                  outerRadius={28}
+                                  innerRadius={15}
+                                  fill="#8884d8"
+                                  dataKey="value"
+                                >
+                                  {periodChartData.map((entry, index) => (
+                                    <Cell 
+                                      key={`cell-${index}`} 
+                                      fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                                    />
+                                  ))}
+                                </Pie>
+                                <Tooltip 
+                                  formatter={(value: any) => formatMinutes(value)}
+                                  contentStyle={{ 
+                                    backgroundColor: 'white', 
+                                    border: '1px solid #ccc',
+                                    borderRadius: '0px',
+                                    fontSize: '8px'
+                                  }}
+                                />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          )}
+                        </div>
                       );
                     })}
-                </CarouselContent>
-                <CarouselPrevious className="left-0" />
-                <CarouselNext className="right-0" />
-              </Carousel>
+              </div>
             )}
           </div>
         ) : activeTab ? (
