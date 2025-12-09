@@ -17,27 +17,33 @@ interface BlockTimerContextType {
   playBell: () => void;
 }
 
-// Boxing ring bell sound using Web Audio API
-const playBoxingBell = () => {
+// Coach whistle sound using Web Audio API
+const playWhistle = () => {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    // First whistle blow
+    const oscillator1 = audioContext.createOscillator();
+    const gainNode1 = audioContext.createGain();
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    oscillator1.connect(gainNode1);
+    gainNode1.connect(audioContext.destination);
     
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.3);
+    // Whistle frequency (high pitch like a real whistle)
+    oscillator1.frequency.setValueAtTime(2800, audioContext.currentTime);
+    oscillator1.frequency.linearRampToValueAtTime(2600, audioContext.currentTime + 0.15);
+    oscillator1.frequency.linearRampToValueAtTime(2800, audioContext.currentTime + 0.3);
     
-    gainNode.gain.setValueAtTime(0.8, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+    gainNode1.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode1.gain.linearRampToValueAtTime(0.6, audioContext.currentTime + 0.02);
+    gainNode1.gain.setValueAtTime(0.6, audioContext.currentTime + 0.25);
+    gainNode1.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.35);
     
-    oscillator.type = 'sine';
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 1);
+    oscillator1.type = 'sine';
+    oscillator1.start(audioContext.currentTime);
+    oscillator1.stop(audioContext.currentTime + 0.35);
     
+    // Second short whistle blow
     setTimeout(() => {
       const osc2 = audioContext.createOscillator();
       const gain2 = audioContext.createGain();
@@ -45,18 +51,19 @@ const playBoxingBell = () => {
       osc2.connect(gain2);
       gain2.connect(audioContext.destination);
       
-      osc2.frequency.setValueAtTime(800, audioContext.currentTime);
-      osc2.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.3);
+      osc2.frequency.setValueAtTime(2800, audioContext.currentTime);
+      osc2.frequency.linearRampToValueAtTime(2500, audioContext.currentTime + 0.1);
       
-      gain2.gain.setValueAtTime(0.8, audioContext.currentTime);
-      gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+      gain2.gain.setValueAtTime(0, audioContext.currentTime);
+      gain2.gain.linearRampToValueAtTime(0.6, audioContext.currentTime + 0.02);
+      gain2.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.15);
       
       osc2.type = 'sine';
       osc2.start(audioContext.currentTime);
-      osc2.stop(audioContext.currentTime + 1);
-    }, 200);
+      osc2.stop(audioContext.currentTime + 0.15);
+    }, 400);
   } catch (e) {
-    console.log('Could not play bell sound:', e);
+    console.log('Could not play whistle sound:', e);
   }
 };
 
@@ -87,7 +94,7 @@ export const BlockTimerProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 timerActive: false
               };
               // Play bell when timer finishes
-              playBoxingBell();
+              playWhistle();
             } else {
               newStates[blockId] = {
                 ...state,
@@ -159,7 +166,7 @@ export const BlockTimerProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, []);
 
   const playBell = useCallback(() => {
-    playBoxingBell();
+    playWhistle();
   }, []);
 
   return (
