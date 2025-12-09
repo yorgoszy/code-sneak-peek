@@ -165,9 +165,31 @@ export const aggregateStatsByType = (stats: any[]) => {
 
 /**
  * Αθροίζει τα stats ανά εβδομάδα και training type
+ * Επιστρέφει όλες τις εβδομάδες του μήνα, ακόμα και χωρίς δεδομένα
  */
-export const aggregateStatsByWeek = (stats: any[]) => {
+export const aggregateStatsByWeek = (stats: any[], startDate?: string, endDate?: string) => {
   const weeklyStats: Record<string, Record<string, number>> = {};
+  
+  // Αν έχουμε startDate και endDate, δημιουργούμε entries για όλες τις εβδομάδες του μήνα
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const current = new Date(start);
+    
+    // Βρίσκουμε τη Δευτέρα της πρώτης εβδομάδας
+    const firstMonday = new Date(current);
+    firstMonday.setDate(current.getDate() - current.getDay() + 1);
+    if (firstMonday > current) {
+      firstMonday.setDate(firstMonday.getDate() - 7);
+    }
+    
+    const weekIterator = new Date(firstMonday);
+    while (weekIterator <= end) {
+      const weekKey = weekIterator.toISOString().split('T')[0];
+      weeklyStats[weekKey] = {};
+      weekIterator.setDate(weekIterator.getDate() + 7);
+    }
+  }
 
   stats.forEach(stat => {
     const date = new Date(stat.training_date);
@@ -189,9 +211,23 @@ export const aggregateStatsByWeek = (stats: any[]) => {
 
 /**
  * Αθροίζει τα stats ανά μήνα και training type
+ * Επιστρέφει όλους τους μήνες του έτους, ακόμα και χωρίς δεδομένα
  */
-export const aggregateStatsByMonth = (stats: any[]) => {
+export const aggregateStatsByMonth = (stats: any[], startDate?: string, endDate?: string) => {
   const monthlyStats: Record<string, Record<string, number>> = {};
+  
+  // Αν έχουμε startDate και endDate, δημιουργούμε entries για όλους τους μήνες
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const current = new Date(start.getFullYear(), start.getMonth(), 1);
+    
+    while (current <= end) {
+      const monthKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+      monthlyStats[monthKey] = {};
+      current.setMonth(current.getMonth() + 1);
+    }
+  }
 
   stats.forEach(stat => {
     const date = new Date(stat.training_date);
