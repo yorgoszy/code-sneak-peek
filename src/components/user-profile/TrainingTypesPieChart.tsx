@@ -10,6 +10,7 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { calculateProgramStats } from "@/hooks/useProgramStats";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { parseRepsToTime, parseTempoToSeconds, parseRestTime } from '@/utils/timeCalculations';
+import { fetchTrainingTypeStats, aggregateStatsByType } from '@/services/trainingTypeStatsService';
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -65,6 +66,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     return activePrograms?.filter(p => p.user_id === userId) || [];
   }, [activePrograms, userId]);
 
+  // State για τα δεδομένα από τη βάση
+  const [dbStats, setDbStats] = useState<Record<string, number>>({});
+  const [dbStatsLoading, setDbStatsLoading] = useState(false);
+
   useEffect(() => {
     if (!isLoading && userPrograms.length > 0) {
       calculateTrainingTypesData();
@@ -72,6 +77,53 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       setData([]);
     }
   }, [userPrograms, timeFilter, isLoading, currentWeek, currentMonth, currentYear, activeTab]);
+
+  // Φόρτωση δεδομένων από τη βάση για completed workouts
+  useEffect(() => {
+    const loadDbStats = async () => {
+      if (!userId) return;
+      
+      setDbStatsLoading(true);
+      try {
+        const today = new Date();
+        let startDate: string;
+        let endDate: string;
+
+        if (activeTab === 'day') {
+          startDate = format(today, 'yyyy-MM-dd');
+          endDate = format(today, 'yyyy-MM-dd');
+        } else if (activeTab === 'week') {
+          startDate = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+          endDate = format(endOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        } else if (activeTab === 'month' || timeFilter === 'week') {
+          startDate = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
+          endDate = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
+        } else if (timeFilter === 'month') {
+          startDate = format(startOfYear(currentYear), 'yyyy-MM-dd');
+          endDate = format(endOfYear(currentYear), 'yyyy-MM-dd');
+        } else if (timeFilter === 'day') {
+          startDate = format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+          endDate = format(endOfWeek(currentWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        } else {
+          startDate = format(startOfMonth(today), 'yyyy-MM-dd');
+          endDate = format(endOfMonth(today), 'yyyy-MM-dd');
+        }
+
+        console.log('📊 Loading DB stats for:', { userId, startDate, endDate });
+        const stats = await fetchTrainingTypeStats(userId, startDate, endDate);
+        const aggregated = aggregateStatsByType(stats);
+        console.log('📊 DB stats loaded:', aggregated);
+        setDbStats(aggregated);
+      } catch (error) {
+        console.error('❌ Error loading DB stats:', error);
+        setDbStats({});
+      } finally {
+        setDbStatsLoading(false);
+      }
+    };
+
+    loadDbStats();
+  }, [userId, activeTab, timeFilter, currentWeek, currentMonth, currentYear]);
 
   // Αρχικοποίηση επιλεγμένης ημέρας όταν αλλάζει το timeFilter
   useEffect(() => {
@@ -312,27 +364,32 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     return acc;
   }, {} as Record<string, number>);
 
-  // Μετατρέπουμε σε array για το pie chart
-  const chartData = Object.entries(pieData).map(([name, value]) => ({
+  // Συνδυασμός δεδομένων από βάση (completed workouts) + υπολογιζόμενα (μελλοντικά)
+  const combinedPieData = useMemo(() => {
+    const combined: Record<string, number> = { ...dbStats };
+    
+    // Προσθέτουμε τα δεδομένα από τα active programs μόνο για μελλοντικές ημερομηνίες
+    Object.entries(pieData).forEach(([type, minutes]) => {
+      if (!combined[type]) {
+        combined[type] = 0;
+      }
+      // Τα pieData περιέχουν μελλοντικές προπονήσεις, τα προσθέτουμε
+      combined[type] += minutes as number;
+    });
+    
+    return combined;
+  }, [dbStats, pieData]);
+
+  // Μετατρέπουμε σε array για το pie chart - χρησιμοποιούμε τα combined δεδομένα
+  const chartData = Object.entries(combinedPieData).map(([name, value]) => ({
     name,
     value: value as number,
   }));
 
   // Για το σύνολο σε day, week και month mode, αθροίζουμε όλες τις περιόδους
   const totalMinutesData = (timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month') ? data : filteredData;
-  const totalPieData = totalMinutesData.reduce((acc, item) => {
-    Object.entries(item).forEach(([key, value]) => {
-      if (key !== 'period') {
-        if (!acc[key]) {
-          acc[key] = 0;
-        }
-        acc[key] += value as number;
-      }
-    });
-    return acc;
-  }, {} as Record<string, number>);
-
-  const totalMinutes = (Object.values(totalPieData) as number[]).reduce((sum, val) => sum + val, 0);
+  // Υπολογισμός συνόλου από τα combined δεδομένα
+  const totalMinutes = Object.values(combinedPieData).reduce((sum, val) => sum + (val as number), 0);
 
   // Λίστα ημερών, εβδομάδων και μηνών
   const daysList = data.map(item => item.period);
