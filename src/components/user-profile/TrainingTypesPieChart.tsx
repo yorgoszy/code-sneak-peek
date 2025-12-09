@@ -111,6 +111,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           startDate = format(startOfYear(activeTabYear), 'yyyy-MM-dd');
           endDate = format(endOfYear(activeTabYear), 'yyyy-MM-dd');
         } else if (timeFilter === 'week') {
+          startDate = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
+          endDate = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
         } else if (timeFilter === 'month') {
           startDate = format(startOfYear(currentYear), 'yyyy-MM-dd');
           endDate = format(endOfYear(currentYear), 'yyyy-MM-dd');

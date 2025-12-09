@@ -299,11 +299,11 @@ export const calculateStatsFromCompletedWorkouts = async (userId: string) => {
         id,
         assignment_id,
         scheduled_date,
-        program_assignments!inner(
+        program_assignments!fk_workout_completions_assignment_id(
           id,
           program_id,
           training_dates,
-          programs!inner(
+          programs!fk_program_assignments_program_id(
             id,
             program_weeks(
               id,
