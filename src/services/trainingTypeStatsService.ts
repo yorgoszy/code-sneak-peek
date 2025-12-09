@@ -170,20 +170,18 @@ export const aggregateStatsByType = (stats: any[]) => {
 export const aggregateStatsByWeek = (stats: any[], startDate?: string, endDate?: string) => {
   const weeklyStats: Record<string, Record<string, number>> = {};
   
-  // Αν έχουμε startDate και endDate, δημιουργούμε entries για όλες τις εβδομάδες του μήνα
+  // Δημιουργούμε entries για όλες τις εβδομάδες του μήνα
   if (startDate && endDate) {
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const current = new Date(start);
     
-    // Βρίσκουμε τη Δευτέρα της πρώτης εβδομάδας
-    const firstMonday = new Date(current);
-    firstMonday.setDate(current.getDate() - current.getDay() + 1);
-    if (firstMonday > current) {
-      firstMonday.setDate(firstMonday.getDate() - 7);
-    }
+    // Βρίσκουμε τη Δευτέρα της πρώτης εβδομάδας που περιέχει το startDate
+    const firstDay = new Date(start);
+    const dayOfWeek = firstDay.getDay();
+    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Δευτέρα = 1
+    firstDay.setDate(firstDay.getDate() + diff);
     
-    const weekIterator = new Date(firstMonday);
+    const weekIterator = new Date(firstDay);
     while (weekIterator <= end) {
       const weekKey = weekIterator.toISOString().split('T')[0];
       weeklyStats[weekKey] = {};
@@ -193,8 +191,11 @@ export const aggregateStatsByWeek = (stats: any[], startDate?: string, endDate?:
 
   stats.forEach(stat => {
     const date = new Date(stat.training_date);
+    // Βρίσκουμε τη Δευτέρα της εβδομάδας
+    const dayOfWeek = date.getDay();
+    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     const weekStart = new Date(date);
-    weekStart.setDate(date.getDate() - date.getDay() + 1); // Δευτέρα
+    weekStart.setDate(date.getDate() + diff);
     const weekKey = weekStart.toISOString().split('T')[0];
 
     if (!weeklyStats[weekKey]) {
@@ -252,21 +253,25 @@ export const aggregateStatsByMonth = (stats: any[], startDate?: string, endDate?
 export const aggregateStatsByDay = (stats: any[], startDate?: string, endDate?: string) => {
   const dailyStats: Record<string, Record<string, number>> = {};
   
-  // Αν έχουμε startDate και endDate, δημιουργούμε entries για όλες τις ημέρες
+  // Δημιουργούμε entries για όλες τις ημέρες της εβδομάδας (7 ημέρες)
   if (startDate && endDate) {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const current = new Date(start);
     
     while (current <= end) {
-      const dayKey = current.toISOString().split('T')[0];
+      // Χρησιμοποιούμε τοπικό format για να αποφύγουμε timezone issues
+      const year = current.getFullYear();
+      const month = String(current.getMonth() + 1).padStart(2, '0');
+      const day = String(current.getDate()).padStart(2, '0');
+      const dayKey = `${year}-${month}-${day}`;
       dailyStats[dayKey] = {};
       current.setDate(current.getDate() + 1);
     }
   }
 
   stats.forEach(stat => {
-    const dayKey = stat.training_date; // Χρησιμοποιούμε απευθείας το training_date (yyyy-MM-dd)
+    const dayKey = stat.training_date; // Ήδη σε format yyyy-MM-dd
 
     if (!dailyStats[dayKey]) {
       dailyStats[dayKey] = {};

@@ -79,9 +79,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     }
   }, [userPrograms, timeFilter, isLoading, currentWeek, currentMonth, currentYear, activeTab]);
 
-  // Ref για να ξέρουμε αν έχει γίνει ήδη το retroactive calculation
-  const retroCalculationDoneRef = React.useRef(false);
-
   // Φόρτωση δεδομένων από τη βάση για completed workouts
   useEffect(() => {
     const loadDbStats = async () => {
@@ -89,12 +86,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       
       setDbStatsLoading(true);
       try {
-        // Πρώτα, αν δεν έχει γίνει, κάνουμε retroactive calculation
-        if (!retroCalculationDoneRef.current) {
-          console.log('📊 Running retroactive calculation for completed workouts...');
-          await calculateStatsFromCompletedWorkouts(userId);
-          retroCalculationDoneRef.current = true;
-        }
+        // Πρώτα κάνουμε retroactive calculation για να πιάσουμε νέα completed workouts
+        console.log('📊 Running retroactive calculation for completed workouts...');
+        await calculateStatsFromCompletedWorkouts(userId);
 
         const today = new Date();
         let startDate: string;
@@ -131,13 +125,14 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         console.log('📊 DB stats loaded (aggregated):', aggregated);
         setDbStats(aggregated);
 
-        // Stats ανά περίοδο
+        // Stats ανά περίοδο - χρησιμοποιούμε activeTab ή timeFilter
+        const effectiveTab = activeTab || timeFilter;
         let periodStats: Record<string, Record<string, number>> = {};
-        if (activeTab === 'day') {
+        if (effectiveTab === 'day') {
           periodStats = aggregateStatsByDay(stats, startDate, endDate);
-        } else if (activeTab === 'week') {
+        } else if (effectiveTab === 'week') {
           periodStats = aggregateStatsByWeek(stats, startDate, endDate);
-        } else if (activeTab === 'month') {
+        } else if (effectiveTab === 'month') {
           periodStats = aggregateStatsByMonth(stats, startDate, endDate);
         }
         console.log('📊 DB stats by period:', periodStats);
