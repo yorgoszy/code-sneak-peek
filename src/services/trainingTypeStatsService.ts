@@ -210,6 +210,27 @@ export const aggregateStatsByMonth = (stats: any[]) => {
 };
 
 /**
+ * Αθροίζει τα stats ανά ημέρα και training type
+ */
+export const aggregateStatsByDay = (stats: any[]) => {
+  const dailyStats: Record<string, Record<string, number>> = {};
+
+  stats.forEach(stat => {
+    const dayKey = stat.training_date; // Χρησιμοποιούμε απευθείας το training_date (yyyy-MM-dd)
+
+    if (!dailyStats[dayKey]) {
+      dailyStats[dayKey] = {};
+    }
+    if (!dailyStats[dayKey][stat.training_type]) {
+      dailyStats[dayKey][stat.training_type] = 0;
+    }
+    dailyStats[dayKey][stat.training_type] += stat.minutes;
+  });
+
+  return dailyStats;
+};
+
+/**
  * Υπολογίζει stats από τα ολοκληρωμένα workouts (για retroactive calculation)
  */
 export const calculateStatsFromCompletedWorkouts = async (userId: string) => {
