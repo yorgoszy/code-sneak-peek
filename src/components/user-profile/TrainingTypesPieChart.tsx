@@ -553,7 +553,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         )}
 
         
-        {data.length === 0 ? (
+        {chartData.length === 0 && Object.keys(dbStats).length === 0 ? (
           <div className="text-center py-4 text-gray-500">
             <p className="mb-1 text-xs">Δεν υπάρχουν δεδομένα για εμφάνιση</p>
             <p className="text-[10px] text-gray-400">
@@ -673,6 +673,93 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                       }}
                     />
                     <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </>
+            )}
+          </div>
+        ) : data.length === 0 && Object.keys(dbStats).length > 0 ? (
+          // Αν δεν υπάρχουν active programs αλλά υπάρχουν completed workouts, εμφάνισε aggregated pie chart
+          <div className="w-full">
+            {chartData.length === 0 ? (
+              <div className="text-center py-4 text-gray-500 text-xs">
+                Δεν υπάρχουν δεδομένα για την επιλεγμένη περίοδο
+              </div>
+            ) : (
+              <>
+                {/* Mobile - Only minutes */}
+                <ResponsiveContainer width="100%" height={200} className="sm:hidden">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={(entry) => formatMinutes(entry.value)}
+                      outerRadius={60}
+                      innerRadius={35}
+                      fill="#8884d8"
+                      dataKey="value"
+                      style={{ fontSize: '10px' }}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: any) => formatMinutes(value)}
+                      contentStyle={{ 
+                        backgroundColor: 'white', 
+                        border: '1px solid #ccc',
+                        borderRadius: '0px',
+                        fontSize: '10px'
+                      }}
+                    />
+                    <Legend 
+                      wrapperStyle={{ fontSize: '9px' }}
+                      formatter={(value) => TRAINING_TYPE_LABELS[value] || value}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                
+                {/* Tablet/Desktop */}
+                <ResponsiveContainer width="100%" height={250} className="hidden sm:block">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={(entry) => `${TRAINING_TYPE_LABELS[entry.name] || entry.name}: ${formatMinutes(entry.value)}`}
+                      outerRadius={80}
+                      innerRadius={50}
+                      fill="#8884d8"
+                      dataKey="value"
+                      style={{ fontSize: '11px' }}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: any) => formatMinutes(value)}
+                      contentStyle={{ 
+                        backgroundColor: 'white', 
+                        border: '1px solid #ccc',
+                        borderRadius: '0px',
+                        fontSize: '11px'
+                      }}
+                    />
+                    <Legend 
+                      wrapperStyle={{ fontSize: '11px' }}
+                      formatter={(value) => TRAINING_TYPE_LABELS[value] || value}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </>
