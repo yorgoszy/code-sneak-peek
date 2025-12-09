@@ -3748,64 +3748,6 @@ export type Database = {
           },
         ]
       }
-      training_type_stats: {
-        Row: {
-          assignment_id: string | null
-          created_at: string
-          id: string
-          minutes: number
-          training_date: string
-          training_type: string
-          updated_at: string
-          user_id: string
-          workout_completion_id: string | null
-        }
-        Insert: {
-          assignment_id?: string | null
-          created_at?: string
-          id?: string
-          minutes?: number
-          training_date: string
-          training_type: string
-          updated_at?: string
-          user_id: string
-          workout_completion_id?: string | null
-        }
-        Update: {
-          assignment_id?: string | null
-          created_at?: string
-          id?: string
-          minutes?: number
-          training_date?: string
-          training_type?: string
-          updated_at?: string
-          user_id?: string
-          workout_completion_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "training_type_stats_assignment_id_fkey"
-            columns: ["assignment_id"]
-            isOneToOne: false
-            referencedRelation: "program_assignments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "training_type_stats_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "training_type_stats_workout_completion_id_fkey"
-            columns: ["workout_completion_id"]
-            isOneToOne: false
-            referencedRelation: "workout_completions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_campaign_participations: {
         Row: {
           campaign_id: string

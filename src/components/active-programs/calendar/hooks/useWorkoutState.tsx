@@ -8,7 +8,6 @@ import { useSharedExerciseNotes } from '@/hooks/useSharedExerciseNotes';
 import { useBlockTimer } from '@/contexts/BlockTimerContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { saveTrainingTypeStats } from '@/services/trainingTypeStatsService';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface UseWorkoutStateProps {
@@ -137,16 +136,14 @@ export const useWorkoutState = (
       console.log('🔄 Now updating with duration and end time...');
       
       // Τώρα ενημερώνουμε την εγγραφή με τη διάρκεια και το end_time
-      const { data: completionData, error } = await supabase
+      const { error } = await supabase
         .from('workout_completions')
         .update({
           actual_duration_minutes: actualDurationMinutes,
           end_time: new Date().toISOString()
         })
         .eq('assignment_id', program.id)
-        .eq('scheduled_date', selectedDateStr)
-        .select()
-        .single();
+        .eq('scheduled_date', selectedDateStr);
 
       if (error) {
         console.error('❌ Error updating workout completion with duration:', error);
@@ -154,33 +151,6 @@ export const useWorkoutState = (
       }
       
       console.log('✅ Workout completion updated successfully with duration:', actualDurationMinutes, 'minutes');
-
-      // Βρίσκουμε το day program για να αποθηκεύσουμε τα training type stats
-      const trainingDates = program.training_dates || [];
-      const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
-      
-      if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
-        const programDays = program.programs.program_weeks[0].program_days;
-        const dayProgram = programDays[dateIndex % programDays.length];
-        
-        // Αποθήκευση training type stats
-        const userId = program.app_users?.id || program.user_id;
-        if (userId && dayProgram) {
-          try {
-            await saveTrainingTypeStats(
-              userId,
-              program.id,
-              selectedDateStr,
-              dayProgram,
-              completionData?.id
-            );
-            console.log('✅ Training type stats saved successfully');
-          } catch (statsError) {
-            console.error('⚠️ Error saving training type stats:', statsError);
-            // Δεν σταματάμε τη ροή για αυτό το σφάλμα
-          }
-        }
-      }
       
       // Αφαίρεση από τις ενεργές προπονήσεις
       if (workoutId) {
