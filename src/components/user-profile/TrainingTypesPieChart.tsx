@@ -1,15 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { format, startOfWeek, startOfMonth, parseISO, endOfWeek, addWeeks, subWeeks, addMonths, subMonths, addYears, subYears, endOfMonth, startOfYear, endOfYear, isWithinInterval } from "date-fns";
+import { format, startOfWeek, startOfMonth, parseISO, endOfWeek, addWeeks, subWeeks, addMonths, subMonths, endOfMonth, startOfYear, endOfYear, isWithinInterval } from "date-fns";
 import { el } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useActivePrograms } from "@/hooks/useActivePrograms";
-import { calculateProgramStats } from "@/hooks/useProgramStats";
+import { supabase } from "@/integrations/supabase/client";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { parseRepsToTime, parseTempoToSeconds, parseRestTime } from '@/utils/timeCalculations';
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -18,34 +15,39 @@ interface TrainingTypesPieChartProps {
 }
 
 const COLORS = {
-  end: '#8045ed',
-  'str/end': '#334ac4',
-  'pwr/end': '#ef3fed',
-  'spd/end': '#ff8ad1',
-  str: '#ff3131',
-  'str/spd': '#8affe3',
-  'spd/str': '#8afbff',
-  spd: '#a4e1ff',
-  pwr: '#fa009a',
-  hpr: '#f6b62c',
+  strength: '#ff3131',
+  endurance: '#8045ed',
+  power: '#fa009a',
+  speed: '#a4e1ff',
 };
 
 const TRAINING_TYPE_LABELS: Record<string, string> = {
-  str: 'Δύναμη',
-  'str/spd': 'Δύναμη/Ταχύτητα',
-  pwr: 'Ισχύς',
-  'spd/str': 'Ταχύτητα/Δύναμη',
-  spd: 'Ταχύτητα',
-  'str/end': 'Δύναμη/Αντοχή',
-  'pwr/end': 'Ισχύς/Αντοχή',
-  'spd/end': 'Ταχύτητα/Αντοχή',
-  end: 'Αντοχή',
+  strength: 'Δύναμη',
+  endurance: 'Αντοχή',
+  power: 'Ισχύς',
+  speed: 'Ταχύτητα',
 };
 
+interface WorkoutStat {
+  id: string;
+  user_id: string;
+  assignment_id: string;
+  scheduled_date: string;
+  total_duration_minutes: number;
+  total_volume_kg: number;
+  strength_minutes: number;
+  endurance_minutes: number;
+  power_minutes: number;
+  speed_minutes: number;
+}
+
 export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId, hideTimeTabs = false, activeTab }) => {
-  const [data, setData] = useState<any[]>([]);
+  const [workoutStats, setWorkoutStats] = useState<WorkoutStat[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [selectedDay, setSelectedDay] = useState<string>('');
   
   // Συγχρονίζουμε το timeFilter με το activeTab αν υπάρχει
   useEffect(() => {
@@ -53,51 +55,50 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       setTimeFilter(activeTab);
     }
   }, [activeTab]);
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [currentYear, setCurrentYear] = useState<Date>(new Date());
-  const [selectedDay, setSelectedDay] = useState<string>('');
-  
-  // Παίρνουμε τα active programs του χρήστη
-  const { data: activePrograms, isLoading } = useActivePrograms();
-  
-  // Φιλτράρουμε για τον συγκεκριμένο χρήστη
-  const userPrograms = useMemo(() => {
-    return activePrograms?.filter(p => p.user_id === userId) || [];
-  }, [activePrograms, userId]);
 
+  // Φόρτωση δεδομένων από workout_stats
   useEffect(() => {
-    if (!isLoading && userPrograms.length > 0) {
-      calculateTrainingTypesData();
-    } else if (!isLoading) {
-      setData([]);
-    }
-  }, [userPrograms, timeFilter, isLoading, currentWeek, currentMonth, currentYear, activeTab]);
+    const fetchWorkoutStats = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('workout_stats')
+          .select('*')
+          .eq('user_id', userId)
+          .order('scheduled_date', { ascending: false });
 
-  // Αρχικοποίηση επιλεγμένης ημέρας όταν αλλάζει το timeFilter
-  useEffect(() => {
-    if (timeFilter === 'day' && data.length > 0 && !selectedDay) {
-      setSelectedDay(data[0].period);
-    }
-  }, [timeFilter, data, selectedDay]);
+        if (error) {
+          console.error('Error fetching workout stats:', error);
+          setWorkoutStats([]);
+        } else {
+          setWorkoutStats(data || []);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        setWorkoutStats([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const calculateTrainingTypesData = () => {
-    console.log('📊 Calculating training types data...');
-    console.log('📊 User programs count:', userPrograms.length);
-    console.log('📊 Active tab:', activeTab);
-    
-    const periodData: Record<string, Record<string, number>> = {};
+    if (userId) {
+      fetchWorkoutStats();
+    }
+  }, [userId]);
+
+  // Φιλτράρισμα δεδομένων με βάση το time filter
+  const filteredStats = useMemo(() => {
+    if (workoutStats.length === 0) return [];
+
     const today = new Date();
     const weekStart = startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 });
     const weekEnd = endOfWeek(currentWeek, { locale: el, weekStartsOn: 1 });
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
-    const yearStart = startOfYear(currentYear);
-    const yearEnd = endOfYear(currentYear);
 
-    // Αν το activeTab είναι set (από το ημερολόγιο), φιλτράρουμε για την τρέχουσα περίοδο
-    let filterStart: Date | null = null;
-    let filterEnd: Date | null = null;
-    
+    let filterStart: Date;
+    let filterEnd: Date;
+
     if (activeTab === 'day') {
       filterStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       filterEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
@@ -107,183 +108,84 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     } else if (activeTab === 'month') {
       filterStart = startOfMonth(today);
       filterEnd = endOfMonth(today);
-    }
-
-    userPrograms.forEach((program, programIndex) => {
-      const programData = program.programs;
-      if (!programData?.program_weeks) return;
-      
-      console.log(`📊 Program ${programIndex + 1}: ${programData.name}`);
-      
-      // Για κάθε training date, βρίσκουμε την αντίστοιχη ημέρα προπόνησης
-      program.training_dates?.forEach((dateStr, dateIndex) => {
-        const date = parseISO(dateStr);
-        
-        // Αν έχουμε activeTab (από ημερολόγιο), φιλτράρουμε για τη συγκεκριμένη περίοδο
-        if (activeTab && filterStart && filterEnd) {
-          if (!isWithinInterval(date, { start: filterStart, end: filterEnd })) {
-            return;
-          }
-        } else {
-          // Αλλιώς χρησιμοποιούμε την παλιά λογική για το programs view
-          if (timeFilter === 'day' && !isWithinInterval(date, { start: weekStart, end: weekEnd })) {
-            return;
-          }
-          if (timeFilter === 'week' && !isWithinInterval(date, { start: monthStart, end: monthEnd })) {
-            return;
-          }
-          if (timeFilter === 'month' && !isWithinInterval(date, { start: yearStart, end: yearEnd })) {
-            return;
-          }
-        }
-        
-        let periodKey = '';
-        
-        // Αν έχουμε activeTab, αθροίζουμε όλα σε μια κατηγορία
-        if (activeTab) {
-          periodKey = 'all';
-        } else if (timeFilter === 'day') {
-          periodKey = format(date, 'EEEE', { locale: el });
-        } else if (timeFilter === 'week') {
-          const weekStart = startOfWeek(date, { locale: el, weekStartsOn: 1 });
-          periodKey = `Εβδ ${format(weekStart, 'dd/MM', { locale: el })}`;
-        } else {
-          periodKey = format(date, 'MMM yyyy', { locale: el });
-        }
-
-        // Βρίσκουμε σε ποια εβδομάδα και ημέρα ανήκει αυτή η ημερομηνία
-        const daysPerWeek = programData.program_weeks[0]?.program_days?.length || 1;
-        const weekIndex = Math.floor(dateIndex / daysPerWeek);
-        const dayIndex = dateIndex % daysPerWeek;
-        
-        const week = programData.program_weeks[weekIndex];
-        if (!week) return;
-        
-        const day = week.program_days?.[dayIndex];
-        if (!day) return;
-        
-        console.log(`📊 Date ${dateStr}: Week ${weekIndex + 1}, Day ${dayIndex + 1}`);
-        
-        // Για κάθε block της ημέρας, υπολογίζουμε τα stats
-        day.program_blocks?.forEach((block: any) => {
-          if (!block.training_type) {
-            console.log(`⚠️ Block "${block.name}" has no training_type`);
-            return;
-          }
-          
-          // Εξαιρούμε τους τύπους που δεν θέλουμε στο pie chart
-          const excludedTypes = ['mobility', 'stability', 'activation', 'neural act', 'recovery'];
-          if (excludedTypes.includes(block.training_type)) {
-            console.log(`⏭️ Skipping block "${block.name}" with type ${block.training_type} (excluded from pie chart)`);
-            return;
-          }
-          
-          // Υπολογίζουμε τον χρόνο του block
-          let blockTime = 0;
-          block.program_exercises?.forEach((exercise: any) => {
-            const sets = exercise.sets || 0;
-            const repsData = parseRepsToTime(exercise.reps || '0');
-            
-            // Έλεγχος αν το reps_mode είναι 'time' ή αν το string reps περιέχει χρόνο
-            const isTimeMode = exercise.reps_mode === 'time' || repsData.isTime;
-            
-            if (isTimeMode) {
-              // Time-based exercise
-              const workTime = sets * repsData.seconds;
-              const restSeconds = parseRestTime(exercise.rest || '');
-              const totalRestTime = sets * restSeconds;
-              blockTime += workTime + totalRestTime;
-            } else {
-              // Rep-based exercise
-              const reps = repsData.count;
-              const tempoSeconds = parseTempoToSeconds(exercise.tempo || '');
-              const restSeconds = parseRestTime(exercise.rest || '');
-              const workTime = sets * reps * tempoSeconds;
-              const totalRestTime = sets * restSeconds;
-              blockTime += workTime + totalRestTime;
-            }
-          });
-          
-          const timeMinutes = Math.round(blockTime / 60);
-          const typeLabel = block.training_type;
-          
-          console.log(`✅ Block "${block.name}": ${block.training_type} -> ${typeLabel}, ${timeMinutes}min`);
-          
-          if (!periodData[periodKey]) {
-            periodData[periodKey] = {};
-          }
-          
-          if (!periodData[periodKey][typeLabel]) {
-            periodData[periodKey][typeLabel] = 0;
-          }
-          
-          periodData[periodKey][typeLabel] += timeMinutes;
-        });
-      });
-    });
-
-    console.log('📊 Period data:', periodData);
-
-    // Μετατρέπουμε σε array για το chart
-    const chartData = Object.entries(periodData).map(([period, types]) => {
-      const entry: any = { period };
-      Object.entries(types).forEach(([type, minutes]) => {
-        entry[type] = minutes;
-      });
-      return entry;
-    });
-
-    console.log('📊 Final chart data:', chartData);
-    setData(chartData);
-    
-    // Αρχικοποιούμε την επιλεγμένη ημέρα αν είμαστε σε day mode
-    if (timeFilter === 'day' && chartData.length > 0 && !selectedDay) {
-      setSelectedDay(chartData[0].period);
-    }
-  };
-
-  // Helper functions από useProgramStats
-  const parseTempoToSeconds = (tempo: string): number => {
-    if (!tempo || tempo.trim() === '') return 3;
-    const parts = tempo.split('.');
-    let totalSeconds = 0;
-    parts.forEach(part => {
-      if (part === 'x' || part === 'X') {
-        totalSeconds += 0.5;
-      } else {
-        totalSeconds += parseFloat(part) || 0;
-      }
-    });
-    return totalSeconds;
-  };
-
-  const parseRepsToTotal = (reps: string): number => {
-    if (!reps) return 0;
-    if (!reps.includes('.')) {
-      return parseInt(reps) || 0;
-    }
-    const parts = reps.split('.');
-    let totalReps = 0;
-    parts.forEach(part => {
-      totalReps += parseInt(part) || 0;
-    });
-    return totalReps;
-  };
-
-  const parseRestTime = (rest: string): number => {
-    if (!rest) return 0;
-    if (rest.includes(':')) {
-      const [minutes, seconds] = rest.split(':');
-      return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
-    } else if (rest.includes("'")) {
-      return (parseFloat(rest.replace("'", "")) || 0) * 60;
-    } else if (rest.includes('s')) {
-      return parseFloat(rest.replace('s', '')) || 0;
+    } else if (timeFilter === 'day') {
+      filterStart = weekStart;
+      filterEnd = weekEnd;
+    } else if (timeFilter === 'week') {
+      filterStart = monthStart;
+      filterEnd = monthEnd;
     } else {
-      const minutes = parseFloat(rest) || 0;
-      return minutes * 60;
+      filterStart = startOfYear(today);
+      filterEnd = endOfYear(today);
     }
-  };
+
+    return workoutStats.filter(stat => {
+      const date = parseISO(stat.scheduled_date);
+      return isWithinInterval(date, { start: filterStart, end: filterEnd });
+    });
+  }, [workoutStats, timeFilter, currentWeek, currentMonth, activeTab]);
+
+  // Ομαδοποίηση δεδομένων ανά περίοδο
+  const groupedData = useMemo(() => {
+    const groups: Record<string, { strength: number; endurance: number; power: number; speed: number; total: number }> = {};
+
+    filteredStats.forEach(stat => {
+      const date = parseISO(stat.scheduled_date);
+      let periodKey = '';
+
+      if (activeTab) {
+        periodKey = 'all';
+      } else if (timeFilter === 'day') {
+        periodKey = format(date, 'EEEE', { locale: el });
+      } else if (timeFilter === 'week') {
+        const weekStart = startOfWeek(date, { locale: el, weekStartsOn: 1 });
+        periodKey = `Εβδ ${format(weekStart, 'dd/MM', { locale: el })}`;
+      } else {
+        periodKey = format(date, 'MMM yyyy', { locale: el });
+      }
+
+      if (!groups[periodKey]) {
+        groups[periodKey] = { strength: 0, endurance: 0, power: 0, speed: 0, total: 0 };
+      }
+
+      groups[periodKey].strength += stat.strength_minutes || 0;
+      groups[periodKey].endurance += stat.endurance_minutes || 0;
+      groups[periodKey].power += stat.power_minutes || 0;
+      groups[periodKey].speed += stat.speed_minutes || 0;
+      groups[periodKey].total += stat.total_duration_minutes || 0;
+    });
+
+    return Object.entries(groups).map(([period, data]) => ({
+      period,
+      ...data
+    }));
+  }, [filteredStats, timeFilter, activeTab]);
+
+  // Αρχικοποίηση επιλεγμένης ημέρας
+  useEffect(() => {
+    if (timeFilter === 'day' && groupedData.length > 0 && !selectedDay) {
+      setSelectedDay(groupedData[0].period);
+    }
+  }, [timeFilter, groupedData, selectedDay]);
+
+  // Υπολογισμός συνολικών λεπτών
+  const totalMinutes = useMemo(() => {
+    return groupedData.reduce((sum, item) => sum + item.total, 0);
+  }, [groupedData]);
+
+  // Δεδομένα για pie chart
+  const pieData = useMemo(() => {
+    const totals = groupedData.reduce((acc, item) => ({
+      strength: acc.strength + item.strength,
+      endurance: acc.endurance + item.endurance,
+      power: acc.power + item.power,
+      speed: acc.speed + item.speed
+    }), { strength: 0, endurance: 0, power: 0, speed: 0 });
+
+    return Object.entries(totals)
+      .filter(([_, value]) => value > 0)
+      .map(([name, value]) => ({ name, value }));
+  }, [groupedData]);
 
   const formatMinutes = (minutes: number) => {
     if (minutes >= 60) {
@@ -294,50 +196,38 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     return `${minutes}λ`;
   };
 
-  // Φιλτράρουμε δεδομένα ανάλογα με το mode
-  const filteredData = timeFilter === 'day' && selectedDay
-    ? data.filter(item => item.period === selectedDay)
-    : data;
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0];
+      return (
+        <div className="bg-white p-2 rounded-none border border-gray-200 shadow-sm">
+          <p className="text-xs font-medium">{TRAINING_TYPE_LABELS[data.name] || data.name}</p>
+          <p className="text-xs text-gray-600">{formatMinutes(data.value)}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
-  // Αθροίζουμε όλα τα δεδομένα ανά training type
-  const pieData = filteredData.reduce((acc, item) => {
-    Object.entries(item).forEach(([key, value]) => {
-      if (key !== 'period') {
-        if (!acc[key]) {
-          acc[key] = 0;
-        }
-        acc[key] += value as number;
-      }
-    });
-    return acc;
-  }, {} as Record<string, number>);
+  const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, value }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-  // Μετατρέπουμε σε array για το pie chart
-  const chartData = Object.entries(pieData).map(([name, value]) => ({
-    name,
-    value: value as number,
-  }));
+    const shortLabels: Record<string, string> = {
+      strength: 'str',
+      endurance: 'end',
+      power: 'pwr',
+      speed: 'spd'
+    };
 
-  // Για το σύνολο σε day, week και month mode, αθροίζουμε όλες τις περιόδους
-  const totalMinutesData = (timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month') ? data : filteredData;
-  const totalPieData = totalMinutesData.reduce((acc, item) => {
-    Object.entries(item).forEach(([key, value]) => {
-      if (key !== 'period') {
-        if (!acc[key]) {
-          acc[key] = 0;
-        }
-        acc[key] += value as number;
-      }
-    });
-    return acc;
-  }, {} as Record<string, number>);
-
-  const totalMinutes = (Object.values(totalPieData) as number[]).reduce((sum, val) => sum + val, 0);
-
-  // Λίστα ημερών, εβδομάδων και μηνών
-  const daysList = data.map(item => item.period);
-  const weeksList = timeFilter === 'week' ? data.map(item => item.period) : [];
-  const monthsList = timeFilter === 'month' ? data.map(item => item.period) : [];
+    return (
+      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold">
+        {`${shortLabels[name] || name}: ${formatMinutes(value)}`}
+      </text>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -393,7 +283,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       <CardContent className="p-3 pt-0">
         {!activeTab && timeFilter === 'day' && (
           <div className="mb-2">
-            {/* Week Navigation */}
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
@@ -425,7 +314,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
         {!activeTab && timeFilter === 'week' && (
           <div className="mb-2">
-            {/* Month Navigation */}
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
@@ -436,9 +324,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 <ChevronLeft className="h-3 w-3" />
               </Button>
               <div className={`text-[10px] md:text-sm font-medium ${
-                format(currentMonth, 'yyyy-MM') === format(new Date(), 'yyyy-MM')
-                  ? 'text-[#cb8954]' 
-                  : ''
+                format(currentMonth, 'yyyy-MM') === format(new Date(), 'yyyy-MM') ? 'text-[#cb8954]' : ''
               }`}>
                 {format(currentMonth, 'MMMM yyyy', { locale: el })}
               </div>
@@ -454,323 +340,106 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           </div>
         )}
 
-        {!activeTab && timeFilter === 'month' && (
-          <div className="mb-2">
-            {/* Year Navigation */}
-            <div className="flex items-center justify-between">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentYear(subYears(currentYear, 1))}
-                className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
-              >
-                <ChevronLeft className="h-3 w-3" />
-              </Button>
-              <div className={`text-[10px] md:text-sm font-medium ${
-                format(currentYear, 'yyyy') === format(new Date(), 'yyyy')
-                  ? 'text-[#cb8954]' 
-                  : ''
-              }`}>
-                {format(currentYear, 'yyyy')}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentYear(addYears(currentYear, 1))}
-                className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
-              >
-                <ChevronRight className="h-3 w-3" />
-              </Button>
-            </div>
+        {groupedData.length === 0 || pieData.length === 0 ? (
+          <div className="text-center py-8 text-gray-500 text-sm">
+            Δεν υπάρχουν ολοκληρωμένες προπονήσεις
           </div>
-        )}
+        ) : (
+          <>
+            {/* Day view with carousel */}
+            {!activeTab && timeFilter === 'day' && groupedData.length > 0 && (
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {groupedData.map((dayData, index) => {
+                    const dayPieData = [
+                      { name: 'strength', value: dayData.strength },
+                      { name: 'endurance', value: dayData.endurance },
+                      { name: 'power', value: dayData.power },
+                      { name: 'speed', value: dayData.speed }
+                    ].filter(item => item.value > 0);
 
-        
-        {data.length === 0 ? (
-          <div className="text-center py-4 text-gray-500">
-            <p className="mb-1 text-xs">Δεν υπάρχουν δεδομένα για εμφάνιση</p>
-            <p className="text-[10px] text-gray-400">
-              Βεβαιωθείτε ότι έχετε ορίσει τύπο προπόνησης (str, end, pwr κτλ.) σε κάθε μπλοκ του προγράμματος
-            </p>
-          </div>
-        ) : activeTab ? (
-          // Όταν έχουμε activeTab (από ημερολόγιο), εμφανίζουμε ένα μόνο pie chart με τα aggregated δεδομένα
-          <div className="w-full">
-            {chartData.length === 0 ? (
-              <div className="text-center py-4 text-gray-500 text-xs">
-                Δεν υπάρχουν δεδομένα για την επιλεγμένη περίοδο
-              </div>
-            ) : (
-              <>
-                {/* Mobile - Only minutes */}
-                <ResponsiveContainer width="100%" height={200} className="sm:hidden">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={(entry) => formatMinutes(entry.value)}
-                      outerRadius={60}
-                      innerRadius={35}
-                      fill="#8884d8"
-                      dataKey="value"
-                      style={{ fontSize: '10px' }}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: any) => formatMinutes(value)}
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '1px solid #ccc',
-                        borderRadius: '0px',
-                        fontSize: '10px'
-                      }}
-                    />
-                    <Legend 
-                      wrapperStyle={{ fontSize: '9px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                
-                {/* Tablet - Medium text */}
-                <ResponsiveContainer width="100%" height={220} className="hidden sm:block md:hidden">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
-                      outerRadius={65}
-                      innerRadius={40}
-                      fill="#8884d8"
-                      dataKey="value"
-                      style={{ fontSize: '9px' }}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: any) => formatMinutes(value)}
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '1px solid #ccc',
-                        borderRadius: '0px',
-                        fontSize: '10px'
-                      }}
-                    />
-                    <Legend 
-                      wrapperStyle={{ fontSize: '10px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-
-                {/* Desktop - Large text */}
-                <ResponsiveContainer width="100%" height={250} className="hidden md:block">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
-                      outerRadius={75}
-                      innerRadius={45}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: any) => formatMinutes(value)}
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '1px solid #ccc',
-                        borderRadius: '0px'
-                      }}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </>
+                    return (
+                      <CarouselItem key={index} className="basis-1/3">
+                        <div className="flex flex-col items-center p-1">
+                          <div className="text-[10px] font-medium mb-1">{dayData.period}</div>
+                          <div className="text-[8px] text-gray-500">{formatMinutes(dayData.total)}</div>
+                          {dayPieData.length > 0 ? (
+                            <ResponsiveContainer width={80} height={80}>
+                              <PieChart>
+                                <Pie
+                                  data={dayPieData}
+                                  cx="50%"
+                                  cy="50%"
+                                  innerRadius={15}
+                                  outerRadius={35}
+                                  dataKey="value"
+                                  stroke="none"
+                                >
+                                  {dayPieData.map((entry, i) => (
+                                    <Cell key={`cell-${i}`} fill={COLORS[entry.name as keyof typeof COLORS] || '#ccc'} />
+                                  ))}
+                                </Pie>
+                              </PieChart>
+                            </ResponsiveContainer>
+                          ) : (
+                            <div className="w-[80px] h-[80px] flex items-center justify-center">
+                              <div className="w-[70px] h-[70px] rounded-full border-2 border-dashed border-gray-300" />
+                            </div>
+                          )}
+                          <div className="flex flex-wrap justify-center gap-1 mt-1">
+                            {dayPieData.map((item, i) => (
+                              <div key={i} className="flex items-center gap-0.5">
+                                <div className="w-2 h-2" style={{ backgroundColor: COLORS[item.name as keyof typeof COLORS] }} />
+                                <span className="text-[8px]">{item.name.slice(0, 3)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+                <CarouselPrevious className="left-0 h-6 w-6" />
+                <CarouselNext className="right-0 h-6 w-6" />
+              </Carousel>
             )}
-          </div>
-        ) : timeFilter === 'day' || timeFilter === 'week' || timeFilter === 'month' ? (
-          <Carousel
-            opts={{
-              align: "start",
-              slidesToScroll: 3,
-            }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-0">
-              {(timeFilter === 'day' ? daysList : timeFilter === 'week' ? weeksList : monthsList).map((period) => {
-              const periodData = data.find(item => item.period === period);
-              if (!periodData) return null;
 
-              // Υπολογίζουμε τα δεδομένα για αυτή την περίοδο
-              const periodPieData = Object.entries(periodData).reduce((acc, [key, value]) => {
-                if (key !== 'period') {
-                  acc[key] = value as number;
-                }
-                return acc;
-              }, {} as Record<string, number>);
-
-              const periodChartData = Object.entries(periodPieData).map(([name, value]) => ({
-                name,
-                value: value as number,
-              }));
-
-              const periodTotalMinutes = periodChartData.reduce((sum, item) => sum + item.value, 0);
-
-              return (
-                <CarouselItem key={period} className="pl-0 basis-1/3">
-                  <div className="border border-gray-200 rounded-none p-1 md:p-2">
-                  <div className="mb-2">
-                    <h4 className="text-[10px] font-semibold text-gray-900">{period}</h4>
-                    <div className="text-[10px] text-gray-600">
-                      <span className="font-semibold">{formatMinutes(periodTotalMinutes)}</span>
+            {/* Week/Month/ActiveTab view - single pie chart */}
+            {(activeTab || timeFilter !== 'day') && pieData.length > 0 && (
+              <div className="flex flex-col items-center">
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      dataKey="value"
+                      stroke="none"
+                      label={renderCustomLabel}
+                      labelLine={false}
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS] || '#ccc'} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex flex-wrap justify-center gap-3 mt-2">
+                  {pieData.map((item, index) => (
+                    <div key={index} className="flex items-center gap-1">
+                      <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: COLORS[item.name as keyof typeof COLORS] }} />
+                      <span className="text-xs">{TRAINING_TYPE_LABELS[item.name] || item.name}</span>
+                      <span className="text-xs text-gray-500">({formatMinutes(item.value)})</span>
                     </div>
-                  </div>
-                  
-                  {periodChartData.length === 0 ? (
-                    <div className="text-center py-2 text-gray-500 text-[10px]">
-                      Δεν υπάρχουν δεδομένα
-                    </div>
-                  ) : (
-                    <>
-                    {/* Mobile - Only minutes */}
-                    <ResponsiveContainer width="100%" height={160} className="sm:hidden">
-                      <PieChart>
-                        <Pie
-                          data={periodChartData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={(entry) => formatMinutes(entry.value)}
-                          outerRadius={40}
-                          innerRadius={25}
-                          fill="#8884d8"
-                          dataKey="value"
-                          style={{ fontSize: '9px' }}
-                        >
-                          {periodChartData.map((entry, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value: any) => formatMinutes(value)}
-                          contentStyle={{ 
-                            backgroundColor: 'white', 
-                            border: '1px solid #ccc',
-                            borderRadius: '0px',
-                            fontSize: '10px'
-                          }}
-                        />
-                        <Legend wrapperStyle={{ fontSize: '9px' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    
-                    {/* Tablet - Small text */}
-                    <ResponsiveContainer width="100%" height={160} className="hidden sm:block md:hidden">
-                      <PieChart>
-                        <Pie
-                          data={periodChartData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
-                          outerRadius={40}
-                          innerRadius={25}
-                          fill="#8884d8"
-                          dataKey="value"
-                          style={{ fontSize: '7px' }}
-                        >
-                          {periodChartData.map((entry, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value: any) => formatMinutes(value)}
-                          contentStyle={{ 
-                            backgroundColor: 'white', 
-                            border: '1px solid #ccc',
-                            borderRadius: '0px',
-                            fontSize: '10px'
-                          }}
-                        />
-                        <Legend wrapperStyle={{ fontSize: '8px' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-
-                    {/* Desktop */}
-                    <ResponsiveContainer width="100%" height={180} className="hidden md:block">
-                      <PieChart>
-                        <Pie
-                          data={periodChartData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={(entry) => `${entry.name}: ${formatMinutes(entry.value)}`}
-                          outerRadius={50}
-                          innerRadius={30}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {periodChartData.map((entry, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={COLORS[entry.name as keyof typeof COLORS] || '#aca097'} 
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value: any) => formatMinutes(value)}
-                          contentStyle={{ 
-                            backgroundColor: 'white', 
-                            border: '1px solid #ccc',
-                            borderRadius: '0px',
-                            fontSize: '10px'
-                          }}
-                        />
-                        <Legend wrapperStyle={{ fontSize: '9px' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    </>
-                  )}
-                  </div>
-                </CarouselItem>
-              );
-            })}
-            </CarouselContent>
-            <div className="flex justify-center gap-2 mt-2">
-              <CarouselPrevious className="rounded-none static translate-y-0 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80" />
-              <CarouselNext className="rounded-none static translate-y-0 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80" />
-            </div>
-          </Carousel>
-        ) : null}
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
     </Card>
   );
