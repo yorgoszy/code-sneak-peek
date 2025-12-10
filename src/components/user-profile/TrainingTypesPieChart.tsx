@@ -193,14 +193,15 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         groups[periodKey] = { trainingTypes: {}, total: 0 };
       }
 
-      // Merge training_type_breakdown
+      // Merge training_type_breakdown and calculate total from breakdown
       const breakdown = stat.training_type_breakdown as Record<string, number> | null;
       if (breakdown) {
         Object.entries(breakdown).forEach(([type, minutes]) => {
           groups[periodKey].trainingTypes[type] = (groups[periodKey].trainingTypes[type] || 0) + minutes;
+          // Add to total from breakdown instead of total_duration_minutes
+          groups[periodKey].total += minutes;
         });
       }
-      groups[periodKey].total += stat.total_duration_minutes || 0;
     });
 
     return Object.entries(groups).map(([period, data]) => ({
