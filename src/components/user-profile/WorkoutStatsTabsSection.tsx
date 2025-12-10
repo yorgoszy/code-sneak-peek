@@ -1,57 +1,33 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WorkoutStatsCards } from "./WorkoutStatsCards";
-import { DayWeekStatsCards } from "./DayWeekStatsCards";
-import { useWorkoutStats } from "./hooks/useWorkoutStats";
-import { useDayWeekStats } from "./hooks/useDayWeekStats";
-import { useWeekStats } from "./hooks/useWeekStats";
 import { useWorkoutStatsFromDB } from "@/hooks/useWorkoutStatsFromDB";
 import { AlertTriangle, Activity, Clock, Dumbbell, Database } from "lucide-react";
 import { TodayExercisesCard } from "./TodayExercisesCard";
 
-interface CustomMonthStats {
-  completedWorkouts: number;
-  totalTrainingMinutes: number;
-  totalVolume: number;
-  missedWorkouts: number;
-  scheduledWorkouts?: number;
-}
-
-interface CustomWeekStats {
-  scheduledMinutes: number;
-  actualMinutes: number;
-  missedWorkouts: number;
-  completedWorkouts: number;
-  scheduledWorkouts: number;
-}
-
 interface WorkoutStatsTabsSectionProps {
   userId: string;
   onTabChange?: (tab: 'month' | 'week' | 'day') => void;
-  customMonthStats?: CustomMonthStats;
-  customWeekStats?: CustomWeekStats;
   userPrograms?: any[];
   workoutCompletions?: any[];
 }
 
-export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats, customWeekStats, userPrograms = [], workoutCompletions = [] }: WorkoutStatsTabsSectionProps) => {
-  const { stats: workoutStats, loading: workoutStatsLoading } = useWorkoutStats(userId);
-  const { stats: dayWeekStats, loading: dayWeekStatsLoading } = useDayWeekStats(userId);
-  const { stats: weekStats, loading: weekStatsLoading } = useWeekStats(userId);
+export const WorkoutStatsTabsSection = ({ userId, onTabChange, userPrograms = [], workoutCompletions = [] }: WorkoutStatsTabsSectionProps) => {
+  const { monthStats, weekStats, allTimeStats, loading } = useWorkoutStatsFromDB(userId);
   
-  // Stats από τη βάση δεδομένων
-  const { monthStats: dbMonthStats, weekStats: dbWeekStats, allTimeStats, loading: dbStatsLoading } = useWorkoutStatsFromDB(userId);
-  
-  // Χρησιμοποιούμε τα stats από τη βάση αν υπάρχουν completed workouts
-  const useDbStats = dbMonthStats.completedWorkouts > 0 || dbWeekStats.completedWorkouts > 0;
-  
-  const monthStatsForCards = customMonthStats ? { currentMonth: customMonthStats, improvements: { workoutsImprovement: 0, hoursImprovement: 0, volumeImprovement: 0 } } : workoutStats;
-  const weekStatsForCards = customWeekStats || weekStats;
+  const hasCompletedWorkouts = allTimeStats.completedWorkouts > 0;
+
+  const NoStatsMessage = () => (
+    <div className="text-center py-8 bg-white border rounded-none">
+      <Dumbbell className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+      <p className="text-gray-500 text-sm">Δεν υπάρχουν ολοκληρωμένες προπονήσεις</p>
+      <p className="text-gray-400 text-xs mt-1">Ολοκλήρωσε μια προπόνηση για να δεις τα στατιστικά σου</p>
+    </div>
+  );
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
         Στατιστικά Προπονήσεων
-        {useDbStats && (
+        {hasCompletedWorkouts && (
           <span title="Δεδομένα από βάση">
             <Database className="h-4 w-4 text-[#00ffba]" />
           </span>
@@ -66,68 +42,64 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
         </TabsList>
         
         <TabsContent value="month" className="space-y-4">
-          {(workoutStatsLoading && !customMonthStats && dbStatsLoading) ? (
+          {loading ? (
             <div className="text-center py-8">
               <p className="text-gray-500">Φόρτωση στατιστικών μήνα...</p>
             </div>
+          ) : !hasCompletedWorkouts ? (
+            <NoStatsMessage />
           ) : (
-            <>
-              {/* Stats από βάση δεδομένων */}
-              {useDbStats && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-                  <div className="bg-white p-3 border rounded-none">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Activity className="h-4 w-4 text-[#00ffba]" />
-                      <span className="text-xs font-medium text-gray-600">Ολοκληρωμένες</span>
-                    </div>
-                    <div className="text-xl font-bold text-[#00ffba]">{dbMonthStats.completedWorkouts}</div>
-                    <p className="text-[10px] text-gray-500">προπονήσεις μήνα</p>
-                  </div>
-                  
-                  <div className="bg-white p-3 border rounded-none">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Clock className="h-4 w-4 text-blue-500" />
-                      <span className="text-xs font-medium text-gray-600">Χρόνος</span>
-                    </div>
-                    <div className="text-xl font-bold text-blue-500">
-                      {Math.floor(dbMonthStats.totalDurationMinutes / 60)}:{String(dbMonthStats.totalDurationMinutes % 60).padStart(2, '0')}
-                    </div>
-                    <p className="text-[10px] text-gray-500">ώρες:λεπτά</p>
-                  </div>
-                  
-                  <div className="bg-white p-3 border rounded-none">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Dumbbell className="h-4 w-4 text-[#cb8954]" />
-                      <span className="text-xs font-medium text-gray-600">Όγκος</span>
-                    </div>
-                    <div className="text-xl font-bold text-[#cb8954]">
-                      {(dbMonthStats.totalVolume / 1000).toFixed(1)}
-                    </div>
-                    <p className="text-[10px] text-gray-500">τόνοι (tn)</p>
-                  </div>
-                  
-                  <div className="bg-white p-3 border rounded-none">
-                    <div className="flex items-center gap-2 mb-1">
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
-                      <span className="text-xs font-medium text-gray-600">Χαμένες</span>
-                    </div>
-                    <div className="text-xl font-bold text-red-500">{dbMonthStats.missedWorkouts}</div>
-                    <p className="text-[10px] text-gray-500">προπονήσεις</p>
-                  </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="bg-white p-3 border rounded-none">
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="h-4 w-4 text-[#00ffba]" />
+                  <span className="text-xs font-medium text-gray-600">Ολοκληρωμένες</span>
                 </div>
-              )}
+                <div className="text-xl font-bold text-[#00ffba]">{monthStats.completedWorkouts}</div>
+                <p className="text-[10px] text-gray-500">προπονήσεις μήνα</p>
+              </div>
               
-              {/* Fallback στα παλιά stats αν δεν υπάρχουν στη βάση */}
-              {!useDbStats && <WorkoutStatsCards stats={monthStatsForCards as any} />}
-            </>
+              <div className="bg-white p-3 border rounded-none">
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock className="h-4 w-4 text-blue-500" />
+                  <span className="text-xs font-medium text-gray-600">Χρόνος</span>
+                </div>
+                <div className="text-xl font-bold text-blue-500">
+                  {Math.floor(monthStats.totalDurationMinutes / 60)}:{String(monthStats.totalDurationMinutes % 60).padStart(2, '0')}
+                </div>
+                <p className="text-[10px] text-gray-500">ώρες:λεπτά</p>
+              </div>
+              
+              <div className="bg-white p-3 border rounded-none">
+                <div className="flex items-center gap-2 mb-1">
+                  <Dumbbell className="h-4 w-4 text-[#cb8954]" />
+                  <span className="text-xs font-medium text-gray-600">Όγκος</span>
+                </div>
+                <div className="text-xl font-bold text-[#cb8954]">
+                  {(monthStats.totalVolume / 1000).toFixed(1)}
+                </div>
+                <p className="text-[10px] text-gray-500">τόνοι (tn)</p>
+              </div>
+              
+              <div className="bg-white p-3 border rounded-none">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                  <span className="text-xs font-medium text-gray-600">Χαμένες</span>
+                </div>
+                <div className="text-xl font-bold text-red-500">{monthStats.missedWorkouts}</div>
+                <p className="text-[10px] text-gray-500">προπονήσεις</p>
+              </div>
+            </div>
           )}
         </TabsContent>
         
         <TabsContent value="week" className="space-y-4">
-          {(weekStatsLoading && !customWeekStats && dbStatsLoading) ? (
+          {loading ? (
             <div className="text-center py-8">
               <p className="text-gray-500">Φόρτωση στατιστικών εβδομάδας...</p>
             </div>
+          ) : !hasCompletedWorkouts ? (
+            <NoStatsMessage />
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <div className="bg-white p-2 border rounded-none flex flex-col h-16 md:h-20">
@@ -137,7 +109,7 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
                 </h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-[#00ffba]">
-                    {useDbStats ? dbWeekStats.completedWorkouts : weekStatsForCards.completedWorkouts}/{useDbStats ? dbWeekStats.totalWorkouts : weekStatsForCards.scheduledWorkouts}
+                    {weekStats.completedWorkouts}/{weekStats.totalWorkouts}
                   </div>
                   <p className="text-[10px] text-gray-500">Ολοκληρωμένες</p>
                 </div>
@@ -150,10 +122,7 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
                 </h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-blue-500">
-                    {useDbStats 
-                      ? `${Math.floor(dbWeekStats.totalDurationMinutes / 60)}:${String(dbWeekStats.totalDurationMinutes % 60).padStart(2, '0')}`
-                      : `${Math.floor(weekStatsForCards.actualMinutes / 60)}:${String(Math.ceil(weekStatsForCards.actualMinutes % 60)).padStart(2, '0')}`
-                    }
+                    {Math.floor(weekStats.totalDurationMinutes / 60)}:{String(weekStats.totalDurationMinutes % 60).padStart(2, '0')}
                   </div>
                   <p className="text-[10px] text-gray-500">Ολοκληρώθηκαν</p>
                 </div>
@@ -166,7 +135,7 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
                 </h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-[#cb8954]">
-                    {(dbWeekStats.totalVolume / 1000).toFixed(1)} tn
+                    {(weekStats.totalVolume / 1000).toFixed(1)} tn
                   </div>
                   <p className="text-[10px] text-gray-500">Εβδομάδα</p>
                 </div>
@@ -181,7 +150,7 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
                 </h4>
                 <div className="flex-1 flex flex-col justify-end">
                   <div className="text-sm md:text-base font-semibold text-red-600">
-                    {useDbStats ? dbWeekStats.missedWorkouts : weekStatsForCards.missedWorkouts}
+                    {weekStats.missedWorkouts}
                   </div>
                   <p className="text-[10px] text-gray-500">Εβδομάδα</p>
                 </div>
@@ -191,16 +160,10 @@ export const WorkoutStatsTabsSection = ({ userId, onTabChange, customMonthStats,
         </TabsContent>
         
         <TabsContent value="day" className="space-y-4">
-          {dayWeekStatsLoading ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Φόρτωση στατιστικών ημέρας...</p>
-            </div>
-          ) : (
-            <TodayExercisesCard 
-              userPrograms={userPrograms} 
-              workoutCompletions={workoutCompletions}
-            />
-          )}
+          <TodayExercisesCard 
+            userPrograms={userPrograms} 
+            workoutCompletions={workoutCompletions}
+          />
         </TabsContent>
       </Tabs>
     </div>
