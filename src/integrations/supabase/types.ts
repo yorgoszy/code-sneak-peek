@@ -4375,6 +4375,7 @@ export type Database = {
           start_time: string | null
           status: string
           status_color: string | null
+          total_volume: number | null
           updated_at: string
           user_id: string
           week_number: number
@@ -4393,6 +4394,7 @@ export type Database = {
           start_time?: string | null
           status?: string
           status_color?: string | null
+          total_volume?: number | null
           updated_at?: string
           user_id: string
           week_number: number
@@ -4411,6 +4413,7 @@ export type Database = {
           start_time?: string | null
           status?: string
           status_color?: string | null
+          total_volume?: number | null
           updated_at?: string
           user_id?: string
           week_number?: number
