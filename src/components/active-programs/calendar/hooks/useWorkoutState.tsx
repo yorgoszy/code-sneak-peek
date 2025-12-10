@@ -214,8 +214,8 @@ export const useWorkoutState = (
         stats.totalVolume += sets * reps * kg;
       });
       
-      // Add raw training type breakdown (only tracked types)
-      if (trainingType && weights) {
+      // Add ALL training types to breakdown (not just tracked ones)
+      if (trainingType) {
         trainingTypeBreakdown[trainingType] = (trainingTypeBreakdown[trainingType] || 0) + blockDuration;
       }
     });
