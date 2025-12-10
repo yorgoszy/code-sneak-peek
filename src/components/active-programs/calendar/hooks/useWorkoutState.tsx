@@ -107,18 +107,28 @@ export const useWorkoutState = (
     toast.success(`Προπόνηση ξεκίνησε για ${program.app_users?.name}!`);
   }, [program, selectedDate, startWorkout]);
 
-  // Helper function to map training_type to stats category
-  const mapTrainingType = (trainingType: string | null): 'strength' | 'endurance' | 'power' | 'speed' | null => {
+  // Helper function to map training_type to stats categories
+  const mapTrainingType = (trainingType: string | null): { strength: number; endurance: number; power: number; speed: number } | null => {
     if (!trainingType) return null;
-    const type = trainingType.toLowerCase();
+    const type = trainingType.toLowerCase().trim();
     
-    // Map training types to categories
-    if (type === 'str' || type === 'strength') return 'strength';
-    if (type === 'hpr' || type === 'hypertrophy' || type === 'endurance' || type === 'end') return 'endurance';
-    if (type === 'pwr' || type === 'power') return 'power';
-    if (type === 'speed' || type === 'spd') return 'speed';
+    // Single types
+    if (type === 'str' || type === 'strength') return { strength: 1, endurance: 0, power: 0, speed: 0 };
+    if (type === 'end' || type === 'endurance') return { strength: 0, endurance: 1, power: 0, speed: 0 };
+    if (type === 'pwr' || type === 'power') return { strength: 0, endurance: 0, power: 1, speed: 0 };
+    if (type === 'spd' || type === 'speed') return { strength: 0, endurance: 0, power: 0, speed: 1 };
+    if (type === 'hpr' || type === 'hypertrophy') return { strength: 0, endurance: 1, power: 0, speed: 0 }; // hpr counts as endurance
+    if (type === 'acc' || type === 'accessory') return { strength: 0, endurance: 1, power: 0, speed: 0 }; // acc counts as endurance
     
-    // Non-tracked types (warmup, mobility, etc.)
+    // Combined types - split 50/50
+    if (type === 'str/end' || type === 'end/str') return { strength: 0.5, endurance: 0.5, power: 0, speed: 0 };
+    if (type === 'spd/end' || type === 'end/spd') return { strength: 0, endurance: 0.5, power: 0, speed: 0.5 };
+    if (type === 'pwr/end' || type === 'end/pwr') return { strength: 0, endurance: 0.5, power: 0.5, speed: 0 };
+    if (type === 'str/spd' || type === 'spd/str') return { strength: 0.5, endurance: 0, power: 0, speed: 0.5 };
+    if (type === 'str/pwr' || type === 'pwr/str') return { strength: 0.5, endurance: 0, power: 0.5, speed: 0 };
+    if (type === 'pwr/spd' || type === 'spd/pwr') return { strength: 0, endurance: 0, power: 0.5, speed: 0.5 };
+    
+    // Non-tracked types (warmup, mobility, stability, activation, neural act, recovery, etc.)
     return null;
   };
 
@@ -173,17 +183,20 @@ export const useWorkoutState = (
     console.log('📊 Calculating stats for day:', dayProgram.name);
     
     dayProgram.program_blocks?.forEach((block: any) => {
-      const category = mapTrainingType(block.training_type);
+      const weights = mapTrainingType(block.training_type);
       
-      console.log(`  Block: ${block.name}, training_type: ${block.training_type}, category: ${category}`);
+      console.log(`  Block: ${block.name}, training_type: ${block.training_type}, weights:`, weights);
       
       block.program_exercises?.forEach((exercise: any) => {
         const duration = calculateExerciseDurationMinutes(exercise);
         
         // Only add to stats if it's a tracked category
-        if (category) {
-          stats[category] += duration;
-          console.log(`    Exercise duration: ${duration.toFixed(2)} min -> ${category}`);
+        if (weights) {
+          stats.strength += duration * weights.strength;
+          stats.endurance += duration * weights.endurance;
+          stats.power += duration * weights.power;
+          stats.speed += duration * weights.speed;
+          console.log(`    Exercise duration: ${duration.toFixed(2)} min distributed by weights`);
         }
 
         // Calculate volume: sets * reps * kg
