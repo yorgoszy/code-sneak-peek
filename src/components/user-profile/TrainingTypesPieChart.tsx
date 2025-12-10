@@ -22,6 +22,7 @@ const COLORS: Record<string, string> = {
   spd: '#a4e1ff',
   hpr: '#00ffba',
   acc: '#cb8954',
+  accessory: '#cb8954',
   // Combined types
   'str/end': '#c43ba0',
   'spd/end': '#9273f0',
@@ -48,6 +49,7 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   spd: 'spd',
   hpr: 'hpr',
   acc: 'acc',
+  accessory: 'acc',
   'str/end': 'str/end',
   'spd/end': 'spd/end',
   'pwr/end': 'pwr/end',
