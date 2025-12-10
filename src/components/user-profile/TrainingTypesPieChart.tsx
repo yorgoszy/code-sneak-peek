@@ -402,7 +402,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           </div>
         )}
 
-        {groupedData.length === 0 || pieData.length === 0 ? (
+        {(groupedData.length === 0 || pieData.length === 0) && timeFilter !== 'month' ? (
           <div className="text-center py-8 text-gray-500 text-sm">
             Δεν υπάρχουν ολοκληρωμένες προπονήσεις
           </div>
@@ -523,7 +523,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             )}
 
             {/* Month view (Ετήσια) with carousel - shows months */}
-            {!activeTab && timeFilter === 'month' && groupedData.length > 0 && (
+            {!activeTab && timeFilter === 'month' && (
               <>
                 <div className="mb-2">
                   <div className="flex items-center justify-between">
@@ -550,59 +550,65 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     </Button>
                   </div>
                 </div>
-                <Carousel className="w-full">
-                  <CarouselContent className="md:justify-center">
-                    {groupedData.map((monthData, index) => {
-                      const monthPieData = Object.entries(monthData.trainingTypes)
-                        .filter(([_, value]) => value > 0)
-                        .map(([name, value]) => ({ name, value: Math.round(value) }))
-                        .sort((a, b) => b.value - a.value);
+                {groupedData.length > 0 ? (
+                  <Carousel className="w-full">
+                    <CarouselContent className="md:justify-center">
+                      {groupedData.map((monthData, index) => {
+                        const monthPieData = Object.entries(monthData.trainingTypes)
+                          .filter(([_, value]) => value > 0)
+                          .map(([name, value]) => ({ name, value: Math.round(value) }))
+                          .sort((a, b) => b.value - a.value);
 
-                      return (
-                        <CarouselItem key={index} className="basis-1/3 md:basis-1/5">
-                          <div className="flex flex-col items-center p-1">
-                            <div className="text-[10px] font-medium mb-1">{monthData.period}</div>
-                            <div className="text-[8px] text-gray-500">{formatMinutes(monthData.total)}</div>
-                            {monthPieData.length > 0 ? (
-                              <ResponsiveContainer width={80} height={80}>
-                                <PieChart>
-                                  <Pie
-                                    data={monthPieData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={15}
-                                    outerRadius={35}
-                                    dataKey="value"
-                                    stroke="none"
-                                  >
-                                    {monthPieData.map((entry, i) => (
-                                      <Cell key={`cell-${i}`} fill={COLORS[entry.name] || '#ccc'} />
-                                    ))}
-                                  </Pie>
-                                </PieChart>
-                              </ResponsiveContainer>
-                            ) : (
-                              <div className="w-[80px] h-[80px] flex items-center justify-center">
-                                <div className="w-[70px] h-[70px] rounded-full border-2 border-dashed border-gray-300" />
-                              </div>
-                            )}
-                            <div className="flex flex-wrap justify-center gap-1 mt-1">
-                              {monthPieData.map((item, i) => (
-                                <div key={i} className="flex items-center gap-0.5">
-                                  <div className="w-2 h-2" style={{ backgroundColor: COLORS[item.name] || '#ccc' }} />
-                                  <span className="text-[8px]">{TRAINING_TYPE_LABELS[item.name] || item.name}</span>
-                                  <span className="text-[8px] text-gray-500">({formatMinutes(item.value)})</span>
+                        return (
+                          <CarouselItem key={index} className="basis-1/3 md:basis-1/5">
+                            <div className="flex flex-col items-center p-1">
+                              <div className="text-[10px] font-medium mb-1">{monthData.period}</div>
+                              <div className="text-[8px] text-gray-500">{formatMinutes(monthData.total)}</div>
+                              {monthPieData.length > 0 ? (
+                                <ResponsiveContainer width={80} height={80}>
+                                  <PieChart>
+                                    <Pie
+                                      data={monthPieData}
+                                      cx="50%"
+                                      cy="50%"
+                                      innerRadius={15}
+                                      outerRadius={35}
+                                      dataKey="value"
+                                      stroke="none"
+                                    >
+                                      {monthPieData.map((entry, i) => (
+                                        <Cell key={`cell-${i}`} fill={COLORS[entry.name] || '#ccc'} />
+                                      ))}
+                                    </Pie>
+                                  </PieChart>
+                                </ResponsiveContainer>
+                              ) : (
+                                <div className="w-[80px] h-[80px] flex items-center justify-center">
+                                  <div className="w-[70px] h-[70px] rounded-full border-2 border-dashed border-gray-300" />
                                 </div>
-                              ))}
+                              )}
+                              <div className="flex flex-wrap justify-center gap-1 mt-1">
+                                {monthPieData.map((item, i) => (
+                                  <div key={i} className="flex items-center gap-0.5">
+                                    <div className="w-2 h-2" style={{ backgroundColor: COLORS[item.name] || '#ccc' }} />
+                                    <span className="text-[8px]">{TRAINING_TYPE_LABELS[item.name] || item.name}</span>
+                                    <span className="text-[8px] text-gray-500">({formatMinutes(item.value)})</span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        </CarouselItem>
-                      );
-                    })}
-                  </CarouselContent>
-                  <CarouselPrevious className="left-0 h-6 w-6" />
-                  <CarouselNext className="right-0 h-6 w-6" />
-                </Carousel>
+                          </CarouselItem>
+                        );
+                      })}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-0 h-6 w-6" />
+                    <CarouselNext className="right-0 h-6 w-6" />
+                  </Carousel>
+                ) : (
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    Δεν υπάρχουν ολοκληρωμένες προπονήσεις
+                  </div>
+                )}
               </>
             )}
 
