@@ -108,25 +108,26 @@ export const useWorkoutState = (
   }, [program, selectedDate, startWorkout]);
 
   // Helper function to map training_type to stats categories
-  const mapTrainingType = (trainingType: string | null): { strength: number; endurance: number; power: number; speed: number } | null => {
+  // 6 categories: strength, endurance, power, speed, hypertrophy, accessory
+  const mapTrainingType = (trainingType: string | null): { strength: number; endurance: number; power: number; speed: number; hypertrophy: number; accessory: number } | null => {
     if (!trainingType) return null;
     const type = trainingType.toLowerCase().trim();
     
     // Single types
-    if (type === 'str' || type === 'strength') return { strength: 1, endurance: 0, power: 0, speed: 0 };
-    if (type === 'end' || type === 'endurance') return { strength: 0, endurance: 1, power: 0, speed: 0 };
-    if (type === 'pwr' || type === 'power') return { strength: 0, endurance: 0, power: 1, speed: 0 };
-    if (type === 'spd' || type === 'speed') return { strength: 0, endurance: 0, power: 0, speed: 1 };
-    if (type === 'hpr' || type === 'hypertrophy') return { strength: 0, endurance: 1, power: 0, speed: 0 }; // hpr counts as endurance
-    if (type === 'acc' || type === 'accessory') return { strength: 0, endurance: 1, power: 0, speed: 0 }; // acc counts as endurance
+    if (type === 'str' || type === 'strength') return { strength: 1, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 0 };
+    if (type === 'end' || type === 'endurance') return { strength: 0, endurance: 1, power: 0, speed: 0, hypertrophy: 0, accessory: 0 };
+    if (type === 'pwr' || type === 'power') return { strength: 0, endurance: 0, power: 1, speed: 0, hypertrophy: 0, accessory: 0 };
+    if (type === 'spd' || type === 'speed') return { strength: 0, endurance: 0, power: 0, speed: 1, hypertrophy: 0, accessory: 0 };
+    if (type === 'hpr' || type === 'hypertrophy') return { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 1, accessory: 0 };
+    if (type === 'acc' || type === 'accessory') return { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 1 };
     
-    // Combined types - split 50/50
-    if (type === 'str/end' || type === 'end/str') return { strength: 0.5, endurance: 0.5, power: 0, speed: 0 };
-    if (type === 'spd/end' || type === 'end/spd') return { strength: 0, endurance: 0.5, power: 0, speed: 0.5 };
-    if (type === 'pwr/end' || type === 'end/pwr') return { strength: 0, endurance: 0.5, power: 0.5, speed: 0 };
-    if (type === 'str/spd' || type === 'spd/str') return { strength: 0.5, endurance: 0, power: 0, speed: 0.5 };
-    if (type === 'str/pwr' || type === 'pwr/str') return { strength: 0.5, endurance: 0, power: 0.5, speed: 0 };
-    if (type === 'pwr/spd' || type === 'spd/pwr') return { strength: 0, endurance: 0, power: 0.5, speed: 0.5 };
+    // Combined types - each type gets full time
+    if (type === 'str/end' || type === 'end/str') return { strength: 1, endurance: 1, power: 0, speed: 0, hypertrophy: 0, accessory: 0 };
+    if (type === 'spd/end' || type === 'end/spd') return { strength: 0, endurance: 1, power: 0, speed: 1, hypertrophy: 0, accessory: 0 };
+    if (type === 'pwr/end' || type === 'end/pwr') return { strength: 0, endurance: 1, power: 1, speed: 0, hypertrophy: 0, accessory: 0 };
+    if (type === 'str/spd' || type === 'spd/str') return { strength: 1, endurance: 0, power: 0, speed: 1, hypertrophy: 0, accessory: 0 };
+    if (type === 'str/pwr' || type === 'pwr/str') return { strength: 1, endurance: 0, power: 1, speed: 0, hypertrophy: 0, accessory: 0 };
+    if (type === 'pwr/spd' || type === 'spd/pwr') return { strength: 0, endurance: 0, power: 1, speed: 1, hypertrophy: 0, accessory: 0 };
     
     // Non-tracked types (warmup, mobility, stability, activation, neural act, recovery, etc.)
     return null;
@@ -175,10 +176,10 @@ export const useWorkoutState = (
     
     if (!dayProgram) {
       console.log('⚠️ No day program found for stats calculation');
-      return { strength: 0, endurance: 0, power: 0, speed: 0, totalVolume: 0 };
+      return { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 0, totalVolume: 0 };
     }
 
-    const stats = { strength: 0, endurance: 0, power: 0, speed: 0, totalVolume: 0 };
+    const stats = { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 0, totalVolume: 0 };
 
     console.log('📊 Calculating stats for day:', dayProgram.name);
     
@@ -196,6 +197,8 @@ export const useWorkoutState = (
           stats.endurance += duration * weights.endurance;
           stats.power += duration * weights.power;
           stats.speed += duration * weights.speed;
+          stats.hypertrophy += duration * weights.hypertrophy;
+          stats.accessory += duration * weights.accessory;
           console.log(`    Exercise duration: ${duration.toFixed(2)} min distributed by weights`);
         }
 
@@ -274,7 +277,9 @@ export const useWorkoutState = (
             strength_minutes: Math.round(workoutStats.strength),
             endurance_minutes: Math.round(workoutStats.endurance),
             power_minutes: Math.round(workoutStats.power),
-            speed_minutes: Math.round(workoutStats.speed)
+            speed_minutes: Math.round(workoutStats.speed),
+            hypertrophy_minutes: Math.round(workoutStats.hypertrophy),
+            accessory_minutes: Math.round(workoutStats.accessory)
           }, {
             onConflict: 'user_id,assignment_id,scheduled_date'
           });

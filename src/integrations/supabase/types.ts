@@ -4444,9 +4444,11 @@ export type Database = {
       }
       workout_stats: {
         Row: {
+          accessory_minutes: number | null
           assignment_id: string
           created_at: string
           endurance_minutes: number
+          hypertrophy_minutes: number | null
           id: string
           power_minutes: number
           scheduled_date: string
@@ -4458,9 +4460,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accessory_minutes?: number | null
           assignment_id: string
           created_at?: string
           endurance_minutes?: number
+          hypertrophy_minutes?: number | null
           id?: string
           power_minutes?: number
           scheduled_date: string
@@ -4472,9 +4476,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accessory_minutes?: number | null
           assignment_id?: string
           created_at?: string
           endurance_minutes?: number
+          hypertrophy_minutes?: number | null
           id?: string
           power_minutes?: number
           scheduled_date?: string

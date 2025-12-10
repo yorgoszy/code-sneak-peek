@@ -19,6 +19,8 @@ const COLORS = {
   endurance: '#8045ed',
   power: '#fa009a',
   speed: '#a4e1ff',
+  hypertrophy: '#00ffba',
+  accessory: '#cb8954',
 };
 
 const TRAINING_TYPE_LABELS: Record<string, string> = {
@@ -26,6 +28,8 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   endurance: 'Αντοχή',
   power: 'Ισχύς',
   speed: 'Ταχύτητα',
+  hypertrophy: 'Υπερτροφία',
+  accessory: 'Βοηθητικά',
 };
 
 interface WorkoutStat {
@@ -39,6 +43,8 @@ interface WorkoutStat {
   endurance_minutes: number;
   power_minutes: number;
   speed_minutes: number;
+  hypertrophy_minutes: number;
+  accessory_minutes: number;
 }
 
 export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId, hideTimeTabs = false, activeTab }) => {
@@ -127,7 +133,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
   // Ομαδοποίηση δεδομένων ανά περίοδο
   const groupedData = useMemo(() => {
-    const groups: Record<string, { strength: number; endurance: number; power: number; speed: number; total: number }> = {};
+    const groups: Record<string, { strength: number; endurance: number; power: number; speed: number; hypertrophy: number; accessory: number; total: number }> = {};
 
     filteredStats.forEach(stat => {
       const date = parseISO(stat.scheduled_date);
@@ -145,13 +151,15 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       }
 
       if (!groups[periodKey]) {
-        groups[periodKey] = { strength: 0, endurance: 0, power: 0, speed: 0, total: 0 };
+        groups[periodKey] = { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 0, total: 0 };
       }
 
       groups[periodKey].strength += stat.strength_minutes || 0;
       groups[periodKey].endurance += stat.endurance_minutes || 0;
       groups[periodKey].power += stat.power_minutes || 0;
       groups[periodKey].speed += stat.speed_minutes || 0;
+      groups[periodKey].hypertrophy += stat.hypertrophy_minutes || 0;
+      groups[periodKey].accessory += stat.accessory_minutes || 0;
       groups[periodKey].total += stat.total_duration_minutes || 0;
     });
 
@@ -179,8 +187,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       strength: acc.strength + item.strength,
       endurance: acc.endurance + item.endurance,
       power: acc.power + item.power,
-      speed: acc.speed + item.speed
-    }), { strength: 0, endurance: 0, power: 0, speed: 0 });
+      speed: acc.speed + item.speed,
+      hypertrophy: acc.hypertrophy + item.hypertrophy,
+      accessory: acc.accessory + item.accessory
+    }), { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 0 });
 
     return Object.entries(totals)
       .filter(([_, value]) => value > 0)
@@ -219,7 +229,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       strength: 'str',
       endurance: 'end',
       power: 'pwr',
-      speed: 'spd'
+      speed: 'spd',
+      hypertrophy: 'hpr',
+      accessory: 'acc'
     };
 
     return (
@@ -355,7 +367,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                       { name: 'strength', value: dayData.strength },
                       { name: 'endurance', value: dayData.endurance },
                       { name: 'power', value: dayData.power },
-                      { name: 'speed', value: dayData.speed }
+                      { name: 'speed', value: dayData.speed },
+                      { name: 'hypertrophy', value: dayData.hypertrophy },
+                      { name: 'accessory', value: dayData.accessory }
                     ].filter(item => item.value > 0);
 
                     return (
