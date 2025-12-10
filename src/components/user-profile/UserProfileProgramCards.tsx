@@ -8,6 +8,9 @@ import { useAllPrograms } from "@/hooks/useAllPrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
 import { TrainingTypesPieChart } from "./TrainingTypesPieChart";
+import { WorkoutStatsTabsSection } from "./WorkoutStatsTabsSection";
+import { format } from "date-fns";
+import { parseRepsToTime, parseTempoToSeconds, parseRestTime } from '@/utils/timeCalculations';
 
 interface UserProfileProgramCardsProps {
   userProfile: any;
@@ -35,6 +38,137 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
     };
     loadCompletions();
   }, [userPrograms.length, userProfile.id, getAllWorkoutCompletions]);
+
+  // Υπολογισμός διάρκειας προπόνησης
+  const calculateWorkoutDuration = (program: any, dateIndex: number): number => {
+    const programData = program.programs;
+    if (!programData?.program_weeks) return 0;
+
+    const weeks = programData.program_weeks;
+    let targetDay = null;
+    let currentDayCount = 0;
+
+    for (const week of weeks) {
+      const daysInWeek = week.program_days?.length || 0;
+      if (dateIndex >= currentDayCount && dateIndex < currentDayCount + daysInWeek) {
+        const dayIndexInWeek = dateIndex - currentDayCount;
+        targetDay = week.program_days?.[dayIndexInWeek] || null;
+        break;
+      }
+      currentDayCount += daysInWeek;
+    }
+
+    if (!targetDay?.program_blocks) return 0;
+
+    let totalSeconds = 0;
+    targetDay.program_blocks.forEach((block: any) => {
+      block.program_exercises?.forEach((exercise: any) => {
+        if (exercise.exercise_id) {
+          const sets = exercise.sets || 0;
+          const repsData = parseRepsToTime(exercise.reps);
+          const isTimeMode = exercise.reps_mode === 'time' || repsData.isTime;
+
+          if (isTimeMode) {
+            const workTime = sets * repsData.seconds;
+            const restTime = parseRestTime(exercise.rest || '');
+            totalSeconds += workTime + (sets * restTime);
+          } else {
+            const tempo = parseTempoToSeconds(exercise.tempo || '');
+            const restTime = parseRestTime(exercise.rest || '');
+            const workTime = sets * repsData.count * tempo;
+            totalSeconds += workTime + (sets * restTime);
+          }
+        }
+      });
+    });
+
+    return totalSeconds / 60;
+  };
+
+  // Week stats calculation
+  const weekStats = React.useMemo(() => {
+    const now = new Date();
+    const startOfWeekDate = new Date(now);
+    const dayOfWeek = now.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startOfWeekDate.setDate(now.getDate() - daysToSubtract);
+    startOfWeekDate.setHours(0, 0, 0, 0);
+
+    let scheduledMinutes = 0, actualMinutes = 0, missed = 0;
+    let scheduledWorkouts = 0, completedWorkouts = 0;
+
+    const weekDays = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startOfWeekDate);
+      day.setDate(startOfWeekDate.getDate() + i);
+      weekDays.push(day);
+    }
+
+    for (const day of weekDays) {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      for (const program of userPrograms) {
+        if (!program.training_dates) continue;
+        const dateIndex = program.training_dates.findIndex((d: string) => d === dateStr);
+        if (dateIndex === -1) continue;
+
+        scheduledWorkouts++;
+        const workoutMinutes = calculateWorkoutDuration(program, dateIndex);
+        scheduledMinutes += workoutMinutes;
+
+        const completion = workoutCompletions.find(c => c.assignment_id === program.id && c.scheduled_date === dateStr);
+        if (completion?.status === 'completed') {
+          completedWorkouts++;
+          actualMinutes += workoutMinutes;
+        } else {
+          const today = new Date();
+          const isPast = day < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          if (isPast || completion?.status === 'missed') missed++;
+        }
+      }
+    }
+
+    return {
+      scheduledMinutes,
+      actualMinutes,
+      missedWorkouts: missed,
+      completedWorkouts,
+      scheduledWorkouts,
+    };
+  }, [userPrograms, workoutCompletions]);
+
+  // Month stats calculation
+  const monthStats = React.useMemo(() => {
+    const current = new Date();
+    const monthStr = format(current, 'yyyy-MM');
+    let scheduled = 0, completed = 0, missed = 0, totalMinutes = 0;
+
+    for (const program of userPrograms) {
+      if (!program.training_dates) continue;
+      const monthlyDates = program.training_dates.filter((d: string) => d && d.startsWith(monthStr));
+      for (const date of monthlyDates) {
+        scheduled++;
+        const completion = workoutCompletions.find(c => c.assignment_id === program.id && c.scheduled_date === date);
+        if (completion?.status === 'completed') {
+          completed++;
+          const dateIndex = program.training_dates.indexOf(date);
+          totalMinutes += calculateWorkoutDuration(program, dateIndex);
+        } else {
+          const workoutDate = new Date(date);
+          const today = new Date();
+          const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          if (isPast || completion?.status === 'missed') missed++;
+        }
+      }
+    }
+
+    return {
+      completedWorkouts: completed,
+      totalTrainingMinutes: totalMinutes,
+      totalVolume: 0,
+      missedWorkouts: missed,
+      scheduledWorkouts: scheduled,
+    };
+  }, [userPrograms, workoutCompletions]);
 
   // Calculate stats the same way as calendar and ProgramCards
   const calculateProgramStats = (assignment: any) => {
@@ -151,6 +285,15 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
 
   return (
     <div className="space-y-6">
+      {/* Workout Stats Section */}
+      <WorkoutStatsTabsSection 
+        userId={userProfile?.id} 
+        customMonthStats={monthStats} 
+        customWeekStats={weekStats} 
+        userPrograms={userPrograms} 
+        workoutCompletions={workoutCompletions} 
+      />
+
       {/* Training Types Analytics */}
       <TrainingTypesPieChart userId={userProfile.id} />
 
