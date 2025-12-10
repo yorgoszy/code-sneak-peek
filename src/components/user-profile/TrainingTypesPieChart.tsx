@@ -461,8 +461,6 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                       outerRadius={80}
                       dataKey="value"
                       stroke="none"
-                      label={renderCustomLabel}
-                      labelLine={false}
                     >
                       {pieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS] || '#ccc'} />
