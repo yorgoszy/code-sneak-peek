@@ -107,16 +107,19 @@ export const useWorkoutState = (
     toast.success(`Προπόνηση ξεκίνησε για ${program.app_users?.name}!`);
   }, [program, selectedDate, startWorkout]);
 
-  // Helper function to categorize exercise type
-  const categorizeExerciseType = (exercise: any): 'strength' | 'endurance' | 'power' | 'speed' => {
-    const reps = parseInt(exercise.reps) || 0;
-    const percentage = parseFloat(exercise.percentage_1rm) || 0;
-    const velocity = parseFloat(exercise.velocity_ms) || 0;
-
-    if (percentage > 85 || reps <= 5) return 'strength';
-    if (percentage < 65 || reps > 12) return 'endurance';
-    if (velocity > 0.8 && percentage < 60) return 'speed';
-    return 'power';
+  // Helper function to map training_type to stats category
+  const mapTrainingType = (trainingType: string | null): 'strength' | 'endurance' | 'power' | 'speed' | null => {
+    if (!trainingType) return null;
+    const type = trainingType.toLowerCase();
+    
+    // Map training types to categories
+    if (type === 'str' || type === 'strength') return 'strength';
+    if (type === 'hpr' || type === 'hypertrophy' || type === 'endurance' || type === 'end') return 'endurance';
+    if (type === 'pwr' || type === 'power') return 'power';
+    if (type === 'speed' || type === 'spd') return 'speed';
+    
+    // Non-tracked types (warmup, mobility, etc.)
+    return null;
   };
 
   // Helper function to calculate exercise duration in minutes
@@ -129,36 +132,71 @@ export const useWorkoutState = (
     const tempoPhases = tempo.split('.').map((phase: string) => parseInt(phase) || 2);
     const tempoSeconds = tempoPhases.reduce((sum: number, phase: number) => sum + phase, 0);
     
-    const totalSeconds = (sets * reps * tempoSeconds) + (sets * rest);
+    // (sets * reps * tempo) + (sets-1) * rest
+    const totalSeconds = (sets * reps * tempoSeconds) + ((sets - 1) * rest);
     return totalSeconds / 60; // minutes
   };
 
-  // Helper function to calculate workout stats
+  // Helper function to get current day's program based on selectedDate
+  const getCurrentDayProgram = useCallback(() => {
+    if (!program?.programs?.program_weeks || !selectedDate) return null;
+    
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    const trainingDates = program.training_dates || [];
+    const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
+    
+    if (dateIndex < 0) return null;
+    
+    // Calculate which week and day this corresponds to
+    const allDays: any[] = [];
+    program.programs.program_weeks.forEach((week: any) => {
+      week.program_days?.forEach((day: any) => {
+        allDays.push(day);
+      });
+    });
+    
+    const dayIndex = dateIndex % allDays.length;
+    return allDays[dayIndex] || null;
+  }, [program, selectedDate]);
+
+  // Helper function to calculate workout stats for the CURRENT DAY ONLY
   const calculateWorkoutStats = useCallback(() => {
-    if (!program?.programs?.program_weeks?.[0]?.program_days) {
+    const dayProgram = getCurrentDayProgram();
+    
+    if (!dayProgram) {
+      console.log('⚠️ No day program found for stats calculation');
       return { strength: 0, endurance: 0, power: 0, speed: 0, totalVolume: 0 };
     }
 
     const stats = { strength: 0, endurance: 0, power: 0, speed: 0, totalVolume: 0 };
 
-    program.programs.program_weeks[0].program_days.forEach((day: any) => {
-      day.program_blocks?.forEach((block: any) => {
-        block.program_exercises?.forEach((exercise: any) => {
-          const type = categorizeExerciseType(exercise);
-          const duration = calculateExerciseDurationMinutes(exercise);
-          stats[type] += duration;
+    console.log('📊 Calculating stats for day:', dayProgram.name);
+    
+    dayProgram.program_blocks?.forEach((block: any) => {
+      const category = mapTrainingType(block.training_type);
+      
+      console.log(`  Block: ${block.name}, training_type: ${block.training_type}, category: ${category}`);
+      
+      block.program_exercises?.forEach((exercise: any) => {
+        const duration = calculateExerciseDurationMinutes(exercise);
+        
+        // Only add to stats if it's a tracked category
+        if (category) {
+          stats[category] += duration;
+          console.log(`    Exercise duration: ${duration.toFixed(2)} min -> ${category}`);
+        }
 
-          // Calculate volume: sets * reps * kg
-          const sets = parseInt(exercise.sets) || 0;
-          const reps = parseInt(exercise.reps) || 0;
-          const kg = parseFloat(exercise.kg) || 0;
-          stats.totalVolume += sets * reps * kg;
-        });
+        // Calculate volume: sets * reps * kg
+        const sets = parseInt(exercise.sets) || 0;
+        const reps = parseInt(exercise.reps) || 0;
+        const kg = parseFloat(exercise.kg) || 0;
+        stats.totalVolume += sets * reps * kg;
       });
     });
 
+    console.log('📊 Final stats:', stats);
     return stats;
-  }, [program]);
+  }, [getCurrentDayProgram]);
 
   const handleCompleteWorkout = useCallback(async () => {
     if (!program || !selectedDate || !currentWorkout) return;
