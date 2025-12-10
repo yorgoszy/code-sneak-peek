@@ -15,18 +15,30 @@ interface TrainingTypesPieChartProps {
 }
 
 const COLORS: Record<string, string> = {
+  // Main tracked types
   str: '#ff3131',
   end: '#8045ed',
   pwr: '#fa009a',
   spd: '#a4e1ff',
   hpr: '#00ffba',
   acc: '#cb8954',
+  // Combined types
   'str/end': '#c43ba0',
   'spd/end': '#9273f0',
   'pwr/end': '#b405c0',
   'str/spd': '#ff7098',
   'str/pwr': '#ff1a6e',
   'pwr/spd': '#d754e0',
+  // Non-tracked types
+  warmup: '#ffd700',
+  'warm up': '#ffd700',
+  recovery: '#4a90d9',
+  mobility: '#20b2aa',
+  stability: '#9370db',
+  rotational: '#ff8c00',
+  'neural act': '#32cd32',
+  activation: '#7cfc00',
+  core: '#ff6347',
 };
 
 const TRAINING_TYPE_LABELS: Record<string, string> = {
@@ -42,6 +54,15 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   'str/spd': 'Δύναμη/Ταχύτητα',
   'str/pwr': 'Δύναμη/Ισχύς',
   'pwr/spd': 'Ισχύς/Ταχύτητα',
+  warmup: 'Προθέρμανση',
+  'warm up': 'Προθέρμανση',
+  recovery: 'Αποκατάσταση',
+  mobility: 'Κινητικότητα',
+  stability: 'Σταθερότητα',
+  rotational: 'Περιστροφικά',
+  'neural act': 'Νευρική Ενεργοποίηση',
+  activation: 'Ενεργοποίηση',
+  core: 'Κορμός',
 };
 
 interface WorkoutStat {
