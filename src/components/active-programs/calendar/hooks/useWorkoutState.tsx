@@ -107,6 +107,59 @@ export const useWorkoutState = (
     toast.success(`Προπόνηση ξεκίνησε για ${program.app_users?.name}!`);
   }, [program, selectedDate, startWorkout]);
 
+  // Helper function to categorize exercise type
+  const categorizeExerciseType = (exercise: any): 'strength' | 'endurance' | 'power' | 'speed' => {
+    const reps = parseInt(exercise.reps) || 0;
+    const percentage = parseFloat(exercise.percentage_1rm) || 0;
+    const velocity = parseFloat(exercise.velocity_ms) || 0;
+
+    if (percentage > 85 || reps <= 5) return 'strength';
+    if (percentage < 65 || reps > 12) return 'endurance';
+    if (velocity > 0.8 && percentage < 60) return 'speed';
+    return 'power';
+  };
+
+  // Helper function to calculate exercise duration in minutes
+  const calculateExerciseDurationMinutes = (exercise: any): number => {
+    const sets = parseInt(exercise.sets) || 1;
+    const reps = parseInt(exercise.reps) || 1;
+    const tempo = exercise.tempo || '2.1.2';
+    const rest = parseInt(exercise.rest) || 60;
+
+    const tempoPhases = tempo.split('.').map((phase: string) => parseInt(phase) || 2);
+    const tempoSeconds = tempoPhases.reduce((sum: number, phase: number) => sum + phase, 0);
+    
+    const totalSeconds = (sets * reps * tempoSeconds) + (sets * rest);
+    return totalSeconds / 60; // minutes
+  };
+
+  // Helper function to calculate workout stats
+  const calculateWorkoutStats = useCallback(() => {
+    if (!program?.programs?.program_weeks?.[0]?.program_days) {
+      return { strength: 0, endurance: 0, power: 0, speed: 0, totalVolume: 0 };
+    }
+
+    const stats = { strength: 0, endurance: 0, power: 0, speed: 0, totalVolume: 0 };
+
+    program.programs.program_weeks[0].program_days.forEach((day: any) => {
+      day.program_blocks?.forEach((block: any) => {
+        block.program_exercises?.forEach((exercise: any) => {
+          const type = categorizeExerciseType(exercise);
+          const duration = calculateExerciseDurationMinutes(exercise);
+          stats[type] += duration;
+
+          // Calculate volume: sets * reps * kg
+          const sets = parseInt(exercise.sets) || 0;
+          const reps = parseInt(exercise.reps) || 0;
+          const kg = parseFloat(exercise.kg) || 0;
+          stats.totalVolume += sets * reps * kg;
+        });
+      });
+    });
+
+    return stats;
+  }, [program]);
+
   const handleCompleteWorkout = useCallback(async () => {
     if (!program || !selectedDate || !currentWorkout) return;
 
@@ -151,6 +204,36 @@ export const useWorkoutState = (
       }
       
       console.log('✅ Workout completion updated successfully with duration:', actualDurationMinutes, 'minutes');
+
+      // Υπολογισμός και αποθήκευση workout stats
+      const workoutStats = calculateWorkoutStats();
+      const userId = program.user_id || program.app_users?.id;
+      
+      if (userId) {
+        console.log('📊 Saving workout stats:', workoutStats);
+        
+        const { error: statsError } = await supabase
+          .from('workout_stats')
+          .upsert({
+            user_id: userId,
+            assignment_id: program.id,
+            scheduled_date: selectedDateStr,
+            total_duration_minutes: actualDurationMinutes,
+            total_volume_kg: workoutStats.totalVolume,
+            strength_minutes: Math.round(workoutStats.strength),
+            endurance_minutes: Math.round(workoutStats.endurance),
+            power_minutes: Math.round(workoutStats.power),
+            speed_minutes: Math.round(workoutStats.speed)
+          }, {
+            onConflict: 'user_id,assignment_id,scheduled_date'
+          });
+
+        if (statsError) {
+          console.error('❌ Error saving workout stats:', statsError);
+        } else {
+          console.log('✅ Workout stats saved successfully');
+        }
+      }
       
       // Αφαίρεση από τις ενεργές προπονήσεις
       if (workoutId) {
@@ -179,7 +262,7 @@ export const useWorkoutState = (
       console.error('❌ Error completing workout:', error);
       toast.error(`Σφάλμα κατά την ολοκλήρωση της προπόνησης για ${program.app_users?.name}: ${(error as Error).message}`);
     }
-  }, [program, selectedDate, currentWorkout, elapsedTime, onRefresh, onClose, removeFromActiveWorkouts, workoutId]);
+  }, [program, selectedDate, currentWorkout, elapsedTime, onRefresh, onClose, removeFromActiveWorkouts, workoutId, calculateWorkoutStats]);
 
   const handleCancelWorkout = useCallback(() => {
     if (!program || !selectedDate || !workoutId) return;

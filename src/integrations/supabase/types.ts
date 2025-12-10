@@ -4442,6 +4442,66 @@ export type Database = {
           },
         ]
       }
+      workout_stats: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          endurance_minutes: number
+          id: string
+          power_minutes: number
+          scheduled_date: string
+          speed_minutes: number
+          strength_minutes: number
+          total_duration_minutes: number
+          total_volume_kg: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          endurance_minutes?: number
+          id?: string
+          power_minutes?: number
+          scheduled_date: string
+          speed_minutes?: number
+          strength_minutes?: number
+          total_duration_minutes?: number
+          total_volume_kg?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          endurance_minutes?: number
+          id?: string
+          power_minutes?: number
+          scheduled_date?: string
+          speed_minutes?: number
+          strength_minutes?: number
+          total_duration_minutes?: number
+          total_volume_kg?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_stats_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "program_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_training_types: {
         Row: {
           created_at: string
