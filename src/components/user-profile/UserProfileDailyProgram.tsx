@@ -12,6 +12,7 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { useUserBookings } from "@/hooks/useUserBookings";
+import { WorkoutStatsTabsSection } from "./WorkoutStatsTabsSection";
 import { TrainingTypesPieChart } from "./TrainingTypesPieChart";
 
 interface UserProfileDailyProgramProps {
@@ -354,6 +355,9 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
 
   return (
     <div className="space-y-6">
+      {/* Workout Stats Section */}
+      <WorkoutStatsTabsSection userId={userProfile?.id} onTabChange={setActiveStatsTab} customMonthStats={monthStats} customWeekStats={weekStats} userPrograms={userPrograms} workoutCompletions={workoutCompletions} />
+
       {/* Training Types Pie Chart */}
       <TrainingTypesPieChart userId={userProfile?.id} hideTimeTabs={true} activeTab={activeStatsTab} />
 
