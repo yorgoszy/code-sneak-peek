@@ -14,22 +14,34 @@ interface TrainingTypesPieChartProps {
   activeTab?: 'month' | 'week' | 'day';
 }
 
-const COLORS = {
-  strength: '#ff3131',
-  endurance: '#8045ed',
-  power: '#fa009a',
-  speed: '#a4e1ff',
-  hypertrophy: '#00ffba',
-  accessory: '#cb8954',
+const COLORS: Record<string, string> = {
+  str: '#ff3131',
+  end: '#8045ed',
+  pwr: '#fa009a',
+  spd: '#a4e1ff',
+  hpr: '#00ffba',
+  acc: '#cb8954',
+  'str/end': '#c43ba0',
+  'spd/end': '#9273f0',
+  'pwr/end': '#b405c0',
+  'str/spd': '#ff7098',
+  'str/pwr': '#ff1a6e',
+  'pwr/spd': '#d754e0',
 };
 
 const TRAINING_TYPE_LABELS: Record<string, string> = {
-  strength: 'Δύναμη',
-  endurance: 'Αντοχή',
-  power: 'Ισχύς',
-  speed: 'Ταχύτητα',
-  hypertrophy: 'Υπερτροφία',
-  accessory: 'Βοηθητικά',
+  str: 'Δύναμη',
+  end: 'Αντοχή',
+  pwr: 'Ισχύς',
+  spd: 'Ταχύτητα',
+  hpr: 'Υπερτροφία',
+  acc: 'Βοηθητικά',
+  'str/end': 'Δύναμη/Αντοχή',
+  'spd/end': 'Ταχύτητα/Αντοχή',
+  'pwr/end': 'Ισχύς/Αντοχή',
+  'str/spd': 'Δύναμη/Ταχύτητα',
+  'str/pwr': 'Δύναμη/Ισχύς',
+  'pwr/spd': 'Ισχύς/Ταχύτητα',
 };
 
 interface WorkoutStat {
@@ -39,13 +51,14 @@ interface WorkoutStat {
   scheduled_date: string;
   total_duration_minutes: number;
   total_volume_kg: number;
-  strength_minutes: number;
-  endurance_minutes: number;
-  power_minutes: number;
-  speed_minutes: number;
-  hypertrophy_minutes: number;
-  accessory_minutes: number;
+  training_type_breakdown: Record<string, number> | null;
 }
+
+// Type guard to safely cast Json to our expected type
+const parseBreakdown = (data: any): Record<string, number> | null => {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+  return data as Record<string, number>;
+};
 
 export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId, hideTimeTabs = false, activeTab }) => {
   const [workoutStats, setWorkoutStats] = useState<WorkoutStat[]>([]);
@@ -77,7 +90,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
           console.error('Error fetching workout stats:', error);
           setWorkoutStats([]);
         } else {
-          setWorkoutStats(data || []);
+          // Transform data to match our WorkoutStat interface
+          const transformed = (data || []).map(stat => ({
+            ...stat,
+            training_type_breakdown: parseBreakdown(stat.training_type_breakdown)
+          })) as WorkoutStat[];
+          setWorkoutStats(transformed);
         }
       } catch (error) {
         console.error('Error:', error);
@@ -131,9 +149,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     });
   }, [workoutStats, timeFilter, currentWeek, currentMonth, activeTab]);
 
-  // Ομαδοποίηση δεδομένων ανά περίοδο
+  // Ομαδοποίηση δεδομένων ανά περίοδο - χρησιμοποιούμε raw training types
   const groupedData = useMemo(() => {
-    const groups: Record<string, { strength: number; endurance: number; power: number; speed: number; hypertrophy: number; accessory: number; total: number }> = {};
+    const groups: Record<string, { trainingTypes: Record<string, number>; total: number }> = {};
 
     filteredStats.forEach(stat => {
       const date = parseISO(stat.scheduled_date);
@@ -151,21 +169,23 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       }
 
       if (!groups[periodKey]) {
-        groups[periodKey] = { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 0, total: 0 };
+        groups[periodKey] = { trainingTypes: {}, total: 0 };
       }
 
-      groups[periodKey].strength += stat.strength_minutes || 0;
-      groups[periodKey].endurance += stat.endurance_minutes || 0;
-      groups[periodKey].power += stat.power_minutes || 0;
-      groups[periodKey].speed += stat.speed_minutes || 0;
-      groups[periodKey].hypertrophy += stat.hypertrophy_minutes || 0;
-      groups[periodKey].accessory += stat.accessory_minutes || 0;
+      // Merge training_type_breakdown
+      const breakdown = stat.training_type_breakdown as Record<string, number> | null;
+      if (breakdown) {
+        Object.entries(breakdown).forEach(([type, minutes]) => {
+          groups[periodKey].trainingTypes[type] = (groups[periodKey].trainingTypes[type] || 0) + minutes;
+        });
+      }
       groups[periodKey].total += stat.total_duration_minutes || 0;
     });
 
     return Object.entries(groups).map(([period, data]) => ({
       period,
-      ...data
+      trainingTypes: data.trainingTypes,
+      total: data.total
     }));
   }, [filteredStats, timeFilter, activeTab]);
 
@@ -181,20 +201,20 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     return groupedData.reduce((sum, item) => sum + item.total, 0);
   }, [groupedData]);
 
-  // Δεδομένα για pie chart
+  // Δεδομένα για pie chart - χρησιμοποιούμε raw training types
   const pieData = useMemo(() => {
-    const totals = groupedData.reduce((acc, item) => ({
-      strength: acc.strength + item.strength,
-      endurance: acc.endurance + item.endurance,
-      power: acc.power + item.power,
-      speed: acc.speed + item.speed,
-      hypertrophy: acc.hypertrophy + item.hypertrophy,
-      accessory: acc.accessory + item.accessory
-    }), { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 0 });
+    const totals: Record<string, number> = {};
+    
+    groupedData.forEach(item => {
+      Object.entries(item.trainingTypes).forEach(([type, minutes]) => {
+        totals[type] = (totals[type] || 0) + minutes;
+      });
+    });
 
     return Object.entries(totals)
       .filter(([_, value]) => value > 0)
-      .map(([name, value]) => ({ name, value }));
+      .map(([name, value]) => ({ name, value: Math.round(value) }))
+      .sort((a, b) => b.value - a.value);
   }, [groupedData]);
 
   const formatMinutes = (minutes: number) => {
@@ -225,18 +245,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-    const shortLabels: Record<string, string> = {
-      strength: 'str',
-      endurance: 'end',
-      power: 'pwr',
-      speed: 'spd',
-      hypertrophy: 'hpr',
-      accessory: 'acc'
-    };
-
     return (
       <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold">
-        {`${shortLabels[name] || name}: ${formatMinutes(value)}`}
+        {`${name} ${formatMinutes(value)}`}
       </text>
     );
   };
@@ -363,14 +374,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               <Carousel className="w-full">
                 <CarouselContent>
                   {groupedData.map((dayData, index) => {
-                    const dayPieData = [
-                      { name: 'strength', value: dayData.strength },
-                      { name: 'endurance', value: dayData.endurance },
-                      { name: 'power', value: dayData.power },
-                      { name: 'speed', value: dayData.speed },
-                      { name: 'hypertrophy', value: dayData.hypertrophy },
-                      { name: 'accessory', value: dayData.accessory }
-                    ].filter(item => item.value > 0);
+                    const dayPieData = Object.entries(dayData.trainingTypes)
+                      .filter(([_, value]) => value > 0)
+                      .map(([name, value]) => ({ name, value: Math.round(value) }))
+                      .sort((a, b) => b.value - a.value);
 
                     return (
                       <CarouselItem key={index} className="basis-1/3">
@@ -390,7 +397,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                                   stroke="none"
                                 >
                                   {dayPieData.map((entry, i) => (
-                                    <Cell key={`cell-${i}`} fill={COLORS[entry.name as keyof typeof COLORS] || '#ccc'} />
+                                    <Cell key={`cell-${i}`} fill={COLORS[entry.name] || '#ccc'} />
                                   ))}
                                 </Pie>
                               </PieChart>
@@ -403,8 +410,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                           <div className="flex flex-wrap justify-center gap-1 mt-1">
                             {dayPieData.map((item, i) => (
                               <div key={i} className="flex items-center gap-0.5">
-                                <div className="w-2 h-2" style={{ backgroundColor: COLORS[item.name as keyof typeof COLORS] }} />
-                                <span className="text-[8px]">{item.name.slice(0, 3)}</span>
+                                <div className="w-2 h-2" style={{ backgroundColor: COLORS[item.name] || '#ccc' }} />
+                                <span className="text-[8px]">{item.name}</span>
                               </div>
                             ))}
                           </div>
