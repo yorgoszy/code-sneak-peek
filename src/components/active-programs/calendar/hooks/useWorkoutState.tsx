@@ -8,7 +8,6 @@ import { useSharedExerciseNotes } from '@/hooks/useSharedExerciseNotes';
 import { useBlockTimer } from '@/contexts/BlockTimerContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { calculateDayMetrics } from '@/components/user-profile/hooks/workoutCalculations';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface UseWorkoutStateProps {
@@ -119,28 +118,11 @@ export const useWorkoutState = (
       // Υπολογισμός διάρκειας από το χρονόμετρο
       const actualDurationMinutes = Math.round(elapsedTime / 60);
       
-      // Υπολογισμός total volume από τα blocks της ημέρας
-      let totalVolume = 0;
-      const trainingDates = program.training_dates || [];
-      const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
-      
-      if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
-        const programDays = program.programs.program_weeks[0].program_days;
-        const dayProgram = programDays[dateIndex % programDays.length];
-        
-        if (dayProgram?.program_blocks) {
-          const metrics = calculateDayMetrics(dayProgram.program_blocks);
-          totalVolume = metrics.volume;
-          console.log('📊 Calculated volume for workout:', totalVolume, 'kg');
-        }
-      }
-      
       console.log('🔄 Updating workout completion:', {
         assignment_id: program.id,
         scheduled_date: selectedDateStr,
         user_id: program.app_users?.id || program.user_id,
-        actual_duration_minutes: actualDurationMinutes,
-        total_volume: totalVolume
+        actual_duration_minutes: actualDurationMinutes
       });
 
       // Χρήση του service για να γίνει upsert αντί για update μόνο
@@ -151,25 +133,24 @@ export const useWorkoutState = (
         'green'
       );
 
-      console.log('🔄 Now updating with duration, volume and end time...');
+      console.log('🔄 Now updating with duration and end time...');
       
-      // Τώρα ενημερώνουμε την εγγραφή με τη διάρκεια, τον όγκο και το end_time
+      // Τώρα ενημερώνουμε την εγγραφή με τη διάρκεια και το end_time
       const { error } = await supabase
         .from('workout_completions')
         .update({
           actual_duration_minutes: actualDurationMinutes,
-          total_volume: totalVolume,
           end_time: new Date().toISOString()
         })
         .eq('assignment_id', program.id)
         .eq('scheduled_date', selectedDateStr);
 
       if (error) {
-        console.error('❌ Error updating workout completion with stats:', error);
+        console.error('❌ Error updating workout completion with duration:', error);
         throw error;
       }
       
-      console.log('✅ Workout completion updated successfully - Duration:', actualDurationMinutes, 'min, Volume:', totalVolume, 'kg');
+      console.log('✅ Workout completion updated successfully with duration:', actualDurationMinutes, 'minutes');
       
       // Αφαίρεση από τις ενεργές προπονήσεις
       if (workoutId) {
@@ -179,8 +160,7 @@ export const useWorkoutState = (
       // Clear block timer states
       clearBlockTimerStates();
       
-      const volumeTons = (totalVolume / 1000).toFixed(1);
-      toast.success(`Προπόνηση ολοκληρώθηκε! Διάρκεια: ${actualDurationMinutes} λεπτά, Όγκος: ${volumeTons}tn`);
+      toast.success(`Προπόνηση ολοκληρώθηκε για ${program.app_users?.name}! Διάρκεια: ${actualDurationMinutes} λεπτά`);
       
       // ΑΜΕΣΗ ανανέωση
       if (onRefresh) {
@@ -197,9 +177,9 @@ export const useWorkoutState = (
       
     } catch (error) {
       console.error('❌ Error completing workout:', error);
-      toast.error(`Σφάλμα κατά την ολοκλήρωση της προπόνησης: ${(error as Error).message}`);
+      toast.error(`Σφάλμα κατά την ολοκλήρωση της προπόνησης για ${program.app_users?.name}: ${(error as Error).message}`);
     }
-  }, [program, selectedDate, currentWorkout, elapsedTime, onRefresh, onClose, removeFromActiveWorkouts, workoutId, clearBlockTimerStates, updateWorkoutStatus]);
+  }, [program, selectedDate, currentWorkout, elapsedTime, onRefresh, onClose, removeFromActiveWorkouts, workoutId]);
 
   const handleCancelWorkout = useCallback(() => {
     if (!program || !selectedDate || !workoutId) return;
