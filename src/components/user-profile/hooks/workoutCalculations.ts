@@ -19,10 +19,9 @@ export const calculateDayMetrics = (blocks: any[]) => {
       const isTimeMode = exercise.reps_mode === 'time' || repsData.isTime;
 
       if (isTimeMode) {
-        // Time-based exercise
+        // Time-based exercise - μόνο χρόνος εργασίας, χωρίς διάλειμμα
         const workTime = (sets * repsData.seconds) / 60; // Convert to minutes
-        const restTime = sets * rest;
-        totalTimeMinutes += workTime + restTime;
+        totalTimeMinutes += workTime;
         
         // No volume calculation for time-based exercises
       } else {
@@ -33,10 +32,9 @@ export const calculateDayMetrics = (blocks: any[]) => {
         const volume = sets * reps * kg;
         totalVolume += volume;
 
-        // Time: [(sets × reps) × tempo] + (sets × rest)
+        // Time: (sets × reps × tempo) - μόνο χρόνος εργασίας, χωρίς διάλειμμα
         const workTime = (sets * reps * tempo) / 60; // Convert to minutes
-        const restTime = sets * rest;
-        totalTimeMinutes += workTime + restTime;
+        totalTimeMinutes += workTime;
       }
     });
   });
