@@ -410,7 +410,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             {/* Day view with carousel */}
             {!activeTab && timeFilter === 'day' && groupedData.length > 0 && (
               <Carousel className="w-full">
-                <CarouselContent>
+                <CarouselContent className="md:justify-center">
                   {groupedData.map((dayData, index) => {
                     const dayPieData = Object.entries(dayData.trainingTypes)
                       .filter(([_, value]) => value > 0)
