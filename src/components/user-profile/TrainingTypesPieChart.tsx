@@ -89,6 +89,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
   const [selectedDay, setSelectedDay] = useState<string>('');
   
   // Συγχρονίζουμε το timeFilter με το activeTab αν υπάρχει
@@ -162,15 +163,15 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       filterStart = monthStart;
       filterEnd = monthEnd;
     } else {
-      filterStart = startOfYear(today);
-      filterEnd = endOfYear(today);
+      filterStart = new Date(currentYear, 0, 1);
+      filterEnd = new Date(currentYear, 11, 31, 23, 59, 59);
     }
 
     return workoutStats.filter(stat => {
       const date = parseISO(stat.scheduled_date);
       return isWithinInterval(date, { start: filterStart, end: filterEnd });
     });
-  }, [workoutStats, timeFilter, currentWeek, currentMonth, activeTab]);
+  }, [workoutStats, timeFilter, currentWeek, currentMonth, currentYear, activeTab]);
 
   // Ομαδοποίηση δεδομένων ανά περίοδο - χρησιμοποιούμε raw training types
   const groupedData = useMemo(() => {
@@ -524,7 +525,31 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             {/* Month view (Ετήσια) with carousel - shows months */}
             {!activeTab && timeFilter === 'month' && groupedData.length > 0 && (
               <>
-                <div className="text-[10px] md:text-sm font-medium mb-2 text-center text-[#cb8954]">{format(new Date(), 'yyyy')}</div>
+                <div className="mb-2">
+                  <div className="flex items-center justify-between">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentYear(currentYear - 1)}
+                      className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
+                    >
+                      <ChevronLeft className="h-3 w-3" />
+                    </Button>
+                    <div className={`text-[10px] md:text-sm font-medium ${
+                      currentYear === new Date().getFullYear() ? 'text-[#cb8954]' : ''
+                    }`}>
+                      {currentYear}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentYear(currentYear + 1)}
+                      className="rounded-none h-6 px-2 bg-transparent border-0 text-[#cb8954] hover:bg-transparent hover:text-[#cb8954]/80"
+                    >
+                      <ChevronRight className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
                 <Carousel className="w-full">
                   <CarouselContent className="md:justify-center">
                     {groupedData.map((monthData, index) => {
