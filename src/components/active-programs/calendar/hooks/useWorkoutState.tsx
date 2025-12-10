@@ -133,7 +133,7 @@ export const useWorkoutState = (
     return null;
   };
 
-  // Helper function to calculate exercise duration in minutes
+  // Helper function to calculate exercise duration in minutes (includes rest)
   const calculateExerciseDurationMinutes = (exercise: any): number => {
     const sets = parseInt(exercise.sets) || 1;
     const reps = parseInt(exercise.reps) || 1;
@@ -145,6 +145,20 @@ export const useWorkoutState = (
     
     // (sets * reps * tempo) + (sets-1) * rest
     const totalSeconds = (sets * reps * tempoSeconds) + ((sets - 1) * rest);
+    return totalSeconds / 60; // minutes
+  };
+
+  // Helper function to calculate exercise WORK time only (without rest) for training type breakdown
+  const calculateExerciseWorkTimeMinutes = (exercise: any): number => {
+    const sets = parseInt(exercise.sets) || 1;
+    const reps = parseInt(exercise.reps) || 1;
+    const tempo = exercise.tempo || '2.1.2';
+
+    const tempoPhases = tempo.split('.').map((phase: string) => parseInt(phase) || 2);
+    const tempoSeconds = tempoPhases.reduce((sum: number, phase: number) => sum + phase, 0);
+    
+    // Only work time: sets * reps * tempo (without rest)
+    const totalSeconds = sets * reps * tempoSeconds;
     return totalSeconds / 60; // minutes
   };
 
@@ -191,10 +205,13 @@ export const useWorkoutState = (
       console.log(`  Block: ${block.name}, training_type: ${trainingType}, weights:`, weights);
       
       let blockDuration = 0;
+      let blockWorkTime = 0; // Work time only (without rest) for training type breakdown
       
       block.program_exercises?.forEach((exercise: any) => {
         const duration = calculateExerciseDurationMinutes(exercise);
+        const workTime = calculateExerciseWorkTimeMinutes(exercise);
         blockDuration += duration;
+        blockWorkTime += workTime;
         
         // Only add to stats if it's a tracked category
         if (weights) {
@@ -204,7 +221,7 @@ export const useWorkoutState = (
           stats.speed += duration * weights.speed;
           stats.hypertrophy += duration * weights.hypertrophy;
           stats.accessory += duration * weights.accessory;
-          console.log(`    Exercise duration: ${duration.toFixed(2)} min distributed by weights`);
+          console.log(`    Exercise duration: ${duration.toFixed(2)} min, work time: ${workTime.toFixed(2)} min`);
         }
 
         // Calculate volume: sets * reps * kg
@@ -214,9 +231,9 @@ export const useWorkoutState = (
         stats.totalVolume += sets * reps * kg;
       });
       
-      // Add ALL training types to breakdown (not just tracked ones)
+      // Add ALL training types to breakdown using WORK TIME only (without rest)
       if (trainingType) {
-        trainingTypeBreakdown[trainingType] = (trainingTypeBreakdown[trainingType] || 0) + blockDuration;
+        trainingTypeBreakdown[trainingType] = (trainingTypeBreakdown[trainingType] || 0) + blockWorkTime;
       }
     });
 
