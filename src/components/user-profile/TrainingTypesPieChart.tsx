@@ -197,9 +197,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       const breakdown = stat.training_type_breakdown as Record<string, number> | null;
       if (breakdown) {
         Object.entries(breakdown).forEach(([type, minutes]) => {
-          groups[periodKey].trainingTypes[type] = (groups[periodKey].trainingTypes[type] || 0) + minutes;
+          const roundedMinutes = Math.round(minutes);
+          groups[periodKey].trainingTypes[type] = (groups[periodKey].trainingTypes[type] || 0) + roundedMinutes;
           // Add to total from breakdown instead of total_duration_minutes
-          groups[periodKey].total += minutes;
+          groups[periodKey].total += roundedMinutes;
         });
       }
     });
