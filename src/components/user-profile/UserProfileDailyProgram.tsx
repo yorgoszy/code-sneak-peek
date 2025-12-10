@@ -356,7 +356,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   return (
     <div className="space-y-6">
       {/* Workout Stats Section */}
-      <WorkoutStatsTabsSection userId={userProfile?.id} onTabChange={setActiveStatsTab} customMonthStats={monthStats} customWeekStats={weekStats} userPrograms={userPrograms} workoutCompletions={workoutCompletions} />
+      <WorkoutStatsTabsSection userId={userProfile?.id} onTabChange={setActiveStatsTab} userPrograms={userPrograms} workoutCompletions={workoutCompletions} />
 
       {/* Training Types Pie Chart */}
       <TrainingTypesPieChart userId={userProfile?.id} hideTimeTabs={true} activeTab={activeStatsTab} />
