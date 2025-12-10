@@ -191,9 +191,6 @@ export const useWeekStats = (userId: string) => {
         if (completion) {
           if (completion.status === 'completed') {
             completedCount++;
-            if (completion.actual_duration_minutes) {
-              totalActualMinutes += completion.actual_duration_minutes;
-            }
           } else if (completion.status === 'missed') {
             missedCount++;
           }
@@ -240,6 +237,11 @@ export const useWeekStats = (userId: string) => {
 
           const timeMinutes = Math.round(totalTimeSeconds / 60);
           totalScheduledMinutes += timeMinutes;
+          
+          // Αν είναι ολοκληρωμένη, προσθέτουμε τον υπολογισμένο χρόνο στα actual minutes
+          if (completion?.status === 'completed') {
+            totalActualMinutes += timeMinutes;
+          }
           
           console.log('⏰ Day', dateStr, 'calculated time:', timeMinutes, 'minutes');
         }
