@@ -21,8 +21,8 @@ const COLORS: Record<string, string> = {
   pwr: '#fa009a',
   spd: '#a4e1ff',
   hpr: '#00ffba',
-  acc: '#aca097',
-  accessory: '#aca097',
+  acc: '#d4d4d4',
+  accessory: '#d4d4d4',
   // Combined types
   'str/end': '#c43ba0',
   'spd/end': '#9273f0',
