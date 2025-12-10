@@ -436,7 +436,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                             {dayPieData.map((item, i) => (
                               <div key={i} className="flex items-center gap-0.5">
                                 <div className="w-2 h-2" style={{ backgroundColor: COLORS[item.name] || '#ccc' }} />
-                                <span className="text-[8px]">{item.name}</span>
+                                <span className="text-[8px]">{TRAINING_TYPE_LABELS[item.name] || item.name}</span>
+                                <span className="text-[8px] text-gray-500">({formatMinutes(item.value)})</span>
                               </div>
                             ))}
                           </div>
