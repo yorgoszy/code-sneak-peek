@@ -4456,6 +4456,7 @@ export type Database = {
           strength_minutes: number
           total_duration_minutes: number
           total_volume_kg: number
+          training_type_breakdown: Json | null
           updated_at: string
           user_id: string
         }
@@ -4472,6 +4473,7 @@ export type Database = {
           strength_minutes?: number
           total_duration_minutes?: number
           total_volume_kg?: number
+          training_type_breakdown?: Json | null
           updated_at?: string
           user_id: string
         }
@@ -4488,6 +4490,7 @@ export type Database = {
           strength_minutes?: number
           total_duration_minutes?: number
           total_volume_kg?: number
+          training_type_breakdown?: Json | null
           updated_at?: string
           user_id?: string
         }

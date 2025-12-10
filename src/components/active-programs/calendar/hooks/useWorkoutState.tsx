@@ -176,20 +176,25 @@ export const useWorkoutState = (
     
     if (!dayProgram) {
       console.log('⚠️ No day program found for stats calculation');
-      return { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 0, totalVolume: 0 };
+      return { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 0, totalVolume: 0, trainingTypeBreakdown: {} };
     }
 
     const stats = { strength: 0, endurance: 0, power: 0, speed: 0, hypertrophy: 0, accessory: 0, totalVolume: 0 };
+    const trainingTypeBreakdown: Record<string, number> = {};
 
     console.log('📊 Calculating stats for day:', dayProgram.name);
     
     dayProgram.program_blocks?.forEach((block: any) => {
-      const weights = mapTrainingType(block.training_type);
+      const trainingType = block.training_type?.toLowerCase().trim() || null;
+      const weights = mapTrainingType(trainingType);
       
-      console.log(`  Block: ${block.name}, training_type: ${block.training_type}, weights:`, weights);
+      console.log(`  Block: ${block.name}, training_type: ${trainingType}, weights:`, weights);
+      
+      let blockDuration = 0;
       
       block.program_exercises?.forEach((exercise: any) => {
         const duration = calculateExerciseDurationMinutes(exercise);
+        blockDuration += duration;
         
         // Only add to stats if it's a tracked category
         if (weights) {
@@ -208,10 +213,16 @@ export const useWorkoutState = (
         const kg = parseFloat(exercise.kg) || 0;
         stats.totalVolume += sets * reps * kg;
       });
+      
+      // Add raw training type breakdown (only tracked types)
+      if (trainingType && weights) {
+        trainingTypeBreakdown[trainingType] = (trainingTypeBreakdown[trainingType] || 0) + blockDuration;
+      }
     });
 
     console.log('📊 Final stats:', stats);
-    return stats;
+    console.log('📊 Training type breakdown:', trainingTypeBreakdown);
+    return { ...stats, trainingTypeBreakdown };
   }, [getCurrentDayProgram]);
 
   const handleCompleteWorkout = useCallback(async () => {
@@ -279,7 +290,8 @@ export const useWorkoutState = (
             power_minutes: Math.round(workoutStats.power),
             speed_minutes: Math.round(workoutStats.speed),
             hypertrophy_minutes: Math.round(workoutStats.hypertrophy),
-            accessory_minutes: Math.round(workoutStats.accessory)
+            accessory_minutes: Math.round(workoutStats.accessory),
+            training_type_breakdown: workoutStats.trainingTypeBreakdown
           }, {
             onConflict: 'user_id,assignment_id,scheduled_date'
           });
