@@ -467,6 +467,9 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             {/* Week/Month/ActiveTab view - single pie chart */}
             {(activeTab || timeFilter !== 'day') && pieData.length > 0 && (
               <div className="flex flex-col items-center">
+                {!activeTab && timeFilter === 'month' && (
+                  <div className="text-[10px] font-medium mb-1">{format(new Date(), 'yyyy')}</div>
+                )}
                 <ResponsiveContainer width={80} height={80}>
                   <PieChart>
                     <Pie
