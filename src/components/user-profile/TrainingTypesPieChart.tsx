@@ -319,7 +319,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   timeFilter === 'day' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                Ημέρα
+                Εβδομαδιαία
               </button>
               <button
                 onClick={() => setTimeFilter('week')}
@@ -327,7 +327,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   timeFilter === 'week' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                Εβδομάδα
+                Μηνιαία
               </button>
               <button
                 onClick={() => setTimeFilter('month')}
@@ -335,7 +335,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   timeFilter === 'month' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                Μήνας
+                Ετήσια
               </button>
             </div>
           )}
