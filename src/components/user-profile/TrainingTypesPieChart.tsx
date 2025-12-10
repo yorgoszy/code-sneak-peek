@@ -418,7 +418,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                       .sort((a, b) => b.value - a.value);
 
                     return (
-                      <CarouselItem key={index} className="basis-1/5">
+                      <CarouselItem key={index} className="basis-1/3 md:basis-1/5">
                         <div className="flex flex-col items-center p-1">
                           <div className="text-[10px] font-medium mb-1">{dayData.period}</div>
                           <div className="text-[8px] text-gray-500">{formatMinutes(dayData.total)}</div>
