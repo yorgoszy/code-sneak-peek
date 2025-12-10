@@ -207,11 +207,24 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       }
     });
 
-    return Object.entries(groups).map(([period, data]) => ({
+    const dayOrder = ['Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο', 'Κυριακή'];
+    
+    const result = Object.entries(groups).map(([period, data]) => ({
       period,
       trainingTypes: data.trainingTypes,
       total: data.total
     }));
+
+    // Sort by day order for day view
+    if (timeFilter === 'day' && !activeTab) {
+      result.sort((a, b) => {
+        const indexA = dayOrder.indexOf(a.period);
+        const indexB = dayOrder.indexOf(b.period);
+        return indexA - indexB;
+      });
+    }
+
+    return result;
   }, [filteredStats, timeFilter, activeTab]);
 
   // Αρχικοποίηση επιλεγμένης ημέρας
