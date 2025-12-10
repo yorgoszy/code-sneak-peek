@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -29,38 +28,14 @@ export const TrainingAnalytics: React.FC<TrainingAnalyticsProps> = ({ userId }) 
     try {
       setLoading(true);
       
-      // Φέρνουμε τα προγράμματα του χρήστη με διευκρίνιση της σχέσης
-      const { data: assignments } = await supabase
-        .from('program_assignments')
-        .select(`
-          *,
-          programs!program_assignments_program_id_fkey(
-            *,
-            program_weeks(
-              *,
-              program_days(
-                *,
-                program_blocks(
-                  *,
-                  program_exercises(
-                    *,
-                    exercises(name),
-                    sets,
-                    reps,
-                    percentage_1rm,
-                    velocity_ms,
-                    tempo,
-                    rest
-                  )
-                )
-              )
-            )
-          )
-        `)
-        .eq('user_id', userId)
-        .eq('status', 'active');
+      // Φέρνουμε τα workout stats από τον νέο πίνακα
+      const { data: stats, error } = await supabase
+        .from('workout_stats')
+        .select('*')
+        .eq('user_id', userId);
 
-      if (!assignments || assignments.length === 0) {
+      if (error) {
+        console.error('Σφάλμα φόρτωσης workout stats:', error);
         setAnalysis({
           strength_hours: 0,
           endurance_hours: 0,
@@ -71,34 +46,39 @@ export const TrainingAnalytics: React.FC<TrainingAnalyticsProps> = ({ userId }) 
         return;
       }
 
-      const workoutAnalysis = {
-        strength_hours: 0,
-        endurance_hours: 0,
-        power_hours: 0,
-        speed_hours: 0
-      };
+      if (!stats || stats.length === 0) {
+        setAnalysis({
+          strength_hours: 0,
+          endurance_hours: 0,
+          power_hours: 0,
+          speed_hours: 0,
+          total_hours: 0
+        });
+        return;
+      }
 
-      assignments.forEach(assignment => {
-        if (assignment.programs?.program_weeks) {
-          assignment.programs.program_weeks.forEach((week: any) => {
-            week.program_days?.forEach((day: any) => {
-              day.program_blocks?.forEach((block: any) => {
-                block.program_exercises?.forEach((exercise: any) => {
-                  const type = categorizeExerciseType(exercise);
-                  const duration = calculateExerciseDuration(exercise);
-                  workoutAnalysis[`${type}_hours`] += duration;
-                });
-              });
-            });
-          });
-        }
+      // Αθροίζουμε τα λεπτά ανά τύπο από όλες τις ολοκληρωμένες προπονήσεις
+      const totals = stats.reduce((acc, stat) => ({
+        strength_minutes: acc.strength_minutes + (stat.strength_minutes || 0),
+        endurance_minutes: acc.endurance_minutes + (stat.endurance_minutes || 0),
+        power_minutes: acc.power_minutes + (stat.power_minutes || 0),
+        speed_minutes: acc.speed_minutes + (stat.speed_minutes || 0),
+        total_minutes: acc.total_minutes + (stat.total_duration_minutes || 0)
+      }), {
+        strength_minutes: 0,
+        endurance_minutes: 0,
+        power_minutes: 0,
+        speed_minutes: 0,
+        total_minutes: 0
       });
 
-      const total = Object.values(workoutAnalysis).reduce((sum, hours) => sum + hours, 0);
-
+      // Μετατροπή λεπτών σε ώρες
       setAnalysis({
-        ...workoutAnalysis,
-        total_hours: total
+        strength_hours: totals.strength_minutes / 60,
+        endurance_hours: totals.endurance_minutes / 60,
+        power_hours: totals.power_minutes / 60,
+        speed_hours: totals.speed_minutes / 60,
+        total_hours: totals.total_minutes / 60
       });
 
     } catch (error) {
@@ -106,39 +86,6 @@ export const TrainingAnalytics: React.FC<TrainingAnalyticsProps> = ({ userId }) 
     } finally {
       setLoading(false);
     }
-  };
-
-  const categorizeExerciseType = (exercise: any): 'strength' | 'endurance' | 'power' | 'speed' => {
-    const reps = parseInt(exercise.reps) || 0;
-    const percentage = parseFloat(exercise.percentage_1rm) || 0;
-    const velocity = parseFloat(exercise.velocity_ms) || 0;
-
-    // Δύναμη: >85% 1RM ή ≤5 reps
-    if (percentage > 85 || reps <= 5) return 'strength';
-    
-    // Αντοχή: <65% 1RM ή >12 reps
-    if (percentage < 65 || reps > 12) return 'endurance';
-    
-    // Ταχύτητα: Υψηλή ταχύτητα και χαμηλό φορτίο
-    if (velocity > 0.8 && percentage < 60) return 'speed';
-    
-    // Ισχύς: Μέσα στο εύρος 30-60% 1RM
-    return 'power';
-  };
-
-  const calculateExerciseDuration = (exercise: any): number => {
-    const sets = parseInt(exercise.sets) || 1;
-    const reps = parseInt(exercise.reps) || 1;
-    const tempo = exercise.tempo || '2.1.2';
-    const rest = parseInt(exercise.rest) || 60;
-
-    // Υπολογίζει τον χρόνο του tempo
-    const tempoPhases = tempo.split('.').map(phase => parseInt(phase) || 2);
-    const tempoSeconds = tempoPhases.reduce((sum, phase) => sum + phase, 0);
-    
-    // Συνολικός χρόνος: (sets * reps * tempo) + (sets * rest)
-    const totalSeconds = (sets * reps * tempoSeconds) + (sets * rest);
-    return totalSeconds / 3600; // μετατροπή σε ώρες
   };
 
   const formatHours = (hours: number): string => {
@@ -189,16 +136,16 @@ export const TrainingAnalytics: React.FC<TrainingAnalyticsProps> = ({ userId }) 
   }
 
   return (
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm md:text-base">
-            <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
-            Ανάλυση Προπονήσεων
-            <span className="text-xs md:text-sm font-normal text-gray-600 ml-auto">
-              Σύνολο: {formatHours(analysis.total_hours)}
-            </span>
-          </CardTitle>
-        </CardHeader>
+    <Card className="rounded-none">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+          <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
+          Ανάλυση Προπονήσεων
+          <span className="text-xs md:text-sm font-normal text-gray-600 ml-auto">
+            Σύνολο: {formatHours(analysis.total_hours)}
+          </span>
+        </CardTitle>
+      </CardHeader>
       <CardContent className="space-y-4">
         {/* Προπόνηση Δύναμης */}
         <div className="space-y-2">
