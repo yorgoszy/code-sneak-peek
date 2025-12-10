@@ -751,9 +751,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           <button 
             onClick={() => {
               if (setActiveTab) {
-                setActiveTab('calendar');
+                setActiveTab('programs');
               } else {
-                navigate(`/dashboard/user-profile/${user.id}?tab=calendar`);
+                navigate(`/dashboard/user-profile/${user.id}?tab=programs`);
               }
             }}
             className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
