@@ -467,14 +467,14 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
             {/* Week/Month/ActiveTab view - single pie chart */}
             {(activeTab || timeFilter !== 'day') && pieData.length > 0 && (
               <div className="flex flex-col items-center">
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width={80} height={80}>
                   <PieChart>
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={40}
-                      outerRadius={80}
+                      innerRadius={15}
+                      outerRadius={35}
                       dataKey="value"
                       stroke="none"
                     >
@@ -485,12 +485,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                     <Tooltip content={<CustomTooltip />} />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="flex flex-wrap justify-center gap-3 mt-2">
+                <div className="flex flex-wrap justify-center gap-1 mt-1">
                   {pieData.map((item, index) => (
-                    <div key={index} className="flex items-center gap-1">
-                      <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: COLORS[item.name as keyof typeof COLORS] }} />
-                      <span className="text-xs">{TRAINING_TYPE_LABELS[item.name] || item.name}</span>
-                      <span className="text-xs text-gray-500">({formatMinutes(item.value)})</span>
+                    <div key={index} className="flex items-center gap-0.5">
+                      <div className="w-2 h-2" style={{ backgroundColor: COLORS[item.name as keyof typeof COLORS] }} />
+                      <span className="text-[8px]">{TRAINING_TYPE_LABELS[item.name] || item.name}</span>
+                      <span className="text-[8px] text-gray-500">({formatMinutes(item.value)})</span>
                     </div>
                   ))}
                 </div>
