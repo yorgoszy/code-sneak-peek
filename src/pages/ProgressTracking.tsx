@@ -9,6 +9,8 @@ import { JumpRecordTab } from "@/components/progress/JumpRecordTab";
 import { JumpHistoryTab } from "@/components/progress/JumpHistoryTab";
 import { AnthropometricRecordTab } from "@/components/progress/AnthropometricRecordTab";
 import { AnthropometricHistoryTab } from "@/components/progress/AnthropometricHistoryTab";
+import { FunctionalRecordTab } from "@/components/progress/FunctionalRecordTab";
+import { FunctionalHistoryTab } from "@/components/progress/FunctionalHistoryTab";
 
 
 export default function ProgressTracking() {
@@ -58,7 +60,7 @@ export default function ProgressTracking() {
       <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Καταγραφή Προόδου</h1>
 
       <Tabs defaultValue="force-velocity" className="w-full">
-        <TabsList className="rounded-none w-full grid grid-cols-2 lg:grid-cols-4 gap-0.5 sm:gap-1 p-0.5 sm:p-1">
+        <TabsList className="rounded-none w-full grid grid-cols-2 lg:grid-cols-5 gap-0.5 sm:gap-1 p-0.5 sm:p-1">
           <TabsTrigger value="force-velocity" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
             Force/Velocity
           </TabsTrigger>
@@ -70,6 +72,9 @@ export default function ProgressTracking() {
           </TabsTrigger>
           <TabsTrigger value="anthropometric" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
             Σωματομετρικά
+          </TabsTrigger>
+          <TabsTrigger value="functional" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
+            Λειτουργικά
           </TabsTrigger>
         </TabsList>
 
@@ -167,6 +172,30 @@ export default function ProgressTracking() {
 
             <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
               <AnthropometricHistoryTab key={refreshKey} />
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        <TabsContent value="functional" className="mt-3 sm:mt-4 md:mt-6">
+          <Tabs defaultValue="new" className="w-full">
+            <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
+              <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
+                Νέα Καταγραφή
+              </TabsTrigger>
+              <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
+                Ιστορικό
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="new" className="mt-3 sm:mt-4 md:mt-6">
+              <FunctionalRecordTab 
+                users={users} 
+                onRecordSaved={handleRecordSaved}
+              />
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
+              <FunctionalHistoryTab key={refreshKey} />
             </TabsContent>
           </Tabs>
         </TabsContent>
