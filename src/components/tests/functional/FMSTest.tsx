@@ -22,9 +22,24 @@ interface FMSTestProps {
 
 export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
   const handleFmsClick = (exercise: string) => {
-    const currentScore = fmsScores[exercise] || 0;
-    const nextScore = currentScore === 3 ? 0 : currentScore + 1;
-    onFmsScoreChange({ ...fmsScores, [exercise]: nextScore });
+    const currentScore = fmsScores[exercise];
+    let nextScore: number | undefined;
+    
+    if (currentScore === undefined) {
+      nextScore = 0;
+    } else if (currentScore === 3) {
+      nextScore = undefined;
+    } else {
+      nextScore = currentScore + 1;
+    }
+    
+    const newScores = { ...fmsScores };
+    if (nextScore === undefined) {
+      delete newScores[exercise];
+    } else {
+      newScores[exercise] = nextScore;
+    }
+    onFmsScoreChange(newScores);
   };
 
   const getFmsTotal = () => {
