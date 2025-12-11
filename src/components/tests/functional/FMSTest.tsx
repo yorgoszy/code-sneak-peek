@@ -137,7 +137,15 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
       </div>
       <div className="space-y-1">
         {fmsRows.map((row, rowIndex) => (
-          <div key={rowIndex} className="grid gap-1" style={{ gridTemplateColumns: `repeat(${row.length}, 1fr)` }}>
+          <div 
+            key={rowIndex} 
+            className={cn(
+              "grid gap-1",
+              rowIndex === 2 
+                ? "grid-cols-1 sm:grid-cols-3" 
+                : "grid-cols-1 sm:grid-cols-2"
+            )}
+          >
             {row.map(exercise => renderExercise(exercise))}
           </div>
         ))}
