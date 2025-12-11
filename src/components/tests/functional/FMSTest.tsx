@@ -2,16 +2,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-// Ασκήσεις FMS - Shoulder Mobility έχει L/R
+// Ασκήσεις FMS - Shoulder Mobility και Straight Leg Raise έχουν L/R
 const fmsExercises = [
-  'Shoulder Mobility', // Αυτή θα έχει L/R μέσα
-  'Active Straight Leg Raise',
+  'Shoulder Mobility',
+  'Straight Leg Raise',
   'Trunk Stability Push-Up', 
   'Rotary Stability',
   'Inline Lunge', 
   'Hurdle Step', 
   'Deep Squat'
 ];
+
+const hasLeftRight = ['Shoulder Mobility', 'Straight Leg Raise'];
 
 interface FMSTestProps {
   fmsScores: Record<string, number>;
@@ -26,12 +28,11 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
   };
 
   const getFmsTotal = () => {
-    // Υπολογισμός με L/R για Shoulder Mobility
     let total = 0;
     fmsExercises.forEach(exercise => {
-      if (exercise === 'Shoulder Mobility') {
-        total += (fmsScores['Shoulder Mobility L'] || 0);
-        total += (fmsScores['Shoulder Mobility R'] || 0);
+      if (hasLeftRight.includes(exercise)) {
+        total += (fmsScores[`${exercise} L`] || 0);
+        total += (fmsScores[`${exercise} R`] || 0);
       } else {
         total += (fmsScores[exercise] || 0);
       }
@@ -81,8 +82,8 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
       <CardContent className="p-2 pt-0">
         <div className="grid grid-cols-7 gap-1.5">
           {fmsExercises.map((exercise) => {
-            if (exercise === 'Shoulder Mobility') {
-              // Special case: Shoulder Mobility με L/R στο ίδιο container
+            if (hasLeftRight.includes(exercise)) {
+              // Special case: exercises με L/R στο ίδιο container
               return (
                 <div
                   key={exercise}
@@ -92,11 +93,11 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
                   <div className="space-y-0.5">
                     <div className="flex items-center justify-center gap-0.5">
                       <span className="text-[10px] font-bold w-3">L</span>
-                      {renderScoreButtons('Shoulder Mobility L')}
+                      {renderScoreButtons(`${exercise} L`)}
                     </div>
                     <div className="flex items-center justify-center gap-0.5">
                       <span className="text-[10px] font-bold w-3">R</span>
-                      {renderScoreButtons('Shoulder Mobility R')}
+                      {renderScoreButtons(`${exercise} R`)}
                     </div>
                   </div>
                 </div>
