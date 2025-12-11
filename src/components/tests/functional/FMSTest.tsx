@@ -31,47 +31,43 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between text-sm">
+      <CardHeader className="p-1.5 pb-1">
+        <CardTitle className="flex items-center justify-between text-[10px]">
           FMS 
           <span className={cn(
-            "text-sm font-bold px-2 py-1",
+            "text-[10px] font-bold px-1.5 py-0.5",
             fmsTotal < 14 ? "bg-red-500 text-white" : "bg-green-500 text-white"
           )}>
             Σκορ: {fmsTotal}
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-2">
-          {fmsExercises.map((row, rowIndex) => (
-            <div key={rowIndex} className="grid gap-2" style={{ gridTemplateColumns: `repeat(${row.length}, 1fr)` }}>
-              {row.map((exercise) => (
-                <div
-                  key={exercise}
-                  onClick={() => handleFmsClick(exercise)}
-                  className="p-2 border cursor-pointer text-center transition-colors hover:bg-gray-50"
-                >
-                  <div className="font-medium text-xs mb-1">{exercise}</div>
-                  <div className="flex justify-center space-x-1">
-                    {[0, 1, 2, 3].map((score) => (
-                      <div
-                        key={score}
-                        className={cn(
-                          "w-6 h-6 border flex items-center justify-center text-xs font-bold",
-                          fmsScores[exercise] === score
-                            ? score === 0 
-                              ? "bg-red-500 text-white" 
-                              : "bg-blue-500 text-white"
-                            : "bg-gray-100 text-gray-400"
-                        )}
-                      >
-                        {score}
-                      </div>
-                    ))}
+      <CardContent className="p-1.5 pt-0">
+        <div className="grid grid-cols-7 gap-1">
+          {fmsExercises.flat().map((exercise) => (
+            <div
+              key={exercise}
+              onClick={() => handleFmsClick(exercise)}
+              className="p-1 border cursor-pointer text-center transition-colors hover:bg-gray-50"
+            >
+              <div className="font-medium text-[8px] leading-tight mb-0.5">{exercise}</div>
+              <div className="flex justify-center gap-0.5">
+                {[0, 1, 2, 3].map((score) => (
+                  <div
+                    key={score}
+                    className={cn(
+                      "w-4 h-4 border flex items-center justify-center text-[8px] font-bold",
+                      fmsScores[exercise] === score
+                        ? score === 0 
+                          ? "bg-red-500 text-white" 
+                          : "bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-400"
+                    )}
+                  >
+                    {score}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           ))}
         </div>

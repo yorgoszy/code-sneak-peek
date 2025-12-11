@@ -26,54 +26,52 @@ export const SingleLegSquatTest = ({ selectedSingleLegIssues, onSingleLegChange 
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm">Μονοποδικά Καθήματα</CardTitle>
+      <CardHeader className="p-1.5 pb-1">
+        <CardTitle className="text-[10px]">Μονοποδικά Καθήματα</CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="text-xs">
-          <table className="w-full border-collapse text-xs">
-            <thead>
-              <tr>
-                <th className="border border-gray-300 p-1 text-left text-xs">Επιλογή</th>
-                <th className="border border-gray-300 p-1 text-center text-xs">Α</th>
-                <th className="border border-gray-300 p-1 text-center text-xs">Δ</th>
+      <CardContent className="p-1.5 pt-0">
+        <table className="w-full border-collapse text-[9px]">
+          <thead>
+            <tr>
+              <th className="border border-gray-300 p-0.5 text-left">Επιλογή</th>
+              <th className="border border-gray-300 p-0.5 text-center w-6">Α</th>
+              <th className="border border-gray-300 p-0.5 text-center w-6">Δ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {singleLegSquatOptions.map((option) => (
+              <tr key={option}>
+                <td className="border border-gray-300 p-0.5">{option}</td>
+                <td className="border border-gray-300 p-0 text-center">
+                  <div
+                    onClick={() => toggleSingleLegSelection(option, 'ΑΡΙΣΤΕΡΑ')}
+                    className={cn(
+                      "w-5 h-4 cursor-pointer flex items-center justify-center mx-auto",
+                      selectedSingleLegIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
+                        ? "bg-blue-500 text-white"
+                        : "hover:bg-gray-50"
+                    )}
+                  >
+                    ✓
+                  </div>
+                </td>
+                <td className="border border-gray-300 p-0 text-center">
+                  <div
+                    onClick={() => toggleSingleLegSelection(option, 'ΔΕΞΙΑ')}
+                    className={cn(
+                      "w-5 h-4 cursor-pointer flex items-center justify-center mx-auto",
+                      selectedSingleLegIssues.includes(`${option} ΔΕΞΙΑ`)
+                        ? "bg-blue-500 text-white"
+                        : "hover:bg-gray-50"
+                    )}
+                  >
+                    ✓
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {singleLegSquatOptions.map((option) => (
-                <tr key={option}>
-                  <td className="border border-gray-300 p-1 text-xs">{option}</td>
-                  <td className="border border-gray-300 p-0 text-center">
-                    <div
-                      onClick={() => toggleSingleLegSelection(option, 'ΑΡΙΣΤΕΡΑ')}
-                      className={cn(
-                        "w-8 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
-                        selectedSingleLegIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
-                          ? "bg-blue-500 text-white border-blue-500"
-                          : "bg-white border-gray-300 hover:bg-gray-50"
-                      )}
-                    >
-                      ✓
-                    </div>
-                  </td>
-                  <td className="border border-gray-300 p-0 text-center">
-                    <div
-                      onClick={() => toggleSingleLegSelection(option, 'ΔΕΞΙΑ')}
-                      className={cn(
-                        "w-8 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
-                        selectedSingleLegIssues.includes(`${option} ΔΕΞΙΑ`)
-                          ? "bg-blue-500 text-white border-blue-500"
-                          : "bg-white border-gray-300 hover:bg-gray-50"
-                      )}
-                    >
-                      ✓
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </CardContent>
     </Card>
   );
