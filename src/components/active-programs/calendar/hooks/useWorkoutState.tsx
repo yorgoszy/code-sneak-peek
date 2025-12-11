@@ -1,8 +1,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import { saveWorkoutData, getWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
+import { saveExerciseResults, getExerciseResults } from '@/hooks/useWorkoutCompletions/exerciseService';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
 import { useSharedExerciseNotes } from '@/hooks/useSharedExerciseNotes';
 import { useBlockTimer } from '@/contexts/BlockTimerContext';
@@ -75,12 +76,20 @@ export const useWorkoutState = (
   const workoutInProgress = currentWorkout?.workoutInProgress || false;
   const elapsedTime = currentWorkout?.elapsedTime || 0;
 
-  // Φόρτωση δεδομένων από localStorage όταν ανοίγει το dialog
+  // Helper function to get day index for current date
+  const getCurrentDayIndex = useCallback(() => {
+    if (!program?.training_dates || !selectedDate) return -1;
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    return program.training_dates.findIndex(date => date === selectedDateStr);
+  }, [program, selectedDate]);
+
+  // Φόρτωση δεδομένων από localStorage και από προηγούμενη εβδομάδα
   useEffect(() => {
     if (program && selectedDate) {
-      const loadExerciseData = () => {
+      const loadExerciseData = async () => {
         const newExerciseData: Record<string, any> = {};
         
+        // 1. Φόρτωση από localStorage για τρέχουσα ημέρα
         program.programs?.program_weeks?.[0]?.program_days?.forEach(day => {
           day.program_blocks?.forEach(block => {
             block.program_exercises?.forEach(exercise => {
@@ -92,12 +101,66 @@ export const useWorkoutState = (
           });
         });
         
+        // 2. Αν δεν υπάρχουν τοπικά δεδομένα, φόρτωσε από προηγούμενη εβδομάδα
+        const hasLocalData = Object.keys(newExerciseData).length > 0;
+        
+        if (!hasLocalData) {
+          try {
+            // Βρες τον αριθμό ημέρας στο πρόγραμμα
+            const currentDayIndex = getCurrentDayIndex();
+            if (currentDayIndex < 0) return;
+            
+            // Υπολόγισε πόσες μέρες έχει η εβδομάδα
+            const daysPerWeek = program.programs?.program_weeks?.[0]?.program_days?.length || 1;
+            
+            // Βρες την προηγούμενη εμφάνιση της ίδιας ημέρας (day_number)
+            const dayNumber = (currentDayIndex % daysPerWeek) + 1;
+            
+            console.log('🔍 Looking for previous exercise results for day:', dayNumber);
+            
+            // Βρες ολοκληρωμένη προπόνηση για την ίδια ημέρα από προηγούμενη εβδομάδα
+            const { data: previousCompletions } = await supabase
+              .from('workout_completions')
+              .select('id, scheduled_date, day_number')
+              .eq('assignment_id', program.id)
+              .eq('day_number', dayNumber)
+              .eq('status', 'completed')
+              .lt('scheduled_date', format(selectedDate, 'yyyy-MM-dd'))
+              .order('scheduled_date', { ascending: false })
+              .limit(1);
+            
+            if (previousCompletions && previousCompletions.length > 0) {
+              const previousCompletion = previousCompletions[0];
+              console.log('📋 Found previous completion:', previousCompletion);
+              
+              // Φόρτωσε τα exercise results
+              const exerciseResults = await getExerciseResults(previousCompletion.id);
+              console.log('📋 Previous exercise results:', exerciseResults);
+              
+              // Μετατροπή σε exerciseData format
+              exerciseResults.forEach((result: any) => {
+                if (result.actual_kg || result.actual_reps || result.actual_velocity_ms) {
+                  newExerciseData[result.program_exercise_id] = {
+                    kg: result.actual_kg || '',
+                    reps: result.actual_reps || '',
+                    velocity: result.actual_velocity_ms || ''
+                  };
+                }
+              });
+              
+              console.log('📋 Loaded exercise data from previous week:', newExerciseData);
+            }
+          } catch (error) {
+            console.error('❌ Error loading previous exercise results:', error);
+          }
+        }
+        
         setExerciseData(newExerciseData);
       };
       
       loadExerciseData();
     }
-  }, [program, selectedDate]);
+  }, [program, selectedDate, getCurrentDayIndex]);
 
   const handleStartWorkout = useCallback(() => {
     if (!program || !selectedDate) return;
@@ -326,6 +389,45 @@ export const useWorkoutState = (
         }
       }
       
+      // Αποθήκευση exercise results στη βάση δεδομένων
+      try {
+        // Βρες το workout_completion_id
+        const { data: completionData } = await supabase
+          .from('workout_completions')
+          .select('id')
+          .eq('assignment_id', program.id)
+          .eq('scheduled_date', selectedDateStr)
+          .single();
+        
+        if (completionData && Object.keys(exerciseData).length > 0) {
+          console.log('💾 Saving exercise results to database:', exerciseData);
+          
+          // Διαγραφή παλιών results για αυτό το workout (για upsert behavior)
+          await supabase
+            .from('exercise_results')
+            .delete()
+            .eq('workout_completion_id', completionData.id);
+          
+          // Δημιουργία array με τα exercise results
+          const exerciseResultsToSave = Object.entries(exerciseData)
+            .filter(([_, data]) => data.kg || data.reps || data.velocity)
+            .map(([exerciseId, data]) => ({
+              program_exercise_id: exerciseId,
+              actual_kg: data.kg || null,
+              actual_reps: data.reps || null,
+              actual_velocity_ms: data.velocity || null
+            }));
+          
+          if (exerciseResultsToSave.length > 0) {
+            await saveExerciseResults(completionData.id, exerciseResultsToSave);
+            console.log('✅ Exercise results saved:', exerciseResultsToSave.length, 'exercises');
+          }
+        }
+      } catch (exerciseResultsError) {
+        console.error('❌ Error saving exercise results:', exerciseResultsError);
+        // Δεν ρίχνουμε error για να μην αποτύχει η ολοκλήρωση
+      }
+      
       // Αφαίρεση από τις ενεργές προπονήσεις
       if (workoutId) {
         removeFromActiveWorkouts(workoutId);
@@ -353,7 +455,7 @@ export const useWorkoutState = (
       console.error('❌ Error completing workout:', error);
       toast.error(`Σφάλμα κατά την ολοκλήρωση της προπόνησης για ${program.app_users?.name}: ${(error as Error).message}`);
     }
-  }, [program, selectedDate, currentWorkout, elapsedTime, onRefresh, onClose, removeFromActiveWorkouts, workoutId, calculateWorkoutStats]);
+  }, [program, selectedDate, currentWorkout, elapsedTime, onRefresh, onClose, removeFromActiveWorkouts, workoutId, calculateWorkoutStats, exerciseData]);
 
   const handleCancelWorkout = useCallback(() => {
     if (!program || !selectedDate || !workoutId) return;
