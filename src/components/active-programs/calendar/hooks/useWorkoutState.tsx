@@ -34,21 +34,25 @@ export const useWorkoutState = (
   // Use shared exercise notes hook
   const sharedNotes = useSharedExerciseNotes(program?.id);
 
-  // Helper function to get day number for an exercise
-  const getDayNumber = useCallback((exerciseId: string) => {
-    if (!program?.programs?.program_weeks?.[0]?.program_days) return 1;
+  // Helper function to get the current day number based on selectedDate
+  const getCurrentDayNumber = useCallback(() => {
+    if (!program?.training_dates || !selectedDate) return 1;
     
-    for (let dayIndex = 0; dayIndex < program.programs.program_weeks[0].program_days.length; dayIndex++) { 
-      const day = program.programs.program_weeks[0].program_days[dayIndex];
-      const hasExercise = day.program_blocks?.some(block => 
-        block.program_exercises?.some(ex => ex.id === exerciseId)
-      );
-      if (hasExercise) {
-        return dayIndex + 1; // Convert to 1-based index
-      }
-    }
-    return 1;
-  }, [program]);
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    const dateIndex = program.training_dates.findIndex(date => date === selectedDateStr);
+    if (dateIndex < 0) return 1;
+    
+    // Calculate days per week from first week
+    const daysPerWeek = program.programs?.program_weeks?.[0]?.program_days?.length || 1;
+    
+    // Get day number within the week (1-based)
+    return (dateIndex % daysPerWeek) + 1;
+  }, [program, selectedDate]);
+
+  // Helper function to get day number for an exercise (uses current day)
+  const getDayNumber = useCallback((exerciseId: string) => {
+    return getCurrentDayNumber();
+  }, [getCurrentDayNumber]);
 
   // Helper function to get exercise_id from exercises table (not program_exercise_id)
   const getExerciseId = useCallback((programExerciseId: string) => {
@@ -107,14 +111,7 @@ export const useWorkoutState = (
         if (!hasLocalData) {
           try {
             // Βρες τον αριθμό ημέρας στο πρόγραμμα
-            const currentDayIndex = getCurrentDayIndex();
-            if (currentDayIndex < 0) return;
-            
-            // Υπολόγισε πόσες μέρες έχει η εβδομάδα
-            const daysPerWeek = program.programs?.program_weeks?.[0]?.program_days?.length || 1;
-            
-            // Βρες την προηγούμενη εμφάνιση της ίδιας ημέρας (day_number)
-            const dayNumber = (currentDayIndex % daysPerWeek) + 1;
+            const dayNumber = getCurrentDayNumber();
             
             console.log('🔍 Looking for previous exercise results for day:', dayNumber);
             
@@ -133,20 +130,61 @@ export const useWorkoutState = (
               const previousCompletion = previousCompletions[0];
               console.log('📋 Found previous completion:', previousCompletion);
               
-              // Φόρτωσε τα exercise results
-              const exerciseResults = await getExerciseResults(previousCompletion.id);
+              // Φόρτωσε τα exercise results με JOIN στα program_exercises για να πάρουμε το exercise_id
+              const { data: exerciseResults } = await supabase
+                .from('exercise_results')
+                .select(`
+                  *,
+                  program_exercises!fk_exercise_results_program_exercise (
+                    id,
+                    exercise_id
+                  )
+                `)
+                .eq('workout_completion_id', previousCompletion.id);
+              
               console.log('📋 Previous exercise results:', exerciseResults);
               
-              // Μετατροπή σε exerciseData format
-              exerciseResults.forEach((result: any) => {
-                if (result.actual_kg || result.actual_reps || result.actual_velocity_ms) {
-                  newExerciseData[result.program_exercise_id] = {
+              // Δημιουργία mapping από exercise_id -> actual values
+              const exerciseIdToActuals: Record<string, any> = {};
+              exerciseResults?.forEach((result: any) => {
+                if (result.program_exercises?.exercise_id && (result.actual_kg || result.actual_reps || result.actual_velocity_ms)) {
+                  exerciseIdToActuals[result.program_exercises.exercise_id] = {
                     kg: result.actual_kg || '',
                     reps: result.actual_reps || '',
                     velocity: result.actual_velocity_ms || ''
                   };
                 }
               });
+              
+              console.log('📋 Exercise ID to actuals mapping:', exerciseIdToActuals);
+              
+              // Βρες τα exercises της τρέχουσας ημέρας και κάνε mapping
+              const weeks = program.programs?.program_weeks || [];
+              const dateIndex = program.training_dates?.findIndex(date => date === format(selectedDate, 'yyyy-MM-dd')) ?? -1;
+              
+              if (dateIndex >= 0) {
+                let cumulativeDays = 0;
+                for (const week of weeks) {
+                  const sortedDays = [...(week.program_days || [])].sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
+                  const daysInWeek = sortedDays.length;
+                  
+                  if (dateIndex < cumulativeDays + daysInWeek) {
+                    const dayIndexInWeek = dateIndex - cumulativeDays;
+                    const currentDay = sortedDays[dayIndexInWeek];
+                    
+                    // Map τα actual values στα program_exercise_id της τρέχουσας ημέρας
+                    currentDay?.program_blocks?.forEach(block => {
+                      block.program_exercises?.forEach(exercise => {
+                        if (exercise.exercise_id && exerciseIdToActuals[exercise.exercise_id]) {
+                          newExerciseData[exercise.id] = exerciseIdToActuals[exercise.exercise_id];
+                        }
+                      });
+                    });
+                    break;
+                  }
+                  cumulativeDays += daysInWeek;
+                }
+              }
               
               console.log('📋 Loaded exercise data from previous week:', newExerciseData);
             }
@@ -160,7 +198,7 @@ export const useWorkoutState = (
       
       loadExerciseData();
     }
-  }, [program, selectedDate, getCurrentDayIndex]);
+  }, [program, selectedDate, getCurrentDayNumber]);
 
   const handleStartWorkout = useCallback(() => {
     if (!program || !selectedDate) return;
