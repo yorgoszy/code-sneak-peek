@@ -170,6 +170,21 @@ export const useWorkoutState = (
     return allDays[dayIndex] || null;
   }, [program, selectedDate]);
 
+  // Helper function to calculate exercise duration using actual values if available
+  const calculateExerciseDurationWithActuals = (exercise: any, actualData: any): number => {
+    const sets = parseInt(exercise.sets) || 1;
+    // Use actual reps if available, otherwise use planned reps
+    const reps = actualData?.reps ? parseInt(actualData.reps) : (parseInt(exercise.reps) || 1);
+    const tempo = exercise.tempo || '2.1.2';
+
+    const tempoPhases = tempo.split('.').map((phase: string) => parseInt(phase) || 2);
+    const tempoSeconds = tempoPhases.reduce((sum: number, phase: number) => sum + phase, 0);
+    
+    // (sets * reps * tempo) - χωρίς διάλειμμα
+    const totalSeconds = sets * reps * tempoSeconds;
+    return totalSeconds / 60; // minutes
+  };
+
   // Helper function to calculate workout stats for the CURRENT DAY ONLY
   const calculateWorkoutStats = useCallback(() => {
     const dayProgram = getCurrentDayProgram();
@@ -183,6 +198,7 @@ export const useWorkoutState = (
     const trainingTypeBreakdown: Record<string, number> = {};
 
     console.log('📊 Calculating stats for day:', dayProgram.name);
+    console.log('📊 Exercise data (actual values):', exerciseData);
     
     dayProgram.program_blocks?.forEach((block: any) => {
       const trainingType = block.training_type?.toLowerCase().trim() || null;
@@ -193,7 +209,11 @@ export const useWorkoutState = (
       let blockDuration = 0;
       
       block.program_exercises?.forEach((exercise: any) => {
-        const duration = calculateExerciseDurationMinutes(exercise);
+        // Get actual values for this exercise if available
+        const actualData = exerciseData[exercise.id];
+        
+        // Calculate duration using actual reps if available
+        const duration = calculateExerciseDurationWithActuals(exercise, actualData);
         blockDuration += duration;
         
         // Only add to stats if it's a tracked category
@@ -204,14 +224,17 @@ export const useWorkoutState = (
           stats.speed += duration * weights.speed;
           stats.hypertrophy += duration * weights.hypertrophy;
           stats.accessory += duration * weights.accessory;
-          console.log(`    Exercise duration: ${duration.toFixed(2)} min distributed by weights`);
+          console.log(`    Exercise ${exercise.id}: duration ${duration.toFixed(2)} min (actual data:`, actualData, ')');
         }
 
-        // Calculate volume: sets * reps * kg
+        // Calculate volume: sets * reps * kg - using actual values if available
         const sets = parseInt(exercise.sets) || 0;
-        const reps = parseInt(exercise.reps) || 0;
-        const kg = parseFloat(exercise.kg) || 0;
-        stats.totalVolume += sets * reps * kg;
+        const reps = actualData?.reps ? parseInt(actualData.reps) : (parseInt(exercise.reps) || 0);
+        const kg = actualData?.kg ? parseFloat(actualData.kg) : (parseFloat(exercise.kg) || 0);
+        const volume = sets * reps * kg;
+        stats.totalVolume += volume;
+        
+        console.log(`    Volume calc: ${sets} sets × ${reps} reps × ${kg} kg = ${volume} kg`);
       });
       
       // Add ALL training types to breakdown (not just tracked ones)
@@ -223,7 +246,7 @@ export const useWorkoutState = (
     console.log('📊 Final stats:', stats);
     console.log('📊 Training type breakdown:', trainingTypeBreakdown);
     return { ...stats, trainingTypeBreakdown };
-  }, [getCurrentDayProgram]);
+  }, [getCurrentDayProgram, exerciseData]);
 
   const handleCompleteWorkout = useCallback(async () => {
     if (!program || !selectedDate || !currentWorkout) return;
