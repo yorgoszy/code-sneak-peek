@@ -30,7 +30,7 @@ export const PostureTest = ({ selectedPosture, onPostureChange }: PostureTestPro
               key={option}
               onClick={() => toggleSelection(option)}
               className={cn(
-                "py-0.5 px-1 border cursor-pointer text-center text-[10px] transition-colors",
+                "py-1 px-2 border cursor-pointer text-center text-xs transition-colors",
                 selectedPosture.includes(option)
                   ? "bg-blue-500 text-white border-blue-500"
                   : "bg-white border-gray-300 hover:bg-gray-50"
