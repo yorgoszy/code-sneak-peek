@@ -81,18 +81,10 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     return (dateIndex % daysPerWeek) + 1;
   };
 
-  const getActualExerciseId = (programExerciseId: string) => {
-    if (!program?.programs?.program_weeks?.[0]?.program_days) return undefined;
-    
-    for (const day of program.programs.program_weeks[0].program_days) {
-      for (const block of day.program_blocks || []) {
-        for (const exercise of block.program_exercises || []) {
-          if (exercise.id === programExerciseId) {
-            return exercise.exercise_id; // This is the reference to exercises table
-          }
-        }
-      }
-    }
+  const getActualExerciseId = (exercise: any) => {
+    // Προσπάθησε να πάρεις το exercise_id (FK στον πίνακα exercises)
+    if (exercise?.exercise_id) return exercise.exercise_id;
+    if (exercise?.exercises?.id) return exercise.exercises.id;
     return undefined;
   };
 
@@ -279,7 +271,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
         clearNotes={exerciseCompletion.clearNotes}
         assignmentId={program?.id}
         dayNumber={selectedExercise ? getDayNumber(selectedExercise.id) : undefined}
-        actualExerciseId={selectedExercise ? getActualExerciseId(selectedExercise.id) : undefined}
+        actualExerciseId={selectedExercise ? getActualExerciseId(selectedExercise) : undefined}
       />
     </>
   );
