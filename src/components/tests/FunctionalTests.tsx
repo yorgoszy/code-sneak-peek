@@ -53,14 +53,16 @@ export const FunctionalTests = ({
   return (
     <div className="space-y-1.5">
       <div className="grid grid-cols-3 gap-1.5">
-        <PostureTest 
-          selectedPosture={formData?.selectedPosture || []}
-          onPostureChange={handlePostureChange}
-        />
-        <SingleLegSquatTest 
-          selectedSingleLegIssues={formData?.selectedSingleLegIssues || []}
-          onSingleLegChange={handleSingleLegChange}
-        />
+        <div className="space-y-4">
+          <PostureTest 
+            selectedPosture={formData?.selectedPosture || []}
+            onPostureChange={handlePostureChange}
+          />
+          <SingleLegSquatTest 
+            selectedSingleLegIssues={formData?.selectedSingleLegIssues || []}
+            onSingleLegChange={handleSingleLegChange}
+          />
+        </div>
         <SquatTest 
           selectedSquatIssues={formData?.selectedSquatIssues || []}
           onSquatChange={handleSquatChange}
