@@ -103,11 +103,18 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   // Create a list with all dates that have programs and their statuses - με enhanced key
   const programDatesWithStatus = React.useMemo(() => {
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    
     const dates = activePrograms.reduce((acc: any[], assignment) => {
       if (assignment.training_dates && assignment.app_users) {
         const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);
         
         assignment.training_dates.forEach(dateStr => {
+          // Για completed προγράμματα, μην εμφανίζεις μελλοντικές ημέρες
+          if (assignment.status === 'completed' && dateStr > todayStr) {
+            return; // Skip future dates for completed programs
+          }
+          
           const completion = assignmentCompletions.find(c => c.scheduled_date === dateStr);
           acc.push({
             date: dateStr,
