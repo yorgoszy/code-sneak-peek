@@ -102,9 +102,18 @@ const ActivePrograms = () => {
   const dayToShowStr = format(dayToShow, 'yyyy-MM-dd');
 
   // Φιλτράρουμε τα προγράμματα για την ημερομηνία που έχει επιλεγεί
+  // Για completed προγράμματα, μην εμφανίζεις μελλοντικές ημέρες
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
   const programsForSelectedDate = activePrograms.filter(assignment => {
     if (!assignment.training_dates) return false;
-    return assignment.training_dates.includes(dayToShowStr);
+    const hasDateScheduled = assignment.training_dates.includes(dayToShowStr);
+    
+    // Αν το πρόγραμμα είναι completed και η επιλεγμένη ημέρα είναι στο μέλλον, μην το εμφανίσεις
+    if (assignment.status === 'completed' && dayToShowStr > todayStr) {
+      return false;
+    }
+    
+    return hasDateScheduled;
   });
 
   // Φόρτωση workout completions
