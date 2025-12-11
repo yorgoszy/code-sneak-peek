@@ -22,6 +22,9 @@ interface ProgramBlocksProps {
   clearVelocity: (exerciseId: string) => void;
   updateReps: (exerciseId: string, reps: string) => void;
   clearReps: (exerciseId: string) => void;
+  getKg: (exerciseId: string) => string;
+  getReps: (exerciseId: string) => string;
+  getVelocity: (exerciseId: string) => string;
   selectedDate: Date;
   program: any;
 }
@@ -44,6 +47,9 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   clearVelocity,
   updateReps,
   clearReps,
+  getKg,
+  getReps,
+  getVelocity,
   selectedDate,
   program
 }) => {
@@ -107,6 +113,9 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
               clearVelocity={clearVelocity}
               updateReps={updateReps}
               clearReps={clearReps}
+              getKg={getKg}
+              getReps={getReps}
+              getVelocity={getVelocity}
               selectedDate={selectedDate}
               program={program}
             />
@@ -149,31 +158,34 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                 blockSets={block.block_sets}
                 workoutInProgress={workoutInProgress}
               />
-                {sortedExercises.map((exercise, exerciseIndex) => (
-                  <ExerciseItem
-                    key={exercise.id}
-                    exercise={exercise}
-                    exerciseNumber={exerciseIndex + 1}
-                    workoutInProgress={workoutInProgress}
-                    getRemainingText={getRemainingText}
-                    isExerciseComplete={isExerciseComplete}
-                    getCompletedSets={getCompletedSets}
-                    onExerciseClick={onExerciseClick}
-                    onSetClick={onSetClick}
-                    onVideoClick={onVideoClick}
-                    getNotes={getNotes}
-                    updateNotes={updateNotes}
-                    clearNotes={clearNotes}
-                    updateKg={updateKg}
-                    clearKg={clearKg}
-                    updateVelocity={updateVelocity}
-                    clearVelocity={clearVelocity}
-                    updateReps={updateReps}
-                    clearReps={clearReps}
-                    selectedDate={selectedDate}
-                    program={program}
-                  />
-                ))}
+                  {sortedExercises.map((exercise, exerciseIndex) => (
+                    <ExerciseItem
+                      key={exercise.id}
+                      exercise={exercise}
+                      exerciseNumber={exerciseIndex + 1}
+                      workoutInProgress={workoutInProgress}
+                      getRemainingText={getRemainingText}
+                      isExerciseComplete={isExerciseComplete}
+                      getCompletedSets={getCompletedSets}
+                      onExerciseClick={onExerciseClick}
+                      onSetClick={onSetClick}
+                      onVideoClick={onVideoClick}
+                      getNotes={getNotes}
+                      updateNotes={updateNotes}
+                      clearNotes={clearNotes}
+                      updateKg={updateKg}
+                      clearKg={clearKg}
+                      updateVelocity={updateVelocity}
+                      clearVelocity={clearVelocity}
+                      updateReps={updateReps}
+                      clearReps={clearReps}
+                      getKg={getKg}
+                      getReps={getReps}
+                      getVelocity={getVelocity}
+                      selectedDate={selectedDate}
+                      program={program}
+                    />
+                  ))}
             </div>
           </TabsContent>
         );

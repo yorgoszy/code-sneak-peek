@@ -252,6 +252,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                       clearVelocity={exerciseCompletion.clearVelocity}
                       updateReps={exerciseCompletion.updateReps}
                       clearReps={exerciseCompletion.clearReps}
+                      getKg={exerciseCompletion.getKg}
+                      getReps={exerciseCompletion.getReps}
+                      getVelocity={exerciseCompletion.getVelocity}
                       selectedDate={selectedDate}
                       program={program}
                     />

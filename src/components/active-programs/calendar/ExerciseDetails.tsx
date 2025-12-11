@@ -1,9 +1,7 @@
 
 import React from 'react';
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { VideoThumbnail } from '@/components/user-profile/daily-program/VideoThumbnail';
-import { getWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 import { formatVelocityMs } from '@/utils/timeCalculations';
 
 const REPS_MODE_LABELS: Record<string, string> = {
@@ -30,8 +28,9 @@ interface ExerciseDetailsProps {
   updateReps?: (exerciseId: string, reps: string) => void;
   updateKg?: (exerciseId: string, kg: string) => void;
   updateVelocity?: (exerciseId: string, velocity: string) => void;
-  selectedDate?: Date;
-  program?: any;
+  getKg: (exerciseId: string) => string;
+  getReps: (exerciseId: string) => string;
+  getVelocity: (exerciseId: string) => string;
 }
 
 export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({ 
@@ -44,8 +43,9 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   updateReps,
   updateKg,
   updateVelocity,
-  selectedDate,
-  program
+  getKg,
+  getReps,
+  getVelocity
 }) => {
   const handleSetsClick = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -54,10 +54,10 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
     }
   };
 
-  // Get saved data from localStorage with proper typing
-  const savedData: { exerciseId: string; kg?: string; reps?: string; velocity?: string; notes?: string } = selectedDate && program ? 
-    getWorkoutData(selectedDate, program.programs?.id || program.id, exercise.id) : 
-    { exerciseId: exercise.id };
+  // Get values from state via getters
+  const currentKg = getKg(exercise.id);
+  const currentReps = getReps(exercise.id);
+  const currentVelocity = getVelocity(exercise.id);
 
   const handleRepsChange = (value: string) => {
     if (updateReps) updateReps(exercise.id, value);
@@ -154,7 +154,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
               <Input
                 type="text"
                 placeholder={exercise.reps?.toString() || ''}
-                value={savedData.reps || ''}
+                value={currentReps}
                 onChange={(e) => handleRepsChange(e.target.value)}
                 className="h-4 text-[8px] md:text-[9px] rounded-none w-full text-center p-0.5"
               />
@@ -164,7 +164,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
               <Input
                 type="text"
                 placeholder={exercise.kg?.toString() || ''}
-                value={savedData.kg || ''}
+                value={currentKg}
                 onChange={(e) => handleKgChange(e.target.value)}
                 className="h-4 text-[8px] md:text-[9px] rounded-none w-full text-center p-0.5"
               />
@@ -173,7 +173,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
               <Input
                 type="text"
                 placeholder={exercise.velocity_ms?.toString() ?? ''}
-                value={savedData.velocity || ''}
+                value={currentVelocity}
                 onChange={(e) => handleVelocityChange(e.target.value)}
                 className="h-4 text-[8px] md:text-[9px] rounded-none w-full text-center p-0.5"
               />
