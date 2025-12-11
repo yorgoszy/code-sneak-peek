@@ -51,8 +51,8 @@ export const FunctionalTests = ({
   };
 
   return (
-    <div className="space-y-1.5">
-      <div className="grid grid-cols-3 gap-1.5">
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="space-y-4">
           <PostureTest 
             selectedPosture={formData?.selectedPosture || []}
@@ -67,11 +67,11 @@ export const FunctionalTests = ({
           selectedSquatIssues={formData?.selectedSquatIssues || []}
           onSquatChange={handleSquatChange}
         />
+        <FMSTest 
+          fmsScores={formData?.fmsScores || {}}
+          onFmsScoreChange={handleFmsScoreChange}
+        />
       </div>
-      <FMSTest 
-        fmsScores={formData?.fmsScores || {}}
-        onFmsScoreChange={handleFmsScoreChange}
-      />
     </div>
   );
 };
