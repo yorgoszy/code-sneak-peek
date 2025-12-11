@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useUserNamesMap } from "@/components/results/hooks/useUserNamesMap";
 import { format } from "date-fns";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
+import { BodyMapCard } from "@/components/user-profile/BodyMapCard";
 
 interface FunctionalHistoryTabProps {
   selectedUserId?: string;
@@ -256,6 +257,13 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
           Καθαρισμός
         </Button>
       </div>
+
+      {/* Body Map - Only show when viewing a specific user */}
+      {selectedUserId && (
+        <div className="w-full max-w-md mx-auto">
+          <BodyMapCard userId={selectedUserId} />
+        </div>
+      )}
 
       {filteredResults.map((result) => {
         const data = functionalData[result.id];
