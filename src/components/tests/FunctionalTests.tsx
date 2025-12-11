@@ -57,13 +57,13 @@ export const FunctionalTests = ({
           selectedPosture={formData?.selectedPosture || []}
           onPostureChange={handlePostureChange}
         />
-        <SquatTest 
-          selectedSquatIssues={formData?.selectedSquatIssues || []}
-          onSquatChange={handleSquatChange}
-        />
         <SingleLegSquatTest 
           selectedSingleLegIssues={formData?.selectedSingleLegIssues || []}
           onSingleLegChange={handleSingleLegChange}
+        />
+        <SquatTest 
+          selectedSquatIssues={formData?.selectedSquatIssues || []}
+          onSquatChange={handleSquatChange}
         />
       </div>
       <FMSTest 
