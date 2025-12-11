@@ -2,27 +2,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+// Ασκήσεις FMS - Shoulder Mobility έχει L/R
 const fmsExercises = [
-  // Πρώτη σειρά
-  ['Shoulder Mobility L', 'Shoulder Mobility R', 'Active Straight Leg Raise'],
-  // Δεύτερη σειρά  
-  ['Trunk Stability Push-Up', 'Rotary Stability'],
-  // Τρίτη σειρά
-  ['Inline Lunge', 'Hurdle Step', 'Deep Squat']
+  'Shoulder Mobility', // Αυτή θα έχει L/R μέσα
+  'Active Straight Leg Raise',
+  'Trunk Stability Push-Up', 
+  'Rotary Stability',
+  'Inline Lunge', 
+  'Hurdle Step', 
+  'Deep Squat'
 ];
-
-// Για εμφάνιση - αντιστοίχιση με πιο σύντομα labels
-const getDisplayLabel = (exercise: string) => {
-  if (exercise === 'Shoulder Mobility L') return 'Shoulder Mobility';
-  if (exercise === 'Shoulder Mobility R') return '';
-  return exercise;
-};
-
-const getSideLabel = (exercise: string) => {
-  if (exercise === 'Shoulder Mobility L') return 'L';
-  if (exercise === 'Shoulder Mobility R') return 'R';
-  return null;
-};
 
 interface FMSTestProps {
   fmsScores: Record<string, number>;
@@ -37,10 +26,44 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
   };
 
   const getFmsTotal = () => {
-    return fmsExercises.flat().reduce((total, exercise) => total + (fmsScores[exercise] || 0), 0);
+    // Υπολογισμός με L/R για Shoulder Mobility
+    let total = 0;
+    fmsExercises.forEach(exercise => {
+      if (exercise === 'Shoulder Mobility') {
+        total += (fmsScores['Shoulder Mobility L'] || 0);
+        total += (fmsScores['Shoulder Mobility R'] || 0);
+      } else {
+        total += (fmsScores[exercise] || 0);
+      }
+    });
+    return total;
   };
 
   const fmsTotal = getFmsTotal();
+
+  const renderScoreButtons = (exerciseKey: string) => (
+    <div className="flex gap-0.5">
+      {[0, 1, 2, 3].map((score) => (
+        <div
+          key={score}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleFmsClick(exerciseKey);
+          }}
+          className={cn(
+            "w-5 h-5 border flex items-center justify-center text-[10px] font-bold cursor-pointer",
+            fmsScores[exerciseKey] === score
+              ? score === 0 
+                ? "bg-red-500 text-white" 
+                : "bg-blue-500 text-white"
+              : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+          )}
+        >
+          {score}
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <Card className="rounded-none">
@@ -57,23 +80,38 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
       </CardHeader>
       <CardContent className="p-2 pt-0">
         <div className="grid grid-cols-7 gap-1.5">
-          {fmsExercises.flat().map((exercise) => {
-            const displayLabel = getDisplayLabel(exercise);
-            const sideLabel = getSideLabel(exercise);
+          {fmsExercises.map((exercise) => {
+            if (exercise === 'Shoulder Mobility') {
+              // Special case: Shoulder Mobility με L/R στο ίδιο container
+              return (
+                <div
+                  key={exercise}
+                  className="p-1.5 border text-center"
+                >
+                  <div className="font-medium text-[10px] leading-tight mb-1">{exercise}</div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center justify-center gap-0.5">
+                      <span className="text-[10px] font-bold w-3">L</span>
+                      {renderScoreButtons('Shoulder Mobility L')}
+                    </div>
+                    <div className="flex items-center justify-center gap-0.5">
+                      <span className="text-[10px] font-bold w-3">R</span>
+                      {renderScoreButtons('Shoulder Mobility R')}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
             
+            // Regular exercises
             return (
               <div
                 key={exercise}
                 onClick={() => handleFmsClick(exercise)}
                 className="p-1.5 border cursor-pointer text-center transition-colors hover:bg-gray-50"
               >
-                {displayLabel && (
-                  <div className="font-medium text-[10px] leading-tight mb-1">{displayLabel}</div>
-                )}
-                <div className="flex items-center justify-center gap-0.5">
-                  {sideLabel && (
-                    <span className="text-[10px] font-bold mr-1">{sideLabel}</span>
-                  )}
+                <div className="font-medium text-[10px] leading-tight mb-1">{exercise}</div>
+                <div className="flex justify-center gap-0.5">
                   {[0, 1, 2, 3].map((score) => (
                     <div
                       key={score}
