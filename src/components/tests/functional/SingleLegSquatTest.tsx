@@ -1,5 +1,4 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const singleLegSquatOptions = [
@@ -25,54 +24,46 @@ export const SingleLegSquatTest = ({ selectedSingleLegIssues, onSingleLegChange 
   };
 
   return (
-    <Card className="rounded-none">
-      <CardHeader className="p-2 pb-1">
-        <CardTitle className="text-xs">Μονοποδικά Καθήματα</CardTitle>
-      </CardHeader>
-      <CardContent className="p-2 pt-0">
-        <table className="w-full border-collapse text-[11px]">
-          <thead>
-            <tr>
-              <th className="border border-gray-300 p-1 text-left">Επιλογή</th>
-              <th className="border border-gray-300 p-1 text-center w-8">Α</th>
-              <th className="border border-gray-300 p-1 text-center w-8">Δ</th>
+    <div>
+      <h3 className="font-semibold text-sm mb-2">Μονοποδικά Καθήματα</h3>
+      <table className="w-full border-collapse text-xs">
+        <thead>
+          <tr>
+            <th className="border border-gray-300 py-1.5 px-3 text-left font-semibold">Επιλογή</th>
+            <th className="border border-gray-300 py-1.5 px-2 text-center font-semibold w-10">Α</th>
+            <th className="border border-gray-300 py-1.5 px-2 text-center font-semibold w-10">Δ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {singleLegSquatOptions.map((option) => (
+            <tr key={option}>
+              <td className="border border-gray-300 py-1.5 px-3">{option}</td>
+              <td 
+                className={cn(
+                  "border border-gray-300 py-1.5 px-2 text-center cursor-pointer transition-colors",
+                  selectedSingleLegIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
+                    ? "bg-black text-white"
+                    : "hover:bg-gray-50"
+                )}
+                onClick={() => toggleSingleLegSelection(option, 'ΑΡΙΣΤΕΡΑ')}
+              >
+                ✓
+              </td>
+              <td 
+                className={cn(
+                  "border border-gray-300 py-1.5 px-2 text-center cursor-pointer transition-colors",
+                  selectedSingleLegIssues.includes(`${option} ΔΕΞΙΑ`)
+                    ? "bg-black text-white"
+                    : "hover:bg-gray-50"
+                )}
+                onClick={() => toggleSingleLegSelection(option, 'ΔΕΞΙΑ')}
+              >
+                ✓
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {singleLegSquatOptions.map((option) => (
-              <tr key={option}>
-                <td className="border border-gray-300 p-1">{option}</td>
-                <td className="border border-gray-300 p-0 text-center">
-                  <div
-                    onClick={() => toggleSingleLegSelection(option, 'ΑΡΙΣΤΕΡΑ')}
-                    className={cn(
-                      "w-6 h-5 cursor-pointer flex items-center justify-center mx-auto",
-                      selectedSingleLegIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
-                        ? "bg-blue-500 text-white"
-                        : "hover:bg-gray-50"
-                    )}
-                  >
-                    ✓
-                  </div>
-                </td>
-                <td className="border border-gray-300 p-0 text-center">
-                  <div
-                    onClick={() => toggleSingleLegSelection(option, 'ΔΕΞΙΑ')}
-                    className={cn(
-                      "w-6 h-5 cursor-pointer flex items-center justify-center mx-auto",
-                      selectedSingleLegIssues.includes(`${option} ΔΕΞΙΑ`)
-                        ? "bg-blue-500 text-white"
-                        : "hover:bg-gray-50"
-                    )}
-                  >
-                    ✓
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </CardContent>
-    </Card>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
