@@ -3,6 +3,8 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { ExerciseHeader } from './ExerciseHeader';
 import { ExerciseDetails } from './ExerciseDetails';
+import { Textarea } from "@/components/ui/textarea";
+import { Trash2 } from 'lucide-react';
 
 interface ExerciseItemProps {
   exercise: any;
@@ -69,6 +71,9 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   const isComplete = propIsComplete ?? isExerciseComplete(exercise.id, exercise.sets);
   const remainingText = propRemainingText ?? getRemainingText(exercise.id);
 
+  // Get notes from state
+  const currentNotes = getNotes ? getNotes(exercise.id) : '';
+
   const handleVideoClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     onVideoClick(exercise);
@@ -78,6 +83,15 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
     event.stopPropagation();
     onSetClick(exercise.id, exercise.sets, event);
   };
+
+  const handleNotesChange = (value: string) => {
+    if (updateNotes) updateNotes(exercise.id, value);
+  };
+
+  const handleClearNotes = () => {
+    if (clearNotes) clearNotes(exercise.id);
+  };
+
   return (
     <Card className="rounded-none border-l-4 border-l-blue-500 mb-2">
       <CardContent className="p-0">
@@ -104,6 +118,28 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           getReps={getReps}
           getVelocity={getVelocity}
         />
+
+        {/* Notes Section - always visible */}
+        <div className="px-2 py-1 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-[9px] font-medium text-gray-500">Notes</label>
+            {currentNotes && workoutInProgress && (
+              <button
+                onClick={handleClearNotes}
+                className="text-red-500 hover:text-red-700 p-0.5"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          <Textarea
+            value={currentNotes}
+            onChange={(e) => handleNotesChange(e.target.value)}
+            placeholder={workoutInProgress ? "Σημειώσεις..." : ""}
+            className="min-h-[28px] text-[9px] rounded-none resize-none p-1"
+            disabled={!workoutInProgress}
+          />
+        </div>
       </CardContent>
     </Card>
   );
