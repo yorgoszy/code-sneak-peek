@@ -13,6 +13,7 @@ import { CardiacProgressCard } from "./CardiacProgressCard";
 import { VO2MaxProgressCard } from "./VO2MaxProgressCard";
 import { JumpProfileLatestCard } from "./JumpProfileLatestCard";
 import { AnthropometricProgressCard } from "./AnthropometricProgressCard";
+import { BodyMapCard } from "./BodyMapCard";
 import { useTranslation } from 'react-i18next';
 
 interface UserProgressSectionProps {
@@ -26,10 +27,12 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
   const [rawHistoricalData, setRawHistoricalData] = useState<any[]>([]);
   const [exerciseSessions, setExerciseSessions] = useState<Record<string, any[]>>({});
   const [selectedSessions, setSelectedSessions] = useState<Record<string, string[]>>({});
+  const [hasFunctionalTest, setHasFunctionalTest] = useState(false);
 
   useEffect(() => {
     fetchExercises();
-  }, []);
+    checkFunctionalTest();
+  }, [userId]);
 
   useEffect(() => {
     if (userId && selectedExercises.length === 0) {
@@ -54,6 +57,25 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       setExercises(data || []);
     } catch (error) {
       console.error('Error fetching exercises:', error);
+    }
+  };
+
+  const checkFunctionalTest = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('functional_test_sessions')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+
+      if (!error && data && data.length > 0) {
+        setHasFunctionalTest(true);
+      } else {
+        setHasFunctionalTest(false);
+      }
+    } catch (error) {
+      console.error('Error checking functional test:', error);
+      setHasFunctionalTest(false);
     }
   };
 
@@ -295,6 +317,13 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       <div className="mb-2 sm:mb-0">
         <AnthropometricProgressCard userId={userId} />
       </div>
+
+      {/* Body Map - only show if user has functional test */}
+      {hasFunctionalTest && (
+        <div className="mb-2 sm:mb-0">
+          <BodyMapCard userId={userId} />
+        </div>
+      )}
 
       {historicalData.length > 0 ? (
         <>
