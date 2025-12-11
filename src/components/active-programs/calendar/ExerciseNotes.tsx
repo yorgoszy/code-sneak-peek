@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from 'lucide-react';
-import { getWorkoutData, saveWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 
 interface ExerciseNotesProps {
   exerciseId: string;
@@ -10,8 +9,6 @@ interface ExerciseNotesProps {
   workoutInProgress: boolean;
   onNotesChange: (exerciseId: string, notes: string) => void;
   onClearNotes: (exerciseId: string) => void;
-  selectedDate?: Date;
-  program?: any;
 }
 
 export const ExerciseNotes: React.FC<ExerciseNotesProps> = ({
@@ -19,32 +16,18 @@ export const ExerciseNotes: React.FC<ExerciseNotesProps> = ({
   initialNotes = '',
   workoutInProgress,
   onNotesChange,
-  onClearNotes,
-  selectedDate,
-  program
+  onClearNotes
 }) => {
   const [notes, setNotes] = useState(initialNotes);
 
-  // Προσπαθούμε να φορτώσουμε notes από την προηγούμενη εβδομάδα
+  // Sync with initialNotes when it changes (e.g., loaded from database)
   useEffect(() => {
-    if (selectedDate && program && !initialNotes) {
-      const data = getWorkoutData(selectedDate, program.id, exerciseId);
-      if (data.notes && data.notes.trim()) {
-        console.log(`📝 Φόρτωση notes από προηγούμενη εβδομάδα για άσκηση ${exerciseId}:`, data.notes);
-        setNotes(data.notes);
-        onNotesChange(exerciseId, data.notes);
-      }
-    }
-  }, [selectedDate, program, exerciseId, initialNotes, onNotesChange]);
+    setNotes(initialNotes);
+  }, [initialNotes]);
 
   const handleNotesChange = (value: string) => {
     setNotes(value);
     onNotesChange(exerciseId, value);
-    
-    // Αποθηκεύουμε τα notes
-    if (selectedDate && program) {
-      saveWorkoutData(selectedDate, program.id, exerciseId, { notes: value });
-    }
   };
 
   return (
@@ -57,11 +40,6 @@ export const ExerciseNotes: React.FC<ExerciseNotesProps> = ({
               onClick={() => {
                 setNotes('');
                 onClearNotes(exerciseId);
-                
-                // Καθαρισμός από το storage
-                if (selectedDate && program) {
-                  clearWorkoutData(selectedDate, program.id, exerciseId);
-                }
               }}
               className="text-red-500 hover:text-red-700 p-0.5"
               disabled={!workoutInProgress}

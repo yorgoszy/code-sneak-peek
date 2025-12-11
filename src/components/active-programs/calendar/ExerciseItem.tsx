@@ -25,6 +25,9 @@ interface ExerciseItemProps {
   clearVelocity?: (exerciseId: string) => void;
   clearNotes?: (exerciseId: string) => void;
   getNotes?: (exerciseId: string) => string;
+  getKg: (exerciseId: string) => string;
+  getReps: (exerciseId: string) => string;
+  getVelocity: (exerciseId: string) => string;
   selectedDate?: Date;
   program?: any;
   actualValues?: {
@@ -55,6 +58,9 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
   clearVelocity,
   clearNotes,
   getNotes,
+  getKg,
+  getReps,
+  getVelocity,
   selectedDate,
   program,
   actualValues
@@ -94,8 +100,9 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           updateReps={updateReps}
           updateKg={updateKg}
           updateVelocity={updateVelocity}
-          selectedDate={selectedDate}
-          program={program}
+          getKg={getKg}
+          getReps={getReps}
+          getVelocity={getVelocity}
         />
       </CardContent>
     </Card>

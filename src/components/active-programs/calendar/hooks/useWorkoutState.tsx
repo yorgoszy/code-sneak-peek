@@ -710,6 +710,19 @@ export const useWorkoutState = (
 
     getCompletedSets: (exerciseId: string) => {
       return exerciseCompletions[exerciseId] || 0;
+    },
+
+    // Getters for actual values
+    getKg: (exerciseId: string) => {
+      return exerciseData[exerciseId]?.kg || '';
+    },
+
+    getReps: (exerciseId: string) => {
+      return exerciseData[exerciseId]?.reps || '';
+    },
+
+    getVelocity: (exerciseId: string) => {
+      return exerciseData[exerciseId]?.velocity || '';
     }
   };
 
