@@ -84,17 +84,21 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
 
       if (error) throw error;
 
-      if (data && data.length > 0 && data[0].functional_test_data) {
-        const functionalData = Array.isArray(data[0].functional_test_data) 
-          ? data[0].functional_test_data[0] 
-          : data[0].functional_test_data;
+      // Αν υπάρχει functional test session, εμφάνισε το component
+      if (data && data.length > 0) {
+        setHasData(true);
         
-        const strengthening = functionalData?.muscles_need_strengthening || [];
-        const stretching = functionalData?.muscles_need_stretching || [];
-        
-        setStrengthenMuscles(strengthening);
-        setStretchMuscles(stretching);
-        setHasData(strengthening.length > 0 || stretching.length > 0);
+        if (data[0].functional_test_data) {
+          const functionalData = Array.isArray(data[0].functional_test_data) 
+            ? data[0].functional_test_data[0] 
+            : data[0].functional_test_data;
+          
+          const strengthening = functionalData?.muscles_need_strengthening || [];
+          const stretching = functionalData?.muscles_need_stretching || [];
+          
+          setStrengthenMuscles(strengthening);
+          setStretchMuscles(stretching);
+        }
       }
     } catch (error) {
       console.error('Error fetching functional data:', error);

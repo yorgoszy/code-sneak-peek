@@ -69,7 +69,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
         .eq('user_id', userId)
         .limit(1);
 
-      console.log('Checking functional test for user:', userId, 'Result:', data, 'Error:', error);
+      
 
       if (!error && data && data.length > 0) {
         setHasFunctionalTest(true);
