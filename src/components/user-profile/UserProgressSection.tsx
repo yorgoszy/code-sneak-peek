@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { TrendingUp } from "lucide-react";
@@ -31,8 +31,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
   useEffect(() => {
     fetchExercises();
-    checkFunctionalTest();
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     if (userId && selectedExercises.length === 0) {
@@ -60,13 +59,17 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
     }
   };
 
-  const checkFunctionalTest = async () => {
+  const checkFunctionalTest = useCallback(async () => {
+    if (!userId) return;
+    
     try {
       const { data, error } = await supabase
         .from('functional_test_sessions')
         .select('id')
         .eq('user_id', userId)
         .limit(1);
+
+      console.log('Checking functional test for user:', userId, 'Result:', data, 'Error:', error);
 
       if (!error && data && data.length > 0) {
         setHasFunctionalTest(true);
@@ -77,7 +80,13 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       console.error('Error checking functional test:', error);
       setHasFunctionalTest(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      checkFunctionalTest();
+    }
+  }, [userId, checkFunctionalTest]);
 
 
   const fetchHistoricalData = async () => {
