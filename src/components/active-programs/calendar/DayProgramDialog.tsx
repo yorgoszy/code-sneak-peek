@@ -66,20 +66,19 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     }
   };
 
-  // Helper functions for shared notes props
+  // Helper function to get current day number based on selected date
   const getDayNumber = (exerciseId: string) => {
-    if (!program?.programs?.program_weeks?.[0]?.program_days) return 1;
+    if (!program?.training_dates || !selectedDate) return 1;
     
-    for (let dayIndex = 0; dayIndex < program.programs.program_weeks[0].program_days.length; dayIndex++) { 
-      const day = program.programs.program_weeks[0].program_days[dayIndex];
-      const hasExercise = day.program_blocks?.some(block => 
-        block.program_exercises?.some(ex => ex.id === exerciseId)
-      );
-      if (hasExercise) {
-        return dayIndex + 1; // Convert to 1-based index
-      }
-    }
-    return 1;
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    const dateIndex = program.training_dates.findIndex(date => date === selectedDateStr);
+    if (dateIndex < 0) return 1;
+    
+    // Calculate days per week from first week
+    const daysPerWeek = program.programs?.program_weeks?.[0]?.program_days?.length || 1;
+    
+    // Get day number within the week (1-based)
+    return (dateIndex % daysPerWeek) + 1;
   };
 
   const getActualExerciseId = (programExerciseId: string) => {
