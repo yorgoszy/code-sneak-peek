@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-const postureOptions = ['Κύφωση', 'Λόρδωση', 'Σκολίωση'];
+const postureOptions = ['Κύφωση', 'Λόρδωση', 'Πρηνισμός', 'Σκολίωση'];
 
 interface PostureTestProps {
   selectedPosture: string[];
