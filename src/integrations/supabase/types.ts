@@ -3989,6 +3989,70 @@ export type Database = {
           },
         ]
       }
+      user_exercise_actuals: {
+        Row: {
+          actual_kg: string | null
+          actual_reps: string | null
+          actual_velocity_ms: string | null
+          assignment_id: string
+          created_at: string
+          day_number: number
+          exercise_id: string
+          id: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_kg?: string | null
+          actual_reps?: string | null
+          actual_velocity_ms?: string | null
+          assignment_id: string
+          created_at?: string
+          day_number: number
+          exercise_id: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_kg?: string | null
+          actual_reps?: string | null
+          actual_velocity_ms?: string | null
+          assignment_id?: string
+          created_at?: string
+          day_number?: number
+          exercise_id?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_exercise_actuals_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "program_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_exercise_actuals_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_exercise_actuals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_magic_boxes: {
         Row: {
           campaign_id: string

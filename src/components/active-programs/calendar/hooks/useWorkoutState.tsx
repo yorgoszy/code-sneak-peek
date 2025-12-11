@@ -1,9 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
-import { saveWorkoutData, getWorkoutData, clearWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
-import { saveExerciseResults, getExerciseResults } from '@/hooks/useWorkoutCompletions/exerciseService';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
 import { useSharedExerciseNotes } from '@/hooks/useSharedExerciseNotes';
 import { useBlockTimer } from '@/contexts/BlockTimerContext';
@@ -87,110 +85,82 @@ export const useWorkoutState = (
     return program.training_dates.findIndex(date => date === selectedDateStr);
   }, [program, selectedDate]);
 
-  // Φόρτωση δεδομένων από localStorage και από προηγούμενη εβδομάδα
+  // Φόρτωση δεδομένων από user_exercise_actuals
   useEffect(() => {
     if (program && selectedDate) {
       const loadExerciseData = async () => {
         const newExerciseData: Record<string, any> = {};
+        const dayNumber = getCurrentDayNumber();
+        const userId = program.user_id || program.app_users?.id;
         
-        // 1. Φόρτωση από localStorage για τρέχουσα ημέρα
-        program.programs?.program_weeks?.[0]?.program_days?.forEach(day => {
-          day.program_blocks?.forEach(block => {
-            block.program_exercises?.forEach(exercise => {
-              const data = getWorkoutData(selectedDate, program.programs!.id, exercise.id);
-              if (data.kg || data.reps || data.velocity) {
-                newExerciseData[exercise.id] = data;
-              }
+        if (!userId) {
+          console.log('⚠️ No userId found for loading actuals');
+          setExerciseData({});
+          return;
+        }
+        
+        try {
+          console.log('🔍 Loading exercise actuals for day:', dayNumber, 'assignment:', program.id);
+          
+          // Φόρτωσε τα actuals από τον νέο πίνακα user_exercise_actuals
+          const { data: actuals, error } = await supabase
+            .from('user_exercise_actuals')
+            .select('*')
+            .eq('assignment_id', program.id)
+            .eq('user_id', userId)
+            .eq('day_number', dayNumber);
+          
+          if (error) {
+            console.error('❌ Error loading actuals:', error);
+          } else if (actuals && actuals.length > 0) {
+            console.log('📋 Loaded actuals from database:', actuals);
+            
+            // Δημιουργία mapping από exercise_id -> actual values
+            const exerciseIdToActuals: Record<string, any> = {};
+            actuals.forEach((actual: any) => {
+              exerciseIdToActuals[actual.exercise_id] = {
+                kg: actual.actual_kg || '',
+                reps: actual.actual_reps || '',
+                velocity: actual.actual_velocity_ms || '',
+                notes: actual.notes || ''
+              };
             });
-          });
-        });
-        
-        // 2. Αν δεν υπάρχουν τοπικά δεδομένα, φόρτωσε από προηγούμενη εβδομάδα
-        const hasLocalData = Object.keys(newExerciseData).length > 0;
-        
-        if (!hasLocalData) {
-          try {
-            // Βρες τον αριθμό ημέρας στο πρόγραμμα
-            const dayNumber = getCurrentDayNumber();
             
-            console.log('🔍 Looking for previous exercise results for day:', dayNumber);
+            // Βρες τα exercises της τρέχουσας ημέρας και κάνε mapping στα program_exercise_id
+            const weeks = program.programs?.program_weeks || [];
+            const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+            const dateIndex = program.training_dates?.findIndex(date => date === selectedDateStr) ?? -1;
             
-            // Βρες ολοκληρωμένη προπόνηση για την ίδια ημέρα από προηγούμενη εβδομάδα
-            const { data: previousCompletions } = await supabase
-              .from('workout_completions')
-              .select('id, scheduled_date, day_number')
-              .eq('assignment_id', program.id)
-              .eq('day_number', dayNumber)
-              .eq('status', 'completed')
-              .lt('scheduled_date', format(selectedDate, 'yyyy-MM-dd'))
-              .order('scheduled_date', { ascending: false })
-              .limit(1);
-            
-            if (previousCompletions && previousCompletions.length > 0) {
-              const previousCompletion = previousCompletions[0];
-              console.log('📋 Found previous completion:', previousCompletion);
-              
-              // Φόρτωσε τα exercise results με JOIN στα program_exercises για να πάρουμε το exercise_id
-              const { data: exerciseResults } = await supabase
-                .from('exercise_results')
-                .select(`
-                  *,
-                  program_exercises!fk_exercise_results_program_exercise (
-                    id,
-                    exercise_id
-                  )
-                `)
-                .eq('workout_completion_id', previousCompletion.id);
-              
-              console.log('📋 Previous exercise results:', exerciseResults);
-              
-              // Δημιουργία mapping από exercise_id -> actual values
-              const exerciseIdToActuals: Record<string, any> = {};
-              exerciseResults?.forEach((result: any) => {
-                if (result.program_exercises?.exercise_id && (result.actual_kg || result.actual_reps || result.actual_velocity_ms)) {
-                  exerciseIdToActuals[result.program_exercises.exercise_id] = {
-                    kg: result.actual_kg || '',
-                    reps: result.actual_reps || '',
-                    velocity: result.actual_velocity_ms || ''
-                  };
-                }
-              });
-              
-              console.log('📋 Exercise ID to actuals mapping:', exerciseIdToActuals);
-              
-              // Βρες τα exercises της τρέχουσας ημέρας και κάνε mapping
-              const weeks = program.programs?.program_weeks || [];
-              const dateIndex = program.training_dates?.findIndex(date => date === format(selectedDate, 'yyyy-MM-dd')) ?? -1;
-              
-              if (dateIndex >= 0) {
-                let cumulativeDays = 0;
-                for (const week of weeks) {
-                  const sortedDays = [...(week.program_days || [])].sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
-                  const daysInWeek = sortedDays.length;
+            if (dateIndex >= 0) {
+              let cumulativeDays = 0;
+              for (const week of weeks) {
+                const sortedDays = [...(week.program_days || [])].sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
+                const daysInWeek = sortedDays.length;
+                
+                if (dateIndex < cumulativeDays + daysInWeek) {
+                  const dayIndexInWeek = dateIndex - cumulativeDays;
+                  const currentDay = sortedDays[dayIndexInWeek];
                   
-                  if (dateIndex < cumulativeDays + daysInWeek) {
-                    const dayIndexInWeek = dateIndex - cumulativeDays;
-                    const currentDay = sortedDays[dayIndexInWeek];
-                    
-                    // Map τα actual values στα program_exercise_id της τρέχουσας ημέρας
-                    currentDay?.program_blocks?.forEach(block => {
-                      block.program_exercises?.forEach(exercise => {
-                        if (exercise.exercise_id && exerciseIdToActuals[exercise.exercise_id]) {
-                          newExerciseData[exercise.id] = exerciseIdToActuals[exercise.exercise_id];
-                        }
-                      });
+                  // Map τα actual values στα program_exercise_id της τρέχουσας ημέρας
+                  currentDay?.program_blocks?.forEach(block => {
+                    block.program_exercises?.forEach(exercise => {
+                      if (exercise.exercise_id && exerciseIdToActuals[exercise.exercise_id]) {
+                        newExerciseData[exercise.id] = exerciseIdToActuals[exercise.exercise_id];
+                      }
                     });
-                    break;
-                  }
-                  cumulativeDays += daysInWeek;
+                  });
+                  break;
                 }
+                cumulativeDays += daysInWeek;
               }
-              
-              console.log('📋 Loaded exercise data from previous week:', newExerciseData);
             }
-          } catch (error) {
-            console.error('❌ Error loading previous exercise results:', error);
+            
+            console.log('📋 Loaded exercise data from user_exercise_actuals:', newExerciseData);
+          } else {
+            console.log('📋 No previous actuals found for this day');
           }
+        } catch (error) {
+          console.error('❌ Error loading exercise actuals:', error);
         }
         
         setExerciseData(newExerciseData);
@@ -427,42 +397,69 @@ export const useWorkoutState = (
         }
       }
       
-      // Αποθήκευση exercise results στη βάση δεδομένων
+      // Αποθήκευση exercise actuals στον νέο πίνακα user_exercise_actuals
       try {
-        // Βρες το workout_completion_id
-        const { data: completionData } = await supabase
-          .from('workout_completions')
-          .select('id')
-          .eq('assignment_id', program.id)
-          .eq('scheduled_date', selectedDateStr)
-          .single();
+        const dayNumber = getCurrentDayNumber();
+        const userId = program.user_id || program.app_users?.id;
         
-        if (completionData && Object.keys(exerciseData).length > 0) {
-          console.log('💾 Saving exercise results to database:', exerciseData);
+        if (userId && Object.keys(exerciseData).length > 0) {
+          console.log('💾 Saving exercise actuals to user_exercise_actuals:', exerciseData);
           
-          // Διαγραφή παλιών results για αυτό το workout (για upsert behavior)
-          await supabase
-            .from('exercise_results')
-            .delete()
-            .eq('workout_completion_id', completionData.id);
+          // Δημιουργία array με τα exercise actuals χρησιμοποιώντας exercise_id
+          const actualsToSave: any[] = [];
           
-          // Δημιουργία array με τα exercise results
-          const exerciseResultsToSave = Object.entries(exerciseData)
-            .filter(([_, data]) => data.kg || data.reps || data.velocity)
-            .map(([exerciseId, data]) => ({
-              program_exercise_id: exerciseId,
-              actual_kg: data.kg || null,
-              actual_reps: data.reps || null,
-              actual_velocity_ms: data.velocity || null
-            }));
+          // Βρες τα exercises της τρέχουσας ημέρας για να πάρουμε τα exercise_id
+          const weeks = program.programs?.program_weeks || [];
+          const dateIndex = program.training_dates?.findIndex(date => date === selectedDateStr) ?? -1;
           
-          if (exerciseResultsToSave.length > 0) {
-            await saveExerciseResults(completionData.id, exerciseResultsToSave);
-            console.log('✅ Exercise results saved:', exerciseResultsToSave.length, 'exercises');
+          if (dateIndex >= 0) {
+            let cumulativeDays = 0;
+            for (const week of weeks) {
+              const sortedDays = [...(week.program_days || [])].sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
+              const daysInWeek = sortedDays.length;
+              
+              if (dateIndex < cumulativeDays + daysInWeek) {
+                const dayIndexInWeek = dateIndex - cumulativeDays;
+                const currentDay = sortedDays[dayIndexInWeek];
+                
+                // Map τα exerciseData (keyed by program_exercise_id) σε exercise_id
+                currentDay?.program_blocks?.forEach(block => {
+                  block.program_exercises?.forEach(exercise => {
+                    const data = exerciseData[exercise.id];
+                    if (data && exercise.exercise_id && (data.kg || data.reps || data.velocity)) {
+                      actualsToSave.push({
+                        user_id: userId,
+                        assignment_id: program.id,
+                        exercise_id: exercise.exercise_id,
+                        day_number: dayNumber,
+                        actual_kg: data.kg || null,
+                        actual_reps: data.reps || null,
+                        actual_velocity_ms: data.velocity || null,
+                        notes: data.notes || null
+                      });
+                    }
+                  });
+                });
+                break;
+              }
+              cumulativeDays += daysInWeek;
+            }
+          }
+          
+          if (actualsToSave.length > 0) {
+            // Upsert - διαγραφή παλιών και εισαγωγή νέων
+            for (const actual of actualsToSave) {
+              await supabase
+                .from('user_exercise_actuals')
+                .upsert(actual, {
+                  onConflict: 'user_id,assignment_id,exercise_id,day_number'
+                });
+            }
+            console.log('✅ Exercise actuals saved:', actualsToSave.length, 'exercises');
           }
         }
-      } catch (exerciseResultsError) {
-        console.error('❌ Error saving exercise results:', exerciseResultsError);
+      } catch (actualsError) {
+        console.error('❌ Error saving exercise actuals:', actualsError);
         // Δεν ρίχνουμε error για να μην αποτύχει η ολοκλήρωση
       }
       
@@ -534,6 +531,11 @@ export const useWorkoutState = (
     },
 
     getNotes: (exerciseId: string) => {
+      // Πρώτα δες αν υπάρχουν notes στο exerciseData (φορτώθηκαν από τη βάση)
+      const data = exerciseData[exerciseId];
+      if (data?.notes) return data.notes;
+      
+      // Fallback στα shared notes
       const actualExerciseId = getExerciseId(exerciseId);
       if (!actualExerciseId) return '';
       
@@ -541,31 +543,86 @@ export const useWorkoutState = (
       return sharedNotes.getNotes(actualExerciseId, dayNumber);
     },
 
-    updateNotes: (exerciseId: string, notes: string) => {
-      const actualExerciseId = getExerciseId(exerciseId);
-      if (!actualExerciseId) return;
+    updateNotes: async (exerciseId: string, notes: string) => {
+      // Update local state
+      setExerciseData(prev => ({
+        ...prev,
+        [exerciseId]: { ...prev[exerciseId], notes }
+      }));
       
-      const dayNumber = getDayNumber(exerciseId);
-      sharedNotes.updateNotes(actualExerciseId, dayNumber, notes);
-      console.log(`📝 Updated shared notes for exercise ${actualExerciseId} day ${dayNumber}:`, notes);
+      // Αποθήκευση στη βάση δεδομένων
+      const actualExerciseId = getExerciseId(exerciseId);
+      const userId = program?.user_id || program?.app_users?.id;
+      const dayNumber = getCurrentDayNumber();
+      
+      if (actualExerciseId && userId && program) {
+        try {
+          await supabase.from('user_exercise_actuals').upsert({
+            user_id: userId,
+            assignment_id: program.id,
+            exercise_id: actualExerciseId,
+            day_number: dayNumber,
+            notes: notes || null
+          }, { onConflict: 'user_id,assignment_id,exercise_id,day_number' });
+          console.log(`📝 Updated notes for exercise ${actualExerciseId} day ${dayNumber}`);
+        } catch (error) {
+          console.error('Error saving notes to database:', error);
+        }
+      }
     },
 
-    clearNotes: (exerciseId: string) => {
-      const actualExerciseId = getExerciseId(exerciseId);
-      if (!actualExerciseId) return;
+    clearNotes: async (exerciseId: string) => {
+      setExerciseData(prev => {
+        const newData = { ...prev };
+        if (newData[exerciseId]) {
+          delete newData[exerciseId].notes;
+        }
+        return newData;
+      });
       
-      const dayNumber = getDayNumber(exerciseId);
-      sharedNotes.clearNotes(actualExerciseId, dayNumber);
-      console.log(`🗑️ Cleared shared notes for exercise ${actualExerciseId} day ${dayNumber}`);
+      // Clear from database
+      const actualExerciseId = getExerciseId(exerciseId);
+      const userId = program?.user_id || program?.app_users?.id;
+      const dayNumber = getCurrentDayNumber();
+      
+      if (actualExerciseId && userId && program) {
+        try {
+          await supabase.from('user_exercise_actuals')
+            .update({ notes: null })
+            .eq('user_id', userId)
+            .eq('assignment_id', program.id)
+            .eq('exercise_id', actualExerciseId)
+            .eq('day_number', dayNumber);
+          console.log(`🗑️ Cleared notes for exercise ${actualExerciseId} day ${dayNumber}`);
+        } catch (error) {
+          console.error('Error clearing notes from database:', error);
+        }
+      }
     },
 
-    updateKg: (exerciseId: string, kg: string) => {
+    updateKg: async (exerciseId: string, kg: string) => {
       setExerciseData(prev => ({
         ...prev,
         [exerciseId]: { ...prev[exerciseId], kg }
       }));
-      if (program && selectedDate) {
-        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { kg });
+      
+      // Αποθήκευση στη βάση δεδομένων
+      const actualExerciseId = getExerciseId(exerciseId);
+      const userId = program?.user_id || program?.app_users?.id;
+      const dayNumber = getCurrentDayNumber();
+      
+      if (actualExerciseId && userId && program) {
+        try {
+          await supabase.from('user_exercise_actuals').upsert({
+            user_id: userId,
+            assignment_id: program.id,
+            exercise_id: actualExerciseId,
+            day_number: dayNumber,
+            actual_kg: kg || null
+          }, { onConflict: 'user_id,assignment_id,exercise_id,day_number' });
+        } catch (error) {
+          console.error('Error saving kg to database:', error);
+        }
       }
     },
 
@@ -579,14 +636,29 @@ export const useWorkoutState = (
       });
     },
 
-    // FIXED: Changed signature to accept string parameter to match component expectations
-    updateVelocity: (exerciseId: string, velocity: string) => {
+    updateVelocity: async (exerciseId: string, velocity: string) => {
       setExerciseData(prev => ({
         ...prev,
         [exerciseId]: { ...prev[exerciseId], velocity }
       }));
-      if (program && selectedDate) {
-        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { velocity });
+      
+      // Αποθήκευση στη βάση δεδομένων
+      const actualExerciseId = getExerciseId(exerciseId);
+      const userId = program?.user_id || program?.app_users?.id;
+      const dayNumber = getCurrentDayNumber();
+      
+      if (actualExerciseId && userId && program) {
+        try {
+          await supabase.from('user_exercise_actuals').upsert({
+            user_id: userId,
+            assignment_id: program.id,
+            exercise_id: actualExerciseId,
+            day_number: dayNumber,
+            actual_velocity_ms: velocity || null
+          }, { onConflict: 'user_id,assignment_id,exercise_id,day_number' });
+        } catch (error) {
+          console.error('Error saving velocity to database:', error);
+        }
       }
     },
 
@@ -600,14 +672,29 @@ export const useWorkoutState = (
       });
     },
 
-    // FIXED: Changed signature to accept string parameter to match component expectations
-    updateReps: (exerciseId: string, reps: string) => {
+    updateReps: async (exerciseId: string, reps: string) => {
       setExerciseData(prev => ({
         ...prev,
         [exerciseId]: { ...prev[exerciseId], reps }
       }));
-      if (program && selectedDate) {
-        saveWorkoutData(selectedDate, program.programs!.id, exerciseId, { reps });
+      
+      // Αποθήκευση στη βάση δεδομένων
+      const actualExerciseId = getExerciseId(exerciseId);
+      const userId = program?.user_id || program?.app_users?.id;
+      const dayNumber = getCurrentDayNumber();
+      
+      if (actualExerciseId && userId && program) {
+        try {
+          await supabase.from('user_exercise_actuals').upsert({
+            user_id: userId,
+            assignment_id: program.id,
+            exercise_id: actualExerciseId,
+            day_number: dayNumber,
+            actual_reps: reps || null
+          }, { onConflict: 'user_id,assignment_id,exercise_id,day_number' });
+        } catch (error) {
+          console.error('Error saving reps to database:', error);
+        }
       }
     },
 
