@@ -200,7 +200,28 @@ const ProgramCards = () => {
     try {
       console.log('🗑️ Διαγραφή assignment:', assignmentId);
       
-      // Διαγραφή workout completions πρώτα
+      // Πρώτα βρίσκουμε όλα τα workout_completion IDs για αυτό το assignment
+      const { data: completions } = await supabase
+        .from('workout_completions')
+        .select('id')
+        .eq('assignment_id', assignmentId);
+
+      const completionIds = completions?.map(c => c.id) || [];
+      console.log('📋 Workout completions to delete:', completionIds.length);
+
+      // Διαγραφή exercise results για αυτά τα completions
+      if (completionIds.length > 0) {
+        const { error: exerciseResultsError } = await supabase
+          .from('exercise_results')
+          .delete()
+          .in('workout_completion_id', completionIds);
+
+        if (exerciseResultsError) {
+          console.error('❌ Σφάλμα κατά τη διαγραφή exercise results:', exerciseResultsError);
+        }
+      }
+
+      // Διαγραφή workout completions
       const { error: completionsError } = await supabase
         .from('workout_completions')
         .delete()
@@ -208,16 +229,6 @@ const ProgramCards = () => {
 
       if (completionsError) {
         console.error('❌ Σφάλμα κατά τη διαγραφή workout completions:', completionsError);
-      }
-
-      // Διαγραφή exercise results
-      const { error: exerciseResultsError } = await supabase
-        .from('exercise_results')
-        .delete()
-        .eq('workout_completion_id', assignmentId);
-
-      if (exerciseResultsError) {
-        console.error('❌ Σφάλμα κατά τη διαγραφή exercise results:', exerciseResultsError);
       }
 
       // Διαγραφή assignment
