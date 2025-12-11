@@ -31,32 +31,32 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="p-1.5 pb-1">
-        <CardTitle className="flex items-center justify-between text-[10px]">
+      <CardHeader className="p-2 pb-1">
+        <CardTitle className="flex items-center justify-between text-xs">
           FMS 
           <span className={cn(
-            "text-[10px] font-bold px-1.5 py-0.5",
+            "text-xs font-bold px-2 py-0.5",
             fmsTotal < 14 ? "bg-red-500 text-white" : "bg-green-500 text-white"
           )}>
             Σκορ: {fmsTotal}
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-1.5 pt-0">
-        <div className="grid grid-cols-7 gap-1">
+      <CardContent className="p-2 pt-0">
+        <div className="grid grid-cols-7 gap-1.5">
           {fmsExercises.flat().map((exercise) => (
             <div
               key={exercise}
               onClick={() => handleFmsClick(exercise)}
-              className="p-1 border cursor-pointer text-center transition-colors hover:bg-gray-50"
+              className="p-1.5 border cursor-pointer text-center transition-colors hover:bg-gray-50"
             >
-              <div className="font-medium text-[8px] leading-tight mb-0.5">{exercise}</div>
+              <div className="font-medium text-[10px] leading-tight mb-1">{exercise}</div>
               <div className="flex justify-center gap-0.5">
                 {[0, 1, 2, 3].map((score) => (
                   <div
                     key={score}
                     className={cn(
-                      "w-4 h-4 border flex items-center justify-center text-[8px] font-bold",
+                      "w-5 h-5 border flex items-center justify-center text-[10px] font-bold",
                       fmsScores[exercise] === score
                         ? score === 0 
                           ? "bg-red-500 text-white" 

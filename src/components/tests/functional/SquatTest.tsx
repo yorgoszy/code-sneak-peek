@@ -39,17 +39,17 @@ export const SquatTest = ({ selectedSquatIssues, onSquatChange }: SquatTestProps
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="p-1.5 pb-1">
-        <CardTitle className="text-[10px]">Καθήματα</CardTitle>
+      <CardHeader className="p-2 pb-1">
+        <CardTitle className="text-xs">Καθήματα</CardTitle>
       </CardHeader>
-      <CardContent className="p-1.5 pt-0">
-        <div className="space-y-0.5">
+      <CardContent className="p-2 pt-0">
+        <div className="space-y-1">
           {squatOptions.slice(5).map((option) => (
             <div
               key={option}
               onClick={() => toggleSelection(option)}
               className={cn(
-                "py-0.5 px-1 border cursor-pointer text-center text-[9px] transition-colors",
+                "py-1 px-2 border cursor-pointer text-center text-[11px] transition-colors",
                 selectedSquatIssues.includes(option)
                   ? "bg-blue-500 text-white border-blue-500"
                   : "bg-white border-gray-300 hover:bg-gray-50"
@@ -59,23 +59,23 @@ export const SquatTest = ({ selectedSquatIssues, onSquatChange }: SquatTestProps
             </div>
           ))}
           
-          <table className="w-full border-collapse text-[9px]">
+          <table className="w-full border-collapse text-[11px]">
             <thead>
               <tr>
-                <th className="border border-gray-300 p-0.5 text-left">Επιλογή</th>
-                <th className="border border-gray-300 p-0.5 text-center w-6">Α</th>
-                <th className="border border-gray-300 p-0.5 text-center w-6">Δ</th>
+                <th className="border border-gray-300 p-1 text-left">Επιλογή</th>
+                <th className="border border-gray-300 p-1 text-center w-8">Α</th>
+                <th className="border border-gray-300 p-1 text-center w-8">Δ</th>
               </tr>
             </thead>
             <tbody>
               {squatOptions.slice(0, 5).map((option) => (
                 <tr key={option}>
-                  <td className="border border-gray-300 p-0.5">{option}</td>
+                  <td className="border border-gray-300 p-1">{option}</td>
                   <td className="border border-gray-300 p-0 text-center">
                     <div
                       onClick={() => toggleSquatSelection(option, 'ΑΡΙΣΤΕΡΑ')}
                       className={cn(
-                        "w-5 h-4 cursor-pointer flex items-center justify-center mx-auto",
+                        "w-6 h-5 cursor-pointer flex items-center justify-center mx-auto",
                         selectedSquatIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
                           ? "bg-blue-500 text-white"
                           : "hover:bg-gray-50"
@@ -88,7 +88,7 @@ export const SquatTest = ({ selectedSquatIssues, onSquatChange }: SquatTestProps
                     <div
                       onClick={() => toggleSquatSelection(option, 'ΔΕΞΙΑ')}
                       className={cn(
-                        "w-5 h-4 cursor-pointer flex items-center justify-center mx-auto",
+                        "w-6 h-5 cursor-pointer flex items-center justify-center mx-auto",
                         selectedSquatIssues.includes(`${option} ΔΕΞΙΑ`)
                           ? "bg-blue-500 text-white"
                           : "hover:bg-gray-50"

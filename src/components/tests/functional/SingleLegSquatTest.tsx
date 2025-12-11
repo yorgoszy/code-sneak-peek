@@ -26,27 +26,27 @@ export const SingleLegSquatTest = ({ selectedSingleLegIssues, onSingleLegChange 
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="p-1.5 pb-1">
-        <CardTitle className="text-[10px]">Μονοποδικά Καθήματα</CardTitle>
+      <CardHeader className="p-2 pb-1">
+        <CardTitle className="text-xs">Μονοποδικά Καθήματα</CardTitle>
       </CardHeader>
-      <CardContent className="p-1.5 pt-0">
-        <table className="w-full border-collapse text-[9px]">
+      <CardContent className="p-2 pt-0">
+        <table className="w-full border-collapse text-[11px]">
           <thead>
             <tr>
-              <th className="border border-gray-300 p-0.5 text-left">Επιλογή</th>
-              <th className="border border-gray-300 p-0.5 text-center w-6">Α</th>
-              <th className="border border-gray-300 p-0.5 text-center w-6">Δ</th>
+              <th className="border border-gray-300 p-1 text-left">Επιλογή</th>
+              <th className="border border-gray-300 p-1 text-center w-8">Α</th>
+              <th className="border border-gray-300 p-1 text-center w-8">Δ</th>
             </tr>
           </thead>
           <tbody>
             {singleLegSquatOptions.map((option) => (
               <tr key={option}>
-                <td className="border border-gray-300 p-0.5">{option}</td>
+                <td className="border border-gray-300 p-1">{option}</td>
                 <td className="border border-gray-300 p-0 text-center">
                   <div
                     onClick={() => toggleSingleLegSelection(option, 'ΑΡΙΣΤΕΡΑ')}
                     className={cn(
-                      "w-5 h-4 cursor-pointer flex items-center justify-center mx-auto",
+                      "w-6 h-5 cursor-pointer flex items-center justify-center mx-auto",
                       selectedSingleLegIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
                         ? "bg-blue-500 text-white"
                         : "hover:bg-gray-50"
@@ -59,7 +59,7 @@ export const SingleLegSquatTest = ({ selectedSingleLegIssues, onSingleLegChange 
                   <div
                     onClick={() => toggleSingleLegSelection(option, 'ΔΕΞΙΑ')}
                     className={cn(
-                      "w-5 h-4 cursor-pointer flex items-center justify-center mx-auto",
+                      "w-6 h-5 cursor-pointer flex items-center justify-center mx-auto",
                       selectedSingleLegIssues.includes(`${option} ΔΕΞΙΑ`)
                         ? "bg-blue-500 text-white"
                         : "hover:bg-gray-50"
