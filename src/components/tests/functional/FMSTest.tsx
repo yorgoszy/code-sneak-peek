@@ -13,7 +13,7 @@ const fmsExercises = [
   'Deep Squat'
 ];
 
-const hasLeftRight = ['Shoulder Mobility', 'Straight Leg Raise'];
+const hasLeftRight = ['Shoulder Mobility', 'Straight Leg Raise', 'Rotary Stability', 'Inline Lunge', 'Hurdle Step'];
 
 interface FMSTestProps {
   fmsScores: Record<string, number>;
