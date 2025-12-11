@@ -115,9 +115,11 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
   const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
   
   let dayProgram = null;
+  let dayNumber = 1;
   if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
     const programDays = program.programs.program_weeks[0].program_days;
     dayProgram = programDays[dateIndex % programDays.length];
+    dayNumber = (dateIndex % programDays.length) + 1;
   }
 
   return (
@@ -154,6 +156,9 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
         isOpen={isVideoDialogOpen}
         onClose={() => setIsVideoDialogOpen(false)}
         exercise={selectedExercise}
+        assignmentId={program.id}
+        dayNumber={dayNumber}
+        actualExerciseId={selectedExercise?.exercises?.id}
       />
     </>
   );
