@@ -165,13 +165,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
       <CardContent className="p-2 pt-0">
         <div className="flex justify-center">
           <svg viewBox="0 0 300 420" className="w-full h-[180px]">
-            {/* Grid background for 3D effect */}
             <defs>
-              <pattern id="wireframeGrid" width="10" height="10" patternUnits="userSpaceOnUse">
-                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5"/>
-              </pattern>
-              
-              {/* Glow filters */}
               <filter id="glowGreen" x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                 <feMerge>
@@ -179,7 +173,6 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
                   <feMergeNode in="SourceGraphic"/>
                 </feMerge>
               </filter>
-              
               <filter id="glowRed" x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
                 <feMerge>
@@ -187,7 +180,6 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
                   <feMergeNode in="SourceGraphic"/>
                 </feMerge>
               </filter>
-              
               <filter id="glowOrange" x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
                 <feMerge>
@@ -197,34 +189,92 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
               </filter>
             </defs>
 
-            <rect width="300" height="420" fill="url(#wireframeGrid)" />
-
-            {/* 3D Wireframe Human Body */}
-            <g stroke="rgba(255,255,255,0.25)" strokeWidth="0.5" fill="none">
-              <ellipse cx="150" cy="45" rx="25" ry="30" />
-              <ellipse cx="150" cy="45" rx="25" ry="30" transform="rotate(90 150 45)" strokeWidth="0.3" />
-              <path d="M125 45 Q150 15 175 45" />
-              <path d="M125 45 Q150 75 175 45" />
-              <path d="M140 75 L140 90 M160 75 L160 90" />
-              <path d="M100 95 Q125 85 150 90 Q175 85 200 95" />
-              <path d="M100 95 L100 110 Q100 120 110 125" />
-              <path d="M200 95 L200 110 Q200 120 190 125" />
-              <path d="M110 125 Q150 130 190 125" />
-              <path d="M115 145 Q150 150 185 145" />
-              <path d="M118 165 Q150 170 182 165" />
-              <path d="M120 185 Q150 190 180 185" />
-              <path d="M125 205 Q150 210 175 205" />
-              <path d="M150 90 L150 215" />
-              <path d="M100 95 Q85 100 80 120 Q75 140 75 160 Q70 180 65 200 L60 225" />
-              <path d="M200 95 Q215 100 220 120 Q225 140 225 160 Q230 180 235 200 L240 225" />
-              <path d="M125 205 Q120 220 120 235 L125 240" />
-              <path d="M175 205 Q180 220 180 235 L175 240" />
-              <path d="M125 240 Q120 270 118 300 Q115 330 115 360 L112 390" />
-              <path d="M145 240 Q140 270 138 300 Q135 330 135 360 L133 390" />
-              <path d="M175 240 Q180 270 182 300 Q185 330 185 360 L188 390" />
-              <path d="M155 240 Q160 270 162 300 Q165 330 165 360 L167 390" />
-              <ellipse cx="123" cy="400" rx="12" ry="6" strokeWidth="0.3" />
-              <ellipse cx="177" cy="400" rx="12" ry="6" strokeWidth="0.3" />
+            {/* 3D Wireframe Human Body - Mesh Style */}
+            <g stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" fill="none">
+              {/* Head - wireframe mesh */}
+              <ellipse cx="150" cy="42" rx="22" ry="28" />
+              <path d="M128 42 Q150 30 172 42" />
+              <path d="M128 42 Q150 54 172 42" />
+              <path d="M130 32 Q150 26 170 32" />
+              <path d="M130 52 Q150 58 170 52" />
+              <line x1="150" y1="14" x2="150" y2="70" strokeWidth="0.3" />
+              <path d="M135 25 Q150 20 165 25" strokeWidth="0.3" />
+              <path d="M135 60 Q150 65 165 60" strokeWidth="0.3" />
+              
+              {/* Neck */}
+              <path d="M140 70 L140 82 M160 70 L160 82" />
+              <path d="M140 76 L160 76" strokeWidth="0.3" />
+              
+              {/* Shoulders & Upper torso mesh */}
+              <path d="M95 92 Q125 82 150 85 Q175 82 205 92" />
+              <path d="M95 92 L85 110 L80 135 L78 165" />
+              <path d="M205 92 L215 110 L220 135 L222 165" />
+              
+              {/* Torso wireframe mesh */}
+              <path d="M115 95 Q150 100 185 95" />
+              <path d="M110 115 Q150 120 190 115" />
+              <path d="M112 135 Q150 142 188 135" />
+              <path d="M115 155 Q150 162 185 155" />
+              <path d="M118 175 Q150 182 182 175" />
+              <path d="M122 195 Q150 202 178 195" />
+              <path d="M128 215 Q150 220 172 215" />
+              
+              {/* Vertical torso lines */}
+              <line x1="150" y1="85" x2="150" y2="220" strokeWidth="0.3" />
+              <path d="M130 95 Q128 155 130 215" strokeWidth="0.3" />
+              <path d="M170 95 Q172 155 170 215" strokeWidth="0.3" />
+              <path d="M115 95 Q112 145 118 195" strokeWidth="0.3" />
+              <path d="M185 95 Q188 145 182 195" strokeWidth="0.3" />
+              
+              {/* Arms - wireframe */}
+              <path d="M78 165 L72 195 L65 225" />
+              <path d="M222 165 L228 195 L235 225" />
+              <path d="M85 125 Q80 145 75 165" strokeWidth="0.3" />
+              <path d="M215 125 Q220 145 225 165" strokeWidth="0.3" />
+              <path d="M82 145 L90 145" strokeWidth="0.3" />
+              <path d="M210 145 L218 145" strokeWidth="0.3" />
+              <path d="M78 175 L88 175" strokeWidth="0.3" />
+              <path d="M212 175 L222 175" strokeWidth="0.3" />
+              <path d="M72 205 L82 205" strokeWidth="0.3" />
+              <path d="M218 205 L228 205" strokeWidth="0.3" />
+              
+              {/* Hands */}
+              <ellipse cx="62" cy="235" rx="8" ry="12" strokeWidth="0.4" />
+              <ellipse cx="238" cy="235" rx="8" ry="12" strokeWidth="0.4" />
+              <path d="M58 228 L58 245 M62 226 L62 248 M66 228 L66 245" strokeWidth="0.2" />
+              <path d="M234 228 L234 245 M238 226 L238 248 M242 228 L242 245" strokeWidth="0.2" />
+              
+              {/* Hips/Pelvis */}
+              <path d="M128 215 Q125 225 128 235" />
+              <path d="M172 215 Q175 225 172 235" />
+              <path d="M128 235 Q150 242 172 235" />
+              
+              {/* Legs - wireframe mesh */}
+              {/* Left leg */}
+              <path d="M128 235 L122 275 L118 315 L115 355 L112 395" />
+              <path d="M145 235 L140 275 L136 315 L133 355 L130 395" />
+              <path d="M125 255 L142 255" strokeWidth="0.3" />
+              <path d="M122 285 L138 285" strokeWidth="0.3" />
+              <path d="M120 315 L136 315" strokeWidth="0.3" />
+              <path d="M118 345 L134 345" strokeWidth="0.3" />
+              <path d="M115 375 L131 375" strokeWidth="0.3" />
+              
+              {/* Right leg */}
+              <path d="M172 235 L178 275 L182 315 L185 355 L188 395" />
+              <path d="M155 235 L160 275 L164 315 L167 355 L170 395" />
+              <path d="M158 255 L175 255" strokeWidth="0.3" />
+              <path d="M162 285 L178 285" strokeWidth="0.3" />
+              <path d="M164 315 L180 315" strokeWidth="0.3" />
+              <path d="M166 345 L182 345" strokeWidth="0.3" />
+              <path d="M169 375 L185 375" strokeWidth="0.3" />
+              
+              {/* Feet */}
+              <ellipse cx="121" cy="402" rx="14" ry="6" strokeWidth="0.4" />
+              <ellipse cx="179" cy="402" rx="14" ry="6" strokeWidth="0.4" />
+              <path d="M112 395 Q110 402 115 405" strokeWidth="0.3" />
+              <path d="M130 395 Q132 402 127 405" strokeWidth="0.3" />
+              <path d="M188 395 Q190 402 185 405" strokeWidth="0.3" />
+              <path d="M170 395 Q168 402 173 405" strokeWidth="0.3" />
             </g>
 
             {/* Muscle Points */}
