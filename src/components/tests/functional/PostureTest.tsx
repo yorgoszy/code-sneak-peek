@@ -1,5 +1,4 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const postureOptions = ['Κύφωση', 'Λόρδωση', 'Πρηνισμός', 'Σκολίωση'];
@@ -19,28 +18,28 @@ export const PostureTest = ({ selectedPosture, onPostureChange }: PostureTestPro
   };
 
   return (
-    <Card className="rounded-none">
-      <CardHeader className="p-2 pb-1">
-        <CardTitle className="text-xs">Στάση Σώματος</CardTitle>
-      </CardHeader>
-      <CardContent className="p-2 pt-0">
-        <div className="space-y-1">
+    <div>
+      <h3 className="font-semibold text-sm mb-2">Στάση Σώματος</h3>
+      <table className="w-full border-collapse text-xs">
+        <tbody>
           {postureOptions.map((option) => (
-            <div
+            <tr
               key={option}
               onClick={() => toggleSelection(option)}
               className={cn(
-                "py-1 px-2 border cursor-pointer text-center text-xs transition-colors",
+                "cursor-pointer transition-colors",
                 selectedPosture.includes(option)
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "bg-white border-gray-300 hover:bg-gray-50"
+                  ? "bg-black text-white"
+                  : "bg-white hover:bg-gray-50"
               )}
             >
-              {option}
-            </div>
+              <td className="border border-gray-300 py-1.5 px-3 text-center">
+                {option}
+              </td>
+            </tr>
           ))}
-        </div>
-      </CardContent>
-    </Card>
+        </tbody>
+      </table>
+    </div>
   );
 };
