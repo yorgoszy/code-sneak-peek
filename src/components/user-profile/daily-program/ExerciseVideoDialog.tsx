@@ -177,32 +177,27 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl rounded-none">
-        <DialogHeader>
-          <DialogTitle className="text-base font-semibold">{name}</DialogTitle>
+      <DialogContent className="max-w-xl rounded-none p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-sm font-semibold">{name}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3">
-          {renderVideo()}
+        <div className="space-y-2">
+          <div className="max-h-[280px]">
+            {renderVideo()}
+          </div>
           
           {description && (
-            <div>
-              <h4 className="font-medium text-gray-900 mb-1 text-sm">Περιγραφή</h4>
-              <p className="text-gray-700 text-xs leading-relaxed">{description}</p>
-            </div>
+            <p className="text-gray-600 text-xs leading-snug">{description}</p>
           )}
 
           {(getNotes && updateNotes) || shouldUseSharedNotes ? (
-            <div>
-              <h4 className="font-medium text-gray-900 mb-1 text-sm">Σημειώσεις</h4>
-              <Textarea
-                placeholder="Προσθέστε σημειώσεις για αυτή την άσκηση..."
-                value={getNotesValue()}
-                onChange={(e) => handleNotesUpdate(e.target.value)}
-                className="rounded-none resize-none text-sm"
-                rows={2}
-              />
-            </div>
+            <Textarea
+              placeholder="Σημειώσεις..."
+              value={getNotesValue()}
+              onChange={(e) => handleNotesUpdate(e.target.value)}
+              className="rounded-none resize-none text-xs h-14"
+            />
           ) : null}
         </div>
       </DialogContent>
