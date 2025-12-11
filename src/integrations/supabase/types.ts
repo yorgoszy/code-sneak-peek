@@ -1593,13 +1593,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_functional_test_data_session"
-            columns: ["test_session_id"]
-            isOneToOne: false
-            referencedRelation: "test_sessions"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "functional_test_data_test_session_id_fkey"
             columns: ["test_session_id"]
             isOneToOne: false
