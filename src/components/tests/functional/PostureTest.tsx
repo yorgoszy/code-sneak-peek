@@ -20,17 +20,17 @@ export const PostureTest = ({ selectedPosture, onPostureChange }: PostureTestPro
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="p-1.5 pb-0.5">
+      <CardHeader className="p-2 pb-1">
         <CardTitle className="text-xs">Στάση Σώματος</CardTitle>
       </CardHeader>
-      <CardContent className="p-1.5 pt-0">
-        <div className="space-y-0.5">
+      <CardContent className="p-2 pt-0">
+        <div className="space-y-1">
           {postureOptions.map((option) => (
             <div
               key={option}
               onClick={() => toggleSelection(option)}
               className={cn(
-                "py-0.5 px-2 border cursor-pointer text-center text-xs transition-colors",
+                "py-1 px-2 border cursor-pointer text-center text-xs transition-colors",
                 selectedPosture.includes(option)
                   ? "bg-blue-500 text-white border-blue-500"
                   : "bg-white border-gray-300 hover:bg-gray-50"
