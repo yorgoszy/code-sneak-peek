@@ -13,6 +13,7 @@ import { CardiacProgressCard } from "./CardiacProgressCard";
 import { VO2MaxProgressCard } from "./VO2MaxProgressCard";
 import { JumpProfileLatestCard } from "./JumpProfileLatestCard";
 import { AnthropometricProgressCard } from "./AnthropometricProgressCard";
+import { BodyMapCard } from "./BodyMapCard";
 import { useTranslation } from 'react-i18next';
 
 interface UserProgressSectionProps {
@@ -461,6 +462,11 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       {/* Jump Progress - Compact Grid to match Anthropometric width */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 w-full max-w-2xl mt-2">
         <JumpProfileLatestCard userId={userId} />
+      </div>
+
+      {/* Body Map - Functional Assessment */}
+      <div className="w-full max-w-2xl mt-2">
+        <BodyMapCard userId={userId} />
       </div>
     </div>
   );
