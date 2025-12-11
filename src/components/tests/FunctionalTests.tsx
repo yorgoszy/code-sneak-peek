@@ -51,9 +51,8 @@ export const FunctionalTests = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Πρώτη γραμμή: Στάση Σώματος, Καθήματα, Μονοποδικά Καθήματα */}
-      <div className="grid grid-cols-3 gap-4">
+    <div className="space-y-1.5">
+      <div className="grid grid-cols-3 gap-1.5">
         <PostureTest 
           selectedPosture={formData?.selectedPosture || []}
           onPostureChange={handlePostureChange}
@@ -67,8 +66,6 @@ export const FunctionalTests = ({
           onSingleLegChange={handleSingleLegChange}
         />
       </div>
-
-      {/* FMS */}
       <FMSTest 
         fmsScores={formData?.fmsScores || {}}
         onFmsScoreChange={handleFmsScoreChange}

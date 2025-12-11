@@ -39,18 +39,17 @@ export const SquatTest = ({ selectedSquatIssues, onSquatChange }: SquatTestProps
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm">Καθήματα</CardTitle>
+      <CardHeader className="p-1.5 pb-1">
+        <CardTitle className="text-[10px]">Καθήματα</CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-1">
-          {/* Επιλογές χωρίς αριστερά/δεξιά */}
+      <CardContent className="p-1.5 pt-0">
+        <div className="space-y-0.5">
           {squatOptions.slice(5).map((option) => (
             <div
               key={option}
               onClick={() => toggleSelection(option)}
               className={cn(
-                "p-1 border cursor-pointer text-center text-xs transition-colors",
+                "py-0.5 px-1 border cursor-pointer text-center text-[9px] transition-colors",
                 selectedSquatIssues.includes(option)
                   ? "bg-blue-500 text-white border-blue-500"
                   : "bg-white border-gray-300 hover:bg-gray-50"
@@ -60,51 +59,48 @@ export const SquatTest = ({ selectedSquatIssues, onSquatChange }: SquatTestProps
             </div>
           ))}
           
-          {/* Πίνακας για αριστερά/δεξιά */}
-          <div className="text-xs">
-            <table className="w-full border-collapse text-xs">
-              <thead>
-                <tr>
-                  <th className="border border-gray-300 p-1 text-left text-xs">Επιλογή</th>
-                  <th className="border border-gray-300 p-1 text-center text-xs">Α</th>
-                  <th className="border border-gray-300 p-1 text-center text-xs">Δ</th>
+          <table className="w-full border-collapse text-[9px]">
+            <thead>
+              <tr>
+                <th className="border border-gray-300 p-0.5 text-left">Επιλογή</th>
+                <th className="border border-gray-300 p-0.5 text-center w-6">Α</th>
+                <th className="border border-gray-300 p-0.5 text-center w-6">Δ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {squatOptions.slice(0, 5).map((option) => (
+                <tr key={option}>
+                  <td className="border border-gray-300 p-0.5">{option}</td>
+                  <td className="border border-gray-300 p-0 text-center">
+                    <div
+                      onClick={() => toggleSquatSelection(option, 'ΑΡΙΣΤΕΡΑ')}
+                      className={cn(
+                        "w-5 h-4 cursor-pointer flex items-center justify-center mx-auto",
+                        selectedSquatIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
+                          ? "bg-blue-500 text-white"
+                          : "hover:bg-gray-50"
+                      )}
+                    >
+                      ✓
+                    </div>
+                  </td>
+                  <td className="border border-gray-300 p-0 text-center">
+                    <div
+                      onClick={() => toggleSquatSelection(option, 'ΔΕΞΙΑ')}
+                      className={cn(
+                        "w-5 h-4 cursor-pointer flex items-center justify-center mx-auto",
+                        selectedSquatIssues.includes(`${option} ΔΕΞΙΑ`)
+                          ? "bg-blue-500 text-white"
+                          : "hover:bg-gray-50"
+                      )}
+                    >
+                      ✓
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {squatOptions.slice(0, 5).map((option) => (
-                  <tr key={option}>
-                    <td className="border border-gray-300 p-1 text-xs">{option}</td>
-                    <td className="border border-gray-300 p-0 text-center">
-                      <div
-                        onClick={() => toggleSquatSelection(option, 'ΑΡΙΣΤΕΡΑ')}
-                        className={cn(
-                          "w-8 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
-                          selectedSquatIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
-                            ? "bg-blue-500 text-white border-blue-500"
-                            : "bg-white border-gray-300 hover:bg-gray-50"
-                        )}
-                      >
-                        ✓
-                      </div>
-                    </td>
-                    <td className="border border-gray-300 p-0 text-center">
-                      <div
-                        onClick={() => toggleSquatSelection(option, 'ΔΕΞΙΑ')}
-                        className={cn(
-                          "w-8 h-6 border cursor-pointer flex items-center justify-center mx-auto text-xs",
-                          selectedSquatIssues.includes(`${option} ΔΕΞΙΑ`)
-                            ? "bg-blue-500 text-white border-blue-500"
-                            : "bg-white border-gray-300 hover:bg-gray-50"
-                        )}
-                      >
-                        ✓
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>
