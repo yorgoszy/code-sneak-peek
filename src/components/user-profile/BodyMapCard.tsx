@@ -31,43 +31,12 @@ function HumanModel() {
   useEffect(() => {
     const box = new THREE.Box3().setFromObject(obj);
     const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
     obj.position.sub(center);
     
     obj.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.geometry) {
-        const geometry = child.geometry;
-        const positionAttribute = geometry.getAttribute('position');
-        
-        if (positionAttribute) {
-          const colors = new Float32Array(positionAttribute.count * 3);
-          
-          for (let i = 0; i < positionAttribute.count; i++) {
-            const y = positionAttribute.getY(i);
-            const z = positionAttribute.getZ(i);
-            
-            // Normalize Y position (0 = feet, 1 = head)
-            const normalizedY = (y - box.min.y) / size.y;
-            const isBack = z < 0; // Back side
-            
-            // Default green
-            let r = 0, g = 1, b = 0.73;
-            
-            // Gluteus maximus region: back side, hip level (roughly 45-55% height)
-            if (isBack && normalizedY >= 0.42 && normalizedY <= 0.52) {
-              r = 1; g = 0; b = 0; // Red
-            }
-            
-            colors[i * 3] = r;
-            colors[i * 3 + 1] = g;
-            colors[i * 3 + 2] = b;
-          }
-          
-          geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        }
-        
+      if (child instanceof THREE.Mesh) {
         child.material = new THREE.MeshStandardMaterial({
-          vertexColors: true,
+          color: '#00ffba',
           wireframe: true,
           transparent: true,
           opacity: 0.8,
