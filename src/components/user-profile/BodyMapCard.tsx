@@ -25,36 +25,99 @@ function Loader() {
   );
 }
 
-function HumanModel() {
+interface BodyMapCardProps {
+  userId: string;
+  strengthenMuscles?: string[];
+  stretchMuscles?: string[];
+}
+
+// Muscle regions defined by normalized Y position ranges and Z position (front/back)
+const MUSCLE_REGIONS: Record<string, { yMin: number; yMax: number; zPositive: boolean; xRange?: [number, number] }> = {
+  'gluteus_maximus': { yMin: 0.35, yMax: 0.50, zPositive: false }, // Back, hip area
+  'hamstrings': { yMin: 0.15, yMax: 0.35, zPositive: false }, // Back of thigh
+  'quadriceps': { yMin: 0.15, yMax: 0.40, zPositive: true }, // Front of thigh
+  'calves': { yMin: 0.0, yMax: 0.15, zPositive: false }, // Back of lower leg
+  'lower_back': { yMin: 0.50, yMax: 0.60, zPositive: false }, // Lower back
+  'upper_back': { yMin: 0.65, yMax: 0.80, zPositive: false }, // Upper back
+  'chest': { yMin: 0.65, yMax: 0.80, zPositive: true }, // Chest
+  'shoulders': { yMin: 0.78, yMax: 0.88, zPositive: true }, // Shoulders
+  'core': { yMin: 0.50, yMax: 0.65, zPositive: true }, // Abs
+};
+
+function HumanModel({ strengthenMuscles = [], stretchMuscles = [] }: { strengthenMuscles: string[]; stretchMuscles: string[] }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   
   useEffect(() => {
-    // Center the model based on its bounding box
+    // Get bounding box to normalize positions
     const box = new THREE.Box3().setFromObject(obj);
     const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    
+    // Center the model
     obj.position.sub(center);
     
     obj.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        const meshName = child.name.toLowerCase();
-        // Check if this mesh is the gluteus maximus
-        const isGluteusMaximus = meshName.includes('gluteus') || 
-                                  meshName.includes('glute') || 
-                                  meshName.includes('buttock') ||
-                                  meshName.includes('butt');
+      if (child instanceof THREE.Mesh && child.geometry) {
+        const geometry = child.geometry;
+        const positionAttribute = geometry.getAttribute('position');
+        
+        if (positionAttribute) {
+          // Create vertex colors
+          const colors = new Float32Array(positionAttribute.count * 3);
+          
+          for (let i = 0; i < positionAttribute.count; i++) {
+            const x = positionAttribute.getX(i);
+            const y = positionAttribute.getY(i);
+            const z = positionAttribute.getZ(i);
+            
+            // Normalize Y position (0 = feet, 1 = head)
+            const normalizedY = (y - box.min.y) / size.y;
+            const isBack = z < center.z; // Back side has lower Z
+            
+            let color = { r: 0, g: 1, b: 0.73 }; // Default green #00ffba
+            
+            // Check if this vertex is in gluteus region
+            const gluteusRegion = MUSCLE_REGIONS['gluteus_maximus'];
+            if (normalizedY >= gluteusRegion.yMin && 
+                normalizedY <= gluteusRegion.yMax && 
+                isBack) {
+              // Check if gluteus needs strengthening or stretching
+              const needsStrengthening = strengthenMuscles.some(m => 
+                m.toLowerCase().includes('γλουτ') || 
+                m.toLowerCase().includes('glut')
+              );
+              const needsStretching = stretchMuscles.some(m => 
+                m.toLowerCase().includes('γλουτ') || 
+                m.toLowerCase().includes('glut')
+              );
+              
+              if (needsStrengthening) {
+                color = { r: 1, g: 0, b: 0 }; // Red for strengthening
+              } else if (needsStretching) {
+                color = { r: 1, g: 0.6, b: 0 }; // Orange for stretching
+              } else {
+                // Default highlight for demo - red
+                color = { r: 1, g: 0, b: 0 };
+              }
+            }
+            
+            colors[i * 3] = color.r;
+            colors[i * 3 + 1] = color.g;
+            colors[i * 3 + 2] = color.b;
+          }
+          
+          geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        }
         
         child.material = new THREE.MeshStandardMaterial({
-          color: isGluteusMaximus ? '#ff0000' : '#00ffba',
+          vertexColors: true,
           wireframe: true,
           transparent: true,
           opacity: 0.8,
         });
-        
-        // Log mesh names for debugging
-        console.log('Mesh name:', child.name);
       }
     });
-  }, [obj]);
+  }, [obj, strengthenMuscles, stretchMuscles]);
 
   return (
     <primitive 
@@ -133,7 +196,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 5]} intensity={1} />
             <Suspense fallback={<Loader />}>
-              <HumanModel />
+              <HumanModel strengthenMuscles={strengthenMuscles} stretchMuscles={stretchMuscles} />
             </Suspense>
             <OrbitControls 
               enableZoom={true}
