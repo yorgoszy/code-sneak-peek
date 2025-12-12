@@ -37,10 +37,17 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
   const fetchResults = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: sessions, error } = await supabase
+      let query = supabase
         .from('functional_test_sessions')
         .select('id, user_id, test_date, notes')
         .order('test_date', { ascending: false });
+      
+      // Αν έχουμε selectedUserId, φιλτράρουμε απευθείας
+      if (selectedUserId) {
+        query = query.eq('user_id', selectedUserId);
+      }
+
+      const { data: sessions, error } = await query;
 
       if (error) throw error;
 
@@ -57,13 +64,16 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
     } finally {
       setLoading(false);
     }
-  }, [usersMap]);
+  }, [usersMap, selectedUserId]);
 
   useEffect(() => {
-    if (usersMap.size > 0) {
+    // Αν έχουμε selectedUserId και readOnly, δεν χρειαζόμαστε το usersMap
+    if (selectedUserId && readOnly) {
+      fetchResults();
+    } else if (usersMap.size > 0) {
       fetchResults();
     }
-  }, [fetchResults, usersMap]);
+  }, [fetchResults, usersMap, selectedUserId, readOnly]);
 
   useEffect(() => {
     if (results.length > 0) {
@@ -79,7 +89,7 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
         .from('functional_test_data')
         .select('*')
         .eq('test_session_id', result.id)
-        .single();
+        .maybeSingle();
 
       if (!error && funcData) {
         data[result.id] = funcData;
