@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
         short_name: 'HYPERKIDS',
         description: 'HYPERKIDS - Athletic Training & Nutrition',
         theme_color: '#00ffba',
-        background_color: '#ffffff',
+        background_color: '#e8e8e8',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
@@ -32,13 +32,19 @@ export default defineConfig(({ mode }) => ({
             src: '/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
           },
           {
             src: '/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
+          },
+          {
+            src: '/apple-touch-icon.png',
+            sizes: '180x180',
+            type: 'image/png',
+            purpose: 'any'
           }
         ]
       },
