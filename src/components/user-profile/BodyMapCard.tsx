@@ -49,7 +49,7 @@ function HumanModel() {
   return (
     <primitive 
       object={obj} 
-      scale={0.96} 
+      scale={0.67} 
       rotation={[0, 0, 0]}
     />
   );
