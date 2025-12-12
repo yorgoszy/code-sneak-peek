@@ -36,12 +36,22 @@ function HumanModel() {
     
     obj.traverse((child) => {
       if (child instanceof THREE.Mesh) {
+        const meshName = child.name.toLowerCase();
+        // Check if this mesh is the gluteus maximus
+        const isGluteusMaximus = meshName.includes('gluteus') || 
+                                  meshName.includes('glute') || 
+                                  meshName.includes('buttock') ||
+                                  meshName.includes('butt');
+        
         child.material = new THREE.MeshStandardMaterial({
-          color: '#00ffba',
+          color: isGluteusMaximus ? '#ff0000' : '#00ffba',
           wireframe: true,
           transparent: true,
           opacity: 0.8,
         });
+        
+        // Log mesh names for debugging
+        console.log('Mesh name:', child.name);
       }
     });
   }, [obj]);
