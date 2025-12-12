@@ -52,12 +52,18 @@ export const AthletesProgressWithSidebar = () => {
         .select('user_id')
         .not('user_id', 'is', null);
 
+      const { data: functionalUsers } = await supabase
+        .from('functional_test_sessions')
+        .select('user_id')
+        .not('user_id', 'is', null);
+
       // Συλλέγουμε όλα τα unique user IDs
       const userIdsWithTests = new Set([
         ...(strengthUsers?.map(u => u.user_id) || []),
         ...(anthropometricUsers?.map(u => u.user_id) || []),
         ...(enduranceUsers?.map(u => u.user_id) || []),
-        ...(jumpUsers?.map(u => u.user_id) || [])
+        ...(jumpUsers?.map(u => u.user_id) || []),
+        ...(functionalUsers?.map(u => u.user_id) || [])
       ]);
 
       if (userIdsWithTests.size === 0) {
