@@ -29,13 +29,18 @@ function HumanModel() {
   const obj = useLoader(OBJLoader, MODEL_URL);
   
   useEffect(() => {
+    // Center the model based on its bounding box
+    const box = new THREE.Box3().setFromObject(obj);
+    const center = box.getCenter(new THREE.Vector3());
+    obj.position.sub(center);
+    
     obj.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         child.material = new THREE.MeshStandardMaterial({
           color: '#00ffba',
           wireframe: true,
           transparent: true,
-          opacity: 0.6,
+          opacity: 0.8,
         });
       }
     });
@@ -44,8 +49,7 @@ function HumanModel() {
   return (
     <primitive 
       object={obj} 
-      scale={0.02} 
-      position={[0, -2, 0]}
+      scale={3} 
       rotation={[0, 0, 0]}
     />
   );
