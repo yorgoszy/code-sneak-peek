@@ -51,28 +51,31 @@ export const FunctionalTests = ({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="space-y-4">
-          <PostureTest 
-            selectedPosture={formData?.selectedPosture || []}
-            onPostureChange={handlePostureChange}
-          />
-          <SingleLegSquatTest 
-            selectedSingleLegIssues={formData?.selectedSingleLegIssues || []}
-            onSingleLegChange={handleSingleLegChange}
-          />
-        </div>
-        <SquatTest 
-          selectedSquatIssues={formData?.selectedSquatIssues || []}
-          onSquatChange={handleSquatChange}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Στάση Σώματος + Μονοποδικά */}
+      <div className="space-y-4">
+        <PostureTest 
+          selectedPosture={formData?.selectedPosture || []}
+          onPostureChange={handlePostureChange}
         />
-        <div className="md:col-span-2 lg:col-span-1">
-          <FMSTest 
-            fmsScores={formData?.fmsScores || {}}
-            onFmsScoreChange={handleFmsScoreChange}
-          />
-        </div>
+        <SingleLegSquatTest 
+          selectedSingleLegIssues={formData?.selectedSingleLegIssues || []}
+          onSingleLegChange={handleSingleLegChange}
+        />
+      </div>
+
+      {/* Καθήματα */}
+      <SquatTest 
+        selectedSquatIssues={formData?.selectedSquatIssues || []}
+        onSquatChange={handleSquatChange}
+      />
+
+      {/* FMS */}
+      <div className="lg:col-span-2">
+        <FMSTest 
+          fmsScores={formData?.fmsScores || {}}
+          onFmsScoreChange={handleFmsScoreChange}
+        />
       </div>
     </div>
   );

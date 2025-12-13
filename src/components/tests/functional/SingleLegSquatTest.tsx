@@ -14,7 +14,7 @@ interface SingleLegSquatTestProps {
 }
 
 export const SingleLegSquatTest = ({ selectedSingleLegIssues, onSingleLegChange }: SingleLegSquatTestProps) => {
-  const toggleSingleLegSelection = (item: string, side: 'ΑΡΙΣΤΕΡΑ' | 'ΔΕΞΙΑ') => {
+  const toggleSingleLegSelection = (item: string, side: 'Α' | 'Δ') => {
     const fullItem = `${item} ${side}`;
     if (selectedSingleLegIssues.includes(fullItem)) {
       onSingleLegChange(selectedSingleLegIssues.filter(i => i !== fullItem));
@@ -41,22 +41,22 @@ export const SingleLegSquatTest = ({ selectedSingleLegIssues, onSingleLegChange 
               <td 
                 className={cn(
                   "border border-gray-300 py-1.5 px-2 text-center cursor-pointer transition-colors",
-                  selectedSingleLegIssues.includes(`${option} ΑΡΙΣΤΕΡΑ`)
+                  selectedSingleLegIssues.includes(`${option} Α`)
                     ? "bg-black text-white"
                     : "hover:bg-gray-50"
                 )}
-                onClick={() => toggleSingleLegSelection(option, 'ΑΡΙΣΤΕΡΑ')}
+                onClick={() => toggleSingleLegSelection(option, 'Α')}
               >
                 ✓
               </td>
               <td 
                 className={cn(
                   "border border-gray-300 py-1.5 px-2 text-center cursor-pointer transition-colors",
-                  selectedSingleLegIssues.includes(`${option} ΔΕΞΙΑ`)
+                  selectedSingleLegIssues.includes(`${option} Δ`)
                     ? "bg-black text-white"
                     : "hover:bg-gray-50"
                 )}
-                onClick={() => toggleSingleLegSelection(option, 'ΔΕΞΙΑ')}
+                onClick={() => toggleSingleLegSelection(option, 'Δ')}
               >
                 ✓
               </td>
