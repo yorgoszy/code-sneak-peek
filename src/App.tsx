@@ -39,6 +39,7 @@ import OnlineBookingWithSidebar from "@/pages/Dashboard/OnlineBookingWithSidebar
 import BookingSectionsWithSidebar from "@/pages/Dashboard/BookingSectionsWithSidebar";
 import { SchoolNotesWithSidebar } from "@/pages/Dashboard/SchoolNotesWithSidebar";
 import StretchesManagementWithSidebar from "@/pages/Dashboard/StretchesManagementWithSidebar";
+import { MuscleMappingWithSidebar } from "@/pages/Dashboard/MuscleMappingWithSidebar";
 import { OneRMManagementWithSidebar } from "@/pages/Dashboard/OneRMManagementWithSidebar";
 import { AthletesProgressWithSidebar } from "@/pages/Dashboard/AthletesProgressWithSidebar";
 import PaymentSuccess from "@/pages/PaymentSuccess";
@@ -124,6 +125,7 @@ function App() {
                 <Route path="/dashboard/booking-sections" element={<ProtectedRoute requireAdmin><BookingSectionsWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/school-notes" element={<ProtectedRoute requireAdmin><SchoolNotesWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/stretches" element={<ProtectedRoute requireAdmin><StretchesManagementWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/muscle-mapping" element={<ProtectedRoute requireAdmin><MuscleMappingWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/one-rm" element={<ProtectedRoute requireAdmin><OneRMManagementWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/rid-ai-coach" element={<ProtectedRoute><RidAiCoachPage /></ProtectedRoute>} />
                 <Route path="/dashboard/ai-knowledge" element={<ProtectedRoute requireAdmin><AdminAIKnowledgeWithSidebar /></ProtectedRoute>} />

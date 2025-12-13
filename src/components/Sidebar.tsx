@@ -539,6 +539,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: Users,
+      label: "Muscle Mapping",
+      path: "/dashboard/muscle-mapping",
+      badge: null
+    },
+    {
       icon: Gauge,
       label: "1RM",
       path: "/dashboard/one-rm",
