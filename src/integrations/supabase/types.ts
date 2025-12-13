@@ -1536,6 +1536,47 @@ export type Database = {
           },
         ]
       }
+      functional_issue_muscle_mappings: {
+        Row: {
+          action_type: string
+          created_at: string
+          dysfunction: string | null
+          id: string
+          issue_category: string
+          issue_name: string
+          muscle_id: string
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          dysfunction?: string | null
+          id?: string
+          issue_category: string
+          issue_name: string
+          muscle_id: string
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          dysfunction?: string | null
+          id?: string
+          issue_category?: string
+          issue_name?: string
+          muscle_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "functional_issue_muscle_mappings_muscle_id_fkey"
+            columns: ["muscle_id"]
+            isOneToOne: false
+            referencedRelation: "muscles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       functional_test_data: {
         Row: {
           created_at: string | null
@@ -2127,6 +2168,30 @@ export type Database = {
           price?: number
           status?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      muscles: {
+        Row: {
+          created_at: string
+          id: string
+          muscle_group: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          muscle_group?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          muscle_group?: string | null
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }
