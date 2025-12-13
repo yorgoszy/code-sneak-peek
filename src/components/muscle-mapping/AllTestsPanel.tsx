@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, ArrowUp, MoveHorizontal, Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -23,34 +22,43 @@ interface Mapping {
   muscles?: Muscle;
 }
 
-interface IssueMappingPanelProps {
-  category: string;
-  title: string;
-  issues: string[];
-}
+const POSTURE_ISSUES = ['Κύφωση', 'Λόρδωση', 'Πρηνισμός', 'Σκολίωση'];
 
-export const IssueMappingPanel = ({ category, title, issues }: IssueMappingPanelProps) => {
+const SQUAT_ISSUES = [
+  'ΕΜΠΡΟΣ ΚΛΙΣΗ ΤΟΥ ΚΟΡΜΟΥ',
+  'ΥΠΕΡΕΚΤΑΣΗ ΣΤΗΝ Σ.Σ.',
+  'ΚΥΦΩΤΙΚΗ ΘΕΣΗ ΣΤΗ Σ.Σ.',
+  'ΠΤΩΣΗ ΧΕΡΙΩΝ'
+];
+
+const SINGLE_LEG_ISSUES = [
+  'ΠΡΗΝΙΣΜΟΣ ΠΕΛΜΑΤΩΝ',
+  'ΕΣΩ ΣΤΡΟΦΗ ΓΟΝΑΤΩΝ',
+  'ΕΞΩ ΣΤΡΟΦΗ ΓΟΝΑΤΩΝ',
+  'ΑΝΥΨΩΣΗ ΦΤΕΡΝΩΝ',
+  'ΜΕΤΑΦΟΡΑ ΒΑΡΟΥΣ'
+];
+
+export const AllTestsPanel = () => {
   const [muscles, setMuscles] = useState<Muscle[]>([]);
   const [mappings, setMappings] = useState<Mapping[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedMuscle, setSelectedMuscle] = useState<string>('');
   const [selectedAction, setSelectedAction] = useState<'strengthen' | 'stretch'>('strengthen');
 
   useEffect(() => {
     fetchData();
-  }, [category]);
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
     
     const [musclesRes, mappingsRes] = await Promise.all([
       supabase.from('muscles').select('*').order('name'),
-      supabase
-        .from('functional_issue_muscle_mappings')
-        .select('*, muscles(*)')
-        .eq('issue_category', category)
+      supabase.from('functional_issue_muscle_mappings').select('*, muscles(*)')
     ]);
 
     if (musclesRes.data) setMuscles(musclesRes.data);
@@ -59,8 +67,9 @@ export const IssueMappingPanel = ({ category, title, issues }: IssueMappingPanel
     setLoading(false);
   };
 
-  const handleOpenDialog = (issue: string) => {
+  const handleOpenDialog = (issue: string, category: string) => {
     setSelectedIssue(issue);
+    setSelectedCategory(category);
     setSelectedMuscle('');
     setDialogOpen(true);
   };
@@ -74,7 +83,7 @@ export const IssueMappingPanel = ({ category, title, issues }: IssueMappingPanel
     const { error } = await supabase
       .from('functional_issue_muscle_mappings')
       .insert({
-        issue_category: category,
+        issue_category: selectedCategory,
         issue_name: selectedIssue,
         muscle_id: selectedMuscle,
         action_type: selectedAction,
@@ -108,60 +117,86 @@ export const IssueMappingPanel = ({ category, title, issues }: IssueMappingPanel
     }
   };
 
-  const getMappingsForIssue = (issueName: string, actionType: string) => {
-    return mappings.filter(m => m.issue_name === issueName && m.action_type === actionType);
+  const hasMapping = (issue: string, category: string, actionType: string) => {
+    return mappings.some(m => 
+      m.issue_name === issue && 
+      m.issue_category === category && 
+      m.action_type === actionType
+    );
   };
 
-  const hasStrengthen = (issue: string) => getMappingsForIssue(issue, 'strengthen').length > 0;
-  const hasStretch = (issue: string) => getMappingsForIssue(issue, 'stretch').length > 0;
+  const getDialogMappings = () => {
+    return mappings.filter(m => m.issue_name === selectedIssue && m.issue_category === selectedCategory);
+  };
 
-  const dialogMappings = mappings.filter(m => m.issue_name === selectedIssue);
+  const renderTestTable = (title: string, issues: string[], category: string, showAD: boolean = true) => (
+    <div className="border">
+      <div className="font-semibold text-sm px-3 py-2 border-b bg-white">{title}</div>
+      <table className="w-full text-sm">
+        {showAD && (
+          <thead>
+            <tr className="border-b">
+              <th className="text-left py-1.5 px-3 font-medium text-gray-600">Επιλογή</th>
+              <th className="text-center py-1.5 px-2 font-medium text-gray-600 w-10">Α</th>
+              <th className="text-center py-1.5 px-2 font-medium text-gray-600 w-10">Δ</th>
+            </tr>
+          </thead>
+        )}
+        <tbody>
+          {issues.map((issue) => (
+            <tr 
+              key={issue} 
+              className="border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
+              onClick={() => handleOpenDialog(issue, category)}
+            >
+              <td className="py-1.5 px-3">{issue}</td>
+              {showAD && (
+                <>
+                  <td className="py-1.5 px-2 text-center">
+                    {hasMapping(issue, category, 'strengthen') && (
+                      <Check className="w-4 h-4 text-gray-600 mx-auto" />
+                    )}
+                  </td>
+                  <td className="py-1.5 px-2 text-center">
+                    {hasMapping(issue, category, 'stretch') && (
+                      <Check className="w-4 h-4 text-gray-600 mx-auto" />
+                    )}
+                  </td>
+                </>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const dialogMappings = getDialogMappings();
   const dialogStrengthen = dialogMappings.filter(m => m.action_type === 'strengthen');
   const dialogStretch = dialogMappings.filter(m => m.action_type === 'stretch');
 
+  if (loading) {
+    return <div className="text-center py-8 text-gray-500">Φόρτωση...</div>;
+  }
+
   return (
     <>
-      <Card className="rounded-none">
-        <CardHeader className="py-3">
-          <CardTitle className="text-base">{title}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="text-center py-8 text-gray-500">Φόρτωση...</div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-4 font-semibold text-sm">Επιλογή</th>
-                  <th className="text-center py-2 px-4 font-semibold text-sm w-12">Α</th>
-                  <th className="text-center py-2 px-4 font-semibold text-sm w-12">Δ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {issues.map((issue) => (
-                  <tr 
-                    key={issue} 
-                    className="border-b hover:bg-gray-50 cursor-pointer"
-                    onClick={() => handleOpenDialog(issue)}
-                  >
-                    <td className="py-2 px-4 text-sm">{issue}</td>
-                    <td className="py-2 px-4 text-center">
-                      {hasStrengthen(issue) && (
-                        <Check className="w-4 h-4 text-gray-600 mx-auto" />
-                      )}
-                    </td>
-                    <td className="py-2 px-4 text-center">
-                      {hasStretch(issue) && (
-                        <Check className="w-4 h-4 text-gray-600 mx-auto" />
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Στάση Σώματος */}
+        <div>
+          {renderTestTable('Στάση Σώματος', POSTURE_ISSUES, 'posture', false)}
+        </div>
+
+        {/* Καθήματα */}
+        <div>
+          {renderTestTable('Καθήματα', SQUAT_ISSUES, 'squat')}
+        </div>
+
+        {/* Μονοποδικά Καθήματα */}
+        <div>
+          {renderTestTable('Μονοποδικά Καθήματα', SINGLE_LEG_ISSUES, 'single_leg_squat')}
+        </div>
+      </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="rounded-none max-w-2xl">
