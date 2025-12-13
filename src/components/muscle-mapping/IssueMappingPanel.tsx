@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, ArrowUp, MoveHorizontal } from 'lucide-react';
+import { Plus, Trash2, ArrowUp, MoveHorizontal, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Muscle {
@@ -33,10 +33,10 @@ export const IssueMappingPanel = ({ category, title, issues }: IssueMappingPanel
   const [muscles, setMuscles] = useState<Muscle[]>([]);
   const [mappings, setMappings] = useState<Mapping[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedIssue, setSelectedIssue] = useState<string>(issues[0] || '');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState<string>('');
   const [selectedMuscle, setSelectedMuscle] = useState<string>('');
-  const [selectedAction, setSelectedAction] = useState<string>('strengthen');
-  const [dysfunction, setDysfunction] = useState<string>('');
+  const [selectedAction, setSelectedAction] = useState<'strengthen' | 'stretch'>('strengthen');
 
   useEffect(() => {
     fetchData();
@@ -59,9 +59,15 @@ export const IssueMappingPanel = ({ category, title, issues }: IssueMappingPanel
     setLoading(false);
   };
 
+  const handleOpenDialog = (issue: string) => {
+    setSelectedIssue(issue);
+    setSelectedMuscle('');
+    setDialogOpen(true);
+  };
+
   const handleAddMapping = async () => {
-    if (!selectedIssue || !selectedMuscle) {
-      toast.error('Επιλέξτε πρόβλημα και μυ');
+    if (!selectedMuscle) {
+      toast.error('Επιλέξτε μυ');
       return;
     }
 
@@ -72,7 +78,6 @@ export const IssueMappingPanel = ({ category, title, issues }: IssueMappingPanel
         issue_name: selectedIssue,
         muscle_id: selectedMuscle,
         action_type: selectedAction,
-        dysfunction: dysfunction.trim() || null
       });
 
     if (error) {
@@ -85,7 +90,6 @@ export const IssueMappingPanel = ({ category, title, issues }: IssueMappingPanel
     } else {
       toast.success('Η σύνδεση προστέθηκε');
       setSelectedMuscle('');
-      setDysfunction('');
       fetchData();
     }
   };
@@ -104,165 +108,192 @@ export const IssueMappingPanel = ({ category, title, issues }: IssueMappingPanel
     }
   };
 
-  const getMappingsForIssue = (issueName: string) => {
-    return mappings.filter(m => m.issue_name === issueName);
+  const getMappingsForIssue = (issueName: string, actionType: string) => {
+    return mappings.filter(m => m.issue_name === issueName && m.action_type === actionType);
   };
 
+  const hasStrengthen = (issue: string) => getMappingsForIssue(issue, 'strengthen').length > 0;
+  const hasStretch = (issue: string) => getMappingsForIssue(issue, 'stretch').length > 0;
+
+  const dialogMappings = mappings.filter(m => m.issue_name === selectedIssue);
+  const dialogStrengthen = dialogMappings.filter(m => m.action_type === 'strengthen');
+  const dialogStretch = dialogMappings.filter(m => m.action_type === 'stretch');
+
   return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Add new mapping */}
-        <div className="p-4 bg-gray-50 border space-y-4">
-          <h3 className="font-semibold text-sm">Νέα Σύνδεση</h3>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-            <Select value={selectedIssue} onValueChange={setSelectedIssue}>
-              <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Πρόβλημα" />
-              </SelectTrigger>
-              <SelectContent>
-                {issues.map(issue => (
-                  <SelectItem key={issue} value={issue}>{issue}</SelectItem>
+    <>
+      <Card className="rounded-none">
+        <CardHeader className="py-3">
+          <CardTitle className="text-base">{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">Φόρτωση...</div>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 px-4 font-semibold text-sm">Επιλογή</th>
+                  <th className="text-center py-2 px-4 font-semibold text-sm w-12">Α</th>
+                  <th className="text-center py-2 px-4 font-semibold text-sm w-12">Δ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {issues.map((issue) => (
+                  <tr 
+                    key={issue} 
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleOpenDialog(issue)}
+                  >
+                    <td className="py-2 px-4 text-sm">{issue}</td>
+                    <td className="py-2 px-4 text-center">
+                      {hasStrengthen(issue) && (
+                        <Check className="w-4 h-4 text-gray-600 mx-auto" />
+                      )}
+                    </td>
+                    <td className="py-2 px-4 text-center">
+                      {hasStretch(issue) && (
+                        <Check className="w-4 h-4 text-gray-600 mx-auto" />
+                      )}
+                    </td>
+                  </tr>
                 ))}
-              </SelectContent>
-            </Select>
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
 
-            <Select value={selectedMuscle} onValueChange={setSelectedMuscle}>
-              <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Μυς" />
-              </SelectTrigger>
-              <SelectContent>
-                {muscles.map(muscle => (
-                  <SelectItem key={muscle.id} value={muscle.id}>
-                    {muscle.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedAction} onValueChange={setSelectedAction}>
-              <SelectTrigger className="rounded-none">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="strengthen">
-                  <span className="flex items-center gap-2">
-                    <ArrowUp className="w-3 h-3 text-green-600" />
-                    Ενδυνάμωση
-                  </span>
-                </SelectItem>
-                <SelectItem value="stretch">
-                  <span className="flex items-center gap-2">
-                    <MoveHorizontal className="w-3 h-3 text-blue-600" />
-                    Διάταση
-                  </span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Input
-              placeholder="Δυσλειτουργία (προαιρετικό)"
-              value={dysfunction}
-              onChange={(e) => setDysfunction(e.target.value)}
-              className="rounded-none"
-            />
-
-            <Button 
-              onClick={handleAddMapping} 
-              className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Προσθήκη
-            </Button>
-          </div>
-        </div>
-
-        {/* Mappings by issue */}
-        {loading ? (
-          <div className="text-center py-8 text-gray-500">Φόρτωση...</div>
-        ) : (
-          <div className="space-y-4">
-            {issues.map(issue => {
-              const issueMappings = getMappingsForIssue(issue);
-              const strengthenMappings = issueMappings.filter(m => m.action_type === 'strengthen');
-              const stretchMappings = issueMappings.filter(m => m.action_type === 'stretch');
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="rounded-none max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{selectedIssue}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-2 gap-6 mt-4">
+            {/* Ενδυνάμωση */}
+            <div className="border p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-green-700 mb-4">
+                <ArrowUp className="w-4 h-4" />
+                Ενδυνάμωση (Α)
+              </div>
               
-              return (
-                <div key={issue} className="border border-gray-200">
-                  <div className="bg-gray-100 px-4 py-2 font-semibold text-sm border-b">
-                    {issue}
-                  </div>
-                  <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Strengthen */}
-                    <div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-green-700 mb-2">
-                        <ArrowUp className="w-4 h-4" />
-                        Ενδυνάμωση
-                      </div>
-                      {strengthenMappings.length === 0 ? (
-                        <span className="text-xs text-gray-400">Δεν υπάρχουν μύες</span>
-                      ) : (
-                        <div className="flex flex-wrap gap-2">
-                          {strengthenMappings.map(m => (
-                            <div 
-                              key={m.id} 
-                              className="flex items-center gap-2 bg-green-50 border border-green-200 px-2 py-1 text-xs group"
-                            >
-                              <span>{m.muscles?.name}</span>
-                              {m.dysfunction && (
-                                <span className="text-gray-500">({m.dysfunction})</span>
-                              )}
-                              <button
-                                onClick={() => handleDeleteMapping(m.id)}
-                                className="text-red-500 opacity-0 group-hover:opacity-100"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+              <div className="space-y-2 mb-4">
+                {dialogStrengthen.length === 0 ? (
+                  <p className="text-xs text-gray-400">Δεν υπάρχουν μύες</p>
+                ) : (
+                  dialogStrengthen.map(m => (
+                    <div 
+                      key={m.id} 
+                      className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 text-sm"
+                    >
+                      <span>{m.muscles?.name}</span>
+                      <button
+                        onClick={() => handleDeleteMapping(m.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
+                  ))
+                )}
+              </div>
 
-                    {/* Stretch */}
-                    <div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-blue-700 mb-2">
-                        <MoveHorizontal className="w-4 h-4" />
-                        Διάταση
-                      </div>
-                      {stretchMappings.length === 0 ? (
-                        <span className="text-xs text-gray-400">Δεν υπάρχουν μύες</span>
-                      ) : (
-                        <div className="flex flex-wrap gap-2">
-                          {stretchMappings.map(m => (
-                            <div 
-                              key={m.id} 
-                              className="flex items-center gap-2 bg-blue-50 border border-blue-200 px-2 py-1 text-xs group"
-                            >
-                              <span>{m.muscles?.name}</span>
-                              {m.dysfunction && (
-                                <span className="text-gray-500">({m.dysfunction})</span>
-                              )}
-                              <button
-                                onClick={() => handleDeleteMapping(m.id)}
-                                className="text-red-500 opacity-0 group-hover:opacity-100"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+              <div className="flex gap-2">
+                <Select 
+                  value={selectedAction === 'strengthen' ? selectedMuscle : ''} 
+                  onValueChange={(v) => {
+                    setSelectedAction('strengthen');
+                    setSelectedMuscle(v);
+                  }}
+                >
+                  <SelectTrigger className="rounded-none flex-1">
+                    <SelectValue placeholder="Προσθήκη μυός..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {muscles.map(muscle => (
+                      <SelectItem key={muscle.id} value={muscle.id}>
+                        {muscle.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  onClick={() => {
+                    setSelectedAction('strengthen');
+                    handleAddMapping();
+                  }}
+                  size="icon"
+                  className="rounded-none bg-green-600 hover:bg-green-700"
+                  disabled={!selectedMuscle || selectedAction !== 'strengthen'}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Διάταση */}
+            <div className="border p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-blue-700 mb-4">
+                <MoveHorizontal className="w-4 h-4" />
+                Διάταση (Δ)
+              </div>
+              
+              <div className="space-y-2 mb-4">
+                {dialogStretch.length === 0 ? (
+                  <p className="text-xs text-gray-400">Δεν υπάρχουν μύες</p>
+                ) : (
+                  dialogStretch.map(m => (
+                    <div 
+                      key={m.id} 
+                      className="flex items-center justify-between bg-blue-50 border border-blue-200 px-3 py-2 text-sm"
+                    >
+                      <span>{m.muscles?.name}</span>
+                      <button
+                        onClick={() => handleDeleteMapping(m.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
+                  ))
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <Select 
+                  value={selectedAction === 'stretch' ? selectedMuscle : ''} 
+                  onValueChange={(v) => {
+                    setSelectedAction('stretch');
+                    setSelectedMuscle(v);
+                  }}
+                >
+                  <SelectTrigger className="rounded-none flex-1">
+                    <SelectValue placeholder="Προσθήκη μυός..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {muscles.map(muscle => (
+                      <SelectItem key={muscle.id} value={muscle.id}>
+                        {muscle.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  onClick={() => {
+                    setSelectedAction('stretch');
+                    handleAddMapping();
+                  }}
+                  size="icon"
+                  className="rounded-none bg-blue-600 hover:bg-blue-700"
+                  disabled={!selectedMuscle || selectedAction !== 'stretch'}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
