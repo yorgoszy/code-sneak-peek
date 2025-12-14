@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dumbbell, User, FlaskConical } from 'lucide-react';
+import { Dumbbell, Target, FlaskConical } from 'lucide-react';
 import { MuscleList } from './MuscleList';
 import { AllTestsPanel } from './AllTestsPanel';
 import { MusclePositionMapper } from './MusclePositionMapper';
@@ -30,7 +30,7 @@ export const MuscleMapping = () => {
             <span className="hidden sm:inline">Τράπεζα</span> Μυών
           </TabsTrigger>
           <TabsTrigger value="3d-mapper" className="rounded-none flex-1 min-w-[100px] text-xs sm:text-sm">
-            <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             3D Mapper
           </TabsTrigger>
         </TabsList>
