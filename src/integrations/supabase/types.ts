@@ -447,6 +447,7 @@ export type Database = {
           child_birth_date: string | null
           created_at: string | null
           email: string
+          gender: string | null
           id: string
           is_athlete: boolean | null
           name: string
@@ -466,6 +467,7 @@ export type Database = {
           child_birth_date?: string | null
           created_at?: string | null
           email: string
+          gender?: string | null
           id?: string
           is_athlete?: boolean | null
           name: string
@@ -485,6 +487,7 @@ export type Database = {
           child_birth_date?: string | null
           created_at?: string | null
           email?: string
+          gender?: string | null
           id?: string
           is_athlete?: boolean | null
           name?: string
