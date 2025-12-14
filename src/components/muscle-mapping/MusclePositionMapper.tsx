@@ -1,15 +1,10 @@
-import React, { useState, useEffect, Suspense, useCallback } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, useProgress, Html } from '@react-three/drei';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import { useLoader } from '@react-three/fiber';
-import * as THREE from 'three';
 import { supabase } from "@/integrations/supabase/client";
-import { Save, RotateCcw, Target, Check, X } from "lucide-react";
+import { Save, RotateCcw, Target, Check, X, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Muscle {
@@ -27,107 +22,58 @@ interface ClickPosition {
   z: number;
 }
 
-const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/models/Male.OBJ';
+// Lazy load the 3D canvas
+const Muscle3DCanvas = React.lazy(() => import('./Muscle3DCanvas'));
 
-function Loader() {
-  const { progress } = useProgress();
+// Loading fallback
+function Canvas3DFallback() {
   return (
-    <Html center>
-      <div className="text-[#00ffba] text-xs">
-        {progress.toFixed(0)}%
+    <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] flex items-center justify-center bg-black/95">
+      <div className="text-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#00ffba] mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Φόρτωση 3D Model...</p>
       </div>
-    </Html>
+    </div>
   );
 }
 
-// Marker component for placed muscles
-function MuscleMarker({ position, color, name }: { position: [number, number, number]; color: string; name: string }) {
+// Error fallback
+function Canvas3DError() {
   return (
-    <group position={position}>
-      <mesh>
-        <sphereGeometry args={[0.03, 16, 16]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.5} />
-      </mesh>
-    </group>
+    <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] flex items-center justify-center bg-black/95">
+      <div className="text-center">
+        <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Σφάλμα φόρτωσης 3D</p>
+        <p className="text-xs text-muted-foreground mt-1">Δοκίμασε να ανανεώσεις τη σελίδα</p>
+      </div>
+    </div>
   );
 }
 
-// Interactive Human Model
-function InteractiveHumanModel({ 
-  onClickPosition, 
-  isSelecting,
-  placedMuscles 
-}: { 
-  onClickPosition: (pos: ClickPosition) => void;
-  isSelecting: boolean;
-  placedMuscles: Array<{ position: [number, number, number]; name: string }>;
-}) {
-  const obj = useLoader(OBJLoader, MODEL_URL);
-  const { raycaster, camera, pointer, gl } = useThree();
-  
-  useEffect(() => {
-    const box = new THREE.Box3().setFromObject(obj);
-    const center = box.getCenter(new THREE.Vector3());
-    obj.position.sub(center);
-    
-    obj.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.material = new THREE.MeshStandardMaterial({
-          color: '#00ffba',
-          wireframe: true,
-          transparent: true,
-          opacity: 0.6,
-        });
-      }
-    });
-  }, [obj]);
+// Error boundary
+class Canvas3DErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-  const handleClick = useCallback((event: THREE.Event) => {
-    if (!isSelecting) return;
-    
-    raycaster.setFromCamera(pointer, camera);
-    const intersects = raycaster.intersectObject(obj, true);
-    
-    if (intersects.length > 0) {
-      const point = intersects[0].point;
-      onClickPosition({
-        x: parseFloat(point.x.toFixed(4)),
-        y: parseFloat(point.y.toFixed(4)),
-        z: parseFloat(point.z.toFixed(4))
-      });
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('3D Canvas Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <Canvas3DError />;
     }
-  }, [isSelecting, raycaster, camera, pointer, obj, onClickPosition]);
-
-  return (
-    <group>
-      <primitive 
-        object={obj} 
-        scale={0.54} 
-        rotation={[0, 0, 0]}
-        onClick={handleClick}
-      />
-      {placedMuscles.map((muscle, index) => (
-        <MuscleMarker 
-          key={index} 
-          position={muscle.position} 
-          color="#ff4444"
-          name={muscle.name}
-        />
-      ))}
-    </group>
-  );
-}
-
-// Pending marker for current selection
-function PendingMarker({ position }: { position: [number, number, number] | null }) {
-  if (!position) return null;
-  
-  return (
-    <mesh position={position}>
-      <sphereGeometry args={[0.04, 16, 16]} />
-      <meshStandardMaterial color="#ffaa00" emissive="#ffaa00" emissiveIntensity={0.8} transparent opacity={0.8} />
-    </mesh>
-  );
+    return this.props.children;
+  }
 }
 
 export const MusclePositionMapper: React.FC = () => {
@@ -184,7 +130,6 @@ export const MusclePositionMapper: React.FC = () => {
       
       if (error) throw error;
       
-      // Update local state
       setMuscles(prev => prev.map(m => 
         m.id === selectedMuscleId 
           ? { ...m, position_x: pendingPosition.x, position_y: pendingPosition.y, position_z: pendingPosition.z }
@@ -239,7 +184,12 @@ export const MusclePositionMapper: React.FC = () => {
   const mappedCount = muscles.filter(m => m.position_x !== null).length;
 
   if (loading) {
-    return <div className="flex justify-center p-8">Φόρτωση...</div>;
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="w-6 h-6 animate-spin mr-2" />
+        <span>Φόρτωση...</span>
+      </div>
+    );
   }
 
   return (
@@ -365,41 +315,17 @@ export const MusclePositionMapper: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-4 pt-0">
-          <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] bg-black/95 relative touch-none">
-            <Canvas
-              camera={{ position: [0, 0, 5], fov: 50 }}
-              style={{ background: 'transparent' }}
-            >
-              <ambientLight intensity={0.5} />
-              <directionalLight position={[10, 10, 5]} intensity={1} />
-              <directionalLight position={[-10, -10, -5]} intensity={0.5} />
-              <Suspense fallback={<Loader />}>
-                <InteractiveHumanModel 
-                  onClickPosition={handlePositionClick}
-                  isSelecting={isSelecting}
-                  placedMuscles={placedMuscles}
-                />
-                <PendingMarker 
-                  position={pendingPosition ? [pendingPosition.x, pendingPosition.y, pendingPosition.z] : null} 
-                />
-              </Suspense>
-              <OrbitControls 
-                enableZoom={true}
-                enablePan={true}
-                minDistance={2}
-                maxDistance={10}
+          <Canvas3DErrorBoundary>
+            <Suspense fallback={<Canvas3DFallback />}>
+              <Muscle3DCanvas
+                placedMuscles={placedMuscles}
+                pendingPosition={pendingPosition}
+                isSelecting={isSelecting}
+                selectedMuscleName={selectedMuscle?.name}
+                onClickPosition={handlePositionClick}
               />
-            </Canvas>
-            
-            {/* Overlay instructions */}
-            {isSelecting && (
-              <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 bg-[#00ffba] text-black px-2 sm:px-4 py-1 sm:py-2 rounded-none text-xs sm:text-sm font-medium max-w-[90%] text-center">
-                <span className="hidden sm:inline">Κάνε click στο σημείο του μυός: </span>
-                <span className="sm:hidden">Click: </span>
-                {selectedMuscle?.name}
-              </div>
-            )}
-          </div>
+            </Suspense>
+          </Canvas3DErrorBoundary>
 
           {/* Legend */}
           <div className="flex flex-wrap gap-2 sm:gap-4 mt-2 sm:mt-3 text-xs sm:text-sm">
