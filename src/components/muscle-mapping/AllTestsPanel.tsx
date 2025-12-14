@@ -375,7 +375,7 @@ export const AllTestsPanel = () => {
             <div className="border p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-green-700 mb-4">
                 <ArrowUp className="w-4 h-4" />
-                Ενδυνάμωση (Α)
+                Ενδυνάμωση
               </div>
               
               <div className="space-y-2 mb-4">
@@ -436,7 +436,7 @@ export const AllTestsPanel = () => {
             <div className="border p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-blue-700 mb-4">
                 <MoveHorizontal className="w-4 h-4" />
-                Διάταση (Δ)
+                Διάταση
               </div>
               
               <div className="space-y-2 mb-4">
