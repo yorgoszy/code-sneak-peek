@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, ArrowUp, MoveHorizontal, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface Muscle {
   id: string;
@@ -22,22 +23,42 @@ interface Mapping {
   muscles?: Muscle;
 }
 
-const POSTURE_ISSUES = ['Κύφωση', 'Λόρδωση', 'Πρηνισμός', 'Σκολίωση'];
+// Posture options
+const postureOptions = ['Κύφωση', 'Λόρδωση', 'Πρηνισμός', 'Σκολίωση'];
 
-const SQUAT_ISSUES = [
+// Squat options - top (without Α/Δ)
+const squatTopOptions = [
   'ΕΜΠΡΟΣ ΚΛΙΣΗ ΤΟΥ ΚΟΡΜΟΥ',
   'ΥΠΕΡΕΚΤΑΣΗ ΣΤΗΝ Σ.Σ.',
   'ΚΥΦΩΤΙΚΗ ΘΕΣΗ ΣΤΗ Σ.Σ.',
   'ΠΤΩΣΗ ΧΕΡΙΩΝ'
 ];
 
-const SINGLE_LEG_ISSUES = [
+// Squat options - bottom (with Α/Δ)
+const squatBottomOptions = [
   'ΠΡΗΝΙΣΜΟΣ ΠΕΛΜΑΤΩΝ',
   'ΕΣΩ ΣΤΡΟΦΗ ΓΟΝΑΤΩΝ',
   'ΕΞΩ ΣΤΡΟΦΗ ΓΟΝΑΤΩΝ',
   'ΑΝΥΨΩΣΗ ΦΤΕΡΝΩΝ',
   'ΜΕΤΑΦΟΡΑ ΒΑΡΟΥΣ'
 ];
+
+// Single leg squat options
+const singleLegSquatOptions = [
+  'ΑΝΗΨΩΣΗ ΙΣΧΙΟΥ',
+  'ΠΤΩΣΗ ΙΣΧΙΟΥ',
+  'ΕΣΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ',
+  'ΕΞΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ'
+];
+
+// FMS exercises
+const fmsRows = [
+  ['DEEP SQUAT', 'HURDLE STEP', 'INLINE LUNGE'],
+  ['SHOULDER', 'ASLR', 'PUSH UP'],
+  ['ROTARY']
+];
+
+const hasLeftRight = ['HURDLE STEP', 'INLINE LUNGE', 'SHOULDER', 'ASLR', 'ROTARY'];
 
 export const AllTestsPanel = () => {
   const [muscles, setMuscles] = useState<Muscle[]>([]);
@@ -125,51 +146,13 @@ export const AllTestsPanel = () => {
     );
   };
 
+  const hasMappingAny = (issue: string, category: string) => {
+    return hasMapping(issue, category, 'strengthen') || hasMapping(issue, category, 'stretch');
+  };
+
   const getDialogMappings = () => {
     return mappings.filter(m => m.issue_name === selectedIssue && m.issue_category === selectedCategory);
   };
-
-  const renderTestTable = (title: string, issues: string[], category: string, showAD: boolean = true) => (
-    <div className="border">
-      <div className="font-semibold text-sm px-3 py-2 border-b bg-white">{title}</div>
-      <table className="w-full text-sm">
-        {showAD && (
-          <thead>
-            <tr className="border-b">
-              <th className="text-left py-1.5 px-3 font-medium text-gray-600">Επιλογή</th>
-              <th className="text-center py-1.5 px-2 font-medium text-gray-600 w-10">Α</th>
-              <th className="text-center py-1.5 px-2 font-medium text-gray-600 w-10">Δ</th>
-            </tr>
-          </thead>
-        )}
-        <tbody>
-          {issues.map((issue) => (
-            <tr 
-              key={issue} 
-              className="border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
-              onClick={() => handleOpenDialog(issue, category)}
-            >
-              <td className="py-1.5 px-3">{issue}</td>
-              {showAD && (
-                <>
-                  <td className="py-1.5 px-2 text-center">
-                    {hasMapping(issue, category, 'strengthen') && (
-                      <Check className="w-4 h-4 text-gray-600 mx-auto" />
-                    )}
-                  </td>
-                  <td className="py-1.5 px-2 text-center">
-                    {hasMapping(issue, category, 'stretch') && (
-                      <Check className="w-4 h-4 text-gray-600 mx-auto" />
-                    )}
-                  </td>
-                </>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
 
   const dialogMappings = getDialogMappings();
   const dialogStrengthen = dialogMappings.filter(m => m.action_type === 'strengthen');
@@ -181,20 +164,203 @@ export const AllTestsPanel = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Στάση Σώματος */}
-        <div>
-          {renderTestTable('Στάση Σώματος', POSTURE_ISSUES, 'posture', false)}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Στάση Σώματος + Μονοποδικά */}
+        <div className="space-y-4">
+          {/* Posture */}
+          <div>
+            <h3 className="font-semibold text-sm mb-2">Στάση Σώματος</h3>
+            <table className="w-full border-collapse text-xs">
+              <tbody>
+                {postureOptions.map((option) => (
+                  <tr
+                    key={option}
+                    onClick={() => handleOpenDialog(option, 'posture')}
+                    className={cn(
+                      "cursor-pointer transition-colors",
+                      hasMappingAny(option, 'posture')
+                        ? "bg-black text-white"
+                        : "bg-white hover:bg-gray-50"
+                    )}
+                  >
+                    <td className="border border-gray-300 py-1.5 px-3 text-center">
+                      {option}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Single Leg Squat */}
+          <div>
+            <h3 className="font-semibold text-sm mb-2">Μονοποδικά Καθήματα</h3>
+            <table className="w-full border-collapse text-xs">
+              <thead>
+                <tr>
+                  <th className="border border-gray-300 py-1.5 px-3 text-left font-semibold">Επιλογή</th>
+                  <th className="border border-gray-300 py-1.5 px-2 text-center font-semibold w-10">Α</th>
+                  <th className="border border-gray-300 py-1.5 px-2 text-center font-semibold w-10">Δ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {singleLegSquatOptions.map((option) => (
+                  <tr key={option}>
+                    <td className="border border-gray-300 py-1.5 px-3">{option}</td>
+                    <td 
+                      className={cn(
+                        "border border-gray-300 py-1.5 px-2 text-center cursor-pointer transition-colors",
+                        hasMappingAny(`${option} Α`, 'single_leg_squat')
+                          ? "bg-black text-white"
+                          : "hover:bg-gray-50"
+                      )}
+                      onClick={() => handleOpenDialog(`${option} Α`, 'single_leg_squat')}
+                    >
+                      ✓
+                    </td>
+                    <td 
+                      className={cn(
+                        "border border-gray-300 py-1.5 px-2 text-center cursor-pointer transition-colors",
+                        hasMappingAny(`${option} Δ`, 'single_leg_squat')
+                          ? "bg-black text-white"
+                          : "hover:bg-gray-50"
+                      )}
+                      onClick={() => handleOpenDialog(`${option} Δ`, 'single_leg_squat')}
+                    >
+                      ✓
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Καθήματα */}
         <div>
-          {renderTestTable('Καθήματα', SQUAT_ISSUES, 'squat')}
+          <h3 className="font-semibold text-sm mb-2">Καθήματα</h3>
+          <table className="w-full border-collapse text-xs">
+            <tbody>
+              {squatTopOptions.map((option) => (
+                <tr
+                  key={option}
+                  onClick={() => handleOpenDialog(option, 'squat')}
+                  className={cn(
+                    "cursor-pointer transition-colors",
+                    hasMappingAny(option, 'squat')
+                      ? "bg-black text-white"
+                      : "bg-white hover:bg-gray-50"
+                  )}
+                >
+                  <td className="border border-gray-300 py-1.5 px-3" colSpan={3}>
+                    {option}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <table className="w-full border-collapse text-xs mt-2">
+            <thead>
+              <tr>
+                <th className="border border-gray-300 py-1.5 px-3 text-left font-semibold">Επιλογή</th>
+                <th className="border border-gray-300 py-1.5 px-2 text-center font-semibold w-10">Α</th>
+                <th className="border border-gray-300 py-1.5 px-2 text-center font-semibold w-10">Δ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {squatBottomOptions.map((option) => (
+                <tr key={option}>
+                  <td className="border border-gray-300 py-1.5 px-3">{option}</td>
+                  <td 
+                    className={cn(
+                      "border border-gray-300 py-1.5 px-2 text-center cursor-pointer transition-colors",
+                      hasMappingAny(`${option} Α`, 'squat')
+                        ? "bg-black text-white"
+                        : "hover:bg-gray-50"
+                    )}
+                    onClick={() => handleOpenDialog(`${option} Α`, 'squat')}
+                  >
+                    ✓
+                  </td>
+                  <td 
+                    className={cn(
+                      "border border-gray-300 py-1.5 px-2 text-center cursor-pointer transition-colors",
+                      hasMappingAny(`${option} Δ`, 'squat')
+                        ? "bg-black text-white"
+                        : "hover:bg-gray-50"
+                    )}
+                    onClick={() => handleOpenDialog(`${option} Δ`, 'squat')}
+                  >
+                    ✓
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        {/* Μονοποδικά Καθήματα */}
-        <div>
-          {renderTestTable('Μονοποδικά Καθήματα', SINGLE_LEG_ISSUES, 'single_leg_squat')}
+        {/* FMS */}
+        <div className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold text-sm">FMS</h3>
+          </div>
+          
+          <div className="space-y-2">
+            {fmsRows.map((row, rowIndex) => (
+              <div 
+                key={rowIndex} 
+                className={cn(
+                  "grid gap-2",
+                  rowIndex === 2 ? "grid-cols-1" : "grid-cols-3"
+                )}
+              >
+                {row.map((exercise) => (
+                  <div key={exercise} className="border border-gray-300 p-2">
+                    <div className="text-xs font-medium mb-1 text-center">{exercise}</div>
+                    {hasLeftRight.includes(exercise) ? (
+                      <div className="grid grid-cols-2 gap-1">
+                        <div 
+                          className={cn(
+                            "text-center py-1 text-xs cursor-pointer transition-colors border",
+                            hasMappingAny(`${exercise} L`, 'fms')
+                              ? "bg-black text-white"
+                              : "hover:bg-gray-50"
+                          )}
+                          onClick={() => handleOpenDialog(`${exercise} L`, 'fms')}
+                        >
+                          L
+                        </div>
+                        <div 
+                          className={cn(
+                            "text-center py-1 text-xs cursor-pointer transition-colors border",
+                            hasMappingAny(`${exercise} R`, 'fms')
+                              ? "bg-black text-white"
+                              : "hover:bg-gray-50"
+                          )}
+                          onClick={() => handleOpenDialog(`${exercise} R`, 'fms')}
+                        >
+                          R
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        className={cn(
+                          "text-center py-1 text-xs cursor-pointer transition-colors border",
+                          hasMappingAny(exercise, 'fms')
+                            ? "bg-black text-white"
+                            : "hover:bg-gray-50"
+                        )}
+                        onClick={() => handleOpenDialog(exercise, 'fms')}
+                      >
+                        0-3
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
