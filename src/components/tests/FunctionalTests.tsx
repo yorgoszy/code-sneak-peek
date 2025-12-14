@@ -1,8 +1,12 @@
 
+import { useState, useEffect } from "react";
 import { PostureTest } from "./functional/PostureTest";
 import { SquatTest } from "./functional/SquatTest";
 import { SingleLegSquatTest } from "./functional/SingleLegSquatTest";
 import { FMSTest } from "./functional/FMSTest";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, ArrowLeft, ArrowUp, MoveHorizontal } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FunctionalData {
   fmsScores: Record<string, number>;
@@ -19,6 +23,12 @@ interface FunctionalTestsProps {
   onDataChange?: (data: FunctionalData) => void;
 }
 
+interface MuscleMapping {
+  issue_name: string;
+  action_type: string;
+  muscle_name: string;
+}
+
 export const FunctionalTests = ({ 
   selectedAthleteId, 
   selectedDate, 
@@ -26,6 +36,10 @@ export const FunctionalTests = ({
   formData,
   onDataChange
 }: FunctionalTestsProps) => {
+  const [showResults, setShowResults] = useState(false);
+  const [muscleMappings, setMuscleMappings] = useState<MuscleMapping[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const handleFmsScoreChange = (scores: Record<string, number>) => {
     if (onDataChange && formData) {
       onDataChange({ ...formData, fmsScores: scores });
@@ -50,32 +64,190 @@ export const FunctionalTests = ({
     }
   };
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Στάση Σώματος + Μονοποδικά */}
+  const getAllSelectedIssues = () => {
+    const allIssues: string[] = [];
+    if (formData?.selectedPosture) {
+      allIssues.push(...formData.selectedPosture);
+    }
+    if (formData?.selectedSquatIssues) {
+      allIssues.push(...formData.selectedSquatIssues);
+    }
+    if (formData?.selectedSingleLegIssues) {
+      allIssues.push(...formData.selectedSingleLegIssues);
+    }
+    return allIssues;
+  };
+
+  const fetchMuscleResults = async () => {
+    const selectedIssues = getAllSelectedIssues();
+    if (selectedIssues.length === 0) {
+      setMuscleMappings([]);
+      setShowResults(true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('functional_issue_muscle_mappings')
+        .select(`
+          issue_name,
+          action_type,
+          muscles!inner(name)
+        `)
+        .in('issue_name', selectedIssues);
+
+      if (error) throw error;
+
+      const mappings: MuscleMapping[] = (data || []).map((item: any) => ({
+        issue_name: item.issue_name,
+        action_type: item.action_type,
+        muscle_name: item.muscles?.name || ''
+      }));
+
+      setMuscleMappings(mappings);
+    } catch (error) {
+      console.error('Error fetching muscle mappings:', error);
+    } finally {
+      setLoading(false);
+      setShowResults(true);
+    }
+  };
+
+  const handleNext = () => {
+    fetchMuscleResults();
+  };
+
+  const handleBack = () => {
+    setShowResults(false);
+  };
+
+  // Group muscles by action type
+  const strengthenMuscles = [...new Set(
+    muscleMappings
+      .filter(m => m.action_type === 'strengthen')
+      .map(m => m.muscle_name)
+  )];
+
+  const stretchMuscles = [...new Set(
+    muscleMappings
+      .filter(m => m.action_type === 'stretch')
+      .map(m => m.muscle_name)
+  )];
+
+  if (showResults) {
+    return (
       <div className="space-y-4">
-        <PostureTest 
-          selectedPosture={formData?.selectedPosture || []}
-          onPostureChange={handlePostureChange}
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-lg">Αποτελέσματα Αξιολόγησης</h3>
+          <Button 
+            variant="outline" 
+            onClick={handleBack}
+            className="rounded-none"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Πίσω
+          </Button>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">Φόρτωση...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Ενδυνάμωση */}
+            <div className="border p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-green-700 mb-4">
+                <ArrowUp className="w-4 h-4" />
+                Ενδυνάμωση
+              </div>
+              {strengthenMuscles.length > 0 ? (
+                <ul className="space-y-1">
+                  {strengthenMuscles.map((muscle) => (
+                    <li key={muscle} className="text-sm bg-green-50 px-3 py-2 border border-green-200">
+                      {muscle}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">Δεν υπάρχουν μύες για ενδυνάμωση</p>
+              )}
+            </div>
+
+            {/* Διάταση */}
+            <div className="border p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-blue-700 mb-4">
+                <MoveHorizontal className="w-4 h-4" />
+                Διάταση
+              </div>
+              {stretchMuscles.length > 0 ? (
+                <ul className="space-y-1">
+                  {stretchMuscles.map((muscle) => (
+                    <li key={muscle} className="text-sm bg-blue-50 px-3 py-2 border border-blue-200">
+                      {muscle}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">Δεν υπάρχουν μύες για διάταση</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Επιλεγμένα Issues */}
+        <div className="border p-4 mt-4">
+          <h4 className="font-semibold text-sm mb-2">Επιλεγμένα Ζητήματα:</h4>
+          <div className="flex flex-wrap gap-2">
+            {getAllSelectedIssues().map((issue) => (
+              <span key={issue} className="text-xs bg-gray-100 px-2 py-1 border">
+                {issue}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Στάση Σώματος + Μονοποδικά */}
+        <div className="space-y-4">
+          <PostureTest 
+            selectedPosture={formData?.selectedPosture || []}
+            onPostureChange={handlePostureChange}
+          />
+          <SingleLegSquatTest 
+            selectedSingleLegIssues={formData?.selectedSingleLegIssues || []}
+            onSingleLegChange={handleSingleLegChange}
+          />
+        </div>
+
+        {/* Καθήματα */}
+        <SquatTest 
+          selectedSquatIssues={formData?.selectedSquatIssues || []}
+          onSquatChange={handleSquatChange}
         />
-        <SingleLegSquatTest 
-          selectedSingleLegIssues={formData?.selectedSingleLegIssues || []}
-          onSingleLegChange={handleSingleLegChange}
-        />
+
+        {/* FMS */}
+        <div className="lg:col-span-2">
+          <FMSTest 
+            fmsScores={formData?.fmsScores || {}}
+            onFmsScoreChange={handleFmsScoreChange}
+          />
+        </div>
       </div>
 
-      {/* Καθήματα */}
-      <SquatTest 
-        selectedSquatIssues={formData?.selectedSquatIssues || []}
-        onSquatChange={handleSquatChange}
-      />
-
-      {/* FMS */}
-      <div className="lg:col-span-2">
-        <FMSTest 
-          fmsScores={formData?.fmsScores || {}}
-          onFmsScoreChange={handleFmsScoreChange}
-        />
+      {/* Κουμπί Επόμενο */}
+      <div className="flex justify-end">
+        <Button 
+          onClick={handleNext}
+          className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+        >
+          Επόμενο
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
       </div>
     </div>
   );
