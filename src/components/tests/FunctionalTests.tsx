@@ -133,17 +133,19 @@ export const FunctionalTests = ({
     setShowResults(false);
   };
 
-  // Group muscles by action type (excluding removed ones)
+  // Group muscles by action type (excluding removed ones) - using Set to remove duplicates
   const strengthenMuscles = [...new Set(
     muscleMappings
       .filter(m => m.action_type === 'strengthen')
-      .map(m => m.muscle_name)
+      .map(m => m.muscle_name?.trim())
+      .filter(Boolean)
   )].filter(m => !removedMuscles.strengthen.includes(m));
 
   const stretchMuscles = [...new Set(
     muscleMappings
       .filter(m => m.action_type === 'stretch')
-      .map(m => m.muscle_name)
+      .map(m => m.muscle_name?.trim())
+      .filter(Boolean)
   )].filter(m => !removedMuscles.stretch.includes(m));
 
   if (showResults) {
