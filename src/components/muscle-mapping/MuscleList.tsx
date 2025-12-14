@@ -98,29 +98,29 @@ export const MuscleList = () => {
 
   return (
     <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+      <CardHeader className="p-3 sm:p-4 md:p-6">
+        <CardTitle className="flex items-center justify-between text-base sm:text-lg md:text-xl">
           <span>Τράπεζα Μυών ({muscles.length})</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-4 md:p-6 pt-0">
         {/* Add new muscle */}
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Input
             placeholder="Όνομα μυός..."
             value={newMuscleName}
             onChange={(e) => setNewMuscleName(e.target.value)}
-            className="rounded-none"
+            className="rounded-none text-sm"
             onKeyDown={(e) => e.key === 'Enter' && handleAddMuscle()}
           />
           <Input
             placeholder="Κατηγορία (προαιρετικό)..."
             value={newMuscleGroup}
             onChange={(e) => setNewMuscleGroup(e.target.value)}
-            className="rounded-none"
+            className="rounded-none text-sm"
             onKeyDown={(e) => e.key === 'Enter' && handleAddMuscle()}
           />
-          <Button onClick={handleAddMuscle} className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90">
+          <Button onClick={handleAddMuscle} className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
             Προσθήκη
           </Button>
@@ -145,22 +145,22 @@ export const MuscleList = () => {
             Δεν βρέθηκαν μύες. Προσθέστε νέους μύες παραπάνω.
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {Object.entries(groupedMuscles).sort().map(([group, groupMuscles]) => (
               <div key={group} className="border border-gray-200 rounded-none">
-                <div className="bg-gray-50 px-4 py-2 font-semibold text-sm border-b">
+                <div className="bg-gray-50 px-3 sm:px-4 py-2 font-semibold text-xs sm:text-sm border-b">
                   {group} ({groupMuscles.length})
                 </div>
-                <div className="p-2 flex flex-wrap gap-2">
+                <div className="p-2 flex flex-wrap gap-1.5 sm:gap-2">
                   {groupMuscles.map(muscle => (
                     <div 
                       key={muscle.id}
-                      className="flex items-center gap-2 bg-white border px-3 py-1.5 text-sm group hover:bg-gray-50"
+                      className="flex items-center gap-1.5 sm:gap-2 bg-white border px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm group hover:bg-gray-50"
                     >
-                      <span>{muscle.name}</span>
+                      <span className="truncate max-w-[150px] sm:max-w-none">{muscle.name}</span>
                       <button
                         onClick={() => handleDeleteMuscle(muscle.id, muscle.name)}
-                        className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="text-red-500 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
