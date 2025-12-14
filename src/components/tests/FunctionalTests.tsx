@@ -5,7 +5,7 @@ import { SquatTest } from "./functional/SquatTest";
 import { SingleLegSquatTest } from "./functional/SingleLegSquatTest";
 import { FMSTest } from "./functional/FMSTest";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowLeft, ArrowUp, MoveHorizontal } from "lucide-react";
+import { ArrowRight, ArrowLeft, ArrowUp, MoveHorizontal, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface FunctionalData {
@@ -39,6 +39,17 @@ export const FunctionalTests = ({
   const [showResults, setShowResults] = useState(false);
   const [muscleMappings, setMuscleMappings] = useState<MuscleMapping[]>([]);
   const [loading, setLoading] = useState(false);
+  const [removedMuscles, setRemovedMuscles] = useState<{strengthen: string[], stretch: string[]}>({
+    strengthen: [],
+    stretch: []
+  });
+
+  const handleRemoveMuscle = (muscle: string, type: 'strengthen' | 'stretch') => {
+    setRemovedMuscles(prev => ({
+      ...prev,
+      [type]: [...prev[type], muscle]
+    }));
+  };
 
   const handleFmsScoreChange = (scores: Record<string, number>) => {
     if (onDataChange && formData) {
@@ -122,18 +133,18 @@ export const FunctionalTests = ({
     setShowResults(false);
   };
 
-  // Group muscles by action type
+  // Group muscles by action type (excluding removed ones)
   const strengthenMuscles = [...new Set(
     muscleMappings
       .filter(m => m.action_type === 'strengthen')
       .map(m => m.muscle_name)
-  )];
+  )].filter(m => !removedMuscles.strengthen.includes(m));
 
   const stretchMuscles = [...new Set(
     muscleMappings
       .filter(m => m.action_type === 'stretch')
       .map(m => m.muscle_name)
-  )];
+  )].filter(m => !removedMuscles.stretch.includes(m));
 
   if (showResults) {
     return (
@@ -163,8 +174,14 @@ export const FunctionalTests = ({
               {strengthenMuscles.length > 0 ? (
                 <ul className="space-y-1">
                   {strengthenMuscles.map((muscle) => (
-                    <li key={muscle} className="text-sm bg-green-50 px-3 py-2 border border-green-200">
-                      {muscle}
+                    <li key={muscle} className="text-sm bg-green-50 px-3 py-2 border border-green-200 flex items-center justify-between">
+                      <span>{muscle}</span>
+                      <button 
+                        onClick={() => handleRemoveMuscle(muscle, 'strengthen')}
+                        className="text-red-500 hover:text-red-700 p-1"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -182,8 +199,14 @@ export const FunctionalTests = ({
               {stretchMuscles.length > 0 ? (
                 <ul className="space-y-1">
                   {stretchMuscles.map((muscle) => (
-                    <li key={muscle} className="text-sm bg-blue-50 px-3 py-2 border border-blue-200">
-                      {muscle}
+                    <li key={muscle} className="text-sm bg-blue-50 px-3 py-2 border border-blue-200 flex items-center justify-between">
+                      <span>{muscle}</span>
+                      <button 
+                        onClick={() => handleRemoveMuscle(muscle, 'stretch')}
+                        className="text-red-500 hover:text-red-700 p-1"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </li>
                   ))}
                 </ul>
