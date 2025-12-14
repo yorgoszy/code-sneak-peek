@@ -164,7 +164,7 @@ export const AllTestsPanel = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Στάση Σώματος + Μονοποδικά */}
         <div className="space-y-4">
           {/* Posture */}
@@ -365,12 +365,12 @@ export const AllTestsPanel = () => {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="rounded-none max-w-2xl">
+        <DialogContent className="rounded-none max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selectedIssue}</DialogTitle>
+            <DialogTitle className="text-sm sm:text-base">{selectedIssue}</DialogTitle>
           </DialogHeader>
           
-          <div className="grid grid-cols-2 gap-6 mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-3 sm:mt-4">
             {/* Ενδυνάμωση */}
             <div className="border p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-green-700 mb-4">

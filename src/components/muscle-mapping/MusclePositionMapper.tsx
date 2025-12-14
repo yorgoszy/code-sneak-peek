@@ -243,19 +243,129 @@ export const MusclePositionMapper: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+      {/* Controls Panel - Mobile first */}
+      <Card className="rounded-none order-1 lg:order-2">
+        <CardHeader className="p-3 sm:p-4 pb-2">
+          <CardTitle className="text-base sm:text-lg flex items-center justify-between">
+            <span>Επιλογή Μυός</span>
+            <Badge variant="outline" className="rounded-none text-xs lg:hidden">
+              {mappedCount}/{muscles.length}
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 sm:p-4 pt-0 space-y-3 sm:space-y-4">
+          {/* Muscle selector */}
+          <div className="space-y-2">
+            <label className="text-xs sm:text-sm text-muted-foreground">Μυς</label>
+            <Select value={selectedMuscleId} onValueChange={setSelectedMuscleId}>
+              <SelectTrigger className="rounded-none text-sm">
+                <SelectValue placeholder="Επέλεξε μυ..." />
+              </SelectTrigger>
+              <SelectContent className="rounded-none max-h-[250px] sm:max-h-[300px]">
+                {muscles.map(muscle => (
+                  <SelectItem key={muscle.id} value={muscle.id} className="rounded-none text-sm">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate max-w-[200px]">{muscle.name}</span>
+                      {muscle.position_x !== null && (
+                        <Check className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
+                      )}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Action buttons */}
+          <div className="space-y-2">
+            <Button
+              onClick={() => setIsSelecting(true)}
+              disabled={!selectedMuscleId || isSelecting}
+              className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-sm"
+            >
+              <Target className="w-4 h-4 mr-2" />
+              {isSelecting ? 'Κάνε click στο model...' : 'Τοποθέτηση στο Model'}
+            </Button>
+
+            {isSelecting && (
+              <Button
+                onClick={() => setIsSelecting(false)}
+                variant="outline"
+                className="w-full rounded-none text-sm"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Ακύρωση
+              </Button>
+            )}
+          </div>
+
+          {/* Pending position */}
+          {pendingPosition && selectedMuscle && (
+            <div className="space-y-2 p-2 sm:p-3 bg-muted/50 border">
+              <div className="text-xs sm:text-sm font-medium truncate">{selectedMuscle.name}</div>
+              <div className="text-[10px] sm:text-xs text-muted-foreground font-mono">
+                X: {pendingPosition.x} | Y: {pendingPosition.y} | Z: {pendingPosition.z}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSavePosition}
+                  disabled={saving}
+                  size="sm"
+                  className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs sm:text-sm"
+                >
+                  <Save className="w-3 h-3 mr-1" />
+                  Αποθήκευση
+                </Button>
+                <Button
+                  onClick={() => setPendingPosition(null)}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-none"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Mapped muscles list */}
+          <div className="space-y-2">
+            <div className="text-xs sm:text-sm font-medium">Τοποθετημένοι Μύες ({mappedCount})</div>
+            <div className="max-h-[150px] sm:max-h-[200px] overflow-y-auto space-y-1">
+              {muscles.filter(m => m.position_x !== null).map(muscle => (
+                <div 
+                  key={muscle.id} 
+                  className="flex items-center justify-between p-1.5 sm:p-2 bg-muted/30 text-[10px] sm:text-xs"
+                >
+                  <span className="truncate flex-1 mr-2">{muscle.name}</span>
+                  <Button
+                    onClick={() => handleClearPosition(muscle.id)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 sm:h-6 sm:w-6 p-0 rounded-none hover:bg-destructive/20 flex-shrink-0"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 3D Model */}
-      <Card className="rounded-none lg:col-span-2">
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-lg flex items-center justify-between">
+      <Card className="rounded-none lg:col-span-2 order-2 lg:order-1">
+        <CardHeader className="p-3 sm:p-4 pb-2">
+          <CardTitle className="text-base sm:text-lg flex items-center justify-between">
             <span>3D Body Model</span>
-            <Badge variant="outline" className="rounded-none">
+            <Badge variant="outline" className="rounded-none text-xs hidden lg:inline-flex">
               {mappedCount}/{muscles.length} μύες
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <div className="w-full h-[500px] bg-black/95 relative">
+        <CardContent className="p-3 sm:p-4 pt-0">
+          <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] bg-black/95 relative touch-none">
             <Canvas
               camera={{ position: [0, 0, 5], fov: 50 }}
               style={{ background: 'transparent' }}
@@ -283,126 +393,23 @@ export const MusclePositionMapper: React.FC = () => {
             
             {/* Overlay instructions */}
             {isSelecting && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-[#00ffba] text-black px-4 py-2 rounded-none text-sm font-medium">
-                Κάνε click στο σημείο του μυός: {selectedMuscle?.name}
+              <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 bg-[#00ffba] text-black px-2 sm:px-4 py-1 sm:py-2 rounded-none text-xs sm:text-sm font-medium max-w-[90%] text-center">
+                <span className="hidden sm:inline">Κάνε click στο σημείο του μυός: </span>
+                <span className="sm:hidden">Click: </span>
+                {selectedMuscle?.name}
               </div>
             )}
           </div>
 
           {/* Legend */}
-          <div className="flex gap-4 mt-3 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <span className="text-muted-foreground">Τοποθετημένοι μύες</span>
+          <div className="flex flex-wrap gap-2 sm:gap-4 mt-2 sm:mt-3 text-xs sm:text-sm">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500"></div>
+              <span className="text-muted-foreground">Τοποθετημένοι</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-              <span className="text-muted-foreground">Επιλογή σε εκκρεμότητα</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Controls Panel */}
-      <Card className="rounded-none">
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-lg">Επιλογή Μυός</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0 space-y-4">
-          {/* Muscle selector */}
-          <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">Μυς</label>
-            <Select value={selectedMuscleId} onValueChange={setSelectedMuscleId}>
-              <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Επέλεξε μυ..." />
-              </SelectTrigger>
-              <SelectContent className="rounded-none max-h-[300px]">
-                {muscles.map(muscle => (
-                  <SelectItem key={muscle.id} value={muscle.id} className="rounded-none">
-                    <span className="flex items-center gap-2">
-                      {muscle.name}
-                      {muscle.position_x !== null && (
-                        <Check className="w-3 h-3 text-[#00ffba]" />
-                      )}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Action buttons */}
-          <div className="space-y-2">
-            <Button
-              onClick={() => setIsSelecting(true)}
-              disabled={!selectedMuscleId || isSelecting}
-              className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-            >
-              <Target className="w-4 h-4 mr-2" />
-              {isSelecting ? 'Κάνε click στο model...' : 'Τοποθέτηση στο Model'}
-            </Button>
-
-            {isSelecting && (
-              <Button
-                onClick={() => setIsSelecting(false)}
-                variant="outline"
-                className="w-full rounded-none"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Ακύρωση
-              </Button>
-            )}
-          </div>
-
-          {/* Pending position */}
-          {pendingPosition && selectedMuscle && (
-            <div className="space-y-2 p-3 bg-muted/50 border">
-              <div className="text-sm font-medium">{selectedMuscle.name}</div>
-              <div className="text-xs text-muted-foreground font-mono">
-                X: {pendingPosition.x} | Y: {pendingPosition.y} | Z: {pendingPosition.z}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleSavePosition}
-                  disabled={saving}
-                  size="sm"
-                  className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-                >
-                  <Save className="w-3 h-3 mr-1" />
-                  Αποθήκευση
-                </Button>
-                <Button
-                  onClick={() => setPendingPosition(null)}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-none"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Mapped muscles list */}
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Τοποθετημένοι Μύες ({mappedCount})</div>
-            <div className="max-h-[200px] overflow-y-auto space-y-1">
-              {muscles.filter(m => m.position_x !== null).map(muscle => (
-                <div 
-                  key={muscle.id} 
-                  className="flex items-center justify-between p-2 bg-muted/30 text-xs"
-                >
-                  <span className="truncate flex-1">{muscle.name}</span>
-                  <Button
-                    onClick={() => handleClearPosition(muscle.id)}
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 rounded-none hover:bg-destructive/20"
-                  >
-                    <X className="w-3 h-3" />
-                  </Button>
-                </div>
-              ))}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500"></div>
+              <span className="text-muted-foreground">Εκκρεμότητα</span>
             </div>
           </div>
         </CardContent>
