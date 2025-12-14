@@ -2177,6 +2177,10 @@ export type Database = {
           id: string
           muscle_group: string | null
           name: string
+          position_x: number | null
+          position_y: number | null
+          position_z: number | null
+          texture_url: string | null
           updated_at: string
         }
         Insert: {
@@ -2184,6 +2188,10 @@ export type Database = {
           id?: string
           muscle_group?: string | null
           name: string
+          position_x?: number | null
+          position_y?: number | null
+          position_z?: number | null
+          texture_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -2191,6 +2199,10 @@ export type Database = {
           id?: string
           muscle_group?: string | null
           name?: string
+          position_x?: number | null
+          position_y?: number | null
+          position_z?: number | null
+          texture_url?: string | null
           updated_at?: string
         }
         Relationships: []

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dumbbell } from 'lucide-react';
+import { Dumbbell, User } from 'lucide-react';
 import { MuscleList } from './MuscleList';
 import { AllTestsPanel } from './AllTestsPanel';
+import { MusclePositionMapper } from './MusclePositionMapper';
 
 export const MuscleMapping = () => {
   const [activeTab, setActiveTab] = useState('tests');
@@ -27,6 +28,10 @@ export const MuscleMapping = () => {
             <Dumbbell className="w-4 h-4 mr-2" />
             Τράπεζα Μυών
           </TabsTrigger>
+          <TabsTrigger value="3d-mapper" className="rounded-none">
+            <User className="w-4 h-4 mr-2" />
+            3D Muscle Mapper
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="tests" className="mt-4">
@@ -35,6 +40,10 @@ export const MuscleMapping = () => {
 
         <TabsContent value="muscles" className="mt-4">
           <MuscleList />
+        </TabsContent>
+
+        <TabsContent value="3d-mapper" className="mt-4">
+          <MusclePositionMapper />
         </TabsContent>
       </Tabs>
     </div>
