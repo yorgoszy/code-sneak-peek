@@ -153,6 +153,13 @@ function InteractiveHumanModel({
     'Rhomboideus_Minor': 'Rhomboideus',
     'rhomboideus_major': 'Rhomboideus',
     'rhomboideus_minor': 'Rhomboideus',
+    // Σύμπλεγμα Δικεφάλων Μηριαίων (Hamstrings)
+    'Semimembranosus': 'Hamstrings_Complex',
+    'semimembranosus': 'Hamstrings_Complex',
+    'Semitendinosus': 'Hamstrings_Complex',
+    'semitendinosus': 'Hamstrings_Complex',
+    'Biceps_Femoris_Long_Head': 'Hamstrings_Complex',
+    'biceps_femoris_long_head': 'Hamstrings_Complex',
   }), []);
 
   // Συνάρτηση για να πάρει το grouped name
