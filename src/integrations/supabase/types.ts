@@ -2178,6 +2178,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          mesh_name: string | null
           muscle_group: string | null
           name: string
           position_x: number | null
@@ -2189,6 +2190,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          mesh_name?: string | null
           muscle_group?: string | null
           name: string
           position_x?: number | null
@@ -2200,6 +2202,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          mesh_name?: string | null
           muscle_group?: string | null
           name?: string
           position_x?: number | null
