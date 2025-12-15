@@ -49,79 +49,151 @@ const getBaseName = (name: string) => {
 
 function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: MuscleData[] }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
-  
-  // Create sets with EXACT mesh names for matching (including _Left/_Right)
-  const strengthenNames = useMemo(() => {
+
+  const norm = (s: string) => (s || '').trim().toLowerCase();
+
+  // Build match sets from DB mesh names
+  const strengthenExact = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
       .filter(m => m.actionType === 'strengthen')
-      .forEach(m => {
-        set.add(m.meshName);
-        set.add(m.meshName.toLowerCase());
-      });
+      .forEach(m => set.add(norm(m.meshName)));
     return set;
   }, [musclesToHighlight]);
 
-  const stretchNames = useMemo(() => {
+  const stretchExact = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
       .filter(m => m.actionType === 'stretch')
-      .forEach(m => {
-        set.add(m.meshName);
-        set.add(m.meshName.toLowerCase());
-      });
+      .forEach(m => set.add(norm(m.meshName)));
     return set;
   }, [musclesToHighlight]);
 
+  // Also build base-name sets per side, in case the OBJ mesh names differ slightly
+  const strengthenLeftBase = useMemo(() => {
+    const set = new Set<string>();
+    musclesToHighlight
+      .filter(m => m.actionType === 'strengthen' && /_Left$/i.test(m.meshName))
+      .forEach(m => set.add(norm(getBaseName(m.meshName))));
+    return set;
+  }, [musclesToHighlight]);
+
+  const strengthenRightBase = useMemo(() => {
+    const set = new Set<string>();
+    musclesToHighlight
+      .filter(m => m.actionType === 'strengthen' && /_Right$/i.test(m.meshName))
+      .forEach(m => set.add(norm(getBaseName(m.meshName))));
+    return set;
+  }, [musclesToHighlight]);
+
+  const stretchLeftBase = useMemo(() => {
+    const set = new Set<string>();
+    musclesToHighlight
+      .filter(m => m.actionType === 'stretch' && /_Left$/i.test(m.meshName))
+      .forEach(m => set.add(norm(getBaseName(m.meshName))));
+    return set;
+  }, [musclesToHighlight]);
+
+  const stretchRightBase = useMemo(() => {
+    const set = new Set<string>();
+    musclesToHighlight
+      .filter(m => m.actionType === 'stretch' && /_Right$/i.test(m.meshName))
+      .forEach(m => set.add(norm(getBaseName(m.meshName))));
+    return set;
+  }, [musclesToHighlight]);
+
+  // Strict split at x=0 so each side shows only its half
+  const CLIP_EPS = 0.001;
+  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), -CLIP_EPS), []); // keep x < 0
+  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), -CLIP_EPS), []); // keep x > 0
+
   const clonedObj = useMemo(() => {
     const clone = obj.clone(true);
-    
+
     const box = new THREE.Box3().setFromObject(clone);
     const center = box.getCenter(new THREE.Vector3());
     clone.position.sub(center);
-    
+
     clone.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        const meshName = (child.name || '').trim();
-        const meshNameLower = meshName.toLowerCase();
+      if (!(child instanceof THREE.Mesh)) return;
 
-        // Match by EXACT name (includes _Left/_Right)
-        const isStrengthen = strengthenNames.has(meshName) || strengthenNames.has(meshNameLower);
-        const isStretch = stretchNames.has(meshName) || stretchNames.has(meshNameLower);
+      const meshNameRaw = (child.name || '').trim();
+      const meshName = norm(meshNameRaw);
+      const meshBase = norm(getBaseName(meshNameRaw));
 
-        if (isStrengthen) {
-          child.material = new THREE.MeshStandardMaterial({
-            color: '#ef4444',
-            roughness: 0.5,
-            metalness: 0.1,
-          });
-          child.visible = true;
-        } else if (isStretch) {
-          child.material = new THREE.MeshStandardMaterial({
-            color: '#f59e0b',
-            roughness: 0.5,
-            metalness: 0.1,
-          });
-          child.visible = true;
-        } else {
-          child.material = new THREE.MeshStandardMaterial({
-            color: '#d1d5db',
-            wireframe: true,
-            transparent: true,
-            opacity: 0.25,
-          });
-          child.visible = true;
-        }
+      const isLeftMesh = /_Left$/i.test(meshNameRaw);
+      const isRightMesh = /_Right$/i.test(meshNameRaw);
+
+      // Match order: exact -> base+side
+      const isStrengthen =
+        strengthenExact.has(meshName) ||
+        (isLeftMesh && strengthenLeftBase.has(meshBase)) ||
+        (isRightMesh && strengthenRightBase.has(meshBase));
+
+      const isStretch =
+        stretchExact.has(meshName) ||
+        (isLeftMesh && stretchLeftBase.has(meshBase)) ||
+        (isRightMesh && stretchRightBase.has(meshBase));
+
+      // Apply clipping per-side
+      const clippingPlanes: THREE.Plane[] = isLeftMesh
+        ? [leftClipPlane]
+        : isRightMesh
+          ? [rightClipPlane]
+          : [];
+
+      if (isStrengthen) {
+        child.material = new THREE.MeshStandardMaterial({
+          color: '#ef4444',
+          roughness: 0.5,
+          metalness: 0.1,
+          clippingPlanes,
+          clipShadows: true,
+        });
+        child.visible = true;
+        return;
       }
+
+      if (isStretch) {
+        child.material = new THREE.MeshStandardMaterial({
+          color: '#f59e0b',
+          roughness: 0.5,
+          metalness: 0.1,
+          clippingPlanes,
+          clipShadows: true,
+        });
+        child.visible = true;
+        return;
+      }
+
+      child.material = new THREE.MeshStandardMaterial({
+        color: '#d1d5db',
+        wireframe: true,
+        transparent: true,
+        opacity: 0.25,
+        clippingPlanes,
+        clipShadows: true,
+      });
+      child.visible = true;
     });
-    
+
     return clone;
-  }, [obj, strengthenNames, stretchNames]);
+  }, [
+    obj,
+    strengthenExact,
+    stretchExact,
+    strengthenLeftBase,
+    strengthenRightBase,
+    stretchLeftBase,
+    stretchRightBase,
+    leftClipPlane,
+    rightClipPlane,
+  ]);
 
   return (
-    <primitive 
-      object={clonedObj} 
-      scale={1.43} 
+    <primitive
+      object={clonedObj}
+      scale={1.43}
       rotation={[0, 0, 0]}
       position={[0, 1.7, 0]}
     />
@@ -287,6 +359,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
       <Canvas
         camera={{ position: [3, 4, 4], fov: 50 }}
         style={{ background: 'transparent' }}
+        gl={{ localClippingEnabled: true }}
       >
         <ambientLight intensity={0.9} />
         <directionalLight position={[10, 10, 5]} intensity={1.2} />
