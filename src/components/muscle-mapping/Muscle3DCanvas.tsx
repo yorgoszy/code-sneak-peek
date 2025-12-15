@@ -143,6 +143,12 @@ function InteractiveHumanModel({
       const baseMeshName = clickedObject.name || 'unnamed';
       const point = intersects[0].point;
       
+      // Αν υπάρχει ενεργό search, επιτρέπουμε κλικ ΜΟΝΟ σε meshes που ταιριάζουν
+      if (matchesSearch.size > 0 && !matchesSearch.has(baseMeshName)) {
+        console.log('⚠️ Κλικ αγνοήθηκε - ο μυς δεν ταιριάζει με την αναζήτηση:', baseMeshName);
+        return;
+      }
+      
       // Διαχωρισμός αριστερά/δεξιά μόνο αν δεν είναι midline muscle
       let finalMeshName = baseMeshName;
       if (!midlineMuscles.has(baseMeshName)) {
@@ -156,7 +162,7 @@ function InteractiveHumanModel({
         onMeshClick(finalMeshName);
       }
     }
-  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles]);
+  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, matchesSearch]);
 
   const handlePointerMove = useCallback((event: any) => {
     raycaster.setFromCamera(pointer, camera);
