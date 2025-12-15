@@ -152,20 +152,28 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       const meshBase = norm(getBaseName(cleanName(meshNameRaw)));
 
       // Determine side:
-      // 1) from name suffix when available
-      // 2) otherwise from mesh world-center x
-      child.updateWorldMatrix(true, false);
-      const geom = child.geometry as THREE.BufferGeometry;
-      geom.computeBoundingBox();
-      const localCenter = geom.boundingBox?.getCenter(new THREE.Vector3()) ?? new THREE.Vector3();
-      const worldCenter = child.localToWorld(localCenter.clone());
-      const x = worldCenter.x;
-
+      // Prefer explicit OBJ suffix, otherwise use world-space bounding-box center.
       const cleanRaw = cleanName(meshNameRaw);
       const nameLeft = /_Left$/i.test(cleanRaw);
       const nameRight = /_Right$/i.test(cleanRaw);
-      const isMidline = Math.abs(x) < 0.02;
-      const side: 'left' | 'right' | 'mid' = nameLeft ? 'left' : nameRight ? 'right' : isMidline ? 'mid' : x < 0 ? 'left' : 'right';
+
+      const worldBox = new THREE.Box3().setFromObject(child);
+      const worldCenter = worldBox.getCenter(new THREE.Vector3());
+      const x = worldCenter.x;
+
+      // Very small epsilon: only truly central meshes are treated as midline.
+      const MID_EPS = 0.001;
+      const isMidline = Math.abs(x) < MID_EPS;
+
+      const side: 'left' | 'right' | 'mid' = nameLeft
+        ? 'left'
+        : nameRight
+          ? 'right'
+          : isMidline
+            ? 'mid'
+            : x < 0
+              ? 'left'
+              : 'right';
 
       const useSided = hasSidedData;
 
@@ -229,6 +237,9 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     strengthenRightBase,
     stretchLeftBase,
     stretchRightBase,
+    strengthenBaseAll,
+    stretchBaseAll,
+    hasSidedData,
     leftClipPlane,
     rightClipPlane,
   ]);
