@@ -182,7 +182,7 @@ function InteractiveHumanModel({
       // Διαχωρισμός αριστερά/δεξιά μόνο αν δεν είναι midline muscle
       let finalMeshName = baseMeshName;
       if (!midlineMuscles.has(baseMeshName)) {
-        const side = point.x > 0 ? 'Right' : 'Left';
+        const side = point.x > 0 ? 'Left' : 'Right';
         finalMeshName = `${baseMeshName}_${side}`;
       }
       
@@ -202,7 +202,7 @@ function InteractiveHumanModel({
       const hoveredObject = intersects[0].object as THREE.Mesh;
       const meshName = hoveredObject.name || 'unnamed';
       const point = intersects[0].point;
-      const side = point.x > 0 ? 'Right' : 'Left';
+      const side = point.x > 0 ? 'Left' : 'Right';
       setHoveredMesh(`${meshName} (${side})`);
     } else {
       setHoveredMesh(null);
