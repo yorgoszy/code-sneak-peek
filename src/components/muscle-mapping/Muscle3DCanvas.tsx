@@ -24,13 +24,15 @@ function InteractiveHumanModel({
   onMeshClick,
   searchQuery,
   mappedMeshNames,
-  onSearchResults
+  onSearchResults,
+  onMeshNamesLoaded
 }: { 
   isSelecting: boolean;
   onMeshClick?: (meshName: string) => void;
   searchQuery: string;
   mappedMeshNames: string[];
   onSearchResults?: (count: number) => void;
+  onMeshNamesLoaded?: (names: string[]) => void;
 }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   const { raycaster, camera, pointer } = useThree();
@@ -78,8 +80,11 @@ function InteractiveHumanModel({
       }
     });
     setAllMeshNames(meshNames);
+    if (onMeshNamesLoaded) {
+      onMeshNamesLoaded(meshNames);
+    }
     console.log('📋 All mesh names:', meshNames);
-  }, [obj]);
+  }, [obj, onMeshNamesLoaded]);
 
   // Highlight meshes based on search query and mapped status
   useEffect(() => {
@@ -217,6 +222,7 @@ interface Muscle3DCanvasProps {
   searchQuery: string;
   mappedMeshNames: string[];
   onSearchResults?: (count: number) => void;
+  onMeshNamesLoaded?: (names: string[]) => void;
 }
 
 const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
@@ -225,7 +231,8 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
   onMeshClick,
   searchQuery,
   mappedMeshNames,
-  onSearchResults
+  onSearchResults,
+  onMeshNamesLoaded
 }) => {
   return (
     <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] bg-black/95 relative touch-none">
@@ -243,6 +250,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
             searchQuery={searchQuery}
             mappedMeshNames={mappedMeshNames}
             onSearchResults={onSearchResults}
+            onMeshNamesLoaded={onMeshNamesLoaded}
           />
         </Suspense>
         <OrbitControls 
