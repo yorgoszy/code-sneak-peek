@@ -86,9 +86,16 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     const center = box.getCenter(new THREE.Vector3());
     clone.position.sub(center);
     
+    // Debug: log mesh names and what we're looking for
+    console.log('🔍 Looking for strengthen meshes:', Array.from(strengthenMeshes));
+    console.log('🔍 Looking for stretch meshes:', Array.from(stretchMeshes));
+    
+    const modelMeshNames: string[] = [];
+    
     clone.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         const meshName = (child.name || '').trim();
+        modelMeshNames.push(meshName);
         const meshNameLower = meshName.toLowerCase();
 
         // Check if this mesh should be highlighted (case-insensitive)
@@ -96,6 +103,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
         const isStretch = stretchMeshes.has(meshName) || stretchMeshes.has(meshNameLower);
 
         if (isStrengthen) {
+          console.log('✅ STRENGTHEN match:', meshName);
           // Red for strengthen
           child.material = new THREE.MeshStandardMaterial({
             color: '#ef4444',
@@ -106,6 +114,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
           });
           child.visible = true;
         } else if (isStretch) {
+          console.log('✅ STRETCH match:', meshName);
           // Yellow/Amber for stretch
           child.material = new THREE.MeshStandardMaterial({
             color: '#f59e0b',
@@ -127,6 +136,8 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
         }
       }
     });
+    
+    console.log('📋 All model mesh names:', modelMeshNames);
     
     return clone;
   }, [obj, strengthenMeshes, stretchMeshes]);
@@ -305,7 +316,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
         </div>
 
         {/* Legend with counts */}
-        <div className="flex justify-center gap-3 -mt-2 text-[9px]">
+        <div className="flex justify-center gap-3 -mt-4 text-[9px]">
           {strengthenCount > 0 && (
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-red-500"></div>
