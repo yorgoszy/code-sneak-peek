@@ -81,16 +81,21 @@ function InteractiveHumanModel({
     
     if (intersects.length > 0) {
       const clickedObject = intersects[0].object;
-      const meshName = clickedObject.name || 'unnamed';
+      const baseMeshName = clickedObject.name || 'unnamed';
+      const point = intersects[0].point;
       
-      console.log('🎯 Clicked mesh:', meshName);
+      // Διαχωρισμός αριστερά/δεξιά βάσει θέσης x
+      const side = point.x > 0 ? 'Right' : 'Left';
+      const meshNameWithSide = `${baseMeshName}_${side}`;
+      
+      console.log('🎯 Clicked mesh:', baseMeshName, '| Side:', side, '| Full name:', meshNameWithSide);
+      console.log('📍 Click position:', { x: point.x.toFixed(4), y: point.y.toFixed(4), z: point.z.toFixed(4) });
       
       if (onMeshClick) {
-        onMeshClick(meshName);
+        onMeshClick(meshNameWithSide);
       }
       
       if (isSelecting) {
-        const point = intersects[0].point;
         onClickPosition({
           x: parseFloat(point.x.toFixed(4)),
           y: parseFloat(point.y.toFixed(4)),
