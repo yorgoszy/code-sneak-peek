@@ -159,10 +159,7 @@ const AthletesProgressWidget = () => {
 
         {selectedUserId && (
           <Card className="rounded-none">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold">Πρόοδος</CardTitle>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               <UserProgressSection userId={selectedUserId} />
             </CardContent>
           </Card>
