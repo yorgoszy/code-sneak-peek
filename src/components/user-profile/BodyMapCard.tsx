@@ -299,7 +299,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
             <directionalLight position={[10, 10, 5]} intensity={1.2} />
             <directionalLight position={[-10, -10, 5]} intensity={0.6} />
             <Suspense fallback={<Loader />}>
-              <HalfBodyClipped musclesToHighlight={musclesToHighlight} />
+              <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
             </Suspense>
             <OrbitControls 
               enableZoom={true}
