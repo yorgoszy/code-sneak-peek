@@ -87,7 +87,10 @@ function InteractiveHumanModel({
   }, [obj, onMeshNamesLoaded]);
 
   // Highlight meshes based on search query and mapped status
+  // When search is active, HIDE all other meshes (isolation mode)
   useEffect(() => {
+    const hasActiveSearch = matchesSearch.size > 0;
+    
     obj.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         const meshName = child.name || 'unnamed';
@@ -100,26 +103,37 @@ function InteractiveHumanModel({
         // Check if matches search
         const matchesSearchQuery = matchesSearch.has(meshName);
         
-        if (matchesSearchQuery) {
-          // Highlight search matches in cyan
-          child.material = new THREE.MeshStandardMaterial({
-            color: '#00ffba',
-            roughness: 0.5,
-            metalness: 0.2,
-            emissive: '#00ffba',
-            emissiveIntensity: 0.4,
-          });
-        } else if (isMapped) {
-          // Show mapped muscles in gold
-          child.material = new THREE.MeshStandardMaterial({
-            color: '#cb8954',
-            roughness: 0.5,
-            metalness: 0.3,
-            emissive: '#cb8954',
-            emissiveIntensity: 0.2,
-          });
-        } else if (child.userData.originalMaterial) {
-          child.material = child.userData.originalMaterial.clone();
+        if (hasActiveSearch) {
+          // Isolation mode: show only matching meshes
+          if (matchesSearchQuery) {
+            child.visible = true;
+            child.material = new THREE.MeshStandardMaterial({
+              color: '#00ffba',
+              roughness: 0.5,
+              metalness: 0.2,
+              emissive: '#00ffba',
+              emissiveIntensity: 0.4,
+            });
+          } else {
+            // Hide non-matching meshes
+            child.visible = false;
+          }
+        } else {
+          // Normal mode: show all meshes
+          child.visible = true;
+          
+          if (isMapped) {
+            // Show mapped muscles in gold
+            child.material = new THREE.MeshStandardMaterial({
+              color: '#cb8954',
+              roughness: 0.5,
+              metalness: 0.3,
+              emissive: '#cb8954',
+              emissiveIntensity: 0.2,
+            });
+          } else if (child.userData.originalMaterial) {
+            child.material = child.userData.originalMaterial.clone();
+          }
         }
       }
     });
