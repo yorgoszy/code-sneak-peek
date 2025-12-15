@@ -128,7 +128,43 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     [musclesToHighlight]
   );
 
-  // Note: we avoid clipping planes here because they can hide whole meshes depending on OBJ orientation.
+  // Clipping planes: left muscles show only x < 0, right muscles show only x > 0
+  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), 0), []); // keeps x < 0
+  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []); // keeps x > 0
+
+  // Build sets per side from DB mesh_name
+  const strengthenLeft = useMemo(() => {
+    const set = new Set<string>();
+    musclesToHighlight
+      .filter(m => m.actionType === 'strengthen' && /_Left$/i.test(m.meshName))
+      .forEach(m => set.add(norm(getBaseName(m.meshName))));
+    return set;
+  }, [musclesToHighlight]);
+
+  const strengthenRight = useMemo(() => {
+    const set = new Set<string>();
+    musclesToHighlight
+      .filter(m => m.actionType === 'strengthen' && /_Right$/i.test(m.meshName))
+      .forEach(m => set.add(norm(getBaseName(m.meshName))));
+    return set;
+  }, [musclesToHighlight]);
+
+  const stretchLeft = useMemo(() => {
+    const set = new Set<string>();
+    musclesToHighlight
+      .filter(m => m.actionType === 'stretch' && /_Left$/i.test(m.meshName))
+      .forEach(m => set.add(norm(getBaseName(m.meshName))));
+    return set;
+  }, [musclesToHighlight]);
+
+  const stretchRight = useMemo(() => {
+    const set = new Set<string>();
+    musclesToHighlight
+      .filter(m => m.actionType === 'stretch' && /_Right$/i.test(m.meshName))
+      .forEach(m => set.add(norm(getBaseName(m.meshName))));
+    return set;
+  }, [musclesToHighlight]);
+
   const clonedObj = useMemo(() => {
     const clone = obj.clone(true);
 
@@ -143,31 +179,35 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       .filter(m => m.actionType === 'strengthen' && m.position)
       .map(m => ({
         pos: new THREE.Vector3(m.position!.x, m.position!.y, m.position!.z).sub(center),
+        isLeft: /_Left$/i.test(m.meshName),
+        isRight: /_Right$/i.test(m.meshName),
       }));
 
     const stretchTargets = musclesToHighlight
       .filter(m => m.actionType === 'stretch' && m.position)
       .map(m => ({
         pos: new THREE.Vector3(m.position!.x, m.position!.y, m.position!.z).sub(center),
+        isLeft: /_Left$/i.test(m.meshName),
+        isRight: /_Right$/i.test(m.meshName),
       }));
 
     // Tweakable: distance threshold for matching DB point -> mesh.
     const MATCH_EPS = 0.25;
 
     const matchByPosition = (meshCenter: THREE.Vector3) => {
-      let best: { type: 'strengthen' | 'stretch'; dist: number } | null = null;
+      let best: { type: 'strengthen' | 'stretch'; dist: number; isLeft: boolean; isRight: boolean } | null = null;
 
       for (const t of strengthenTargets) {
         const d = t.pos.distanceTo(meshCenter);
-        if (d <= MATCH_EPS && (!best || d < best.dist)) best = { type: 'strengthen', dist: d };
+        if (d <= MATCH_EPS && (!best || d < best.dist)) best = { type: 'strengthen', dist: d, isLeft: t.isLeft, isRight: t.isRight };
       }
 
       for (const t of stretchTargets) {
         const d = t.pos.distanceTo(meshCenter);
-        if (d <= MATCH_EPS && (!best || d < best.dist)) best = { type: 'stretch', dist: d };
+        if (d <= MATCH_EPS && (!best || d < best.dist)) best = { type: 'stretch', dist: d, isLeft: t.isLeft, isRight: t.isRight };
       }
 
-      return best?.type ?? null;
+      return best;
     };
 
     clone.traverse((child) => {
@@ -185,8 +225,8 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
       // Preferred: coordinate matching (ignores Left/Right naming completely)
       const matchedByPosition = hasPositionData ? matchByPosition(meshCenter) : null;
-      const isStrengthenByPos = matchedByPosition === 'strengthen';
-      const isStretchByPos = matchedByPosition === 'stretch';
+      const isStrengthenByPos = matchedByPosition?.type === 'strengthen';
+      const isStretchByPos = matchedByPosition?.type === 'stretch';
 
       // Fallback: name-based matching (base-name only; no side splitting)
       const isStrengthenByName = strengthenExact.has(meshName) || strengthenBaseAll.has(meshBase);
@@ -195,7 +235,23 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       const isStrengthen = isStrengthenByPos || isStrengthenByName;
       const isStretch = isStretchByPos || isStretchByName;
 
-      const clippingPlanes: THREE.Plane[] = [];
+      // Determine if we should clip to show only left or right half
+      let clipSide: 'left' | 'right' | null = null;
+      if (matchedByPosition) {
+        if (matchedByPosition.isLeft) clipSide = 'left';
+        else if (matchedByPosition.isRight) clipSide = 'right';
+      } else if (isStrengthenByName) {
+        if (strengthenLeft.has(meshBase)) clipSide = 'left';
+        else if (strengthenRight.has(meshBase)) clipSide = 'right';
+      } else if (isStretchByName) {
+        if (stretchLeft.has(meshBase)) clipSide = 'left';
+        else if (stretchRight.has(meshBase)) clipSide = 'right';
+      }
+
+      const clippingPlanes: THREE.Plane[] = 
+        clipSide === 'left' ? [leftClipPlane] : 
+        clipSide === 'right' ? [rightClipPlane] : 
+        [];
 
       if (isStrengthen) {
         child.material = new THREE.MeshStandardMaterial({
@@ -240,7 +296,13 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     stretchExact,
     strengthenBaseAll,
     stretchBaseAll,
+    strengthenLeft,
+    strengthenRight,
+    stretchLeft,
+    stretchRight,
     hasPositionData,
+    leftClipPlane,
+    rightClipPlane,
   ]);
 
   return (
