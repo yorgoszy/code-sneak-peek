@@ -157,6 +157,8 @@ function InteractiveHumanModel({
     'infraspinatus',
     'Longissimus_Thoracis',
     'longissimus_thoracis',
+    'Spinalis_Thoracis',
+    'spinalis_thoracis',
     // Πρόσθεσε περισσότερους εδώ αν χρειάζεται
   ]), []);
 
