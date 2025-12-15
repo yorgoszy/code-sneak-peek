@@ -203,12 +203,28 @@ export const MusclePositionMapper: React.FC = () => {
               <Search className="w-3 h-3" />
               Αναζήτηση Mesh (Λατινικά)
             </label>
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="π.χ. Biceps, Trapezius..."
-              className="rounded-none text-sm"
-            />
+            <div className="flex gap-2">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                  }
+                }}
+                placeholder="π.χ. Biceps, Trapezius..."
+                className="rounded-none text-sm flex-1"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setSearchQuery(searchQuery)}
+                className="rounded-none px-3"
+              >
+                <Search className="w-4 h-4" />
+              </Button>
+            </div>
             <p className="text-[10px] text-muted-foreground">
               Πέρνα το ποντίκι πάνω στο model για να δεις τα ονόματα
             </p>
