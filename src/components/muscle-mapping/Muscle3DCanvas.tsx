@@ -139,6 +139,7 @@ function InteractiveHumanModel({
     'Splenius_Cervicis',
     'splenius_capitis',
     'splenius_cervicis',
+    'Rhomboideus',
     // Πρόσθεσε περισσότερους εδώ αν χρειάζεται
   ]), []);
 
@@ -148,6 +149,10 @@ function InteractiveHumanModel({
     'Psoas_Minor': 'Psoas',
     'psoas_major': 'Psoas',
     'psoas_minor': 'Psoas',
+    'Rhomboideus_Major': 'Rhomboideus',
+    'Rhomboideus_Minor': 'Rhomboideus',
+    'rhomboideus_major': 'Rhomboideus',
+    'rhomboideus_minor': 'Rhomboideus',
   }), []);
 
   // Συνάρτηση για να πάρει το grouped name
