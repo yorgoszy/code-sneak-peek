@@ -110,6 +110,16 @@ function InteractiveHumanModel({
     });
   }, [obj, matchesSearch, mappedMeshNames]);
 
+  // Μύες που δεν χρειάζονται διαχωρισμό Left/Right (κεντρικοί μύες)
+  const midlineMuscles = useMemo(() => new Set([
+    'Latissimus_Dorsi',
+    'Trapezius',
+    'Rectus_Abdominis',
+    'Erector_Spinae',
+    'Sternum',
+    // Πρόσθεσε περισσότερους εδώ αν χρειάζεται
+  ]), []);
+
   const handleClick = useCallback((event: any) => {
     event.stopPropagation();
     
@@ -123,17 +133,20 @@ function InteractiveHumanModel({
       const baseMeshName = clickedObject.name || 'unnamed';
       const point = intersects[0].point;
       
-      // Διαχωρισμός αριστερά/δεξιά βάσει θέσης x
-      const side = point.x > 0 ? 'Right' : 'Left';
-      const meshNameWithSide = `${baseMeshName}_${side}`;
+      // Διαχωρισμός αριστερά/δεξιά μόνο αν δεν είναι midline muscle
+      let finalMeshName = baseMeshName;
+      if (!midlineMuscles.has(baseMeshName)) {
+        const side = point.x > 0 ? 'Right' : 'Left';
+        finalMeshName = `${baseMeshName}_${side}`;
+      }
       
-      console.log('🎯 Clicked mesh:', baseMeshName, '| Side:', side, '| Full name:', meshNameWithSide);
+      console.log('🎯 Clicked mesh:', baseMeshName, '| Final name:', finalMeshName);
       
       if (onMeshClick) {
-        onMeshClick(meshNameWithSide);
+        onMeshClick(finalMeshName);
       }
     }
-  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick]);
+  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles]);
 
   const handlePointerMove = useCallback((event: any) => {
     raycaster.setFromCamera(pointer, camera);
