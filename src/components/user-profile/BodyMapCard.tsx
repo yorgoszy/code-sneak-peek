@@ -134,7 +134,7 @@ function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesT
       object={clonedObj} 
       scale={1.43} 
       rotation={[0, 0, 0]}
-      position={[0, 5, 0]}
+      position={[0, 1.5, 0]}
     />
   );
 }
@@ -289,7 +289,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const stretchCount = musclesToHighlight.filter(m => m.actionType === 'stretch').length;
 
   return (
-    <div className="w-[220px] h-[300px] bg-black rounded-none">
+    <div className="w-[220px] h-[300px] rounded-none bg-[hsl(var(--foreground))]">
       <Canvas
         camera={{ position: [3, 4, 4], fov: 50 }}
         style={{ background: 'transparent' }}
@@ -302,7 +302,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
           <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
         </Suspense>
         <OrbitControls 
-          target={[0, 5, 0]}
+          target={[0, 3, 0]}
           enableZoom={true}
           enablePan={false}
           minDistance={3}
