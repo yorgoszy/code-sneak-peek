@@ -86,11 +86,18 @@ export const MusclePositionMapper: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('muscles')
-        .select('id, name, muscle_group, mesh_name')
-        .order('name') as { data: Muscle[] | null; error: any };
+        .select('*')
+        .order('name');
       
       if (error) throw error;
-      setMuscles(data || []);
+      // Cast to our interface since mesh_name is a new column
+      const musclesData = (data || []).map(m => ({
+        id: m.id,
+        name: m.name,
+        muscle_group: m.muscle_group,
+        mesh_name: (m as any).mesh_name || null
+      })) as Muscle[];
+      setMuscles(musclesData);
     } catch (error) {
       console.error('Error fetching muscles:', error);
       toast.error('Σφάλμα φόρτωσης μυών');
