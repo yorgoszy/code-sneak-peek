@@ -291,7 +291,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   return (
     <div className="w-[220px] h-[380px]">
       <Canvas
-        camera={{ position: [0, 0, 0], fov: 50 }}
+        camera={{ position: [3, 3, 3], fov: 50 }}
         style={{ background: 'transparent' }}
         gl={{ localClippingEnabled: true }}
       >
