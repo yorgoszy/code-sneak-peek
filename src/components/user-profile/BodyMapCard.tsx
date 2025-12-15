@@ -282,12 +282,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const stretchCount = musclesToHighlight.filter(m => m.actionType === 'stretch').length;
 
   return (
-    <Card className="rounded-none border-border bg-black/95 max-w-[200px]">
-      <CardHeader className="p-2 pb-1">
-        <CardTitle className="text-xs font-medium text-[#00ffba]">
-          {t('progress.bodyMap', 'Χάρτης Σώματος')}
-        </CardTitle>
-      </CardHeader>
+    <Card className="rounded-none border-none bg-transparent max-w-[200px]">
       <CardContent className="p-2 pt-0">
         <div className="w-full h-[200px]">
           <Canvas
