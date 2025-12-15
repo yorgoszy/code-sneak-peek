@@ -133,7 +133,7 @@ function InteractiveHumanModel({
     <group>
       <primitive 
         object={obj} 
-        scale={0.01}
+        scale={1.5}
         rotation={[0, 0, 0]}
         onClick={handleClick}
         onPointerMove={handlePointerMove}
