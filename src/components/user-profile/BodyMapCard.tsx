@@ -302,7 +302,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
           <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
         </Suspense>
         <OrbitControls 
-          target={[0, 0, 0]}
+          target={[0, 1, 0]}
           enableZoom={true}
           enablePan={false}
           minDistance={3}
