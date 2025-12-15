@@ -1,11 +1,11 @@
-import React, { useEffect, useCallback, Suspense } from 'react';
+import React, { useEffect, useCallback, Suspense, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, useProgress, Html } from '@react-three/drei';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 
-const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/models/Male.OBJ';
+const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/models/Ecorche_by_AlexLashko_ShrunkenView.obj';
 
 interface ClickPosition {
   x: number;
@@ -40,55 +40,103 @@ function MuscleMarker({ position, color }: { position: [number, number, number];
 function InteractiveHumanModel({ 
   onClickPosition, 
   isSelecting,
-  placedMuscles 
+  placedMuscles,
+  onMeshClick
 }: { 
   onClickPosition: (pos: ClickPosition) => void;
   isSelecting: boolean;
   placedMuscles: Array<{ position: [number, number, number]; name: string }>;
+  onMeshClick?: (meshName: string) => void;
 }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   const { raycaster, camera, pointer } = useThree();
+  const [hoveredMesh, setHoveredMesh] = useState<string | null>(null);
   
   useEffect(() => {
     const box = new THREE.Box3().setFromObject(obj);
     const center = box.getCenter(new THREE.Vector3());
     obj.position.sub(center);
     
+    // Store original materials and list all mesh names
+    const meshNames: string[] = [];
     obj.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        child.material = new THREE.MeshStandardMaterial({
-          color: '#00ffba',
-          wireframe: true,
-          transparent: true,
-          opacity: 0.6,
+        meshNames.push(child.name || 'unnamed');
+        child.userData.originalMaterial = new THREE.MeshStandardMaterial({
+          color: '#cc8866',
+          roughness: 0.7,
+          metalness: 0.1,
         });
+        child.material = child.userData.originalMaterial.clone();
       }
     });
+    console.log('📋 Mesh names in model:', meshNames);
   }, [obj]);
 
-  const handleClick = useCallback(() => {
-    if (!isSelecting) return;
+  const handleClick = useCallback((event: any) => {
+    event.stopPropagation();
     
     raycaster.setFromCamera(pointer, camera);
     const intersects = raycaster.intersectObject(obj, true);
     
     if (intersects.length > 0) {
-      const point = intersects[0].point;
-      onClickPosition({
-        x: parseFloat(point.x.toFixed(4)),
-        y: parseFloat(point.y.toFixed(4)),
-        z: parseFloat(point.z.toFixed(4))
-      });
+      const clickedObject = intersects[0].object;
+      const meshName = clickedObject.name || 'unnamed';
+      
+      console.log('🎯 Clicked mesh:', meshName);
+      
+      if (onMeshClick) {
+        onMeshClick(meshName);
+      }
+      
+      if (isSelecting) {
+        const point = intersects[0].point;
+        onClickPosition({
+          x: parseFloat(point.x.toFixed(4)),
+          y: parseFloat(point.y.toFixed(4)),
+          z: parseFloat(point.z.toFixed(4))
+        });
+      }
     }
-  }, [isSelecting, raycaster, camera, pointer, obj, onClickPosition]);
+  }, [isSelecting, raycaster, camera, pointer, obj, onClickPosition, onMeshClick]);
+
+  const handlePointerMove = useCallback((event: any) => {
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObject(obj, true);
+    
+    // Reset all materials first
+    obj.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.userData.originalMaterial) {
+        child.material = child.userData.originalMaterial.clone();
+      }
+    });
+    
+    if (intersects.length > 0) {
+      const hoveredObject = intersects[0].object as THREE.Mesh;
+      const meshName = hoveredObject.name || 'unnamed';
+      setHoveredMesh(meshName);
+      
+      // Highlight hovered mesh
+      hoveredObject.material = new THREE.MeshStandardMaterial({
+        color: '#00ffba',
+        roughness: 0.5,
+        metalness: 0.2,
+        emissive: '#00ffba',
+        emissiveIntensity: 0.3,
+      });
+    } else {
+      setHoveredMesh(null);
+    }
+  }, [raycaster, camera, pointer, obj]);
 
   return (
     <group>
       <primitive 
         object={obj} 
-        scale={0.54} 
+        scale={0.01}
         rotation={[0, 0, 0]}
         onClick={handleClick}
+        onPointerMove={handlePointerMove}
       />
       {placedMuscles.map((muscle, index) => (
         <MuscleMarker 
@@ -97,6 +145,13 @@ function InteractiveHumanModel({
           color="#ff4444"
         />
       ))}
+      {hoveredMesh && (
+        <Html center position={[0, 2, 0]}>
+          <div className="bg-black/80 text-[#00ffba] px-3 py-1 text-sm font-mono whitespace-nowrap">
+            {hoveredMesh}
+          </div>
+        </Html>
+      )}
     </group>
   );
 }
@@ -119,6 +174,7 @@ interface Muscle3DCanvasProps {
   isSelecting: boolean;
   selectedMuscleName?: string;
   onClickPosition: (pos: ClickPosition) => void;
+  onMeshClick?: (meshName: string) => void;
 }
 
 const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
@@ -126,7 +182,8 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
   pendingPosition,
   isSelecting,
   selectedMuscleName,
-  onClickPosition
+  onClickPosition,
+  onMeshClick
 }) => {
   return (
     <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] bg-black/95 relative touch-none">
@@ -142,6 +199,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
             onClickPosition={onClickPosition}
             isSelecting={isSelecting}
             placedMuscles={placedMuscles}
+            onMeshClick={onMeshClick}
           />
           <PendingMarker 
             position={pendingPosition ? [pendingPosition.x, pendingPosition.y, pendingPosition.z] : null} 
