@@ -1,11 +1,11 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, Target, Check, X, Loader2, AlertTriangle, Search, Link2 } from "lucide-react";
+import { Save, Target, Check, X, Loader2, AlertTriangle, Search, Link2, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 interface Muscle {
@@ -79,6 +79,8 @@ export const MusclePositionMapper: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchActive, setSearchActive] = useState(false);
   const [foundCount, setFoundCount] = useState(0);
+  const [muscleSearch, setMuscleSearch] = useState('');
+  const [muscleDropdownOpen, setMuscleDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetchMuscles();
@@ -177,6 +179,13 @@ export const MusclePositionMapper: React.FC = () => {
   const mappedCount = muscles.filter(m => m.mesh_name !== null).length;
   const mappedMeshNames = muscles.filter(m => m.mesh_name).map(m => m.mesh_name!);
 
+  // Filtered muscles for the dropdown
+  const filteredMuscles = useMemo(() => {
+    if (!muscleSearch.trim()) return muscles;
+    const search = muscleSearch.toLowerCase();
+    return muscles.filter(m => m.name.toLowerCase().includes(search));
+  }, [muscles, muscleSearch]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -256,26 +265,59 @@ export const MusclePositionMapper: React.FC = () => {
             )}
           </div>
 
-          {/* Muscle selector */}
+          {/* Muscle selector with search */}
           <div className="space-y-2">
             <label className="text-xs sm:text-sm text-muted-foreground">Επιλογή Μυός (Ελληνικά)</label>
-            <Select value={selectedMuscleId} onValueChange={setSelectedMuscleId}>
-              <SelectTrigger className="rounded-none text-sm">
-                <SelectValue placeholder="Επέλεξε μυ..." />
-              </SelectTrigger>
-              <SelectContent className="rounded-none max-h-[250px] sm:max-h-[300px]">
-                {muscles.map(muscle => (
-                  <SelectItem key={muscle.id} value={muscle.id} className="rounded-none text-sm">
-                    <span className="flex items-center gap-2">
-                      <span className="truncate max-w-[200px]">{muscle.name}</span>
-                      {muscle.mesh_name && (
-                        <Check className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
-                      )}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={muscleDropdownOpen} onOpenChange={setMuscleDropdownOpen}>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-full rounded-none text-sm justify-between font-normal"
+                >
+                  <span className={selectedMuscle ? '' : 'text-muted-foreground'}>
+                    {selectedMuscle ? selectedMuscle.name : 'Επέλεξε μυ...'}
+                  </span>
+                  <ChevronDown className="w-4 h-4 ml-2 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[280px] p-0 rounded-none" align="start">
+                <div className="p-2 border-b">
+                  <Input
+                    placeholder="Αναζήτηση μυός..."
+                    value={muscleSearch}
+                    onChange={(e) => setMuscleSearch(e.target.value)}
+                    className="rounded-none text-sm h-8"
+                    autoFocus
+                  />
+                </div>
+                <div className="max-h-[250px] overflow-y-auto">
+                  {filteredMuscles.length === 0 ? (
+                    <div className="p-3 text-center text-sm text-muted-foreground">
+                      Δεν βρέθηκαν μύες
+                    </div>
+                  ) : (
+                    filteredMuscles.map(muscle => (
+                      <div
+                        key={muscle.id}
+                        onClick={() => {
+                          setSelectedMuscleId(muscle.id);
+                          setMuscleDropdownOpen(false);
+                          setMuscleSearch('');
+                        }}
+                        className={`flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-muted ${
+                          muscle.id === selectedMuscleId ? 'bg-muted' : ''
+                        }`}
+                      >
+                        <span className="truncate">{muscle.name}</span>
+                        {muscle.mesh_name && (
+                          <Check className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Action buttons */}
