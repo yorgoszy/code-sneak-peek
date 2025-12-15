@@ -50,7 +50,15 @@ const getBaseName = (name: string) => {
 function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: MuscleData[] }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
 
-  const norm = (s: string) => (s || '').trim().toLowerCase();
+  const cleanName = (s: string) =>
+    (s || '')
+      .trim()
+      // common exporter suffixes
+      .replace(/\.(\d+)$/, '')
+      .replace(/_(\d+)$/, '')
+      .replace(/\s+/g, '');
+
+  const norm = (s: string) => cleanName(s).toLowerCase();
 
   // Build match sets from DB mesh names
   const strengthenExact = useMemo(() => {
@@ -119,10 +127,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
       const meshNameRaw = (child.name || '').trim();
       const meshName = norm(meshNameRaw);
-      const meshBase = norm(getBaseName(meshNameRaw));
+      const meshBase = norm(getBaseName(cleanName(meshNameRaw)));
 
-      const isLeftMesh = /_Left$/i.test(meshNameRaw);
-      const isRightMesh = /_Right$/i.test(meshNameRaw);
+      const isLeftMesh = /_Left$/i.test(cleanName(meshNameRaw));
+      const isRightMesh = /_Right$/i.test(cleanName(meshNameRaw));
 
       // Match order: exact -> base+side
       const isStrengthen =
@@ -319,10 +327,11 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
       });
 
       const muscleArray = Array.from(muscleDataMap.values());
-      
+
+      console.log('[BodyMapCard] highlight muscles:', muscleArray.map(m => m.meshName));
+
       setMusclesToHighlight(muscleArray);
       setHasData(muscleArray.length > 0);
-      
     } catch (error) {
       console.error('Error fetching muscle data:', error);
       setHasData(false);
