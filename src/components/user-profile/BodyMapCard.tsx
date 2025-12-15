@@ -134,7 +134,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   return (
     <primitive 
       object={clonedObj} 
-      scale={0.65} 
+      scale={0.91} 
       rotation={[0, 0, 0]}
     />
   );
