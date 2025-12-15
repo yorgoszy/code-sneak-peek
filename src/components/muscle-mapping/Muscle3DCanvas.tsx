@@ -19,13 +19,13 @@ function Loader() {
 }
 
 // Μύες που έχουν υπο-μέρη (sub-parts) - popup επιλογής
-const musclesWithSubParts: Record<string, { name: string; parts: { id: string; label: string }[] }> = {
+const musclesWithSubParts: Record<string, { name: string; parts: { id: string; label: string; isMidline: boolean }[] }> = {
   'Trapezius': {
     name: 'Τραπεζοειδής',
     parts: [
-      { id: 'Upper', label: 'Άνω Μοίρα' },
-      { id: 'Middle', label: 'Μεσαία Μοίρα' },
-      { id: 'Lower', label: 'Κάτω Μοίρα' },
+      { id: 'Upper', label: 'Άνω Μοίρα', isMidline: false },
+      { id: 'Middle', label: 'Μεσαία Μοίρα', isMidline: true },
+      { id: 'Lower', label: 'Κάτω Μοίρα', isMidline: true },
     ]
   }
 };
@@ -304,6 +304,14 @@ const SubPartSelector: React.FC<SubPartSelectorProps> = ({ muscleName, side, onS
 
   const sideLabel = side === 'Left' ? 'Αριστερά' : 'Δεξιά';
 
+  const handlePartClick = (part: { id: string; label: string; isMidline: boolean }) => {
+    // Αν είναι κεντρικός μυς, δεν προσθέτουμε Left/Right
+    const fullName = part.isMidline 
+      ? `${muscleName}_${part.id}`
+      : `${muscleName}_${part.id}_${side}`;
+    onSelect(fullName);
+  };
+
   return (
     <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50">
       <div className="bg-black border border-[#00ffba] p-4 max-w-xs w-full mx-4">
@@ -317,10 +325,11 @@ const SubPartSelector: React.FC<SubPartSelectorProps> = ({ muscleName, side, onS
           {muscleData.parts.map((part) => (
             <button
               key={part.id}
-              onClick={() => onSelect(`${muscleName}_${part.id}_${side}`)}
+              onClick={() => handlePartClick(part)}
               className="w-full py-2 px-3 bg-transparent border border-[#00ffba]/50 text-[#00ffba] text-sm hover:bg-[#00ffba] hover:text-black transition-colors rounded-none"
             >
               {part.label}
+              {part.isMidline && <span className="text-white/40 text-xs ml-2">(κεντρικός)</span>}
             </button>
           ))}
         </div>
