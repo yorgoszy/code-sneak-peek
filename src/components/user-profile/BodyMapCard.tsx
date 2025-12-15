@@ -78,12 +78,15 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     return set;
   }, [musclesToHighlight]);
 
-  useEffect(() => {
-    const box = new THREE.Box3().setFromObject(obj);
-    const center = box.getCenter(new THREE.Vector3());
-    obj.position.sub(center);
+  // Clone the object to avoid modifying the cached version
+  const clonedObj = useMemo(() => {
+    const clone = obj.clone(true);
     
-    obj.traverse((child) => {
+    const box = new THREE.Box3().setFromObject(clone);
+    const center = box.getCenter(new THREE.Vector3());
+    clone.position.sub(center);
+    
+    clone.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         const meshName = child.name || '';
         
@@ -123,11 +126,13 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
         }
       }
     });
+    
+    return clone;
   }, [obj, strengthenMeshes, stretchMeshes]);
 
   return (
     <primitive 
-      object={obj} 
+      object={clonedObj} 
       scale={0.65} 
       rotation={[0, 0, 0]}
     />
