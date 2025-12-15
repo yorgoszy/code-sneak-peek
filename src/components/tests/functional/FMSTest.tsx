@@ -42,8 +42,16 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
     let total = 0;
     allFmsExercises.forEach(exercise => {
       if (hasLeftRight.includes(exercise)) {
-        total += (fmsScores[`${exercise} L`] || 0);
-        total += (fmsScores[`${exercise} R`] || 0);
+        const leftScore = fmsScores[`${exercise} L`];
+        const rightScore = fmsScores[`${exercise} R`];
+        
+        if (leftScore !== undefined && rightScore !== undefined) {
+          total += Math.min(leftScore, rightScore);
+        } else if (leftScore !== undefined) {
+          total += leftScore;
+        } else if (rightScore !== undefined) {
+          total += rightScore;
+        }
       } else {
         total += (fmsScores[exercise] || 0);
       }
