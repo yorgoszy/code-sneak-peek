@@ -172,10 +172,7 @@ export const AthletesProgressWithSidebar = () => {
 
             {selectedUserId && (
               <Card className="rounded-none">
-                <CardHeader className="pb-3 md:pb-6">
-                  <CardTitle className="text-base md:text-xl font-semibold">Πρόοδος</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="pt-4">
                   <UserProgressSection userId={selectedUserId} />
                 </CardContent>
               </Card>
