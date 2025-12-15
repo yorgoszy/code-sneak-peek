@@ -110,6 +110,28 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     return set;
   }, [musclesToHighlight]);
 
+  // Fallback base sets (when we can't reliably infer side from OBJ names)
+  const strengthenBaseAll = useMemo(() => {
+    const set = new Set<string>();
+    musclesToHighlight
+      .filter(m => m.actionType === 'strengthen')
+      .forEach(m => set.add(norm(getBaseName(m.meshName))));
+    return set;
+  }, [musclesToHighlight]);
+
+  const stretchBaseAll = useMemo(() => {
+    const set = new Set<string>();
+    musclesToHighlight
+      .filter(m => m.actionType === 'stretch')
+      .forEach(m => set.add(norm(getBaseName(m.meshName))));
+    return set;
+  }, [musclesToHighlight]);
+
+  const hasSidedData = useMemo(
+    () => musclesToHighlight.some(m => /_Left$|_Right$/i.test(m.meshName)),
+    [musclesToHighlight]
+  );
+
   // Strict split at x=0 so each side shows only its half
   const CLIP_EPS = 0.001;
   const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), -CLIP_EPS), []); // keep x < 0
@@ -129,26 +151,39 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       const meshName = norm(meshNameRaw);
       const meshBase = norm(getBaseName(cleanName(meshNameRaw)));
 
-      const isLeftMesh = /_Left$/i.test(cleanName(meshNameRaw));
-      const isRightMesh = /_Right$/i.test(cleanName(meshNameRaw));
+      // Determine side:
+      // 1) from name suffix when available
+      // 2) otherwise from mesh world-center x
+      child.updateWorldMatrix(true, false);
+      const geom = child.geometry as THREE.BufferGeometry;
+      geom.computeBoundingBox();
+      const localCenter = geom.boundingBox?.getCenter(new THREE.Vector3()) ?? new THREE.Vector3();
+      const worldCenter = child.localToWorld(localCenter.clone());
+      const x = worldCenter.x;
 
-      // Match order: exact -> base+side
+      const cleanRaw = cleanName(meshNameRaw);
+      const nameLeft = /_Left$/i.test(cleanRaw);
+      const nameRight = /_Right$/i.test(cleanRaw);
+      const isMidline = Math.abs(x) < 0.02;
+      const side: 'left' | 'right' | 'mid' = nameLeft ? 'left' : nameRight ? 'right' : isMidline ? 'mid' : x < 0 ? 'left' : 'right';
+
+      const useSided = hasSidedData;
+
+      // Match order: exact -> base(+side) -> base(all)
       const isStrengthen =
         strengthenExact.has(meshName) ||
-        (isLeftMesh && strengthenLeftBase.has(meshBase)) ||
-        (isRightMesh && strengthenRightBase.has(meshBase));
+        (useSided
+          ? (side === 'left' && strengthenLeftBase.has(meshBase)) || (side === 'right' && strengthenRightBase.has(meshBase))
+          : strengthenBaseAll.has(meshBase));
 
       const isStretch =
         stretchExact.has(meshName) ||
-        (isLeftMesh && stretchLeftBase.has(meshBase)) ||
-        (isRightMesh && stretchRightBase.has(meshBase));
+        (useSided
+          ? (side === 'left' && stretchLeftBase.has(meshBase)) || (side === 'right' && stretchRightBase.has(meshBase))
+          : stretchBaseAll.has(meshBase));
 
       // Apply clipping per-side
-      const clippingPlanes: THREE.Plane[] = isLeftMesh
-        ? [leftClipPlane]
-        : isRightMesh
-          ? [rightClipPlane]
-          : [];
+      const clippingPlanes: THREE.Plane[] = side === 'left' ? [leftClipPlane] : side === 'right' ? [rightClipPlane] : [];
 
       if (isStrengthen) {
         child.material = new THREE.MeshStandardMaterial({
