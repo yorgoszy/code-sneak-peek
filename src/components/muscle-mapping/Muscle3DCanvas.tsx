@@ -140,6 +140,8 @@ function InteractiveHumanModel({
     'splenius_capitis',
     'splenius_cervicis',
     'Rhomboideus',
+    'Infraspinatus',
+    'infraspinatus',
     // Πρόσθεσε περισσότερους εδώ αν χρειάζεται
   ]), []);
 
