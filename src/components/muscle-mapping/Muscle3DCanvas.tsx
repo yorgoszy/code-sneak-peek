@@ -25,7 +25,8 @@ function InteractiveHumanModel({
   searchQuery,
   mappedMeshNames,
   onSearchResults,
-  onMeshNamesLoaded
+  onMeshNamesLoaded,
+  selectedMeshes = []
 }: { 
   isSelecting: boolean;
   onMeshClick?: (meshName: string) => void;
@@ -33,6 +34,7 @@ function InteractiveHumanModel({
   mappedMeshNames: string[];
   onSearchResults?: (count: number) => void;
   onMeshNamesLoaded?: (names: string[]) => void;
+  selectedMeshes?: string[];
 }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   const { raycaster, camera, pointer } = useThree();
@@ -86,7 +88,7 @@ function InteractiveHumanModel({
     console.log('📋 All mesh names:', meshNames);
   }, [obj, onMeshNamesLoaded]);
 
-  // Highlight meshes based on search query and mapped status
+  // Highlight meshes based on search query, mapped status, and selected meshes
   useEffect(() => {
     obj.traverse((child) => {
       if (child instanceof THREE.Mesh) {
@@ -95,15 +97,35 @@ function InteractiveHumanModel({
         // Always show all meshes
         child.visible = true;
         
+        // Check if this mesh is currently selected (for multi-select)
+        const isSelected = selectedMeshes.some(selected => {
+          const baseName = selected.replace(/_Left$|_Right$/, '');
+          return baseName === meshName;
+        });
+        
         // Check if this mesh is mapped (either side)
-        const isMapped = mappedMeshNames.some(mapped => 
-          getBaseMeshName(mapped) === meshName
-        );
+        const isMapped = mappedMeshNames.some(mapped => {
+          // Support comma-separated mesh names
+          const mappedMeshes = mapped.split(',');
+          return mappedMeshes.some(m => {
+            const baseName = m.replace(/_Left$|_Right$/, '').trim();
+            return baseName === meshName;
+          });
+        });
         
         // Check if matches search
         const matchesSearchQuery = matchesSearch.has(meshName);
         
-        if (matchesSearchQuery) {
+        if (isSelected) {
+          // Highlight currently selected meshes in bright green
+          child.material = new THREE.MeshStandardMaterial({
+            color: '#00ff00',
+            roughness: 0.3,
+            metalness: 0.3,
+            emissive: '#00ff00',
+            emissiveIntensity: 0.6,
+          });
+        } else if (matchesSearchQuery) {
           // Highlight search matches in cyan
           child.material = new THREE.MeshStandardMaterial({
             color: '#00ffba',
@@ -126,7 +148,7 @@ function InteractiveHumanModel({
         }
       }
     });
-  }, [obj, matchesSearch, mappedMeshNames]);
+  }, [obj, matchesSearch, mappedMeshNames, selectedMeshes]);
 
   // Μύες που δεν χρειάζονται διαχωρισμό Left/Right (κεντρικοί μύες)
   const midlineMuscles = useMemo(() => new Set([
@@ -142,30 +164,6 @@ function InteractiveHumanModel({
     'Rhomboideus',
     // Πρόσθεσε περισσότερους εδώ αν χρειάζεται
   ]), []);
-
-  // Ομαδοποίηση meshes σε έναν μυ (πολλά meshes -> ένα όνομα)
-  const meshGrouping = useMemo(() => ({
-    'Psoas_Major': 'Psoas',
-    'Psoas_Minor': 'Psoas',
-    'psoas_major': 'Psoas',
-    'psoas_minor': 'Psoas',
-    'Rhomboideus_Major': 'Rhomboideus',
-    'Rhomboideus_Minor': 'Rhomboideus',
-    'rhomboideus_major': 'Rhomboideus',
-    'rhomboideus_minor': 'Rhomboideus',
-    // Σύμπλεγμα Δικεφάλων Μηριαίων (Hamstrings)
-    'Semimembranosus': 'Hamstrings_Complex',
-    'semimembranosus': 'Hamstrings_Complex',
-    'Semitendinosus': 'Hamstrings_Complex',
-    'semitendinosus': 'Hamstrings_Complex',
-    'Biceps_Femoris_Long_Head': 'Hamstrings_Complex',
-    'biceps_femoris_long_head': 'Hamstrings_Complex',
-  }), []);
-
-  // Συνάρτηση για να πάρει το grouped name
-  const getGroupedMeshName = useCallback((meshName: string) => {
-    return meshGrouping[meshName as keyof typeof meshGrouping] || meshName;
-  }, [meshGrouping]);
 
   const handleClick = useCallback((event: any) => {
     event.stopPropagation();
@@ -197,23 +195,20 @@ function InteractiveHumanModel({
       
       const point = targetIntersect.point;
       
-      // Εφαρμογή grouping (π.χ. psoas_major -> Psoas)
-      const groupedName = getGroupedMeshName(baseMeshName);
-      
       // Διαχωρισμός αριστερά/δεξιά μόνο αν δεν είναι midline muscle
-      let finalMeshName = groupedName;
-      if (!midlineMuscles.has(groupedName)) {
+      let finalMeshName = baseMeshName;
+      if (!midlineMuscles.has(baseMeshName)) {
         const side = point.x > 0 ? 'Left' : 'Right';
-        finalMeshName = `${groupedName}_${side}`;
+        finalMeshName = `${baseMeshName}_${side}`;
       }
       
-      console.log('🎯 Clicked mesh:', baseMeshName, '| Grouped:', groupedName, '| Final name:', finalMeshName);
+      console.log('🎯 Clicked mesh:', baseMeshName, '| Final name:', finalMeshName);
       
       if (onMeshClick) {
         onMeshClick(finalMeshName);
       }
     }
-  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, matchesSearch, getGroupedMeshName]);
+  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, matchesSearch]);
 
   const handlePointerMove = useCallback((event: any) => {
     raycaster.setFromCamera(pointer, camera);
@@ -224,20 +219,17 @@ function InteractiveHumanModel({
       const meshName = hoveredObject.name || 'unnamed';
       const point = intersects[0].point;
       
-      // Εφαρμογή grouping
-      const groupedName = getGroupedMeshName(meshName);
-      
       // Κεντρικοί μύες δεν έχουν Left/Right
-      if (midlineMuscles.has(groupedName)) {
-        setHoveredMesh(groupedName);
+      if (midlineMuscles.has(meshName)) {
+        setHoveredMesh(meshName);
       } else {
         const side = point.x > 0 ? 'Left' : 'Right';
-        setHoveredMesh(`${groupedName} (${side})`);
+        setHoveredMesh(`${meshName} (${side})`);
       }
     } else {
       setHoveredMesh(null);
     }
-  }, [raycaster, camera, pointer, obj, midlineMuscles, getGroupedMeshName]);
+  }, [raycaster, camera, pointer, obj, midlineMuscles]);
 
   return (
     <group>
@@ -267,6 +259,7 @@ interface Muscle3DCanvasProps {
   mappedMeshNames: string[];
   onSearchResults?: (count: number) => void;
   onMeshNamesLoaded?: (names: string[]) => void;
+  selectedMeshes?: string[];
 }
 
 const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
@@ -276,7 +269,8 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
   searchQuery,
   mappedMeshNames,
   onSearchResults,
-  onMeshNamesLoaded
+  onMeshNamesLoaded,
+  selectedMeshes = []
 }) => {
   return (
     <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] bg-black/95 relative touch-none">
@@ -295,6 +289,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
             mappedMeshNames={mappedMeshNames}
             onSearchResults={onSearchResults}
             onMeshNamesLoaded={onMeshNamesLoaded}
+            selectedMeshes={selectedMeshes}
           />
         </Suspense>
         <OrbitControls 

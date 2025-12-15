@@ -73,7 +73,7 @@ export const MusclePositionMapper: React.FC = () => {
   const [muscles, setMuscles] = useState<Muscle[]>([]);
   const [selectedMuscleId, setSelectedMuscleId] = useState<string>('');
   const [isSelecting, setIsSelecting] = useState(false);
-  const [pendingMeshName, setPendingMeshName] = useState<string | null>(null);
+  const [selectedMeshes, setSelectedMeshes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -96,7 +96,6 @@ export const MusclePositionMapper: React.FC = () => {
         .order('name');
       
       if (error) throw error;
-      // Cast to our interface since mesh_name is a new column
       const musclesData = (data || []).map(m => ({
         id: m.id,
         name: m.name,
@@ -121,31 +120,49 @@ export const MusclePositionMapper: React.FC = () => {
       return;
     }
     
-    console.log('🔗 Mesh clicked for mapping:', meshName);
-    setPendingMeshName(meshName);
+    // Toggle selection - add or remove from selectedMeshes
+    setSelectedMeshes(prev => {
+      if (prev.includes(meshName)) {
+        console.log('🔗 Mesh removed from selection:', meshName);
+        return prev.filter(m => m !== meshName);
+      } else {
+        console.log('🔗 Mesh added to selection:', meshName);
+        return [...prev, meshName];
+      }
+    });
+  };
+
+  const handleFinishSelection = () => {
+    if (selectedMeshes.length === 0) {
+      toast.error('Δεν έχεις επιλέξει κανένα mesh');
+      return;
+    }
     setIsSelecting(false);
   };
 
   const handleSaveMapping = async () => {
-    if (!selectedMuscleId || !pendingMeshName) return;
+    if (!selectedMuscleId || selectedMeshes.length === 0) return;
+    
+    // Join multiple meshes with comma
+    const meshNameToSave = selectedMeshes.join(',');
     
     setSaving(true);
     try {
       const { error } = await supabase
         .from('muscles')
-        .update({ mesh_name: pendingMeshName } as any)
+        .update({ mesh_name: meshNameToSave } as any)
         .eq('id', selectedMuscleId);
       
       if (error) throw error;
       
       setMuscles(prev => prev.map(m => 
         m.id === selectedMuscleId 
-          ? { ...m, mesh_name: pendingMeshName }
+          ? { ...m, mesh_name: meshNameToSave }
           : m
       ));
       
-      toast.success('Η αντιστοίχιση αποθηκεύτηκε!');
-      setPendingMeshName(null);
+      toast.success(`Αποθηκεύτηκαν ${selectedMeshes.length} meshes!`);
+      setSelectedMeshes([]);
       setSelectedMuscleId('');
     } catch (error) {
       console.error('Error saving mapping:', error);
@@ -372,33 +389,52 @@ export const MusclePositionMapper: React.FC = () => {
           {/* Action buttons */}
           <div className="space-y-2">
             <Button
-              onClick={() => setIsSelecting(true)}
+              onClick={() => {
+                setIsSelecting(true);
+                setSelectedMeshes([]);
+              }}
               disabled={!selectedMuscleId || isSelecting}
               className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-sm"
             >
               <Target className="w-4 h-4 mr-2" />
-              {isSelecting ? 'Κάνε click στον μυ...' : 'Αντιστοίχιση με Mesh'}
+              {isSelecting ? `Επιλέχθηκαν ${selectedMeshes.length} meshes` : 'Αντιστοίχιση με Mesh'}
             </Button>
 
             {isSelecting && (
-              <Button
-                onClick={() => setIsSelecting(false)}
-                variant="outline"
-                className="w-full rounded-none text-sm"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Ακύρωση
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleFinishSelection}
+                  disabled={selectedMeshes.length === 0}
+                  className="flex-1 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white text-sm"
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Ολοκλήρωση ({selectedMeshes.length})
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsSelecting(false);
+                    setSelectedMeshes([]);
+                  }}
+                  variant="outline"
+                  className="rounded-none text-sm"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             )}
           </div>
 
-          {/* Pending mapping */}
-          {pendingMeshName && selectedMuscle && (
+          {/* Selected meshes preview */}
+          {selectedMeshes.length > 0 && !isSelecting && selectedMuscle && (
             <div className="space-y-2 p-2 sm:p-3 bg-muted/50 border">
               <div className="text-xs sm:text-sm font-medium truncate">{selectedMuscle.name}</div>
-              <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
-                <Link2 className="w-3 h-3" />
-                <span className="font-mono">{pendingMeshName}</span>
+              <div className="space-y-1">
+                {selectedMeshes.map((mesh, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                    <Link2 className="w-3 h-3 flex-shrink-0" />
+                    <span className="font-mono truncate">{mesh}</span>
+                  </div>
+                ))}
               </div>
               <div className="flex gap-2">
                 <Button
@@ -408,10 +444,10 @@ export const MusclePositionMapper: React.FC = () => {
                   className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs sm:text-sm"
                 >
                   <Save className="w-3 h-3 mr-1" />
-                  Αποθήκευση
+                  Αποθήκευση ({selectedMeshes.length})
                 </Button>
                 <Button
-                  onClick={() => setPendingMeshName(null)}
+                  onClick={() => setSelectedMeshes([])}
                   variant="outline"
                   size="sm"
                   className="rounded-none"
@@ -471,6 +507,7 @@ export const MusclePositionMapper: React.FC = () => {
                 mappedMeshNames={mappedMeshNames}
                 onSearchResults={setFoundCount}
                 onMeshNamesLoaded={setAvailableMeshNames}
+                selectedMeshes={selectedMeshes}
               />
             </Suspense>
           </Canvas3DErrorBoundary>
