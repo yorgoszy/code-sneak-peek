@@ -12,7 +12,7 @@ interface BodyMapCardProps {
   userId: string;
 }
 
-const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/models/Male.OBJ';
+const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/models/Ecorche_by_AlexLashko_ShrunkenView.obj';
 
 function Loader() {
   const { progress } = useProgress();
