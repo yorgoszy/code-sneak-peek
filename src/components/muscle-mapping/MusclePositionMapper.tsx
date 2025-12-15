@@ -87,7 +87,7 @@ export const MusclePositionMapper: React.FC = () => {
       const { data, error } = await supabase
         .from('muscles')
         .select('id, name, muscle_group, mesh_name')
-        .order('name');
+        .order('name') as { data: Muscle[] | null; error: any };
       
       if (error) throw error;
       setMuscles(data || []);
@@ -120,7 +120,7 @@ export const MusclePositionMapper: React.FC = () => {
     try {
       const { error } = await supabase
         .from('muscles')
-        .update({ mesh_name: pendingMeshName })
+        .update({ mesh_name: pendingMeshName } as any)
         .eq('id', selectedMuscleId);
       
       if (error) throw error;
@@ -146,7 +146,7 @@ export const MusclePositionMapper: React.FC = () => {
     try {
       const { error } = await supabase
         .from('muscles')
-        .update({ mesh_name: null })
+        .update({ mesh_name: null } as any)
         .eq('id', muscleId);
       
       if (error) throw error;
