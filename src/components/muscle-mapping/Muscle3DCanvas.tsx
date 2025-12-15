@@ -135,6 +135,10 @@ function InteractiveHumanModel({
     'Rectus_Abdominis',
     'Erector_Spinae',
     'Sternum',
+    'Splenius_Capitis',
+    'Splenius_Cervicis',
+    'splenius_capitis',
+    'splenius_cervicis',
     // Πρόσθεσε περισσότερους εδώ αν χρειάζεται
   ]), []);
 
@@ -191,12 +195,18 @@ function InteractiveHumanModel({
       const hoveredObject = intersects[0].object as THREE.Mesh;
       const meshName = hoveredObject.name || 'unnamed';
       const point = intersects[0].point;
-      const side = point.x > 0 ? 'Left' : 'Right';
-      setHoveredMesh(`${meshName} (${side})`);
+      
+      // Κεντρικοί μύες δεν έχουν Left/Right
+      if (midlineMuscles.has(meshName)) {
+        setHoveredMesh(meshName);
+      } else {
+        const side = point.x > 0 ? 'Left' : 'Right';
+        setHoveredMesh(`${meshName} (${side})`);
+      }
     } else {
       setHoveredMesh(null);
     }
-  }, [raycaster, camera, pointer, obj]);
+  }, [raycaster, camera, pointer, obj, midlineMuscles]);
 
   return (
     <group>
