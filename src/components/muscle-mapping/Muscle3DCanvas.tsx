@@ -139,15 +139,26 @@ function InteractiveHumanModel({
     const intersects = raycaster.intersectObject(obj, true);
     
     if (intersects.length > 0) {
-      const clickedObject = intersects[0].object;
-      const baseMeshName = clickedObject.name || 'unnamed';
-      const point = intersects[0].point;
+      let targetIntersect = intersects[0];
+      let baseMeshName = targetIntersect.object.name || 'unnamed';
       
-      // Αν υπάρχει ενεργό search, επιτρέπουμε κλικ ΜΟΝΟ σε meshes που ταιριάζουν
-      if (matchesSearch.size > 0 && !matchesSearch.has(baseMeshName)) {
-        console.log('⚠️ Κλικ αγνοήθηκε - ο μυς δεν ταιριάζει με την αναζήτηση:', baseMeshName);
-        return;
+      // Αν υπάρχει ενεργό search, βρες τον ΠΡΩΤΟ mesh που ταιριάζει με το search
+      if (matchesSearch.size > 0) {
+        const matchingIntersect = intersects.find(intersect => {
+          const name = intersect.object.name || 'unnamed';
+          return matchesSearch.has(name);
+        });
+        
+        if (!matchingIntersect) {
+          console.log('⚠️ Κλικ αγνοήθηκε - κανένας μυς δεν ταιριάζει με την αναζήτηση');
+          return;
+        }
+        
+        targetIntersect = matchingIntersect;
+        baseMeshName = targetIntersect.object.name || 'unnamed';
       }
+      
+      const point = targetIntersect.point;
       
       // Διαχωρισμός αριστερά/δεξιά μόνο αν δεν είναι midline muscle
       let finalMeshName = baseMeshName;
