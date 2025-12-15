@@ -288,7 +288,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
 
   return (
     <Card className="rounded-none border-none bg-transparent max-w-[220px]">
-      <CardContent className="p-2 pt-0">
+      <CardContent className="p-0">
         <div className="w-full h-[280px]">
           <Canvas
             camera={{ position: [3, 0, 5], fov: 50 }}
@@ -308,22 +308,6 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
               maxDistance={10}
             />
           </Canvas>
-        </div>
-
-        {/* Legend with counts */}
-        <div className="flex justify-center gap-3 text-[9px]">
-          {strengthenCount > 0 && (
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-red-500"></div>
-              <span className="text-gray-400">Ενδ. ({strengthenCount})</span>
-            </div>
-          )}
-          {stretchCount > 0 && (
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-              <span className="text-gray-400">Διατ. ({stretchCount})</span>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
