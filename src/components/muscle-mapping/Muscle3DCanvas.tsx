@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, Suspense, useState } from 'react';
+import React, { useEffect, useCallback, Suspense, useState, useMemo } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, useProgress, Html } from '@react-three/drei';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
@@ -6,12 +6,6 @@ import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 
 const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/models/Ecorche_by_AlexLashko_ShrunkenView.obj';
-
-interface ClickPosition {
-  x: number;
-  y: number;
-  z: number;
-}
 
 function Loader() {
   const { progress } = useProgress();
@@ -24,34 +18,37 @@ function Loader() {
   );
 }
 
-// Marker component for placed muscles
-function MuscleMarker({ position, color }: { position: [number, number, number]; color: string }) {
-  return (
-    <group position={position}>
-      <mesh>
-        <sphereGeometry args={[0.03, 16, 16]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.5} />
-      </mesh>
-    </group>
-  );
-}
-
 // Interactive Human Model
 function InteractiveHumanModel({ 
-  onClickPosition, 
   isSelecting,
-  placedMuscles,
-  onMeshClick
+  onMeshClick,
+  searchQuery,
+  mappedMeshNames
 }: { 
-  onClickPosition: (pos: ClickPosition) => void;
   isSelecting: boolean;
-  placedMuscles: Array<{ position: [number, number, number]; name: string }>;
   onMeshClick?: (meshName: string) => void;
+  searchQuery: string;
+  mappedMeshNames: string[];
 }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   const { raycaster, camera, pointer } = useThree();
   const [hoveredMesh, setHoveredMesh] = useState<string | null>(null);
+  const [allMeshNames, setAllMeshNames] = useState<string[]>([]);
   
+  // Get base mesh name (without _Left/_Right)
+  const getBaseMeshName = (fullName: string) => {
+    return fullName.replace(/_Left$|_Right$/, '');
+  };
+
+  // Check if mesh matches search query
+  const matchesSearch = useMemo(() => {
+    if (!searchQuery.trim()) return new Set<string>();
+    const query = searchQuery.toLowerCase();
+    return new Set(
+      allMeshNames.filter(name => name.toLowerCase().includes(query))
+    );
+  }, [searchQuery, allMeshNames]);
+
   useEffect(() => {
     const box = new THREE.Box3().setFromObject(obj);
     const center = box.getCenter(new THREE.Vector3());
@@ -70,11 +67,53 @@ function InteractiveHumanModel({
         child.material = child.userData.originalMaterial.clone();
       }
     });
-    console.log('📋 Mesh names in model:', meshNames);
+    setAllMeshNames(meshNames);
+    console.log('📋 All mesh names:', meshNames);
   }, [obj]);
+
+  // Highlight meshes based on search query and mapped status
+  useEffect(() => {
+    obj.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const meshName = child.name || 'unnamed';
+        
+        // Check if this mesh is mapped (either side)
+        const isMapped = mappedMeshNames.some(mapped => 
+          getBaseMeshName(mapped) === meshName
+        );
+        
+        // Check if matches search
+        const matchesSearchQuery = matchesSearch.has(meshName);
+        
+        if (matchesSearchQuery) {
+          // Highlight search matches in cyan
+          child.material = new THREE.MeshStandardMaterial({
+            color: '#00ffba',
+            roughness: 0.5,
+            metalness: 0.2,
+            emissive: '#00ffba',
+            emissiveIntensity: 0.4,
+          });
+        } else if (isMapped) {
+          // Show mapped muscles in gold
+          child.material = new THREE.MeshStandardMaterial({
+            color: '#cb8954',
+            roughness: 0.5,
+            metalness: 0.3,
+            emissive: '#cb8954',
+            emissiveIntensity: 0.2,
+          });
+        } else if (child.userData.originalMaterial) {
+          child.material = child.userData.originalMaterial.clone();
+        }
+      }
+    });
+  }, [obj, matchesSearch, mappedMeshNames]);
 
   const handleClick = useCallback((event: any) => {
     event.stopPropagation();
+    
+    if (!isSelecting) return;
     
     raycaster.setFromCamera(pointer, camera);
     const intersects = raycaster.intersectObject(obj, true);
@@ -89,46 +128,23 @@ function InteractiveHumanModel({
       const meshNameWithSide = `${baseMeshName}_${side}`;
       
       console.log('🎯 Clicked mesh:', baseMeshName, '| Side:', side, '| Full name:', meshNameWithSide);
-      console.log('📍 Click position:', { x: point.x.toFixed(4), y: point.y.toFixed(4), z: point.z.toFixed(4) });
       
       if (onMeshClick) {
         onMeshClick(meshNameWithSide);
       }
-      
-      if (isSelecting) {
-        onClickPosition({
-          x: parseFloat(point.x.toFixed(4)),
-          y: parseFloat(point.y.toFixed(4)),
-          z: parseFloat(point.z.toFixed(4))
-        });
-      }
     }
-  }, [isSelecting, raycaster, camera, pointer, obj, onClickPosition, onMeshClick]);
+  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick]);
 
   const handlePointerMove = useCallback((event: any) => {
     raycaster.setFromCamera(pointer, camera);
     const intersects = raycaster.intersectObject(obj, true);
     
-    // Reset all materials first
-    obj.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.userData.originalMaterial) {
-        child.material = child.userData.originalMaterial.clone();
-      }
-    });
-    
     if (intersects.length > 0) {
       const hoveredObject = intersects[0].object as THREE.Mesh;
       const meshName = hoveredObject.name || 'unnamed';
-      setHoveredMesh(meshName);
-      
-      // Highlight hovered mesh
-      hoveredObject.material = new THREE.MeshStandardMaterial({
-        color: '#00ffba',
-        roughness: 0.5,
-        metalness: 0.2,
-        emissive: '#00ffba',
-        emissiveIntensity: 0.3,
-      });
+      const point = intersects[0].point;
+      const side = point.x > 0 ? 'Right' : 'Left';
+      setHoveredMesh(`${meshName} (${side})`);
     } else {
       setHoveredMesh(null);
     }
@@ -143,13 +159,6 @@ function InteractiveHumanModel({
         onClick={handleClick}
         onPointerMove={handlePointerMove}
       />
-      {placedMuscles.map((muscle, index) => (
-        <MuscleMarker 
-          key={index} 
-          position={muscle.position} 
-          color="#ff4444"
-        />
-      ))}
       {hoveredMesh && (
         <Html center position={[0, 2, 0]}>
           <div className="bg-black/80 text-[#00ffba] px-3 py-1 text-sm font-mono whitespace-nowrap">
@@ -161,34 +170,20 @@ function InteractiveHumanModel({
   );
 }
 
-// Pending marker for current selection
-function PendingMarker({ position }: { position: [number, number, number] | null }) {
-  if (!position) return null;
-  
-  return (
-    <mesh position={position}>
-      <sphereGeometry args={[0.04, 16, 16]} />
-      <meshStandardMaterial color="#ffaa00" emissive="#ffaa00" emissiveIntensity={0.8} transparent opacity={0.8} />
-    </mesh>
-  );
-}
-
 interface Muscle3DCanvasProps {
-  placedMuscles: Array<{ position: [number, number, number]; name: string }>;
-  pendingPosition: { x: number; y: number; z: number } | null;
   isSelecting: boolean;
   selectedMuscleName?: string;
-  onClickPosition: (pos: ClickPosition) => void;
   onMeshClick?: (meshName: string) => void;
+  searchQuery: string;
+  mappedMeshNames: string[];
 }
 
 const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
-  placedMuscles,
-  pendingPosition,
   isSelecting,
   selectedMuscleName,
-  onClickPosition,
-  onMeshClick
+  onMeshClick,
+  searchQuery,
+  mappedMeshNames
 }) => {
   return (
     <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] bg-black/95 relative touch-none">
@@ -201,13 +196,10 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
         <directionalLight position={[-10, -10, -5]} intensity={0.5} />
         <Suspense fallback={<Loader />}>
           <InteractiveHumanModel 
-            onClickPosition={onClickPosition}
             isSelecting={isSelecting}
-            placedMuscles={placedMuscles}
             onMeshClick={onMeshClick}
-          />
-          <PendingMarker 
-            position={pendingPosition ? [pendingPosition.x, pendingPosition.y, pendingPosition.z] : null} 
+            searchQuery={searchQuery}
+            mappedMeshNames={mappedMeshNames}
           />
         </Suspense>
         <OrbitControls 
@@ -221,11 +213,23 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
       {/* Overlay instructions */}
       {isSelecting && selectedMuscleName && (
         <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 bg-[#00ffba] text-black px-2 sm:px-4 py-1 sm:py-2 rounded-none text-xs sm:text-sm font-medium max-w-[90%] text-center">
-          <span className="hidden sm:inline">Κάνε click στο σημείο του μυός: </span>
+          <span className="hidden sm:inline">Κάνε click στον μυ: </span>
           <span className="sm:hidden">Click: </span>
           {selectedMuscleName}
         </div>
       )}
+
+      {/* Legend */}
+      <div className="absolute bottom-2 left-2 flex flex-col gap-1 text-[10px] sm:text-xs">
+        <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#cb8954]"></div>
+          <span className="text-white/80">Αντιστοιχισμένοι</span>
+        </div>
+        <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#00ffba]"></div>
+          <span className="text-white/80">Αποτελέσματα αναζήτησης</span>
+        </div>
+      </div>
     </div>
   );
 };

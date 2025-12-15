@@ -3,23 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, RotateCcw, Target, Check, X, Loader2, AlertTriangle } from "lucide-react";
+import { Save, Target, Check, X, Loader2, AlertTriangle, Search, Link2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Muscle {
   id: string;
   name: string;
   muscle_group: string | null;
-  position_x: number | null;
-  position_y: number | null;
-  position_z: number | null;
-}
-
-interface ClickPosition {
-  x: number;
-  y: number;
-  z: number;
+  mesh_name: string | null;
 }
 
 // Lazy load the 3D canvas
@@ -80,9 +73,10 @@ export const MusclePositionMapper: React.FC = () => {
   const [muscles, setMuscles] = useState<Muscle[]>([]);
   const [selectedMuscleId, setSelectedMuscleId] = useState<string>('');
   const [isSelecting, setIsSelecting] = useState(false);
-  const [pendingPosition, setPendingPosition] = useState<ClickPosition | null>(null);
+  const [pendingMeshName, setPendingMeshName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchMuscles();
@@ -92,7 +86,7 @@ export const MusclePositionMapper: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('muscles')
-        .select('id, name, muscle_group, position_x, position_y, position_z')
+        .select('id, name, muscle_group, mesh_name')
         .order('name');
       
       if (error) throw error;
@@ -105,83 +99,74 @@ export const MusclePositionMapper: React.FC = () => {
     }
   };
 
-  const handlePositionClick = (pos: ClickPosition) => {
+  const handleMeshClick = (meshName: string) => {
     if (!selectedMuscleId) {
-      toast.error('Επέλεξε πρώτα έναν μυ');
+      toast.error('Επέλεξε πρώτα έναν μυ από τη λίστα');
       return;
     }
-    setPendingPosition(pos);
+    if (!isSelecting) {
+      return;
+    }
+    
+    console.log('🔗 Mesh clicked for mapping:', meshName);
+    setPendingMeshName(meshName);
     setIsSelecting(false);
   };
 
-  const handleSavePosition = async () => {
-    if (!selectedMuscleId || !pendingPosition) return;
+  const handleSaveMapping = async () => {
+    if (!selectedMuscleId || !pendingMeshName) return;
     
     setSaving(true);
     try {
       const { error } = await supabase
         .from('muscles')
-        .update({
-          position_x: pendingPosition.x,
-          position_y: pendingPosition.y,
-          position_z: pendingPosition.z
-        })
+        .update({ mesh_name: pendingMeshName })
         .eq('id', selectedMuscleId);
       
       if (error) throw error;
       
       setMuscles(prev => prev.map(m => 
         m.id === selectedMuscleId 
-          ? { ...m, position_x: pendingPosition.x, position_y: pendingPosition.y, position_z: pendingPosition.z }
+          ? { ...m, mesh_name: pendingMeshName }
           : m
       ));
       
-      toast.success('Η θέση αποθηκεύτηκε!');
-      setPendingPosition(null);
+      toast.success('Η αντιστοίχιση αποθηκεύτηκε!');
+      setPendingMeshName(null);
       setSelectedMuscleId('');
     } catch (error) {
-      console.error('Error saving position:', error);
+      console.error('Error saving mapping:', error);
       toast.error('Σφάλμα αποθήκευσης');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleClearPosition = async (muscleId: string) => {
+  const handleClearMapping = async (muscleId: string) => {
     try {
       const { error } = await supabase
         .from('muscles')
-        .update({
-          position_x: null,
-          position_y: null,
-          position_z: null
-        })
+        .update({ mesh_name: null })
         .eq('id', muscleId);
       
       if (error) throw error;
       
       setMuscles(prev => prev.map(m => 
         m.id === muscleId 
-          ? { ...m, position_x: null, position_y: null, position_z: null }
+          ? { ...m, mesh_name: null }
           : m
       ));
       
-      toast.success('Η θέση διαγράφηκε');
+      toast.success('Η αντιστοίχιση διαγράφηκε');
     } catch (error) {
-      console.error('Error clearing position:', error);
+      console.error('Error clearing mapping:', error);
       toast.error('Σφάλμα διαγραφής');
     }
   };
 
-  const placedMuscles = muscles
-    .filter(m => m.position_x !== null && m.position_y !== null && m.position_z !== null)
-    .map(m => ({
-      position: [m.position_x!, m.position_y!, m.position_z!] as [number, number, number],
-      name: m.name
-    }));
-
   const selectedMuscle = muscles.find(m => m.id === selectedMuscleId);
-  const mappedCount = muscles.filter(m => m.position_x !== null).length;
+  const mappedCount = muscles.filter(m => m.mesh_name !== null).length;
+  const mappedMeshNames = muscles.filter(m => m.mesh_name).map(m => m.mesh_name!);
 
   if (loading) {
     return (
@@ -194,20 +179,37 @@ export const MusclePositionMapper: React.FC = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
-      {/* Controls Panel - Mobile first */}
+      {/* Controls Panel */}
       <Card className="rounded-none order-1 lg:order-2">
         <CardHeader className="p-3 sm:p-4 pb-2">
           <CardTitle className="text-base sm:text-lg flex items-center justify-between">
-            <span>Επιλογή Μυός</span>
+            <span>Αντιστοίχιση Μυών</span>
             <Badge variant="outline" className="rounded-none text-xs lg:hidden">
               {mappedCount}/{muscles.length}
             </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-4 pt-0 space-y-3 sm:space-y-4">
+          {/* Search for mesh names */}
+          <div className="space-y-2">
+            <label className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+              <Search className="w-3 h-3" />
+              Αναζήτηση Mesh (Λατινικά)
+            </label>
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="π.χ. Biceps, Trapezius..."
+              className="rounded-none text-sm"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Πέρνα το ποντίκι πάνω στο model για να δεις τα ονόματα
+            </p>
+          </div>
+
           {/* Muscle selector */}
           <div className="space-y-2">
-            <label className="text-xs sm:text-sm text-muted-foreground">Μυς</label>
+            <label className="text-xs sm:text-sm text-muted-foreground">Επιλογή Μυός (Ελληνικά)</label>
             <Select value={selectedMuscleId} onValueChange={setSelectedMuscleId}>
               <SelectTrigger className="rounded-none text-sm">
                 <SelectValue placeholder="Επέλεξε μυ..." />
@@ -217,7 +219,7 @@ export const MusclePositionMapper: React.FC = () => {
                   <SelectItem key={muscle.id} value={muscle.id} className="rounded-none text-sm">
                     <span className="flex items-center gap-2">
                       <span className="truncate max-w-[200px]">{muscle.name}</span>
-                      {muscle.position_x !== null && (
+                      {muscle.mesh_name && (
                         <Check className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
                       )}
                     </span>
@@ -235,7 +237,7 @@ export const MusclePositionMapper: React.FC = () => {
               className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-sm"
             >
               <Target className="w-4 h-4 mr-2" />
-              {isSelecting ? 'Κάνε click στο model...' : 'Τοποθέτηση στο Model'}
+              {isSelecting ? 'Κάνε click στον μυ...' : 'Αντιστοίχιση με Mesh'}
             </Button>
 
             {isSelecting && (
@@ -250,16 +252,17 @@ export const MusclePositionMapper: React.FC = () => {
             )}
           </div>
 
-          {/* Pending position */}
-          {pendingPosition && selectedMuscle && (
+          {/* Pending mapping */}
+          {pendingMeshName && selectedMuscle && (
             <div className="space-y-2 p-2 sm:p-3 bg-muted/50 border">
               <div className="text-xs sm:text-sm font-medium truncate">{selectedMuscle.name}</div>
-              <div className="text-[10px] sm:text-xs text-muted-foreground font-mono">
-                X: {pendingPosition.x} | Y: {pendingPosition.y} | Z: {pendingPosition.z}
+              <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                <Link2 className="w-3 h-3" />
+                <span className="font-mono">{pendingMeshName}</span>
               </div>
               <div className="flex gap-2">
                 <Button
-                  onClick={handleSavePosition}
+                  onClick={handleSaveMapping}
                   disabled={saving}
                   size="sm"
                   className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs sm:text-sm"
@@ -268,12 +271,12 @@ export const MusclePositionMapper: React.FC = () => {
                   Αποθήκευση
                 </Button>
                 <Button
-                  onClick={() => setPendingPosition(null)}
+                  onClick={() => setPendingMeshName(null)}
                   variant="outline"
                   size="sm"
                   className="rounded-none"
                 >
-                  <RotateCcw className="w-3 h-3" />
+                  <X className="w-3 h-3" />
                 </Button>
               </div>
             </div>
@@ -281,16 +284,19 @@ export const MusclePositionMapper: React.FC = () => {
 
           {/* Mapped muscles list */}
           <div className="space-y-2">
-            <div className="text-xs sm:text-sm font-medium">Τοποθετημένοι Μύες ({mappedCount})</div>
+            <div className="text-xs sm:text-sm font-medium">Αντιστοιχισμένοι ({mappedCount})</div>
             <div className="max-h-[150px] sm:max-h-[200px] overflow-y-auto space-y-1">
-              {muscles.filter(m => m.position_x !== null).map(muscle => (
+              {muscles.filter(m => m.mesh_name !== null).map(muscle => (
                 <div 
                   key={muscle.id} 
                   className="flex items-center justify-between p-1.5 sm:p-2 bg-muted/30 text-[10px] sm:text-xs"
                 >
-                  <span className="truncate flex-1 mr-2">{muscle.name}</span>
+                  <div className="flex-1 mr-2 min-w-0">
+                    <div className="truncate">{muscle.name}</div>
+                    <div className="truncate text-muted-foreground font-mono">{muscle.mesh_name}</div>
+                  </div>
                   <Button
-                    onClick={() => handleClearPosition(muscle.id)}
+                    onClick={() => handleClearMapping(muscle.id)}
                     variant="ghost"
                     size="sm"
                     className="h-5 w-5 sm:h-6 sm:w-6 p-0 rounded-none hover:bg-destructive/20 flex-shrink-0"
@@ -318,26 +324,14 @@ export const MusclePositionMapper: React.FC = () => {
           <Canvas3DErrorBoundary>
             <Suspense fallback={<Canvas3DFallback />}>
               <Muscle3DCanvas
-                placedMuscles={placedMuscles}
-                pendingPosition={pendingPosition}
                 isSelecting={isSelecting}
                 selectedMuscleName={selectedMuscle?.name}
-                onClickPosition={handlePositionClick}
+                onMeshClick={handleMeshClick}
+                searchQuery={searchQuery}
+                mappedMeshNames={mappedMeshNames}
               />
             </Suspense>
           </Canvas3DErrorBoundary>
-
-          {/* Legend */}
-          <div className="flex flex-wrap gap-2 sm:gap-4 mt-2 sm:mt-3 text-xs sm:text-sm">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500"></div>
-              <span className="text-muted-foreground">Τοποθετημένοι</span>
-            </div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500"></div>
-              <span className="text-muted-foreground">Εκκρεμότητα</span>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
