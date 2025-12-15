@@ -76,8 +76,8 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   }, [musclesToHighlight]);
 
   // Clipping planes for left and right sides
-  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []); // clips x > 0, shows x < 0
-  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), 0), []); // clips x < 0, shows x > 0
+  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), 0), []); // keep x <= 0
+  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []); // keep x >= 0
 
   const clonedObj = useMemo(() => {
     const clone = obj.clone(true);
@@ -312,7 +312,9 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
       <Canvas
         camera={{ position: [3, 4, 4], fov: 50 }}
         style={{ background: 'transparent' }}
-        gl={{ localClippingEnabled: true }}
+        onCreated={({ gl }) => {
+          gl.localClippingEnabled = true;
+        }}
       >
         <ambientLight intensity={0.9} />
         <directionalLight position={[10, 10, 5]} intensity={1.2} />
