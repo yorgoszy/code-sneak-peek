@@ -47,7 +47,7 @@ const getBaseName = (name: string) => {
   return name.replace(/_Left$|_Right$|_left$|_right$/i, '');
 };
 
-function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesToHighlight: MuscleData[], clippingPlane?: THREE.Plane }) {
+function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: MuscleData[] }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   
   // Create sets with base names for matching
@@ -75,6 +75,10 @@ function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesT
     return set;
   }, [musclesToHighlight]);
 
+  // Clipping planes for left and right sides
+  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), 0), []); // shows x < 0
+  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []); // shows x > 0
+
   const clonedObj = useMemo(() => {
     const clone = obj.clone(true);
     
@@ -88,11 +92,21 @@ function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesT
         const meshBaseName = getBaseName(meshName);
         const meshBaseNameLower = meshBaseName.toLowerCase();
 
+        // Check if mesh is left or right
+        const isLeftMesh = /_Left$/i.test(meshName);
+        const isRightMesh = /_Right$/i.test(meshName);
+
         // Match by base name (ignores _Left/_Right)
         const isStrengthen = strengthenBaseNames.has(meshBaseName) || strengthenBaseNames.has(meshBaseNameLower);
         const isStretch = stretchBaseNames.has(meshBaseName) || stretchBaseNames.has(meshBaseNameLower);
 
-        const clippingPlanes = clippingPlane ? [clippingPlane] : [];
+        // Apply clipping based on side
+        let clippingPlanes: THREE.Plane[] = [];
+        if (isLeftMesh) {
+          clippingPlanes = [leftClipPlane];
+        } else if (isRightMesh) {
+          clippingPlanes = [rightClipPlane];
+        }
 
         if (isStrengthen) {
           child.material = new THREE.MeshStandardMaterial({
@@ -127,7 +141,7 @@ function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesT
     });
     
     return clone;
-  }, [obj, strengthenBaseNames, stretchBaseNames, clippingPlane]);
+  }, [obj, strengthenBaseNames, stretchBaseNames, leftClipPlane, rightClipPlane]);
 
   return (
     <primitive 
@@ -139,13 +153,6 @@ function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesT
   );
 }
 
-// Component that shows only half of the body using clipping
-function HalfBodyClipped({ musclesToHighlight }: { musclesToHighlight: MuscleData[] }) {
-  // Clipping plane at x=0, showing only x > 0 (right side of the body)
-  const clippingPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []);
-  
-  return <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} clippingPlane={clippingPlane} />;
-}
 
 export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const { t } = useTranslation();
