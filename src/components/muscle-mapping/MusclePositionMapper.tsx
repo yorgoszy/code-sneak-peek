@@ -77,6 +77,8 @@ export const MusclePositionMapper: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchActive, setSearchActive] = useState(false);
+  const [foundCount, setFoundCount] = useState(0);
 
   useEffect(() => {
     fetchMuscles();
@@ -206,10 +208,17 @@ export const MusclePositionMapper: React.FC = () => {
             <div className="flex gap-2">
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSearchActive(false);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
+                    if (searchQuery.trim()) {
+                      setSearchActive(true);
+                      toast.info(`Αναζήτηση: "${searchQuery}"`);
+                    }
                   }
                 }}
                 placeholder="π.χ. Biceps, Trapezius..."
@@ -219,15 +228,32 @@ export const MusclePositionMapper: React.FC = () => {
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => setSearchQuery(searchQuery)}
+                onClick={() => {
+                  if (searchQuery.trim()) {
+                    setSearchActive(true);
+                    toast.info(`Αναζήτηση: "${searchQuery}"`);
+                  }
+                }}
                 className="rounded-none px-3"
               >
                 <Search className="w-4 h-4" />
               </Button>
             </div>
-            <p className="text-[10px] text-muted-foreground">
-              Πέρνα το ποντίκι πάνω στο model για να δεις τα ονόματα
-            </p>
+            {searchActive && foundCount > 0 && (
+              <p className="text-[10px] text-[#00ffba] font-medium">
+                ✓ Βρέθηκαν {foundCount} meshes με "{searchQuery}"
+              </p>
+            )}
+            {searchActive && foundCount === 0 && (
+              <p className="text-[10px] text-amber-500 font-medium">
+                ✗ Δεν βρέθηκε mesh με "{searchQuery}"
+              </p>
+            )}
+            {!searchActive && (
+              <p className="text-[10px] text-muted-foreground">
+                Πάτα Enter ή το κουμπί για να βρεις τον μυ στο model
+              </p>
+            )}
           </div>
 
           {/* Muscle selector */}
@@ -350,8 +376,9 @@ export const MusclePositionMapper: React.FC = () => {
                 isSelecting={isSelecting}
                 selectedMuscleName={selectedMuscle?.name}
                 onMeshClick={handleMeshClick}
-                searchQuery={searchQuery}
+                searchQuery={searchActive ? searchQuery : ''}
                 mappedMeshNames={mappedMeshNames}
+                onSearchResults={setFoundCount}
               />
             </Suspense>
           </Canvas3DErrorBoundary>
