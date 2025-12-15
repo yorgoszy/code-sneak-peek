@@ -88,12 +88,13 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     
     clone.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        const meshName = child.name || '';
-        
-        // Check if this mesh should be highlighted
-        const isStrengthen = strengthenMeshes.has(meshName);
-        const isStretch = stretchMeshes.has(meshName);
-        
+        const meshName = (child.name || '').trim();
+        const meshNameLower = meshName.toLowerCase();
+
+        // Check if this mesh should be highlighted (case-insensitive)
+        const isStrengthen = strengthenMeshes.has(meshName) || strengthenMeshes.has(meshNameLower);
+        const isStretch = stretchMeshes.has(meshName) || stretchMeshes.has(meshNameLower);
+
         if (isStrengthen) {
           // Red for strengthen
           child.material = new THREE.MeshStandardMaterial({
@@ -115,12 +116,12 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
           });
           child.visible = true;
         } else {
-          // Hide non-highlighted meshes or show as wireframe
+          // Keep the rest visible as faint wireframe so the model is always seen
           child.material = new THREE.MeshStandardMaterial({
-            color: '#333333',
+            color: '#6b7280',
             wireframe: true,
             transparent: true,
-            opacity: 0.1,
+            opacity: 0.25,
           });
           child.visible = true;
         }
@@ -293,8 +294,9 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
             camera={{ position: [0, 0, 5], fov: 50 }}
             style={{ background: 'transparent' }}
           >
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[10, 10, 5]} intensity={1} />
+            <ambientLight intensity={0.9} />
+            <directionalLight position={[10, 10, 5]} intensity={1.2} />
+            <directionalLight position={[-10, -10, 5]} intensity={0.6} />
             <Suspense fallback={<Loader />}>
               <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
             </Suspense>
