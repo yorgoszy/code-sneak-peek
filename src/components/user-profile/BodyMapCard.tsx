@@ -114,7 +114,7 @@ function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesT
           child.visible = true;
         } else {
           child.material = new THREE.MeshStandardMaterial({
-            color: '#6b7280',
+            color: '#d1d5db',
             wireframe: true,
             transparent: true,
             opacity: 0.25,
