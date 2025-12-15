@@ -289,7 +289,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const stretchCount = musclesToHighlight.filter(m => m.actionType === 'stretch').length;
 
   return (
-    <div className="w-[220px] h-[300px]">
+    <div className="w-[220px] h-[300px] bg-black rounded-none">
       <Canvas
         camera={{ position: [3, 4, 4], fov: 50 }}
         style={{ background: 'transparent' }}
