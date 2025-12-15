@@ -42,7 +42,7 @@ interface MuscleData {
   actionType: 'stretch' | 'strengthen';
 }
 
-function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: MuscleData[] }) {
+function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesToHighlight: MuscleData[], clippingPlane?: THREE.Plane }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   
   // Create sets for quick lookup
@@ -53,7 +53,6 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       .forEach(m => {
         set.add(m.meshName);
         set.add(m.meshName.toLowerCase());
-        // Add Left/Right variants for midline muscles
         if (midlineMuscles.has(m.meshName)) {
           set.add(`${m.meshName}_Left`);
           set.add(`${m.meshName}_Right`);
@@ -69,7 +68,6 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       .forEach(m => {
         set.add(m.meshName);
         set.add(m.meshName.toLowerCase());
-        // Add Left/Right variants for midline muscles
         if (midlineMuscles.has(m.meshName)) {
           set.add(`${m.meshName}_Left`);
           set.add(`${m.meshName}_Right`);
@@ -78,7 +76,6 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     return set;
   }, [musclesToHighlight]);
 
-  // Clone the object to avoid modifying the cached version
   const clonedObj = useMemo(() => {
     const clone = obj.clone(true);
     
@@ -86,61 +83,50 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     const center = box.getCenter(new THREE.Vector3());
     clone.position.sub(center);
     
-    // Debug: log mesh names and what we're looking for
-    console.log('🔍 Looking for strengthen meshes:', Array.from(strengthenMeshes));
-    console.log('🔍 Looking for stretch meshes:', Array.from(stretchMeshes));
-    
-    const modelMeshNames: string[] = [];
-    
     clone.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         const meshName = (child.name || '').trim();
-        modelMeshNames.push(meshName);
         const meshNameLower = meshName.toLowerCase();
 
-        // Check if this mesh should be highlighted (case-insensitive)
         const isStrengthen = strengthenMeshes.has(meshName) || strengthenMeshes.has(meshNameLower);
         const isStretch = stretchMeshes.has(meshName) || stretchMeshes.has(meshNameLower);
 
+        const clippingPlanes = clippingPlane ? [clippingPlane] : [];
+
         if (isStrengthen) {
-          console.log('✅ STRENGTHEN match:', meshName);
-          // Red for strengthen
           child.material = new THREE.MeshStandardMaterial({
             color: '#ef4444',
             roughness: 0.5,
             metalness: 0.1,
-            transparent: false,
-            opacity: 1,
+            clippingPlanes,
+            clipShadows: true,
           });
           child.visible = true;
         } else if (isStretch) {
-          console.log('✅ STRETCH match:', meshName);
-          // Yellow/Amber for stretch
           child.material = new THREE.MeshStandardMaterial({
             color: '#f59e0b',
             roughness: 0.5,
             metalness: 0.1,
-            transparent: false,
-            opacity: 1,
+            clippingPlanes,
+            clipShadows: true,
           });
           child.visible = true;
         } else {
-          // Keep the rest visible as faint wireframe so the model is always seen
           child.material = new THREE.MeshStandardMaterial({
             color: '#6b7280',
             wireframe: true,
             transparent: true,
             opacity: 0.25,
+            clippingPlanes,
+            clipShadows: true,
           });
           child.visible = true;
         }
       }
     });
     
-    console.log('📋 All model mesh names:', modelMeshNames);
-    
     return clone;
-  }, [obj, strengthenMeshes, stretchMeshes]);
+  }, [obj, strengthenMeshes, stretchMeshes, clippingPlane]);
 
   return (
     <primitive 
@@ -149,6 +135,14 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       rotation={[0, 0, 0]}
     />
   );
+}
+
+// Component that shows only half of the body using clipping
+function HalfBodyClipped({ musclesToHighlight }: { musclesToHighlight: MuscleData[] }) {
+  // Clipping plane at x=0, showing only x > 0 (right side of the body)
+  const clippingPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []);
+  
+  return <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} clippingPlane={clippingPlane} />;
 }
 
 export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
@@ -293,18 +287,19 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const stretchCount = musclesToHighlight.filter(m => m.actionType === 'stretch').length;
 
   return (
-    <Card className="rounded-none border-none bg-transparent max-w-[200px]">
+    <Card className="rounded-none border-none bg-transparent max-w-[220px]">
       <CardContent className="p-2 pt-0">
-        <div className="w-full h-[200px]">
+        <div className="w-full h-[280px]">
           <Canvas
-            camera={{ position: [0, 0, 5], fov: 50 }}
+            camera={{ position: [3, 0, 5], fov: 50 }}
             style={{ background: 'transparent' }}
+            gl={{ localClippingEnabled: true }}
           >
             <ambientLight intensity={0.9} />
             <directionalLight position={[10, 10, 5]} intensity={1.2} />
             <directionalLight position={[-10, -10, 5]} intensity={0.6} />
             <Suspense fallback={<Loader />}>
-              <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
+              <HalfBodyClipped musclesToHighlight={musclesToHighlight} />
             </Suspense>
             <OrbitControls 
               enableZoom={true}
