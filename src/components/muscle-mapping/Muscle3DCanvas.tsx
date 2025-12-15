@@ -142,6 +142,8 @@ function InteractiveHumanModel({
     'Rhomboideus',
     'Infraspinatus',
     'infraspinatus',
+    'Longissimus_Thoracis',
+    'longissimus_thoracis',
     // Πρόσθεσε περισσότερους εδώ αν χρειάζεται
   ]), []);
 
