@@ -142,6 +142,19 @@ function InteractiveHumanModel({
     // Πρόσθεσε περισσότερους εδώ αν χρειάζεται
   ]), []);
 
+  // Ομαδοποίηση meshes σε έναν μυ (πολλά meshes -> ένα όνομα)
+  const meshGrouping = useMemo(() => ({
+    'Psoas_Major': 'Psoas',
+    'Psoas_Minor': 'Psoas',
+    'psoas_major': 'Psoas',
+    'psoas_minor': 'Psoas',
+  }), []);
+
+  // Συνάρτηση για να πάρει το grouped name
+  const getGroupedMeshName = useCallback((meshName: string) => {
+    return meshGrouping[meshName as keyof typeof meshGrouping] || meshName;
+  }, [meshGrouping]);
+
   const handleClick = useCallback((event: any) => {
     event.stopPropagation();
     
@@ -172,20 +185,23 @@ function InteractiveHumanModel({
       
       const point = targetIntersect.point;
       
+      // Εφαρμογή grouping (π.χ. psoas_major -> Psoas)
+      const groupedName = getGroupedMeshName(baseMeshName);
+      
       // Διαχωρισμός αριστερά/δεξιά μόνο αν δεν είναι midline muscle
-      let finalMeshName = baseMeshName;
-      if (!midlineMuscles.has(baseMeshName)) {
+      let finalMeshName = groupedName;
+      if (!midlineMuscles.has(groupedName)) {
         const side = point.x > 0 ? 'Left' : 'Right';
-        finalMeshName = `${baseMeshName}_${side}`;
+        finalMeshName = `${groupedName}_${side}`;
       }
       
-      console.log('🎯 Clicked mesh:', baseMeshName, '| Final name:', finalMeshName);
+      console.log('🎯 Clicked mesh:', baseMeshName, '| Grouped:', groupedName, '| Final name:', finalMeshName);
       
       if (onMeshClick) {
         onMeshClick(finalMeshName);
       }
     }
-  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, matchesSearch]);
+  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, matchesSearch, getGroupedMeshName]);
 
   const handlePointerMove = useCallback((event: any) => {
     raycaster.setFromCamera(pointer, camera);
@@ -196,17 +212,20 @@ function InteractiveHumanModel({
       const meshName = hoveredObject.name || 'unnamed';
       const point = intersects[0].point;
       
+      // Εφαρμογή grouping
+      const groupedName = getGroupedMeshName(meshName);
+      
       // Κεντρικοί μύες δεν έχουν Left/Right
-      if (midlineMuscles.has(meshName)) {
-        setHoveredMesh(meshName);
+      if (midlineMuscles.has(groupedName)) {
+        setHoveredMesh(groupedName);
       } else {
         const side = point.x > 0 ? 'Left' : 'Right';
-        setHoveredMesh(`${meshName} (${side})`);
+        setHoveredMesh(`${groupedName} (${side})`);
       }
     } else {
       setHoveredMesh(null);
     }
-  }, [raycaster, camera, pointer, obj, midlineMuscles]);
+  }, [raycaster, camera, pointer, obj, midlineMuscles, getGroupedMeshName]);
 
   return (
     <group>
