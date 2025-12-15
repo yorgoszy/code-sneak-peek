@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, ArrowUp, MoveHorizontal, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -67,8 +66,10 @@ export const AllTestsPanel = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedMuscle, setSelectedMuscle] = useState<string>('');
-  const [selectedAction, setSelectedAction] = useState<'strengthen' | 'stretch'>('strengthen');
+  const [selectedMusclesStrengthen, setSelectedMusclesStrengthen] = useState<string[]>([]);
+  const [selectedMusclesStretch, setSelectedMusclesStretch] = useState<string[]>([]);
+  const [muscleSearchStrengthen, setMuscleSearchStrengthen] = useState('');
+  const [muscleSearchStretch, setMuscleSearchStretch] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -91,35 +92,73 @@ export const AllTestsPanel = () => {
   const handleOpenDialog = (issue: string, category: string) => {
     setSelectedIssue(issue);
     setSelectedCategory(category);
-    setSelectedMuscle('');
+    setSelectedMusclesStrengthen([]);
+    setSelectedMusclesStretch([]);
+    setMuscleSearchStrengthen('');
+    setMuscleSearchStretch('');
     setDialogOpen(true);
   };
 
-  const handleAddMapping = async () => {
-    if (!selectedMuscle) {
-      toast.error('Επιλέξτε μυ');
+  const isMuscleAlreadyMapped = (muscleId: string, actionType: 'strengthen' | 'stretch') => {
+    return mappings.some(m => 
+      m.issue_name === selectedIssue && 
+      m.issue_category === selectedCategory && 
+      m.muscle_id === muscleId && 
+      m.action_type === actionType
+    );
+  };
+
+  const toggleMuscleSelection = (muscleId: string, actionType: 'strengthen' | 'stretch') => {
+    if (isMuscleAlreadyMapped(muscleId, actionType)) return;
+    
+    if (actionType === 'strengthen') {
+      setSelectedMusclesStrengthen(prev => 
+        prev.includes(muscleId) 
+          ? prev.filter(id => id !== muscleId)
+          : [...prev, muscleId]
+      );
+    } else {
+      setSelectedMusclesStretch(prev => 
+        prev.includes(muscleId) 
+          ? prev.filter(id => id !== muscleId)
+          : [...prev, muscleId]
+      );
+    }
+  };
+
+  const handleAddMappings = async (actionType: 'strengthen' | 'stretch') => {
+    const selectedMuscles = actionType === 'strengthen' ? selectedMusclesStrengthen : selectedMusclesStretch;
+    
+    if (selectedMuscles.length === 0) {
+      toast.error('Επιλέξτε τουλάχιστον έναν μυ');
       return;
     }
 
+    const insertData = selectedMuscles.map(muscleId => ({
+      issue_category: selectedCategory,
+      issue_name: selectedIssue,
+      muscle_id: muscleId,
+      action_type: actionType,
+    }));
+
     const { error } = await supabase
       .from('functional_issue_muscle_mappings')
-      .insert({
-        issue_category: selectedCategory,
-        issue_name: selectedIssue,
-        muscle_id: selectedMuscle,
-        action_type: selectedAction,
-      });
+      .insert(insertData);
 
     if (error) {
       if (error.code === '23505') {
-        toast.error('Αυτή η σύνδεση υπάρχει ήδη');
+        toast.error('Κάποιες συνδέσεις υπάρχουν ήδη');
       } else {
         toast.error('Σφάλμα προσθήκης');
         console.error(error);
       }
     } else {
-      toast.success('Η σύνδεση προστέθηκε');
-      setSelectedMuscle('');
+      toast.success(`${selectedMuscles.length} μύες προστέθηκαν`);
+      if (actionType === 'strengthen') {
+        setSelectedMusclesStrengthen([]);
+      } else {
+        setSelectedMusclesStretch([]);
+      }
       fetchData();
     }
   };
@@ -365,74 +404,13 @@ export const AllTestsPanel = () => {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="rounded-none max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="rounded-none max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-sm sm:text-base">{selectedIssue}</DialogTitle>
           </DialogHeader>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-3 sm:mt-4">
-            {/* Ενδυνάμωση */}
-            <div className="border p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-green-700 mb-4">
-                <ArrowUp className="w-4 h-4" />
-                Ενδυνάμωση
-              </div>
-              
-              <div className="space-y-2 mb-4">
-                {dialogStrengthen.length === 0 ? (
-                  <p className="text-xs text-gray-400">Δεν υπάρχουν μύες</p>
-                ) : (
-                  dialogStrengthen.map(m => (
-                    <div 
-                      key={m.id} 
-                      className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 text-sm"
-                    >
-                      <span>{m.muscles?.name}</span>
-                      <button
-                        onClick={() => handleDeleteMapping(m.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="flex gap-2">
-                <Select 
-                  value={selectedAction === 'strengthen' ? selectedMuscle : ''} 
-                  onValueChange={(v) => {
-                    setSelectedAction('strengthen');
-                    setSelectedMuscle(v);
-                  }}
-                >
-                  <SelectTrigger className="rounded-none flex-1">
-                    <SelectValue placeholder="Προσθήκη μυός..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {muscles.map(muscle => (
-                      <SelectItem key={muscle.id} value={muscle.id}>
-                        {muscle.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button 
-                  onClick={() => {
-                    setSelectedAction('strengthen');
-                    handleAddMapping();
-                  }}
-                  size="icon"
-                  className="rounded-none bg-green-600 hover:bg-green-700"
-                  disabled={!selectedMuscle || selectedAction !== 'strengthen'}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Διάταση */}
+            {/* Διάταση - ΑΡΙΣΤΕΡΑ */}
             <div className="border p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-blue-700 mb-4">
                 <MoveHorizontal className="w-4 h-4" />
@@ -460,35 +438,124 @@ export const AllTestsPanel = () => {
                 )}
               </div>
 
-              <div className="flex gap-2">
-                <Select 
-                  value={selectedAction === 'stretch' ? selectedMuscle : ''} 
-                  onValueChange={(v) => {
-                    setSelectedAction('stretch');
-                    setSelectedMuscle(v);
-                  }}
-                >
-                  <SelectTrigger className="rounded-none flex-1">
-                    <SelectValue placeholder="Προσθήκη μυός..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {muscles.map(muscle => (
-                      <SelectItem key={muscle.id} value={muscle.id}>
-                        {muscle.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Αναζήτηση μυός..."
+                  value={muscleSearchStretch}
+                  onChange={(e) => setMuscleSearchStretch(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-none text-sm"
+                />
+                <div className="max-h-40 overflow-y-auto border">
+                  {muscles
+                    .filter(m => m.name.toLowerCase().includes(muscleSearchStretch.toLowerCase()))
+                    .map(muscle => {
+                      const isAlreadyMapped = isMuscleAlreadyMapped(muscle.id, 'stretch');
+                      const isSelected = selectedMusclesStretch.includes(muscle.id);
+                      return (
+                        <div
+                          key={muscle.id}
+                          onClick={() => toggleMuscleSelection(muscle.id, 'stretch')}
+                          className={cn(
+                            "px-3 py-2 text-sm cursor-pointer transition-colors",
+                            isAlreadyMapped 
+                              ? "bg-blue-100 text-blue-800 cursor-not-allowed" 
+                              : isSelected 
+                                ? "bg-blue-500 text-white" 
+                                : "hover:bg-gray-100"
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            {isSelected && <Check className="w-4 h-4" />}
+                            {isAlreadyMapped && <span className="text-xs">(ήδη)</span>}
+                            {muscle.name}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
                 <Button 
-                  onClick={() => {
-                    setSelectedAction('stretch');
-                    handleAddMapping();
-                  }}
-                  size="icon"
-                  className="rounded-none bg-blue-600 hover:bg-blue-700"
-                  disabled={!selectedMuscle || selectedAction !== 'stretch'}
+                  onClick={() => handleAddMappings('stretch')}
+                  className="w-full rounded-none bg-blue-600 hover:bg-blue-700"
+                  disabled={selectedMusclesStretch.length === 0}
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4 mr-2" />
+                  Προσθήκη {selectedMusclesStretch.length > 0 && `(${selectedMusclesStretch.length})`}
+                </Button>
+              </div>
+            </div>
+
+            {/* Ενδυνάμωση - ΔΕΞΙΑ */}
+            <div className="border p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-green-700 mb-4">
+                <ArrowUp className="w-4 h-4" />
+                Ενδυνάμωση
+              </div>
+              
+              <div className="space-y-2 mb-4">
+                {dialogStrengthen.length === 0 ? (
+                  <p className="text-xs text-gray-400">Δεν υπάρχουν μύες</p>
+                ) : (
+                  dialogStrengthen.map(m => (
+                    <div 
+                      key={m.id} 
+                      className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 text-sm"
+                    >
+                      <span>{m.muscles?.name}</span>
+                      <button
+                        onClick={() => handleDeleteMapping(m.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Αναζήτηση μυός..."
+                  value={muscleSearchStrengthen}
+                  onChange={(e) => setMuscleSearchStrengthen(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-none text-sm"
+                />
+                <div className="max-h-40 overflow-y-auto border">
+                  {muscles
+                    .filter(m => m.name.toLowerCase().includes(muscleSearchStrengthen.toLowerCase()))
+                    .map(muscle => {
+                      const isAlreadyMapped = isMuscleAlreadyMapped(muscle.id, 'strengthen');
+                      const isSelected = selectedMusclesStrengthen.includes(muscle.id);
+                      return (
+                        <div
+                          key={muscle.id}
+                          onClick={() => toggleMuscleSelection(muscle.id, 'strengthen')}
+                          className={cn(
+                            "px-3 py-2 text-sm cursor-pointer transition-colors",
+                            isAlreadyMapped 
+                              ? "bg-green-100 text-green-800 cursor-not-allowed" 
+                              : isSelected 
+                                ? "bg-green-500 text-white" 
+                                : "hover:bg-gray-100"
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            {isSelected && <Check className="w-4 h-4" />}
+                            {isAlreadyMapped && <span className="text-xs">(ήδη)</span>}
+                            {muscle.name}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+                <Button 
+                  onClick={() => handleAddMappings('strengthen')}
+                  className="w-full rounded-none bg-green-600 hover:bg-green-700"
+                  disabled={selectedMusclesStrengthen.length === 0}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Προσθήκη {selectedMusclesStrengthen.length > 0 && `(${selectedMusclesStrengthen.length})`}
                 </Button>
               </div>
             </div>
