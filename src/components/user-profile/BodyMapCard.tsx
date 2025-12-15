@@ -134,6 +134,7 @@ function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesT
       object={clonedObj} 
       scale={1.43} 
       rotation={[0, 0, 0]}
+      position={[0, -0.5, 0]}
     />
   );
 }
