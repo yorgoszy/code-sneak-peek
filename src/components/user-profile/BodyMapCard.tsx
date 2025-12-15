@@ -277,13 +277,12 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
         return;
       }
 
+      // No clipping for background wireframe - show full model
       child.material = new THREE.MeshStandardMaterial({
         color: '#d1d5db',
         wireframe: true,
         transparent: true,
         opacity: 0.25,
-        clippingPlanes,
-        clipShadows: true,
       });
       child.visible = true;
     });
