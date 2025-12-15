@@ -291,7 +291,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   return (
     <div className="w-[220px] h-[380px]">
       <Canvas
-        camera={{ position: [3, 0, 5], fov: 50 }}
+        camera={{ position: [3, 5, 5], fov: 50 }}
         style={{ background: 'transparent' }}
         gl={{ localClippingEnabled: true }}
       >
@@ -302,6 +302,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
           <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
         </Suspense>
         <OrbitControls 
+          target={[0, 5, 0]}
           enableZoom={true}
           enablePan={false}
           minDistance={3}
