@@ -42,36 +42,35 @@ interface MuscleData {
   actionType: 'stretch' | 'strengthen';
 }
 
+// Helper to get base muscle name (without _Left/_Right suffix)
+const getBaseName = (name: string) => {
+  return name.replace(/_Left$|_Right$|_left$|_right$/i, '');
+};
+
 function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesToHighlight: MuscleData[], clippingPlane?: THREE.Plane }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   
-  // Create sets for quick lookup
-  const strengthenMeshes = useMemo(() => {
+  // Create sets with base names for matching
+  const strengthenBaseNames = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
       .filter(m => m.actionType === 'strengthen')
       .forEach(m => {
-        set.add(m.meshName);
-        set.add(m.meshName.toLowerCase());
-        if (midlineMuscles.has(m.meshName)) {
-          set.add(`${m.meshName}_Left`);
-          set.add(`${m.meshName}_Right`);
-        }
+        const baseName = getBaseName(m.meshName);
+        set.add(baseName);
+        set.add(baseName.toLowerCase());
       });
     return set;
   }, [musclesToHighlight]);
 
-  const stretchMeshes = useMemo(() => {
+  const stretchBaseNames = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
       .filter(m => m.actionType === 'stretch')
       .forEach(m => {
-        set.add(m.meshName);
-        set.add(m.meshName.toLowerCase());
-        if (midlineMuscles.has(m.meshName)) {
-          set.add(`${m.meshName}_Left`);
-          set.add(`${m.meshName}_Right`);
-        }
+        const baseName = getBaseName(m.meshName);
+        set.add(baseName);
+        set.add(baseName.toLowerCase());
       });
     return set;
   }, [musclesToHighlight]);
@@ -86,10 +85,12 @@ function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesT
     clone.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         const meshName = (child.name || '').trim();
-        const meshNameLower = meshName.toLowerCase();
+        const meshBaseName = getBaseName(meshName);
+        const meshBaseNameLower = meshBaseName.toLowerCase();
 
-        const isStrengthen = strengthenMeshes.has(meshName) || strengthenMeshes.has(meshNameLower);
-        const isStretch = stretchMeshes.has(meshName) || stretchMeshes.has(meshNameLower);
+        // Match by base name (ignores _Left/_Right)
+        const isStrengthen = strengthenBaseNames.has(meshBaseName) || strengthenBaseNames.has(meshBaseNameLower);
+        const isStretch = stretchBaseNames.has(meshBaseName) || stretchBaseNames.has(meshBaseNameLower);
 
         const clippingPlanes = clippingPlane ? [clippingPlane] : [];
 
@@ -126,7 +127,7 @@ function HumanModelWithMuscles({ musclesToHighlight, clippingPlane }: { musclesT
     });
     
     return clone;
-  }, [obj, strengthenMeshes, stretchMeshes, clippingPlane]);
+  }, [obj, strengthenBaseNames, stretchBaseNames, clippingPlane]);
 
   return (
     <primitive 
@@ -287,29 +288,25 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const stretchCount = musclesToHighlight.filter(m => m.actionType === 'stretch').length;
 
   return (
-    <Card className="rounded-none border-none bg-transparent max-w-[220px]">
-      <CardContent className="p-0">
-        <div className="w-full h-[280px]">
-          <Canvas
-            camera={{ position: [3, 0, 5], fov: 50 }}
-            style={{ background: 'transparent' }}
-            gl={{ localClippingEnabled: true }}
-          >
-            <ambientLight intensity={0.9} />
-            <directionalLight position={[10, 10, 5]} intensity={1.2} />
-            <directionalLight position={[-10, -10, 5]} intensity={0.6} />
-            <Suspense fallback={<Loader />}>
-              <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
-            </Suspense>
-            <OrbitControls 
-              enableZoom={true}
-              enablePan={false}
-              minDistance={3}
-              maxDistance={10}
-            />
-          </Canvas>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="w-[220px] h-[280px]">
+      <Canvas
+        camera={{ position: [3, 0, 5], fov: 50 }}
+        style={{ background: 'transparent' }}
+        gl={{ localClippingEnabled: true }}
+      >
+        <ambientLight intensity={0.9} />
+        <directionalLight position={[10, 10, 5]} intensity={1.2} />
+        <directionalLight position={[-10, -10, 5]} intensity={0.6} />
+        <Suspense fallback={<Loader />}>
+          <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
+        </Suspense>
+        <OrbitControls 
+          enableZoom={true}
+          enablePan={false}
+          minDistance={3}
+          maxDistance={10}
+        />
+      </Canvas>
+    </div>
   );
 };
