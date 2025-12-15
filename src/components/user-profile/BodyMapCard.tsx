@@ -128,7 +128,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   return (
     <primitive 
       object={obj} 
-      scale={0.54} 
+      scale={0.65} 
       rotation={[0, 0, 0]}
     />
   );
