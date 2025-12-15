@@ -50,35 +50,28 @@ const getBaseName = (name: string) => {
 function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: MuscleData[] }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   
-  // Create sets with base names for matching
-  const strengthenBaseNames = useMemo(() => {
+  // Create sets with EXACT mesh names for matching (including _Left/_Right)
+  const strengthenNames = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
       .filter(m => m.actionType === 'strengthen')
       .forEach(m => {
-        const baseName = getBaseName(m.meshName);
-        set.add(baseName);
-        set.add(baseName.toLowerCase());
+        set.add(m.meshName);
+        set.add(m.meshName.toLowerCase());
       });
     return set;
   }, [musclesToHighlight]);
 
-  const stretchBaseNames = useMemo(() => {
+  const stretchNames = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
       .filter(m => m.actionType === 'stretch')
       .forEach(m => {
-        const baseName = getBaseName(m.meshName);
-        set.add(baseName);
-        set.add(baseName.toLowerCase());
+        set.add(m.meshName);
+        set.add(m.meshName.toLowerCase());
       });
     return set;
   }, [musclesToHighlight]);
-
-  // Clipping planes for left and right sides (strict split, avoid showing the center seam)
-  const CLIP_EPS = 0.001;
-  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), -CLIP_EPS), []); // keep x < 0
-  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), -CLIP_EPS), []); // keep x > 0
 
   const clonedObj = useMemo(() => {
     const clone = obj.clone(true);
@@ -90,32 +83,17 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     clone.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         const meshName = (child.name || '').trim();
-        const meshBaseName = getBaseName(meshName);
-        const meshBaseNameLower = meshBaseName.toLowerCase();
+        const meshNameLower = meshName.toLowerCase();
 
-        // Check if mesh is left or right
-        const isLeftMesh = /_Left$/i.test(meshName);
-        const isRightMesh = /_Right$/i.test(meshName);
-
-        // Match by base name (ignores _Left/_Right)
-        const isStrengthen = strengthenBaseNames.has(meshBaseName) || strengthenBaseNames.has(meshBaseNameLower);
-        const isStretch = stretchBaseNames.has(meshBaseName) || stretchBaseNames.has(meshBaseNameLower);
-
-        // Apply clipping based on side
-        let clippingPlanes: THREE.Plane[] = [];
-        if (isLeftMesh) {
-          clippingPlanes = [leftClipPlane];
-        } else if (isRightMesh) {
-          clippingPlanes = [rightClipPlane];
-        }
+        // Match by EXACT name (includes _Left/_Right)
+        const isStrengthen = strengthenNames.has(meshName) || strengthenNames.has(meshNameLower);
+        const isStretch = stretchNames.has(meshName) || stretchNames.has(meshNameLower);
 
         if (isStrengthen) {
           child.material = new THREE.MeshStandardMaterial({
             color: '#ef4444',
             roughness: 0.5,
             metalness: 0.1,
-            clippingPlanes,
-            clipShadows: true,
           });
           child.visible = true;
         } else if (isStretch) {
@@ -123,8 +101,6 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
             color: '#f59e0b',
             roughness: 0.5,
             metalness: 0.1,
-            clippingPlanes,
-            clipShadows: true,
           });
           child.visible = true;
         } else {
@@ -133,8 +109,6 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
             wireframe: true,
             transparent: true,
             opacity: 0.25,
-            clippingPlanes,
-            clipShadows: true,
           });
           child.visible = true;
         }
@@ -142,7 +116,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     });
     
     return clone;
-  }, [obj, strengthenBaseNames, stretchBaseNames, leftClipPlane, rightClipPlane]);
+  }, [obj, strengthenNames, stretchNames]);
 
   return (
     <primitive 
@@ -313,9 +287,6 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
       <Canvas
         camera={{ position: [3, 4, 4], fov: 50 }}
         style={{ background: 'transparent' }}
-        onCreated={({ gl }) => {
-          gl.localClippingEnabled = true;
-        }}
       >
         <ambientLight intensity={0.9} />
         <directionalLight position={[10, 10, 5]} intensity={1.2} />
