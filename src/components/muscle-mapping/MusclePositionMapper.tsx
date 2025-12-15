@@ -81,6 +81,8 @@ export const MusclePositionMapper: React.FC = () => {
   const [foundCount, setFoundCount] = useState(0);
   const [muscleSearch, setMuscleSearch] = useState('');
   const [muscleDropdownOpen, setMuscleDropdownOpen] = useState(false);
+  const [availableMeshNames, setAvailableMeshNames] = useState<string[]>([]);
+  const [meshSuggestionsOpen, setMeshSuggestionsOpen] = useState(false);
 
   useEffect(() => {
     fetchMuscles();
@@ -186,6 +188,15 @@ export const MusclePositionMapper: React.FC = () => {
     return muscles.filter(m => m.name.toLowerCase().includes(search));
   }, [muscles, muscleSearch]);
 
+  // Filtered mesh suggestions for autocomplete
+  const filteredMeshSuggestions = useMemo(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) return [];
+    const query = searchQuery.toLowerCase();
+    return availableMeshNames
+      .filter(name => name.toLowerCase().includes(query))
+      .slice(0, 10); // Limit to 10 suggestions
+  }, [searchQuery, availableMeshNames]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -208,46 +219,84 @@ export const MusclePositionMapper: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 sm:p-4 pt-0 space-y-3 sm:space-y-4">
-          {/* Search for mesh names */}
+          {/* Search for mesh names with autocomplete */}
           <div className="space-y-2">
             <label className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
               <Search className="w-3 h-3" />
               Αναζήτηση Mesh (Λατινικά)
             </label>
-            <div className="flex gap-2">
-              <Input
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSearchActive(false);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
+            <div className="relative">
+              <div className="flex gap-2">
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setSearchActive(false);
+                    setMeshSuggestionsOpen(e.target.value.length >= 2);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (searchQuery.trim()) {
+                        setSearchActive(true);
+                        setMeshSuggestionsOpen(false);
+                        toast.info(`Αναζήτηση: "${searchQuery}"`);
+                      }
+                    }
+                    if (e.key === 'Escape') {
+                      setMeshSuggestionsOpen(false);
+                    }
+                  }}
+                  onFocus={() => {
+                    if (searchQuery.length >= 2) setMeshSuggestionsOpen(true);
+                  }}
+                  onBlur={() => {
+                    // Delay to allow click on suggestions
+                    setTimeout(() => setMeshSuggestionsOpen(false), 200);
+                  }}
+                  placeholder="π.χ. Biceps, Trapezius..."
+                  className="rounded-none text-sm flex-1"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
                     if (searchQuery.trim()) {
                       setSearchActive(true);
+                      setMeshSuggestionsOpen(false);
                       toast.info(`Αναζήτηση: "${searchQuery}"`);
                     }
-                  }
-                }}
-                placeholder="π.χ. Biceps, Trapezius..."
-                className="rounded-none text-sm flex-1"
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (searchQuery.trim()) {
-                    setSearchActive(true);
-                    toast.info(`Αναζήτηση: "${searchQuery}"`);
-                  }
-                }}
-                className="rounded-none px-3"
-              >
-                <Search className="w-4 h-4" />
-              </Button>
+                  }}
+                  className="rounded-none px-3"
+                >
+                  <Search className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {/* Autocomplete suggestions */}
+              {meshSuggestionsOpen && filteredMeshSuggestions.length > 0 && (
+                <div className="absolute z-50 top-full left-0 right-12 mt-1 bg-background border shadow-lg max-h-[200px] overflow-y-auto">
+                  {filteredMeshSuggestions.map((meshName, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        setSearchQuery(meshName);
+                        setSearchActive(true);
+                        setMeshSuggestionsOpen(false);
+                      }}
+                      className="px-3 py-2 text-sm cursor-pointer hover:bg-muted flex items-center justify-between"
+                    >
+                      <span className="font-mono text-xs">{meshName}</span>
+                      {mappedMeshNames.some(m => m.includes(meshName)) && (
+                        <Check className="w-3 h-3 text-[#00ffba]" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+            
             {searchActive && foundCount > 0 && (
               <p className="text-[10px] text-[#00ffba] font-medium">
                 ✓ Βρέθηκαν {foundCount} meshes με "{searchQuery}"
@@ -260,7 +309,7 @@ export const MusclePositionMapper: React.FC = () => {
             )}
             {!searchActive && (
               <p className="text-[10px] text-muted-foreground">
-                Πάτα Enter ή το κουμπί για να βρεις τον μυ στο model
+                Γράψε 2+ χαρακτήρες για προτάσεις
               </p>
             )}
           </div>
@@ -421,6 +470,7 @@ export const MusclePositionMapper: React.FC = () => {
                 searchQuery={searchActive ? searchQuery : ''}
                 mappedMeshNames={mappedMeshNames}
                 onSearchResults={setFoundCount}
+                onMeshNamesLoaded={setAvailableMeshNames}
               />
             </Suspense>
           </Canvas3DErrorBoundary>
