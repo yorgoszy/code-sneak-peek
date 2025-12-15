@@ -289,9 +289,9 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const stretchCount = musclesToHighlight.filter(m => m.actionType === 'stretch').length;
 
   return (
-    <div className="w-[220px] h-[380px]">
+    <div className="w-[220px] h-[300px]">
       <Canvas
-        camera={{ position: [3, 5, 5], fov: 50 }}
+        camera={{ position: [3, 4, 4], fov: 50 }}
         style={{ background: 'transparent' }}
         gl={{ localClippingEnabled: true }}
       >
@@ -302,7 +302,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
           <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
         </Suspense>
         <OrbitControls 
-          target={[0, 7, 0]}
+          target={[0, 5, 0]}
           enableZoom={true}
           enablePan={false}
           minDistance={3}
