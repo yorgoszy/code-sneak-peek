@@ -128,19 +128,16 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     [musclesToHighlight]
   );
 
-  // Strict split at x=0 so each side shows only its half
-  const CLIP_EPS = 0.001;
-  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), -CLIP_EPS), []); // keep x < 0
-  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), -CLIP_EPS), []); // keep x > 0
-
+  // Note: we avoid clipping planes here because they can hide whole meshes depending on OBJ orientation.
   const clonedObj = useMemo(() => {
     const clone = obj.clone(true);
 
-    // We center the model by subtracting its bounding box center.
-    // We'll apply the same centering to DB coordinates when we do coordinate matching.
+    // Center the model by subtracting its bounding box center.
+    clone.updateWorldMatrix(true, true);
     const box = new THREE.Box3().setFromObject(clone);
     const center = box.getCenter(new THREE.Vector3());
     clone.position.sub(center);
+    clone.updateWorldMatrix(true, true);
 
     const strengthenTargets = musclesToHighlight
       .filter(m => m.actionType === 'strengthen' && m.position)
@@ -155,18 +152,18 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       }));
 
     // Tweakable: distance threshold for matching DB point -> mesh.
-    const MATCH_EPS = 0.12;
+    const MATCH_EPS = 0.25;
 
-    const matchByPosition = (worldCenter: THREE.Vector3) => {
+    const matchByPosition = (meshCenter: THREE.Vector3) => {
       let best: { type: 'strengthen' | 'stretch'; dist: number } | null = null;
 
       for (const t of strengthenTargets) {
-        const d = t.pos.distanceTo(worldCenter);
+        const d = t.pos.distanceTo(meshCenter);
         if (d <= MATCH_EPS && (!best || d < best.dist)) best = { type: 'strengthen', dist: d };
       }
 
       for (const t of stretchTargets) {
-        const d = t.pos.distanceTo(worldCenter);
+        const d = t.pos.distanceTo(meshCenter);
         if (d <= MATCH_EPS && (!best || d < best.dist)) best = { type: 'stretch', dist: d };
       }
 
@@ -176,55 +173,29 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     clone.traverse((child) => {
       if (!(child instanceof THREE.Mesh)) return;
 
+      child.updateWorldMatrix(true, false);
+
       const meshNameRaw = (child.name || '').trim();
       const meshName = norm(meshNameRaw);
       const meshBase = norm(getBaseName(cleanName(meshNameRaw)));
 
-      // Determine side (for clipping only)
-      const cleanRaw = cleanName(meshNameRaw);
-      const nameLeft = /_Left$/i.test(cleanRaw);
-      const nameRight = /_Right$/i.test(cleanRaw);
-
-      const worldBox = new THREE.Box3().setFromObject(child);
-      const worldCenter = worldBox.getCenter(new THREE.Vector3());
-      const x = worldCenter.x;
-
-      const MID_EPS = 0.001;
-      const isMidline = Math.abs(x) < MID_EPS;
-
-      const side: 'left' | 'right' | 'mid' = nameLeft
-        ? 'left'
-        : nameRight
-          ? 'right'
-          : isMidline
-            ? 'mid'
-            : x < 0
-              ? 'left'
-              : 'right';
-
-      const clippingPlanes: THREE.Plane[] = side === 'left' ? [leftClipPlane] : side === 'right' ? [rightClipPlane] : [];
+      // Use mesh bounding box center (in the clone's local space after centering)
+      const meshBox = new THREE.Box3().setFromObject(child);
+      const meshCenter = meshBox.getCenter(new THREE.Vector3());
 
       // Preferred: coordinate matching (ignores Left/Right naming completely)
-      const matchedByPosition = hasPositionData ? matchByPosition(worldCenter) : null;
+      const matchedByPosition = hasPositionData ? matchByPosition(meshCenter) : null;
       const isStrengthenByPos = matchedByPosition === 'strengthen';
       const isStretchByPos = matchedByPosition === 'stretch';
 
-      // Fallback: name-based matching
-      const useSided = hasSidedData;
-      const isStrengthenByName =
-        strengthenExact.has(meshName) ||
-        (useSided
-          ? (side === 'left' && strengthenLeftBase.has(meshBase)) || (side === 'right' && strengthenRightBase.has(meshBase))
-          : strengthenBaseAll.has(meshBase));
-
-      const isStretchByName =
-        stretchExact.has(meshName) ||
-        (useSided
-          ? (side === 'left' && stretchLeftBase.has(meshBase)) || (side === 'right' && stretchRightBase.has(meshBase))
-          : stretchBaseAll.has(meshBase));
+      // Fallback: name-based matching (base-name only; no side splitting)
+      const isStrengthenByName = strengthenExact.has(meshName) || strengthenBaseAll.has(meshBase);
+      const isStretchByName = stretchExact.has(meshName) || stretchBaseAll.has(meshBase);
 
       const isStrengthen = isStrengthenByPos || isStrengthenByName;
       const isStretch = isStretchByPos || isStretchByName;
+
+      const clippingPlanes: THREE.Plane[] = [];
 
       if (isStrengthen) {
         child.material = new THREE.MeshStandardMaterial({
@@ -267,16 +238,9 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     musclesToHighlight,
     strengthenExact,
     stretchExact,
-    strengthenLeftBase,
-    strengthenRightBase,
-    stretchLeftBase,
-    stretchRightBase,
     strengthenBaseAll,
     stretchBaseAll,
-    hasSidedData,
     hasPositionData,
-    leftClipPlane,
-    rightClipPlane,
   ]);
 
   return (
