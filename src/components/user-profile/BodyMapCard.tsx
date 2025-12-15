@@ -75,9 +75,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     return set;
   }, [musclesToHighlight]);
 
-  // Clipping planes for left and right sides
-  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), 0), []); // keep x <= 0
-  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []); // keep x >= 0
+  // Clipping planes for left and right sides (strict split, avoid showing the center seam)
+  const CLIP_EPS = 0.001;
+  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), -CLIP_EPS), []); // keep x < 0
+  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), -CLIP_EPS), []); // keep x > 0
 
   const clonedObj = useMemo(() => {
     const clone = obj.clone(true);
