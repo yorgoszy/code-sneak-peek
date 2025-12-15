@@ -18,6 +18,18 @@ function Loader() {
   );
 }
 
+// Μύες που έχουν υπο-μέρη (sub-parts) - popup επιλογής
+const musclesWithSubParts: Record<string, { name: string; parts: { id: string; label: string }[] }> = {
+  'Trapezius': {
+    name: 'Τραπεζοειδής',
+    parts: [
+      { id: 'Upper', label: 'Άνω Μοίρα' },
+      { id: 'Middle', label: 'Μεσαία Μοίρα' },
+      { id: 'Lower', label: 'Κάτω Μοίρα' },
+    ]
+  }
+};
+
 // Interactive Human Model
 function InteractiveHumanModel({ 
   isSelecting,
@@ -25,7 +37,8 @@ function InteractiveHumanModel({
   searchQuery,
   mappedMeshNames,
   onSearchResults,
-  onMeshNamesLoaded
+  onMeshNamesLoaded,
+  onShowSubPartSelector
 }: { 
   isSelecting: boolean;
   onMeshClick?: (meshName: string) => void;
@@ -33,6 +46,7 @@ function InteractiveHumanModel({
   mappedMeshNames: string[];
   onSearchResults?: (count: number) => void;
   onMeshNamesLoaded?: (names: string[]) => void;
+  onShowSubPartSelector?: (meshName: string, side: 'Left' | 'Right') => void;
 }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   const { raycaster, camera, pointer } = useThree();
@@ -131,7 +145,6 @@ function InteractiveHumanModel({
   // Μύες που δεν χρειάζονται διαχωρισμό Left/Right (κεντρικοί μύες)
   const midlineMuscles = useMemo(() => new Set([
     'Latissimus_Dorsi',
-    'Trapezius',
     'Rectus_Abdominis',
     'Erector_Spinae',
     'Sternum',
@@ -204,10 +217,21 @@ function InteractiveHumanModel({
       // Εφαρμογή grouping (π.χ. psoas_major -> Psoas)
       const groupedName = getGroupedMeshName(baseMeshName);
       
+      // Υπολογισμός πλευράς
+      const side: 'Left' | 'Right' = point.x > 0 ? 'Left' : 'Right';
+      
+      // Έλεγχος αν ο μυς έχει υπο-μέρη (π.χ. Trapezius)
+      if (musclesWithSubParts[groupedName]) {
+        console.log('🎯 Clicked muscle with sub-parts:', groupedName, '| Side:', side);
+        if (onShowSubPartSelector) {
+          onShowSubPartSelector(groupedName, side);
+        }
+        return;
+      }
+      
       // Διαχωρισμός αριστερά/δεξιά μόνο αν δεν είναι midline muscle
       let finalMeshName = groupedName;
       if (!midlineMuscles.has(groupedName)) {
-        const side = point.x > 0 ? 'Left' : 'Right';
         finalMeshName = `${groupedName}_${side}`;
       }
       
@@ -217,7 +241,7 @@ function InteractiveHumanModel({
         onMeshClick(finalMeshName);
       }
     }
-  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, matchesSearch, getGroupedMeshName]);
+  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, matchesSearch, getGroupedMeshName, onShowSubPartSelector]);
 
   const handlePointerMove = useCallback((event: any) => {
     raycaster.setFromCamera(pointer, camera);
@@ -231,8 +255,11 @@ function InteractiveHumanModel({
       // Εφαρμογή grouping
       const groupedName = getGroupedMeshName(meshName);
       
-      // Κεντρικοί μύες δεν έχουν Left/Right
-      if (midlineMuscles.has(groupedName)) {
+      // Έλεγχος αν έχει υπο-μέρη
+      if (musclesWithSubParts[groupedName]) {
+        const side = point.x > 0 ? 'Left' : 'Right';
+        setHoveredMesh(`${musclesWithSubParts[groupedName].name} (${side === 'Left' ? 'Αριστερά' : 'Δεξιά'})`);
+      } else if (midlineMuscles.has(groupedName)) {
         setHoveredMesh(groupedName);
       } else {
         const side = point.x > 0 ? 'Left' : 'Right';
@@ -263,6 +290,51 @@ function InteractiveHumanModel({
   );
 }
 
+// Sub-Part Selector Popup
+interface SubPartSelectorProps {
+  muscleName: string;
+  side: 'Left' | 'Right';
+  onSelect: (fullName: string) => void;
+  onClose: () => void;
+}
+
+const SubPartSelector: React.FC<SubPartSelectorProps> = ({ muscleName, side, onSelect, onClose }) => {
+  const muscleData = musclesWithSubParts[muscleName];
+  if (!muscleData) return null;
+
+  const sideLabel = side === 'Left' ? 'Αριστερά' : 'Δεξιά';
+
+  return (
+    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50">
+      <div className="bg-black border border-[#00ffba] p-4 max-w-xs w-full mx-4">
+        <h3 className="text-[#00ffba] text-sm font-medium mb-3 text-center">
+          {muscleData.name} ({sideLabel})
+        </h3>
+        <p className="text-white/60 text-xs mb-4 text-center">
+          Επιλέξτε μοίρα:
+        </p>
+        <div className="flex flex-col gap-2">
+          {muscleData.parts.map((part) => (
+            <button
+              key={part.id}
+              onClick={() => onSelect(`${muscleName}_${part.id}_${side}`)}
+              className="w-full py-2 px-3 bg-transparent border border-[#00ffba]/50 text-[#00ffba] text-sm hover:bg-[#00ffba] hover:text-black transition-colors rounded-none"
+            >
+              {part.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={onClose}
+          className="w-full mt-4 py-2 px-3 bg-transparent border border-white/30 text-white/60 text-xs hover:border-white/50 hover:text-white transition-colors rounded-none"
+        >
+          Ακύρωση
+        </button>
+      </div>
+    </div>
+  );
+};
+
 interface Muscle3DCanvasProps {
   isSelecting: boolean;
   selectedMuscleName?: string;
@@ -282,6 +354,19 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
   onSearchResults,
   onMeshNamesLoaded
 }) => {
+  const [subPartSelector, setSubPartSelector] = useState<{ muscleName: string; side: 'Left' | 'Right' } | null>(null);
+
+  const handleShowSubPartSelector = useCallback((muscleName: string, side: 'Left' | 'Right') => {
+    setSubPartSelector({ muscleName, side });
+  }, []);
+
+  const handleSubPartSelect = useCallback((fullName: string) => {
+    setSubPartSelector(null);
+    if (onMeshClick) {
+      onMeshClick(fullName);
+    }
+  }, [onMeshClick]);
+
   return (
     <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] bg-black/95 relative touch-none">
       <Canvas
@@ -299,6 +384,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
             mappedMeshNames={mappedMeshNames}
             onSearchResults={onSearchResults}
             onMeshNamesLoaded={onMeshNamesLoaded}
+            onShowSubPartSelector={handleShowSubPartSelector}
           />
         </Suspense>
         <OrbitControls 
@@ -308,6 +394,16 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
           maxDistance={10}
         />
       </Canvas>
+      
+      {/* Sub-Part Selector Popup */}
+      {subPartSelector && (
+        <SubPartSelector
+          muscleName={subPartSelector.muscleName}
+          side={subPartSelector.side}
+          onSelect={handleSubPartSelect}
+          onClose={() => setSubPartSelector(null)}
+        />
+      )}
       
       {/* Overlay instructions */}
       {isSelecting && selectedMuscleName && (
