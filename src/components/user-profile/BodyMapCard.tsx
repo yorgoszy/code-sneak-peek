@@ -316,7 +316,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
         </div>
 
         {/* Legend with counts */}
-        <div className="flex justify-center gap-3 -mt-4 text-[9px]">
+        <div className="flex justify-center gap-3 text-[9px]">
           {strengthenCount > 0 && (
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-red-500"></div>
