@@ -289,7 +289,19 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const stretchCount = musclesToHighlight.filter(m => m.actionType === 'stretch').length;
 
   return (
-    <div className="w-full max-w-2xl h-[300px] rounded-none bg-[hsl(var(--foreground))]">
+    <div className="w-full max-w-2xl h-[300px] rounded-none bg-white border border-gray-200 relative">
+      {/* Labels */}
+      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 bg-[#ef4444] rounded-none"></div>
+          <span className="text-[10px] text-gray-700">Ενδυνάμωση</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 bg-[#f59e0b] rounded-none"></div>
+          <span className="text-[10px] text-gray-700">Διάταση</span>
+        </div>
+      </div>
+      
       <Canvas
         camera={{ position: [3, 4, 4], fov: 50 }}
         style={{ background: 'transparent' }}
