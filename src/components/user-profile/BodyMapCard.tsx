@@ -501,14 +501,14 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
             onClick={() => setStrengthenDialogOpen(true)}
             className="flex items-center gap-1.5 hover:bg-gray-100 px-1 py-0.5 transition-colors cursor-pointer"
           >
-            <div className="w-3 h-3 bg-[#ef4444] rounded-none"></div>
+            <div className="w-3 h-3 bg-[#ff1493] rounded-none"></div>
             <span className="text-[10px] text-gray-700">Ενδυνάμωση ({strengthenMuscles.length})</span>
           </button>
           <button 
             onClick={() => setStretchDialogOpen(true)}
             className="flex items-center gap-1.5 hover:bg-gray-100 px-1 py-0.5 transition-colors cursor-pointer"
           >
-            <div className="w-3 h-3 bg-[#f59e0b] rounded-none"></div>
+            <div className="w-3 h-3 bg-[#ffff00] rounded-none"></div>
             <span className="text-[10px] text-gray-700">Διάταση ({stretchMuscles.length})</span>
           </button>
         </div>
@@ -539,7 +539,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
         <DialogContent className="max-w-sm rounded-none">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-[#ef4444] rounded-none"></div>
+              <div className="w-4 h-4 bg-[#ff1493] rounded-none"></div>
               Μύες για Ενδυνάμωση
             </DialogTitle>
           </DialogHeader>
@@ -562,7 +562,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
         <DialogContent className="max-w-sm rounded-none">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-[#f59e0b] rounded-none"></div>
+              <div className="w-4 h-4 bg-[#ffff00] rounded-none"></div>
               Μύες για Διάταση
             </DialogTitle>
           </DialogHeader>
