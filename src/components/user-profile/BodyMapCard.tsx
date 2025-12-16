@@ -6,6 +6,7 @@ import { OrbitControls, useProgress, Html } from '@react-three/drei';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface BodyMapCardProps {
   userId: string;
@@ -351,6 +352,21 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const [musclesToHighlight, setMusclesToHighlight] = useState<MuscleData[]>([]);
   const [hasData, setHasData] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [strengthenDialogOpen, setStrengthenDialogOpen] = useState(false);
+  const [stretchDialogOpen, setStretchDialogOpen] = useState(false);
+
+  // Get unique muscle names by type
+  const strengthenMuscles = useMemo(() => {
+    return [...new Set(musclesToHighlight
+      .filter(m => m.actionType === 'strengthen')
+      .map(m => m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' ')))];
+  }, [musclesToHighlight]);
+
+  const stretchMuscles = useMemo(() => {
+    return [...new Set(musclesToHighlight
+      .filter(m => m.actionType === 'stretch')
+      .map(m => m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' ')))];
+  }, [musclesToHighlight]);
 
   useEffect(() => {
     fetchMuscleData();
@@ -499,38 +515,92 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   }
 
   return (
-    <div className="w-full max-w-2xl h-[300px] rounded-none bg-white border border-gray-200 relative">
-      {/* Labels */}
-      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 bg-[#ef4444] rounded-none"></div>
-          <span className="text-[10px] text-gray-700">Ενδυνάμωση</span>
+    <>
+      <div className="w-full max-w-2xl h-[300px] rounded-none bg-white border border-gray-200 relative">
+        {/* Labels - Clickable */}
+        <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+          <button 
+            onClick={() => setStrengthenDialogOpen(true)}
+            className="flex items-center gap-1.5 hover:bg-gray-100 px-1 py-0.5 transition-colors cursor-pointer"
+          >
+            <div className="w-3 h-3 bg-[#ef4444] rounded-none"></div>
+            <span className="text-[10px] text-gray-700">Ενδυνάμωση ({strengthenMuscles.length})</span>
+          </button>
+          <button 
+            onClick={() => setStretchDialogOpen(true)}
+            className="flex items-center gap-1.5 hover:bg-gray-100 px-1 py-0.5 transition-colors cursor-pointer"
+          >
+            <div className="w-3 h-3 bg-[#f59e0b] rounded-none"></div>
+            <span className="text-[10px] text-gray-700">Διάταση ({stretchMuscles.length})</span>
+          </button>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 bg-[#f59e0b] rounded-none"></div>
-          <span className="text-[10px] text-gray-700">Διάταση</span>
-        </div>
+        
+        <Canvas
+          camera={{ position: [3, 4, 4], fov: 50 }}
+          style={{ background: 'transparent' }}
+          gl={{ localClippingEnabled: true }}
+        >
+          <ambientLight intensity={0.9} />
+          <directionalLight position={[10, 10, 5]} intensity={1.2} />
+          <directionalLight position={[-10, -10, 5]} intensity={0.6} />
+          <Suspense fallback={<Loader />}>
+            <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
+          </Suspense>
+          <OrbitControls 
+            target={[0, 3, 0]}
+            enableZoom={true}
+            enablePan={false}
+            minDistance={3}
+            maxDistance={10}
+          />
+        </Canvas>
       </div>
-      
-      <Canvas
-        camera={{ position: [3, 4, 4], fov: 50 }}
-        style={{ background: 'transparent' }}
-        gl={{ localClippingEnabled: true }}
-      >
-        <ambientLight intensity={0.9} />
-        <directionalLight position={[10, 10, 5]} intensity={1.2} />
-        <directionalLight position={[-10, -10, 5]} intensity={0.6} />
-        <Suspense fallback={<Loader />}>
-          <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
-        </Suspense>
-        <OrbitControls 
-          target={[0, 3, 0]}
-          enableZoom={true}
-          enablePan={false}
-          minDistance={3}
-          maxDistance={10}
-        />
-      </Canvas>
-    </div>
+
+      {/* Strengthen Muscles Dialog */}
+      <Dialog open={strengthenDialogOpen} onOpenChange={setStrengthenDialogOpen}>
+        <DialogContent className="max-w-sm rounded-none">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-[#ef4444] rounded-none"></div>
+              Μύες για Ενδυνάμωση
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            {strengthenMuscles.length > 0 ? (
+              strengthenMuscles.map((muscle, index) => (
+                <div key={index} className="py-2 px-3 bg-red-50 border-l-2 border-[#ef4444] text-sm">
+                  {muscle}
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">Δεν υπάρχουν μύες για ενδυνάμωση</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stretch Muscles Dialog */}
+      <Dialog open={stretchDialogOpen} onOpenChange={setStretchDialogOpen}>
+        <DialogContent className="max-w-sm rounded-none">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-[#f59e0b] rounded-none"></div>
+              Μύες για Διάταση
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            {stretchMuscles.length > 0 ? (
+              stretchMuscles.map((muscle, index) => (
+                <div key={index} className="py-2 px-3 bg-amber-50 border-l-2 border-[#f59e0b] text-sm">
+                  {muscle}
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">Δεν υπάρχουν μύες για διάταση</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
