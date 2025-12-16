@@ -44,20 +44,20 @@ export const TestsTabs: React.FC<TestsTabsProps> = ({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-5 rounded-none">
-        <TabsTrigger value="anthropometric" className="rounded-none">
+      <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 rounded-none h-auto gap-0.5 p-0.5">
+        <TabsTrigger value="anthropometric" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5">
           Σωματομετρικά
         </TabsTrigger>
-        <TabsTrigger value="functional" className="rounded-none">
+        <TabsTrigger value="functional" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5">
           Λειτουργικότητα
         </TabsTrigger>
-        <TabsTrigger value="endurance" className="rounded-none">
+        <TabsTrigger value="endurance" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5">
           Αντοχή
         </TabsTrigger>
-        <TabsTrigger value="jump" className="rounded-none">
+        <TabsTrigger value="jump" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5">
           Άλματα
         </TabsTrigger>
-        <TabsTrigger value="strength" className="rounded-none">
+        <TabsTrigger value="strength" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5">
           Δύναμη
         </TabsTrigger>
       </TabsList>
