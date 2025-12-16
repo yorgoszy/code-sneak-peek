@@ -669,6 +669,7 @@ ${calendarDisplay}`;
     let enduranceContext = '';
     let jumpContext = '';
     let anthropometricContext = '';
+    let functionalContext = '';
     let availableAthletesContext = '';
     let athletesProgressContext = '';
     let todayProgramContext = '';
@@ -1728,6 +1729,56 @@ ${calendarDisplay}`;
       anthropometricContext = `\n\nΑνθρωπομετρικό Ιστορικό:\n${anthropometricList}`;
     }
     
+    // Context για λειτουργικά τεστ (User Mode)
+    let functionalContext = '';
+    if (!(isAdmin && !targetUserId)) {
+      const functionalHistoryResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/functional_test_data?select=id,created_at,fms_score,posture_issues,squat_issues,single_leg_squat_issues,muscles_need_strengthening,muscles_need_stretching,sit_and_reach,shoulder_mobility_left,shoulder_mobility_right,flamingo_balance,functional_test_sessions!inner(user_id,test_date)&functional_test_sessions.user_id=eq.${effectiveUserId}&order=created_at.desc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const functionalHistory = await functionalHistoryResponse.json();
+      
+      if (Array.isArray(functionalHistory) && functionalHistory.length > 0) {
+        let functionalList = functionalHistory.map((test: any) => {
+          const parts = [];
+          if (test.fms_score) parts.push(`FMS: ${test.fms_score}/21`);
+          if (test.sit_and_reach) parts.push(`Sit & Reach: ${test.sit_and_reach}cm`);
+          if (test.shoulder_mobility_left) parts.push(`Ώμος Α: ${test.shoulder_mobility_left}cm`);
+          if (test.shoulder_mobility_right) parts.push(`Ώμος Δ: ${test.shoulder_mobility_right}cm`);
+          if (test.flamingo_balance) parts.push(`Ισορροπία: ${test.flamingo_balance}s`);
+          const date = test.functional_test_sessions?.[0]?.test_date || test.created_at;
+          return `- ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})`;
+        }).join('\n');
+        
+        // Πρόσθεση μυών που χρειάζονται προσοχή από το τελευταίο τεστ
+        const latestTest = functionalHistory[0];
+        let muscleRecommendations = '';
+        if (latestTest.muscles_need_strengthening && latestTest.muscles_need_strengthening.length > 0) {
+          muscleRecommendations += `\n\n💪 Μύες που χρειάζονται ενδυνάμωση:\n- ${latestTest.muscles_need_strengthening.join('\n- ')}`;
+        }
+        if (latestTest.muscles_need_stretching && latestTest.muscles_need_stretching.length > 0) {
+          muscleRecommendations += `\n\n🧘 Μύες που χρειάζονται διάταση:\n- ${latestTest.muscles_need_stretching.join('\n- ')}`;
+        }
+        if (latestTest.posture_issues && latestTest.posture_issues.length > 0) {
+          muscleRecommendations += `\n\n⚠️ Προβλήματα στάσης:\n- ${latestTest.posture_issues.join('\n- ')}`;
+        }
+        if (latestTest.squat_issues && latestTest.squat_issues.length > 0) {
+          muscleRecommendations += `\n\n🏋️ Προβλήματα squat:\n- ${latestTest.squat_issues.join('\n- ')}`;
+        }
+        if (latestTest.single_leg_squat_issues && latestTest.single_leg_squat_issues.length > 0) {
+          muscleRecommendations += `\n\n🦵 Προβλήματα single leg squat:\n- ${latestTest.single_leg_squat_issues.join('\n- ')}`;
+        }
+        
+        functionalContext = `\n\n🧘 Λειτουργικό Ιστορικό (Functional Tests):\n${functionalList}${muscleRecommendations}`;
+        console.log(`✅ Functional context loaded: ${functionalHistory.length} tests`);
+      }
+    }
+    
     // Context για Athletes Progress - Λεπτομερής ανάλυση δύναμης με 1RM
     if (Array.isArray(strengthAttemptsData) && strengthAttemptsData.length > 0 && Array.isArray(exercisesData)) {
       athletesProgressContext = '\n\n📊 ATHLETES PROGRESS - Λεπτομερής Ανάλυση Δύναμης (1RM & Load-Velocity):\n\n';
@@ -2259,6 +2310,43 @@ ${calendarDisplay}`;
               adminProgressContext += `    - ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})\n`;
             });
           }
+          
+          // Λειτουργικά Τεστ
+          const functionalResponse = await fetch(
+            `${SUPABASE_URL}/rest/v1/functional_test_data?select=id,created_at,fms_score,posture_issues,squat_issues,single_leg_squat_issues,muscles_need_strengthening,muscles_need_stretching,sit_and_reach,shoulder_mobility_left,shoulder_mobility_right,flamingo_balance,functional_test_sessions!inner(user_id,test_date)&functional_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
+            {
+              headers: {
+                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+              }
+            }
+          );
+          const functionalData = await functionalResponse.json();
+          
+          if (Array.isArray(functionalData) && functionalData.length > 0) {
+            adminProgressContext += '  🧘 Λειτουργικά Τεστ:\n';
+            functionalData.forEach((test: any) => {
+              const parts = [];
+              if (test.fms_score) parts.push(`FMS: ${test.fms_score}/21`);
+              if (test.sit_and_reach) parts.push(`Sit & Reach: ${test.sit_and_reach}cm`);
+              if (test.shoulder_mobility_left) parts.push(`Ώμος Α: ${test.shoulder_mobility_left}cm`);
+              if (test.shoulder_mobility_right) parts.push(`Ώμος Δ: ${test.shoulder_mobility_right}cm`);
+              if (test.flamingo_balance) parts.push(`Ισορροπία: ${test.flamingo_balance}s`);
+              const date = test.functional_test_sessions?.[0]?.test_date || test.created_at;
+              adminProgressContext += `    - ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})\n`;
+              
+              // Προσθήκη μυών που χρειάζονται προσοχή
+              if (test.muscles_need_strengthening && test.muscles_need_strengthening.length > 0) {
+                adminProgressContext += `      💪 Ενδυνάμωση: ${test.muscles_need_strengthening.join(', ')}\n`;
+              }
+              if (test.muscles_need_stretching && test.muscles_need_stretching.length > 0) {
+                adminProgressContext += `      🧘 Διάταση: ${test.muscles_need_stretching.join(', ')}\n`;
+              }
+              if (test.posture_issues && test.posture_issues.length > 0) {
+                adminProgressContext += `      ⚠️ Στάση: ${test.posture_issues.join(', ')}\n`;
+              }
+            });
+          }
         }
         
         console.log('✅ Admin Progress Context loaded:', {
@@ -2698,7 +2786,7 @@ ${isAdmin && !targetUserId ? `
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
