@@ -36,9 +36,22 @@ interface MuscleData {
   position?: { x: number; y: number; z: number };
 }
 
-// Helper to get base muscle name (without _Left/_Right suffix)
+// Helper to get base muscle name (without _Left/_Right suffix and sub-parts for Trapezius)
 const getBaseName = (name: string) => {
+  // For multi-part muscles like Trapezius_Upper_Left, extract just the main muscle name
+  if (name.startsWith('Trapezius_')) {
+    return 'Trapezius';
+  }
   return name.replace(/_Left$|_Right$|_left$|_right$/i, '');
+};
+
+// Helper to check if a mesh name has Left or Right side
+const hasSide = (name: string, side: 'Left' | 'Right') => {
+  // Check for standard suffix
+  if (name.endsWith(`_${side}`)) return true;
+  // Check for multi-part format like Trapezius_Upper_Left
+  if (name.includes(`_${side}`)) return true;
+  return false;
 };
 
 function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: MuscleData[] }) {
@@ -75,7 +88,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   const strengthenLeftBase = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
-      .filter(m => m.actionType === 'strengthen' && /_Left$/i.test(m.meshName))
+      .filter(m => m.actionType === 'strengthen' && hasSide(m.meshName, 'Left'))
       .forEach(m => set.add(norm(getBaseName(m.meshName))));
     return set;
   }, [musclesToHighlight]);
@@ -83,7 +96,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   const strengthenRightBase = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
-      .filter(m => m.actionType === 'strengthen' && /_Right$/i.test(m.meshName))
+      .filter(m => m.actionType === 'strengthen' && hasSide(m.meshName, 'Right'))
       .forEach(m => set.add(norm(getBaseName(m.meshName))));
     return set;
   }, [musclesToHighlight]);
@@ -91,7 +104,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   const stretchLeftBase = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
-      .filter(m => m.actionType === 'stretch' && /_Left$/i.test(m.meshName))
+      .filter(m => m.actionType === 'stretch' && hasSide(m.meshName, 'Left'))
       .forEach(m => set.add(norm(getBaseName(m.meshName))));
     return set;
   }, [musclesToHighlight]);
@@ -99,7 +112,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   const stretchRightBase = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
-      .filter(m => m.actionType === 'stretch' && /_Right$/i.test(m.meshName))
+      .filter(m => m.actionType === 'stretch' && hasSide(m.meshName, 'Right'))
       .forEach(m => set.add(norm(getBaseName(m.meshName))));
     return set;
   }, [musclesToHighlight]);
@@ -122,7 +135,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   }, [musclesToHighlight]);
 
   const hasSidedData = useMemo(
-    () => musclesToHighlight.some(m => /_Left$|_Right$/i.test(m.meshName)),
+    () => musclesToHighlight.some(m => hasSide(m.meshName, 'Left') || hasSide(m.meshName, 'Right')),
     [musclesToHighlight]
   );
 
@@ -137,12 +150,12 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     if (!hasPositionData) return false;
 
     const leftXs = musclesToHighlight
-      .filter(m => /_Left$/i.test(m.meshName) && m.position)
+      .filter(m => hasSide(m.meshName, 'Left') && m.position)
       .map(m => Number(m.position!.x))
       .filter(n => Number.isFinite(n));
 
     const rightXs = musclesToHighlight
-      .filter(m => /_Right$/i.test(m.meshName) && m.position)
+      .filter(m => hasSide(m.meshName, 'Right') && m.position)
       .map(m => Number(m.position!.x))
       .filter(n => Number.isFinite(n));
 
@@ -170,7 +183,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   const strengthenLeft = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
-      .filter(m => m.actionType === 'strengthen' && /_Left$/i.test(m.meshName))
+      .filter(m => m.actionType === 'strengthen' && hasSide(m.meshName, 'Left'))
       .forEach(m => set.add(norm(getBaseName(m.meshName))));
     return set;
   }, [musclesToHighlight]);
@@ -178,7 +191,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   const strengthenRight = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
-      .filter(m => m.actionType === 'strengthen' && /_Right$/i.test(m.meshName))
+      .filter(m => m.actionType === 'strengthen' && hasSide(m.meshName, 'Right'))
       .forEach(m => set.add(norm(getBaseName(m.meshName))));
     return set;
   }, [musclesToHighlight]);
@@ -186,7 +199,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   const stretchLeft = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
-      .filter(m => m.actionType === 'stretch' && /_Left$/i.test(m.meshName))
+      .filter(m => m.actionType === 'stretch' && hasSide(m.meshName, 'Left'))
       .forEach(m => set.add(norm(getBaseName(m.meshName))));
     return set;
   }, [musclesToHighlight]);
@@ -194,7 +207,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   const stretchRight = useMemo(() => {
     const set = new Set<string>();
     musclesToHighlight
-      .filter(m => m.actionType === 'stretch' && /_Right$/i.test(m.meshName))
+      .filter(m => m.actionType === 'stretch' && hasSide(m.meshName, 'Right'))
       .forEach(m => set.add(norm(getBaseName(m.meshName))));
     return set;
   }, [musclesToHighlight]);
