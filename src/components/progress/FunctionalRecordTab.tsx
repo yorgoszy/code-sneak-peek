@@ -20,6 +20,8 @@ interface FunctionalForm {
   selectedPosture: string[];
   selectedSquatIssues: string[];
   selectedSingleLegIssues: string[];
+  musclesNeedStrengthening: string[];
+  musclesNeedStretching: string[];
   loading: boolean;
 }
 
@@ -32,6 +34,8 @@ export const FunctionalRecordTab = ({ users, onRecordSaved }: FunctionalRecordTa
       selectedPosture: [],
       selectedSquatIssues: [],
       selectedSingleLegIssues: [],
+      musclesNeedStrengthening: [],
+      musclesNeedStretching: [],
       loading: false
     }
   ]);
@@ -55,6 +59,8 @@ export const FunctionalRecordTab = ({ users, onRecordSaved }: FunctionalRecordTa
       selectedPosture: [],
       selectedSquatIssues: [],
       selectedSingleLegIssues: [],
+      musclesNeedStrengthening: [],
+      musclesNeedStretching: [],
       loading: false
     }]);
   };
@@ -109,7 +115,10 @@ export const FunctionalRecordTab = ({ users, onRecordSaved }: FunctionalRecordTa
           fms_detailed_scores: form.fmsScores,
           posture_issues: form.selectedPosture,
           squat_issues: form.selectedSquatIssues,
-          single_leg_squat_issues: form.selectedSingleLegIssues
+          single_leg_squat_issues: form.selectedSingleLegIssues,
+          // IMPORTANT: save the final muscle lists (after "Επόμενο" and after deletions)
+          muscles_need_strengthening: form.musclesNeedStrengthening,
+          muscles_need_stretching: form.musclesNeedStretching,
         });
 
       if (dataError) throw dataError;
@@ -123,6 +132,8 @@ export const FunctionalRecordTab = ({ users, onRecordSaved }: FunctionalRecordTa
         selectedPosture: [],
         selectedSquatIssues: [],
         selectedSingleLegIssues: [],
+        musclesNeedStrengthening: [],
+        musclesNeedStretching: [],
         loading: false
       });
 
@@ -170,7 +181,11 @@ export const FunctionalRecordTab = ({ users, onRecordSaved }: FunctionalRecordTa
                 <Combobox
                   options={userOptions}
                   value={form.selectedUserId}
-                  onValueChange={(val) => updateForm(form.id, { selectedUserId: val })}
+                  onValueChange={(val) => updateForm(form.id, {
+                    selectedUserId: val,
+                    musclesNeedStrengthening: [],
+                    musclesNeedStretching: [],
+                  })}
                   placeholder="Χρήστης"
                   emptyMessage="Δεν βρέθηκε."
                   className="h-5 text-[10px]"
@@ -202,6 +217,10 @@ export const FunctionalRecordTab = ({ users, onRecordSaved }: FunctionalRecordTa
                 selectedPosture: data.selectedPosture,
                 selectedSquatIssues: data.selectedSquatIssues,
                 selectedSingleLegIssues: data.selectedSingleLegIssues
+              })}
+              onMusclesChange={(muscles) => updateForm(form.id, {
+                musclesNeedStrengthening: muscles.strengthen,
+                musclesNeedStretching: muscles.stretch,
               })}
             />
           </CardContent>
