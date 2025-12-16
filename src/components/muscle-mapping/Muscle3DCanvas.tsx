@@ -189,8 +189,8 @@ function InteractiveHumanModel({
             
             for (let i = 0; i < positionAttribute.count; i++) {
               const x = positionAttribute.getX(i);
-              // x < 0 = δεξιά = πράσινο, x > 0 = αριστερά = ροζ
-              const color = x < 0 ? greenColor : pinkColor;
+              // x > 0 = αριστερά (πράσινο), x < 0 = δεξιά (ροζ)
+              const color = x > 0 ? greenColor : pinkColor;
               colors[i * 3] = color.r;
               colors[i * 3 + 1] = color.g;
               colors[i * 3 + 2] = color.b;
@@ -589,11 +589,11 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
           <>
             <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
               <div className="w-2.5 h-2.5 rounded-full bg-[#ff69b4]"></div>
-              <span className="text-white/80">Δεξιά</span>
+              <span className="text-white/80">Δεξιά (x&lt;0)</span>
             </div>
             <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
               <div className="w-2.5 h-2.5 rounded-full bg-[#00ff00]"></div>
-              <span className="text-white/80">Αριστερά</span>
+              <span className="text-white/80">Αριστερά (x&gt;0)</span>
             </div>
             <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
               <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
