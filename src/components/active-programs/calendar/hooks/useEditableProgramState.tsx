@@ -29,6 +29,8 @@ export const useEditableProgramState = (isOpen: boolean, assignment: EnrichedAss
     if (!assignment?.id) return;
     try {
       const data = await getWorkoutCompletions(assignment.id);
+      console.log('📊 useEditableProgramState - Fetched completions:', data);
+      console.log('📊 useEditableProgramState - Completions with RPE:', data.filter(c => c.rpe_score));
       setCompletions(data);
     } catch (error) {
       console.error('Error fetching completions:', error);
@@ -82,7 +84,9 @@ export const useEditableProgramState = (isOpen: boolean, assignment: EnrichedAss
       c.status === 'completed'
     );
     
-    return completion?.rpe_score ?? null;
+    const rpe = completion?.rpe_score ?? null;
+    console.log('📊 getDayRpe:', { weekNumber, dayNumber, dateStr, rpe, completionFound: !!completion });
+    return rpe;
   };
 
   const resetToOriginal = () => {
