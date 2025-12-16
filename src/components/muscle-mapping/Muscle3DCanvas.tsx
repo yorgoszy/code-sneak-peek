@@ -55,24 +55,20 @@ const musclesWithSubParts: Record<string, { name: string; parts: { id: string; l
   }
 };
 
-// Trapezius Boundary Overlay Component - Simple horizontal lines
+// Trapezius Boundary Overlay Component - Single horizontal line for Upper boundary
 interface TrapeziusBoundaryOverlayProps {
   visible: boolean;
-  upperMiddle: number;
-  middleLower: number;
-  onUpperMiddleChange: (value: number) => void;
-  onMiddleLowerChange: (value: number) => void;
+  upperBoundary: number;
+  onUpperBoundaryChange: (value: number) => void;
 }
 
 const TrapeziusBoundaryOverlay: React.FC<TrapeziusBoundaryOverlayProps> = ({
   visible,
-  upperMiddle,
-  middleLower,
-  onUpperMiddleChange,
-  onMiddleLowerChange,
+  upperBoundary,
+  onUpperBoundaryChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState<'upper' | 'lower' | null>(null);
+  const [dragging, setDragging] = useState(false);
 
   // Y range mapping (model coordinates to screen percentage)
   const yMin = -0.5;
@@ -87,22 +83,11 @@ const TrapeziusBoundaryOverlay: React.FC<TrapeziusBoundaryOverlayProps> = ({
     const percent = ((e.clientY - rect.top) / rect.height) * 100;
     const clampedPercent = Math.max(5, Math.min(95, percent));
     const newY = toY(clampedPercent);
-    
-    if (dragging === 'upper') {
-      // Upper line can't go below middle line
-      if (newY > middleLower + 0.05) {
-        onUpperMiddleChange(newY);
-      }
-    } else {
-      // Lower line can't go above upper line
-      if (newY < upperMiddle - 0.05) {
-        onMiddleLowerChange(newY);
-      }
-    }
-  }, [dragging, middleLower, upperMiddle, onUpperMiddleChange, onMiddleLowerChange]);
+    onUpperBoundaryChange(newY);
+  }, [dragging, onUpperBoundaryChange]);
 
   const handleMouseUp = useCallback(() => {
-    setDragging(null);
+    setDragging(false);
   }, []);
 
   useEffect(() => {
@@ -123,18 +108,18 @@ const TrapeziusBoundaryOverlay: React.FC<TrapeziusBoundaryOverlayProps> = ({
       ref={containerRef}
       className="absolute inset-0 pointer-events-none z-40"
     >
-      {/* Upper-Middle Line (Red) */}
+      {/* Upper Boundary Line (Red) */}
       <div
-        className="absolute left-0 right-0 h-1 bg-red-500 cursor-ns-resize pointer-events-auto flex items-center justify-center group"
-        style={{ top: `${toPercent(upperMiddle)}%` }}
-        onMouseDown={() => setDragging('upper')}
+        className="absolute left-0 right-0 h-1 bg-red-500 cursor-ns-resize pointer-events-auto flex items-center group"
+        style={{ top: `${toPercent(upperBoundary)}%` }}
+        onMouseDown={() => setDragging(true)}
       >
         {/* Dashed line effect */}
         <div className="absolute inset-0 border-t-2 border-dashed border-red-300" />
         
         {/* Handle - positioned on the right */}
         <div className="absolute right-16 bg-red-500 text-white text-[10px] px-2 py-0.5 font-mono whitespace-nowrap opacity-80 group-hover:opacity-100">
-          Άνω/Μέση Y={upperMiddle.toFixed(2)}
+          Άνω Μοίρα Y={upperBoundary.toFixed(2)}
         </div>
         
         {/* Drag indicators on edges */}
@@ -142,44 +127,19 @@ const TrapeziusBoundaryOverlay: React.FC<TrapeziusBoundaryOverlayProps> = ({
         <div className="absolute right-2 w-4 h-4 bg-red-500 rounded-full border-2 border-white" />
       </div>
 
-      {/* Middle-Lower Line (Blue) */}
-      <div
-        className="absolute left-0 right-0 h-1 bg-blue-500 cursor-ns-resize pointer-events-auto flex items-center justify-center group"
-        style={{ top: `${toPercent(middleLower)}%` }}
-        onMouseDown={() => setDragging('lower')}
-      >
-        {/* Dashed line effect */}
-        <div className="absolute inset-0 border-t-2 border-dashed border-blue-300" />
-        
-        {/* Handle - positioned on the right */}
-        <div className="absolute right-16 bg-blue-500 text-white text-[10px] px-2 py-0.5 font-mono whitespace-nowrap opacity-80 group-hover:opacity-100">
-          Μέση/Κάτω Y={middleLower.toFixed(2)}
-        </div>
-        
-        {/* Drag indicators on edges */}
-        <div className="absolute left-2 w-4 h-4 bg-blue-500 rounded-full border-2 border-white" />
-        <div className="absolute right-2 w-4 h-4 bg-blue-500 rounded-full border-2 border-white" />
-      </div>
-
       {/* Zone labels on the left */}
       <div className="absolute left-2 flex flex-col pointer-events-none" style={{ top: 0, height: '100%' }}>
         <div 
           className="flex items-center text-red-400 text-xs font-bold"
-          style={{ height: `${toPercent(upperMiddle)}%` }}
+          style={{ height: `${toPercent(upperBoundary)}%` }}
         >
-          ΆΝΩ
+          ΆΝΩ (L/R)
         </div>
         <div 
           className="flex items-center text-yellow-400 text-xs font-bold"
-          style={{ height: `${toPercent(middleLower) - toPercent(upperMiddle)}%` }}
+          style={{ height: `${100 - toPercent(upperBoundary)}%` }}
         >
-          ΜΕΣΗ
-        </div>
-        <div 
-          className="flex items-center text-blue-400 text-xs font-bold"
-          style={{ height: `${100 - toPercent(middleLower)}%` }}
-        >
-          ΚΑΤΩ
+          ΜΕΣΗ/ΚΑΤΩ
         </div>
       </div>
     </div>
@@ -208,7 +168,7 @@ function InteractiveHumanModel({
   selectedSearchMesh?: string | null;
   onShowSubPartSelector?: (meshName: string, side: 'Left' | 'Right') => void;
   isolateMode?: boolean;
-  trapeziusBoundaries?: { upperMiddle: number; middleLower: number };
+  trapeziusBoundaries?: { upperBoundary: number };
 }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   const { raycaster, camera, pointer } = useThree();
@@ -318,24 +278,27 @@ function InteractiveHumanModel({
         if (isSelectedMesh) {
           // Selected mesh: χρωματισμός vertices
           if (isTrapezius && trapeziusBoundaries) {
-            // Trapezius: χρωματισμός κατά Y zones (Άνω/Μέση/Κάτω)
+            // Trapezius: χρωματισμός κατά Y και X
+            // - Upper (Y > upperBoundary): Left/Right coloring (pink/green)
+            // - Middle/Lower (Y <= upperBoundary): Yellow (midline)
             const positionAttribute = geometry.getAttribute('position');
             const colors = new Float32Array(positionAttribute.count * 3);
             
-            const upperColor = new THREE.Color('#ff6b6b'); // Red for Upper
-            const middleColor = new THREE.Color('#ffd43b'); // Yellow for Middle
-            const lowerColor = new THREE.Color('#4dabf7'); // Blue for Lower
+            const upperLeftColor = new THREE.Color('#00ff00'); // Green for Upper Left
+            const upperRightColor = new THREE.Color('#ff69b4'); // Pink for Upper Right
+            const middleLowerColor = new THREE.Color('#ffd43b'); // Yellow for Middle/Lower
             
             for (let i = 0; i < positionAttribute.count; i++) {
+              const x = positionAttribute.getX(i);
               const y = positionAttribute.getY(i);
               let color: THREE.Color;
               
-              if (y > trapeziusBoundaries.upperMiddle) {
-                color = upperColor; // Upper Trapezius
-              } else if (y > trapeziusBoundaries.middleLower) {
-                color = middleColor; // Middle Trapezius
+              if (y > trapeziusBoundaries.upperBoundary) {
+                // Upper Trapezius - has Left/Right
+                color = x > 0 ? upperLeftColor : upperRightColor;
               } else {
-                color = lowerColor; // Lower Trapezius
+                // Middle/Lower Trapezius - midline
+                color = middleLowerColor;
               }
               
               colors[i * 3] = color.r;
@@ -656,10 +619,9 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
   const [isolateMode, setIsolateMode] = useState(false);
   const orbitControlsRef = useRef<OrbitControlsImpl>(null);
   
-  // Trapezius boundary state for configuration
+  // Trapezius boundary state for configuration (only upper boundary needed)
   const [showTrapeziusOverlay, setShowTrapeziusOverlay] = useState(false);
-  const [upperMiddleY, setUpperMiddleY] = useState(TRAPEZIUS_BOUNDARIES.upperMiddle);
-  const [middleLowerY, setMiddleLowerY] = useState(TRAPEZIUS_BOUNDARIES.middleLower);
+  const [upperBoundaryY, setUpperBoundaryY] = useState(TRAPEZIUS_BOUNDARIES.upperMiddle);
 
   // Update view side periodically
   useEffect(() => {
@@ -718,7 +680,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
             onMeshNamesLoaded={onMeshNamesLoaded}
             selectedSearchMesh={selectedSearchMesh}
             isolateMode={isolateMode}
-            trapeziusBoundaries={showTrapeziusOverlay || selectedSearchMesh === 'Trapezius' ? { upperMiddle: upperMiddleY, middleLower: middleLowerY } : undefined}
+            trapeziusBoundaries={showTrapeziusOverlay || selectedSearchMesh === 'Trapezius' ? { upperBoundary: upperBoundaryY } : undefined}
           />
         </Suspense>
         <OrbitControls 
@@ -780,10 +742,8 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
       {/* Trapezius Boundary Overlay */}
       <TrapeziusBoundaryOverlay
         visible={showTrapeziusOverlay && selectedSearchMesh === 'Trapezius'}
-        upperMiddle={upperMiddleY}
-        middleLower={middleLowerY}
-        onUpperMiddleChange={setUpperMiddleY}
-        onMiddleLowerChange={setMiddleLowerY}
+        upperBoundary={upperBoundaryY}
+        onUpperBoundaryChange={setUpperBoundaryY}
       />
 
       {/* Legend */}
@@ -799,16 +759,16 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
         {selectedSearchMesh === 'Trapezius' && showTrapeziusOverlay ? (
           <>
             <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
-              <div className="w-2.5 h-2.5 bg-[#ff6b6b]"></div>
-              <span className="text-white/80">Άνω Τραπεζοειδής</span>
+              <div className="w-2.5 h-2.5 bg-[#00ff00]"></div>
+              <span className="text-white/80">Άνω Αριστερά (Y&gt;{upperBoundaryY.toFixed(2)}, X&gt;0)</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
+              <div className="w-2.5 h-2.5 bg-[#ff69b4]"></div>
+              <span className="text-white/80">Άνω Δεξιά (Y&gt;{upperBoundaryY.toFixed(2)}, X&lt;0)</span>
             </div>
             <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
               <div className="w-2.5 h-2.5 bg-[#ffd43b]"></div>
-              <span className="text-white/80">Μέση Τραπεζοειδής</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
-              <div className="w-2.5 h-2.5 bg-[#4dabf7]"></div>
-              <span className="text-white/80">Κάτω Τραπεζοειδής</span>
+              <span className="text-white/80">Μέση/Κάτω (Y≤{upperBoundaryY.toFixed(2)})</span>
             </div>
           </>
         ) : selectedSearchMesh && (
