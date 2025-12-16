@@ -20,6 +20,7 @@ interface DayProgramDialogHeaderProps {
   workoutInProgress: boolean;
   elapsedTime: number;
   workoutStatus: string;
+  rpeScore?: number | null;
   onStartWorkout: () => void;
   onCompleteWorkout: () => void;
   onCancelWorkout: () => void;
@@ -28,11 +29,18 @@ interface DayProgramDialogHeaderProps {
   onClose: () => void;
 }
 
+const getRpeColor = (rpe: number) => {
+  if (rpe <= 6) return 'bg-green-500';
+  if (rpe <= 8) return 'bg-yellow-500';
+  return 'bg-red-500';
+};
+
 export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   selectedDate,
   workoutInProgress,
   elapsedTime,
   workoutStatus,
+  rpeScore,
   onStartWorkout,
   onCompleteWorkout,
   onCancelWorkout,
@@ -123,6 +131,11 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
               <Badge className="bg-green-100 text-green-800 border-green-200 rounded-none text-xs px-2 py-0.5">
                 Ολοκληρωμένη
               </Badge>
+              {rpeScore && (
+                <span className={`text-[10px] text-white px-1 rounded-none font-bold ${getRpeColor(rpeScore)}`}>
+                  RPE {rpeScore}
+                </span>
+              )}
               <button
                 onClick={onClose}
                 className="border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-none inline-flex items-center justify-center whitespace-nowrap text-xs font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-7 w-7 p-0"

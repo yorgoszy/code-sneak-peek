@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
 import { useWorkoutState } from './hooks/useWorkoutState';
+import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramBlocks } from './ProgramBlocks';
@@ -31,6 +32,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
   const [isRpeDialogOpen, setIsRpeDialogOpen] = useState(false);
+  const [currentRpeScore, setCurrentRpeScore] = useState<number | null>(null);
+  const { getWorkoutCompletions } = useWorkoutCompletions();
 
   const {
     workoutInProgress,
@@ -40,6 +43,24 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     handleCancelWorkout,
     exerciseCompletion
   } = useWorkoutState(program, selectedDate, onRefresh, onClose);
+
+  // Fetch RPE score for completed workout
+  useEffect(() => {
+    const fetchRpeScore = async () => {
+      if (!program?.id || !selectedDate) return;
+      
+      const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+      const completions = await getWorkoutCompletions(program.id);
+      const completion = completions.find(c => 
+        c.scheduled_date === selectedDateStr && 
+        c.status === 'completed'
+      );
+      
+      setCurrentRpeScore(completion?.rpe_score ?? null);
+    };
+    
+    fetchRpeScore();
+  }, [program?.id, selectedDate, workoutStatus]);
 
   if (!program || !selectedDate) return null;
 
@@ -167,6 +188,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             workoutInProgress={workoutInProgress}
             elapsedTime={elapsedTime}
             workoutStatus={workoutStatus}
+            rpeScore={currentRpeScore}
             onStartWorkout={handleStartWorkout}
             onCompleteWorkout={handleRequestComplete}
             onCancelWorkout={handleCancelWorkout}

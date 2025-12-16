@@ -64,6 +64,27 @@ export const useEditableProgramState = (isOpen: boolean, assignment: EnrichedAss
     return completedDays === totalDaysInWeek;
   };
 
+  const getDayRpe = (weekNumber: number, dayNumber: number): number | null => {
+    if (!assignment?.training_dates) return null;
+    
+    const program = assignment.programs;
+    if (!program?.program_weeks?.[0]?.program_days) return null;
+    
+    const daysPerWeek = program.program_weeks[0].program_days.length;
+    const totalDayIndex = ((weekNumber - 1) * daysPerWeek) + (dayNumber - 1);
+    
+    if (totalDayIndex >= assignment.training_dates.length) return null;
+    
+    const dateStr = assignment.training_dates[totalDayIndex];
+    
+    const completion = completions.find(c => 
+      c.scheduled_date === dateStr && 
+      c.status === 'completed'
+    );
+    
+    return completion?.rpe_score ?? null;
+  };
+
   const resetToOriginal = () => {
     if (originalProgramData) {
       setProgramData(JSON.parse(JSON.stringify(originalProgramData)));
@@ -94,6 +115,7 @@ export const useEditableProgramState = (isOpen: boolean, assignment: EnrichedAss
     fetchCompletions,
     isWorkoutCompleted,
     isWeekCompleted,
+    getDayRpe,
     resetToOriginal,
     updateOriginalData
   };
