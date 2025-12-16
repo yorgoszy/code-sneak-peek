@@ -162,17 +162,31 @@ function InteractiveHumanModel({
         // Check if matches search (but not selected)
         const matchesSearchQuery = matchesSearch.has(meshName);
         
-        // Determine mesh center position for left/right coloring
+        // Determine mesh world position for left/right coloring
+        const worldPosition = new THREE.Vector3();
+        child.getWorldPosition(worldPosition);
+        
+        // Compute average x from vertices in world space
         const geometry = child.geometry;
-        geometry.computeBoundingBox();
-        const center = new THREE.Vector3();
-        geometry.boundingBox?.getCenter(center);
-        child.localToWorld(center);
+        const positionAttribute = geometry.getAttribute('position');
+        let avgX = 0;
+        if (positionAttribute && positionAttribute.count > 0) {
+          for (let i = 0; i < positionAttribute.count; i++) {
+            const vertex = new THREE.Vector3();
+            vertex.fromBufferAttribute(positionAttribute, i);
+            child.localToWorld(vertex); // Convert to world space
+            avgX += vertex.x;
+          }
+          avgX /= positionAttribute.count;
+        } else {
+          avgX = worldPosition.x;
+        }
         
         // Check if midline muscle
         const isMidline = midlineMuscles.has(meshName);
         
         if (isSelectedMesh) {
+          console.log(`🎯 Selected mesh ${meshName}: avgX=${avgX.toFixed(3)}, isMidline=${isMidline}`);
           // Selected mesh: ροζ για x<0, πράσινο για x>0, άσπρο για κεντρικούς
           if (isMidline) {
             // Κεντρικός μυς = άσπρο
@@ -183,7 +197,7 @@ function InteractiveHumanModel({
               emissive: '#ffffff',
               emissiveIntensity: 0.5,
             });
-          } else if (center.x < 0) {
+          } else if (avgX < -0.05) {
             // Αριστερή πλευρά (x<0) = ροζ
             child.material = new THREE.MeshStandardMaterial({
               color: '#ff69b4',
