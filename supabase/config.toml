@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.analyze-school-note]
 verify_jwt = false
+
+[functions.send-rpe-notification]
+verify_jwt = false

@@ -475,6 +475,53 @@ export const useWorkoutState = (
       
       toast.success(`Προπόνηση ολοκληρώθηκε για ${program.app_users?.name}! Διάρκεια: ${actualDurationMinutes} λεπτά`);
       
+      // Send RPE notification email if RPE was submitted
+      if (rpeScore) {
+        try {
+          const userId = program.user_id || program.app_users?.id;
+          const programName = program.programs?.name || 'Πρόγραμμα';
+          
+          // Get the day name from the current day
+          let dayName = 'Ημέρα';
+          const weeks = program.programs?.program_weeks || [];
+          const dateIndex = program.training_dates?.findIndex(date => date === selectedDateStr) ?? -1;
+          if (dateIndex >= 0) {
+            let cumulativeDays = 0;
+            for (const week of weeks) {
+              const sortedDays = [...(week.program_days || [])].sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
+              const daysInWeek = sortedDays.length;
+              if (dateIndex < cumulativeDays + daysInWeek) {
+                const dayIndexInWeek = dateIndex - cumulativeDays;
+                const currentDay = sortedDays[dayIndexInWeek];
+                dayName = currentDay?.name || `Ημέρα ${currentDay?.day_number || dayIndexInWeek + 1}`;
+                break;
+              }
+              cumulativeDays += daysInWeek;
+            }
+          }
+          
+          console.log('📧 Sending RPE notification:', { userId, rpeScore, programName, dayName, scheduledDate: selectedDateStr });
+          
+          supabase.functions.invoke('send-rpe-notification', {
+            body: {
+              userId,
+              rpeScore,
+              programName,
+              dayName,
+              scheduledDate: selectedDateStr
+            }
+          }).then(({ error }) => {
+            if (error) {
+              console.error('❌ Error sending RPE notification:', error);
+            } else {
+              console.log('✅ RPE notification sent');
+            }
+          });
+        } catch (notifyError) {
+          console.error('❌ Error preparing RPE notification:', notifyError);
+        }
+      }
+      
       // ΑΜΕΣΗ ανανέωση
       if (onRefresh) {
         console.log('🔄 TRIGGERING IMMEDIATE REFRESH...');
