@@ -24,7 +24,7 @@ export interface Block {
   id: string;
   name: string;
   block_order: number;
-  training_type?: 'warm up' | 'activation' | 'str' | 'str/spd' | 'pwr' | 'spd/str' | 'spd' | 'str/end' | 'pwr/end' | 'spd/end' | 'end' | 'hpr' | 'mobility' | 'neural act' | 'stability' | 'recovery' | 'accessory' | 'rotational';
+  training_type?: 'warm up' | 'activation' | 'power' | 'str' | 'str/spd' | 'pwr' | 'spd/str' | 'spd' | 'str/end' | 'pwr/end' | 'spd/end' | 'end' | 'hpr' | 'mobility' | 'neural act' | 'stability' | 'recovery' | 'accessory' | 'rotational';
   workout_format?: string;
   workout_duration?: string;
   block_sets?: number;
