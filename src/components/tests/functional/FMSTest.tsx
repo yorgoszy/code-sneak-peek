@@ -149,9 +149,7 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
             key={rowIndex} 
             className={cn(
               "grid gap-1",
-              rowIndex === 2 
-                ? "grid-cols-1 sm:grid-cols-3"
-                : "grid-cols-2"
+              rowIndex === 2 ? "grid-cols-3" : "grid-cols-2"
             )}
           >
             {row.map(exercise => renderExercise(exercise))}
