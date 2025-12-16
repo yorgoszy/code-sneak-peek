@@ -10,16 +10,24 @@ interface SortableDayProps {
   dayIndex: number;
   week: any;
   isDayCompleted: boolean;
+  rpe?: number | null;
   onDoubleClick: (e: React.MouseEvent) => void;
   isEditing: boolean;
   displayName?: string;
 }
+
+const getRpeColor = (rpe: number) => {
+  if (rpe <= 6) return 'bg-green-500';
+  if (rpe <= 8) return 'bg-yellow-500';
+  return 'bg-red-500';
+};
 
 export const SortableDay: React.FC<SortableDayProps> = ({
   day,
   dayIndex,
   week,
   isDayCompleted,
+  rpe,
   onDoubleClick,
   isEditing,
   displayName
@@ -62,6 +70,11 @@ export const SortableDay: React.FC<SortableDayProps> = ({
         )}
         <div className={`flex items-center gap-0.5 ${isEditing ? 'ml-3 text-xs' : ''} truncate`}>
           {isDayCompleted && <CheckCircle className="w-2 h-2 text-[#00ffba] flex-shrink-0" />}
+          {isDayCompleted && rpe && (
+            <span className={`text-[8px] text-white px-0.5 rounded-none font-bold ${getRpeColor(rpe)} flex-shrink-0`}>
+              {rpe}
+            </span>
+          )}
           <span className="truncate text-xs">
             {displayName || day.name || `Ημέρα ${day.day_number}`}
           </span>

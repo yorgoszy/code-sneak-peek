@@ -45,6 +45,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     fetchCompletions,
     isWorkoutCompleted,
     isWeekCompleted,
+    getDayRpe,
     resetToOriginal,
     updateOriginalData
   } = useEditableProgramState(isOpen, assignment);
@@ -207,6 +208,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                     isEditing={isEditing}
                     isWeekCompleted={isWeekCompleted}
                     isWorkoutCompleted={isWorkoutCompleted}
+                    getDayRpe={getDayRpe}
                     onDayDoubleClick={handleDayDoubleClick}
                     onAddNewBlock={handleAddNewBlock}
                     onAddExercise={handleAddExercise}

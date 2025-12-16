@@ -14,6 +14,7 @@ interface EditableProgramWeekCardProps {
   isEditing: boolean;
   isWeekCompleted: (weekNumber: number, totalDaysInWeek: number) => boolean;
   isWorkoutCompleted: (weekNumber: number, dayNumber: number) => boolean;
+  getDayRpe?: (weekNumber: number, dayNumber: number) => number | null;
   onDayDoubleClick: (week: any, day: any, event: React.MouseEvent) => void;
   onAddNewBlock: (dayId: string) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
@@ -31,6 +32,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
   isEditing,
   isWeekCompleted,
   isWorkoutCompleted,
+  getDayRpe,
   onDayDoubleClick,
   onAddNewBlock,
   onAddExercise,
@@ -79,6 +81,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
                 <TabsList className="flex w-full rounded-none gap-0 h-6 p-0 sticky top-[42px] z-10 bg-white border-b border-gray-200">
                   {week.program_days?.map((day: any, dayIndex: number) => {
                     const isDayCompleted = isWorkoutCompleted(week.week_number, day.day_number);
+                    const rpe = getDayRpe ? getDayRpe(week.week_number, day.day_number) : null;
                     const label = getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`);
                     
                     return (
@@ -88,6 +91,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
                         dayIndex={dayIndex}
                         week={week}
                         isDayCompleted={isDayCompleted}
+                        rpe={rpe}
                         onDoubleClick={(e) => onDayDoubleClick(week, day, e)}
                         isEditing={isEditing}
                         displayName={label}
@@ -101,6 +105,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
             <TabsList className="grid w-full rounded-none sticky top-[42px] z-10 bg-white border-b border-gray-200" style={{ gridTemplateColumns: `repeat(${week.program_days?.length || 1}, 1fr)` }}>
               {week.program_days?.map((day: any, dayIndex: number) => {
                 const isDayCompleted = isWorkoutCompleted(week.week_number, day.day_number);
+                const rpe = getDayRpe ? getDayRpe(week.week_number, day.day_number) : null;
                 const label = getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`);
                 
                 return (
@@ -110,6 +115,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
                     dayIndex={dayIndex}
                     week={week}
                     isDayCompleted={isDayCompleted}
+                    rpe={rpe}
                     onDoubleClick={(e) => onDayDoubleClick(week, day, e)}
                     isEditing={false}
                     displayName={label}
