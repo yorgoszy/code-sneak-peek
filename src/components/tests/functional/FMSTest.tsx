@@ -62,7 +62,7 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
   const fmsTotal = getFmsTotal();
 
   const renderScoreButtons = (exerciseKey: string) => (
-    <div className="flex gap-0.5">
+    <div className="flex gap-0.5 md:gap-1">
       {[0, 1, 2, 3].map((score) => (
         <div
           key={score}
@@ -71,7 +71,7 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
             handleFmsClick(exerciseKey);
           }}
           className={cn(
-            "w-5 h-5 border flex items-center justify-center text-[10px] font-bold cursor-pointer",
+            "w-5 h-5 md:w-7 md:h-7 border flex items-center justify-center text-[10px] md:text-xs font-bold cursor-pointer",
             fmsScores[exerciseKey] === score
               ? score === 0 
                 ? "bg-red-500 text-white" 
@@ -88,15 +88,15 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
   const renderExercise = (exercise: string) => {
     if (hasLeftRight.includes(exercise)) {
       return (
-        <div key={exercise} className="p-1.5 border border-gray-300 text-center">
-          <div className="font-medium text-[10px] leading-tight mb-1">{exercise}</div>
-          <div className="space-y-0.5">
-            <div className="flex items-center justify-center gap-0.5">
-              <span className="text-[10px] font-bold w-3">L</span>
+        <div key={exercise} className="p-1.5 md:p-3 border border-gray-300 text-center">
+          <div className="font-medium text-[10px] md:text-sm leading-tight mb-1 md:mb-2">{exercise}</div>
+          <div className="space-y-0.5 md:space-y-1">
+            <div className="flex items-center justify-center gap-0.5 md:gap-1">
+              <span className="text-[10px] md:text-sm font-bold w-3 md:w-4">L</span>
               {renderScoreButtons(`${exercise} L`)}
             </div>
-            <div className="flex items-center justify-center gap-0.5">
-              <span className="text-[10px] font-bold w-3">R</span>
+            <div className="flex items-center justify-center gap-0.5 md:gap-1">
+              <span className="text-[10px] md:text-sm font-bold w-3 md:w-4">R</span>
               {renderScoreButtons(`${exercise} R`)}
             </div>
           </div>
@@ -108,15 +108,15 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
       <div
         key={exercise}
         onClick={() => handleFmsClick(exercise)}
-        className="p-1.5 border border-gray-300 cursor-pointer text-center transition-colors hover:bg-gray-50"
+        className="p-1.5 md:p-3 border border-gray-300 cursor-pointer text-center transition-colors hover:bg-gray-50"
       >
-        <div className="font-medium text-[10px] leading-tight mb-1">{exercise}</div>
-        <div className="flex justify-center gap-0.5">
+        <div className="font-medium text-[10px] md:text-sm leading-tight mb-1 md:mb-2">{exercise}</div>
+        <div className="flex justify-center gap-0.5 md:gap-1">
           {[0, 1, 2, 3].map((score) => (
             <div
               key={score}
               className={cn(
-                "w-5 h-5 border flex items-center justify-center text-[10px] font-bold",
+                "w-5 h-5 md:w-7 md:h-7 border flex items-center justify-center text-[10px] md:text-xs font-bold",
                 fmsScores[exercise] === score
                   ? score === 0 
                     ? "bg-red-500 text-white" 
@@ -134,21 +134,21 @@ export const FMSTest = ({ fmsScores, onFmsScoreChange }: FMSTestProps) => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold text-sm">FMS</h3>
+      <div className="flex items-center justify-between mb-2 md:mb-3">
+        <h3 className="font-semibold text-sm md:text-base">FMS</h3>
         <span className={cn(
-          "text-xs font-bold px-2 py-0.5",
+          "text-xs md:text-sm font-bold px-2 md:px-3 py-0.5 md:py-1",
           fmsTotal < 14 ? "bg-red-500 text-white" : "bg-green-500 text-white"
         )}>
           Σκορ: {fmsTotal}
         </span>
       </div>
-      <div className="space-y-1">
+      <div className="space-y-1 md:space-y-2">
         {fmsRows.map((row, rowIndex) => (
           <div 
             key={rowIndex} 
             className={cn(
-              "grid gap-1",
+              "grid gap-1 md:gap-2",
               rowIndex === 2 ? "grid-cols-3" : "grid-cols-2"
             )}
           >
