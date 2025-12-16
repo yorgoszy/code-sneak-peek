@@ -8,6 +8,7 @@ interface WorkoutStats {
   total: number;
   missed: number;
   progress: number;
+  averageRpe?: number;
 }
 
 export const useWorkoutCompletionsCache = () => {
@@ -84,6 +85,14 @@ export const useWorkoutCompletionsCache = () => {
     const completedWorkouts = uniqueCompletedDates.size;
     const missedWorkouts = completions.filter(c => c.status === 'missed').length;
     
+    // Calculate average RPE from completed workouts
+    const rpeScores = completions
+      .filter(c => c.status === 'completed' && c.rpe_score)
+      .map(c => c.rpe_score as number);
+    const averageRpe = rpeScores.length > 0 
+      ? rpeScores.reduce((a, b) => a + b, 0) / rpeScores.length 
+      : undefined;
+    
     // Περιορίζουμε το progress στο 100%
     const progress = totalWorkouts > 0 
       ? Math.min(100, Math.round((completedWorkouts / totalWorkouts) * 100))
@@ -94,14 +103,16 @@ export const useWorkoutCompletionsCache = () => {
       totalWorkouts,
       missedWorkouts,
       progress,
-      completions: completions.map(c => ({ date: c.scheduled_date, status: c.status }))
+      averageRpe,
+      completions: completions.map(c => ({ date: c.scheduled_date, status: c.status, rpe: c.rpe_score }))
     });
 
     return {
       completed: completedWorkouts,
       total: totalWorkouts,
       missed: missedWorkouts,
-      progress
+      progress,
+      averageRpe
     };
   }, []);
 

@@ -14,6 +14,7 @@ export interface WorkoutCompletion {
   end_time?: string;
   actual_duration_minutes?: number;
   status_color?: string;
+  rpe_score?: number;
   created_at: string;
   updated_at: string;
 }
