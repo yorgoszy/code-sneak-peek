@@ -162,23 +162,14 @@ function InteractiveHumanModel({
         // Check if matches search (but not selected)
         const matchesSearchQuery = matchesSearch.has(meshName);
         
-        // Compute average x from LOCAL vertices (before centering transform)
+        // Get geometry for vertex coloring
         const geometry = child.geometry;
-        const positionAttribute = geometry.getAttribute('position');
-        let avgLocalX = 0;
-        if (positionAttribute && positionAttribute.count > 0) {
-          for (let i = 0; i < positionAttribute.count; i++) {
-            avgLocalX += positionAttribute.getX(i);
-          }
-          avgLocalX /= positionAttribute.count;
-        }
         
         // Check if midline muscle
         const isMidline = midlineMuscles.has(meshName);
         
         if (isSelectedMesh) {
-          console.log(`🎯 Selected mesh ${meshName}: localAvgX=${avgLocalX.toFixed(3)}, isMidline=${isMidline}`);
-          // Selected mesh: ροζ για x<0, πράσινο για x>0, άσπρο για κεντρικούς
+          // Selected mesh: χρωματισμός vertices ανάλογα με θέση x
           if (isMidline) {
             // Κεντρικός μυς = άσπρο
             child.material = new THREE.MeshStandardMaterial({
@@ -188,23 +179,31 @@ function InteractiveHumanModel({
               emissive: '#ffffff',
               emissiveIntensity: 0.5,
             });
-          } else if (avgLocalX < -0.5) {
-            // Αριστερή πλευρά (x<0) = ροζ
-            child.material = new THREE.MeshStandardMaterial({
-              color: '#ff69b4',
-              roughness: 0.3,
-              metalness: 0.4,
-              emissive: '#ff69b4',
-              emissiveIntensity: 0.6,
-            });
           } else {
-            // Δεξιά πλευρά (x>0) = πράσινο
+            // Δημιουργία vertex colors για left/right
+            const positionAttribute = geometry.getAttribute('position');
+            const colors = new Float32Array(positionAttribute.count * 3);
+            
+            const pinkColor = new THREE.Color('#ff69b4');
+            const greenColor = new THREE.Color('#00ff00');
+            
+            for (let i = 0; i < positionAttribute.count; i++) {
+              const x = positionAttribute.getX(i);
+              // x < 0 = αριστερά = ροζ, x > 0 = δεξιά = πράσινο
+              const color = x < 0 ? pinkColor : greenColor;
+              colors[i * 3] = color.r;
+              colors[i * 3 + 1] = color.g;
+              colors[i * 3 + 2] = color.b;
+            }
+            
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            
             child.material = new THREE.MeshStandardMaterial({
-              color: '#00ff00',
+              vertexColors: true,
               roughness: 0.3,
               metalness: 0.4,
-              emissive: '#00ff00',
-              emissiveIntensity: 0.6,
+              emissive: '#333333',
+              emissiveIntensity: 0.3,
             });
           }
         } else if (matchesSearchQuery && !selectedSearchMesh) {
