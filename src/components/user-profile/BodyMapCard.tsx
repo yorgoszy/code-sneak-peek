@@ -54,6 +54,24 @@ const hasSide = (name: string, side: 'Left' | 'Right') => {
   return false;
 };
 
+// Helper to get Trapezius part from mesh name
+const getTrapeziusPart = (name: string): { part: 'Upper' | 'Middle_Lower' | null; side: 'Left' | 'Right' | null } => {
+  if (!name.startsWith('Trapezius_')) return { part: null, side: null };
+  
+  const isUpper = name.includes('Upper');
+  const isMiddleLower = name.includes('Middle_Lower');
+  const isLeft = name.includes('Left');
+  const isRight = name.includes('Right');
+  
+  return {
+    part: isUpper ? 'Upper' : isMiddleLower ? 'Middle_Lower' : null,
+    side: isLeft ? 'Left' : isRight ? 'Right' : null
+  };
+};
+
+// Trapezius Y boundary (same as in Muscle3DCanvas)
+const TRAPEZIUS_UPPER_BOUNDARY = 0.88;
+
 function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: MuscleData[] }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
 
@@ -132,6 +150,32 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       .filter(m => m.actionType === 'stretch')
       .forEach(m => set.add(norm(getBaseName(m.meshName))));
     return set;
+  }, [musclesToHighlight]);
+
+  // Trapezius-specific parts tracking
+  const trapeziusParts = useMemo(() => {
+    const parts: {
+      strengthen: { upperLeft: boolean; upperRight: boolean; middleLower: boolean };
+      stretch: { upperLeft: boolean; upperRight: boolean; middleLower: boolean };
+    } = {
+      strengthen: { upperLeft: false, upperRight: false, middleLower: false },
+      stretch: { upperLeft: false, upperRight: false, middleLower: false }
+    };
+    
+    musclesToHighlight.forEach(m => {
+      const trapPart = getTrapeziusPart(m.meshName);
+      if (!trapPart.part) return;
+      
+      const action = m.actionType;
+      if (trapPart.part === 'Upper') {
+        if (trapPart.side === 'Left') parts[action].upperLeft = true;
+        else if (trapPart.side === 'Right') parts[action].upperRight = true;
+      } else if (trapPart.part === 'Middle_Lower') {
+        parts[action].middleLower = true;
+      }
+    });
+    
+    return parts;
   }, [musclesToHighlight]);
 
   const hasSidedData = useMemo(
@@ -266,6 +310,92 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       const meshName = norm(meshNameRaw);
       const meshBase = norm(getBaseName(cleanName(meshNameRaw)));
 
+      // Special handling for Trapezius - use vertex coloring for parts
+      if (meshNameRaw === 'Trapezius') {
+        const hasTrapData = trapeziusParts.strengthen.upperLeft || trapeziusParts.strengthen.upperRight || 
+                            trapeziusParts.strengthen.middleLower || trapeziusParts.stretch.upperLeft || 
+                            trapeziusParts.stretch.upperRight || trapeziusParts.stretch.middleLower;
+        
+        if (hasTrapData) {
+          const geometry = child.geometry;
+          const positionAttribute = geometry.getAttribute('position');
+          const colors = new Float32Array(positionAttribute.count * 3);
+          
+          const strengthenColor = new THREE.Color('#ff1493'); // Neon pink
+          const stretchColor = new THREE.Color('#ffff00'); // Neon yellow
+          const defaultColor = new THREE.Color('#d1d5db'); // Gray for non-highlighted parts
+          
+          let hasHighlightedVertices = false;
+          
+          for (let i = 0; i < positionAttribute.count; i++) {
+            const x = positionAttribute.getX(i);
+            const y = positionAttribute.getY(i);
+            let color: THREE.Color = defaultColor;
+            let isHighlighted = false;
+            
+            if (y > TRAPEZIUS_UPPER_BOUNDARY) {
+              // Upper Trapezius region
+              const isLeftSide = x > 0;
+              const isRightSide = x < 0;
+              
+              if (isLeftSide) {
+                if (trapeziusParts.strengthen.upperLeft) {
+                  color = strengthenColor;
+                  isHighlighted = true;
+                } else if (trapeziusParts.stretch.upperLeft) {
+                  color = stretchColor;
+                  isHighlighted = true;
+                }
+              } else if (isRightSide) {
+                if (trapeziusParts.strengthen.upperRight) {
+                  color = strengthenColor;
+                  isHighlighted = true;
+                } else if (trapeziusParts.stretch.upperRight) {
+                  color = stretchColor;
+                  isHighlighted = true;
+                }
+              }
+            } else {
+              // Middle/Lower Trapezius region
+              if (trapeziusParts.strengthen.middleLower) {
+                color = strengthenColor;
+                isHighlighted = true;
+              } else if (trapeziusParts.stretch.middleLower) {
+                color = stretchColor;
+                isHighlighted = true;
+              }
+            }
+            
+            if (isHighlighted) hasHighlightedVertices = true;
+            
+            colors[i * 3] = color.r;
+            colors[i * 3 + 1] = color.g;
+            colors[i * 3 + 2] = color.b;
+          }
+          
+          geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+          
+          if (hasHighlightedVertices) {
+            child.material = new THREE.MeshStandardMaterial({
+              vertexColors: true,
+              roughness: 0.3,
+              metalness: 0.2,
+              emissive: '#333333',
+              emissiveIntensity: 0.3,
+            });
+          } else {
+            child.material = new THREE.MeshStandardMaterial({
+              color: '#d1d5db',
+              wireframe: true,
+              transparent: true,
+              opacity: 0.25,
+            });
+          }
+          child.visible = true;
+          return;
+        }
+      }
+
       // Use mesh bounding box center (in the clone's local space after centering)
       const meshBox = new THREE.Box3().setFromObject(child);
       const meshCenter = meshBox.getCenter(new THREE.Vector3());
@@ -276,8 +406,9 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       const isStretchByPos = matchedByPosition?.type === 'stretch';
 
       // Fallback: name-based matching (base-name only; no side splitting)
-      const isStrengthenByName = strengthenExact.has(meshName) || strengthenBaseAll.has(meshBase);
-      const isStretchByName = stretchExact.has(meshName) || stretchBaseAll.has(meshBase);
+      // Exclude Trapezius from general matching since we handle it above
+      const isStrengthenByName = meshBase !== 'trapezius' && (strengthenExact.has(meshName) || strengthenBaseAll.has(meshBase));
+      const isStretchByName = meshBase !== 'trapezius' && (stretchExact.has(meshName) || stretchBaseAll.has(meshBase));
 
       const isStrengthen = isStrengthenByPos || isStrengthenByName;
       const isStretch = isStretchByPos || isStretchByName;
@@ -353,6 +484,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     hasPositionData,
     leftClipPlane,
     rightClipPlane,
+    trapeziusParts,
   ]);
 
   return (
