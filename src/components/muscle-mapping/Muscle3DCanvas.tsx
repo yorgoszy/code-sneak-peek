@@ -55,7 +55,7 @@ const musclesWithSubParts: Record<string, { name: string; parts: { id: string; l
   }
 };
 
-// Trapezius Boundary Overlay Component
+// Trapezius Boundary Overlay Component - Simple horizontal lines
 interface TrapeziusBoundaryOverlayProps {
   visible: boolean;
   upperMiddle: number;
@@ -71,90 +71,116 @@ const TrapeziusBoundaryOverlay: React.FC<TrapeziusBoundaryOverlayProps> = ({
   onUpperMiddleChange,
   onMiddleLowerChange,
 }) => {
-  if (!visible) return null;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState<'upper' | 'lower' | null>(null);
 
-  // Convert Y values to percentage (assuming Y range is roughly -1 to 1.5)
+  // Y range mapping (model coordinates to screen percentage)
   const yMin = -0.5;
   const yMax = 1.5;
   const toPercent = (y: number) => ((yMax - y) / (yMax - yMin)) * 100;
   const toY = (percent: number) => yMax - (percent / 100) * (yMax - yMin);
 
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!dragging || !containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const percent = ((e.clientY - rect.top) / rect.height) * 100;
+    const clampedPercent = Math.max(5, Math.min(95, percent));
+    const newY = toY(clampedPercent);
+    
+    if (dragging === 'upper') {
+      // Upper line can't go below middle line
+      if (newY > middleLower + 0.05) {
+        onUpperMiddleChange(newY);
+      }
+    } else {
+      // Lower line can't go above upper line
+      if (newY < upperMiddle - 0.05) {
+        onMiddleLowerChange(newY);
+      }
+    }
+  }, [dragging, middleLower, upperMiddle, onUpperMiddleChange, onMiddleLowerChange]);
+
+  const handleMouseUp = useCallback(() => {
+    setDragging(null);
+  }, []);
+
+  useEffect(() => {
+    if (dragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [dragging, handleMouseMove, handleMouseUp]);
+
+  if (!visible) return null;
+
   return (
-    <div className="absolute right-4 top-1/2 -translate-y-1/2 h-[60%] w-12 flex flex-col items-center z-40">
-      {/* Y Axis Label */}
-      <div className="text-[#00ffba] text-xs mb-2 font-mono">Y Axis</div>
-      
-      {/* Slider Track */}
-      <div className="relative h-full w-2 bg-white/20 rounded">
-        {/* Upper Zone */}
-        <div 
-          className="absolute w-full bg-red-500/40 rounded-t"
-          style={{ top: 0, height: `${toPercent(upperMiddle)}%` }}
-        />
-        {/* Middle Zone */}
-        <div 
-          className="absolute w-full bg-yellow-500/40"
-          style={{ top: `${toPercent(upperMiddle)}%`, height: `${toPercent(middleLower) - toPercent(upperMiddle)}%` }}
-        />
-        {/* Lower Zone */}
-        <div 
-          className="absolute w-full bg-blue-500/40 rounded-b"
-          style={{ top: `${toPercent(middleLower)}%`, height: `${100 - toPercent(middleLower)}%` }}
-        />
+    <div 
+      ref={containerRef}
+      className="absolute inset-0 pointer-events-none z-40"
+    >
+      {/* Upper-Middle Line (Red) */}
+      <div
+        className="absolute left-0 right-0 h-1 bg-red-500 cursor-ns-resize pointer-events-auto flex items-center justify-center group"
+        style={{ top: `${toPercent(upperMiddle)}%` }}
+        onMouseDown={() => setDragging('upper')}
+      >
+        {/* Dashed line effect */}
+        <div className="absolute inset-0 border-t-2 border-dashed border-red-300" />
         
-        {/* Upper-Middle Slider */}
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={toPercent(upperMiddle)}
-          onChange={(e) => onUpperMiddleChange(toY(Number(e.target.value)))}
-          className="absolute w-[200px] h-2 -rotate-90 origin-left cursor-pointer"
-          style={{ 
-            left: '50%', 
-            top: `${toPercent(upperMiddle)}%`,
-            transform: 'translateX(-50%) rotate(-90deg)',
-            accentColor: '#ff6b6b'
-          }}
-        />
+        {/* Handle */}
+        <div className="absolute left-1/2 -translate-x-1/2 bg-red-500 text-white text-[10px] px-2 py-0.5 font-mono whitespace-nowrap opacity-80 group-hover:opacity-100">
+          Άνω/Μέση Y={upperMiddle.toFixed(2)}
+        </div>
         
-        {/* Middle-Lower Slider */}
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={toPercent(middleLower)}
-          onChange={(e) => onMiddleLowerChange(toY(Number(e.target.value)))}
-          className="absolute w-[200px] h-2 -rotate-90 origin-left cursor-pointer"
-          style={{ 
-            left: '50%', 
-            top: `${toPercent(middleLower)}%`,
-            transform: 'translateX(-50%) rotate(-90deg)',
-            accentColor: '#4dabf7'
-          }}
-        />
+        {/* Drag indicators on edges */}
+        <div className="absolute left-2 w-4 h-4 bg-red-500 rounded-full border-2 border-white" />
+        <div className="absolute right-2 w-4 h-4 bg-red-500 rounded-full border-2 border-white" />
       </div>
-      
-      {/* Labels */}
-      <div className="mt-2 text-[10px] space-y-1">
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 bg-red-500/60"></div>
-          <span className="text-white/80">Άνω</span>
+
+      {/* Middle-Lower Line (Blue) */}
+      <div
+        className="absolute left-0 right-0 h-1 bg-blue-500 cursor-ns-resize pointer-events-auto flex items-center justify-center group"
+        style={{ top: `${toPercent(middleLower)}%` }}
+        onMouseDown={() => setDragging('lower')}
+      >
+        {/* Dashed line effect */}
+        <div className="absolute inset-0 border-t-2 border-dashed border-blue-300" />
+        
+        {/* Handle */}
+        <div className="absolute left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] px-2 py-0.5 font-mono whitespace-nowrap opacity-80 group-hover:opacity-100">
+          Μέση/Κάτω Y={middleLower.toFixed(2)}
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 bg-yellow-500/60"></div>
-          <span className="text-white/80">Μέση</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 bg-blue-500/60"></div>
-          <span className="text-white/80">Κάτω</span>
-        </div>
+        
+        {/* Drag indicators on edges */}
+        <div className="absolute left-2 w-4 h-4 bg-blue-500 rounded-full border-2 border-white" />
+        <div className="absolute right-2 w-4 h-4 bg-blue-500 rounded-full border-2 border-white" />
       </div>
-      
-      {/* Y Values Display */}
-      <div className="mt-2 text-[9px] font-mono text-[#00ffba] bg-black/80 px-2 py-1">
-        <div>U/M: {upperMiddle.toFixed(2)}</div>
-        <div>M/L: {middleLower.toFixed(2)}</div>
+
+      {/* Zone labels on the left */}
+      <div className="absolute left-2 flex flex-col pointer-events-none" style={{ top: 0, height: '100%' }}>
+        <div 
+          className="flex items-center text-red-400 text-xs font-bold"
+          style={{ height: `${toPercent(upperMiddle)}%` }}
+        >
+          ΆΝΩ
+        </div>
+        <div 
+          className="flex items-center text-yellow-400 text-xs font-bold"
+          style={{ height: `${toPercent(middleLower) - toPercent(upperMiddle)}%` }}
+        >
+          ΜΕΣΗ
+        </div>
+        <div 
+          className="flex items-center text-blue-400 text-xs font-bold"
+          style={{ height: `${100 - toPercent(middleLower)}%` }}
+        >
+          ΚΑΤΩ
+        </div>
       </div>
     </div>
   );
