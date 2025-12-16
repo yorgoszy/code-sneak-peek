@@ -357,18 +357,26 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const [strengthenDialogOpen, setStrengthenDialogOpen] = useState(false);
   const [stretchDialogOpen, setStretchDialogOpen] = useState(false);
 
-  // Get unique muscle names by type - using Greek names
+  // Get unique muscle names by type - using Greek names with side info
   const strengthenMuscles = useMemo(() => {
     const names = musclesToHighlight
       .filter(m => m.actionType === 'strengthen')
-      .map(m => m.displayName || m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' '));
+      .map(m => {
+        const baseName = m.displayName || m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' ');
+        const side = /_Left$/i.test(m.meshName) ? ' (Αριστερά)' : /_Right$/i.test(m.meshName) ? ' (Δεξιά)' : '';
+        return baseName + side;
+      });
     return [...new Set(names)];
   }, [musclesToHighlight]);
 
   const stretchMuscles = useMemo(() => {
     const names = musclesToHighlight
       .filter(m => m.actionType === 'stretch')
-      .map(m => m.displayName || m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' '));
+      .map(m => {
+        const baseName = m.displayName || m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' ');
+        const side = /_Left$/i.test(m.meshName) ? ' (Αριστερά)' : /_Right$/i.test(m.meshName) ? ' (Δεξιά)' : '';
+        return baseName + side;
+      });
     return [...new Set(names)];
   }, [musclesToHighlight]);
 
