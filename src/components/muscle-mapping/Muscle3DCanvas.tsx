@@ -214,33 +214,33 @@ function InteractiveHumanModel({
         baseMeshName = targetIntersect.object.name || 'unnamed';
       }
       
-      const point = targetIntersect.point;
-      
       // Εφαρμογή grouping (π.χ. psoas_major -> Psoas)
       const groupedName = getGroupedMeshName(baseMeshName);
       
-      // Υπολογισμός πλευράς
-      const side: 'Left' | 'Right' = point.x > 0 ? 'Left' : 'Right';
-      
       // Έλεγχος αν ο μυς έχει υπο-μέρη (π.χ. Trapezius)
       if (musclesWithSubParts[groupedName]) {
-        console.log('🎯 Clicked muscle with sub-parts:', groupedName, '| Side:', side);
+        console.log('🎯 Clicked muscle with sub-parts:', groupedName);
         if (onShowSubPartSelector) {
-          onShowSubPartSelector(groupedName, side);
+          onShowSubPartSelector(groupedName, 'Left'); // side param ignored now
         }
         return;
       }
       
-      // Διαχωρισμός αριστερά/δεξιά μόνο αν δεν είναι midline muscle
-      let finalMeshName = groupedName;
-      if (!midlineMuscles.has(groupedName)) {
-        finalMeshName = `${groupedName}_${side}`;
+      // Αν είναι midline muscle, δεν χρειάζεται επιλογή πλευράς
+      if (midlineMuscles.has(groupedName)) {
+        console.log('🎯 Clicked midline muscle:', groupedName);
+        if (onMeshClick) {
+          onMeshClick(groupedName);
+        }
+        return;
       }
       
-      console.log('🎯 Clicked mesh:', baseMeshName, '| Grouped:', groupedName, '| Final name:', finalMeshName);
+      // Μη-κεντρικός μυς: στέλνουμε το base name και το parent component θα δείξει popup επιβεβαίωσης
+      console.log('🎯 Clicked mesh:', baseMeshName, '| Grouped:', groupedName, '| Needs side confirmation');
       
       if (onMeshClick) {
-        onMeshClick(finalMeshName);
+        // Send with __NEEDS_SIDE__ marker so parent shows SideConfirmation popup
+        onMeshClick(`${groupedName}__NEEDS_SIDE__`);
       }
     }
   }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, matchesSearch, getGroupedMeshName, onShowSubPartSelector]);
@@ -292,33 +292,74 @@ function InteractiveHumanModel({
   );
 }
 
-// Sub-Part Selector Popup
-interface SubPartSelectorProps {
+// Side Confirmation Popup (for selecting Left/Right after click)
+interface SideConfirmationProps {
   muscleName: string;
-  side: 'Left' | 'Right';
   onSelect: (fullName: string) => void;
   onClose: () => void;
 }
 
-const SubPartSelector: React.FC<SubPartSelectorProps> = ({ muscleName, side, onSelect, onClose }) => {
+const SideConfirmation: React.FC<SideConfirmationProps> = ({ muscleName, onSelect, onClose }) => {
+  return (
+    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50">
+      <div className="bg-black border border-[#00ffba] p-4 max-w-xs w-full mx-4">
+        <h3 className="text-[#00ffba] text-sm font-medium mb-3 text-center">
+          {muscleName}
+        </h3>
+        <p className="text-white/60 text-xs mb-4 text-center">
+          Επιλέξτε πλευρά:
+        </p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onSelect(`${muscleName}_Left`)}
+            className="flex-1 py-2 px-3 bg-transparent border border-[#00ffba]/50 text-[#00ffba] text-sm hover:bg-[#00ffba] hover:text-black transition-colors rounded-none"
+          >
+            Αριστερά
+          </button>
+          <button
+            onClick={() => onSelect(`${muscleName}_Right`)}
+            className="flex-1 py-2 px-3 bg-transparent border border-[#00ffba]/50 text-[#00ffba] text-sm hover:bg-[#00ffba] hover:text-black transition-colors rounded-none"
+          >
+            Δεξιά
+          </button>
+        </div>
+        <button
+          onClick={onClose}
+          className="w-full mt-4 py-2 px-3 bg-transparent border border-white/30 text-white/60 text-xs hover:border-white/50 hover:text-white transition-colors rounded-none"
+        >
+          Ακύρωση
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Sub-Part Selector Popup
+interface SubPartSelectorProps {
+  muscleName: string;
+  onSelect: (fullName: string) => void;
+  onClose: () => void;
+}
+
+const SubPartSelector: React.FC<SubPartSelectorProps> = ({ muscleName, onSelect, onClose }) => {
   const muscleData = musclesWithSubParts[muscleName];
   if (!muscleData) return null;
 
-  const sideLabel = side === 'Left' ? 'Αριστερά' : 'Δεξιά';
-
   const handlePartClick = (part: { id: string; label: string; isMidline: boolean }) => {
-    // Αν είναι κεντρικός μυς, δεν προσθέτουμε Left/Right
-    const fullName = part.isMidline 
-      ? `${muscleName}_${part.id}`
-      : `${muscleName}_${part.id}_${side}`;
-    onSelect(fullName);
+    if (part.isMidline) {
+      // Κεντρικός μυς -> δεν χρειάζεται πλευρά
+      onSelect(`${muscleName}_${part.id}`);
+    } else {
+      // Χρειάζεται επιλογή πλευράς - return the part name for further processing
+      onSelect(`${muscleName}_${part.id}__NEEDS_SIDE__`);
+    }
   };
 
   return (
     <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50">
       <div className="bg-black border border-[#00ffba] p-4 max-w-xs w-full mx-4">
         <h3 className="text-[#00ffba] text-sm font-medium mb-3 text-center">
-          {muscleData.name} ({sideLabel})
+          {muscleData.name}
         </h3>
         <p className="text-white/60 text-xs mb-4 text-center">
           Επιλέξτε μοίρα:
@@ -365,18 +406,51 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
   onSearchResults,
   onMeshNamesLoaded
 }) => {
-  const [subPartSelector, setSubPartSelector] = useState<{ muscleName: string; side: 'Left' | 'Right' } | null>(null);
+  const [subPartSelector, setSubPartSelector] = useState<{ muscleName: string } | null>(null);
+  const [sideConfirmation, setSideConfirmation] = useState<{ muscleName: string } | null>(null);
 
-  const handleShowSubPartSelector = useCallback((muscleName: string, side: 'Left' | 'Right') => {
-    setSubPartSelector({ muscleName, side });
+  const handleShowSubPartSelector = useCallback((muscleName: string, _side: 'Left' | 'Right') => {
+    // side ignored now - we show the sub-part popup without side
+    setSubPartSelector({ muscleName });
+  }, []);
+
+  // Called when user needs to confirm the side (Left/Right)
+  const handleShowSideConfirmation = useCallback((muscleName: string) => {
+    setSideConfirmation({ muscleName });
   }, []);
 
   const handleSubPartSelect = useCallback((fullName: string) => {
     setSubPartSelector(null);
+    // Check if needs side confirmation
+    if (fullName.includes('__NEEDS_SIDE__')) {
+      const baseName = fullName.replace('__NEEDS_SIDE__', '');
+      handleShowSideConfirmation(baseName);
+    } else if (onMeshClick) {
+      onMeshClick(fullName);
+    }
+  }, [onMeshClick, handleShowSideConfirmation]);
+
+  const handleSideSelect = useCallback((fullName: string) => {
+    setSideConfirmation(null);
     if (onMeshClick) {
       onMeshClick(fullName);
     }
   }, [onMeshClick]);
+
+  // Handle muscle clicks that need side confirmation
+  const handleMeshClickWithSideConfirmation = useCallback((meshName: string) => {
+    // Check if it needs side confirmation
+    if (meshName.includes('__NEEDS_SIDE__')) {
+      const baseName = meshName.replace('__NEEDS_SIDE__', '');
+      handleShowSideConfirmation(baseName);
+      return;
+    }
+    
+    // Midline muscles or already-sided names pass through directly
+    if (onMeshClick) {
+      onMeshClick(meshName);
+    }
+  }, [onMeshClick, handleShowSideConfirmation]);
 
   return (
     <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] bg-black/95 relative touch-none">
@@ -390,7 +464,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
         <Suspense fallback={<Loader />}>
           <InteractiveHumanModel 
             isSelecting={isSelecting}
-            onMeshClick={onMeshClick}
+            onMeshClick={handleMeshClickWithSideConfirmation}
             searchQuery={searchQuery}
             mappedMeshNames={mappedMeshNames}
             onSearchResults={onSearchResults}
@@ -410,9 +484,17 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
       {subPartSelector && (
         <SubPartSelector
           muscleName={subPartSelector.muscleName}
-          side={subPartSelector.side}
           onSelect={handleSubPartSelect}
           onClose={() => setSubPartSelector(null)}
+        />
+      )}
+
+      {/* Side Confirmation Popup */}
+      {sideConfirmation && (
+        <SideConfirmation
+          muscleName={sideConfirmation.muscleName}
+          onSelect={handleSideSelect}
+          onClose={() => setSideConfirmation(null)}
         />
       )}
       
