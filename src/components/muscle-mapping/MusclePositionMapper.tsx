@@ -139,27 +139,71 @@ export const MusclePositionMapper: React.FC = () => {
     
     setSaving(true);
     try {
+      // Get current muscle to append to existing mesh names
+      const currentMuscle = muscles.find(m => m.id === selectedMuscleId);
+      const existingMeshNames = currentMuscle?.mesh_name?.split(',').map(s => s.trim()).filter(Boolean) || [];
+      
+      // Check if mesh already exists
+      if (existingMeshNames.includes(pendingMeshName)) {
+        toast.warning('Αυτό το mesh υπάρχει ήδη');
+        setPendingMeshName(null);
+        setSaving(false);
+        return;
+      }
+      
+      // Append new mesh name
+      const newMeshName = [...existingMeshNames, pendingMeshName].join(',');
+      
       const { error } = await supabase
         .from('muscles')
-        .update({ mesh_name: pendingMeshName } as any)
+        .update({ mesh_name: newMeshName } as any)
         .eq('id', selectedMuscleId);
       
       if (error) throw error;
       
       setMuscles(prev => prev.map(m => 
         m.id === selectedMuscleId 
-          ? { ...m, mesh_name: pendingMeshName }
+          ? { ...m, mesh_name: newMeshName }
           : m
       ));
       
       toast.success('Η αντιστοίχιση αποθηκεύτηκε!');
       setPendingMeshName(null);
-      setSelectedMuscleId('');
+      // Don't clear selectedMuscleId to allow adding more meshes
     } catch (error) {
       console.error('Error saving mapping:', error);
       toast.error('Σφάλμα αποθήκευσης');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRemoveSingleMesh = async (muscleId: string, meshToRemove: string) => {
+    try {
+      const muscle = muscles.find(m => m.id === muscleId);
+      if (!muscle?.mesh_name) return;
+      
+      const existingMeshNames = muscle.mesh_name.split(',').map(s => s.trim()).filter(Boolean);
+      const newMeshNames = existingMeshNames.filter(m => m !== meshToRemove);
+      const newMeshName = newMeshNames.length > 0 ? newMeshNames.join(',') : null;
+      
+      const { error } = await supabase
+        .from('muscles')
+        .update({ mesh_name: newMeshName } as any)
+        .eq('id', muscleId);
+      
+      if (error) throw error;
+      
+      setMuscles(prev => prev.map(m => 
+        m.id === muscleId 
+          ? { ...m, mesh_name: newMeshName }
+          : m
+      ));
+      
+      toast.success('Το mesh αφαιρέθηκε');
+    } catch (error) {
+      console.error('Error removing mesh:', error);
+      toast.error('Σφάλμα αφαίρεσης');
     }
   };
 
@@ -178,7 +222,7 @@ export const MusclePositionMapper: React.FC = () => {
           : m
       ));
       
-      toast.success('Η αντιστοίχιση διαγράφηκε');
+      toast.success('Όλες οι αντιστοιχίσεις διαγράφηκαν');
     } catch (error) {
       console.error('Error clearing mapping:', error);
       toast.error('Σφάλμα διαγραφής');
@@ -187,7 +231,10 @@ export const MusclePositionMapper: React.FC = () => {
 
   const selectedMuscle = muscles.find(m => m.id === selectedMuscleId);
   const mappedCount = muscles.filter(m => m.mesh_name !== null).length;
-  const mappedMeshNames = muscles.filter(m => m.mesh_name).map(m => m.mesh_name!);
+  // Split comma-separated mesh names for mapping check
+  const mappedMeshNames = muscles
+    .filter(m => m.mesh_name)
+    .flatMap(m => m.mesh_name!.split(',').map(s => s.trim()));
 
   // Filtered muscles for the dropdown
   const filteredMuscles = useMemo(() => {
@@ -469,25 +516,46 @@ export const MusclePositionMapper: React.FC = () => {
           <div className="space-y-2">
             <div className="text-xs sm:text-sm font-medium">Αντιστοιχισμένοι ({mappedCount})</div>
             <div className="max-h-[150px] sm:max-h-[200px] overflow-y-auto space-y-1">
-              {muscles.filter(m => m.mesh_name !== null).map(muscle => (
-                <div 
-                  key={muscle.id} 
-                  className="flex items-center justify-between p-1.5 sm:p-2 bg-muted/30 text-[10px] sm:text-xs"
-                >
-                  <div className="flex-1 mr-2 min-w-0">
-                    <div className="truncate">{muscle.name}</div>
-                    <div className="truncate text-muted-foreground font-mono">{muscle.mesh_name}</div>
-                  </div>
-                  <Button
-                    onClick={() => handleClearMapping(muscle.id)}
-                    variant="ghost"
-                    size="sm"
-                    className="h-5 w-5 sm:h-6 sm:w-6 p-0 rounded-none hover:bg-destructive/20 flex-shrink-0"
+              {muscles.filter(m => m.mesh_name !== null).map(muscle => {
+                const meshNames = muscle.mesh_name!.split(',').map(s => s.trim()).filter(Boolean);
+                return (
+                  <div 
+                    key={muscle.id} 
+                    className="p-1.5 sm:p-2 bg-muted/30 text-[10px] sm:text-xs"
                   >
-                    <X className="w-3 h-3" />
-                  </Button>
-                </div>
-              ))}
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="truncate font-medium">{muscle.name}</div>
+                      <Button
+                        onClick={() => handleClearMapping(muscle.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 rounded-none hover:bg-destructive/20 flex-shrink-0"
+                        title="Διαγραφή όλων"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </Button>
+                    </div>
+                    <div className="space-y-0.5">
+                      {meshNames.map((meshName, idx) => (
+                        <div key={idx} className="flex items-center justify-between pl-2 text-muted-foreground">
+                          <span className="font-mono truncate">{meshName}</span>
+                          {meshNames.length > 1 && (
+                            <Button
+                              onClick={() => handleRemoveSingleMesh(muscle.id, meshName)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-3 w-3 p-0 rounded-none hover:bg-destructive/20 flex-shrink-0 ml-1"
+                              title="Αφαίρεση mesh"
+                            >
+                              <X className="w-2 h-2" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </CardContent>
