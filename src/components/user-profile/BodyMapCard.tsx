@@ -30,6 +30,8 @@ interface MuscleData {
   // DB value (kept as fallback)
   meshName: string;
   actionType: 'stretch' | 'strengthen';
+  // Greek name from muscles table
+  displayName?: string;
   // Preferred matching input (from muscles table)
   position?: { x: number; y: number; z: number };
 }
@@ -355,17 +357,19 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const [strengthenDialogOpen, setStrengthenDialogOpen] = useState(false);
   const [stretchDialogOpen, setStretchDialogOpen] = useState(false);
 
-  // Get unique muscle names by type
+  // Get unique muscle names by type - using Greek names
   const strengthenMuscles = useMemo(() => {
-    return [...new Set(musclesToHighlight
+    const names = musclesToHighlight
       .filter(m => m.actionType === 'strengthen')
-      .map(m => m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' ')))];
+      .map(m => m.displayName || m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' '));
+    return [...new Set(names)];
   }, [musclesToHighlight]);
 
   const stretchMuscles = useMemo(() => {
-    return [...new Set(musclesToHighlight
+    const names = musclesToHighlight
       .filter(m => m.actionType === 'stretch')
-      .map(m => m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' ')))];
+      .map(m => m.displayName || m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' '));
+    return [...new Set(names)];
   }, [musclesToHighlight]);
 
   useEffect(() => {
@@ -479,9 +483,13 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
 
         // Strengthen takes priority over stretch
         if (!muscleDataMap.has(muscle.mesh_name) || mapping.action_type === 'strengthen') {
+          // Extract base Greek name (remove Αριστερά/Δεξιά suffixes if present)
+          const greekName = muscle.name?.replace(/\s*(Αριστερά|Δεξιά|Left|Right)$/i, '').trim();
+          
           muscleDataMap.set(muscle.mesh_name, {
             meshName: muscle.mesh_name,
             actionType: mapping.action_type as 'stretch' | 'strengthen',
+            displayName: greekName || undefined,
             position: posValid
               ? {
                   x: Number(muscle.position_x),
