@@ -60,7 +60,7 @@ export default function ProgressTracking() {
       <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Καταγραφή Προόδου</h1>
 
       <Tabs defaultValue="force-velocity" className="w-full">
-        <TabsList className="rounded-none w-full grid grid-cols-2 lg:grid-cols-5 gap-0.5 sm:gap-1 p-0.5 sm:p-1">
+        <TabsList className="rounded-none w-full grid grid-cols-3 lg:grid-cols-5 gap-0.5 sm:gap-1 p-0.5 sm:p-1 h-auto">
           <TabsTrigger value="force-velocity" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
             Force/Velocity
           </TabsTrigger>
