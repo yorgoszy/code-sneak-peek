@@ -35,6 +35,7 @@ interface BlockCardHeaderProps {
 const TRAINING_TYPE_LABELS: Record<string, string> = {
   'warm up': 'warm up',
   activation: 'activation',
+  power: 'power',
   str: 'str',
   'str/spd': 'str/spd',
   pwr: 'pwr',
