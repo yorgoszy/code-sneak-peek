@@ -1,11 +1,29 @@
-import React, { useEffect, useCallback, Suspense, useState, useMemo } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import React, { useEffect, useCallback, Suspense, useState, useMemo, useRef } from 'react';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, useProgress, Html } from '@react-three/drei';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/models/Ecorche_by_AlexLashko_ShrunkenView.obj';
+
+// Helper to determine view side based on camera angle
+type ViewSide = 'front' | 'back' | 'left' | 'right';
+
+const getViewSide = (azimuthAngle: number): ViewSide => {
+  // Normalize angle to 0-360
+  const angle = ((azimuthAngle * 180 / Math.PI) % 360 + 360) % 360;
+  
+  // Front: 315-45° (looking at face)
+  // Right side: 45-135°
+  // Back: 135-225° (looking at back)
+  // Left side: 225-315°
+  if (angle >= 315 || angle < 45) return 'front';
+  if (angle >= 45 && angle < 135) return 'right';
+  if (angle >= 135 && angle < 225) return 'back';
+  return 'left';
+};
 
 function Loader() {
   const { progress } = useProgress();
@@ -295,32 +313,62 @@ function InteractiveHumanModel({
 // Side Confirmation Popup (for selecting Left/Right after click)
 interface SideConfirmationProps {
   muscleName: string;
+  viewSide: ViewSide;
   onSelect: (fullName: string) => void;
   onClose: () => void;
 }
 
-const SideConfirmation: React.FC<SideConfirmationProps> = ({ muscleName, onSelect, onClose }) => {
+const SideConfirmation: React.FC<SideConfirmationProps> = ({ muscleName, viewSide, onSelect, onClose }) => {
+  // Determine which button is "visually left" and "visually right" based on view angle
+  // When viewing from the back, anatomical left appears on the right side of screen
+  const isBackView = viewSide === 'back';
+  
+  const viewLabel = {
+    front: 'Μπροστινή Όψη',
+    back: 'Πίσω Όψη',
+    left: 'Πλάγια Όψη (Αριστερά)',
+    right: 'Πλάγια Όψη (Δεξιά)'
+  }[viewSide];
+  
   return (
     <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50">
       <div className="bg-black border border-[#00ffba] p-4 max-w-xs w-full mx-4">
-        <h3 className="text-[#00ffba] text-sm font-medium mb-3 text-center">
+        <h3 className="text-[#00ffba] text-sm font-medium mb-2 text-center">
           {muscleName}
         </h3>
+        <p className="text-[#cb8954] text-xs mb-3 text-center">
+          📐 {viewLabel}
+        </p>
         <p className="text-white/60 text-xs mb-4 text-center">
-          Επιλέξτε πλευρά:
+          Επιλέξτε ανατομική πλευρά:
         </p>
         <div className="flex gap-2">
+          {/* Always show anatomical sides, but order based on view for visual consistency */}
           <button
             onClick={() => onSelect(`${muscleName}_Left`)}
-            className="flex-1 py-2 px-3 bg-transparent border border-[#00ffba]/50 text-[#00ffba] text-sm hover:bg-[#00ffba] hover:text-black transition-colors rounded-none"
+            className={`flex-1 py-2 px-3 bg-transparent border text-sm transition-colors rounded-none ${
+              isBackView 
+                ? 'border-[#00ffba]/50 text-[#00ffba] hover:bg-[#00ffba] hover:text-black order-2' 
+                : 'border-[#00ffba]/50 text-[#00ffba] hover:bg-[#00ffba] hover:text-black order-1'
+            }`}
           >
             Αριστερά
+            <span className="block text-[10px] text-white/40">
+              {isBackView ? '(στα δεξιά σου)' : '(στα αριστερά σου)'}
+            </span>
           </button>
           <button
             onClick={() => onSelect(`${muscleName}_Right`)}
-            className="flex-1 py-2 px-3 bg-transparent border border-[#00ffba]/50 text-[#00ffba] text-sm hover:bg-[#00ffba] hover:text-black transition-colors rounded-none"
+            className={`flex-1 py-2 px-3 bg-transparent border text-sm transition-colors rounded-none ${
+              isBackView 
+                ? 'border-[#00ffba]/50 text-[#00ffba] hover:bg-[#00ffba] hover:text-black order-1' 
+                : 'border-[#00ffba]/50 text-[#00ffba] hover:bg-[#00ffba] hover:text-black order-2'
+            }`}
           >
             Δεξιά
+            <span className="block text-[10px] text-white/40">
+              {isBackView ? '(στα αριστερά σου)' : '(στα δεξιά σου)'}
+            </span>
           </button>
         </div>
         <button
@@ -408,7 +456,19 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
 }) => {
   const [subPartSelector, setSubPartSelector] = useState<{ muscleName: string } | null>(null);
   const [sideConfirmation, setSideConfirmation] = useState<{ muscleName: string } | null>(null);
+  const [viewSide, setViewSide] = useState<ViewSide>('front');
+  const orbitControlsRef = useRef<OrbitControlsImpl>(null);
 
+  // Update view side periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (orbitControlsRef.current) {
+        const azimuth = orbitControlsRef.current.getAzimuthalAngle();
+        setViewSide(getViewSide(azimuth));
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
   const handleShowSubPartSelector = useCallback((muscleName: string, _side: 'Left' | 'Right') => {
     // side ignored now - we show the sub-part popup without side
     setSubPartSelector({ muscleName });
@@ -473,6 +533,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
           />
         </Suspense>
         <OrbitControls 
+          ref={orbitControlsRef}
           enableZoom={true}
           enablePan={true}
           minDistance={2}
@@ -493,6 +554,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
       {sideConfirmation && (
         <SideConfirmation
           muscleName={sideConfirmation.muscleName}
+          viewSide={viewSide}
           onSelect={handleSideSelect}
           onClose={() => setSideConfirmation(null)}
         />
