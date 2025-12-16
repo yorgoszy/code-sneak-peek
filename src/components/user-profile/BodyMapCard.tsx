@@ -223,6 +223,12 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     [flipSides]
   ); // keeps right half
 
+  // Trapezius: keep only Y >= boundary for Upper part
+  const trapeziusUpperClipPlane = useMemo(
+    () => new THREE.Plane(new THREE.Vector3(0, 1, 0), -TRAPEZIUS_UPPER_BOUNDARY),
+    []
+  );
+
   // Build sets per side from DB mesh_name
   const strengthenLeft = useMemo(() => {
     const set = new Set<string>();
@@ -310,52 +316,58 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       const meshName = norm(meshNameRaw);
       const meshBase = norm(getBaseName(cleanName(meshNameRaw)));
 
-      // Special handling for Trapezius - use vertex coloring for parts
+      // Special handling for Trapezius
       if (meshNameRaw === 'Trapezius') {
-        const hasTrapData = trapeziusParts.strengthen.upperLeft || trapeziusParts.strengthen.upperRight || 
-                            trapeziusParts.strengthen.middleLower || trapeziusParts.stretch.upperLeft || 
-                            trapeziusParts.stretch.upperRight || trapeziusParts.stretch.middleLower;
-        
+        const hasTrapData = trapeziusParts.strengthen.upperLeft || trapeziusParts.strengthen.upperRight ||
+          trapeziusParts.strengthen.middleLower || trapeziusParts.stretch.upperLeft ||
+          trapeziusParts.stretch.upperRight || trapeziusParts.stretch.middleLower;
+
         if (hasTrapData) {
+          // If Upper trapezius is selected, show ONLY Y >= boundary (and optionally only one side)
+          const upperLeftSelected = trapeziusParts.strengthen.upperLeft || trapeziusParts.stretch.upperLeft;
+          const upperRightSelected = trapeziusParts.strengthen.upperRight || trapeziusParts.stretch.upperRight;
+          const hasAnyUpper = upperLeftSelected || upperRightSelected;
+
+          if (hasAnyUpper) {
+            const upperColor = (trapeziusParts.strengthen.upperLeft || trapeziusParts.strengthen.upperRight)
+              ? '#ff1493'
+              : '#ffff00';
+
+            const sidePlanes: THREE.Plane[] =
+              upperLeftSelected && !upperRightSelected ? [leftClipPlane] :
+              upperRightSelected && !upperLeftSelected ? [rightClipPlane] :
+              [];
+
+            child.material = new THREE.MeshStandardMaterial({
+              color: upperColor,
+              roughness: 0.3,
+              metalness: 0.2,
+              emissive: upperColor,
+              emissiveIntensity: 0.4,
+              clippingPlanes: [trapeziusUpperClipPlane, ...sidePlanes],
+              clipShadows: true,
+            });
+            child.visible = true;
+            return;
+          }
+
+          // Otherwise (Middle/Lower selection), keep vertex coloring approach
           const geometry = child.geometry;
           const positionAttribute = geometry.getAttribute('position');
           const colors = new Float32Array(positionAttribute.count * 3);
-          
+
           const strengthenColor = new THREE.Color('#ff1493'); // Neon pink
           const stretchColor = new THREE.Color('#ffff00'); // Neon yellow
           const defaultColor = new THREE.Color('#d1d5db'); // Gray for non-highlighted parts
-          
+
           let hasHighlightedVertices = false;
-          
+
           for (let i = 0; i < positionAttribute.count; i++) {
-            const x = positionAttribute.getX(i);
             const y = positionAttribute.getY(i);
             let color: THREE.Color = defaultColor;
             let isHighlighted = false;
-            
-            if (y > TRAPEZIUS_UPPER_BOUNDARY) {
-              // Upper Trapezius region
-              const isLeftSide = x > 0;
-              const isRightSide = x < 0;
-              
-              if (isLeftSide) {
-                if (trapeziusParts.strengthen.upperLeft) {
-                  color = strengthenColor;
-                  isHighlighted = true;
-                } else if (trapeziusParts.stretch.upperLeft) {
-                  color = stretchColor;
-                  isHighlighted = true;
-                }
-              } else if (isRightSide) {
-                if (trapeziusParts.strengthen.upperRight) {
-                  color = strengthenColor;
-                  isHighlighted = true;
-                } else if (trapeziusParts.stretch.upperRight) {
-                  color = stretchColor;
-                  isHighlighted = true;
-                }
-              }
-            } else {
+
+            if (y <= TRAPEZIUS_UPPER_BOUNDARY) {
               // Middle/Lower Trapezius region
               if (trapeziusParts.strengthen.middleLower) {
                 color = strengthenColor;
@@ -365,16 +377,16 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
                 isHighlighted = true;
               }
             }
-            
+
             if (isHighlighted) hasHighlightedVertices = true;
-            
+
             colors[i * 3] = color.r;
             colors[i * 3 + 1] = color.g;
             colors[i * 3 + 2] = color.b;
           }
-          
+
           geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-          
+
           if (hasHighlightedVertices) {
             child.material = new THREE.MeshStandardMaterial({
               vertexColors: true,
@@ -484,6 +496,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     hasPositionData,
     leftClipPlane,
     rightClipPlane,
+    trapeziusUpperClipPlane,
     trapeziusParts,
   ]);
 
