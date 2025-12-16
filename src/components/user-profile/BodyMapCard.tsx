@@ -357,26 +357,20 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const [strengthenDialogOpen, setStrengthenDialogOpen] = useState(false);
   const [stretchDialogOpen, setStretchDialogOpen] = useState(false);
 
-  // Get unique muscle names by type - using Greek names with side info
+  // Get unique muscle names by type - use the DB muscle.name (includes Αριστερά/Δεξιά when applicable)
   const strengthenMuscles = useMemo(() => {
     const names = musclesToHighlight
       .filter(m => m.actionType === 'strengthen')
-      .map(m => {
-        const baseName = m.displayName || m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' ');
-        const side = /_Left$/i.test(m.meshName) ? ' (Αριστερά)' : /_Right$/i.test(m.meshName) ? ' (Δεξιά)' : '';
-        return baseName + side;
-      });
+      .map(m => (m.displayName || m.meshName.replace(/_/g, ' ')).trim())
+      .filter(Boolean);
     return [...new Set(names)];
   }, [musclesToHighlight]);
 
   const stretchMuscles = useMemo(() => {
     const names = musclesToHighlight
       .filter(m => m.actionType === 'stretch')
-      .map(m => {
-        const baseName = m.displayName || m.meshName.replace(/_Left$|_Right$/i, '').replace(/_/g, ' ');
-        const side = /_Left$/i.test(m.meshName) ? ' (Αριστερά)' : /_Right$/i.test(m.meshName) ? ' (Δεξιά)' : '';
-        return baseName + side;
-      });
+      .map(m => (m.displayName || m.meshName.replace(/_/g, ' ')).trim())
+      .filter(Boolean);
     return [...new Set(names)];
   }, [musclesToHighlight]);
 
@@ -387,7 +381,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const fetchMuscleData = async () => {
     try {
       setLoading(true);
-      
+
       // 1. Get latest functional test session with data
       const { data: sessionData, error: sessionError } = await supabase
         .from('functional_test_sessions')
@@ -395,9 +389,8 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
           id,
           test_date,
           functional_test_data (
-            posture_issues,
-            squat_issues,
-            single_leg_squat_issues
+            muscles_need_strengthening,
+            muscles_need_stretching
           )
         `)
         .eq('user_id', userId)
@@ -408,96 +401,63 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
 
       if (!sessionData || sessionData.length === 0) {
         setHasData(false);
-        setLoading(false);
         return;
       }
 
-      const functionalData = Array.isArray(sessionData[0].functional_test_data) 
-        ? sessionData[0].functional_test_data[0] 
+      const functionalData = Array.isArray(sessionData[0].functional_test_data)
+        ? sessionData[0].functional_test_data[0]
         : sessionData[0].functional_test_data;
 
       if (!functionalData) {
         setHasData(false);
-        setLoading(false);
         return;
       }
 
-      // 2. Collect all issues
-      const allIssues: { name: string; category: string }[] = [];
-      
-      if (functionalData.posture_issues) {
-        functionalData.posture_issues.forEach((issue: string) => {
-          allIssues.push({ name: issue, category: 'posture' });
-        });
-      }
-      
-      if (functionalData.squat_issues) {
-        functionalData.squat_issues.forEach((issue: string) => {
-          allIssues.push({ name: issue, category: 'squat' });
-        });
-      }
-      
-      if (functionalData.single_leg_squat_issues) {
-        functionalData.single_leg_squat_issues.forEach((issue: string) => {
-          allIssues.push({ name: issue, category: 'single_leg_squat' });
-        });
-      }
+      const needStrengthening: string[] = functionalData.muscles_need_strengthening || [];
+      const needStretching: string[] = functionalData.muscles_need_stretching || [];
 
-      if (allIssues.length === 0) {
+      if (needStrengthening.length === 0 && needStretching.length === 0) {
         setHasData(false);
-        setLoading(false);
         return;
       }
 
-      // 3. Get muscle mappings for all issues
-      const issueNames = allIssues.map(i => i.name);
-      
-      const { data: mappings, error: mappingsError } = await supabase
-        .from('functional_issue_muscle_mappings')
-        .select(`
-          muscle_id,
-          action_type,
-          issue_name,
-          muscles (
-            id,
-            name,
-            mesh_name,
-            position_x,
-            position_y,
-            position_z
-          )
-        `)
-        .in('issue_name', issueNames);
+      // 2. Fetch muscles from muscles table based on the final saved lists
+      const allMuscleNames = Array.from(new Set([...needStrengthening, ...needStretching]));
 
-      if (mappingsError) throw mappingsError;
+      const { data: muscles, error: musclesError } = await supabase
+        .from('muscles')
+        .select('name, mesh_name, position_x, position_y, position_z')
+        .in('name', allMuscleNames);
 
-      if (!mappings || mappings.length === 0) {
+      if (musclesError) throw musclesError;
+
+      if (!muscles || muscles.length === 0) {
         setHasData(false);
-        setLoading(false);
         return;
       }
 
-      // 4. Create muscle data for highlighting
+      const strengthenSet = new Set(needStrengthening);
+      const stretchSet = new Set(needStretching);
+
       const muscleDataMap = new Map<string, MuscleData>();
-      
-      mappings.forEach((mapping: any) => {
-        const muscle = mapping.muscles;
-        if (!muscle || !muscle.mesh_name) return;
+
+      muscles.forEach((muscle: any) => {
+        if (!muscle?.mesh_name) return;
 
         const posValid =
           muscle.position_x !== null &&
           muscle.position_y !== null &&
           muscle.position_z !== null;
 
-        // Strengthen takes priority over stretch
-        if (!muscleDataMap.has(muscle.mesh_name) || mapping.action_type === 'strengthen') {
-          // Extract base Greek name (remove Αριστερά/Δεξιά suffixes if present)
-          const greekName = muscle.name?.replace(/\s*(Αριστερά|Δεξιά|Left|Right)$/i, '').trim();
-          
+        const actionType: 'strengthen' | 'stretch' =
+          strengthenSet.has(muscle.name) ? 'strengthen' : 'stretch';
+
+        // Strengthen takes priority if a muscle appears in both arrays
+        if (!muscleDataMap.has(muscle.mesh_name) || actionType === 'strengthen') {
           muscleDataMap.set(muscle.mesh_name, {
             meshName: muscle.mesh_name,
-            actionType: mapping.action_type as 'stretch' | 'strengthen',
-            displayName: greekName || undefined,
+            actionType,
+            displayName: muscle.name,
             position: posValid
               ? {
                   x: Number(muscle.position_x),
@@ -508,10 +468,8 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
           });
         }
       });
+
       const muscleArray = Array.from(muscleDataMap.values());
-
-      console.log('[BodyMapCard] highlight muscles:', muscleArray.map(m => m.meshName));
-
       setMusclesToHighlight(muscleArray);
       setHasData(muscleArray.length > 0);
     } catch (error) {

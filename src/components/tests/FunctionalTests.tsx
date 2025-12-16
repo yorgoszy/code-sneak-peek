@@ -21,6 +21,11 @@ interface FunctionalTestsProps {
   hideSubmitButton?: boolean;
   formData?: FunctionalData;
   onDataChange?: (data: FunctionalData) => void;
+  /**
+   * Final muscles after the "Επόμενο" step and after the user removes the ones they don't want.
+   * These are the muscles we should save.
+   */
+  onMusclesChange?: (muscles: { strengthen: string[]; stretch: string[] }) => void;
 }
 
 interface MuscleMapping {
@@ -34,15 +39,24 @@ export const FunctionalTests = ({
   selectedDate, 
   hideSubmitButton = false,
   formData,
-  onDataChange
+  onDataChange,
+  onMusclesChange,
 }: FunctionalTestsProps) => {
   const [showResults, setShowResults] = useState(false);
   const [muscleMappings, setMuscleMappings] = useState<MuscleMapping[]>([]);
   const [loading, setLoading] = useState(false);
-  const [removedMuscles, setRemovedMuscles] = useState<{strengthen: string[], stretch: string[]}>({
+  const [removedMuscles, setRemovedMuscles] = useState<{ strengthen: string[]; stretch: string[] }>({
     strengthen: [],
-    stretch: []
+    stretch: [],
   });
+
+  useEffect(() => {
+    // When switching athlete/date, reset results state.
+    setShowResults(false);
+    setMuscleMappings([]);
+    setRemovedMuscles({ strengthen: [], stretch: [] });
+    onMusclesChange?.({ strengthen: [], stretch: [] });
+  }, [selectedAthleteId, selectedDate]);
 
   const handleRemoveMuscle = (muscle: string, type: 'strengthen' | 'stretch') => {
     setRemovedMuscles(prev => ({
@@ -131,6 +145,9 @@ export const FunctionalTests = ({
 
   const handleBack = () => {
     setShowResults(false);
+    // keep removedMuscles so if they go Next again it keeps their choices? -> reset for clarity
+    setRemovedMuscles({ strengthen: [], stretch: [] });
+    onMusclesChange?.({ strengthen: [], stretch: [] });
   };
 
   // Group muscles by action type (excluding removed ones) - using Set to remove duplicates
@@ -147,6 +164,11 @@ export const FunctionalTests = ({
       .map(m => m.muscle_name?.trim())
       .filter(Boolean)
   )].filter(m => !removedMuscles.stretch.includes(m));
+
+  useEffect(() => {
+    if (!showResults) return;
+    onMusclesChange?.({ strengthen: strengthenMuscles, stretch: stretchMuscles });
+  }, [showResults, strengthenMuscles, stretchMuscles, onMusclesChange]);
 
   if (showResults) {
     return (
