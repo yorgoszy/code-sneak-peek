@@ -8,6 +8,7 @@ import { useWorkoutState } from './hooks/useWorkoutState';
 import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramBlocks } from './ProgramBlocks';
+import { RpeScoreDialog } from './RpeScoreDialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -29,6 +30,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+  const [isRpeDialogOpen, setIsRpeDialogOpen] = useState(false);
 
   const {
     workoutInProgress,
@@ -40,6 +42,15 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   } = useWorkoutState(program, selectedDate, onRefresh, onClose);
 
   if (!program || !selectedDate) return null;
+
+  const handleRequestComplete = () => {
+    setIsRpeDialogOpen(true);
+  };
+
+  const handleRpeSubmit = (rpeScore: number) => {
+    setIsRpeDialogOpen(false);
+    handleCompleteWorkout(rpeScore);
+  };
 
   const handleVideoClick = (exercise: any) => {
     if (exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url)) {
@@ -157,7 +168,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             elapsedTime={elapsedTime}
             workoutStatus={workoutStatus}
             onStartWorkout={handleStartWorkout}
-            onCompleteWorkout={handleCompleteWorkout}
+            onCompleteWorkout={handleRequestComplete}
             onCancelWorkout={handleCancelWorkout}
             program={program}
             onClose={onClose}
@@ -272,6 +283,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
         assignmentId={program?.id}
         dayNumber={selectedExercise ? getDayNumber(selectedExercise.id) : undefined}
         actualExerciseId={selectedExercise ? getActualExerciseId(selectedExercise) : undefined}
+      />
+
+      <RpeScoreDialog
+        isOpen={isRpeDialogOpen}
+        onClose={() => setIsRpeDialogOpen(false)}
+        onSubmit={handleRpeSubmit}
       />
     </>
   );

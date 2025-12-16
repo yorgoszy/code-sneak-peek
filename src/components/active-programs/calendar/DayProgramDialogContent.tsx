@@ -7,6 +7,7 @@ import { useWorkoutState } from './hooks/useWorkoutState';
 import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { DayProgramStatusIndicator } from './DayProgramStatusIndicator';
 import { DayProgramMainContent } from './DayProgramMainContent';
+import { RpeScoreDialog } from './RpeScoreDialog';
 import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -29,6 +30,7 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+  const [isRpeDialogOpen, setIsRpeDialogOpen] = useState(false);
   const [dynamicStatus, setDynamicStatus] = useState<string>(workoutStatus);
   const [statusLoading, setStatusLoading] = useState(false);
 
@@ -40,6 +42,15 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
     handleCancelWorkout,
     exerciseCompletion
   } = useWorkoutState(program, selectedDate, onRefresh);
+
+  const handleRequestComplete = () => {
+    setIsRpeDialogOpen(true);
+  };
+
+  const handleRpeSubmit = (rpeScore: number) => {
+    setIsRpeDialogOpen(false);
+    handleCompleteWorkout(rpeScore);
+  };
 
   // Fetch current completion status when dialog opens or date/assignment changes
   useEffect(() => {
@@ -130,7 +141,7 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
         elapsedTime={elapsedTime}
         workoutStatus={dynamicStatus}
         onStartWorkout={handleStartWorkout}
-        onCompleteWorkout={handleCompleteWorkout}
+        onCompleteWorkout={handleRequestComplete}
         onCancelWorkout={handleCancelWorkout}
         onMinimize={onMinimize}
         program={program}
@@ -159,6 +170,12 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
         assignmentId={program.id}
         dayNumber={dayNumber}
         actualExerciseId={selectedExercise?.exercises?.id}
+      />
+
+      <RpeScoreDialog
+        isOpen={isRpeDialogOpen}
+        onClose={() => setIsRpeDialogOpen(false)}
+        onSubmit={handleRpeSubmit}
       />
     </>
   );

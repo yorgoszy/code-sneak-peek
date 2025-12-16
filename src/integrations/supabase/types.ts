@@ -4511,6 +4511,7 @@ export type Database = {
           id: string
           notes: string | null
           program_id: string
+          rpe_score: number | null
           scheduled_date: string
           start_time: string | null
           status: string
@@ -4530,6 +4531,7 @@ export type Database = {
           id?: string
           notes?: string | null
           program_id: string
+          rpe_score?: number | null
           scheduled_date: string
           start_time?: string | null
           status?: string
@@ -4549,6 +4551,7 @@ export type Database = {
           id?: string
           notes?: string | null
           program_id?: string
+          rpe_score?: number | null
           scheduled_date?: string
           start_time?: string | null
           status?: string
