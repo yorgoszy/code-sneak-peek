@@ -48,9 +48,8 @@ const musclesWithSubParts: Record<string, { name: string; parts: { id: string; l
   'Trapezius': {
     name: 'Τραπεζοειδής',
     parts: [
-      { id: 'Upper', label: 'Άνω Μοίρα', isMidline: false },
-      { id: 'Middle', label: 'Μεσαία Μοίρα', isMidline: true },
-      { id: 'Lower', label: 'Κάτω Μοίρα', isMidline: true },
+      { id: 'Upper', label: 'Άνω Μοίρα', isMidline: false }, // Has Left/Right
+      { id: 'Middle_Lower', label: 'Μεσαία/Κάτω Μοίρα', isMidline: true }, // Midline
     ]
   }
 };
@@ -387,6 +386,7 @@ function InteractiveHumanModel({
     
     if (intersects.length > 0) {
       let targetMeshName: string | null = null;
+      let intersectionPoint: THREE.Vector3 | null = null;
       
       // If we have a selected search mesh, only accept clicks on that mesh
       if (selectedSearchMesh) {
@@ -397,6 +397,7 @@ function InteractiveHumanModel({
         
         if (matchingIntersect) {
           targetMeshName = selectedSearchMesh;
+          intersectionPoint = matchingIntersect.point;
         } else {
           console.log('⚠️ Κλικ μόνο στο επιλεγμένο mesh:', selectedSearchMesh);
           return;
@@ -404,11 +405,36 @@ function InteractiveHumanModel({
       } else {
         // No specific selection - use first intersect
         targetMeshName = intersects[0].object.name || 'unnamed';
+        intersectionPoint = intersects[0].point;
       }
       
       if (!targetMeshName) return;
       
-      console.log('🎯 Clicked exact mesh:', targetMeshName);
+      console.log('🎯 Clicked exact mesh:', targetMeshName, 'at point:', intersectionPoint);
+      
+      // Special handling for Trapezius - use click position to determine sub-part
+      if (targetMeshName === 'Trapezius' && intersectionPoint && trapeziusBoundaries) {
+        const y = intersectionPoint.y;
+        const x = intersectionPoint.x;
+        
+        console.log('📍 Trapezius click at Y:', y.toFixed(2), 'X:', x.toFixed(2), 'Upper boundary:', trapeziusBoundaries.upperBoundary);
+        
+        if (y > trapeziusBoundaries.upperBoundary) {
+          // Upper Trapezius - determine side by X coordinate
+          const side = x > 0 ? 'Left' : 'Right';
+          console.log('✅ Upper Trapezius', side);
+          if (onMeshClick) {
+            onMeshClick(`Trapezius_Upper_${side}`);
+          }
+        } else {
+          // Middle/Lower Trapezius - midline, no side needed
+          console.log('✅ Middle/Lower Trapezius (midline)');
+          if (onMeshClick) {
+            onMeshClick('Trapezius_Middle_Lower');
+          }
+        }
+        return;
+      }
       
       // Check if midline muscle (no side needed)
       if (midlineMuscles.has(targetMeshName)) {
@@ -423,7 +449,7 @@ function InteractiveHumanModel({
         onMeshClick(`${targetMeshName}__NEEDS_SIDE__`);
       }
     }
-  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, selectedSearchMesh]);
+  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, selectedSearchMesh, trapeziusBoundaries]);
 
   const handlePointerMove = useCallback((event: any) => {
     raycaster.setFromCamera(pointer, camera);
