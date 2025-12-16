@@ -128,9 +128,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     [musclesToHighlight]
   );
 
-  // Clipping planes: left muscles show only x < 0, right muscles show only x > 0
-  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), 0), []); // keeps x < 0
-  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []); // keeps x > 0
+  // Clipping planes: left muscles show only x <= 0, right muscles show only x >= 0
+  // THREE.Plane keeps points where normal.dot(point) + constant >= 0
+  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []); // keeps x <= 0 (left side)
+  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), 0), []); // keeps x >= 0 (right side)
 
   // Build sets per side from DB mesh_name
   const strengthenLeft = useMemo(() => {
