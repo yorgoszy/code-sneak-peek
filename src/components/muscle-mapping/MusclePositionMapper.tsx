@@ -79,10 +79,18 @@ export const MusclePositionMapper: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchActive, setSearchActive] = useState(false);
   const [foundCount, setFoundCount] = useState(0);
+  const [searchMatches, setSearchMatches] = useState<string[]>([]);
+  const [selectedSearchMesh, setSelectedSearchMesh] = useState<string | null>(null);
   const [muscleSearch, setMuscleSearch] = useState('');
   const [muscleDropdownOpen, setMuscleDropdownOpen] = useState(false);
   const [availableMeshNames, setAvailableMeshNames] = useState<string[]>([]);
   const [meshSuggestionsOpen, setMeshSuggestionsOpen] = useState(false);
+
+  // Handle search results from 3D canvas
+  const handleSearchResults = (count: number, matches: string[]) => {
+    setFoundCount(count);
+    setSearchMatches(matches);
+  };
 
   useEffect(() => {
     fetchMuscles();
@@ -232,6 +240,7 @@ export const MusclePositionMapper: React.FC = () => {
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
                     setSearchActive(false);
+                    setSelectedSearchMesh(null);
                     setMeshSuggestionsOpen(e.target.value.length >= 2);
                   }}
                   onKeyDown={(e) => {
@@ -297,10 +306,44 @@ export const MusclePositionMapper: React.FC = () => {
               )}
             </div>
             
-            {searchActive && foundCount > 0 && (
-              <p className="text-[10px] text-[#00ffba] font-medium">
-                ✓ Βρέθηκαν {foundCount} meshes με "{searchQuery}"
-              </p>
+            {searchActive && foundCount > 0 && !selectedSearchMesh && (
+              <div className="space-y-1">
+                <p className="text-[10px] text-[#00ffba] font-medium">
+                  ✓ Βρέθηκαν {foundCount} meshes - Επέλεξε ένα:
+                </p>
+                <div className="max-h-[120px] overflow-y-auto border bg-black/50">
+                  {searchMatches.map((meshName, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        setSelectedSearchMesh(meshName);
+                        toast.success(`Επιλέχθηκε: ${meshName}`);
+                      }}
+                      className="px-2 py-1.5 text-xs font-mono cursor-pointer hover:bg-[#00ffba]/20 border-b border-white/10 last:border-0"
+                    >
+                      {meshName}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {searchActive && selectedSearchMesh && (
+              <div className="space-y-1">
+                <p className="text-[10px] text-[#00ff00] font-medium">
+                  ✓ Επιλεγμένο mesh:
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs text-[#00ff00] flex-1 truncate">{selectedSearchMesh}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0 rounded-none"
+                    onClick={() => setSelectedSearchMesh(null)}
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
             )}
             {searchActive && foundCount === 0 && (
               <p className="text-[10px] text-amber-500 font-medium">
@@ -469,8 +512,9 @@ export const MusclePositionMapper: React.FC = () => {
                 onMeshClick={handleMeshClick}
                 searchQuery={searchActive ? searchQuery : ''}
                 mappedMeshNames={mappedMeshNames}
-                onSearchResults={setFoundCount}
+                onSearchResults={handleSearchResults}
                 onMeshNamesLoaded={setAvailableMeshNames}
+                selectedSearchMesh={selectedSearchMesh}
               />
             </Suspense>
           </Canvas3DErrorBoundary>
