@@ -162,31 +162,22 @@ function InteractiveHumanModel({
         // Check if matches search (but not selected)
         const matchesSearchQuery = matchesSearch.has(meshName);
         
-        // Determine mesh world position for left/right coloring
-        const worldPosition = new THREE.Vector3();
-        child.getWorldPosition(worldPosition);
-        
-        // Compute average x from vertices in world space
+        // Compute average x from LOCAL vertices (before centering transform)
         const geometry = child.geometry;
         const positionAttribute = geometry.getAttribute('position');
-        let avgX = 0;
+        let avgLocalX = 0;
         if (positionAttribute && positionAttribute.count > 0) {
           for (let i = 0; i < positionAttribute.count; i++) {
-            const vertex = new THREE.Vector3();
-            vertex.fromBufferAttribute(positionAttribute, i);
-            child.localToWorld(vertex); // Convert to world space
-            avgX += vertex.x;
+            avgLocalX += positionAttribute.getX(i);
           }
-          avgX /= positionAttribute.count;
-        } else {
-          avgX = worldPosition.x;
+          avgLocalX /= positionAttribute.count;
         }
         
         // Check if midline muscle
         const isMidline = midlineMuscles.has(meshName);
         
         if (isSelectedMesh) {
-          console.log(`🎯 Selected mesh ${meshName}: avgX=${avgX.toFixed(3)}, isMidline=${isMidline}`);
+          console.log(`🎯 Selected mesh ${meshName}: localAvgX=${avgLocalX.toFixed(3)}, isMidline=${isMidline}`);
           // Selected mesh: ροζ για x<0, πράσινο για x>0, άσπρο για κεντρικούς
           if (isMidline) {
             // Κεντρικός μυς = άσπρο
@@ -197,7 +188,7 @@ function InteractiveHumanModel({
               emissive: '#ffffff',
               emissiveIntensity: 0.5,
             });
-          } else if (avgX < -0.05) {
+          } else if (avgLocalX < -0.5) {
             // Αριστερή πλευρά (x<0) = ροζ
             child.material = new THREE.MeshStandardMaterial({
               color: '#ff69b4',
