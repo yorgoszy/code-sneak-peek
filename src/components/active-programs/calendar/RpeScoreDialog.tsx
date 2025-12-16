@@ -10,14 +10,10 @@ interface RpeScoreDialogProps {
 }
 
 const RPE_DESCRIPTIONS: Record<number, string> = {
-  1: 'Πολύ εύκολο',
-  2: 'Εύκολο',
-  3: 'Σχετικά εύκολο',
-  4: 'Μέτριο',
-  5: 'Λίγο δύσκολο',
-  6: 'Δύσκολο',
-  7: 'Πολύ δύσκολο',
-  8: 'Εξαιρετικά δύσκολο',
+  5: 'Μέτριο',
+  6: 'Λίγο δύσκολο',
+  7: 'Δύσκολο',
+  8: 'Πολύ δύσκολο',
   9: 'Σχεδόν μέγιστο',
   10: 'Μέγιστη προσπάθεια'
 };
@@ -42,9 +38,8 @@ export const RpeScoreDialog: React.FC<RpeScoreDialogProps> = ({
   };
 
   const getColorForRpe = (rpe: number) => {
-    if (rpe <= 3) return 'bg-green-500 hover:bg-green-600';
-    if (rpe <= 5) return 'bg-yellow-500 hover:bg-yellow-600';
-    if (rpe <= 7) return 'bg-orange-500 hover:bg-orange-600';
+    if (rpe <= 6) return 'bg-green-500 hover:bg-green-600';
+    if (rpe <= 8) return 'bg-yellow-500 hover:bg-yellow-600';
     return 'bg-red-500 hover:bg-red-600';
   };
 
@@ -60,8 +55,8 @@ export const RpeScoreDialog: React.FC<RpeScoreDialogProps> = ({
             Βαθμολόγησε την προσπάθειά σου (RPE 1-10)
           </p>
 
-          <div className="grid grid-cols-5 gap-2">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rpe) => (
+          <div className="grid grid-cols-6 gap-2">
+            {[5, 6, 7, 8, 9, 10].map((rpe) => (
               <button
                 key={rpe}
                 onClick={() => setSelectedRpe(rpe)}
