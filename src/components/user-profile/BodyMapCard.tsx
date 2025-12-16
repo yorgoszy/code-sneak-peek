@@ -289,9 +289,11 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
       if (isStrengthen) {
         child.material = new THREE.MeshStandardMaterial({
-          color: '#ef4444',
-          roughness: 0.5,
-          metalness: 0.1,
+          color: '#ff1493', // Neon pink for strengthening
+          roughness: 0.3,
+          metalness: 0.2,
+          emissive: '#ff1493',
+          emissiveIntensity: 0.4,
           clippingPlanes,
           clipShadows: true,
         });
@@ -301,9 +303,11 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
       if (isStretch) {
         child.material = new THREE.MeshStandardMaterial({
-          color: '#f59e0b',
-          roughness: 0.5,
-          metalness: 0.1,
+          color: '#ffff00', // Neon yellow for stretching
+          roughness: 0.3,
+          metalness: 0.2,
+          emissive: '#ffff00',
+          emissiveIntensity: 0.4,
           clippingPlanes,
           clipShadows: true,
         });
