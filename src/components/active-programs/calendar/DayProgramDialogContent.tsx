@@ -33,6 +33,7 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
   const [isRpeDialogOpen, setIsRpeDialogOpen] = useState(false);
   const [dynamicStatus, setDynamicStatus] = useState<string>(workoutStatus);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [currentRpeScore, setCurrentRpeScore] = useState<number | null>(null);
 
   const {
     workoutInProgress,
@@ -52,11 +53,12 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
     handleCompleteWorkout(rpeScore);
   };
 
-  // Fetch current completion status when dialog opens or date/assignment changes
+  // Fetch current completion status and RPE when dialog opens or date/assignment changes
   useEffect(() => {
-    const fetchStatus = async () => {
+    const fetchStatusAndRpe = async () => {
       setStatusLoading(true);
       setDynamicStatus(workoutStatus);
+      setCurrentRpeScore(null);
       if (!program?.id || !selectedDate) {
         setStatusLoading(false);
         return;
@@ -64,7 +66,7 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
       const { data, error } = await supabase
         .from('workout_completions')
-        .select('status')
+        .select('status, rpe_score')
         .eq('assignment_id', program.id)
         .eq('scheduled_date', dateStr)
         .maybeSingle();
@@ -73,13 +75,14 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
         setDynamicStatus(workoutStatus);
       } else if (data?.status) {
         setDynamicStatus(data.status);
+        setCurrentRpeScore(data.rpe_score ?? null);
       } else {
         setDynamicStatus(workoutStatus);
       }
       setStatusLoading(false);
     };
 
-    fetchStatus();
+    fetchStatusAndRpe();
   }, [program?.id, selectedDate, workoutStatus]);
 
   const handleVideoClick = (exercise: any) => {
@@ -140,6 +143,7 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
         workoutInProgress={workoutInProgress}
         elapsedTime={elapsedTime}
         workoutStatus={dynamicStatus}
+        rpeScore={currentRpeScore}
         onStartWorkout={handleStartWorkout}
         onCompleteWorkout={handleRequestComplete}
         onCancelWorkout={handleCancelWorkout}
