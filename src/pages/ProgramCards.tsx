@@ -92,6 +92,14 @@ const ProgramCards = () => {
       }
     }
     
+    // Υπολογισμός average RPE
+    const rpeScores = assignmentCompletions
+      .filter(c => c.status === 'completed' && c.rpe_score)
+      .map(c => c.rpe_score as number);
+    const averageRpe = rpeScores.length > 0 
+      ? rpeScores.reduce((a, b) => a + b, 0) / rpeScores.length 
+      : undefined;
+    
     // Το progress υπολογίζεται από completed + missed (όλες οι "ολοκληρωμένες" προπονήσεις)
     const processedWorkouts = completed + missed;
     const progress = total > 0 ? Math.round((processedWorkouts / total) * 100) : 0;
@@ -100,7 +108,8 @@ const ProgramCards = () => {
       completed,
       total,
       missed,
-      progress
+      progress,
+      averageRpe
     };
   };
 
