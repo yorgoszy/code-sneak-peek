@@ -9,6 +9,7 @@ interface ProgramCardProgressProps {
     completed: number;
     total: number;
     missed: number;
+    averageRpe?: number;
   };
 }
 
@@ -42,6 +43,11 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
 
   const progressPercentage = workoutStats.total > 0 ? Math.round((workoutStats.completed / workoutStats.total) * 100) : 0;
 
+  const getRpeColor = (rpe: number) => {
+    if (rpe <= 6) return 'bg-green-500';
+    if (rpe <= 8) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
   return (
     <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
       {/* Training Days with Duration */}
@@ -69,6 +75,11 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
         <div className="text-xs text-gray-600 font-medium min-w-8">
           {progressPercentage}%
         </div>
+        {workoutStats.averageRpe && (
+          <div className={`text-[10px] text-white px-1 rounded-none font-bold ${getRpeColor(workoutStats.averageRpe)}`}>
+            RPE {workoutStats.averageRpe.toFixed(1)}
+          </div>
+        )}
       </div>
     </div>
   );

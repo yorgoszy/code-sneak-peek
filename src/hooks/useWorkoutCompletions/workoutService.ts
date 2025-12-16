@@ -14,7 +14,8 @@ export const completeWorkout = async (
   notes?: string,
   startTime?: Date,
   endTime?: Date,
-  actualDurationMinutes?: number
+  actualDurationMinutes?: number,
+  rpeScore?: number
 ) => {
   const userId = await getUserId(authUserId);
   if (!userId) throw new Error('User not found');
@@ -44,6 +45,10 @@ export const completeWorkout = async (
 
   if (actualDurationMinutes) {
     workoutData.actual_duration_minutes = actualDurationMinutes;
+  }
+
+  if (rpeScore) {
+    workoutData.rpe_score = rpeScore;
   }
 
   const { data, error } = await supabase

@@ -121,7 +121,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             status: completion?.status || 'scheduled',
             assignmentId: assignment.id,
             userName: assignment.app_users.name || 'Άγνωστος',
-            assignment: assignment
+            assignment: assignment,
+            rpeScore: completion?.rpe_score
           });
         });
       }

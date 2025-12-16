@@ -7,6 +7,7 @@ interface ProgramData {
   assignmentId: string;
   userName: string;
   assignment: any;
+  rpeScore?: number;
 }
 
 interface CalendarDayProps {
@@ -47,11 +48,16 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         return 'text-red-500 font-semibold';
       case 'pending':
       case 'scheduled':
-        // Αν έχει περάσει η ημερομηνία και δεν έχει ολοκληρωθεί → κόκκινο
         return isPast ? 'text-red-500 font-semibold' : 'text-blue-500';
       default:
         return isPast ? 'text-red-500 font-semibold' : 'text-blue-500';
     }
+  };
+
+  const getRpeColor = (rpe: number) => {
+    if (rpe <= 6) return 'bg-green-500';
+    if (rpe <= 8) return 'bg-yellow-500';
+    return 'bg-red-500';
   };
 
   return (
@@ -95,10 +101,15 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           return (
             <div 
               key={userKey}
-              className={`text-xs cursor-pointer hover:underline truncate w-full text-left ${colorClass}`}
+              className={`text-xs cursor-pointer hover:underline truncate w-full text-left flex items-center gap-1 ${colorClass}`}
               onClick={(e) => onUserNameClick(program, e)}
             >
-              {program.userName.split(' ')[0]}
+              <span className="truncate">{program.userName.split(' ')[0]}</span>
+              {program.status === 'completed' && program.rpeScore && (
+                <span className={`text-[10px] text-white px-1 rounded-none ${getRpeColor(program.rpeScore)}`}>
+                  {program.rpeScore}
+                </span>
+              )}
             </div>
           );
         })}

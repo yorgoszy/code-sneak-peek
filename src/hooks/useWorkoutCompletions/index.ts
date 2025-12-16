@@ -20,7 +20,8 @@ export const useWorkoutCompletions = () => {
     notes?: string,
     startTime?: Date,
     endTime?: Date,
-    actualDurationMinutes?: number
+    actualDurationMinutes?: number,
+    rpeScore?: number
   ) => {
     if (!user?.id) throw new Error('User not authenticated');
     
@@ -36,7 +37,8 @@ export const useWorkoutCompletions = () => {
         notes,
         startTime,
         endTime,
-        actualDurationMinutes
+        actualDurationMinutes,
+        rpeScore
       );
     } catch (error) {
       console.error('Error completing workout:', error);
