@@ -319,11 +319,11 @@ export const useWorkoutState = (
     return { ...stats, trainingTypeBreakdown };
   }, [getCurrentDayProgram, exerciseData]);
 
-  const handleCompleteWorkout = useCallback(async () => {
+  const handleCompleteWorkout = useCallback(async (rpeScore?: number) => {
     if (!program || !selectedDate || !currentWorkout) return;
 
     try {
-      console.log('✅ ΟΛΟΚΛΗΡΩΣΗ ΠΡΟΠΟΝΗΣΗΣ για:', program.app_users?.name);
+      console.log('✅ ΟΛΟΚΛΗΡΩΣΗ ΠΡΟΠΟΝΗΣΗΣ για:', program.app_users?.name, 'RPE:', rpeScore);
       
       const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
       
@@ -334,7 +334,8 @@ export const useWorkoutState = (
         assignment_id: program.id,
         scheduled_date: selectedDateStr,
         user_id: program.app_users?.id || program.user_id,
-        actual_duration_minutes: actualDurationMinutes
+        actual_duration_minutes: actualDurationMinutes,
+        rpe_score: rpeScore
       });
 
       // Χρήση του service για να γίνει upsert αντί για update μόνο
@@ -345,14 +346,15 @@ export const useWorkoutState = (
         'green'
       );
 
-      console.log('🔄 Now updating with duration and end time...');
+      console.log('🔄 Now updating with duration, end time and RPE...');
       
-      // Τώρα ενημερώνουμε την εγγραφή με τη διάρκεια και το end_time
+      // Τώρα ενημερώνουμε την εγγραφή με τη διάρκεια, το end_time και το RPE
       const { error } = await supabase
         .from('workout_completions')
         .update({
           actual_duration_minutes: actualDurationMinutes,
-          end_time: new Date().toISOString()
+          end_time: new Date().toISOString(),
+          rpe_score: rpeScore || null
         })
         .eq('assignment_id', program.id)
         .eq('scheduled_date', selectedDateStr);
