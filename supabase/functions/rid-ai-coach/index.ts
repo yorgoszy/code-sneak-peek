@@ -264,7 +264,50 @@ ${activePrograms.map((p, i) => `${i + 1}. ${p.userName} (${p.userEmail})
    - Σήμερα: ${p.todayStatus === 'completed' ? '✅ Ολοκληρώθηκε' : p.todayStatus === 'scheduled' ? '⏳ Προγραμματισμένη' : '➖ Χωρίς προπόνηση'}`).join('\n\n')}
 
 ${completedPrograms.length > 0 ? `\n✅ Πρόσφατα Ολοκληρωμένα:
-${completedPrograms.slice(0, 5).map((p, i) => `${i + 1}. ${p.userName} - ${p.programName} (${p.progress})`).join('\n')}` : ''}`;
+${completedPrograms.slice(0, 5).map((p, i) => `${i + 1}. ${p.userName} - ${p.programName} (${p.progress})`).join('\n')}` : ''}
+
+📊 RPE ANALYSIS (Όλες οι προπονήσεις):
+${(() => {
+  const completionsWithRpe = Array.isArray(allCompletions) 
+    ? allCompletions.filter((c: any) => c.rpe_score !== null && c.rpe_score !== undefined)
+    : [];
+  if (completionsWithRpe.length === 0) return '- Δεν υπάρχουν καταγραφές RPE';
+  
+  const avgRpe = (completionsWithRpe.reduce((sum: number, c: any) => sum + (c.rpe_score || 0), 0) / completionsWithRpe.length).toFixed(1);
+  
+  // Group by user
+  const rpeByUser: { [userId: string]: { scores: number[], userName: string } } = {};
+  completionsWithRpe.forEach((c: any) => {
+    const user = Array.isArray(allUsersData) ? allUsersData.find((u: any) => u.id === c.user_id) : null;
+    if (!rpeByUser[c.user_id]) {
+      rpeByUser[c.user_id] = { scores: [], userName: user?.name || 'Unknown' };
+    }
+    rpeByUser[c.user_id].scores.push(c.rpe_score);
+  });
+  
+  const userRpeSummary = Object.values(rpeByUser)
+    .map((u: any) => `  - ${u.userName}: Μέσος RPE ${(u.scores.reduce((a: number, b: number) => a + b, 0) / u.scores.length).toFixed(1)} (${u.scores.length} καταγραφές)`)
+    .join('\n');
+  
+  // Latest 10 RPE entries
+  const latestRpe = completionsWithRpe
+    .sort((a: any, b: any) => new Date(b.scheduled_date || b.completed_date).getTime() - new Date(a.scheduled_date || a.completed_date).getTime())
+    .slice(0, 10)
+    .map((c: any) => {
+      const user = Array.isArray(allUsersData) ? allUsersData.find((u: any) => u.id === c.user_id) : null;
+      const date = c.scheduled_date || c.completed_date;
+      return `  - ${new Date(date).toLocaleDateString('el-GR')}: ${user?.name || 'Unknown'} - RPE ${c.rpe_score}`;
+    }).join('\n');
+  
+  return `- Μέσος όρος RPE (όλοι): ${avgRpe}
+- Σύνολο καταγραφών: ${completionsWithRpe.length}
+
+RPE ανά Αθλητή:
+${userRpeSummary}
+
+Τελευταίες 10 καταγραφές RPE:
+${latestRpe}`;
+})()}`;
 
         // 📅 CALENDAR VIEW: Δημιουργία λεπτομερούς ημερολογίου
         // Group workouts by date
@@ -1598,7 +1641,22 @@ ${calendarDisplay}`;
         return `\n${programName}: ${trainingDates} προγραμματισμένες ημέρες`;
       }).filter(Boolean).join('\n');
       
-      workoutStatsContext = `\n\nΣτατιστικά Προπονήσεων:${statsList}\n\nΤελευταία 7 ημέρες:\n- Ολοκληρωμένες: ${completionsLast7}\n- Χαμένες: ${missedLast7}\n\nΤελευταίος μήνας (30 ημέρες):\n- Ολοκληρωμένες: ${completionsLast30}\n- Χαμένες: ${missedLast30}\n\nΣύνολο workout completions: ${workoutCompletions.length}`;
+      // RPE Analysis για User Mode
+      const completionsWithRpe = workoutCompletions.filter((c: any) => c.rpe_score !== null && c.rpe_score !== undefined);
+      let rpeContext = '';
+      if (completionsWithRpe.length > 0) {
+        const avgRpe = (completionsWithRpe.reduce((sum: number, c: any) => sum + (c.rpe_score || 0), 0) / completionsWithRpe.length).toFixed(1);
+        const rpeByDate = completionsWithRpe
+          .sort((a: any, b: any) => new Date(b.scheduled_date || b.completed_date).getTime() - new Date(a.scheduled_date || a.completed_date).getTime())
+          .slice(0, 10)
+          .map((c: any) => {
+            const date = c.scheduled_date || c.completed_date;
+            return `- ${new Date(date).toLocaleDateString('el-GR')}: RPE ${c.rpe_score}`;
+          }).join('\n');
+        rpeContext = `\n\n📊 RPE Analysis (Rate of Perceived Exertion):\n- Μέσος όρος RPE: ${avgRpe}\n- Προπονήσεις με RPE: ${completionsWithRpe.length}\n\nΤελευταίες 10 καταγραφές RPE:\n${rpeByDate}`;
+      }
+      
+      workoutStatsContext = `\n\nΣτατιστικά Προπονήσεων:${statsList}\n\nΤελευταία 7 ημέρες:\n- Ολοκληρωμένες: ${completionsLast7}\n- Χαμένες: ${missedLast7}\n\nΤελευταίος μήνας (30 ημέρες):\n- Ολοκληρωμένες: ${completionsLast30}\n- Χαμένες: ${missedLast30}\n\nΣύνολο workout completions: ${workoutCompletions.length}${rpeContext}`;
     }
 
     // Context για δύναμη
