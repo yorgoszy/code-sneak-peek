@@ -92,6 +92,7 @@ function InteractiveHumanModel({
     'Rhomboideus_Major',
     'Rhomboideus_Minor',
     'Iliocostalis_Lumborum',
+    'Iliococygeus',
     'Infraspinatus',
     'Longissimus_Thoracis',
     'Spinalis_Thoracis',
