@@ -128,10 +128,40 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     [musclesToHighlight]
   );
 
-  // Clipping planes: left muscles show only x <= 0, right muscles show only x >= 0
-  // THREE.Plane keeps points where normal.dot(point) + constant >= 0
-  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []); // keeps x <= 0 (left side)
-  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), 0), []); // keeps x >= 0 (right side)
+  // Auto-detect if model X axis is mirrored vs our "Left = x<=0" assumption.
+  // If the avg X of "_Left" targets is actually > avg X of "_Right" targets, we flip the clipping planes.
+  const flipSides = useMemo(() => {
+    if (!hasPositionData) return false;
+
+    const leftXs = musclesToHighlight
+      .filter(m => /_Left$/i.test(m.meshName) && m.position)
+      .map(m => Number(m.position!.x))
+      .filter(n => Number.isFinite(n));
+
+    const rightXs = musclesToHighlight
+      .filter(m => /_Right$/i.test(m.meshName) && m.position)
+      .map(m => Number(m.position!.x))
+      .filter(n => Number.isFinite(n));
+
+    if (leftXs.length < 2 || rightXs.length < 2) return false;
+
+    const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
+    const leftAvg = avg(leftXs);
+    const rightAvg = avg(rightXs);
+
+    // Expected: leftAvg < rightAvg. If not, our notion of left/right for X is reversed.
+    return leftAvg > rightAvg;
+  }, [hasPositionData, musclesToHighlight]);
+
+  // Clipping planes (THREE.Plane keeps points where normal.dot(point) + constant >= 0)
+  const leftClipPlane = useMemo(
+    () => new THREE.Plane(new THREE.Vector3(flipSides ? 1 : -1, 0, 0), 0),
+    [flipSides]
+  ); // keeps left half
+  const rightClipPlane = useMemo(
+    () => new THREE.Plane(new THREE.Vector3(flipSides ? -1 : 1, 0, 0), 0),
+    [flipSides]
+  ); // keeps right half
 
   // Build sets per side from DB mesh_name
   const strengthenLeft = useMemo(() => {
