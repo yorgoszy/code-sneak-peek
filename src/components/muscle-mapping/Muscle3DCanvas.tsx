@@ -8,6 +8,13 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/models/Ecorche_by_AlexLashko_ShrunkenView.obj';
 
+// Trapezius Y Boundaries (hardcoded - adjust these values)
+// These define where Upper ends/Middle starts and where Middle ends/Lower starts
+export const TRAPEZIUS_BOUNDARIES = {
+  upperMiddle: 0.85, // Y value: above this = Upper, below = Middle
+  middleLower: 0.45, // Y value: above this = Middle, below = Lower
+};
+
 // Helper to determine view side based on camera angle
 type ViewSide = 'front' | 'back' | 'left' | 'right';
 
@@ -48,6 +55,111 @@ const musclesWithSubParts: Record<string, { name: string; parts: { id: string; l
   }
 };
 
+// Trapezius Boundary Overlay Component
+interface TrapeziusBoundaryOverlayProps {
+  visible: boolean;
+  upperMiddle: number;
+  middleLower: number;
+  onUpperMiddleChange: (value: number) => void;
+  onMiddleLowerChange: (value: number) => void;
+}
+
+const TrapeziusBoundaryOverlay: React.FC<TrapeziusBoundaryOverlayProps> = ({
+  visible,
+  upperMiddle,
+  middleLower,
+  onUpperMiddleChange,
+  onMiddleLowerChange,
+}) => {
+  if (!visible) return null;
+
+  // Convert Y values to percentage (assuming Y range is roughly -1 to 1.5)
+  const yMin = -0.5;
+  const yMax = 1.5;
+  const toPercent = (y: number) => ((yMax - y) / (yMax - yMin)) * 100;
+  const toY = (percent: number) => yMax - (percent / 100) * (yMax - yMin);
+
+  return (
+    <div className="absolute right-4 top-1/2 -translate-y-1/2 h-[60%] w-12 flex flex-col items-center z-40">
+      {/* Y Axis Label */}
+      <div className="text-[#00ffba] text-xs mb-2 font-mono">Y Axis</div>
+      
+      {/* Slider Track */}
+      <div className="relative h-full w-2 bg-white/20 rounded">
+        {/* Upper Zone */}
+        <div 
+          className="absolute w-full bg-red-500/40 rounded-t"
+          style={{ top: 0, height: `${toPercent(upperMiddle)}%` }}
+        />
+        {/* Middle Zone */}
+        <div 
+          className="absolute w-full bg-yellow-500/40"
+          style={{ top: `${toPercent(upperMiddle)}%`, height: `${toPercent(middleLower) - toPercent(upperMiddle)}%` }}
+        />
+        {/* Lower Zone */}
+        <div 
+          className="absolute w-full bg-blue-500/40 rounded-b"
+          style={{ top: `${toPercent(middleLower)}%`, height: `${100 - toPercent(middleLower)}%` }}
+        />
+        
+        {/* Upper-Middle Slider */}
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={toPercent(upperMiddle)}
+          onChange={(e) => onUpperMiddleChange(toY(Number(e.target.value)))}
+          className="absolute w-[200px] h-2 -rotate-90 origin-left cursor-pointer"
+          style={{ 
+            left: '50%', 
+            top: `${toPercent(upperMiddle)}%`,
+            transform: 'translateX(-50%) rotate(-90deg)',
+            accentColor: '#ff6b6b'
+          }}
+        />
+        
+        {/* Middle-Lower Slider */}
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={toPercent(middleLower)}
+          onChange={(e) => onMiddleLowerChange(toY(Number(e.target.value)))}
+          className="absolute w-[200px] h-2 -rotate-90 origin-left cursor-pointer"
+          style={{ 
+            left: '50%', 
+            top: `${toPercent(middleLower)}%`,
+            transform: 'translateX(-50%) rotate(-90deg)',
+            accentColor: '#4dabf7'
+          }}
+        />
+      </div>
+      
+      {/* Labels */}
+      <div className="mt-2 text-[10px] space-y-1">
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 bg-red-500/60"></div>
+          <span className="text-white/80">Άνω</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 bg-yellow-500/60"></div>
+          <span className="text-white/80">Μέση</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 bg-blue-500/60"></div>
+          <span className="text-white/80">Κάτω</span>
+        </div>
+      </div>
+      
+      {/* Y Values Display */}
+      <div className="mt-2 text-[9px] font-mono text-[#00ffba] bg-black/80 px-2 py-1">
+        <div>U/M: {upperMiddle.toFixed(2)}</div>
+        <div>M/L: {middleLower.toFixed(2)}</div>
+      </div>
+    </div>
+  );
+};
+
 // Interactive Human Model
 function InteractiveHumanModel({ 
   isSelecting,
@@ -58,8 +170,9 @@ function InteractiveHumanModel({
   onMeshNamesLoaded,
   selectedSearchMesh,
   onShowSubPartSelector,
-  isolateMode
-}: { 
+  isolateMode,
+  trapeziusBoundaries
+}: {
   isSelecting: boolean;
   onMeshClick?: (meshName: string) => void;
   searchQuery: string;
@@ -69,6 +182,7 @@ function InteractiveHumanModel({
   selectedSearchMesh?: string | null;
   onShowSubPartSelector?: (meshName: string, side: 'Left' | 'Right') => void;
   isolateMode?: boolean;
+  trapeziusBoundaries?: { upperMiddle: number; middleLower: number };
 }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   const { raycaster, camera, pointer } = useThree();
@@ -172,9 +286,47 @@ function InteractiveHumanModel({
         // Check if midline muscle
         const isMidline = midlineMuscles.has(meshName);
         
+        // Special handling for Trapezius - show Y zones
+        const isTrapezius = meshName === 'Trapezius';
+        
         if (isSelectedMesh) {
-          // Selected mesh: χρωματισμός vertices ανάλογα με θέση x
-          if (isMidline) {
+          // Selected mesh: χρωματισμός vertices
+          if (isTrapezius && trapeziusBoundaries) {
+            // Trapezius: χρωματισμός κατά Y zones (Άνω/Μέση/Κάτω)
+            const positionAttribute = geometry.getAttribute('position');
+            const colors = new Float32Array(positionAttribute.count * 3);
+            
+            const upperColor = new THREE.Color('#ff6b6b'); // Red for Upper
+            const middleColor = new THREE.Color('#ffd43b'); // Yellow for Middle
+            const lowerColor = new THREE.Color('#4dabf7'); // Blue for Lower
+            
+            for (let i = 0; i < positionAttribute.count; i++) {
+              const y = positionAttribute.getY(i);
+              let color: THREE.Color;
+              
+              if (y > trapeziusBoundaries.upperMiddle) {
+                color = upperColor; // Upper Trapezius
+              } else if (y > trapeziusBoundaries.middleLower) {
+                color = middleColor; // Middle Trapezius
+              } else {
+                color = lowerColor; // Lower Trapezius
+              }
+              
+              colors[i * 3] = color.r;
+              colors[i * 3 + 1] = color.g;
+              colors[i * 3 + 2] = color.b;
+            }
+            
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            
+            child.material = new THREE.MeshStandardMaterial({
+              vertexColors: true,
+              roughness: 0.3,
+              metalness: 0.4,
+              emissive: '#333333',
+              emissiveIntensity: 0.3,
+            });
+          } else if (isMidline) {
             // Κεντρικός μυς = άσπρο
             child.material = new THREE.MeshStandardMaterial({
               color: '#ffffff',
@@ -233,7 +385,7 @@ function InteractiveHumanModel({
         }
       }
     });
-  }, [obj, matchesSearch, mappedMeshNames, selectedSearchMesh, isolateMode, midlineMuscles]);
+  }, [obj, matchesSearch, mappedMeshNames, selectedSearchMesh, isolateMode, midlineMuscles, trapeziusBoundaries]);
 
 
   const handleClick = useCallback((event: any) => {
@@ -477,6 +629,11 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
   const [viewSide, setViewSide] = useState<ViewSide>('front');
   const [isolateMode, setIsolateMode] = useState(false);
   const orbitControlsRef = useRef<OrbitControlsImpl>(null);
+  
+  // Trapezius boundary state for configuration
+  const [showTrapeziusOverlay, setShowTrapeziusOverlay] = useState(false);
+  const [upperMiddleY, setUpperMiddleY] = useState(TRAPEZIUS_BOUNDARIES.upperMiddle);
+  const [middleLowerY, setMiddleLowerY] = useState(TRAPEZIUS_BOUNDARIES.middleLower);
 
   // Update view side periodically
   useEffect(() => {
@@ -535,6 +692,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
             onMeshNamesLoaded={onMeshNamesLoaded}
             selectedSearchMesh={selectedSearchMesh}
             isolateMode={isolateMode}
+            trapeziusBoundaries={showTrapeziusOverlay || selectedSearchMesh === 'Trapezius' ? { upperMiddle: upperMiddleY, middleLower: middleLowerY } : undefined}
           />
         </Suspense>
         <OrbitControls 
@@ -579,6 +737,29 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
         </button>
       )}
 
+      {/* Trapezius Boundary Toggle - only when Trapezius is selected */}
+      {selectedSearchMesh === 'Trapezius' && (
+        <button
+          onClick={() => setShowTrapeziusOverlay(!showTrapeziusOverlay)}
+          className={`absolute top-12 right-2 px-3 py-2 text-xs font-medium transition-colors rounded-none ${
+            showTrapeziusOverlay 
+              ? 'bg-[#ffd43b] text-black' 
+              : 'bg-black/60 text-white border border-white/30 hover:border-[#ffd43b]'
+          }`}
+        >
+          {showTrapeziusOverlay ? '✓ Y Boundaries' : '📏 Y Boundaries'}
+        </button>
+      )}
+
+      {/* Trapezius Boundary Overlay */}
+      <TrapeziusBoundaryOverlay
+        visible={showTrapeziusOverlay && selectedSearchMesh === 'Trapezius'}
+        upperMiddle={upperMiddleY}
+        middleLower={middleLowerY}
+        onUpperMiddleChange={setUpperMiddleY}
+        onMiddleLowerChange={setMiddleLowerY}
+      />
+
       {/* Legend */}
       <div className="absolute bottom-2 left-2 flex flex-col gap-1 text-[10px] sm:text-xs">
         <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
@@ -589,7 +770,22 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
           <div className="w-2.5 h-2.5 rounded-full bg-[#00ffba]"></div>
           <span className="text-white/80">Αποτελέσματα αναζήτησης</span>
         </div>
-        {selectedSearchMesh && (
+        {selectedSearchMesh === 'Trapezius' && showTrapeziusOverlay ? (
+          <>
+            <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
+              <div className="w-2.5 h-2.5 bg-[#ff6b6b]"></div>
+              <span className="text-white/80">Άνω Τραπεζοειδής</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
+              <div className="w-2.5 h-2.5 bg-[#ffd43b]"></div>
+              <span className="text-white/80">Μέση Τραπεζοειδής</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
+              <div className="w-2.5 h-2.5 bg-[#4dabf7]"></div>
+              <span className="text-white/80">Κάτω Τραπεζοειδής</span>
+            </div>
+          </>
+        ) : selectedSearchMesh && (
           <>
             <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
               <div className="w-2.5 h-2.5 rounded-full bg-[#ff69b4]"></div>
