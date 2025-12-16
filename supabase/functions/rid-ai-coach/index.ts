@@ -285,11 +285,13 @@ ${completedPrograms.slice(0, 5).map((p, i) => `${i + 1}. ${p.userName} - ${p.pro
                 : null;
               
               const status = completion?.status || 'scheduled';
+              const rpe = completion?.rpe_score || null;
               
               workoutsByDate[dateStr].push({
                 userName: user.name || 'Unknown',
                 programName: program.name || 'Unknown Program',
-                status: status
+                status: status,
+                rpe: rpe
               });
             });
           }
@@ -317,7 +319,8 @@ ${completedPrograms.slice(0, 5).map((p, i) => `${i + 1}. ${p.userName} - ${p.pro
             
             const workoutsList = workouts.map(w => {
               const statusIcon = w.status === 'completed' ? '✅' : w.status === 'missed' ? '❌' : '📅';
-              return `      ${statusIcon} ${w.userName} - ${w.programName}`;
+              const rpeText = w.rpe ? ` (RPE: ${w.rpe})` : '';
+              return `      ${statusIcon} ${w.userName} - ${w.programName}${rpeText}`;
             }).join('\n');
             
             const totalCount = workouts.length;
@@ -370,8 +373,10 @@ ${calendarDisplay}`;
                   : null;
                 
                 const statusIcon = completion?.status === 'completed' ? '✅' : completion?.status === 'missed' ? '❌' : '📅';
+                const rpeScore = completion?.rpe_score;
+                const rpeText = rpeScore ? ` (RPE: ${rpeScore})` : '';
                 
-                detailedWorkoutsContext += `\n  ${statusIcon} ${scheduledDate} - ${day.name}:\n`;
+                detailedWorkoutsContext += `\n  ${statusIcon} ${scheduledDate} - ${day.name}${rpeText}:\n`;
                 
                 // Blocks και ασκήσεις
                 const dayBlocks = allBlocksData.filter((b: any) => b.day_id === day.id);
@@ -943,7 +948,8 @@ ${calendarDisplay}`;
               userName: assignment.app_users.name,
               assignmentId: assignment.id,
               estimatedMinutes: estimatedMinutes,
-              actualMinutes: completion?.actual_duration_minutes || 0
+              actualMinutes: completion?.actual_duration_minutes || 0,
+              rpe: completion?.rpe_score || null
             });
           });
         }
@@ -1521,16 +1527,18 @@ ${calendarDisplay}`;
       
       
       if (todaysWorkouts.length > 0) {
-        const todaysList = todaysWorkouts.map((w: any) => 
-          `- ${w.programName} (${w.status === 'completed' ? '✓ Ολοκληρωμένη' : w.status === 'missed' ? '✗ Χαμένη' : 'Προγραμματισμένη σήμερα'})`
-        ).join('\n');
+        const todaysList = todaysWorkouts.map((w: any) => {
+          const rpeText = w.rpe ? ` - RPE: ${w.rpe}` : '';
+          return `- ${w.programName} (${w.status === 'completed' ? '✓ Ολοκληρωμένη' : w.status === 'missed' ? '✗ Χαμένη' : 'Προγραμματισμένη σήμερα'})${rpeText}`;
+        }).join('\n');
         calendarContext += `\n\nΣήμερα (${todayStr}):\n${todaysList}`;
       }
       
       if (recentWorkouts.length > 0) {
-        const recentList = recentWorkouts.map((w: any) => 
-          `- ${w.date}: ${w.programName} (${w.status === 'completed' ? '✓' : w.status === 'missed' ? '✗' : '?'})`
-        ).join('\n');
+        const recentList = recentWorkouts.map((w: any) => {
+          const rpeText = w.rpe ? ` - RPE: ${w.rpe}` : '';
+          return `- ${w.date}: ${w.programName} (${w.status === 'completed' ? '✓' : w.status === 'missed' ? '✗' : '?'})${rpeText}`;
+        }).join('\n');
         calendarContext += `\n\nΤελευταίες προπονήσεις:\n${recentList}`;
       }
       
