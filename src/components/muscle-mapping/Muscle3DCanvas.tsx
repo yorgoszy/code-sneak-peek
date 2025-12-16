@@ -89,6 +89,8 @@ function InteractiveHumanModel({
     'Splenius_Capitis',
     'Splenius_Cervicis',
     'Rhomboideus',
+    'Rhomboideus_Major',
+    'Rhomboideus_Minor',
     'Infraspinatus',
     'Longissimus_Thoracis',
     'Spinalis_Thoracis',
