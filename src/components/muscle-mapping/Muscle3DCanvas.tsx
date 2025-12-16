@@ -11,8 +11,8 @@ const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/pu
 // Trapezius Y Boundaries (hardcoded - adjust these values)
 // These define where Upper ends/Middle starts and where Middle ends/Lower starts
 export const TRAPEZIUS_BOUNDARIES = {
-  upperMiddle: 0.85, // Y value: above this = Upper, below = Middle
-  middleLower: 0.45, // Y value: above this = Middle, below = Lower
+  upperMiddle: 0.88, // Y value: above this = Upper, below = Middle
+  middleLower: 0.45, // Y value: above this = Middle, below = Lower (may not be visible in mesh)
 };
 
 // Helper to determine view side based on camera angle
