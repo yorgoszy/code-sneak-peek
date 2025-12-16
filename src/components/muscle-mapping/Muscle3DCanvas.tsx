@@ -56,14 +56,16 @@ function InteractiveHumanModel({
   mappedMeshNames,
   onSearchResults,
   onMeshNamesLoaded,
+  selectedSearchMesh,
   onShowSubPartSelector
 }: { 
   isSelecting: boolean;
   onMeshClick?: (meshName: string) => void;
   searchQuery: string;
   mappedMeshNames: string[];
-  onSearchResults?: (count: number) => void;
+  onSearchResults?: (count: number, matches: string[]) => void;
   onMeshNamesLoaded?: (names: string[]) => void;
+  selectedSearchMesh?: string | null;
   onShowSubPartSelector?: (meshName: string, side: 'Left' | 'Right') => void;
 }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
@@ -80,16 +82,14 @@ function InteractiveHumanModel({
   const matchesSearch = useMemo(() => {
     if (!searchQuery.trim()) return new Set<string>();
     const query = searchQuery.toLowerCase();
-    const matches = new Set(
-      allMeshNames.filter(name => name.toLowerCase().includes(query))
-    );
-    return matches;
+    const matches = allMeshNames.filter(name => name.toLowerCase().includes(query));
+    return new Set(matches);
   }, [searchQuery, allMeshNames]);
 
-  // Report search results count
+  // Report search results count and matches
   useEffect(() => {
     if (onSearchResults) {
-      onSearchResults(matchesSearch.size);
+      onSearchResults(matchesSearch.size, Array.from(matchesSearch));
     }
   }, [matchesSearch, onSearchResults]);
 
@@ -118,25 +118,36 @@ function InteractiveHumanModel({
     console.log('📋 All mesh names:', meshNames);
   }, [obj, onMeshNamesLoaded]);
 
-  // Highlight meshes based on search query and mapped status
+  // Highlight meshes based on selected mesh, search query and mapped status
   useEffect(() => {
     obj.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         const meshName = child.name || 'unnamed';
         
-        // Always show all meshes
         child.visible = true;
         
-        // Check if this mesh is mapped (either side)
+        // Check if this is the selected mesh from search
+        const isSelectedMesh = selectedSearchMesh === meshName;
+        
+        // Check if this mesh is mapped
         const isMapped = mappedMeshNames.some(mapped => 
-          getBaseMeshName(mapped) === meshName
+          getBaseMeshName(mapped) === meshName || mapped === meshName
         );
         
-        // Check if matches search
+        // Check if matches search (but not selected)
         const matchesSearchQuery = matchesSearch.has(meshName);
         
-        if (matchesSearchQuery) {
-          // Highlight search matches in cyan
+        if (isSelectedMesh) {
+          // Bright highlight for selected mesh - BRIGHT GREEN with strong glow
+          child.material = new THREE.MeshStandardMaterial({
+            color: '#00ff00',
+            roughness: 0.3,
+            metalness: 0.4,
+            emissive: '#00ff00',
+            emissiveIntensity: 0.8,
+          });
+        } else if (matchesSearchQuery && !selectedSearchMesh) {
+          // Cyan highlight for search matches (only if no specific selection)
           child.material = new THREE.MeshStandardMaterial({
             color: '#00ffba',
             roughness: 0.5,
@@ -145,7 +156,7 @@ function InteractiveHumanModel({
             emissiveIntensity: 0.4,
           });
         } else if (isMapped) {
-          // Show mapped muscles in gold
+          // Gold for mapped muscles
           child.material = new THREE.MeshStandardMaterial({
             color: '#cb8954',
             roughness: 0.5,
@@ -158,7 +169,7 @@ function InteractiveHumanModel({
         }
       }
     });
-  }, [obj, matchesSearch, mappedMeshNames]);
+  }, [obj, matchesSearch, mappedMeshNames, selectedSearchMesh]);
 
   // Μύες που δεν χρειάζονται διαχωρισμό Left/Right (κεντρικοί μύες)
   const midlineMuscles = useMemo(() => new Set([
@@ -168,41 +179,11 @@ function InteractiveHumanModel({
     'Sternum',
     'Splenius_Capitis',
     'Splenius_Cervicis',
-    'splenius_capitis',
-    'splenius_cervicis',
     'Rhomboideus',
     'Infraspinatus',
-    'infraspinatus',
     'Longissimus_Thoracis',
-    'longissimus_thoracis',
     'Spinalis_Thoracis',
-    'spinalis_thoracis',
-    // Πρόσθεσε περισσότερους εδώ αν χρειάζεται
   ]), []);
-
-  // Ομαδοποίηση meshes σε έναν μυ (πολλά meshes -> ένα όνομα)
-  const meshGrouping = useMemo(() => ({
-    'Psoas_Major': 'Psoas',
-    'Psoas_Minor': 'Psoas',
-    'psoas_major': 'Psoas',
-    'psoas_minor': 'Psoas',
-    'Rhomboideus_Major': 'Rhomboideus',
-    'Rhomboideus_Minor': 'Rhomboideus',
-    'rhomboideus_major': 'Rhomboideus',
-    'rhomboideus_minor': 'Rhomboideus',
-    // Σύμπλεγμα Δικεφάλων Μηριαίων (Hamstrings)
-    'Semimembranosus': 'Hamstrings_Complex',
-    'semimembranosus': 'Hamstrings_Complex',
-    'Semitendinosus': 'Hamstrings_Complex',
-    'semitendinosus': 'Hamstrings_Complex',
-    'Biceps_Femoris_Long_Head': 'Hamstrings_Complex',
-    'biceps_femoris_long_head': 'Hamstrings_Complex',
-  }), []);
-
-  // Συνάρτηση για να πάρει το grouped name
-  const getGroupedMeshName = useCallback((meshName: string) => {
-    return meshGrouping[meshName as keyof typeof meshGrouping] || meshName;
-  }, [meshGrouping]);
 
   const handleClick = useCallback((event: any) => {
     event.stopPropagation();
@@ -213,82 +194,67 @@ function InteractiveHumanModel({
     const intersects = raycaster.intersectObject(obj, true);
     
     if (intersects.length > 0) {
-      let targetIntersect = intersects[0];
-      let baseMeshName = targetIntersect.object.name || 'unnamed';
+      let targetMeshName: string | null = null;
       
-      // Αν υπάρχει ενεργό search, βρες τον ΠΡΩΤΟ mesh που ταιριάζει με το search
-      if (matchesSearch.size > 0) {
+      // If we have a selected search mesh, only accept clicks on that mesh
+      if (selectedSearchMesh) {
         const matchingIntersect = intersects.find(intersect => {
           const name = intersect.object.name || 'unnamed';
-          return matchesSearch.has(name);
+          return name === selectedSearchMesh;
         });
         
-        if (!matchingIntersect) {
-          console.log('⚠️ Κλικ αγνοήθηκε - κανένας μυς δεν ταιριάζει με την αναζήτηση');
+        if (matchingIntersect) {
+          targetMeshName = selectedSearchMesh;
+        } else {
+          console.log('⚠️ Κλικ μόνο στο επιλεγμένο mesh:', selectedSearchMesh);
           return;
         }
-        
-        targetIntersect = matchingIntersect;
-        baseMeshName = targetIntersect.object.name || 'unnamed';
+      } else {
+        // No specific selection - use first intersect
+        targetMeshName = intersects[0].object.name || 'unnamed';
       }
       
-      // Εφαρμογή grouping (π.χ. psoas_major -> Psoas)
-      const groupedName = getGroupedMeshName(baseMeshName);
+      if (!targetMeshName) return;
       
-      // Έλεγχος αν ο μυς έχει υπο-μέρη (π.χ. Trapezius)
-      if (musclesWithSubParts[groupedName]) {
-        console.log('🎯 Clicked muscle with sub-parts:', groupedName);
-        if (onShowSubPartSelector) {
-          onShowSubPartSelector(groupedName, 'Left'); // side param ignored now
-        }
-        return;
-      }
+      console.log('🎯 Clicked exact mesh:', targetMeshName);
       
-      // Αν είναι midline muscle, δεν χρειάζεται επιλογή πλευράς
-      if (midlineMuscles.has(groupedName)) {
-        console.log('🎯 Clicked midline muscle:', groupedName);
+      // Check if midline muscle (no side needed)
+      if (midlineMuscles.has(targetMeshName)) {
         if (onMeshClick) {
-          onMeshClick(groupedName);
+          onMeshClick(targetMeshName);
         }
         return;
       }
       
-      // Μη-κεντρικός μυς: στέλνουμε το base name και το parent component θα δείξει popup επιβεβαίωσης
-      console.log('🎯 Clicked mesh:', baseMeshName, '| Grouped:', groupedName, '| Needs side confirmation');
-      
+      // Non-midline: needs side confirmation
       if (onMeshClick) {
-        // Send with __NEEDS_SIDE__ marker so parent shows SideConfirmation popup
-        onMeshClick(`${groupedName}__NEEDS_SIDE__`);
+        onMeshClick(`${targetMeshName}__NEEDS_SIDE__`);
       }
     }
-  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, matchesSearch, getGroupedMeshName, onShowSubPartSelector]);
+  }, [isSelecting, raycaster, camera, pointer, obj, onMeshClick, midlineMuscles, selectedSearchMesh]);
 
   const handlePointerMove = useCallback((event: any) => {
     raycaster.setFromCamera(pointer, camera);
     const intersects = raycaster.intersectObject(obj, true);
     
     if (intersects.length > 0) {
-      const hoveredObject = intersects[0].object as THREE.Mesh;
-      const meshName = hoveredObject.name || 'unnamed';
-      const point = intersects[0].point;
+      const meshName = intersects[0].object.name || 'unnamed';
       
-      // Εφαρμογή grouping
-      const groupedName = getGroupedMeshName(meshName);
-      
-      // Έλεγχος αν έχει υπο-μέρη
-      if (musclesWithSubParts[groupedName]) {
-        const side = point.x > 0 ? 'Left' : 'Right';
-        setHoveredMesh(`${musclesWithSubParts[groupedName].name} (${side === 'Left' ? 'Αριστερά' : 'Δεξιά'})`);
-      } else if (midlineMuscles.has(groupedName)) {
-        setHoveredMesh(groupedName);
+      // If we have a selected mesh, only show that one
+      if (selectedSearchMesh) {
+        const matchingIntersect = intersects.find(i => i.object.name === selectedSearchMesh);
+        if (matchingIntersect) {
+          setHoveredMesh(selectedSearchMesh);
+        } else {
+          setHoveredMesh(null);
+        }
       } else {
-        const side = point.x > 0 ? 'Left' : 'Right';
-        setHoveredMesh(`${groupedName} (${side})`);
+        setHoveredMesh(meshName);
       }
     } else {
       setHoveredMesh(null);
     }
-  }, [raycaster, camera, pointer, obj, midlineMuscles, getGroupedMeshName]);
+  }, [raycaster, camera, pointer, obj, selectedSearchMesh]);
 
   return (
     <group>
@@ -441,8 +407,9 @@ interface Muscle3DCanvasProps {
   onMeshClick?: (meshName: string) => void;
   searchQuery: string;
   mappedMeshNames: string[];
-  onSearchResults?: (count: number) => void;
+  onSearchResults?: (count: number, matches: string[]) => void;
   onMeshNamesLoaded?: (names: string[]) => void;
+  selectedSearchMesh?: string | null;
 }
 
 const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
@@ -452,9 +419,9 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
   searchQuery,
   mappedMeshNames,
   onSearchResults,
-  onMeshNamesLoaded
+  onMeshNamesLoaded,
+  selectedSearchMesh
 }) => {
-  const [subPartSelector, setSubPartSelector] = useState<{ muscleName: string } | null>(null);
   const [sideConfirmation, setSideConfirmation] = useState<{ muscleName: string } | null>(null);
   const [viewSide, setViewSide] = useState<ViewSide>('front');
   const orbitControlsRef = useRef<OrbitControlsImpl>(null);
@@ -469,26 +436,11 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
     }, 100);
     return () => clearInterval(interval);
   }, []);
-  const handleShowSubPartSelector = useCallback((muscleName: string, _side: 'Left' | 'Right') => {
-    // side ignored now - we show the sub-part popup without side
-    setSubPartSelector({ muscleName });
-  }, []);
 
   // Called when user needs to confirm the side (Left/Right)
   const handleShowSideConfirmation = useCallback((muscleName: string) => {
     setSideConfirmation({ muscleName });
   }, []);
-
-  const handleSubPartSelect = useCallback((fullName: string) => {
-    setSubPartSelector(null);
-    // Check if needs side confirmation
-    if (fullName.includes('__NEEDS_SIDE__')) {
-      const baseName = fullName.replace('__NEEDS_SIDE__', '');
-      handleShowSideConfirmation(baseName);
-    } else if (onMeshClick) {
-      onMeshClick(fullName);
-    }
-  }, [onMeshClick, handleShowSideConfirmation]);
 
   const handleSideSelect = useCallback((fullName: string) => {
     setSideConfirmation(null);
@@ -506,7 +458,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
       return;
     }
     
-    // Midline muscles or already-sided names pass through directly
+    // Midline muscles pass through directly
     if (onMeshClick) {
       onMeshClick(meshName);
     }
@@ -529,7 +481,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
             mappedMeshNames={mappedMeshNames}
             onSearchResults={onSearchResults}
             onMeshNamesLoaded={onMeshNamesLoaded}
-            onShowSubPartSelector={handleShowSubPartSelector}
+            selectedSearchMesh={selectedSearchMesh}
           />
         </Suspense>
         <OrbitControls 
@@ -541,15 +493,6 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
         />
       </Canvas>
       
-      {/* Sub-Part Selector Popup */}
-      {subPartSelector && (
-        <SubPartSelector
-          muscleName={subPartSelector.muscleName}
-          onSelect={handleSubPartSelect}
-          onClose={() => setSubPartSelector(null)}
-        />
-      )}
-
       {/* Side Confirmation Popup */}
       {sideConfirmation && (
         <SideConfirmation
@@ -560,12 +503,12 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
         />
       )}
       
-      {/* Overlay instructions */}
-      {isSelecting && selectedMuscleName && (
-        <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 bg-[#00ffba] text-black px-2 sm:px-4 py-1 sm:py-2 rounded-none text-xs sm:text-sm font-medium max-w-[90%] text-center">
-          <span className="hidden sm:inline">Κάνε click στον μυ: </span>
+      {/* Overlay instructions - show selected mesh */}
+      {isSelecting && selectedSearchMesh && (
+        <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 bg-[#00ff00] text-black px-2 sm:px-4 py-1 sm:py-2 rounded-none text-xs sm:text-sm font-medium max-w-[90%] text-center">
+          <span className="hidden sm:inline">Κάνε click στο: </span>
           <span className="sm:hidden">Click: </span>
-          {selectedMuscleName}
+          {selectedSearchMesh}
         </div>
       )}
 
@@ -578,6 +521,10 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
         <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
           <div className="w-2.5 h-2.5 rounded-full bg-[#00ffba]"></div>
           <span className="text-white/80">Αποτελέσματα αναζήτησης</span>
+        </div>
+        <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#00ff00]"></div>
+          <span className="text-white/80">Επιλεγμένος μυς</span>
         </div>
       </div>
     </div>
