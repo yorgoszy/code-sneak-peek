@@ -57,7 +57,8 @@ function InteractiveHumanModel({
   onSearchResults,
   onMeshNamesLoaded,
   selectedSearchMesh,
-  onShowSubPartSelector
+  onShowSubPartSelector,
+  isolateMode
 }: { 
   isSelecting: boolean;
   onMeshClick?: (meshName: string) => void;
@@ -67,6 +68,7 @@ function InteractiveHumanModel({
   onMeshNamesLoaded?: (names: string[]) => void;
   selectedSearchMesh?: string | null;
   onShowSubPartSelector?: (meshName: string, side: 'Left' | 'Right') => void;
+  isolateMode?: boolean;
 }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
   const { raycaster, camera, pointer } = useThree();
@@ -77,6 +79,20 @@ function InteractiveHumanModel({
   const getBaseMeshName = (fullName: string) => {
     return fullName.replace(/_Left$|_Right$/, '');
   };
+  
+  // Μύες που δεν χρειάζονται διαχωρισμό Left/Right (κεντρικοί μύες)
+  const midlineMuscles = useMemo(() => new Set([
+    'Latissimus_Dorsi',
+    'Rectus_Abdominis',
+    'Erector_Spinae',
+    'Sternum',
+    'Splenius_Capitis',
+    'Splenius_Cervicis',
+    'Rhomboideus',
+    'Infraspinatus',
+    'Longissimus_Thoracis',
+    'Spinalis_Thoracis',
+  ]), []);
 
   // Check if mesh matches search query
   const matchesSearch = useMemo(() => {
@@ -124,10 +140,19 @@ function InteractiveHumanModel({
       if (child instanceof THREE.Mesh) {
         const meshName = child.name || 'unnamed';
         
-        child.visible = true;
-        
         // Check if this is the selected mesh from search
         const isSelectedMesh = selectedSearchMesh === meshName;
+        
+        // In isolate mode, hide everything except selected mesh
+        if (isolateMode && selectedSearchMesh) {
+          if (!isSelectedMesh) {
+            child.visible = false;
+            return;
+          }
+          child.visible = true;
+        } else {
+          child.visible = true;
+        }
         
         // Check if this mesh is mapped
         const isMapped = mappedMeshNames.some(mapped => 
@@ -137,15 +162,46 @@ function InteractiveHumanModel({
         // Check if matches search (but not selected)
         const matchesSearchQuery = matchesSearch.has(meshName);
         
+        // Determine mesh center position for left/right coloring
+        const geometry = child.geometry;
+        geometry.computeBoundingBox();
+        const center = new THREE.Vector3();
+        geometry.boundingBox?.getCenter(center);
+        child.localToWorld(center);
+        
+        // Check if midline muscle
+        const isMidline = midlineMuscles.has(meshName);
+        
         if (isSelectedMesh) {
-          // Bright highlight for selected mesh - BRIGHT GREEN with strong glow
-          child.material = new THREE.MeshStandardMaterial({
-            color: '#00ff00',
-            roughness: 0.3,
-            metalness: 0.4,
-            emissive: '#00ff00',
-            emissiveIntensity: 0.8,
-          });
+          // Selected mesh: ροζ για x<0, πράσινο για x>0, άσπρο για κεντρικούς
+          if (isMidline) {
+            // Κεντρικός μυς = άσπρο
+            child.material = new THREE.MeshStandardMaterial({
+              color: '#ffffff',
+              roughness: 0.3,
+              metalness: 0.4,
+              emissive: '#ffffff',
+              emissiveIntensity: 0.5,
+            });
+          } else if (center.x < 0) {
+            // Αριστερή πλευρά (x<0) = ροζ
+            child.material = new THREE.MeshStandardMaterial({
+              color: '#ff69b4',
+              roughness: 0.3,
+              metalness: 0.4,
+              emissive: '#ff69b4',
+              emissiveIntensity: 0.6,
+            });
+          } else {
+            // Δεξιά πλευρά (x>0) = πράσινο
+            child.material = new THREE.MeshStandardMaterial({
+              color: '#00ff00',
+              roughness: 0.3,
+              metalness: 0.4,
+              emissive: '#00ff00',
+              emissiveIntensity: 0.6,
+            });
+          }
         } else if (matchesSearchQuery && !selectedSearchMesh) {
           // Cyan highlight for search matches (only if no specific selection)
           child.material = new THREE.MeshStandardMaterial({
@@ -169,21 +225,8 @@ function InteractiveHumanModel({
         }
       }
     });
-  }, [obj, matchesSearch, mappedMeshNames, selectedSearchMesh]);
+  }, [obj, matchesSearch, mappedMeshNames, selectedSearchMesh, isolateMode, midlineMuscles]);
 
-  // Μύες που δεν χρειάζονται διαχωρισμό Left/Right (κεντρικοί μύες)
-  const midlineMuscles = useMemo(() => new Set([
-    'Latissimus_Dorsi',
-    'Rectus_Abdominis',
-    'Erector_Spinae',
-    'Sternum',
-    'Splenius_Capitis',
-    'Splenius_Cervicis',
-    'Rhomboideus',
-    'Infraspinatus',
-    'Longissimus_Thoracis',
-    'Spinalis_Thoracis',
-  ]), []);
 
   const handleClick = useCallback((event: any) => {
     event.stopPropagation();
@@ -424,6 +467,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
 }) => {
   const [sideConfirmation, setSideConfirmation] = useState<{ muscleName: string } | null>(null);
   const [viewSide, setViewSide] = useState<ViewSide>('front');
+  const [isolateMode, setIsolateMode] = useState(false);
   const orbitControlsRef = useRef<OrbitControlsImpl>(null);
 
   // Update view side periodically
@@ -482,6 +526,7 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
             onSearchResults={onSearchResults}
             onMeshNamesLoaded={onMeshNamesLoaded}
             selectedSearchMesh={selectedSearchMesh}
+            isolateMode={isolateMode}
           />
         </Suspense>
         <OrbitControls 
@@ -512,6 +557,20 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
         </div>
       )}
 
+      {/* Isolate Mode Toggle */}
+      {selectedSearchMesh && (
+        <button
+          onClick={() => setIsolateMode(!isolateMode)}
+          className={`absolute top-2 right-2 px-3 py-2 text-xs font-medium transition-colors rounded-none ${
+            isolateMode 
+              ? 'bg-[#00ffba] text-black' 
+              : 'bg-black/60 text-white border border-white/30 hover:border-[#00ffba]'
+          }`}
+        >
+          {isolateMode ? '👁 Εμφάνιση Όλων' : '🎯 Απομόνωση'}
+        </button>
+      )}
+
       {/* Legend */}
       <div className="absolute bottom-2 left-2 flex flex-col gap-1 text-[10px] sm:text-xs">
         <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
@@ -522,10 +581,22 @@ const Muscle3DCanvas: React.FC<Muscle3DCanvasProps> = ({
           <div className="w-2.5 h-2.5 rounded-full bg-[#00ffba]"></div>
           <span className="text-white/80">Αποτελέσματα αναζήτησης</span>
         </div>
-        <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
-          <div className="w-2.5 h-2.5 rounded-full bg-[#00ff00]"></div>
-          <span className="text-white/80">Επιλεγμένος μυς</span>
-        </div>
+        {selectedSearchMesh && (
+          <>
+            <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#00ff00]"></div>
+              <span className="text-white/80">Δεξιά (x&gt;0)</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#ff69b4]"></div>
+              <span className="text-white/80">Αριστερά (x&lt;0)</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-black/60 px-2 py-1">
+              <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+              <span className="text-white/80">Κεντρικός</span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
