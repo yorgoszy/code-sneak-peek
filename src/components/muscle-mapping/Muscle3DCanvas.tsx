@@ -132,8 +132,8 @@ const TrapeziusBoundaryOverlay: React.FC<TrapeziusBoundaryOverlayProps> = ({
         {/* Dashed line effect */}
         <div className="absolute inset-0 border-t-2 border-dashed border-red-300" />
         
-        {/* Handle */}
-        <div className="absolute left-1/2 -translate-x-1/2 bg-red-500 text-white text-[10px] px-2 py-0.5 font-mono whitespace-nowrap opacity-80 group-hover:opacity-100">
+        {/* Handle - positioned on the right */}
+        <div className="absolute right-16 bg-red-500 text-white text-[10px] px-2 py-0.5 font-mono whitespace-nowrap opacity-80 group-hover:opacity-100">
           Άνω/Μέση Y={upperMiddle.toFixed(2)}
         </div>
         
@@ -151,8 +151,8 @@ const TrapeziusBoundaryOverlay: React.FC<TrapeziusBoundaryOverlayProps> = ({
         {/* Dashed line effect */}
         <div className="absolute inset-0 border-t-2 border-dashed border-blue-300" />
         
-        {/* Handle */}
-        <div className="absolute left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] px-2 py-0.5 font-mono whitespace-nowrap opacity-80 group-hover:opacity-100">
+        {/* Handle - positioned on the right */}
+        <div className="absolute right-16 bg-blue-500 text-white text-[10px] px-2 py-0.5 font-mono whitespace-nowrap opacity-80 group-hover:opacity-100">
           Μέση/Κάτω Y={middleLower.toFixed(2)}
         </div>
         
