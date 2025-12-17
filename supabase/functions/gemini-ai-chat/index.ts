@@ -32,6 +32,29 @@ serve(async (req) => {
 
     console.log('🚀 Gemini AI request for user:', userId, 'message:', message);
 
+    // Fetch user's basic info (birth_date, gender)
+    const { data: userData, error: userError } = await supabase
+      .from('app_users')
+      .select('birth_date, gender, name')
+      .eq('id', userId)
+      .single();
+
+    if (userError) {
+      console.error('Error fetching user data:', userError);
+    }
+
+    // Calculate age from birth_date
+    let userAge = null;
+    if (userData?.birth_date) {
+      const birthDate = new Date(userData.birth_date);
+      const today = new Date();
+      userAge = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        userAge--;
+      }
+    }
+
     // Fetch user's exercises from their active programs
     const { data: userExercisesData, error: userExercisesError } = await supabase
       .from('program_assignments')
@@ -279,8 +302,22 @@ serve(async (req) => {
       anthropometricContext = `\n\nΑνθρωπομετρικό Ιστορικό:\n${anthropometricList}`;
     }
 
+    // Create user profile context
+    let userProfileContext = '';
+    if (userData) {
+      const parts = [];
+      if (userAge) parts.push(`Ηλικία: ${userAge} ετών`);
+      if (userData.gender) {
+        const genderText = userData.gender === 'male' ? 'Άνδρας' : userData.gender === 'female' ? 'Γυναίκα' : userData.gender;
+        parts.push(`Φύλο: ${genderText}`);
+      }
+      if (parts.length > 0) {
+        userProfileContext = `\n\nΠροφίλ Χρήστη:\n${parts.join('\n')}`;
+      }
+    }
+
     // Enhanced system prompt with user's specific exercises
-    const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, και το πλήρες ιστορικό προόδου του χρήστη.
+    const systemPrompt = `Είσαι ο "RID AI Προπονητής", ένας εξειδικευμένος AI βοηθός για fitness και διατροφή. Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, και το πλήρες ιστορικό προόδου του χρήστη.${userProfileContext}
 
 Βοηθάς με:
 1. Διατροφικές συμβουλές και σχεδιασμό γευμάτων
