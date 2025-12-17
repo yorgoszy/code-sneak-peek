@@ -51,6 +51,26 @@ serve(async (req) => {
     const callerUserData = await callerUserResponse.json();
     const isAdmin = callerUserData[0]?.role === 'admin';
 
+    // 🏋️ ΦΟΡΤΩΣΗ ΤΡΑΠΕΖΑΣ ΑΣΚΗΣΕΩΝ (για δημιουργία προγραμμάτων)
+    let exerciseDatabaseContext = '';
+    if (isAdmin) {
+      const exercisesResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/exercises?select=id,name&order=name.asc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const exercisesData = await exercisesResponse.json();
+      if (Array.isArray(exercisesData) && exercisesData.length > 0) {
+        console.log(`✅ Loaded ${exercisesData.length} exercises from database`);
+        const exerciseNames = exercisesData.map((e: any) => e.name).join(', ');
+        exerciseDatabaseContext = `\n\n📚 ΔΙΑΘΕΣΙΜΕΣ ΑΣΚΗΣΕΙΣ ΣΤΗΝ ΤΡΑΠΕΖΑ (${exercisesData.length} ασκήσεις):\n${exerciseNames}\n\n⚠️ ΧΡΗΣΙΜΟΠΟΙΗΣΕ ΜΟΝΟ ασκήσεις από αυτή τη λίστα! Αν δεν υπάρχει, χρησιμοποίησε κάτι παρόμοιο.`;
+      }
+    }
+
     // Αν είναι admin και έχει δώσει targetUserId, χρησιμοποιούμε αυτό
     // Αλλιώς χρησιμοποιούμε το δικό του userId
     const effectiveUserId = (isAdmin && targetUserId) ? targetUserId : userId;
@@ -3271,6 +3291,7 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
 🏋️ ΔΥΝΑΤΟΤΗΤΑ ΔΗΜΙΟΥΡΓΙΑΣ & ΑΝΑΘΕΣΗΣ ΠΡΟΓΡΑΜΜΑΤΩΝ:
 ${isAdmin ? `
 Ως admin, μπορείς να ΔΗΜΙΟΥΡΓΕΙΣ και να ΑΝΑΘΕΤΕΙΣ προγράμματα προπόνησης!
+${exerciseDatabaseContext}
 
 ⚠️ ΚΡΙΣΙΜΟ: Όταν δημιουργείς πρόγραμμα, το JSON ΠΡΕΠΕΙ να είναι ΠΛΗΡΕΣ και ΕΓΚΥΡΟ!
 - ΜΗΝ κόβεις το JSON στη μέση
@@ -3324,7 +3345,7 @@ ${isAdmin ? `
 
 ΚΑΝΟΝΕΣ:
 - user_id: Μπορείς να βάλεις το ΟΝΟΜΑ του αθλητή (πχ "HYPERKIDS") - το σύστημα το βρίσκει αυτόματα
-- Χρησιμοποίησε ΜΟΝΟ ασκήσεις που υπάρχουν στην τράπεζα ασκήσεων
+- Χρησιμοποίησε ΜΟΝΟ ασκήσεις από την ΤΡΑΠΕΖΑ ΑΣΚΗΣΕΩΝ παραπάνω!
 - training_dates σε format "YYYY-MM-DD"
 - ΠΑΝΤΑ κλείνε σωστά όλες τις αγκύλες και brackets
 - Αν δεν ξέρεις λεπτομέρειες, ΡΩΤΑ πρώτα τον χρήστη
