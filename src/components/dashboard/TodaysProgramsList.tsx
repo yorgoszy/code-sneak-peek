@@ -40,6 +40,19 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
     return currentStatus;
   };
 
+  const getRpeScore = (assignmentId: string): number | null => {
+    const completion = completions.find(c => 
+      c.assignment_id === assignmentId && c.scheduled_date === todayStr
+    );
+    return completion?.rpe_score || null;
+  };
+
+  const getRpeColor = (rpe: number) => {
+    if (rpe <= 6) return 'bg-green-500';
+    if (rpe <= 8) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   return (
     <div className="space-y-2">
       {programs.map((assignment) => {
@@ -61,8 +74,13 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
               </Avatar>
               
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-xs truncate">
+                <div className="font-medium text-xs truncate flex items-center gap-1">
                   {assignment.app_users?.name}
+                  {isCompleted && getRpeScore(assignment.id) && (
+                    <span className={`text-[9px] text-white px-1 py-0.5 rounded-none font-bold ${getRpeColor(getRpeScore(assignment.id)!)} flex-shrink-0`}>
+                      RPE {getRpeScore(assignment.id)}
+                    </span>
+                  )}
                 </div>
                 <div className="text-[10px] text-gray-600 truncate">
                   {assignment.programs?.name}
