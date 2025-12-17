@@ -7,6 +7,34 @@ import { BlockCardContent } from './BlockCardContent';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { Exercise, Block } from '../types';
 
+// Training types labels - πρέπει να ταιριάζουν με το BlockCardHeader
+const TRAINING_TYPE_LABELS: Record<string, string> = {
+  'warm up': 'warm up',
+  'pillar prep': 'pillar prep',
+  'movement prep': 'mov prep',
+  activation: 'activation',
+  plyos: 'plyos',
+  'movement skills': 'mov skills',
+  'med ball': 'med ball',
+  power: 'power',
+  str: 'str',
+  'str/spd': 'str/spd',
+  pwr: 'pwr',
+  'spd/str': 'spd/str',
+  spd: 'spd',
+  'str/end': 'str/end',
+  'pwr/end': 'pwr/end',
+  'spd/end': 'spd/end',
+  end: 'end',
+  hpr: 'hpr',
+  mobility: 'mobility',
+  'neural act': 'neural act',
+  stability: 'stability',
+  recovery: 'rec',
+  accessory: 'acc',
+  rotational: 'rot',
+};
+
 interface BlockCardProps {
   block: Block;
   exercises: Exercise[];
@@ -77,6 +105,15 @@ export const BlockCard: React.FC<BlockCardProps> = ({
     setShowExerciseDialog(false);
   };
 
+  // Όταν αλλάζει το training type, αλλάζει και το όνομα του block
+  const handleTrainingTypeChange = (trainingType: string) => {
+    onUpdateBlockTrainingType(trainingType);
+    // Ενημέρωση του ονόματος με το label του training type
+    const newName = TRAINING_TYPE_LABELS[trainingType] || trainingType;
+    onUpdateBlockName(newName);
+    setEditingName(newName);
+  };
+
   const exercisesCount = block.program_exercises.length;
 
   return (
@@ -100,7 +137,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
             onAddExercise={handleAddExerciseClick}
             onDuplicateBlock={onDuplicateBlock}
             onRemoveBlock={onRemoveBlock}
-            onTrainingTypeChange={onUpdateBlockTrainingType}
+            onTrainingTypeChange={handleTrainingTypeChange}
             onWorkoutFormatChange={onUpdateBlockWorkoutFormat}
             onWorkoutDurationChange={onUpdateBlockWorkoutDuration}
             onBlockSetsChange={onUpdateBlockSets}
