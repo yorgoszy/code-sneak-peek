@@ -3504,34 +3504,72 @@ ${exerciseDatabaseContext}
     const reader = response.body?.getReader();
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
-    
+
     let fullResponse = "";
 
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          while (true) {
+          // ✅ Robust SSE parsing (handles partial JSON across chunks)
+          let textBuffer = "";
+          let streamDone = false;
+
+          while (!streamDone) {
             const { done, value } = await reader!.read();
             if (done) break;
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
+            textBuffer += decoder.decode(value, { stream: true });
 
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6);
-                if (data === '[DONE]') continue;
-                
-                try {
-                  const parsed = JSON.parse(data);
-                  const content = parsed.choices?.[0]?.delta?.content;
-                  if (content) {
-                    fullResponse += content;
-                    controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-                  }
-                } catch (e) {
-                  // Ignore parse errors for incomplete chunks
-                }
+            let newlineIndex: number;
+            while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+              let line = textBuffer.slice(0, newlineIndex);
+              textBuffer = textBuffer.slice(newlineIndex + 1);
+
+              if (line.endsWith("\r")) line = line.slice(0, -1);
+              if (line.startsWith(":")) continue; // keep-alive
+              if (line.trim() === "") continue;
+              if (!line.startsWith("data: ")) continue;
+
+              const data = line.slice(6).trim();
+              if (data === "[DONE]") {
+                streamDone = true;
+                break;
+              }
+
+              try {
+                const parsed = JSON.parse(data);
+                const content = parsed.choices?.[0]?.delta?.content;
+                if (content) fullResponse += content;
+
+                // Προωθούμε ακριβώς το ίδιο SSE line στον client
+                controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+              } catch {
+                // Incomplete JSON split across chunks: put back & wait for more
+                textBuffer = line + "\n" + textBuffer;
+                break;
+              }
+            }
+          }
+
+          // Final flush (in case stream ended without trailing newline)
+          if (textBuffer.trim()) {
+            for (let raw of textBuffer.split("\n")) {
+              if (!raw) continue;
+              if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+              if (raw.startsWith(":")) continue;
+              if (raw.trim() === "") continue;
+              if (!raw.startsWith("data: ")) continue;
+
+              const data = raw.slice(6).trim();
+              if (data === "[DONE]") continue;
+
+              try {
+                const parsed = JSON.parse(data);
+                const content = parsed.choices?.[0]?.delta?.content;
+                if (content) fullResponse += content;
+                controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+              } catch {
+                // ignore leftovers
               }
             }
           }
