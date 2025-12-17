@@ -41,6 +41,19 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
     return currentStatus;
   };
 
+  const getRpeScore = (assignment: any): number | null => {
+    const completion = workoutCompletions.find(c => 
+      c.assignment_id === assignment.id && c.scheduled_date === todayStr
+    );
+    return completion?.rpe_score || null;
+  };
+
+  const getRpeColor = (rpe: number) => {
+    if (rpe <= 6) return 'bg-green-500';
+    if (rpe <= 8) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   // Μετατρέπουμε το todayStr σε Date
   const selectedDateObj = new Date(todayStr);
   const isTodaySelected = isToday(selectedDateObj);
@@ -99,7 +112,14 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
                     </Avatar>
                     
                     <div className="min-w-0 flex-1">
-                      <h4 className="font-medium text-sm truncate">{assignment.app_users?.name}</h4>
+                      <h4 className="font-medium text-sm truncate flex items-center gap-1">
+                        {assignment.app_users?.name}
+                        {status === 'completed' && getRpeScore(assignment) && (
+                          <span className={`text-[9px] text-white px-1 py-0.5 rounded-none font-bold ${getRpeColor(getRpeScore(assignment)!)} flex-shrink-0`}>
+                            RPE {getRpeScore(assignment)}
+                          </span>
+                        )}
+                      </h4>
                       <p className="text-xs text-gray-600 truncate">{assignment.programs?.name}</p>
                       {status !== 'completed' && (
                         <div className={`inline-block px-2 py-0.5 rounded-none text-xs mt-1 ${
