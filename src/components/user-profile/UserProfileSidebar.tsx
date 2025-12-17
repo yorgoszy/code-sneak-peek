@@ -14,7 +14,8 @@ import {
   TrendingUp,
   History,
   BookOpen,
-  Download
+  Download,
+  Utensils
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -266,6 +267,13 @@ export const UserProfileSidebar = forwardRef<
       icon: CalendarDays,
       label: t('sidebar.onlineBooking'),
       key: "online-booking",
+      badge: null,
+      visible: true
+    },
+    {
+      icon: Utensils,
+      label: "Διατροφή",
+      key: "nutrition",
       badge: null,
       visible: true
     },
