@@ -362,6 +362,34 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
                     </div>
                   </div>
                 )}
+
+                {/* Muscles Need Stretching */}
+                {data.muscles_need_stretching && data.muscles_need_stretching.length > 0 && (
+                  <div>
+                    <p className="text-[9px] sm:text-xs text-muted-foreground mb-1">Μύες για Διάταση:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {data.muscles_need_stretching.map((muscle: string, i: number) => (
+                        <Badge key={i} variant="outline" className="rounded-none text-[8px] border-yellow-500 text-yellow-600 bg-yellow-50">
+                          {muscle}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Muscles Need Strengthening */}
+                {data.muscles_need_strengthening && data.muscles_need_strengthening.length > 0 && (
+                  <div>
+                    <p className="text-[9px] sm:text-xs text-muted-foreground mb-1">Μύες για Ενδυνάμωση:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {data.muscles_need_strengthening.map((muscle: string, i: number) => (
+                        <Badge key={i} variant="outline" className="rounded-none text-[8px] border-pink-500 text-pink-600 bg-pink-50">
+                          {muscle}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             )}
           </Card>
