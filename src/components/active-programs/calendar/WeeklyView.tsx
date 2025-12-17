@@ -11,6 +11,7 @@ interface ProgramData {
   assignmentId: string;
   userName: string;
   assignment: any;
+  rpeScore?: number | null;
 }
 
 interface WeeklyViewProps {
@@ -67,6 +68,12 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
     }
   };
 
+  const getRpeColor = (rpe: number) => {
+    if (rpe <= 6) return 'bg-green-500';
+    if (rpe <= 8) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   return (
     <div className="w-full">
       {/* Week Navigation - Smaller on mobile */}
@@ -119,11 +126,16 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
                 {dateProgramsWithStatus.slice(0, 6).map((program, i) => (
                   <div 
                     key={`${program.assignmentId}-${i}-${realtimeKey}`}
-                    className={`text-xs cursor-pointer hover:underline truncate ${getNameColor(program.status, program.date)}`}
+                    className={`text-xs cursor-pointer hover:underline flex items-center gap-0.5 ${getNameColor(program.status, program.date)}`}
                     onClick={(e) => onUserNameClick(program, e)}
                     style={{ fontSize: '10px', lineHeight: '12px' }}
                   >
-                    {program.userName.split(' ')[0]}
+                    <span className="truncate">{program.userName.split(' ')[0]}</span>
+                    {program.status === 'completed' && program.rpeScore && (
+                      <span className={`text-[8px] text-white px-0.5 rounded-none font-bold ${getRpeColor(program.rpeScore)} flex-shrink-0`}>
+                        {program.rpeScore}
+                      </span>
+                    )}
                   </div>
                 ))}
                 {dateProgramsWithStatus.length > 6 && (
