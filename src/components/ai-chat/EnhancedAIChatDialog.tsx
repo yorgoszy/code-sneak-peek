@@ -407,42 +407,42 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col p-0">
-        <DialogHeader className="p-6 pb-4 border-b">
-          <DialogTitle className="flex items-center justify-between">
+      <DialogContent className="w-[95vw] max-w-2xl h-[90vh] sm:h-[80vh] rounded-none flex flex-col p-0">
+        <DialogHeader className="p-3 sm:p-6 pb-3 sm:pb-4 border-b">
+          <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Brain className="w-5 h-5 text-[#cb8954]" />
-              RidAI Προπονητής
+              <Brain className="w-5 h-5 text-[#cb8954] flex-shrink-0" />
+              <span className="truncate">RidAI Προπονητής</span>
               {athleteName && (
-                <span className="text-sm font-normal text-gray-600">
+                <span className="text-xs sm:text-sm font-normal text-gray-600 truncate hidden sm:inline">
                   για {athleteName}
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               {isAdmin && (
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => setQuickAssignOpen(true)}
-                  className="rounded-none text-xs"
+                  className="rounded-none text-[10px] sm:text-xs h-7 px-2 sm:px-3"
                 >
                   <Wand2 className="w-3 h-3 mr-1" />
-                  Quick Assign
+                  <span className="hidden xs:inline">Quick</span> Assign
                 </Button>
               )}
               {isAdmin ? (
-                <Badge variant="default" className="bg-[#cb8954] text-white rounded-none">
+                <Badge variant="default" className="bg-[#cb8954] text-white rounded-none text-[10px] sm:text-xs">
                   <Crown className="w-3 h-3 mr-1" />
                   Admin
                 </Badge>
               ) : hasActiveSubscription ? (
-                <Badge variant="default" className="bg-[#00ffba] text-black rounded-none">
+                <Badge variant="default" className="bg-[#00ffba] text-black rounded-none text-[10px] sm:text-xs">
                   <Sparkles className="w-3 h-3 mr-1" />
                   Premium
                 </Badge>
               ) : (
-                <Badge variant="secondary" className="rounded-none">
+                <Badge variant="secondary" className="rounded-none text-[10px] sm:text-xs">
                   Βασική
                 </Badge>
               )}
@@ -451,8 +451,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         </DialogHeader>
 
         <div className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1 px-4">
-            <div className="space-y-4 py-4">
+          <ScrollArea className="flex-1 px-2 sm:px-4">
+            <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
               {isLoadingHistory ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin mr-2" />
@@ -464,36 +464,36 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
                     key={message.id}
                     className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    <div className={`flex gap-2 sm:gap-3 max-w-[90%] sm:max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                       <div className="flex-shrink-0">
                         {message.role === 'user' ? (
-                          <Avatar className="w-8 h-8">
+                          <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
                             <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
-                            <AvatarFallback className="bg-blue-500 text-white text-xs">
+                            <AvatarFallback className="bg-blue-500 text-white text-[10px] sm:text-xs">
                               {getUserInitials(athleteName)}
                             </AvatarFallback>
                           </Avatar>
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-[#cb8954] text-white flex items-center justify-center">
-                            <Brain className="w-4 h-4" />
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#cb8954] text-white flex items-center justify-center flex-shrink-0">
+                            <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
                           </div>
                         )}
                       </div>
-                      <div className={`p-3 rounded-lg ${
+                      <div className={`p-2 sm:p-3 rounded-lg ${
                         message.role === 'user'
                           ? 'bg-blue-500 text-white rounded-br-none'
                           : 'bg-gray-100 text-gray-900 rounded-bl-none'
                       }`}>
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{message.content}</p>
                         <div className="flex items-center justify-between mt-1">
-                          <p className="text-xs opacity-70">
+                          <p className="text-[10px] sm:text-xs opacity-70">
                             {message.timestamp.toLocaleTimeString('el-GR', { 
                               hour: '2-digit', 
                               minute: '2-digit' 
                             })}
                           </p>
                           {message.role === 'assistant' && (
-                            <span className="text-xs opacity-70 ml-2">
+                            <span className="text-[10px] sm:text-xs opacity-70 ml-2">
                               RidAI
                             </span>
                           )}
@@ -505,14 +505,14 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
               )}
               
               {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-[#cb8954] text-white flex items-center justify-center">
-                    <Brain className="w-4 h-4" />
+                <div className="flex gap-2 sm:gap-3 justify-start">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#cb8954] text-white flex items-center justify-center flex-shrink-0">
+                    <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
                   </div>
-                  <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-none">
+                  <div className="bg-gray-100 text-gray-900 p-2 sm:p-3 rounded-lg rounded-bl-none">
                     <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Το RidAI σκέφτεται έξυπνα...</span>
+                      <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                      <span className="text-xs sm:text-sm">Σκέφτομαι...</span>
                     </div>
                   </div>
                 </div>
@@ -522,19 +522,19 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             </div>
           </ScrollArea>
 
-          <div className="flex gap-2 p-4 border-t bg-white">
+          <div className="flex gap-2 p-2 sm:p-4 border-t bg-white">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ρώτα τον RidAI Προπονητή για προπόνηση, διατροφή, ανάκαμψη..."
-              className="rounded-none"
+              placeholder="Ρώτησε κάτι..."
+              className="rounded-none text-sm sm:text-base h-9 sm:h-10"
               disabled={isLoading || isLoadingHistory}
             />
             <Button
               onClick={sendMessage}
               disabled={!input.trim() || isLoading || isLoadingHistory}
-              className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
+              className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white h-9 sm:h-10 w-9 sm:w-10 p-0"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
