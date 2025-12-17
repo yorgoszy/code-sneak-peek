@@ -23,6 +23,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
   const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
   const [selectedProgramData, setSelectedProgramData] = useState<any>(null);
 
@@ -260,7 +261,6 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
             <CalendarDays className="h-4 w-4 md:h-5 md:w-5" />
             Ημερολόγιο Προπονήσεων
             {(() => {
-              const currentMonth = selectedDate || new Date();
               const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
               const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
               
@@ -295,6 +295,8 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
           <Calendar
             mode="single"
             selected={selectedDate}
+            month={currentMonth}
+            onMonthChange={setCurrentMonth}
             onDayClick={handleDayClick}
             locale={el}
             className="rounded-none border"
