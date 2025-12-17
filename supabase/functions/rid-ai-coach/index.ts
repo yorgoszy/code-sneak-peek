@@ -1733,7 +1733,7 @@ ${calendarDisplay}`;
     let functionalContext = '';
     if (!(isAdmin && !targetUserId)) {
       const functionalHistoryResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/functional_test_data?select=id,created_at,fms_score,posture_issues,squat_issues,single_leg_squat_issues,muscles_need_strengthening,muscles_need_stretching,sit_and_reach,shoulder_mobility_left,shoulder_mobility_right,flamingo_balance,functional_test_sessions!inner(user_id,test_date)&functional_test_sessions.user_id=eq.${effectiveUserId}&order=created_at.desc`,
+        `${SUPABASE_URL}/rest/v1/functional_test_data?select=id,created_at,fms_score,fms_detailed_scores,posture_issues,squat_issues,single_leg_squat_issues,muscles_need_strengthening,muscles_need_stretching,sit_and_reach,shoulder_mobility_left,shoulder_mobility_right,flamingo_balance,functional_test_sessions!inner(user_id,test_date)&functional_test_sessions.user_id=eq.${effectiveUserId}&order=created_at.desc`,
         {
           headers: {
             "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1746,13 +1746,36 @@ ${calendarDisplay}`;
       if (Array.isArray(functionalHistory) && functionalHistory.length > 0) {
         let functionalList = functionalHistory.map((test: any) => {
           const parts = [];
-          if (test.fms_score) parts.push(`FMS: ${test.fms_score}/21`);
+          if (test.fms_score) parts.push(`FMS Total: ${test.fms_score}/21`);
           if (test.sit_and_reach) parts.push(`Sit & Reach: ${test.sit_and_reach}cm`);
           if (test.shoulder_mobility_left) parts.push(`Ώμος Α: ${test.shoulder_mobility_left}cm`);
           if (test.shoulder_mobility_right) parts.push(`Ώμος Δ: ${test.shoulder_mobility_right}cm`);
           if (test.flamingo_balance) parts.push(`Ισορροπία: ${test.flamingo_balance}s`);
           const date = test.functional_test_sessions?.[0]?.test_date || test.created_at;
-          return `- ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})`;
+          
+          // Αναλυτικά FMS scores
+          let fmsDetails = '';
+          if (test.fms_detailed_scores && typeof test.fms_detailed_scores === 'object') {
+            const scores = test.fms_detailed_scores;
+            const fmsParts = [];
+            if (scores.deep_squat !== undefined) fmsParts.push(`Deep Squat: ${scores.deep_squat}`);
+            if (scores.hurdle_step_left !== undefined) fmsParts.push(`Hurdle L: ${scores.hurdle_step_left}`);
+            if (scores.hurdle_step_right !== undefined) fmsParts.push(`Hurdle R: ${scores.hurdle_step_right}`);
+            if (scores.inline_lunge_left !== undefined) fmsParts.push(`Lunge L: ${scores.inline_lunge_left}`);
+            if (scores.inline_lunge_right !== undefined) fmsParts.push(`Lunge R: ${scores.inline_lunge_right}`);
+            if (scores.shoulder_mobility_left !== undefined) fmsParts.push(`Shoulder Mob L: ${scores.shoulder_mobility_left}`);
+            if (scores.shoulder_mobility_right !== undefined) fmsParts.push(`Shoulder Mob R: ${scores.shoulder_mobility_right}`);
+            if (scores.active_straight_leg_raise_left !== undefined) fmsParts.push(`ASLR L: ${scores.active_straight_leg_raise_left}`);
+            if (scores.active_straight_leg_raise_right !== undefined) fmsParts.push(`ASLR R: ${scores.active_straight_leg_raise_right}`);
+            if (scores.trunk_stability_pushup !== undefined) fmsParts.push(`Trunk Stability: ${scores.trunk_stability_pushup}`);
+            if (scores.rotary_stability_left !== undefined) fmsParts.push(`Rotary L: ${scores.rotary_stability_left}`);
+            if (scores.rotary_stability_right !== undefined) fmsParts.push(`Rotary R: ${scores.rotary_stability_right}`);
+            if (fmsParts.length > 0) {
+              fmsDetails = `\n    📋 FMS Ασκήσεις: ${fmsParts.join(', ')}`;
+            }
+          }
+          
+          return `- ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})${fmsDetails}`;
         }).join('\n');
         
         // Πρόσθεση μυών που χρειάζονται προσοχή από το τελευταίο τεστ
@@ -2313,7 +2336,7 @@ ${calendarDisplay}`;
           
           // Λειτουργικά Τεστ
           const functionalResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/functional_test_data?select=id,created_at,fms_score,posture_issues,squat_issues,single_leg_squat_issues,muscles_need_strengthening,muscles_need_stretching,sit_and_reach,shoulder_mobility_left,shoulder_mobility_right,flamingo_balance,functional_test_sessions!inner(user_id,test_date)&functional_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
+            `${SUPABASE_URL}/rest/v1/functional_test_data?select=id,created_at,fms_score,fms_detailed_scores,posture_issues,squat_issues,single_leg_squat_issues,muscles_need_strengthening,muscles_need_stretching,sit_and_reach,shoulder_mobility_left,shoulder_mobility_right,flamingo_balance,functional_test_sessions!inner(user_id,test_date)&functional_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
             {
               headers: {
                 "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -2327,13 +2350,34 @@ ${calendarDisplay}`;
             adminProgressContext += '  🧘 Λειτουργικά Τεστ:\n';
             functionalData.forEach((test: any) => {
               const parts = [];
-              if (test.fms_score) parts.push(`FMS: ${test.fms_score}/21`);
+              if (test.fms_score) parts.push(`FMS Total: ${test.fms_score}/21`);
               if (test.sit_and_reach) parts.push(`Sit & Reach: ${test.sit_and_reach}cm`);
               if (test.shoulder_mobility_left) parts.push(`Ώμος Α: ${test.shoulder_mobility_left}cm`);
               if (test.shoulder_mobility_right) parts.push(`Ώμος Δ: ${test.shoulder_mobility_right}cm`);
               if (test.flamingo_balance) parts.push(`Ισορροπία: ${test.flamingo_balance}s`);
               const date = test.functional_test_sessions?.[0]?.test_date || test.created_at;
               adminProgressContext += `    - ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})\n`;
+              
+              // Αναλυτικά FMS scores
+              if (test.fms_detailed_scores && typeof test.fms_detailed_scores === 'object') {
+                const scores = test.fms_detailed_scores;
+                const fmsParts = [];
+                if (scores.deep_squat !== undefined) fmsParts.push(`Deep Squat: ${scores.deep_squat}`);
+                if (scores.hurdle_step_left !== undefined) fmsParts.push(`Hurdle L: ${scores.hurdle_step_left}`);
+                if (scores.hurdle_step_right !== undefined) fmsParts.push(`Hurdle R: ${scores.hurdle_step_right}`);
+                if (scores.inline_lunge_left !== undefined) fmsParts.push(`Lunge L: ${scores.inline_lunge_left}`);
+                if (scores.inline_lunge_right !== undefined) fmsParts.push(`Lunge R: ${scores.inline_lunge_right}`);
+                if (scores.shoulder_mobility_left !== undefined) fmsParts.push(`Shoulder Mob L: ${scores.shoulder_mobility_left}`);
+                if (scores.shoulder_mobility_right !== undefined) fmsParts.push(`Shoulder Mob R: ${scores.shoulder_mobility_right}`);
+                if (scores.active_straight_leg_raise_left !== undefined) fmsParts.push(`ASLR L: ${scores.active_straight_leg_raise_left}`);
+                if (scores.active_straight_leg_raise_right !== undefined) fmsParts.push(`ASLR R: ${scores.active_straight_leg_raise_right}`);
+                if (scores.trunk_stability_pushup !== undefined) fmsParts.push(`Trunk Stability: ${scores.trunk_stability_pushup}`);
+                if (scores.rotary_stability_left !== undefined) fmsParts.push(`Rotary L: ${scores.rotary_stability_left}`);
+                if (scores.rotary_stability_right !== undefined) fmsParts.push(`Rotary R: ${scores.rotary_stability_right}`);
+                if (fmsParts.length > 0) {
+                  adminProgressContext += `      📋 FMS Ασκήσεις: ${fmsParts.join(', ')}\n`;
+                }
+              }
               
               // Προσθήκη μυών που χρειάζονται προσοχή
               if (test.muscles_need_strengthening && test.muscles_need_strengthening.length > 0) {
