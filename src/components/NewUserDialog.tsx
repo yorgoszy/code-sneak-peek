@@ -38,6 +38,7 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("");
+  const [gender, setGender] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
@@ -66,6 +67,7 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
 
       // Add optional fields only if they have values
       if (phone.trim()) userData.phone = phone.trim();
+      if (gender) userData.gender = gender;
       if (birthDate) userData.birth_date = birthDate;
       if (photoUrl) userData.photo_url = photoUrl;
 
@@ -109,6 +111,7 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
       setEmail("");
       setPhone("");
       setRole("");
+      setGender("");
       setBirthDate("");
       setPhotoUrl(null);
       setChildren([]);
@@ -194,7 +197,7 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
           <div className="space-y-2">
             <Label htmlFor="role">Ρόλος</Label>
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger>
+              <SelectTrigger className="rounded-none">
                 <SelectValue placeholder="Επιλέξτε ρόλο" />
               </SelectTrigger>
               <SelectContent>
@@ -203,6 +206,19 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
                 <SelectItem value="athlete">Athlete</SelectItem>
                 <SelectItem value="general">General</SelectItem>
                 <SelectItem value="parent">Parent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="gender">Φύλο</Label>
+            <Select value={gender} onValueChange={setGender}>
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε φύλο" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Άνδρας</SelectItem>
+                <SelectItem value="female">Γυναίκα</SelectItem>
               </SelectContent>
             </Select>
           </div>
