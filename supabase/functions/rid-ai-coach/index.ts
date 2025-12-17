@@ -467,9 +467,9 @@ ${calendarDisplay}`;
       }
     }
 
-    // 📋 PROGRAMS MENU: Φόρτωση ΟΛΩΝ των programs (drafts/templates) για admin
+    // 📋 PROGRAMS MENU: Φόρτωση ΟΛΩΝ των programs (drafts/templates) ΜΟΝΟ για admin overview mode
     let adminProgramsMenuContext = '';
-    if (isAdmin) {
+    if (isAdmin && !targetUserId) {
       console.log('📋 Admin mode: Loading ALL programs from Programs menu (drafts + templates)...');
       
       // Φόρτωση ΟΛΩΝ των programs (drafts, templates)
