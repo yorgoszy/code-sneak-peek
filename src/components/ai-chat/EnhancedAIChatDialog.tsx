@@ -191,6 +191,13 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
     let jsonStr = actionMatch[1].trim();
     
+    // Έλεγχος αν το content ξεκινάει με { (είναι JSON)
+    if (!jsonStr.startsWith('{')) {
+      console.error('❌ AI action block δεν περιέχει valid JSON - ξεκινάει με:', jsonStr.substring(0, 50));
+      toast.error('Το AI έδωσε λάθος format. Παρακαλώ δοκίμασε ξανά.');
+      return;
+    }
+    
     try {
       // Διόρθωση JSON
       jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
@@ -199,8 +206,18 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       const openBrackets = (jsonStr.match(/\[/g) || []).length;
       const closeBrackets = (jsonStr.match(/]/g) || []).length;
       
-      for (let i = 0; i < openBrackets - closeBrackets; i++) jsonStr += ']';
-      for (let i = 0; i < openBraces - closeBraces; i++) jsonStr += '}';
+      // Έλεγχος αν λείπουν πολλές αγκύλες (truncated JSON)
+      const missingBraces = openBraces - closeBraces;
+      const missingBrackets = openBrackets - closeBrackets;
+      
+      if (missingBraces > 5 || missingBrackets > 5) {
+        console.error('❌ JSON φαίνεται truncated - λείπουν πολλές αγκύλες');
+        toast.error('Το πρόγραμμα ήταν πολύ μεγάλο. Ζήτα απλούστερο πρόγραμμα με λιγότερες ασκήσεις.');
+        return;
+      }
+      
+      for (let i = 0; i < missingBrackets; i++) jsonStr += ']';
+      for (let i = 0; i < missingBraces; i++) jsonStr += '}';
       
       const actionData = JSON.parse(jsonStr);
       console.log('🤖 Processing AI action:', actionData);
