@@ -252,7 +252,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         });
         
         console.log('📋 AI Program Data saved for QuickAssign:', actionData.name);
-        toast.success('Το πρόγραμμα είναι έτοιμο! Πάτα "Quick Assign" για ανάθεση.', { id: 'ai-action' });
+        // Δεν δείχνουμε toast εδώ - το κουμπί θα αναβοσβήνει
       }
     } catch (error) {
       console.error('Error processing AI action:', error, 'JSON:', jsonStr);
@@ -394,6 +394,11 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       .slice(0, 2);
   };
 
+  // Φιλτράρισμα του ai-action block από το μήνυμα
+  const filterAIActionBlock = (content: string) => {
+    return content.replace(/```ai-action[\s\S]*?```/g, '').trim();
+  };
+
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -413,12 +418,16 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
               {isAdmin && (
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant={lastAIProgramData ? "default" : "outline"}
                   onClick={() => setQuickAssignOpen(true)}
-                  className="rounded-none text-[10px] sm:text-xs h-7 px-2 sm:px-3"
+                  className={`rounded-none text-[10px] sm:text-xs h-7 px-2 sm:px-3 ${
+                    lastAIProgramData 
+                      ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black animate-pulse' 
+                      : ''
+                  }`}
                 >
                   <Wand2 className="w-3 h-3 mr-1" />
-                  <span className="hidden xs:inline">Quick</span> Assign
+                  {lastAIProgramData ? 'Έτοιμο!' : <><span className="hidden xs:inline">Quick</span> Assign</>}
                 </Button>
               )}
               {isAdmin ? (
@@ -474,7 +483,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
                           ? 'bg-blue-500 text-white rounded-br-none'
                           : 'bg-gray-100 text-gray-900 rounded-bl-none'
                       }`}>
-                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{filterAIActionBlock(message.content)}</p>
                         <div className="flex items-center justify-between mt-1">
                           <p className="text-[10px] sm:text-xs opacity-70">
                             {message.timestamp.toLocaleTimeString('el-GR', { 
@@ -541,7 +550,10 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     {athleteId && (
       <QuickAssignProgramDialog
         isOpen={quickAssignOpen}
-        onClose={() => setQuickAssignOpen(false)}
+        onClose={() => {
+          setQuickAssignOpen(false);
+          setLastAIProgramData(null); // Καθαρισμός δεδομένων
+        }}
         userId={athleteId}
         programData={lastAIProgramData}
       />
