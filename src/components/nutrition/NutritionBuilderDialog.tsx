@@ -134,10 +134,10 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={`rounded-none ${mode === 'select' ? 'max-w-md' : 'max-w-5xl max-h-[90vh] overflow-y-auto'}`}>
+      <DialogContent className={`rounded-none w-[95vw] sm:w-auto ${mode === 'select' ? 'max-w-md' : 'max-w-5xl'} max-h-[90vh] overflow-y-auto`}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Utensils className="w-5 h-5 text-[#00ffba]" />
+          <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <Utensils className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ffba]" />
             {mode === 'select' && 'Νέο Πρόγραμμα Διατροφής'}
             {mode === 'ai' && 'AI Διατροφολόγος'}
             {mode === 'manual' && 'Χειροκίνητη Δημιουργία'}
@@ -146,23 +146,23 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
 
         {mode === 'select' && (
           <div className="space-y-4 py-4">
-            <p className="text-sm text-gray-500 text-center">
+            <p className="text-xs sm:text-sm text-gray-500 text-center">
               Επιλέξτε τον τρόπο δημιουργίας του προγράμματος
             </p>
             
             <div className="grid gap-4">
               <Button
                 variant="outline"
-                className="h-auto p-4 flex-col items-start text-left rounded-none hover:border-[#00ffba] hover:bg-[#00ffba]/5"
+                className="h-auto p-3 sm:p-4 flex-col items-start text-left rounded-none hover:border-[#00ffba] hover:bg-[#00ffba]/5"
                 onClick={() => setMode('ai')}
               >
-                <div className="flex items-center gap-3 w-full">
-                  <div className="p-2 bg-[#00ffba]/10 rounded-none">
-                    <Brain className="w-6 h-6 text-[#00ffba]" />
+                <div className="flex items-center gap-2 sm:gap-3 w-full">
+                  <div className="p-1.5 sm:p-2 bg-[#00ffba]/10 rounded-none">
+                    <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-[#00ffba]" />
                   </div>
                   <div>
-                    <div className="font-semibold">AI Διατροφολόγος</div>
-                    <div className="text-xs text-gray-500">
+                    <div className="font-semibold text-sm sm:text-base">AI Διατροφολόγος</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500">
                       Απαντήστε σε ερωτήσεις και το AI θα δημιουργήσει το πρόγραμμα
                     </div>
                   </div>
@@ -171,16 +171,16 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
               
               <Button
                 variant="outline"
-                className="h-auto p-4 flex-col items-start text-left rounded-none hover:border-[#cb8954] hover:bg-[#cb8954]/5"
+                className="h-auto p-3 sm:p-4 flex-col items-start text-left rounded-none hover:border-[#cb8954] hover:bg-[#cb8954]/5"
                 onClick={() => setMode('manual')}
               >
-                <div className="flex items-center gap-3 w-full">
-                  <div className="p-2 bg-[#cb8954]/10 rounded-none">
-                    <Plus className="w-6 h-6 text-[#cb8954]" />
+                <div className="flex items-center gap-2 sm:gap-3 w-full">
+                  <div className="p-1.5 sm:p-2 bg-[#cb8954]/10 rounded-none">
+                    <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-[#cb8954]" />
                   </div>
                   <div>
-                    <div className="font-semibold">Χειροκίνητη Δημιουργία</div>
-                    <div className="text-xs text-gray-500">
+                    <div className="font-semibold text-sm sm:text-base">Χειροκίνητη Δημιουργία</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500">
                       Δημιουργήστε το πρόγραμμα βήμα-βήμα
                     </div>
                   </div>

@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, Brain, Crown, Sparkles, Loader2, Wand2 } from "lucide-react";
+import { Send, Brain, Crown, Sparkles, Loader2, Wand2, Utensils } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAIProgramBuilder } from "@/contexts/AIProgramBuilderContext";
 import { Badge } from "@/components/ui/badge";
 import { QuickAssignProgramDialog, AIProgramData } from "@/components/ai-chat/QuickAssignProgramDialog";
+import { QuickAssignNutritionDialog, AINutritionData } from "@/components/ai-chat/QuickAssignNutritionDialog";
 
 interface Message {
   id: string;
@@ -42,6 +43,10 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const [isAdmin, setIsAdmin] = useState(false);
   const [quickAssignOpen, setQuickAssignOpen] = useState(false);
   const [lastAIProgramData, setLastAIProgramData] = useState<AIProgramData | null>(null);
+  
+  // Nutrition states
+  const [nutritionAssignOpen, setNutritionAssignOpen] = useState(false);
+  const [lastAINutritionData, setLastAINutritionData] = useState<AINutritionData | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { openDialog: openProgramBuilder, queueAction, executeAction } = useAIProgramBuilder();
@@ -273,6 +278,21 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
         console.log('📋 AI Program Data saved for QuickAssign:', actionData.name);
       }
+
+      // Handle nutrition plan creation
+      if (actionData.action === 'create_nutrition_plan') {
+        setLastAINutritionData({
+          name: actionData.name || 'Πρόγραμμα Διατροφής AI',
+          description: actionData.description,
+          goal: actionData.goal,
+          totalCalories: actionData.totalCalories || actionData.total_calories,
+          proteinTarget: actionData.proteinTarget || actionData.protein_target,
+          carbsTarget: actionData.carbsTarget || actionData.carbs_target,
+          fatTarget: actionData.fatTarget || actionData.fat_target,
+          days: actionData.days || [],
+        });
+        console.log('🥗 AI Nutrition Data saved for QuickAssign:', actionData.name);
+      }
     } catch (error) {
       console.error('Error processing AI action:', error, 'JSON:', jsonStr);
       toast.error('Σφάλμα επεξεργασίας AI action');
@@ -474,19 +494,34 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               {isAdmin && (
-                <Button
-                  size="sm"
-                  variant={lastAIProgramData ? "default" : "outline"}
-                  onClick={() => setQuickAssignOpen(true)}
-                  className={`rounded-none text-[10px] sm:text-xs h-7 px-2 sm:px-3 ${
-                    lastAIProgramData 
-                      ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black animate-pulse' 
-                      : ''
-                  }`}
-                >
-                  <Wand2 className="w-3 h-3 mr-1" />
-                  {lastAIProgramData ? 'Έτοιμο!' : <><span className="hidden xs:inline">Quick</span> Assign</>}
-                </Button>
+                <>
+                  <Button
+                    size="sm"
+                    variant={lastAIProgramData ? "default" : "outline"}
+                    onClick={() => setQuickAssignOpen(true)}
+                    className={`rounded-none text-[10px] sm:text-xs h-7 px-2 sm:px-3 ${
+                      lastAIProgramData 
+                        ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black animate-pulse' 
+                        : ''
+                    }`}
+                  >
+                    <Wand2 className="w-3 h-3 mr-1" />
+                    {lastAIProgramData ? 'Έτοιμο!' : 'Assign'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={lastAINutritionData ? "default" : "outline"}
+                    onClick={() => setNutritionAssignOpen(true)}
+                    className={`rounded-none text-[10px] sm:text-xs h-7 px-2 sm:px-3 ${
+                      lastAINutritionData 
+                        ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black animate-pulse' 
+                        : ''
+                    }`}
+                  >
+                    <Utensils className="w-3 h-3 mr-1" />
+                    {lastAINutritionData ? 'NutrEnd!' : 'NutrEnd'}
+                  </Button>
+                </>
               )}
               {isAdmin ? (
                 <Badge variant="default" className="bg-[#cb8954] text-white rounded-none text-[10px] sm:text-xs">
@@ -610,12 +645,23 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         isOpen={quickAssignOpen}
         onClose={() => {
           setQuickAssignOpen(false);
-          setLastAIProgramData(null); // Καθαρισμός δεδομένων
+          setLastAIProgramData(null);
         }}
         userId={athleteId}
         programData={lastAIProgramData}
       />
     )}
+
+    {/* Quick Assign Nutrition Dialog */}
+    <QuickAssignNutritionDialog
+      isOpen={nutritionAssignOpen}
+      onClose={() => {
+        setNutritionAssignOpen(false);
+        setLastAINutritionData(null);
+      }}
+      nutritionData={lastAINutritionData}
+      defaultUserId={athleteId}
+    />
     </>
   );
 };
