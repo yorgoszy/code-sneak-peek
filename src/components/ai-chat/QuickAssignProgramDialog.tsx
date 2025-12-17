@@ -83,9 +83,8 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
   useEffect(() => {
     if (programData) {
       const code = generateCodedName(programData.description, programData.name);
-      const dateStr = programData.training_dates?.[0] || today;
-      setName(`${code} - ${dateStr}`);
-      setDate(dateStr);
+      setName(code);
+      setDate(programData.training_dates?.[0] || today);
     }
   }, [programData, today]);
 
