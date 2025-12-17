@@ -10,7 +10,9 @@ interface ProgramExercise {
   exercise_id?: string;
   sets: number;
   reps: string;
+  reps_mode?: string; // 'reps' | 'time' | 'meter'
   kg?: string;
+  kg_mode?: string;
   tempo?: string;
   rest?: string;
   notes?: string;
@@ -259,7 +261,9 @@ serve(async (req) => {
                           exercise_id: exerciseId,
                           sets: exercise.sets || 3,
                           reps: exercise.reps || '10',
+                          reps_mode: exercise.reps_mode || 'reps',
                           kg: exercise.kg || '',
+                          kg_mode: exercise.kg_mode || 'kg',
                           tempo: exercise.tempo || '',
                           rest: exercise.rest || '60',
                           notes: exercise.notes || '',

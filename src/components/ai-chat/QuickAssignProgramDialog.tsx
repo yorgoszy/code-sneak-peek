@@ -36,21 +36,22 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
           name: "Εβδομάδα 1",
           days: [
             {
-              name: "Ημέρα 1 - Full Body Δύναμη & Στάση",
+              name: "Τρίτη",
               blocks: [
                 {
                   name: "Pillar Prep",
-                  training_type: "stability",
+                  training_type: "pillar prep",
                   exercises: [
                     {
-                      exercise_name: "Plank",
+                      exercise_name: "Plank with 1 Arm Pull Down Tubing",
                       sets: 2,
-                      reps: "30-45s",
+                      reps: "30-45",
+                      reps_mode: "time",
                       rest: "45",
                       notes: "Σφιχτός κορμός, ουδέτερη σπονδυλική.",
                     },
                     {
-                      exercise_name: "Face Pull",
+                      exercise_name: "Face Pull Half Kneeling Cable",
                       sets: 2,
                       reps: "12-15",
                       rest: "45",
@@ -63,7 +64,7 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
                   training_type: "str",
                   exercises: [
                     {
-                      exercise_name: "SQ",
+                      exercise_name: "Low Crawl Backward to Deep Squat",
                       sets: 4,
                       reps: "5",
                       rest: "150",
