@@ -3097,8 +3097,54 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
       }
     }
 
-    // Κλήση Lovable AI - χρησιμοποιούμε ΜΟΝΟ το messages που στέλνει το frontend
-    // (το οποίο ήδη περιέχει όλο το conversation history)
+    // Κλήση Lovable AI
+    // ΣΗΜΑΝΤΙΚΟ: Το frontend μερικές φορές στέλνει μόνο το τελευταίο μήνυμα.
+    // Για να μην "χάνεται" το context (π.χ. απάντηση "ναι"), κάνουμε merge με το ιστορικό από τη βάση.
+    let dbConversationMessages: Array<{ role: "user" | "assistant"; content: string }> = [];
+    try {
+      const dbHistoryRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/ai_conversations?user_id=eq.${effectiveUserId}&select=content,message_type,created_at,metadata&order=created_at.desc&limit=40`,
+        {
+          headers: {
+            apikey: SUPABASE_SERVICE_ROLE_KEY!,
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+        }
+      );
+      const dbHistory = await dbHistoryRes.json();
+      if (Array.isArray(dbHistory)) {
+        const filtered = dbHistory
+          .filter((m: any) => m?.metadata?.conversation_type === "rid-ai-coach")
+          .slice(0, 30)
+          .reverse();
+
+        dbConversationMessages = filtered
+          .filter((m: any) => m?.content && (m.message_type === "user" || m.message_type === "assistant"))
+          .map((m: any) => ({
+            role: m.message_type === "user" ? ("user" as const) : ("assistant" as const),
+            content: String(m.content),
+          }));
+      }
+    } catch (e) {
+      console.log("[WARN] Could not load DB conversation history, continuing with request messages only");
+    }
+
+    const requestMessages = Array.isArray(messages) ? messages : [];
+    const shouldMergeDbHistory = requestMessages.length < 4 && dbConversationMessages.length > 0;
+
+    const mergedMessages = shouldMergeDbHistory
+      ? [...dbConversationMessages, ...requestMessages]
+      : requestMessages;
+
+    // Extra guard: αν υπάρχει ιστορικό, απαγορεύεται welcome / reset
+    const conversationGuard = shouldMergeDbHistory
+      ? {
+          role: "system",
+          content:
+            "ΥΠΑΡΧΕΙ ΗΔΗ ΙΣΤΟΡΙΚΟ ΣΥΝΟΜΙΛΙΑΣ. ΜΗΝ δώσεις welcome message, ΜΗΝ συστηθείς, ΜΗΝ αλλάξεις θέμα. Απάντησε ΑΚΡΙΒΩΣ στο τελευταίο ερώτημα/αίτημα του χρήστη, σαν συνέχεια της συζήτησης.",
+        }
+      : null;
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -3107,7 +3153,9 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: [systemPrompt, ...messages],
+        messages: conversationGuard
+          ? [systemPrompt, conversationGuard, ...mergedMessages]
+          : [systemPrompt, ...mergedMessages],
         stream: true,
       }),
     });
