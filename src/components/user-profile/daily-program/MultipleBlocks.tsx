@@ -2,6 +2,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExerciseItem } from './ExerciseItem';
+import { getTrainingTypeLabel } from '@/utils/trainingTypeLabels';
 
 interface Exercise {
   id: string;
@@ -53,25 +54,26 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
   onExerciseClick,
   onVideoClick
 }) => {
+  const sortedBlocks = [...blocks].sort((a, b) => a.block_order - b.block_order);
+
   console.log('📑 MultipleBlocks render:', {
-    blockCount: blocks.length,
+    blockCount: sortedBlocks.length,
     viewOnly: viewOnly,
-    blockNames: blocks.map(b => b.name)
+    blockNames: sortedBlocks.map(b => b.name),
+    blockTypes: sortedBlocks.map(b => b.training_type)
   });
-  
+
   return (
-    <Tabs defaultValue={blocks[0]?.id} className="w-full">
-      <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${blocks.length}, 1fr)` }}>
-        {blocks
-          ?.sort((a, b) => a.block_order - b.block_order)
-          .map((block) => (
-            <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
-              {block.name}
-            </TabsTrigger>
-          ))}
+    <Tabs defaultValue={sortedBlocks[0]?.id} className="w-full">
+      <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${sortedBlocks.length}, 1fr)` }}>
+        {sortedBlocks.map((block) => (
+          <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
+            {getTrainingTypeLabel(block.training_type, block.name)}
+          </TabsTrigger>
+        ))}
       </TabsList>
-      
-      {blocks?.map((block) => (
+
+      {sortedBlocks.map((block) => (
         <TabsContent key={block.id} value={block.id} className="mt-2">
           {/* Block Info Header */}
           {(block.workout_format || block.workout_duration || (block.block_sets && block.block_sets > 1)) && (
@@ -90,20 +92,20 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
               )}
             </div>
           )}
-          
+
           <div className="space-y-0">
             {block.program_exercises
               ?.sort((a, b) => a.exercise_order - b.exercise_order)
               .map((exercise) => {
                 const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
                 const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
-                
+
                 console.log('🏋️ MultipleBlocks rendering exercise:', {
                   exerciseName: exercise.exercises?.name,
                   hasVideo: !!exercise.exercises?.video_url,
                   videoUrl: exercise.exercises?.video_url
                 });
-                
+
                 return (
                   <div key={exercise.id} className="border border-gray-200">
                     <ExerciseItem
