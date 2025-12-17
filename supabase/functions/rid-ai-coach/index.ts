@@ -2521,16 +2521,25 @@ ${drafts.map((p: any, i: number) => {
           adminProgressContext += `\n👤 ${user.name} (${user.email}):\n`;
           
           // Αντοχή
-          const enduranceResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/endurance_test_data?select=id,created_at,vo2_max,mas_kmh,sprint_watt,push_ups,pull_ups,crunches,t2b,endurance_test_sessions!inner(user_id,test_date)&endurance_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          let enduranceData: any[] = [];
+          try {
+            const enduranceResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/endurance_test_data?select=id,created_at,vo2_max,mas_kmh,sprint_watt,push_ups,pull_ups,crunches,t2b,endurance_test_sessions!inner(user_id,test_date)&endurance_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
+              {
+                headers: {
+                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+                }
               }
+            );
+            if (enduranceResponse.ok) {
+              enduranceData = await enduranceResponse.json();
+            } else {
+              console.log(`⚠️ Endurance response not OK for ${user.name}: ${enduranceResponse.status}`);
             }
-          );
-          const enduranceData = await enduranceResponse.json();
+          } catch (e) {
+            console.log(`⚠️ Error loading endurance data for ${user.name}:`, e);
+          }
           
           console.log(`📊 Endurance data for ${user.name}:`, {
             count: Array.isArray(enduranceData) ? enduranceData.length : 0,
@@ -2558,16 +2567,25 @@ ${drafts.map((p: any, i: number) => {
           }
           
           // Άλματα
-          const jumpResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/jump_test_data?select=id,created_at,counter_movement_jump,non_counter_movement_jump,broad_jump,triple_jump_left,triple_jump_right,jump_test_sessions!inner(user_id,test_date)&jump_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          let jumpData: any[] = [];
+          try {
+            const jumpResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/jump_test_data?select=id,created_at,counter_movement_jump,non_counter_movement_jump,broad_jump,triple_jump_left,triple_jump_right,jump_test_sessions!inner(user_id,test_date)&jump_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
+              {
+                headers: {
+                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+                }
               }
+            );
+            if (jumpResponse.ok) {
+              jumpData = await jumpResponse.json();
+            } else {
+              console.log(`⚠️ Jump response not OK for ${user.name}: ${jumpResponse.status}`);
             }
-          );
-          const jumpData = await jumpResponse.json();
+          } catch (e) {
+            console.log(`⚠️ Error loading jump data for ${user.name}:`, e);
+          }
           
           if (Array.isArray(jumpData) && jumpData.length > 0) {
             adminProgressContext += '  🦘 Τεστ Άλματος:\n';
@@ -2584,16 +2602,25 @@ ${drafts.map((p: any, i: number) => {
           }
           
           // Ανθρωπομετρικά
-          const anthropometricResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/anthropometric_test_data?select=id,created_at,height,weight,body_fat_percentage,muscle_mass_percentage,waist_circumference,anthropometric_test_sessions!inner(user_id,test_date)&anthropometric_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          let anthropometricData: any[] = [];
+          try {
+            const anthropometricResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/anthropometric_test_data?select=id,created_at,height,weight,body_fat_percentage,muscle_mass_percentage,waist_circumference,anthropometric_test_sessions!inner(user_id,test_date)&anthropometric_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
+              {
+                headers: {
+                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+                }
               }
+            );
+            if (anthropometricResponse.ok) {
+              anthropometricData = await anthropometricResponse.json();
+            } else {
+              console.log(`⚠️ Anthropometric response not OK for ${user.name}: ${anthropometricResponse.status}`);
             }
-          );
-          const anthropometricData = await anthropometricResponse.json();
+          } catch (e) {
+            console.log(`⚠️ Error loading anthropometric data for ${user.name}:`, e);
+          }
           
           if (Array.isArray(anthropometricData) && anthropometricData.length > 0) {
             adminProgressContext += '  📏 Ανθρωπομετρικά:\n';
@@ -2608,16 +2635,25 @@ ${drafts.map((p: any, i: number) => {
           }
           
           // Λειτουργικά Τεστ
-          const functionalResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/functional_test_data?select=id,created_at,fms_score,fms_detailed_scores,posture_issues,squat_issues,single_leg_squat_issues,muscles_need_strengthening,muscles_need_stretching,sit_and_reach,shoulder_mobility_left,shoulder_mobility_right,flamingo_balance,functional_test_sessions!inner(user_id,test_date)&functional_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          let functionalData: any[] = [];
+          try {
+            const functionalResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/functional_test_data?select=id,created_at,fms_score,fms_detailed_scores,posture_issues,squat_issues,single_leg_squat_issues,muscles_need_strengthening,muscles_need_stretching,sit_and_reach,shoulder_mobility_left,shoulder_mobility_right,flamingo_balance,functional_test_sessions!inner(user_id,test_date)&functional_test_sessions.user_id=eq.${user.id}&order=created_at.desc&limit=5`,
+              {
+                headers: {
+                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+                }
               }
+            );
+            if (functionalResponse.ok) {
+              functionalData = await functionalResponse.json();
+            } else {
+              console.log(`⚠️ Functional response not OK for ${user.name}: ${functionalResponse.status}`);
             }
-          );
-          const functionalData = await functionalResponse.json();
+          } catch (e) {
+            console.log(`⚠️ Error loading functional data for ${user.name}:`, e);
+          }
           
           if (Array.isArray(functionalData) && functionalData.length > 0) {
             adminProgressContext += '  🧘 Λειτουργικά Τεστ:\n';
