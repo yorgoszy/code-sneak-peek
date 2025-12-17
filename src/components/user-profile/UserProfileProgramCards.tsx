@@ -1,13 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreditCard, CheckCircle, Clock } from "lucide-react";
+import { CreditCard, CheckCircle, Clock, CalendarDays } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar } from "@/components/ui/calendar";
 import { useTranslation } from 'react-i18next';
 import { useAllPrograms } from "@/hooks/useAllPrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
 import { TrainingTypesPieChart } from "./TrainingTypesPieChart";
+import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
+import { format } from "date-fns";
+import { el } from "date-fns/locale";
 
 interface UserProfileProgramCardsProps {
   userProfile: any;
@@ -18,6 +22,9 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
   const { data: allActivePrograms = [], isLoading, error, refetch } = useAllPrograms();
   const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
+  const [selectedProgramData, setSelectedProgramData] = useState<any>(null);
 
   // Filter programs for the specific user
   const userPrograms = allActivePrograms.filter(program => program.user_id === userProfile.id);
@@ -120,6 +127,89 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
     console.log('Delete not allowed for user profiles');
   };
 
+  // Calendar functions
+  const getDayProgram = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    
+    for (const program of userPrograms) {
+      if (!program.training_dates) continue;
+      
+      const dateIndex = program.training_dates.findIndex((d: string) => d === dateStr);
+      if (dateIndex === -1) continue;
+
+      const weeks = program.programs?.program_weeks || [];
+      if (weeks.length === 0) continue;
+
+      let targetDay = null;
+      let currentDayCount = 0;
+
+      for (const week of weeks) {
+        const daysInWeek = week.program_days?.length || 0;
+        
+        if (dateIndex >= currentDayCount && dateIndex < currentDayCount + daysInWeek) {
+          const dayIndexInWeek = dateIndex - currentDayCount;
+          targetDay = week.program_days?.[dayIndexInWeek] || null;
+          break;
+        }
+        
+        currentDayCount += daysInWeek;
+      }
+
+      if (targetDay) {
+        const completion = workoutCompletions.find(c => 
+          c.assignment_id === program.id && 
+          c.scheduled_date === dateStr
+        );
+        
+        return {
+          program,
+          dateIndex,
+          targetDay,
+          isCompleted: completion?.status === 'completed',
+          status: completion?.status || 'scheduled'
+        };
+      }
+    }
+    return null;
+  };
+
+  const getDateStatus = (date: Date) => {
+    const dayProgram = getDayProgram(date);
+    if (!dayProgram) return null;
+    
+    const today = new Date();
+    const workoutDate = new Date(date);
+    const isPast = workoutDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    if (dayProgram.status === 'completed') {
+      return 'completed';
+    } else if (dayProgram.status === 'missed') {
+      return 'missed';
+    } else if (isPast && dayProgram.status !== 'completed') {
+      return 'missed';
+    } else {
+      return 'scheduled';
+    }
+  };
+
+  const handleDayClick = (date: Date) => {
+    const dayProgram = getDayProgram(date);
+    if (dayProgram) {
+      setSelectedDate(date);
+      setSelectedProgramData(dayProgram);
+      setIsDayDialogOpen(true);
+    }
+  };
+
+  const handleRefresh = async () => {
+    const allCompletions = await getAllWorkoutCompletions();
+    const userAssignmentIds = userPrograms.map(p => p.id);
+    const userCompletions = allCompletions.filter(c => userAssignmentIds.includes(c.assignment_id));
+    setWorkoutCompletions(userCompletions);
+  };
+
+  const workoutStatus = selectedProgramData?.status || 'no_workout';
+
   if (isLoading) {
     return (
       <Card className="rounded-none">
@@ -162,6 +252,35 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
     <div className="space-y-6">
       {/* Training Types Analytics */}
       <TrainingTypesPieChart userId={userProfile.id} />
+
+      {/* Training Calendar */}
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm md:text-base">
+            <CalendarDays className="h-4 w-4 md:h-5 md:w-5" />
+            Ημερολόγιο Προπονήσεων
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onDayClick={handleDayClick}
+            locale={el}
+            className="rounded-none border"
+            modifiers={{
+              scheduled: (date) => getDateStatus(date) === 'scheduled',
+              completed: (date) => getDateStatus(date) === 'completed',
+              missed: (date) => getDateStatus(date) === 'missed',
+            }}
+            modifiersStyles={{
+              scheduled: { backgroundColor: '#fef3c7', color: '#92400e' },
+              completed: { backgroundColor: '#d1fae5', color: '#065f46' },
+              missed: { backgroundColor: '#fee2e2', color: '#991b1b' },
+            }}
+          />
+        </CardContent>
+      </Card>
 
       <Card className="rounded-none">
         <CardContent>
@@ -255,6 +374,17 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
         </Tabs>
         </CardContent>
       </Card>
+
+      {selectedProgramData && selectedDate && (
+        <DayProgramDialog
+          isOpen={isDayDialogOpen}
+          onClose={() => setIsDayDialogOpen(false)}
+          program={selectedProgramData.program}
+          selectedDate={selectedDate}
+          workoutStatus={workoutStatus}
+          onRefresh={handleRefresh}
+        />
+      )}
     </div>
   );
 };
