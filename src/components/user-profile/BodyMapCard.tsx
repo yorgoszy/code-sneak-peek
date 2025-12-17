@@ -333,7 +333,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
           const strengthenColor = new THREE.Color('#ff1493'); // Neon pink
           const stretchColor = new THREE.Color('#ffff00'); // Neon yellow
-          const defaultColor = new THREE.Color('#d1d5db'); // Gray for non-highlighted parts
+          const defaultColor = new THREE.Color('#000000'); // Black for non-highlighted parts
 
           let hasHighlightedVertices = false;
 
@@ -393,7 +393,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
             });
           } else {
             child.material = new THREE.MeshStandardMaterial({
-              color: '#d1d5db',
+              color: '#000000',
               wireframe: true,
               transparent: true,
               opacity: 0.25,
@@ -468,7 +468,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
       // No clipping for background wireframe - show full model
       child.material = new THREE.MeshStandardMaterial({
-        color: '#d1d5db',
+        color: '#000000',
         wireframe: true,
         transparent: true,
         opacity: 0.25,
