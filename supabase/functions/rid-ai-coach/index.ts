@@ -3400,11 +3400,29 @@ ${exerciseDatabaseContext}
 ΠΑΡΑΔΕΙΓΜΑ ΣΩΣΤΗΣ ΑΠΑΝΤΗΣΗΣ (αντέγραψε αυτή τη δομή):
 ---
 \`\`\`ai-action
-{"action":"create_program","name":"Heavy DL","description":"Deadlift focus","user_id":"HYPERKIDS","training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Warm","training_type":"warm_up","exercises":[{"exercise_name":"Cat-Cow","sets":2,"reps":"8","rest":"30"}]},{"name":"Main","training_type":"str","exercises":[{"exercise_name":"DL","sets":4,"reps":"3","percentage_1rm":85,"velocity_ms":"0.35","tempo":"2.1.X.0","rest":"180"}]}]}]}]}
+{"action":"create_program","name":"Heavy DL","description":"Deadlift focus","user_id":"HYPERKIDS","training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Warm","training_type":"warm up","exercises":[{"exercise_name":"Cat-Cow","sets":2,"reps":"8","rest":"30"}]},{"name":"Main","training_type":"str","exercises":[{"exercise_name":"DL","sets":4,"reps":"3","percentage_1rm":85,"velocity_ms":"0.35","tempo":"2.1.X.0","rest":"180"}]}]}]}]}
 \`\`\`
 
 Δημιούργησα πρόγραμμα δύναμης με DL για 30 Δεκεμβρίου.
 ---
+
+⚠️ ΕΠΙΤΡΕΠΤΕΣ ΤΙΜΕΣ training_type (ΧΡΗΣΙΜΟΠΟΙΗΣΕ ΜΟΝΟ ΑΥΤΕΣ!):
+- "str" → Δύναμη
+- "str/end" → Αντοχή στη δύναμη (Strength Endurance)
+- "str/spd" → Δύναμη/Ταχύτητα
+- "pwr" → Ισχύς (Power)
+- "pwr/end" → Ισχύς/Αντοχή
+- "end" → Αντοχή
+- "spd/end" → Ταχύτητα/Αντοχή
+- "hpr" → Υπερτροφία
+- "warm up" → Ζέσταμα (ΜΕ ΚΕΝΟ, ΟΧΙ warm_up!)
+- "mobility" → Κινητικότητα
+- "stability" → Σταθερότητα
+- "activation" → Ενεργοποίηση
+- "neural act" → Νευρική ενεργοποίηση
+- "recovery" → Αποκατάσταση
+- "accessory" → Βοηθητικές
+- "rotational" → Στροφικές
 
 ΚΑΝΟΝΕΣ ΟΝΟΜΑΤΩΝ:
 - name: ΣΥΝΤΟΜΟ όνομα (π.χ. "Heavy DL", "Chest Day", "Speed Work") - ΟΧΙ μεγάλα ονόματα με ημερομηνίες!
@@ -3423,6 +3441,8 @@ ${exerciseDatabaseContext}
 ` : hasActiveSubscription ? `
 Μπορείς να δημιουργήσεις προγράμματα για τον εαυτό σου!
 ${exerciseDatabaseContext}
+
+⚠️ ΕΠΙΤΡΕΠΤΕΣ ΤΙΜΕΣ training_type: "str", "str/end", "str/spd", "pwr", "pwr/end", "end", "spd/end", "hpr", "warm up", "mobility", "stability", "activation", "neural act", "recovery", "accessory", "rotational"
 
 ΠΑΡΑΔΕΙΓΜΑ:
 \`\`\`ai-action
