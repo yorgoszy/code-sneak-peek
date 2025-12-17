@@ -301,12 +301,12 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     try {
       // Κλήση rid-ai-coach με streaming
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rid-ai-coach`,
+        'https://dicwdviufetibnafzipa.supabase.co/functions/v1/rid-ai-coach',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3dkdml1ZmV0aWJuYWZ6aXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczOTczNTAsImV4cCI6MjA2Mjk3MzM1MH0.Rlr7MWSRm1dUnXH_5xBkTNYxKBb3t8xCzwwnv1SlIs8',
           },
           body: JSON.stringify({
             messages: [{ role: 'user', content: currentInput }],
@@ -405,6 +405,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col p-0">
         <DialogHeader className="p-6 pb-4 border-b">
@@ -419,6 +420,17 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
               )}
             </div>
             <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setQuickAssignOpen(true)}
+                  className="rounded-none text-xs"
+                >
+                  <Wand2 className="w-3 h-3 mr-1" />
+                  Quick Assign
+                </Button>
+              )}
               {isAdmin ? (
                 <Badge variant="default" className="bg-[#cb8954] text-white rounded-none">
                   <Crown className="w-3 h-3 mr-1" />
@@ -534,5 +546,15 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Quick Assign Dialog */}
+    {athleteId && (
+      <QuickAssignProgramDialog
+        isOpen={quickAssignOpen}
+        onClose={() => setQuickAssignOpen(false)}
+        userId={athleteId}
+      />
+    )}
+    </>
   );
 };
