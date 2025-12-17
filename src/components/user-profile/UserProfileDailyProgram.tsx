@@ -24,6 +24,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const [activeStatsTab, setActiveStatsTab] = useState<'month' | 'week' | 'day'>('month');
+  const [selectedProgramData, setSelectedProgramData] = useState<any>(null);
   
   const { data: activePrograms, isLoading } = useActivePrograms();
   const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
@@ -272,16 +273,17 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     if (date) {
       setSelectedDate(date);
       const dayProgram = getDayProgram(date);
+      console.log('📆 handleDateSelect:', { date: format(date, 'yyyy-MM-dd'), dayProgram: !!dayProgram });
       if (dayProgram) {
+        setSelectedProgramData(dayProgram);
         setIsDayDialogOpen(true);
+      } else {
+        setSelectedProgramData(null);
       }
     }
   };
 
-  const selectedProgram = selectedDate ? getDayProgram(selectedDate)?.program : null;
-  const workoutStatus = selectedDate && selectedProgram ? 
-    (getDayProgram(selectedDate)?.status || 'scheduled') : 
-    'no_workout';
+  const workoutStatus = selectedProgramData?.status || 'no_workout';
 
   const getBookingStatus = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -397,11 +399,11 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
         </CardContent>
       </Card>
 
-      {selectedProgram && selectedDate && (
+      {selectedProgramData && selectedDate && (
         <DayProgramDialog
           isOpen={isDayDialogOpen}
           onClose={() => setIsDayDialogOpen(false)}
-          program={selectedProgram}
+          program={selectedProgramData.program}
           selectedDate={selectedDate}
           workoutStatus={workoutStatus}
           onRefresh={handleRefresh}
