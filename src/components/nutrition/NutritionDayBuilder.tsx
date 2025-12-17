@@ -283,9 +283,9 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
                     onClick={() => handleSelectUser(user)}
                     className="w-full flex items-center gap-2 p-2 hover:bg-gray-50 text-left"
                   >
-                    <Avatar className="w-6 h-6 rounded-none">
-                      <AvatarImage src={user.photo_url || user.avatar_url} />
-                      <AvatarFallback className="rounded-none bg-[#cb8954] text-white text-[10px]">
+                    <Avatar className="w-6 h-6 rounded-full">
+                      <AvatarImage src={user.photo_url || user.avatar_url} className="rounded-full" />
+                      <AvatarFallback className="rounded-full bg-[#cb8954] text-white text-[10px]">
                         {user.name.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
