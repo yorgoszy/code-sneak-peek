@@ -3357,49 +3357,20 @@ ${subscriptionsContext}
 Ως admin, μπορείς να ΔΗΜΙΟΥΡΓΕΙΣ και να ΑΝΑΘΕΤΕΙΣ προγράμματα προπόνησης ΣΕ ΟΠΟΙΟΝΔΗΠΟΤΕ ΧΡΗΣΤΗ!
 ${exerciseDatabaseContext}
 
-⚠️ ΚΡΙΣΙΜΟ: Όταν δημιουργείς πρόγραμμα, το JSON ΠΡΕΠΕΙ να είναι ΠΛΗΡΕΣ και ΕΓΚΥΡΟ!
-- ΜΗΝ κόβεις το JSON στη μέση
-- ΜΗΝ βάζεις "..." ή ellipsis
-- Κράτα τις ασκήσεις ΛΙΓΕΣ (3-5 ανά block) για να μην είναι πολύ μεγάλο
-- ΑΠΛΟΠΟΙΗΣΕ: 1 εβδομάδα, 1-2 ημέρες, 2-3 blocks με 2-4 ασκήσεις το καθένα
+⚠️⚠️⚠️ ΚΡΙΣΙΜΟΙ ΚΑΝΟΝΕΣ ΓΙΑ AI-ACTION BLOCKS:
+1. ΜΟΝΟ JSON μέσα στο \`\`\`ai-action block - ΠΟΤΕ text/κείμενο!
+2. Το JSON ΠΡΕΠΕΙ να ξεκινάει με { και να τελειώνει με }
+3. MAXIMUM 2 ασκήσεις ανά block (για να χωράει το JSON)
+4. MAXIMUM 2 blocks ανά ημέρα
+5. MAXIMUM 1 ημέρα ανά εβδομάδα
+6. ΜΟΝΟ 1 εβδομάδα
+7. ΠΑΝΤΑ κλείνε ΟΛΕΣ τις αγκύλες {}[]
 
 📌 ΓΙΑ ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΓΡΑΜΜΑΤΟΣ:
-Απάντησε με ΣΥΝΤΟΜΟ κείμενο (2-3 γραμμές) ΚΑΙ μετά το JSON block:
+Πρώτα γράψε ΕΞΗΓΗΣΗ, ΜΕΤΑ κλείσε με το JSON block.
 
 \`\`\`ai-action
-{
-  "action": "create_program",
-  "name": "Όνομα Προγράμματος",
-  "description": "Σύντομη περιγραφή",
-  "user_id": "ΟΝΟΜΑ του χρήστη (πχ HYPERKIDS) ή UUID - το σύστημα θα το βρει",
-  "training_dates": ["2024-12-30"],
-  "weeks": [
-    {
-      "name": "Εβδομάδα 1",
-      "days": [
-        {
-          "name": "Ημέρα 1",
-          "blocks": [
-            {
-              "name": "Warm Up",
-              "training_type": "warm_up",
-              "exercises": [
-                {"exercise_name": "Cat-Cow", "sets": 2, "reps": "10"}
-              ]
-            },
-            {
-              "name": "Strength",
-              "training_type": "strength",
-              "exercises": [
-                {"exercise_name": "Back Squat", "sets": 4, "reps": "6", "kg": "100", "rest": "120"}
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
+{"action":"create_program","name":"Πρόγραμμα Δύναμης","description":"Strength training","user_id":"HYPERKIDS","training_dates":["2025-12-30"],"weeks":[{"name":"Εβδομάδα 1","days":[{"name":"Ημέρα 1","blocks":[{"name":"Warm Up","training_type":"warm_up","exercises":[{"exercise_name":"Cat-Cow","sets":2,"reps":"10"}]},{"name":"Strength","training_type":"strength","exercises":[{"exercise_name":"SQ","sets":4,"reps":"6","kg":"100","rest":"120"}]}]}]}]}
 \`\`\`
 
 📌 ΓΙΑ ΑΝΑΘΕΣΗ ΥΠΑΡΧΟΝΤΟΣ ΠΡΟΓΡΑΜΜΑΤΟΣ:
