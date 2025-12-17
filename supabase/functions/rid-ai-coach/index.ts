@@ -3349,109 +3349,41 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
 - Δώσε συγκεκριμένες συμβουλές βασισμένες στα δεδομένα
 - Χρησιμοποίησε percentages και trends για clarity
 
-🏋️ ΔΥΝΑΤΟΤΗΤΑ ΔΗΜΙΟΥΡΓΙΑΣ & ΑΝΑΘΕΣΗΣ ΠΡΟΓΡΑΜΜΑΤΩΝ:
+🏋️ ΔΥΝΑΤΟΤΗΤΑ ΔΗΜΙΟΥΡΓΙΑΣ ΠΡΟΓΡΑΜΜΑΤΩΝ:
 ${isAdmin ? `
-📊 ΣΥΝΔΡΟΜΕΣ (ADMIN VIEW):
-${subscriptionsContext}
-
-Ως admin, μπορείς να ΔΗΜΙΟΥΡΓΕΙΣ και να ΑΝΑΘΕΤΕΙΣ προγράμματα προπόνησης ΣΕ ΟΠΟΙΟΝΔΗΠΟΤΕ ΧΡΗΣΤΗ!
+Ως admin, μπορείς να δημιουργείς προγράμματα για ΟΠΟΙΟΝΔΗΠΟΤΕ χρήστη!
 ${exerciseDatabaseContext}
 
-⚠️⚠️⚠️ ΚΡΙΣΙΜΟΙ ΚΑΝΟΝΕΣ ΓΙΑ AI-ACTION BLOCKS:
-1. ΜΟΝΟ JSON μέσα στο \`\`\`ai-action block - ΠΟΤΕ text/κείμενο!
-2. Το JSON ΠΡΕΠΕΙ να ξεκινάει με { και να τελειώνει με }
-3. MAXIMUM 2 ασκήσεις ανά block (για να χωράει το JSON)
-4. MAXIMUM 2 blocks ανά ημέρα
-5. MAXIMUM 1 ημέρα ανά εβδομάδα
-6. ΜΟΝΟ 1 εβδομάδα
-7. ΠΑΝΤΑ κλείνε ΟΛΕΣ τις αγκύλες {}[]
+⚠️⚠️⚠️ ΚΡΙΣΙΜΟ - ΑΚΟΛΟΥΘΑ ΑΥΤΟΥΣ ΤΟΥΣ ΚΑΝΟΝΕΣ ΑΚΡΙΒΩΣ:
 
-📌 ΓΙΑ ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΓΡΑΜΜΑΤΟΣ:
-Πρώτα γράψε ΕΞΗΓΗΣΗ, ΜΕΤΑ κλείσε με το JSON block.
+1. ΠΡΩΤΑ ΤΟ JSON - Βάλε το \`\`\`ai-action block στην ΑΡΧΗ της απάντησης, ΟΧΙ στο τέλος!
+2. ΜΟΝΟ JSON μέσα στο block - ΚΑΝΕΝΑ κείμενο/text!
+3. ΜΙΑ ΓΡΑΜΜΗ JSON - χωρίς newlines/enters μέσα στο JSON
+4. MAXIMUM 1 άσκηση ανά block, 2 blocks, 1 ημέρα, 1 εβδομάδα
 
+ΠΑΡΑΔΕΙΓΜΑ ΣΩΣΤΗΣ ΑΠΑΝΤΗΣΗΣ (αντέγραψε αυτή τη δομή):
+---
 \`\`\`ai-action
-{"action":"create_program","name":"Πρόγραμμα Δύναμης","description":"Strength training","user_id":"HYPERKIDS","training_dates":["2025-12-30"],"weeks":[{"name":"Εβδομάδα 1","days":[{"name":"Ημέρα 1","blocks":[{"name":"Warm Up","training_type":"warm_up","exercises":[{"exercise_name":"Cat-Cow","sets":2,"reps":"10"}]},{"name":"Strength","training_type":"strength","exercises":[{"exercise_name":"SQ","sets":4,"reps":"6","kg":"100","rest":"120"}]}]}]}]}
+{"action":"create_program","name":"Strength","description":"Test","user_id":"HYPERKIDS","training_dates":["2025-12-30"],"weeks":[{"name":"Week1","days":[{"name":"Day1","blocks":[{"name":"Warm","training_type":"warm_up","exercises":[{"exercise_name":"Cat-Cow","sets":2,"reps":"8"}]},{"name":"Main","training_type":"strength","exercises":[{"exercise_name":"SQ","sets":4,"reps":"5","kg":"100"}]}]}]}]}
 \`\`\`
 
-📌 ΓΙΑ ΑΝΑΘΕΣΗ ΥΠΑΡΧΟΝΤΟΣ ΠΡΟΓΡΑΜΜΑΤΟΣ:
-\`\`\`ai-action
-{"action": "assign_program", "program_id": "UUID", "user_id": "ΟΝΟΜΑ ή UUID", "training_dates": ["2024-12-30"]}
-\`\`\`
+Δημιούργησα πρόγραμμα δύναμης με SQ για 30 Δεκεμβρίου.
+---
 
-📌 ΓΙΑ ΕΛΕΓΧΟ PROGRAM BUILDER (διαδραστική δημιουργία):
-\`\`\`ai-action
-{
-  "action": "open_program_builder",
-  "actions": [
-    {"type": "SET_NAME", "payload": "Πρόγραμμα Δύναμης"},
-    {"type": "SET_DESCRIPTION", "payload": "4 εβδομάδες strength training"},
-    {"type": "SELECT_USER", "payload": "user_id_here"},
-    {"type": "ADD_WEEK"},
-    {"type": "ADD_DAY", "payload": {"weekId": "week_1"}},
-    {"type": "ADD_BLOCK", "payload": {"weekId": "week_1", "dayId": "day_1"}},
-    {"type": "UPDATE_BLOCK_TYPE", "payload": {"weekId": "week_1", "dayId": "day_1", "blockId": "block_1", "trainingType": "strength"}},
-    {"type": "ADD_EXERCISE", "payload": {"weekId": "week_1", "dayId": "day_1", "blockId": "block_1", "exerciseId": "exercise_uuid"}},
-    {"type": "UPDATE_EXERCISE", "payload": {"weekId": "week_1", "dayId": "day_1", "blockId": "block_1", "exerciseId": "pe_1", "field": "sets", "value": 4}},
-    {"type": "SET_TRAINING_DATES", "payload": ["2024-12-30", "2025-01-02"]}
-  ]
-}
-\`\`\`
-
-Διαθέσιμες ACTIONS για Program Builder:
-- SET_NAME, SET_DESCRIPTION: Βασικά στοιχεία
-- SELECT_USER, SELECT_USERS, SELECT_GROUP, TOGGLE_MULTIPLE_MODE: Επιλογή χρήστη/ων
-- ADD_WEEK, REMOVE_WEEK, DUPLICATE_WEEK, UPDATE_WEEK_NAME: Εβδομάδες
-- ADD_DAY, REMOVE_DAY, DUPLICATE_DAY, UPDATE_DAY_NAME: Ημέρες
-- ADD_BLOCK, REMOVE_BLOCK, DUPLICATE_BLOCK: Blocks
-- UPDATE_BLOCK_NAME, UPDATE_BLOCK_TYPE, UPDATE_BLOCK_FORMAT, UPDATE_BLOCK_DURATION, UPDATE_BLOCK_SETS
-- ADD_EXERCISE, REMOVE_EXERCISE, DUPLICATE_EXERCISE
-- UPDATE_EXERCISE: fields = sets, reps, kg, percent_rm, velocity_ms, rest, tempo, notes
-- SET_TRAINING_DATES: Ημερομηνίες προπόνησης
-- SAVE, ASSIGN, GET_STATS, GET_PROGRAM
-
-ΚΑΝΟΝΕΣ:
-- user_id: Μπορείς να βάλεις το ΟΝΟΜΑ του αθλητή (πχ "HYPERKIDS") - το σύστημα το βρίσκει αυτόματα
-- Χρησιμοποίησε ΜΟΝΟ ασκήσεις από την ΤΡΑΠΕΖΑ ΑΣΚΗΣΕΩΝ παραπάνω!
-- training_dates σε format "YYYY-MM-DD"
-- ΠΑΝΤΑ κλείνε σωστά όλες τις αγκύλες και brackets
-- Αν δεν ξέρεις λεπτομέρειες, ΡΩΤΑ πρώτα τον χρήστη
+ΚΑΝΟΝΕΣ ΟΝΟΜΑΤΩΝ:
+- user_id: Βάλε ΟΝΟΜΑ (πχ "HYPERKIDS") ή email - το σύστημα βρίσκει το ID
+- exercise_name: Χρησιμοποίησε ΜΟΝΟ ονόματα από την ΤΡΑΠΕΖΑ ΑΣΚΗΣΕΩΝ
+- training_dates: format "YYYY-MM-DD"
 ` : hasActiveSubscription ? `
-🎉 Έχεις ΕΝΕΡΓΗ ΣΥΝΔΡΟΜΗ! Μπορείς να δημιουργήσεις προγράμματα ΜΟΝΟ για τον εαυτό σου.
+Μπορείς να δημιουργήσεις προγράμματα για τον εαυτό σου!
 ${exerciseDatabaseContext}
 
-⚠️ ΚΡΙΣΙΜΟ: Όταν δημιουργείς πρόγραμμα, το JSON ΠΡΕΠΕΙ να είναι ΠΛΗΡΕΣ και ΕΓΚΥΡΟ!
-
-📌 ΓΙΑ ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΓΡΑΜΜΑΤΟΣ (ΓΙΑ ΤΟΝ ΕΑΥΤΟ ΣΟΥ):
+ΠΑΡΑΔΕΙΓΜΑ:
 \`\`\`ai-action
-{
-  "action": "create_program",
-  "name": "Το Πρόγραμμά μου",
-  "description": "Περιγραφή",
-  "user_id": "${userId}",
-  "training_dates": ["2024-12-30"],
-  "weeks": [...]
-}
+{"action":"create_program","name":"My Program","user_id":"${userId}","training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Main","training_type":"strength","exercises":[{"exercise_name":"SQ","sets":4,"reps":"6"}]}]}]}]}
 \`\`\`
-
-📌 ΓΙΑ ΔΙΑΔΡΑΣΤΙΚΗ ΔΗΜΙΟΥΡΓΙΑ (PROGRAM BUILDER):
-\`\`\`ai-action
-{
-  "action": "open_program_builder",
-  "actions": [
-    {"type": "SET_NAME", "payload": "Το Πρόγραμμά μου"},
-    {"type": "SELECT_USER", "payload": "${userId}"}
-  ]
-}
-\`\`\`
-
-ΚΑΝΟΝΕΣ:
-- Μπορείς να φτιάξεις προγράμματα ΜΟΝΟ για τον εαυτό σου
-- Χρησιμοποίησε ΜΟΝΟ ασκήσεις από την ΤΡΑΠΕΖΑ ΑΣΚΗΣΕΩΝ παραπάνω!
-- training_dates σε format "YYYY-MM-DD"
 ` : `
-⚠️ ΔΕΝ ΕΧΕΙΣ ΕΝΕΡΓΗ ΣΥΝΔΡΟΜΗ!
-Για να μπορείς να δημιουργείς προγράμματα, χρειάζεσαι ενεργή συνδρομή.
-Επικοινώνησε με τον προπονητή ή ενεργοποίησε τη συνδρομή σου.
+⚠️ Χρειάζεσαι ενεργή συνδρομή για δημιουργία προγραμμάτων.
 `}
 
 Θυμάσαι όλες τις προηγούμενες συνομιλίες και χρησιμοποιείς αυτές τις πληροφορίες για να δίνεις καλύτερες συμβουλές.`
