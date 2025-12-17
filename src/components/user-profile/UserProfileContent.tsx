@@ -22,6 +22,7 @@ import { UserProfileEdit } from "./UserProfileEdit";
 import { UserProgressSection } from "./UserProgressSection";
 import { UserProfileHistory } from "./UserProfileHistory";
 import { SchoolNotes } from "@/pages/SchoolNotes";
+import { UserProfileNutrition } from "./UserProfileNutrition";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -191,6 +192,13 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <SchoolNotes userId={userProfile?.id} />
+          </div>
+        );
+      case "nutrition":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <UserProfileNutrition userId={userProfile?.id} userProfile={userProfile} />
           </div>
         );
       default:
