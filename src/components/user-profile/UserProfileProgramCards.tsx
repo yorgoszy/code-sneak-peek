@@ -259,6 +259,36 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
           <CardTitle className="flex items-center gap-2 text-sm md:text-base">
             <CalendarDays className="h-4 w-4 md:h-5 md:w-5" />
             Ημερολόγιο Προπονήσεων
+            {(() => {
+              const currentMonth = selectedDate || new Date();
+              const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+              const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+              
+              let monthTotal = 0;
+              let monthCompleted = 0;
+              let monthMissed = 0;
+              
+              for (const program of userPrograms) {
+                const trainingDates = program.training_dates || [];
+                for (const dateStr of trainingDates) {
+                  const date = new Date(dateStr);
+                  if (date >= monthStart && date <= monthEnd) {
+                    monthTotal++;
+                    const status = getDateStatus(date);
+                    if (status === 'completed') monthCompleted++;
+                    else if (status === 'missed') monthMissed++;
+                  }
+                }
+              }
+              
+              if (monthTotal === 0) return null;
+              
+              return (
+                <span className="text-xs font-normal text-muted-foreground ml-2">
+                  ({monthTotal} προπ. · <span className="text-green-600">{monthCompleted} ✓</span> · <span className="text-red-500">{monthMissed} ✗</span>)
+                </span>
+              );
+            })()}
           </CardTitle>
         </CardHeader>
         <CardContent>
