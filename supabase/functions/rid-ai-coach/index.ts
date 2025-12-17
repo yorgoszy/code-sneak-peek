@@ -3364,7 +3364,7 @@ ${exerciseDatabaseContext}
 ΠΑΡΑΔΕΙΓΜΑ ΣΩΣΤΗΣ ΑΠΑΝΤΗΣΗΣ (αντέγραψε αυτή τη δομή):
 ---
 \`\`\`ai-action
-{"action":"create_program","name":"Strength","description":"Test","user_id":"HYPERKIDS","training_dates":["2025-12-30"],"weeks":[{"name":"Week1","days":[{"name":"Day1","blocks":[{"name":"Warm","training_type":"warm_up","exercises":[{"exercise_name":"Cat-Cow","sets":2,"reps":"8"}]},{"name":"Main","training_type":"strength","exercises":[{"exercise_name":"SQ","sets":4,"reps":"5","kg":"100"}]}]}]}]}
+{"action":"create_program","name":"Strength","description":"Test","user_id":"HYPERKIDS","training_dates":["2025-12-30"],"weeks":[{"name":"Week1","days":[{"name":"Day1","blocks":[{"name":"Warm","training_type":"warm_up","exercises":[{"exercise_name":"Cat-Cow","sets":2,"reps":"8"}]},{"name":"Main","training_type":"strength","exercises":[{"exercise_name":"SQ","sets":4,"reps":"5","percentage_1rm":85,"tempo":"2.1.X.0","rest":"180"}]}]}]}]}
 \`\`\`
 
 Δημιούργησα πρόγραμμα δύναμης με SQ για 30 Δεκεμβρίου.
@@ -3374,14 +3374,22 @@ ${exerciseDatabaseContext}
 - user_id: Βάλε ΟΝΟΜΑ (πχ "HYPERKIDS") ή email - το σύστημα βρίσκει το ID
 - exercise_name: Χρησιμοποίησε ΜΟΝΟ ονόματα από την ΤΡΑΠΕΖΑ ΑΣΚΗΣΕΩΝ
 - training_dates: format "YYYY-MM-DD"
+
+⚠️ ΚΡΙΣΙΜΟ ΓΙΑ ΦΟΡΤΙΟ (kg vs percentage_1rm):
+- Αν θέλεις ΠΟΣΟΣΤΟ 1RM (π.χ. 85% 1RM) → χρησιμοποίησε "percentage_1rm": 85 (ΑΡΙΘΜΟΣ 1-100)
+- Αν θέλεις ΑΠΟΛΥΤΟ ΒΑΡΟΣ (π.χ. 100kg) → χρησιμοποίησε "kg": "100"
+- ΜΗΝ βάζεις "85% 1RM" στο kg πεδίο! Το percentage_1rm είναι για ποσοστά!
+- Το σύστημα υπολογίζει αυτόματα τα kg αν δώσεις percentage_1rm
 ` : hasActiveSubscription ? `
 Μπορείς να δημιουργήσεις προγράμματα για τον εαυτό σου!
 ${exerciseDatabaseContext}
 
 ΠΑΡΑΔΕΙΓΜΑ:
 \`\`\`ai-action
-{"action":"create_program","name":"My Program","user_id":"${userId}","training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Main","training_type":"strength","exercises":[{"exercise_name":"SQ","sets":4,"reps":"6"}]}]}]}]}
+{"action":"create_program","name":"My Program","user_id":"${userId}","training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Main","training_type":"strength","exercises":[{"exercise_name":"SQ","sets":4,"reps":"6","percentage_1rm":80}]}]}]}]}
 \`\`\`
+
+⚠️ ΚΡΙΣΙΜΟ: Για ποσοστά 1RM, χρησιμοποίησε "percentage_1rm": 80 (αριθμός), ΟΧΙ "kg": "80%"!
 ` : `
 ⚠️ Χρειάζεσαι ενεργή συνδρομή για δημιουργία προγραμμάτων.
 `}
