@@ -10,6 +10,7 @@ interface ProgramData {
   assignmentId: string;
   userName: string;
   assignment: any;
+  rpeScore?: number | null;
 }
 
 interface DailyViewProps {
@@ -64,6 +65,12 @@ export const DailyView: React.FC<DailyViewProps> = ({
     }
   };
 
+  const getRpeColor = (rpe: number) => {
+    if (rpe <= 6) return 'bg-green-500';
+    if (rpe <= 8) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   const dateStr = format(currentDate, 'yyyy-MM-dd');
   const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
   const isTodayDate = isToday(currentDate);
@@ -106,7 +113,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
               <div
                 key={`daily-${program.assignmentId}-${i}-${realtimeKey}`}
                 className={`
-                  text-sm cursor-pointer hover:underline p-2 rounded-none border-l-4
+                  text-sm cursor-pointer hover:underline p-2 rounded-none border-l-4 flex items-center gap-2
                   ${program.status === 'completed' ? 'border-[#00ffba] bg-[#00ffba]/5' : 
                     program.status === 'missed' ? 'border-red-500 bg-red-50' : 
                     'border-blue-500 bg-blue-50'}
@@ -114,7 +121,12 @@ export const DailyView: React.FC<DailyViewProps> = ({
                 `}
                 onClick={(e) => onUserNameClick(program, e)}
               >
-                {program.userName}
+                <span>{program.userName}</span>
+                {program.status === 'completed' && program.rpeScore && (
+                  <span className={`text-[10px] text-white px-1.5 py-0.5 rounded-none font-bold ${getRpeColor(program.rpeScore)}`}>
+                    RPE {program.rpeScore}
+                  </span>
+                )}
               </div>
             ))}
           </div>
