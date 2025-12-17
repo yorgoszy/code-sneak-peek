@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, Bot, User, Loader2, Download, Sparkles, Brain } from "lucide-react";
+import { Send, Bot, User, Loader2, Download, Sparkles, Brain, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAIProgramBuilder } from "@/contexts/AIProgramBuilderContext";
+import { Badge } from "@/components/ui/badge";
 
 interface Message {
   id: string;
@@ -36,8 +37,46 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { openDialog: openProgramBuilder, queueAction, executeAction } = useAIProgramBuilder();
+
+  // Check subscription and role status
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      if (!athleteId) return;
+      
+      try {
+        // Check if user is admin
+        const { data: userData } = await supabase
+          .from('app_users')
+          .select('role')
+          .eq('id', athleteId)
+          .single();
+        
+        setIsAdmin(userData?.role === 'admin');
+        
+        // Check subscription status
+        const today = new Date().toISOString().split('T')[0];
+        const { data: subscriptionData } = await supabase
+          .from('user_subscriptions')
+          .select('id')
+          .eq('user_id', athleteId)
+          .eq('status', 'active')
+          .gte('end_date', today)
+          .limit(1);
+        
+        setHasActiveSubscription(subscriptionData && subscriptionData.length > 0);
+      } catch (error) {
+        console.error('Error checking user status:', error);
+      }
+    };
+    
+    if (isOpen) {
+      checkUserStatus();
+    }
+  }, [isOpen, athleteId]);
 
   useEffect(() => {
     if (isOpen && athleteId) {
@@ -350,14 +389,33 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col p-0">
         <DialogHeader className="p-6 pb-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-[#cb8954]" />
-            RidAI Προπονητής
-            {athleteName && (
-              <span className="text-sm font-normal text-gray-600">
-                για {athleteName}
-              </span>
-            )}
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-[#cb8954]" />
+              RidAI Προπονητής
+              {athleteName && (
+                <span className="text-sm font-normal text-gray-600">
+                  για {athleteName}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {isAdmin ? (
+                <Badge variant="default" className="bg-[#cb8954] text-white rounded-none">
+                  <Crown className="w-3 h-3 mr-1" />
+                  Admin
+                </Badge>
+              ) : hasActiveSubscription ? (
+                <Badge variant="default" className="bg-[#00ffba] text-black rounded-none">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Premium
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="rounded-none">
+                  Βασική
+                </Badge>
+              )}
+            </div>
           </DialogTitle>
         </DialogHeader>
 
