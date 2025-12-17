@@ -142,6 +142,39 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     await saveMessageToDatabase(welcomeMessage);
   };
 
+  // Επεξεργασία AI actions (δημιουργία/ανάθεση προγραμμάτων)
+  const processAIActions = async (response: string) => {
+    const actionMatch = response.match(/```ai-action\s*([\s\S]*?)```/);
+    if (!actionMatch) return;
+
+    try {
+      const actionData = JSON.parse(actionMatch[1].trim());
+      console.log('🤖 Processing AI action:', actionData);
+
+      const result = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-program-actions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify(actionData),
+        }
+      );
+
+      const data = await result.json();
+      
+      if (data.success) {
+        toast.success(data.message || 'Η ενέργεια ολοκληρώθηκε επιτυχώς!');
+      } else {
+        toast.error(data.error || 'Σφάλμα κατά την εκτέλεση της ενέργειας');
+      }
+    } catch (error) {
+      console.error('Error processing AI action:', error);
+    }
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading || !athleteId) return;
 
@@ -237,6 +270,9 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       }
 
       console.log('✅ Streaming completed');
+      
+      // Έλεγχος για AI actions στην απάντηση
+      await processAIActions(fullResponse);
       
     } catch (error) {
       console.error('RID AI Error:', error);
