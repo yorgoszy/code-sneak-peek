@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 import { BlockTimerProvider } from "@/contexts/BlockTimerContext";
+import { AIProgramBuilderProvider } from "@/contexts/AIProgramBuilderContext";
+import { AIControlledProgramBuilderDialog } from "@/components/programs/builder/AIControlledProgramBuilderDialog";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RootRedirect } from "@/components/RootRedirect";
 import Auth from "@/pages/Auth";
@@ -70,10 +72,12 @@ function App() {
     <Router>
       <AnalyticsProvider>
         <QueryClientProvider client={queryClient}>
-          <BlockTimerProvider>
-            <div className="min-h-screen bg-gray-50">
-              <Toaster />
-              <Suspense fallback={<CustomLoadingScreen />}>
+          <AIProgramBuilderProvider>
+            <BlockTimerProvider>
+              <div className="min-h-screen bg-gray-50">
+                <Toaster />
+                <AIControlledProgramBuilderDialog />
+                <Suspense fallback={<CustomLoadingScreen />}>
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<RootRedirect />} />
@@ -144,6 +148,7 @@ function App() {
               </Suspense>
             </div>
           </BlockTimerProvider>
+          </AIProgramBuilderProvider>
         </QueryClientProvider>
       </AnalyticsProvider>
     </Router>
