@@ -331,8 +331,8 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
           const positionAttribute = geometry.getAttribute('position');
           const colors = new Float32Array(positionAttribute.count * 3);
 
-          const strengthenColor = new THREE.Color('#ef4444'); // Red for strengthening
-          const stretchColor = new THREE.Color('#f97316'); // Orange for stretching
+          const strengthenColor = new THREE.Color('#f80000'); // Red for strengthening
+          const stretchColor = new THREE.Color('#ffbb38'); // Orange for stretching
           const defaultColor = new THREE.Color('#000000'); // Black for non-highlighted parts
 
           let hasHighlightedVertices = false;
@@ -440,10 +440,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
       if (isStrengthen) {
         child.material = new THREE.MeshStandardMaterial({
-          color: '#ef4444', // Red for strengthening
+          color: '#f80000', // Red for strengthening
           roughness: 0.3,
           metalness: 0.2,
-          emissive: '#ef4444',
+          emissive: '#f80000',
           emissiveIntensity: 0.4,
           clippingPlanes,
           clipShadows: true,
@@ -454,10 +454,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
       if (isStretch) {
         child.material = new THREE.MeshStandardMaterial({
-          color: '#f97316', // Orange for stretching
+          color: '#ffbb38', // Orange for stretching
           roughness: 0.3,
           metalness: 0.2,
-          emissive: '#f97316',
+          emissive: '#ffbb38',
           emissiveIntensity: 0.4,
           clippingPlanes,
           clipShadows: true,
@@ -653,14 +653,14 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
             onClick={() => setStrengthenDialogOpen(true)}
             className="flex items-center gap-1.5 hover:bg-gray-100 px-1 py-0.5 transition-colors cursor-pointer"
           >
-            <div className="w-3 h-3 bg-[#ef4444] rounded-none"></div>
+            <div className="w-3 h-3 bg-[#f80000] rounded-none"></div>
             <span className="text-[10px] text-gray-700">Ενδυνάμωση ({strengthenMuscles.length})</span>
           </button>
           <button 
             onClick={() => setStretchDialogOpen(true)}
             className="flex items-center gap-1.5 hover:bg-gray-100 px-1 py-0.5 transition-colors cursor-pointer"
           >
-            <div className="w-3 h-3 bg-[#f97316] rounded-none"></div>
+            <div className="w-3 h-3 bg-[#ffbb38] rounded-none"></div>
             <span className="text-[10px] text-gray-700">Διάταση ({stretchMuscles.length})</span>
           </button>
         </div>
@@ -691,14 +691,14 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
         <DialogContent className="max-w-sm rounded-none">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-[#ef4444] rounded-none"></div>
+              <div className="w-4 h-4 bg-[#f80000] rounded-none"></div>
               Μύες για Ενδυνάμωση
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
             {strengthenMuscles.length > 0 ? (
               strengthenMuscles.map((muscle, index) => (
-                <div key={index} className="py-2 px-3 bg-red-50 border-l-2 border-[#ef4444] text-sm">
+                <div key={index} className="py-2 px-3 bg-red-50 border-l-2 border-[#f80000] text-sm">
                   {muscle}
                 </div>
               ))
@@ -714,14 +714,14 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
         <DialogContent className="max-w-sm rounded-none">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-[#f97316] rounded-none"></div>
+              <div className="w-4 h-4 bg-[#ffbb38] rounded-none"></div>
               Μύες για Διάταση
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
             {stretchMuscles.length > 0 ? (
               stretchMuscles.map((muscle, index) => (
-                <div key={index} className="py-2 px-3 bg-amber-50 border-l-2 border-[#f59e0b] text-sm">
+                <div key={index} className="py-2 px-3 bg-amber-50 border-l-2 border-[#ffbb38] text-sm">
                   {muscle}
                 </div>
               ))
