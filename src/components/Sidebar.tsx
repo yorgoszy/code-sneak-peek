@@ -22,7 +22,8 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
-  Timer
+  Timer,
+  Utensils
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -493,6 +494,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: CreditCard, 
       label: "Program Cards", 
       path: "/dashboard/program-cards",
+      badge: null
+    },
+    {
+      icon: Utensils,
+      label: "Διατροφή",
+      path: "/dashboard/nutrition",
       badge: null
     },
     { type: 'separator' },
