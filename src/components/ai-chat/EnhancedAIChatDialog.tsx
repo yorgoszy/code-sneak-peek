@@ -144,12 +144,35 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
   // Επεξεργασία AI actions (δημιουργία/ανάθεση προγραμμάτων)
   const processAIActions = async (response: string) => {
+    // Βρες το ai-action block - υποστήριξη για διάφορα formats
     const actionMatch = response.match(/```ai-action\s*([\s\S]*?)```/);
     if (!actionMatch) return;
 
+    let jsonStr = actionMatch[1].trim();
+    
+    // Προσπάθησε να διορθώσεις συνηθισμένα προβλήματα στο JSON
     try {
-      const actionData = JSON.parse(actionMatch[1].trim());
+      // Αφαίρεση trailing commas πριν από } ή ]
+      jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+      
+      // Αν λείπουν κλείσιμο brackets, προσπάθησε να τα προσθέσεις
+      const openBraces = (jsonStr.match(/{/g) || []).length;
+      const closeBraces = (jsonStr.match(/}/g) || []).length;
+      const openBrackets = (jsonStr.match(/\[/g) || []).length;
+      const closeBrackets = (jsonStr.match(/]/g) || []).length;
+      
+      // Προσθήκη missing brackets
+      for (let i = 0; i < openBrackets - closeBrackets; i++) {
+        jsonStr += ']';
+      }
+      for (let i = 0; i < openBraces - closeBraces; i++) {
+        jsonStr += '}';
+      }
+      
+      const actionData = JSON.parse(jsonStr);
       console.log('🤖 Processing AI action:', actionData);
+
+      toast.loading('Δημιουργία προγράμματος...', { id: 'ai-action' });
 
       const result = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-program-actions`,
@@ -166,12 +189,13 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       const data = await result.json();
       
       if (data.success) {
-        toast.success(data.message || 'Η ενέργεια ολοκληρώθηκε επιτυχώς!');
+        toast.success(data.message || 'Το πρόγραμμα δημιουργήθηκε επιτυχώς!', { id: 'ai-action' });
       } else {
-        toast.error(data.error || 'Σφάλμα κατά την εκτέλεση της ενέργειας');
+        toast.error(data.error || 'Σφάλμα κατά τη δημιουργία του προγράμματος', { id: 'ai-action' });
       }
     } catch (error) {
-      console.error('Error processing AI action:', error);
+      console.error('Error processing AI action:', error, 'JSON:', jsonStr);
+      toast.error('Το AI δεν μπόρεσε να δημιουργήσει έγκυρο πρόγραμμα. Δοκιμάστε ξανά με πιο απλή αίτηση.');
     }
   };
 

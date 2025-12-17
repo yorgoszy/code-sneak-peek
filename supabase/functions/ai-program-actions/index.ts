@@ -66,8 +66,41 @@ serve(async (req) => {
 
     console.log('🤖 AI Program Action:', action, body);
 
+    // Helper: Βρίσκει user_id από όνομα αν δεν είναι UUID
+    const resolveUserId = async (userIdOrName: string | undefined): Promise<string | undefined> => {
+      if (!userIdOrName) return undefined;
+      
+      // Αν είναι UUID, επέστρεψε άμεσα
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (uuidRegex.test(userIdOrName)) {
+        return userIdOrName;
+      }
+      
+      // Αλλιώς, ψάξε στη βάση με το όνομα
+      console.log('🔍 Searching user by name:', userIdOrName);
+      const userResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/app_users?name=ilike.*${encodeURIComponent(userIdOrName)}*&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const users = await userResponse.json();
+      if (users && users.length > 0) {
+        console.log(`✅ Found user "${userIdOrName}" -> ${users[0].id}`);
+        return users[0].id;
+      }
+      console.log(`⚠️ User "${userIdOrName}" not found`);
+      return undefined;
+    };
+
     if (action === 'create_program') {
-      const { name, description, weeks, user_id, training_dates } = body as CreateProgramRequest;
+      const { name, description, weeks, user_id: rawUserId, training_dates } = body as CreateProgramRequest;
+      
+      // Resolve user_id αν δόθηκε
+      const user_id = await resolveUserId(rawUserId);
 
       // 1. Δημιουργία του προγράμματος
       const programResponse = await fetch(`${SUPABASE_URL}/rest/v1/programs`, {
