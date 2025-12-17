@@ -13,6 +13,8 @@ interface ProgramExercise {
   reps_mode?: string; // 'reps' | 'time' | 'meter'
   kg?: string;
   kg_mode?: string;
+  percentage_1rm?: number;
+  velocity_ms?: string;
   tempo?: string;
   rest?: string;
   notes?: string;
@@ -264,6 +266,8 @@ serve(async (req) => {
                           reps_mode: exercise.reps_mode || 'reps',
                           kg: exercise.kg || '',
                           kg_mode: exercise.kg_mode || 'kg',
+                          percentage_1rm: exercise.percentage_1rm || null,
+                          velocity_ms: exercise.velocity_ms || null,
                           tempo: exercise.tempo || '',
                           rest: exercise.rest || '60',
                           notes: exercise.notes || '',
