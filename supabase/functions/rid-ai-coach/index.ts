@@ -467,6 +467,198 @@ ${calendarDisplay}`;
       }
     }
 
+    // 📋 PROGRAMS MENU: Φόρτωση ΟΛΩΝ των programs (drafts/templates) για admin
+    let adminProgramsMenuContext = '';
+    if (isAdmin) {
+      console.log('📋 Admin mode: Loading ALL programs from Programs menu (drafts + templates)...');
+      
+      // Φόρτωση ΟΛΩΝ των programs (drafts, templates)
+      const allProgramsMenuResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/programs?select=id,name,description,status,is_template,created_at,updated_at&order=updated_at.desc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const allProgramsMenu = await allProgramsMenuResponse.json();
+      
+      if (Array.isArray(allProgramsMenu) && allProgramsMenu.length > 0) {
+        console.log(`✅ Loaded ${allProgramsMenu.length} programs from Programs menu`);
+        
+        // Φόρτωση πλήρης δομής για όλα τα programs
+        const menuProgramIds = allProgramsMenu.map((p: any) => p.id);
+        
+        // Weeks
+        const menuWeeksResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/program_weeks?program_id=in.(${menuProgramIds.join(',')})&select=*&order=week_number.asc`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const menuWeeksData = await menuWeeksResponse.json();
+        const menuWeeks = Array.isArray(menuWeeksData) ? menuWeeksData : [];
+        
+        // Days
+        const menuWeekIds = menuWeeks.map((w: any) => w.id);
+        let menuDays: any[] = [];
+        if (menuWeekIds.length > 0) {
+          const menuDaysResponse = await fetch(
+            `${SUPABASE_URL}/rest/v1/program_days?week_id=in.(${menuWeekIds.join(',')})&select=*&order=day_number.asc`,
+            {
+              headers: {
+                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+              }
+            }
+          );
+          const menuDaysData = await menuDaysResponse.json();
+          menuDays = Array.isArray(menuDaysData) ? menuDaysData : [];
+        }
+        
+        // Blocks
+        const menuDayIds = menuDays.map((d: any) => d.id);
+        let menuBlocks: any[] = [];
+        if (menuDayIds.length > 0) {
+          const menuBlocksResponse = await fetch(
+            `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${menuDayIds.join(',')})&select=*&order=block_order.asc`,
+            {
+              headers: {
+                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+              }
+            }
+          );
+          const menuBlocksData = await menuBlocksResponse.json();
+          menuBlocks = Array.isArray(menuBlocksData) ? menuBlocksData : [];
+        }
+        
+        // Exercises
+        const menuBlockIds = menuBlocks.map((b: any) => b.id);
+        let menuProgramExercises: any[] = [];
+        if (menuBlockIds.length > 0) {
+          // Batch loading για να μην υπερβούμε τα URL limits
+          const batchSize = 25;
+          for (let i = 0; i < menuBlockIds.length; i += batchSize) {
+            const batchIds = menuBlockIds.slice(i, i + batchSize);
+            const menuExercisesResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/program_exercises?block_id=in.(${batchIds.join(',')})&select=*&order=exercise_order.asc`,
+              {
+                headers: {
+                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+                }
+              }
+            );
+            const menuExercisesData = await menuExercisesResponse.json();
+            if (Array.isArray(menuExercisesData)) {
+              menuProgramExercises.push(...menuExercisesData);
+            }
+          }
+        }
+        
+        // Exercises names
+        const menuExerciseIds = [...new Set(menuProgramExercises.map((pe: any) => pe.exercise_id).filter(Boolean))];
+        let menuExercisesNames: any[] = [];
+        if (menuExerciseIds.length > 0) {
+          const menuExercisesNamesResponse = await fetch(
+            `${SUPABASE_URL}/rest/v1/exercises?id=in.(${menuExerciseIds.join(',')})&select=id,name,description`,
+            {
+              headers: {
+                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+              }
+            }
+          );
+          const menuExercisesNamesData = await menuExercisesNamesResponse.json();
+          menuExercisesNames = Array.isArray(menuExercisesNamesData) ? menuExercisesNamesData : [];
+        }
+        
+        // Build context
+        const templates = allProgramsMenu.filter((p: any) => p.is_template === true);
+        const drafts = allProgramsMenu.filter((p: any) => p.status === 'draft' && !p.is_template);
+        const otherPrograms = allProgramsMenu.filter((p: any) => p.status !== 'draft' && !p.is_template);
+        
+        adminProgramsMenuContext = `\n\n📋 ΜΕΝΟΥ ΠΡΟΓΡΑΜΜΑΤΑ (Programs Menu - Drafts/Templates):
+
+📊 Σύνοψη:
+- Templates: ${templates.length}
+- Drafts: ${drafts.length}
+- Άλλα: ${otherPrograms.length}
+- Σύνολο: ${allProgramsMenu.length}
+
+📁 TEMPLATES (${templates.length}):
+${templates.map((p: any, i: number) => {
+  const weeks = menuWeeks.filter((w: any) => w.program_id === p.id);
+  const days = weeks.flatMap((w: any) => menuDays.filter((d: any) => d.week_id === w.id));
+  const blocks = days.flatMap((d: any) => menuBlocks.filter((b: any) => b.day_id === d.id));
+  const exercises = blocks.flatMap((b: any) => menuProgramExercises.filter((pe: any) => pe.block_id === b.id));
+  
+  return `${i + 1}. ${p.name}
+   - Περιγραφή: ${p.description || 'Χωρίς περιγραφή'}
+   - Δομή: ${weeks.length} εβδομάδες, ${days.length} ημέρες, ${blocks.length} blocks, ${exercises.length} ασκήσεις
+   - Δημιουργήθηκε: ${new Date(p.created_at).toLocaleDateString('el-GR')}`;
+}).join('\n\n')}
+
+📝 DRAFTS (${drafts.length}):
+${drafts.map((p: any, i: number) => {
+  const weeks = menuWeeks.filter((w: any) => w.program_id === p.id);
+  const days = weeks.flatMap((w: any) => menuDays.filter((d: any) => d.week_id === w.id));
+  const blocks = days.flatMap((d: any) => menuBlocks.filter((b: any) => b.day_id === d.id));
+  const exercises = blocks.flatMap((b: any) => menuProgramExercises.filter((pe: any) => pe.block_id === b.id));
+  
+  return `${i + 1}. ${p.name}
+   - Περιγραφή: ${p.description || 'Χωρίς περιγραφή'}
+   - Δομή: ${weeks.length} εβδομάδες, ${days.length} ημέρες, ${blocks.length} blocks, ${exercises.length} ασκήσεις
+   - Τελευταία ενημέρωση: ${new Date(p.updated_at).toLocaleDateString('el-GR')}`;
+}).join('\n\n')}
+
+📋 ΑΝΑΛΥΤΙΚΗ ΔΟΜΗ ΠΡΟΓΡΑΜΜΑΤΩΝ:
+`;
+        
+        // Αναλυτική δομή για κάθε πρόγραμμα
+        allProgramsMenu.forEach((program: any) => {
+          const progWeeks = menuWeeks.filter((w: any) => w.program_id === program.id);
+          if (progWeeks.length === 0) return;
+          
+          adminProgramsMenuContext += `\n🏋️ ${program.name} ${program.is_template ? '(TEMPLATE)' : program.status === 'draft' ? '(DRAFT)' : ''}:\n`;
+          
+          progWeeks.forEach((week: any) => {
+            const weekDays = menuDays.filter((d: any) => d.week_id === week.id);
+            adminProgramsMenuContext += `  📅 ${week.name || `Εβδομάδα ${week.week_number}`}:\n`;
+            
+            weekDays.forEach((day: any) => {
+              const dayBlocks = menuBlocks.filter((b: any) => b.day_id === day.id);
+              adminProgramsMenuContext += `    📌 ${day.name || `Ημέρα ${day.day_number}`}:\n`;
+              
+              dayBlocks.forEach((block: any) => {
+                const blockExercises = menuProgramExercises.filter((pe: any) => pe.block_id === block.id);
+                adminProgramsMenuContext += `      🔹 ${block.name}${block.training_type ? ` (${block.training_type})` : ''}:\n`;
+                
+                blockExercises.forEach((pe: any) => {
+                  const exercise = menuExercisesNames.find((e: any) => e.id === pe.exercise_id);
+                  const exerciseName = exercise?.name || 'Unknown Exercise';
+                  let details = `${pe.sets || '?'}x${pe.reps || '?'}`;
+                  if (pe.kg) details += ` @ ${pe.kg}kg`;
+                  if (pe.tempo) details += ` tempo ${pe.tempo}`;
+                  if (pe.rest) details += ` rest ${pe.rest}s`;
+                  if (pe.notes) details += ` (${pe.notes})`;
+                  
+                  adminProgramsMenuContext += `        • ${exerciseName}: ${details}\n`;
+                });
+              });
+            });
+          });
+        });
+        
+        console.log(`✅ Admin Programs Menu context length: ${adminProgramsMenuContext.length} chars`);
+      }
+    }
+
     // 👥 ADMIN MODE: Φόρτωση ΟΛΩΝ των χρηστών με εγγραφή και συνδρομές
     let adminAllUsersContext = '';
     if (isAdmin && !targetUserId) {
@@ -2830,7 +3022,7 @@ ${isAdmin && !targetUserId ? `
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
