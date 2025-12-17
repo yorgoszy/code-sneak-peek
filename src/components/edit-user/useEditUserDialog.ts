@@ -56,6 +56,17 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         } else {
           setChildren([]);
         }
+      } else if (!isOpen) {
+        // Reset state when dialog closes
+        setName("");
+        setEmail("");
+        setPhone("");
+        setRole("");
+        setCategory("");
+        setGender("");
+        setBirthDate("");
+        setPhotoUrl("");
+        setChildren([]);
       }
     };
 
