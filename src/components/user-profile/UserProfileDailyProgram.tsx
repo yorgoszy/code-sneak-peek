@@ -283,6 +283,17 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
     }
   };
 
+  // Handle day click - always fires even on already selected date
+  const handleDayClick = (date: Date) => {
+    const dayProgram = getDayProgram(date);
+    console.log('📆 handleDayClick:', { date: format(date, 'yyyy-MM-dd'), dayProgram: !!dayProgram });
+    if (dayProgram) {
+      setSelectedDate(date);
+      setSelectedProgramData(dayProgram);
+      setIsDayDialogOpen(true);
+    }
+  };
+
   const workoutStatus = selectedProgramData?.status || 'no_workout';
 
   const getBookingStatus = (date: Date) => {
@@ -376,6 +387,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
               mode="single"
               selected={selectedDate}
               onSelect={handleDateSelect}
+              onDayClick={handleDayClick}
               locale={el}
               className="rounded-none border"
               modifiers={{
