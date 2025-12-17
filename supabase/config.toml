@@ -3,6 +3,9 @@ project_id = "dicwdviufetibnafzipa"
 [functions.rid-ai-coach]
 verify_jwt = false
 
+[functions.ai-program-actions]
+verify_jwt = false
+
 [functions.mydata-send-receipt]
 verify_jwt = false
 

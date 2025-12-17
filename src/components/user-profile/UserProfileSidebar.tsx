@@ -218,7 +218,7 @@ export const UserProfileSidebar = forwardRef<
       label: t('sidebar.calendar'), 
       key: "calendar",
       badge: null,
-      visible: true
+      visible: false // Κρύβουμε το ημερολόγιο
     },
     { 
       icon: TrendingUp, 
