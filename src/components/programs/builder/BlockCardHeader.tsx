@@ -49,9 +49,9 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
   mobility: 'mobility',
   'neural act': 'neural act',
   stability: 'stability',
-  recovery: 'recovery',
-  accessory: 'accessory',
-  rotational: 'rotational',
+  recovery: 'rec',
+  accessory: 'acc',
+  rotational: 'rot',
 };
 
 const WORKOUT_FORMAT_LABELS: Record<string, string> = {
