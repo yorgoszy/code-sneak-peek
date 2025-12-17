@@ -310,12 +310,12 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     try {
       // Κλήση rid-ai-coach με streaming
       const response = await fetch(
-        'https://dicwdviufetibnafzipa.supabase.co/functions/v1/rid-ai-coach',
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rid-ai-coach`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3dkdml1ZmV0aWJuYWZ6aXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczOTczNTAsImV4cCI6MjA2Mjk3MzM1MH0.Rlr7MWSRm1dUnXH_5xBkTNYxKBb3t8xCzwwnv1SlIs8',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
             messages: [{ role: 'user', content: currentInput }],
