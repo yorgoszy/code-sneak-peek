@@ -256,10 +256,12 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
 
       {/* Training Calendar */}
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm md:text-base">
-            <CalendarDays className="h-4 w-4 md:h-5 md:w-5" />
-            Ημερολόγιο Προπονήσεων
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center justify-between text-sm md:text-base">
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <CalendarDays className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+              <span>Ημερολόγιο Προπονήσεων</span>
+            </div>
             {(() => {
               const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
               const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
@@ -284,8 +286,9 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
               if (monthTotal === 0) return null;
               
               return (
-                <span className="text-xs font-normal text-muted-foreground ml-2">
-                  ({monthTotal} προπ. · <span className="text-green-600">{monthCompleted} ✓</span> · <span className="text-red-500">{monthMissed} ✗</span>)
+                <span className="text-xs font-normal text-muted-foreground whitespace-nowrap">
+                  <span className="text-green-600">{monthCompleted}/{monthTotal}</span>
+                  {monthMissed > 0 && <span className="text-red-500 ml-1">{monthMissed}✗</span>}
                 </span>
               );
             })()}
