@@ -11,17 +11,14 @@ import {
 interface RoleStatusFieldsProps {
   role: string;
   setRole: (value: string) => void;
-  userStatus: string;
-  setUserStatus: (value: string) => void;
-  subscriptionStatus: string;
-  setSubscriptionStatus: (value: string) => void;
+  gender: string;
+  setGender: (value: string) => void;
   loading: boolean;
 }
 
 export const RoleStatusFields = ({
   role, setRole,
-  userStatus, setUserStatus,
-  subscriptionStatus, setSubscriptionStatus,
+  gender, setGender,
   loading
 }: RoleStatusFieldsProps) => {
   return (
@@ -43,28 +40,14 @@ export const RoleStatusFields = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="userStatus">Κατάσταση Χρήστη</Label>
-        <Select value={userStatus} onValueChange={setUserStatus} disabled={loading}>
+        <Label htmlFor="gender">Φύλο</Label>
+        <Select value={gender} onValueChange={setGender} disabled={loading}>
           <SelectTrigger className="rounded-none">
-            <SelectValue placeholder="Επιλέξτε κατάσταση" />
+            <SelectValue placeholder="Επιλέξτε φύλο" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="subscriptionStatus">Κατάσταση Συνδρομής</Label>
-        <Select value={subscriptionStatus} onValueChange={setSubscriptionStatus} disabled={loading}>
-          <SelectTrigger className="rounded-none">
-            <SelectValue placeholder="Επιλέξτε κατάσταση συνδρομής" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
+            <SelectItem value="male">Άνδρας</SelectItem>
+            <SelectItem value="female">Γυναίκα</SelectItem>
           </SelectContent>
         </Select>
       </div>

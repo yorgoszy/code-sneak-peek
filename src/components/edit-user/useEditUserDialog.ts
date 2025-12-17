@@ -26,8 +26,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("");
   const [category, setCategory] = useState("");
-  const [userStatus, setUserStatus] = useState("");
-  const [subscriptionStatus, setSubscriptionStatus] = useState("");
+  const [gender, setGender] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,8 +40,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         setPhone(user.phone || "");
         setRole(user.role || "");
         setCategory(user.category || "");
-        setUserStatus(user.user_status || "");
-        setSubscriptionStatus(normalizeSubscriptionStatus(user.subscription_status));
+        setGender(user.gender || "");
         setBirthDate(user.birth_date || "");
         setPhotoUrl(user.photo_url || "");
 
@@ -88,8 +86,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         phone: phone.trim() || null,
         role,
         category,
-        user_status: userStatus,
-        subscription_status: normalizeSubscriptionStatus(subscriptionStatus),
+        gender: gender || null,
         birth_date: birthDate || null,
         photo_url: photoUrl || null,
         updated_at: new Date().toISOString(),
@@ -187,8 +184,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
     phone, setPhone,
     role, setRole,
     category, setCategory,
-    userStatus, setUserStatus,
-    subscriptionStatus, setSubscriptionStatus,
+    gender, setGender,
     birthDate, setBirthDate,
     photoUrl, setPhotoUrl,
     loading,
