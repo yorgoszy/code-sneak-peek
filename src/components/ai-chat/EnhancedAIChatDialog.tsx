@@ -49,18 +49,25 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   useEffect(() => {
     const checkUserStatus = async () => {
       if (!athleteId) return;
-      
+
       try {
-        // Check if user is admin
-        const { data: userData } = await supabase
-          .from('app_users')
-          .select('role')
-          .eq('id', athleteId)
-          .single();
-        
-        setIsAdmin(userData?.role === 'admin');
-        
-        // Check subscription status
+        // ✅ Admin έλεγχος για ΤΡΕΧΟΝ logged-in χρήστη (όχι για τον athlete που βλέπουμε)
+        const { data: auth } = await supabase.auth.getUser();
+        const authUserId = auth?.user?.id;
+
+        if (authUserId) {
+          const { data: currentUserData } = await supabase
+            .from('app_users')
+            .select('role')
+            .eq('auth_user_id', authUserId)
+            .maybeSingle();
+
+          setIsAdmin(currentUserData?.role === 'admin');
+        } else {
+          setIsAdmin(false);
+        }
+
+        // Subscription status αφορά τον athleteId (τον χρήστη που «ανήκει» το chat)
         const today = new Date().toISOString().split('T')[0];
         const { data: subscriptionData } = await supabase
           .from('user_subscriptions')
@@ -69,13 +76,13 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           .eq('status', 'active')
           .gte('end_date', today)
           .limit(1);
-        
-        setHasActiveSubscription(subscriptionData && subscriptionData.length > 0);
+
+        setHasActiveSubscription(!!(subscriptionData && subscriptionData.length > 0));
       } catch (error) {
         console.error('Error checking user status:', error);
       }
     };
-    
+
     if (isOpen) {
       checkUserStatus();
     }
@@ -188,71 +195,83 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
   // Επεξεργασία AI actions (δημιουργία/ανάθεση προγραμμάτων + ProgramBuilder control)
   const processAIActions = async (response: string) => {
-    // Βρες το ai-action block
-    const actionMatch = response.match(/```ai-action\s*([\s\S]*?)```/);
-    if (!actionMatch) return;
+    const extractActionJson = (text: string): string | null => {
+      const actionMatch = text.match(/```ai-action\s*([\s\S]*?)```/);
+      if (actionMatch?.[1]) return actionMatch[1].trim();
 
-    let jsonStr = actionMatch[1].trim();
-    
-    // Έλεγχος αν το content ξεκινάει με { (είναι JSON)
+      const markerIdx = text.search(/"action"\s*:\s*"(create_program|open_program_builder)"/);
+      if (markerIdx === -1) return null;
+
+      const startIdx = text.lastIndexOf('{', markerIdx);
+      if (startIdx === -1) return null;
+
+      let depth = 0;
+      for (let i = startIdx; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === '{') depth++;
+        if (ch === '}') depth--;
+        if (depth === 0) return text.slice(startIdx, i + 1).trim();
+      }
+
+      return null;
+    };
+
+    const extracted = extractActionJson(response);
+    if (!extracted) return;
+
+    let jsonStr = extracted;
+
     if (!jsonStr.startsWith('{')) {
       console.error('❌ AI action block δεν περιέχει valid JSON - ξεκινάει με:', jsonStr.substring(0, 50));
       toast.error('Το AI έδωσε λάθος format. Παρακαλώ δοκίμασε ξανά.');
       return;
     }
-    
+
     try {
-      // Διόρθωση JSON
+      // Διόρθωση JSON (trailing commas)
       jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+
       const openBraces = (jsonStr.match(/{/g) || []).length;
       const closeBraces = (jsonStr.match(/}/g) || []).length;
       const openBrackets = (jsonStr.match(/\[/g) || []).length;
-      const closeBrackets = (jsonStr.match(/]/g) || []).length;
-      
-      // Έλεγχος αν λείπουν πολλές αγκύλες (truncated JSON)
+      const closeBrackets = (jsonStr.match(/\]/g) || []).length;
+
       const missingBraces = openBraces - closeBraces;
       const missingBrackets = openBrackets - closeBrackets;
-      
+
       if (missingBraces > 5 || missingBrackets > 5) {
         console.error('❌ JSON φαίνεται truncated - λείπουν πολλές αγκύλες');
         toast.error('Το πρόγραμμα ήταν πολύ μεγάλο. Ζήτα απλούστερο πρόγραμμα με λιγότερες ασκήσεις.');
         return;
       }
-      
+
       for (let i = 0; i < missingBrackets; i++) jsonStr += ']';
       for (let i = 0; i < missingBraces; i++) jsonStr += '}';
-      
+
       const actionData = JSON.parse(jsonStr);
       console.log('🤖 Processing AI action:', actionData);
 
-      // Έλεγχος για ProgramBuilder actions
       if (actionData.action === 'open_program_builder') {
         openProgramBuilder();
         toast.success('Άνοιξε ο Program Builder!');
-        
-        // Εκτέλεση ακολουθίας actions αν υπάρχουν
+
         if (actionData.actions && Array.isArray(actionData.actions)) {
           setTimeout(() => {
-            actionData.actions.forEach((act: any) => {
-              executeAction(act);
-            });
+            actionData.actions.forEach((act: any) => executeAction(act));
           }, 500);
         }
         return;
       }
 
-      // Υπάρχουσα λογική για create_program - ΑΠΟΘΗΚΕΥΣΗ για QuickAssign
       if (actionData.action === 'create_program') {
-        // Αποθήκευση δεδομένων για το QuickAssignProgramDialog
         setLastAIProgramData({
           name: actionData.name || 'Πρόγραμμα AI',
           description: actionData.description,
           training_dates: actionData.training_dates || [new Date().toISOString().split('T')[0]],
           weeks: actionData.weeks || [],
         });
-        
+
         console.log('📋 AI Program Data saved for QuickAssign:', actionData.name);
-        // Δεν δείχνουμε toast εδώ - το κουμπί θα αναβοσβήνει
       }
     } catch (error) {
       console.error('Error processing AI action:', error, 'JSON:', jsonStr);
