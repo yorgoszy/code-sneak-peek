@@ -34,11 +34,58 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
   const [name, setName] = useState(programData?.name || "Πρόγραμμα Προπόνησης");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Helper για κωδικοποιημένη ονομασία
+  const generateCodedName = (description?: string, programName?: string): string => {
+    const text = (description || programName || '').toLowerCase();
+    const codes: string[] = [];
+    
+    // Strength variations
+    if (text.includes('strength') || text.includes('δύναμη') || text.includes('δύναμης')) {
+      codes.push('STR');
+    }
+    // Endurance variations
+    if (text.includes('endurance') || text.includes('αντοχή') || text.includes('αντοχής')) {
+      codes.push('END');
+    }
+    // Power
+    if (text.includes('power') || text.includes('ισχύς') || text.includes('εκρηκτικ')) {
+      codes.push('PWR');
+    }
+    // Hypertrophy
+    if (text.includes('hypertrophy') || text.includes('υπερτροφία') || text.includes('μυϊκή')) {
+      codes.push('HYP');
+    }
+    // Speed
+    if (text.includes('speed') || text.includes('ταχύτητα')) {
+      codes.push('SPD');
+    }
+    // Mobility
+    if (text.includes('mobility') || text.includes('κινητικότητα')) {
+      codes.push('MOB');
+    }
+    // Core
+    if (text.includes('core') || text.includes('κορμό') || text.includes('pillar')) {
+      codes.push('CORE');
+    }
+    // Conditioning
+    if (text.includes('conditioning') || text.includes('φυσική κατάσταση')) {
+      codes.push('COND');
+    }
+    
+    if (codes.length === 0) {
+      codes.push('PROG');
+    }
+    
+    return codes.join('/');
+  };
+
   // Ενημέρωση όταν αλλάζουν τα programData
   useEffect(() => {
     if (programData) {
-      setName(programData.name || "Πρόγραμμα Προπόνησης");
-      setDate(programData.training_dates?.[0] || today);
+      const code = generateCodedName(programData.description, programData.name);
+      const dateStr = programData.training_dates?.[0] || today;
+      setName(`${code} - ${dateStr}`);
+      setDate(dateStr);
     }
   }, [programData, today]);
 
