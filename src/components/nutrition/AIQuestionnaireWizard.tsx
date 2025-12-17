@@ -23,6 +23,7 @@ const STEPS = [
   { id: 'goal', title: 'Στόχος' },
   { id: 'preferences', title: 'Προτιμήσεις' },
   { id: 'allergies', title: 'Αλλεργίες' },
+  { id: 'health', title: 'Υγεία' },
   { id: 'generate', title: 'Δημιουργία' },
 ];
 
@@ -72,7 +73,11 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
     height: '',
     age: '',
     activityLevel: 'moderate',
-    trainingVolume: ''
+    trainingVolume: '',
+    // Health data
+    hasDiabetes: false,
+    diabetesType: '',
+    medications: ''
   });
 
   useEffect(() => {
@@ -298,6 +303,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
       case 1: return !!formData.goal;
       case 2: return true; // Preferences are optional
       case 3: return true; // Allergies are optional
+      case 4: return true; // Health info optional
       default: return true;
     }
   };
@@ -457,8 +463,60 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
         </div>
       )}
 
-      {/* Step 4: Generate */}
+      {/* Step 4: Health */}
       {currentStep === 4 && (
+        <div className="space-y-4">
+          <h3 className="font-medium">Πληροφορίες Υγείας (προαιρετικά)</h3>
+          
+          <div className="space-y-4">
+            <div
+              className={`flex items-center space-x-3 p-3 border rounded-none cursor-pointer transition-colors ${
+                formData.hasDiabetes ? 'border-red-500 bg-red-50' : 'hover:bg-gray-50'
+              }`}
+              onClick={() => setFormData(prev => ({ ...prev, hasDiabetes: !prev.hasDiabetes, diabetesType: '' }))}
+            >
+              <Checkbox checked={formData.hasDiabetes} />
+              <span className="text-sm">Έχω διαβήτη</span>
+            </div>
+            
+            {formData.hasDiabetes && (
+              <div className="ml-6 space-y-2">
+                <Label>Τύπος Διαβήτη</Label>
+                <RadioGroup 
+                  value={formData.diabetesType} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, diabetesType: value }))}
+                >
+                  <div className="flex items-center space-x-3 p-2 border rounded-none hover:bg-gray-50">
+                    <RadioGroupItem value="type1" id="type1" />
+                    <Label htmlFor="type1" className="cursor-pointer">Τύπου 1</Label>
+                  </div>
+                  <div className="flex items-center space-x-3 p-2 border rounded-none hover:bg-gray-50">
+                    <RadioGroupItem value="type2" id="type2" />
+                    <Label htmlFor="type2" className="cursor-pointer">Τύπου 2</Label>
+                  </div>
+                  <div className="flex items-center space-x-3 p-2 border rounded-none hover:bg-gray-50">
+                    <RadioGroupItem value="gestational" id="gestational" />
+                    <Label htmlFor="gestational" className="cursor-pointer">Κύησης</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
+            
+            <div className="space-y-2 pt-4">
+              <Label>Φάρμακα που λαμβάνετε (αν υπάρχουν)</Label>
+              <Textarea
+                value={formData.medications}
+                onChange={(e) => setFormData(prev => ({ ...prev, medications: e.target.value }))}
+                placeholder="π.χ. Μετφορμίνη 500mg, Ινσουλίνη..."
+                className="rounded-none"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step 5: Generate */}
+      {currentStep === 5 && (
         <div className="space-y-6 text-center py-8">
           <div className="inline-flex p-4 bg-[#00ffba]/10 rounded-full">
             <Brain className="w-12 h-12 text-[#00ffba]" />

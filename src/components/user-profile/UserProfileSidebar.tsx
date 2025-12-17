@@ -214,6 +214,13 @@ export const UserProfileSidebar = forwardRef<
       badge: activePrograms > 0 ? activePrograms : null,
       visible: true
     },
+    {
+      icon: Utensils,
+      label: "Διατροφή",
+      key: "nutrition",
+      badge: null,
+      visible: true
+    },
     { 
       icon: Calendar, 
       label: t('sidebar.calendar'), 
@@ -267,13 +274,6 @@ export const UserProfileSidebar = forwardRef<
       icon: CalendarDays,
       label: t('sidebar.onlineBooking'),
       key: "online-booking",
-      badge: null,
-      visible: true
-    },
-    {
-      icon: Utensils,
-      label: "Διατροφή",
-      key: "nutrition",
       badge: null,
       visible: true
     },
