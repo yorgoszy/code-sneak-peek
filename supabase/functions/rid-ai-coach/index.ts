@@ -51,9 +51,70 @@ serve(async (req) => {
     const callerUserData = await callerUserResponse.json();
     const isAdmin = callerUserData[0]?.role === 'admin';
 
+    // 📦 ΦΟΡΤΩΣΗ SUBSCRIPTION STATUS ΤΟΥ ΧΡΗΣΤΗ
+    let userSubscriptionStatus = 'inactive';
+    let hasActiveSubscription = false;
+    let subscriptionsContext = '';
+    
+    // Για τον χρήστη που κάνει request, ελέγχουμε την συνδρομή του
+    const userSubscriptionResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_subscriptions?user_id=eq.${userId}&status=eq.active&end_date=gte.${new Date().toISOString().split('T')[0]}&select=*,subscription_types(name,description)&order=end_date.desc&limit=1`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const userSubscriptionData = await userSubscriptionResponse.json();
+    
+    if (Array.isArray(userSubscriptionData) && userSubscriptionData.length > 0) {
+      hasActiveSubscription = true;
+      userSubscriptionStatus = 'active';
+      console.log(`✅ User ${userId} has active subscription:`, userSubscriptionData[0]);
+    } else {
+      console.log(`⚠️ User ${userId} does NOT have an active subscription`);
+    }
+    
+    // Admin: φόρτωση ΟΛΩΝ των συνδρομών για overview
+    if (isAdmin && !targetUserId) {
+      const allSubscriptionsResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_subscriptions?select=*,subscription_types(name),app_users(name)&order=created_at.desc&limit=100`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const allSubscriptionsData = await allSubscriptionsResponse.json();
+      
+      if (Array.isArray(allSubscriptionsData) && allSubscriptionsData.length > 0) {
+        const activeCount = allSubscriptionsData.filter((s: any) => s.status === 'active').length;
+        const inactiveCount = allSubscriptionsData.filter((s: any) => s.status !== 'active').length;
+        
+        subscriptionsContext = `\n\n📊 ΣΥΝΔΡΟΜΕΣ OVERVIEW:\n- Ενεργές: ${activeCount}\n- Ανενεργές: ${inactiveCount}\n`;
+        
+        // Λίστα με τους χρήστες και τις συνδρομές τους
+        const subscriptionsList = allSubscriptionsData.slice(0, 20).map((s: any) => {
+          const userName = s.app_users?.name || 'Unknown';
+          const typeName = s.subscription_types?.name || 'Unknown';
+          const status = s.status;
+          const endDate = s.end_date;
+          return `  • ${userName}: ${typeName} (${status}) - λήγει: ${endDate}`;
+        }).join('\n');
+        
+        subscriptionsContext += `\nΠρόσφατες συνδρομές:\n${subscriptionsList}`;
+        console.log(`✅ Admin: Loaded ${allSubscriptionsData.length} subscriptions`);
+      }
+    }
+    
     // 🏋️ ΦΟΡΤΩΣΗ ΤΡΑΠΕΖΑΣ ΑΣΚΗΣΕΩΝ (για δημιουργία προγραμμάτων)
+    // Διαθέσιμο για admin Ή για users με ενεργή συνδρομή
     let exerciseDatabaseContext = '';
-    if (isAdmin) {
+    const canAccessProgramBuilder = isAdmin || hasActiveSubscription;
+    
+    if (canAccessProgramBuilder) {
       const exercisesResponse = await fetch(
         `${SUPABASE_URL}/rest/v1/exercises?select=id,name&order=name.asc`,
         {
@@ -3290,7 +3351,10 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
 
 🏋️ ΔΥΝΑΤΟΤΗΤΑ ΔΗΜΙΟΥΡΓΙΑΣ & ΑΝΑΘΕΣΗΣ ΠΡΟΓΡΑΜΜΑΤΩΝ:
 ${isAdmin ? `
-Ως admin, μπορείς να ΔΗΜΙΟΥΡΓΕΙΣ και να ΑΝΑΘΕΤΕΙΣ προγράμματα προπόνησης!
+📊 ΣΥΝΔΡΟΜΕΣ (ADMIN VIEW):
+${subscriptionsContext}
+
+Ως admin, μπορείς να ΔΗΜΙΟΥΡΓΕΙΣ και να ΑΝΑΘΕΤΕΙΣ προγράμματα προπόνησης ΣΕ ΟΠΟΙΟΝΔΗΠΟΤΕ ΧΡΗΣΤΗ!
 ${exerciseDatabaseContext}
 
 ⚠️ ΚΡΙΣΙΜΟ: Όταν δημιουργείς πρόγραμμα, το JSON ΠΡΕΠΕΙ να είναι ΠΛΗΡΕΣ και ΕΓΚΥΡΟ!
@@ -3343,14 +3407,80 @@ ${exerciseDatabaseContext}
 {"action": "assign_program", "program_id": "UUID", "user_id": "ΟΝΟΜΑ ή UUID", "training_dates": ["2024-12-30"]}
 \`\`\`
 
+📌 ΓΙΑ ΕΛΕΓΧΟ PROGRAM BUILDER (διαδραστική δημιουργία):
+\`\`\`ai-action
+{
+  "action": "open_program_builder",
+  "actions": [
+    {"type": "SET_NAME", "payload": "Πρόγραμμα Δύναμης"},
+    {"type": "SET_DESCRIPTION", "payload": "4 εβδομάδες strength training"},
+    {"type": "SELECT_USER", "payload": "user_id_here"},
+    {"type": "ADD_WEEK"},
+    {"type": "ADD_DAY", "payload": {"weekId": "week_1"}},
+    {"type": "ADD_BLOCK", "payload": {"weekId": "week_1", "dayId": "day_1"}},
+    {"type": "UPDATE_BLOCK_TYPE", "payload": {"weekId": "week_1", "dayId": "day_1", "blockId": "block_1", "trainingType": "strength"}},
+    {"type": "ADD_EXERCISE", "payload": {"weekId": "week_1", "dayId": "day_1", "blockId": "block_1", "exerciseId": "exercise_uuid"}},
+    {"type": "UPDATE_EXERCISE", "payload": {"weekId": "week_1", "dayId": "day_1", "blockId": "block_1", "exerciseId": "pe_1", "field": "sets", "value": 4}},
+    {"type": "SET_TRAINING_DATES", "payload": ["2024-12-30", "2025-01-02"]}
+  ]
+}
+\`\`\`
+
+Διαθέσιμες ACTIONS για Program Builder:
+- SET_NAME, SET_DESCRIPTION: Βασικά στοιχεία
+- SELECT_USER, SELECT_USERS, SELECT_GROUP, TOGGLE_MULTIPLE_MODE: Επιλογή χρήστη/ων
+- ADD_WEEK, REMOVE_WEEK, DUPLICATE_WEEK, UPDATE_WEEK_NAME: Εβδομάδες
+- ADD_DAY, REMOVE_DAY, DUPLICATE_DAY, UPDATE_DAY_NAME: Ημέρες
+- ADD_BLOCK, REMOVE_BLOCK, DUPLICATE_BLOCK: Blocks
+- UPDATE_BLOCK_NAME, UPDATE_BLOCK_TYPE, UPDATE_BLOCK_FORMAT, UPDATE_BLOCK_DURATION, UPDATE_BLOCK_SETS
+- ADD_EXERCISE, REMOVE_EXERCISE, DUPLICATE_EXERCISE
+- UPDATE_EXERCISE: fields = sets, reps, kg, percent_rm, velocity_ms, rest, tempo, notes
+- SET_TRAINING_DATES: Ημερομηνίες προπόνησης
+- SAVE, ASSIGN, GET_STATS, GET_PROGRAM
+
 ΚΑΝΟΝΕΣ:
 - user_id: Μπορείς να βάλεις το ΟΝΟΜΑ του αθλητή (πχ "HYPERKIDS") - το σύστημα το βρίσκει αυτόματα
 - Χρησιμοποίησε ΜΟΝΟ ασκήσεις από την ΤΡΑΠΕΖΑ ΑΣΚΗΣΕΩΝ παραπάνω!
 - training_dates σε format "YYYY-MM-DD"
 - ΠΑΝΤΑ κλείνε σωστά όλες τις αγκύλες και brackets
 - Αν δεν ξέρεις λεπτομέρειες, ΡΩΤΑ πρώτα τον χρήστη
+` : hasActiveSubscription ? `
+🎉 Έχεις ΕΝΕΡΓΗ ΣΥΝΔΡΟΜΗ! Μπορείς να δημιουργήσεις προγράμματα ΜΟΝΟ για τον εαυτό σου.
+${exerciseDatabaseContext}
+
+⚠️ ΚΡΙΣΙΜΟ: Όταν δημιουργείς πρόγραμμα, το JSON ΠΡΕΠΕΙ να είναι ΠΛΗΡΕΣ και ΕΓΚΥΡΟ!
+
+📌 ΓΙΑ ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΓΡΑΜΜΑΤΟΣ (ΓΙΑ ΤΟΝ ΕΑΥΤΟ ΣΟΥ):
+\`\`\`ai-action
+{
+  "action": "create_program",
+  "name": "Το Πρόγραμμά μου",
+  "description": "Περιγραφή",
+  "user_id": "${userId}",
+  "training_dates": ["2024-12-30"],
+  "weeks": [...]
+}
+\`\`\`
+
+📌 ΓΙΑ ΔΙΑΔΡΑΣΤΙΚΗ ΔΗΜΙΟΥΡΓΙΑ (PROGRAM BUILDER):
+\`\`\`ai-action
+{
+  "action": "open_program_builder",
+  "actions": [
+    {"type": "SET_NAME", "payload": "Το Πρόγραμμά μου"},
+    {"type": "SELECT_USER", "payload": "${userId}"}
+  ]
+}
+\`\`\`
+
+ΚΑΝΟΝΕΣ:
+- Μπορείς να φτιάξεις προγράμματα ΜΟΝΟ για τον εαυτό σου
+- Χρησιμοποίησε ΜΟΝΟ ασκήσεις από την ΤΡΑΠΕΖΑ ΑΣΚΗΣΕΩΝ παραπάνω!
+- training_dates σε format "YYYY-MM-DD"
 ` : `
-Δεν έχεις δικαίωμα δημιουργίας ή ανάθεσης προγραμμάτων. Αν σου ζητηθεί, πες στον χρήστη να επικοινωνήσει με τον προπονητή.
+⚠️ ΔΕΝ ΕΧΕΙΣ ΕΝΕΡΓΗ ΣΥΝΔΡΟΜΗ!
+Για να μπορείς να δημιουργείς προγράμματα, χρειάζεσαι ενεργή συνδρομή.
+Επικοινώνησε με τον προπονητή ή ενεργοποίησε τη συνδρομή σου.
 `}
 
 Θυμάσαι όλες τις προηγούμενες συνομιλίες και χρησιμοποιείς αυτές τις πληροφορίες για να δίνεις καλύτερες συμβουλές.`
