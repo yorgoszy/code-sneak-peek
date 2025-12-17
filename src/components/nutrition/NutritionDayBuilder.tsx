@@ -56,6 +56,7 @@ interface AppUser {
   name: string;
   email: string;
   avatar_url?: string;
+  photo_url?: string;
 }
 
 export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
@@ -111,7 +112,7 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
     try {
       const { data, error } = await supabase
         .from('app_users')
-        .select('id, name, email, avatar_url')
+        .select('id, name, email, avatar_url, photo_url')
         .order('name');
 
       if (error) throw error;
@@ -245,8 +246,8 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
         {selectedUser ? (
           <div className="flex items-center gap-2 p-2 border border-[#00ffba] bg-[#00ffba]/5 rounded-none">
             <Avatar className="w-8 h-8 rounded-none">
-              <AvatarImage src={selectedUser.avatar_url} />
-              <AvatarFallback className="rounded-none bg-gray-200 text-xs">
+              <AvatarImage src={selectedUser.photo_url || selectedUser.avatar_url} />
+              <AvatarFallback className="rounded-none bg-[#cb8954] text-white text-xs">
                 {selectedUser.name.substring(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -283,8 +284,8 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
                     className="w-full flex items-center gap-2 p-2 hover:bg-gray-50 text-left"
                   >
                     <Avatar className="w-6 h-6 rounded-none">
-                      <AvatarImage src={user.avatar_url} />
-                      <AvatarFallback className="rounded-none bg-gray-200 text-xs">
+                      <AvatarImage src={user.photo_url || user.avatar_url} />
+                      <AvatarFallback className="rounded-none bg-[#cb8954] text-white text-[10px]">
                         {user.name.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

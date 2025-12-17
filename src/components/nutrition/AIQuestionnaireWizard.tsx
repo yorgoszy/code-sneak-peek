@@ -7,6 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Brain, Loader2, ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -82,7 +83,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
     try {
       const { data, error } = await supabase
         .from('app_users')
-        .select('id, name, birth_date')
+        .select('id, name, birth_date, avatar_url, photo_url')
         .order('name');
 
       if (error) throw error;
@@ -340,9 +341,12 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
                 onClick={() => handleUserSelect(user.id)}
               >
                 <CardContent className="p-3 flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#cb8954] rounded-full flex items-center justify-center text-white font-medium text-sm">
-                    {user.name?.charAt(0)}
-                  </div>
+                  <Avatar className="w-8 h-8 rounded-none">
+                    <AvatarImage src={user.photo_url || user.avatar_url} />
+                    <AvatarFallback className="rounded-none bg-[#cb8954] text-white text-sm">
+                      {user.name?.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="text-sm">{user.name}</span>
                 </CardContent>
               </Card>
