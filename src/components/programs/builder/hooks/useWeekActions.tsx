@@ -8,13 +8,13 @@ export const useWeekActions = (
   saveProgram?: (programData: any) => Promise<any>
 ) => {
   const createDefaultBlocks = () => [
-    { id: generateId(), name: 'warm up', training_type: 'warm up' as any, block_order: 1, workout_format: '', workout_duration: '', block_sets: 1, program_exercises: [] },
-    { id: generateId(), name: 'power', training_type: 'power' as any, block_order: 2, workout_format: '', workout_duration: '', block_sets: 1, program_exercises: [] },
-    { id: generateId(), name: 'str', training_type: 'str' as any, block_order: 3, workout_format: '', workout_duration: '', block_sets: 1, program_exercises: [] },
-    { id: generateId(), name: 'end', training_type: 'end' as any, block_order: 4, workout_format: '', workout_duration: '', block_sets: 1, program_exercises: [] },
-    { id: generateId(), name: 'rotational', training_type: 'rotational' as any, block_order: 5, workout_format: '', workout_duration: '', block_sets: 1, program_exercises: [] },
-    { id: generateId(), name: 'accessory', training_type: 'accessory' as any, block_order: 6, workout_format: '', workout_duration: '', block_sets: 1, program_exercises: [] },
-    { id: generateId(), name: 'recovery', training_type: 'recovery' as any, block_order: 7, workout_format: '', workout_duration: '', block_sets: 1, program_exercises: [] }
+    { id: generateId(), name: 'warm up', training_type: 'warm up' as any, block_order: 1, workout_format: undefined, workout_duration: '', block_sets: 1, program_exercises: [] },
+    { id: generateId(), name: 'power', training_type: 'power' as any, block_order: 2, workout_format: undefined, workout_duration: '', block_sets: 1, program_exercises: [] },
+    { id: generateId(), name: 'str', training_type: 'str' as any, block_order: 3, workout_format: undefined, workout_duration: '', block_sets: 1, program_exercises: [] },
+    { id: generateId(), name: 'end', training_type: 'end' as any, block_order: 4, workout_format: undefined, workout_duration: '', block_sets: 1, program_exercises: [] },
+    { id: generateId(), name: 'rotational', training_type: 'rotational' as any, block_order: 5, workout_format: undefined, workout_duration: '', block_sets: 1, program_exercises: [] },
+    { id: generateId(), name: 'accessory', training_type: 'accessory' as any, block_order: 6, workout_format: undefined, workout_duration: '', block_sets: 1, program_exercises: [] },
+    { id: generateId(), name: 'recovery', training_type: 'recovery' as any, block_order: 7, workout_format: undefined, workout_duration: '', block_sets: 1, program_exercises: [] }
   ];
 
   const addWeek = () => {
@@ -84,7 +84,7 @@ export const useWeekActions = (
               name: block.name,
               block_order: block.block_order,
               training_type: block.training_type,
-              workout_format: block.workout_format || '',
+              workout_format: (block.workout_format as any) || undefined,
               workout_duration: block.workout_duration || '',
               block_sets: block.block_sets || 1,
               program_exercises: sortedExercises.map((exercise) => {

@@ -24,7 +24,7 @@ export const useBlockActions = (
                 name: `Μπλοκ ${currentBlocks.length + 1}`,
                 block_order: currentBlocks.length + 1,
                 training_type: undefined,
-                workout_format: '',
+                workout_format: undefined,
                 workout_duration: '',
                 block_sets: 1,
                 program_exercises: []
@@ -106,7 +106,7 @@ export const useBlockActions = (
                 name: `${blockToDuplicate.name} (Αντίγραφο)`,
                 block_order: (day.program_blocks?.length || 0) + 1,
                 training_type: blockToDuplicate.training_type,
-                workout_format: blockToDuplicate.workout_format || '',
+                workout_format: (blockToDuplicate.workout_format as any) || undefined,
                 workout_duration: blockToDuplicate.workout_duration || '',
                 block_sets: blockToDuplicate.block_sets || 1,
                 program_exercises: sortedExercises.map(exercise => ({
@@ -185,7 +185,12 @@ export const useBlockActions = (
               return {
                 ...day,
                 program_blocks: (day.program_blocks || []).map(block =>
-                  block.id === blockId ? { ...block, workout_format: workoutFormat as any } : block
+                  block.id === blockId
+                    ? {
+                        ...block,
+                        workout_format: (workoutFormat ? (workoutFormat as any) : undefined)
+                      }
+                    : block
                 )
               };
             }
