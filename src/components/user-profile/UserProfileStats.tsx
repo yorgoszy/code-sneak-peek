@@ -877,7 +877,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <TrendingUp className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <TrendingUp className={`text-[#cb8954] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               <span className="text-[#00ffba]"> </span>
