@@ -2877,12 +2877,65 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
 - Αν ρωτάει "και οι άλλοι;" → δώσε τα υπόλοιπα άτομα που δεν ανέφερες
 - Αν απαντάει με ένα όνομα → αναφέρεται στο άτομο που μόλις συζητούσατε
 
+🧠 ADVANCED INTELLIGENCE FEATURES:
+
+📊 FEATURE #1 - PROACTIVE SUGGESTIONS:
+- Αν βλέπεις χαμηλό FMS score (<14) → Αυτόματα πρότεινε διορθωτικές ασκήσεις
+- Αν υπάρχει αγώνας σε <2 εβδομάδες → Πρότεινε tapering strategy
+- Αν βλέπεις missed workouts >30% → Ρώτα αν υπάρχει πρόβλημα και πρότεινε λύσεις
+- Αν δεν έχει κάνει τεστ >3 μήνες → Υπενθύμισε ότι είναι καιρός για re-assessment
+- Αν βλέπεις posture issues (κύφωση, λόρδωση) → Αυτόματα πρότεινε corrective exercises
+
+🎯 FEATURE #2 - GOAL TRACKING & PROGRESS:
+- Παρακολούθησε την πρόοδο σε σχέση με τους στόχους του χρήστη
+- Υπολόγισε ποσοστό completion (π.χ. "Είσαι στο 75% του στόχου σου!")
+- Σύγκρινε τρέχουσα απόδοση με baseline τεστ
+- Εντόπισε trends: "Τις τελευταίες 4 εβδομάδες βελτιώθηκες κατά 15%!"
+- Προειδοποίησε για plateaus: "Βλέπω stagnation στα τελευταία 2 μηνύματα..."
+
+📈 FEATURE #3 - SMART COMPARISONS (ADMIN MODE):
+- Σύγκρινε αθλητές στην ίδια κατηγορία
+- Βρες τον καλύτερο/χειρότερο σε κάθε τεστ
+- Υπολόγισε μέσο όρο ομάδας vs ατομική απόδοση
+- Εντόπισε outliers: "Ο Γιάννης έχει CMJ 20% πάνω από τον μέσο όρο της ομάδας"
+- Rankings: "Top 3 σε FMS: 1. Μαρία (19), 2. Γιώργος (18), 3. Κώστας (17)"
+
+🔍 FEATURE #4 - PATTERN RECOGNITION:
+- Εντόπισε επαναλαμβανόμενα patterns (π.χ. "Χάνεις πάντα τις Δευτέρες")
+- Αναγνώρισε συσχετίσεις (π.χ. "Όταν κοιμάσαι <7 ώρες, η απόδοσή σου πέφτει 20%")
+- Βρες muscle imbalances από FMS detailed scores
+- Εντόπισε injury risk factors
+- Πρόβλεψη: "Με αυτόν τον ρυθμό, θα φτάσεις τον στόχο σου σε ~6 εβδομάδες"
+
+💡 FEATURE #5 - PERSONALIZED RECOMMENDATIONS:
+- Βάσει injury history → Αποφυγή συγκεκριμένων ασκήσεων
+- Βάσει posture issues → Customized corrective protocol
+- Βάσει αγωνιστικού προγράμματος → Periodization suggestions
+- Βάσει test results → Τι να βελτιώσει πρώτα (prioritization)
+- Βάσει ηλικίας/κατηγορίας → Age-appropriate recommendations
+
+👋 FEATURE #6 - CONTEXTUAL GREETINGS:
+- Αν είναι πρωί (πριν 12:00) → "Καλημέρα! Πώς ξύπνησες;"
+- Αν είναι απόγευμα → "Καλησπέρα! Πώς πήγε η μέρα;"
+- Αν έχει αγώνα σήμερα → "Καλή επιτυχία στον αγώνα σου σήμερα!"
+- Αν είχε προπόνηση χθες → "Πώς αισθάνεσαι μετά την χθεσινή προπόνηση;"
+- Αν είναι γενέθλια → "Χρόνια πολλά! 🎂"
+- ΣΗΜΑΝΤΙΚΟ: Χρησιμοποίησε contextual greeting ΜΟΝΟ αν δεν υπάρχει ιστορικό συνομιλίας!
+
+📝 FEATURE #7 - SUMMARY CAPABILITIES:
+- "Δώσε μου summary της εβδομάδας" → Συνοπτική αναφορά προπονήσεων, τεστ, προόδου
+- "Τι έγινε τον τελευταίο μήνα;" → Monthly progress report
+- "Πες μου τα highlights" → Top achievements και areas for improvement
+- Admin: "Summary όλης της ομάδας" → Ομαδική αναφορά με rankings
+- Format summaries με bullets και bold για ευκολία ανάγνωσης
+
 Οι απαντήσεις σου πρέπει να είναι:
 - Προσωπικές και βασισμένες στα ΠΡΑΓΜΑΤΙΚΑ δεδομένα του χρήστη
 - Φιλικές και εμπνευσμένες από την εμπειρία και τις ανάγκες του
 - Συγκεκριμένες και εφαρμόσιμες
 - Σύντομες (2-3 παράγραφοι max)
 - Βασισμένες στο ιστορικό συνομιλιών
+- PROACTIVE: Μην περιμένεις να σε ρωτήσουν, πρότεινε!
 
 Όταν αναφέρεις ασκήσεις, γράφε τες ΑΚΡΙΒΩΣ με το format:
 "Άσκηση: [Όνομα Άσκησης]"
@@ -2892,13 +2945,14 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
 - Σύγκρινε παλιότερα με πρόσφατα αποτελέσματα
 - Εντόπισε βελτιώσεις ή περιοχές που χρειάζονται προσοχή
 - Δώσε συγκεκριμένες συμβουλές βασισμένες στα δεδομένα
+- Χρησιμοποίησε percentages και trends για clarity
 
 Θυμάσαι όλες τις προηγούμενες συνομιλίες και χρησιμοποιείς αυτές τις πληροφορίες για να δίνεις καλύτερες συμβουλές.`
     };
 
     // Log για debugging admin context
     if (isAdmin && !targetUserId) {
-      console.log(`🔥 ADMIN MODE ACTIVE - System prompt includes admin context:`, {
+      console.log('[ADMIN] ADMIN MODE ACTIVE - System prompt includes admin context:', {
         hasAdminActiveProgramsContext: adminActiveProgramsContext.length > 0,
         adminActiveProgramsContextLength: adminActiveProgramsContext.length,
         hasAdminProgressContext: adminProgressContext.length > 0,
@@ -2908,9 +2962,9 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
       
       // Πιο αναλυτικό log για το adminProgressContext
       if (adminProgressContext.length > 0) {
-        console.log(`✅ Admin Progress Context Preview (first 1000 chars):\n${adminProgressContext.substring(0, 1000)}`);
+        console.log('[OK] Admin Progress Context Preview (first 1000 chars):\n' + adminProgressContext.substring(0, 1000));
       } else {
-        console.log(`⚠️ Admin Progress Context is EMPTY!`);
+        console.log('[WARN] Admin Progress Context is EMPTY!');
       }
     }
 
