@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, Bot, User, Loader2, Download, Sparkles, Brain, Crown } from "lucide-react";
+import { Send, Brain, Crown, Sparkles, Loader2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAIProgramBuilder } from "@/contexts/AIProgramBuilderContext";
 import { Badge } from "@/components/ui/badge";
+import { QuickAssignProgramDialog } from "@/components/ai-chat/QuickAssignProgramDialog";
 
 interface Message {
   id: string;
@@ -39,10 +40,11 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [quickAssignOpen, setQuickAssignOpen] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { openDialog: openProgramBuilder, queueAction, executeAction } = useAIProgramBuilder();
 
-  // Check subscription and role status
   useEffect(() => {
     const checkUserStatus = async () => {
       if (!athleteId) return;
