@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAIProgramBuilder } from "@/contexts/AIProgramBuilderContext";
 import { Badge } from "@/components/ui/badge";
-import { QuickAssignProgramDialog } from "@/components/ai-chat/QuickAssignProgramDialog";
+import { QuickAssignProgramDialog, AIProgramData } from "@/components/ai-chat/QuickAssignProgramDialog";
 
 interface Message {
   id: string;
@@ -41,6 +41,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [quickAssignOpen, setQuickAssignOpen] = useState(false);
+  const [lastAIProgramData, setLastAIProgramData] = useState<AIProgramData | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { openDialog: openProgramBuilder, queueAction, executeAction } = useAIProgramBuilder();
@@ -240,29 +241,18 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         return;
       }
 
-      // Υπάρχουσα λογική για create_program
+      // Υπάρχουσα λογική για create_program - ΑΠΟΘΗΚΕΥΣΗ για QuickAssign
       if (actionData.action === 'create_program') {
-        toast.loading('Δημιουργία προγράμματος...', { id: 'ai-action' });
-
-        const result = await fetch(
-          `https://dicwdviufetibnafzipa.supabase.co/functions/v1/ai-program-actions`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3dkdml1ZmV0aWJuYWZ6aXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczOTczNTAsImV4cCI6MjA2Mjk3MzM1MH0.Rlr7MWSRm1dUnXH_5xBkTNYxKBb3t8xCzwwnv1SlIs8`,
-            },
-            body: JSON.stringify(actionData),
-          }
-        );
-
-        const data = await result.json();
+        // Αποθήκευση δεδομένων για το QuickAssignProgramDialog
+        setLastAIProgramData({
+          name: actionData.name || 'Πρόγραμμα AI',
+          description: actionData.description,
+          training_dates: actionData.training_dates || [new Date().toISOString().split('T')[0]],
+          weeks: actionData.weeks || [],
+        });
         
-        if (data.success) {
-          toast.success(data.message || 'Το πρόγραμμα δημιουργήθηκε επιτυχώς!', { id: 'ai-action' });
-        } else {
-          toast.error(data.error || 'Σφάλμα κατά τη δημιουργία του προγράμματος', { id: 'ai-action' });
-        }
+        console.log('📋 AI Program Data saved for QuickAssign:', actionData.name);
+        toast.success('Το πρόγραμμα είναι έτοιμο! Πάτα "Quick Assign" για ανάθεση.', { id: 'ai-action' });
       }
     } catch (error) {
       console.error('Error processing AI action:', error, 'JSON:', jsonStr);
@@ -553,6 +543,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         isOpen={quickAssignOpen}
         onClose={() => setQuickAssignOpen(false)}
         userId={athleteId}
+        programData={lastAIProgramData}
       />
     )}
     </>
