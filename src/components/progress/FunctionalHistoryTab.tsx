@@ -369,7 +369,7 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
                     <p className="text-[9px] sm:text-xs text-muted-foreground mb-1">Μύες για Διάταση:</p>
                     <div className="flex flex-wrap gap-1">
                       {data.muscles_need_stretching.map((muscle: string, i: number) => (
-                        <Badge key={i} variant="outline" className="rounded-none text-[8px] border-yellow-500 text-yellow-600 bg-yellow-50">
+                        <Badge key={i} variant="outline" className="rounded-none text-[8px] border-orange-500 text-orange-600 bg-orange-50">
                           {muscle}
                         </Badge>
                       ))}
@@ -383,7 +383,7 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
                     <p className="text-[9px] sm:text-xs text-muted-foreground mb-1">Μύες για Ενδυνάμωση:</p>
                     <div className="flex flex-wrap gap-1">
                       {data.muscles_need_strengthening.map((muscle: string, i: number) => (
-                        <Badge key={i} variant="outline" className="rounded-none text-[8px] border-pink-500 text-pink-600 bg-pink-50">
+                        <Badge key={i} variant="outline" className="rounded-none text-[8px] border-red-500 text-red-600 bg-red-50">
                           {muscle}
                         </Badge>
                       ))}
