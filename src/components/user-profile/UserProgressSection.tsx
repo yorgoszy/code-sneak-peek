@@ -14,7 +14,6 @@ import { VO2MaxProgressCard } from "./VO2MaxProgressCard";
 import { JumpProfileLatestCard } from "./JumpProfileLatestCard";
 import { AnthropometricProgressCard } from "./AnthropometricProgressCard";
 import { BodyMapCard } from "./BodyMapCard";
-import { FunctionalProgressCard } from "./FunctionalProgressCard";
 import { useTranslation } from 'react-i18next';
 
 interface UserProgressSectionProps {
@@ -332,13 +331,6 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       {hasFunctionalTest && (
         <div className="mb-2 sm:mb-0">
           <BodyMapCard userId={userId} />
-        </div>
-      )}
-
-      {/* Functional Progress Card - show if user has functional test */}
-      {hasFunctionalTest && (
-        <div className="mb-2 sm:mb-0">
-          <FunctionalProgressCard userId={userId} />
         </div>
       )}
 
