@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, Bot, User, Loader2, Download, Sparkles, Brain } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAIProgramBuilder } from "@/contexts/AIProgramBuilderContext";
 
 interface Message {
   id: string;
@@ -36,6 +37,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { openDialog: openProgramBuilder, queueAction, executeAction } = useAIProgramBuilder();
 
   useEffect(() => {
     if (isOpen && athleteId) {
@@ -142,60 +144,71 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     await saveMessageToDatabase(welcomeMessage);
   };
 
-  // Επεξεργασία AI actions (δημιουργία/ανάθεση προγραμμάτων)
+  // Επεξεργασία AI actions (δημιουργία/ανάθεση προγραμμάτων + ProgramBuilder control)
   const processAIActions = async (response: string) => {
-    // Βρες το ai-action block - υποστήριξη για διάφορα formats
+    // Βρες το ai-action block
     const actionMatch = response.match(/```ai-action\s*([\s\S]*?)```/);
     if (!actionMatch) return;
 
     let jsonStr = actionMatch[1].trim();
     
-    // Προσπάθησε να διορθώσεις συνηθισμένα προβλήματα στο JSON
     try {
-      // Αφαίρεση trailing commas πριν από } ή ]
+      // Διόρθωση JSON
       jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
-      
-      // Αν λείπουν κλείσιμο brackets, προσπάθησε να τα προσθέσεις
       const openBraces = (jsonStr.match(/{/g) || []).length;
       const closeBraces = (jsonStr.match(/}/g) || []).length;
       const openBrackets = (jsonStr.match(/\[/g) || []).length;
       const closeBrackets = (jsonStr.match(/]/g) || []).length;
       
-      // Προσθήκη missing brackets
-      for (let i = 0; i < openBrackets - closeBrackets; i++) {
-        jsonStr += ']';
-      }
-      for (let i = 0; i < openBraces - closeBraces; i++) {
-        jsonStr += '}';
-      }
+      for (let i = 0; i < openBrackets - closeBrackets; i++) jsonStr += ']';
+      for (let i = 0; i < openBraces - closeBraces; i++) jsonStr += '}';
       
       const actionData = JSON.parse(jsonStr);
       console.log('🤖 Processing AI action:', actionData);
 
-      toast.loading('Δημιουργία προγράμματος...', { id: 'ai-action' });
-
-      const result = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-program-actions`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify(actionData),
+      // Έλεγχος για ProgramBuilder actions
+      if (actionData.action === 'open_program_builder') {
+        openProgramBuilder();
+        toast.success('Άνοιξε ο Program Builder!');
+        
+        // Εκτέλεση ακολουθίας actions αν υπάρχουν
+        if (actionData.actions && Array.isArray(actionData.actions)) {
+          setTimeout(() => {
+            actionData.actions.forEach((act: any) => {
+              executeAction(act);
+            });
+          }, 500);
         }
-      );
+        return;
+      }
 
-      const data = await result.json();
-      
-      if (data.success) {
-        toast.success(data.message || 'Το πρόγραμμα δημιουργήθηκε επιτυχώς!', { id: 'ai-action' });
-      } else {
-        toast.error(data.error || 'Σφάλμα κατά τη δημιουργία του προγράμματος', { id: 'ai-action' });
+      // Υπάρχουσα λογική για create_program
+      if (actionData.action === 'create_program') {
+        toast.loading('Δημιουργία προγράμματος...', { id: 'ai-action' });
+
+        const result = await fetch(
+          `https://dicwdviufetibnafzipa.supabase.co/functions/v1/ai-program-actions`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpY3dkdml1ZmV0aWJuYWZ6aXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczOTczNTAsImV4cCI6MjA2Mjk3MzM1MH0.Rlr7MWSRm1dUnXH_5xBkTNYxKBb3t8xCzwwnv1SlIs8`,
+            },
+            body: JSON.stringify(actionData),
+          }
+        );
+
+        const data = await result.json();
+        
+        if (data.success) {
+          toast.success(data.message || 'Το πρόγραμμα δημιουργήθηκε επιτυχώς!', { id: 'ai-action' });
+        } else {
+          toast.error(data.error || 'Σφάλμα κατά τη δημιουργία του προγράμματος', { id: 'ai-action' });
+        }
       }
     } catch (error) {
       console.error('Error processing AI action:', error, 'JSON:', jsonStr);
-      toast.error('Το AI δεν μπόρεσε να δημιουργήσει έγκυρο πρόγραμμα. Δοκιμάστε ξανά με πιο απλή αίτηση.');
+      toast.error('Σφάλμα επεξεργασίας AI action');
     }
   };
 
