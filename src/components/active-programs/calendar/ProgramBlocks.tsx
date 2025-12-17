@@ -3,6 +3,7 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExerciseItem } from './ExerciseItem';
 import { InteractiveBlockInfo } from './InteractiveBlockInfo';
+import { getTrainingTypeLabel } from '@/utils/trainingTypeLabels';
 
 interface ProgramBlocksProps {
   blocks: any[];
@@ -68,14 +69,14 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
     return orderA - orderB;
   });
 
-  console.log('🔧 ProgramBlocks: Rendering blocks with correct order:', 
-    sortedBlocks.map(b => ({ name: b.name, order: b.block_order }))
+  console.log('🔧 ProgramBlocks: Rendering blocks with correct order:',
+    sortedBlocks.map(b => ({ name: b.name, type: b.training_type, order: b.block_order }))
   );
 
   // Αν έχουμε μόνο ένα block, εμφανίζουμε χωρίς tabs
   if (sortedBlocks.length === 1) {
     const block = sortedBlocks[0];
-    
+
     // Ταξινόμηση ασκήσεων με βάση exercise_order
     const sortedExercises = [...(block.program_exercises || [])].sort((a, b) => {
       const orderA = Number(a.exercise_order) || 0;
@@ -92,34 +93,34 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
           blockSets={block.block_sets}
           workoutInProgress={workoutInProgress}
         />
-          {sortedExercises.map((exercise, exerciseIndex) => (
-            <ExerciseItem
-              key={exercise.id}
-              exercise={exercise}
-              exerciseNumber={exerciseIndex + 1}
-              workoutInProgress={workoutInProgress}
-              getRemainingText={getRemainingText}
-              isExerciseComplete={isExerciseComplete}
-              getCompletedSets={getCompletedSets}
-              onExerciseClick={onExerciseClick}
-              onSetClick={onSetClick}
-              onVideoClick={onVideoClick}
-              getNotes={getNotes}
-              updateNotes={updateNotes}
-              clearNotes={clearNotes}
-              updateKg={updateKg}
-              clearKg={clearKg}
-              updateVelocity={updateVelocity}
-              clearVelocity={clearVelocity}
-              updateReps={updateReps}
-              clearReps={clearReps}
-              getKg={getKg}
-              getReps={getReps}
-              getVelocity={getVelocity}
-              selectedDate={selectedDate}
-              program={program}
-            />
-          ))}
+        {sortedExercises.map((exercise, exerciseIndex) => (
+          <ExerciseItem
+            key={exercise.id}
+            exercise={exercise}
+            exerciseNumber={exerciseIndex + 1}
+            workoutInProgress={workoutInProgress}
+            getRemainingText={getRemainingText}
+            isExerciseComplete={isExerciseComplete}
+            getCompletedSets={getCompletedSets}
+            onExerciseClick={onExerciseClick}
+            onSetClick={onSetClick}
+            onVideoClick={onVideoClick}
+            getNotes={getNotes}
+            updateNotes={updateNotes}
+            clearNotes={clearNotes}
+            updateKg={updateKg}
+            clearKg={clearKg}
+            updateVelocity={updateVelocity}
+            clearVelocity={clearVelocity}
+            updateReps={updateReps}
+            clearReps={clearReps}
+            getKg={getKg}
+            getReps={getReps}
+            getVelocity={getVelocity}
+            selectedDate={selectedDate}
+            program={program}
+          />
+        ))}
       </div>
     );
   }
@@ -130,21 +131,20 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
       <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${sortedBlocks.length}, 1fr)` }}>
         {sortedBlocks.map((block) => (
           <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
-            {block.name}
+            {getTrainingTypeLabel(block.training_type, block.name)}
           </TabsTrigger>
         ))}
       </TabsList>
-      
+
       {sortedBlocks.map((block) => {
         // Ταξινόμηση ασκήσεων με βάση exercise_order για κάθε block
         const sortedExercises = [...(block.program_exercises || [])].sort((a, b) => {
           const orderA = Number(a.exercise_order) || 0;
           const orderB = Number(b.exercise_order) || 0;
-          console.log(`🔧 ProgramBlocks: Sorting exercises: ${a.exercises?.name} (${orderA}) vs ${b.exercises?.name} (${orderB})`);
           return orderA - orderB;
         });
 
-        console.log(`🔧 ProgramBlocks: Block "${block.name}" final exercise order:`, 
+        console.log(`🔧 ProgramBlocks: Block "${block.name}" final exercise order:`,
           sortedExercises.map((ex, idx) => `${idx + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`)
         );
 
@@ -158,34 +158,34 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                 blockSets={block.block_sets}
                 workoutInProgress={workoutInProgress}
               />
-                  {sortedExercises.map((exercise, exerciseIndex) => (
-                    <ExerciseItem
-                      key={exercise.id}
-                      exercise={exercise}
-                      exerciseNumber={exerciseIndex + 1}
-                      workoutInProgress={workoutInProgress}
-                      getRemainingText={getRemainingText}
-                      isExerciseComplete={isExerciseComplete}
-                      getCompletedSets={getCompletedSets}
-                      onExerciseClick={onExerciseClick}
-                      onSetClick={onSetClick}
-                      onVideoClick={onVideoClick}
-                      getNotes={getNotes}
-                      updateNotes={updateNotes}
-                      clearNotes={clearNotes}
-                      updateKg={updateKg}
-                      clearKg={clearKg}
-                      updateVelocity={updateVelocity}
-                      clearVelocity={clearVelocity}
-                      updateReps={updateReps}
-                      clearReps={clearReps}
-                      getKg={getKg}
-                      getReps={getReps}
-                      getVelocity={getVelocity}
-                      selectedDate={selectedDate}
-                      program={program}
-                    />
-                  ))}
+              {sortedExercises.map((exercise, exerciseIndex) => (
+                <ExerciseItem
+                  key={exercise.id}
+                  exercise={exercise}
+                  exerciseNumber={exerciseIndex + 1}
+                  workoutInProgress={workoutInProgress}
+                  getRemainingText={getRemainingText}
+                  isExerciseComplete={isExerciseComplete}
+                  getCompletedSets={getCompletedSets}
+                  onExerciseClick={onExerciseClick}
+                  onSetClick={onSetClick}
+                  onVideoClick={onVideoClick}
+                  getNotes={getNotes}
+                  updateNotes={updateNotes}
+                  clearNotes={clearNotes}
+                  updateKg={updateKg}
+                  clearKg={clearKg}
+                  updateVelocity={updateVelocity}
+                  clearVelocity={clearVelocity}
+                  updateReps={updateReps}
+                  clearReps={clearReps}
+                  getKg={getKg}
+                  getReps={getReps}
+                  getVelocity={getVelocity}
+                  selectedDate={selectedDate}
+                  program={program}
+                />
+              ))}
             </div>
           </TabsContent>
         );
