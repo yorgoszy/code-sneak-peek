@@ -130,7 +130,7 @@ export const NutritionAssignments: React.FC = () => {
     <>
       <div className="space-y-2">
         {assignments.map((assignment) => (
-          <Card key={assignment.id} className="rounded-none" style={{ backgroundColor: '#969696' }}>
+          <Card key={assignment.id} className="rounded-none" style={{ backgroundColor: '#d4d4d4' }}>
             <CardContent className="p-2 sm:p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
