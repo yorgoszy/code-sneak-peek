@@ -276,36 +276,40 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       -(TRAPEZIUS_UPPER_BOUNDARY)  // This clips at Y >= 0.88 in centered space
     );
 
+    const sideFromX = (x: number): 'Left' | 'Right' => {
+      const side: 'Left' | 'Right' = x <= 0 ? 'Left' : 'Right';
+      return flipSides ? (side === 'Left' ? 'Right' : 'Left') : side;
+    };
+
     const strengthenTargets = musclesToHighlight
       .filter(m => m.actionType === 'strengthen' && m.position)
       .map(m => ({
         pos: new THREE.Vector3(m.position!.x, m.position!.y, m.position!.z).sub(center),
-        isLeft: /_Left$/i.test(m.meshName),
-        isRight: /_Right$/i.test(m.meshName),
+        // Prefer side inferred from X (as set in /dashboard/muscle-mapping/3d-mapper)
+        side: sideFromX(m.position!.x - center.x),
       }));
 
     const stretchTargets = musclesToHighlight
       .filter(m => m.actionType === 'stretch' && m.position)
       .map(m => ({
         pos: new THREE.Vector3(m.position!.x, m.position!.y, m.position!.z).sub(center),
-        isLeft: /_Left$/i.test(m.meshName),
-        isRight: /_Right$/i.test(m.meshName),
+        side: sideFromX(m.position!.x - center.x),
       }));
 
     // Tweakable: distance threshold for matching DB point -> mesh.
     const MATCH_EPS = 0.25;
 
     const matchByPosition = (meshCenter: THREE.Vector3) => {
-      let best: { type: 'strengthen' | 'stretch'; dist: number; isLeft: boolean; isRight: boolean } | null = null;
+      let best: { type: 'strengthen' | 'stretch'; dist: number; side: 'Left' | 'Right' } | null = null;
 
       for (const t of strengthenTargets) {
         const d = t.pos.distanceTo(meshCenter);
-        if (d <= MATCH_EPS && (!best || d < best.dist)) best = { type: 'strengthen', dist: d, isLeft: t.isLeft, isRight: t.isRight };
+        if (d <= MATCH_EPS && (!best || d < best.dist)) best = { type: 'strengthen', dist: d, side: t.side };
       }
 
       for (const t of stretchTargets) {
         const d = t.pos.distanceTo(meshCenter);
-        if (d <= MATCH_EPS && (!best || d < best.dist)) best = { type: 'stretch', dist: d, isLeft: t.isLeft, isRight: t.isRight };
+        if (d <= MATCH_EPS && (!best || d < best.dist)) best = { type: 'stretch', dist: d, side: t.side };
       }
 
       return best;
@@ -344,10 +348,12 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
             let color: THREE.Color = defaultColor;
             let isHighlighted = false;
 
-            // Upper Trapezius region (Y >= 0.88)
-            if (y >= TRAPEZIUS_UPPER_BOUNDARY) {
-              const isLeftSide = x <= 0;
-              const isRightSide = x > 0;
+             // Upper Trapezius region (Y >= 0.88)
+             if (y >= TRAPEZIUS_UPPER_BOUNDARY) {
+               const logicalSide: 'Left' | 'Right' = x <= 0 ? 'Left' : 'Right';
+               const side: 'Left' | 'Right' = flipSides ? (logicalSide === 'Left' ? 'Right' : 'Left') : logicalSide;
+               const isLeftSide = side === 'Left';
+               const isRightSide = side === 'Right';
 
               // Check if this vertex should be highlighted based on selected parts
               if (isLeftSide && trapeziusParts.strengthen.upperLeft) {
@@ -408,15 +414,31 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       const meshBox = new THREE.Box3().setFromObject(child);
       const meshCenter = meshBox.getCenter(new THREE.Vector3());
 
-      // Preferred: coordinate matching (ignores Left/Right naming completely)
-      const matchedByPosition = hasPositionData ? matchByPosition(meshCenter) : null;
-      const isStrengthenByPos = matchedByPosition?.type === 'strengthen';
-      const isStretchByPos = matchedByPosition?.type === 'stretch';
+      const meshSide: 'Left' | 'Right' = (() => {
+        const side: 'Left' | 'Right' = meshCenter.x <= 0 ? 'Left' : 'Right';
+        return flipSides ? (side === 'Left' ? 'Right' : 'Left') : side;
+      })();
 
-      // Fallback: name-based matching (base-name only; no side splitting)
-      // Exclude Trapezius from general matching since we handle it above
-      const isStrengthenByName = meshBase !== 'trapezius' && (strengthenExact.has(meshName) || strengthenBaseAll.has(meshBase));
-      const isStretchByName = meshBase !== 'trapezius' && (stretchExact.has(meshName) || stretchBaseAll.has(meshBase));
+      // Preferred: coordinate matching (uses the X sign mapping from /dashboard/muscle-mapping/3d-mapper)
+      const matchedByPosition = hasPositionData ? matchByPosition(meshCenter) : null;
+      const isStrengthenByPos = matchedByPosition?.type === 'strengthen' && matchedByPosition.side === meshSide;
+      const isStretchByPos = matchedByPosition?.type === 'stretch' && matchedByPosition.side === meshSide;
+
+      // Fallback: name-based matching
+      // If we have sided DB names but no positions, apply only on the correct half by meshCenter.x.
+      // Exclude Trapezius from general matching since we handle it above.
+      const isStrengthenByName = meshBase !== 'trapezius' && (
+        strengthenExact.has(meshName) ||
+        (hasSidedData
+          ? (strengthenLeft.has(meshBase) && meshSide === 'Left') || (strengthenRight.has(meshBase) && meshSide === 'Right')
+          : strengthenBaseAll.has(meshBase))
+      );
+      const isStretchByName = meshBase !== 'trapezius' && (
+        stretchExact.has(meshName) ||
+        (hasSidedData
+          ? (stretchLeft.has(meshBase) && meshSide === 'Left') || (stretchRight.has(meshBase) && meshSide === 'Right')
+          : stretchBaseAll.has(meshBase))
+      );
 
       const isStrengthen = isStrengthenByPos || isStrengthenByName;
       const isStretch = isStretchByPos || isStretchByName;
