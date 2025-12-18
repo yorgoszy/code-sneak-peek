@@ -43,17 +43,26 @@ export const isValidAssignment = (assignment: EnrichedAssignment): boolean => {
     totalTrainingDates: trainingDates.length
   });
   
+  // Υπολογισμός ημερομηνίας μία εβδομάδα μετά την τελευταία προπόνηση
+  const lastTrainingDateObj = new Date(lastTrainingDate);
+  const oneWeekAfterEnd = new Date(lastTrainingDateObj);
+  oneWeekAfterEnd.setDate(oneWeekAfterEnd.getDate() + 7);
+  const oneWeekAfterEndString = formatDateToLocalString(oneWeekAfterEnd);
+  
   // Program is active if:
   // 1. It has started and not ended (active)
   // 2. It starts within the next week (coming soon)
+  // 3. It completed within the last week (recently completed)
   const isActive = firstTrainingDate <= todayString && lastTrainingDate >= todayString;
   const isComingSoon = firstTrainingDate > todayString && firstTrainingDate <= nextWeekString;
+  const isRecentlyCompleted = lastTrainingDate < todayString && oneWeekAfterEndString >= todayString;
   
   console.log('📊 Date validation result for assignment:', assignment.id, {
     isActive,
     isComingSoon,
-    willInclude: isActive || isComingSoon
+    isRecentlyCompleted,
+    willInclude: isActive || isComingSoon || isRecentlyCompleted
   });
   
-  return isActive || isComingSoon;
+  return isActive || isComingSoon || isRecentlyCompleted;
 };
