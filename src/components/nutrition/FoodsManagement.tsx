@@ -237,23 +237,23 @@ export const FoodsManagement: React.FC = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filteredFoods.map((food) => (
               <Card key={food.id} className="rounded-none">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h4 className="font-medium text-sm">{food.name}</h4>
-                      <Badge variant="outline" className="rounded-none text-xs mt-1">
+                <CardContent className="p-2">
+                  <div className="flex items-start justify-between gap-1 mb-1">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-medium text-[10px] sm:text-xs truncate">{food.name}</h4>
+                      <Badge variant="outline" className="rounded-none text-[8px] sm:text-[10px] mt-0.5 px-1">
                         {getCategoryLabel(food.category)}
                       </Badge>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-0.5 shrink-0">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(food)}
-                        className="rounded-none h-7 w-7 p-0"
+                        className="rounded-none h-6 w-6 p-0"
                       >
                         <Edit className="w-3 h-3" />
                       </Button>
@@ -261,34 +261,31 @@ export const FoodsManagement: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(food.id)}
-                        className="rounded-none h-7 w-7 p-0 text-red-500 hover:text-red-700"
+                        className="rounded-none h-6 w-6 p-0 text-red-500 hover:text-red-700"
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-4 gap-2 text-center text-xs mt-3">
-                    <div className="bg-gray-50 p-2 rounded-none">
+                  <div className="grid grid-cols-4 gap-0.5 text-center text-[8px] sm:text-[10px]">
+                    <div className="bg-gray-50 p-1 rounded-none">
                       <div className="font-semibold text-[#00ffba]">{food.calories_per_100g}</div>
                       <div className="text-gray-500">kcal</div>
                     </div>
-                    <div className="bg-gray-50 p-2 rounded-none">
+                    <div className="bg-gray-50 p-1 rounded-none">
                       <div className="font-semibold text-blue-600">{food.protein_per_100g}g</div>
                       <div className="text-gray-500">Π</div>
                     </div>
-                    <div className="bg-gray-50 p-2 rounded-none">
+                    <div className="bg-gray-50 p-1 rounded-none">
                       <div className="font-semibold text-orange-600">{food.carbs_per_100g}g</div>
                       <div className="text-gray-500">Υ</div>
                     </div>
-                    <div className="bg-gray-50 p-2 rounded-none">
+                    <div className="bg-gray-50 p-1 rounded-none">
                       <div className="font-semibold text-yellow-600">{food.fat_per_100g}g</div>
                       <div className="text-gray-500">Λ</div>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 mt-2 text-center">
-                    ανά {food.portion_size || 100}{food.portion_unit || 'g'}
-                  </p>
                 </CardContent>
               </Card>
             ))}

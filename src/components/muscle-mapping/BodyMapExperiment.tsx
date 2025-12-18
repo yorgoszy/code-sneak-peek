@@ -8,6 +8,8 @@ import { OrbitControls, useProgress, Html } from '@react-three/drei';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
+import { Save } from "lucide-react";
+import { toast } from "sonner";
 
 const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/models/Ecorche_by_AlexLashko_ShrunkenView.obj';
 
@@ -243,24 +245,43 @@ export const BodyMapExperiment: React.FC = () => {
             />
           </div>
 
-          {/* Reset Button */}
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSettings({
-                backgroundColor: '#1a1a1a',
-                objectColor: '#000000',
-                stretchColor: '#ffbb38',
-                strengthenColor: '#f80000',
-                wireframeOpacity: 0.25,
-              });
-              setStretchInput('');
-              setStrengthenInput('');
-            }}
-            className="w-full rounded-none"
-          >
-            Επαναφορά
-          </Button>
+          {/* Buttons */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSettings({
+                  backgroundColor: '#1a1a1a',
+                  objectColor: '#000000',
+                  stretchColor: '#ffbb38',
+                  strengthenColor: '#f80000',
+                  wireframeOpacity: 0.25,
+                });
+                setStretchInput('');
+                setStrengthenInput('');
+              }}
+              className="flex-1 rounded-none"
+            >
+              Επαναφορά
+            </Button>
+            <Button
+              onClick={() => {
+                // Save settings to localStorage
+                const savedDesign = {
+                  settings,
+                  stretchMuscles: stretchInput,
+                  strengthenMuscles: strengthenInput,
+                  savedAt: new Date().toISOString()
+                };
+                localStorage.setItem('bodyMapDesign', JSON.stringify(savedDesign));
+                toast.success('Το design αποθηκεύτηκε επιτυχώς!');
+              }}
+              className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Αποθήκευση
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
