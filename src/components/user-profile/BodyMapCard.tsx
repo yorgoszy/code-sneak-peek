@@ -25,6 +25,21 @@ function Loader() {
   );
 }
 
+interface DesignSettings {
+  backgroundColor: string;
+  objectColor: string;
+  stretchColor: string;
+  strengthenColor: string;
+  wireframeOpacity: number;
+}
+
+const DEFAULT_DESIGN: DesignSettings = {
+  backgroundColor: '#ffffff',
+  objectColor: '#000000',
+  stretchColor: '#ffbb38',
+  strengthenColor: '#f80000',
+  wireframeOpacity: 0.25,
+};
 
 interface MuscleData {
   // DB value (kept as fallback)
@@ -72,7 +87,7 @@ const getTrapeziusPart = (name: string): { part: 'Upper' | 'Middle_Lower' | null
 // Trapezius Y boundary (same as in Muscle3DCanvas)
 const TRAPEZIUS_UPPER_BOUNDARY = 0.88;
 
-function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: MuscleData[] }) {
+function HumanModelWithMuscles({ musclesToHighlight, designSettings }: { musclesToHighlight: MuscleData[]; designSettings: DesignSettings }) {
   const obj = useLoader(OBJLoader, MODEL_URL);
 
   const cleanName = (s: string) =>
@@ -340,9 +355,9 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
           const positionAttribute = geometry.getAttribute('position');
           const colors = new Float32Array(positionAttribute.count * 3);
 
-          const strengthenColor = new THREE.Color('#f80000'); // Red for strengthening
-          const stretchColor = new THREE.Color('#ffbb38'); // Orange for stretching
-          const defaultColor = new THREE.Color('#000000'); // Black for non-highlighted parts
+          const strengthenColor = new THREE.Color(designSettings.strengthenColor);
+          const stretchColor = new THREE.Color(designSettings.stretchColor);
+          const defaultColor = new THREE.Color(designSettings.objectColor);
 
           let hasHighlightedVertices = false;
 
@@ -406,10 +421,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
            } else {
              // Keep full model visible as wireframe when this muscle isn't in labels
              child.material = new THREE.MeshStandardMaterial({
-               color: '#000000',
+               color: designSettings.objectColor,
                wireframe: true,
                transparent: true,
-               opacity: 0.25,
+               opacity: designSettings.wireframeOpacity,
              });
              child.visible = true;
            }
@@ -458,10 +473,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
       if (isStrengthen) {
         child.material = new THREE.MeshStandardMaterial({
-          color: '#f80000', // Red for strengthening
+          color: designSettings.strengthenColor,
           roughness: 0.3,
           metalness: 0.2,
-          emissive: '#f80000',
+          emissive: designSettings.strengthenColor,
           emissiveIntensity: 0.4,
           clippingPlanes,
           clipShadows: true,
@@ -472,10 +487,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
       if (isStretch) {
         child.material = new THREE.MeshStandardMaterial({
-          color: '#ffbb38', // Orange for stretching
+          color: designSettings.stretchColor,
           roughness: 0.3,
           metalness: 0.2,
-          emissive: '#ffbb38',
+          emissive: designSettings.stretchColor,
           emissiveIntensity: 0.4,
           clippingPlanes,
           clipShadows: true,
@@ -486,10 +501,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
       // Keep full model visible as wireframe for non-highlighted meshes
       child.material = new THREE.MeshStandardMaterial({
-        color: '#000000',
+        color: designSettings.objectColor,
         wireframe: true,
         transparent: true,
-        opacity: 0.25,
+        opacity: designSettings.wireframeOpacity,
       });
       child.visible = true;
     });
@@ -510,6 +525,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     leftClipPlane,
     rightClipPlane,
     trapeziusParts,
+    designSettings,
   ]);
 
   return (
@@ -530,6 +546,22 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   const [loading, setLoading] = useState(true);
   const [strengthenDialogOpen, setStrengthenDialogOpen] = useState(false);
   const [stretchDialogOpen, setStretchDialogOpen] = useState(false);
+  const [designSettings, setDesignSettings] = useState<DesignSettings>(DEFAULT_DESIGN);
+
+  // Load design settings from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('bodyMapDesign');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.settings) {
+          setDesignSettings(parsed.settings);
+        }
+      }
+    } catch (e) {
+      console.error('Error loading design settings:', e);
+    }
+  }, []);
 
   // Get unique muscle names by type - use the DB muscle.name (includes Αριστερά/Δεξιά when applicable)
   const strengthenMuscles = useMemo(() => {
@@ -664,21 +696,21 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
 
   return (
     <>
-      <div className="w-full max-w-2xl h-[300px] rounded-none bg-white border border-gray-200 relative">
+      <div className="w-full max-w-2xl h-[300px] rounded-none border border-gray-200 relative" style={{ backgroundColor: designSettings.backgroundColor }}>
         {/* Labels - Clickable */}
         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
           <button 
             onClick={() => setStrengthenDialogOpen(true)}
-            className="flex items-center gap-1.5 hover:bg-gray-100 px-1 py-0.5 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 hover:opacity-80 px-1 py-0.5 transition-colors cursor-pointer"
           >
-            <div className="w-3 h-3 bg-[#f80000] rounded-none"></div>
+            <div className="w-3 h-3 rounded-none" style={{ backgroundColor: designSettings.strengthenColor }}></div>
             <span className="text-[10px] text-gray-700">Ενδυνάμωση ({strengthenMuscles.length})</span>
           </button>
           <button 
             onClick={() => setStretchDialogOpen(true)}
-            className="flex items-center gap-1.5 hover:bg-gray-100 px-1 py-0.5 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 hover:opacity-80 px-1 py-0.5 transition-colors cursor-pointer"
           >
-            <div className="w-3 h-3 bg-[#ffbb38] rounded-none"></div>
+            <div className="w-3 h-3 rounded-none" style={{ backgroundColor: designSettings.stretchColor }}></div>
             <span className="text-[10px] text-gray-700">Διάταση ({stretchMuscles.length})</span>
           </button>
         </div>
@@ -692,7 +724,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
           <directionalLight position={[10, 10, 5]} intensity={1.2} />
           <directionalLight position={[-10, -10, 5]} intensity={0.6} />
           <Suspense fallback={<Loader />}>
-            <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} />
+            <HumanModelWithMuscles musclesToHighlight={musclesToHighlight} designSettings={designSettings} />
           </Suspense>
           <OrbitControls 
             target={[0, 3, 0]}
@@ -709,14 +741,14 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
         <DialogContent className="max-w-sm rounded-none">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-[#f80000] rounded-none"></div>
+              <div className="w-4 h-4 rounded-none" style={{ backgroundColor: designSettings.strengthenColor }}></div>
               Μύες για Ενδυνάμωση
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
             {strengthenMuscles.length > 0 ? (
               strengthenMuscles.map((muscle, index) => (
-                <div key={index} className="py-2 px-3 bg-red-50 border-l-2 border-[#f80000] text-sm">
+                <div key={index} className="py-2 px-3 text-sm" style={{ backgroundColor: `${designSettings.strengthenColor}20`, borderLeft: `2px solid ${designSettings.strengthenColor}` }}>
                   {muscle}
                 </div>
               ))
@@ -732,14 +764,14 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
         <DialogContent className="max-w-sm rounded-none">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-[#ffbb38] rounded-none"></div>
+              <div className="w-4 h-4 rounded-none" style={{ backgroundColor: designSettings.stretchColor }}></div>
               Μύες για Διάταση
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
             {stretchMuscles.length > 0 ? (
               stretchMuscles.map((muscle, index) => (
-                <div key={index} className="py-2 px-3 bg-amber-50 border-l-2 border-[#ffbb38] text-sm">
+                <div key={index} className="py-2 px-3 text-sm" style={{ backgroundColor: `${designSettings.stretchColor}20`, borderLeft: `2px solid ${designSettings.stretchColor}` }}>
                   {muscle}
                 </div>
               ))
