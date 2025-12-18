@@ -394,17 +394,24 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
 
           geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-          if (hasHighlightedVertices) {
-            child.material = new THREE.MeshStandardMaterial({
-              vertexColors: true,
-              roughness: 0.3,
-              metalness: 0.2,
-              emissive: '#333333',
-              emissiveIntensity: 0.3,
-            });
+           if (hasHighlightedVertices) {
+             child.material = new THREE.MeshStandardMaterial({
+               vertexColors: true,
+               roughness: 0.3,
+               metalness: 0.2,
+               emissive: '#333333',
+               emissiveIntensity: 0.3,
+             });
+             child.visible = true;
            } else {
-             // Show ONLY the muscles that exist in the labels.
-             child.visible = false;
+             // Keep full model visible as wireframe when this muscle isn't in labels
+             child.material = new THREE.MeshStandardMaterial({
+               color: '#000000',
+               wireframe: true,
+               transparent: true,
+               opacity: 0.25,
+             });
+             child.visible = true;
            }
            return;
         }
@@ -418,11 +425,7 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
         return flipSides ? (side === 'Left' ? 'Right' : 'Left') : side;
       })();
 
-      // If labels indicate a single side, render ONLY that half of the body.
-      if (allowedSide && meshSide !== allowedSide) {
-        child.visible = false;
-        return;
-      }
+      // Keep full model visible; we only limit which side can be highlighted (not rendered).
 
       // Preferred: coordinate matching (uses the X sign mapping from /dashboard/muscle-mapping/3d-mapper)
       const matchedByPosition = hasPositionData ? matchByPosition(meshCenter) : null;
@@ -481,8 +484,14 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
         return;
       }
 
-      // Show ONLY the muscles that exist in the labels.
-      child.visible = false;
+      // Keep full model visible as wireframe for non-highlighted meshes
+      child.material = new THREE.MeshStandardMaterial({
+        color: '#000000',
+        wireframe: true,
+        transparent: true,
+        opacity: 0.25,
+      });
+      child.visible = true;
     });
 
     return clone;
