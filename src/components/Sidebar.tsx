@@ -515,18 +515,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/athletes-progress",
       badge: null
     },
-    { 
-      icon: FileText, 
-      label: "Τεστ", 
-      path: "/dashboard/tests",
-      badge: null
-    },
-    { 
-      icon: BarChart3, 
-      label: "Αποτελέσματα Τεστ", 
-      path: "/dashboard/test-results",
-      badge: null
-    },
     {
       icon: Timer,
       label: "Sprint Timer",
