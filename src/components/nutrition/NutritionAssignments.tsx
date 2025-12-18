@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, Trash2, Calendar } from "lucide-react";
+import { Eye, Trash2, Calendar, Utensils } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -134,6 +134,7 @@ export const NutritionAssignments: React.FC = () => {
             <CardContent className="p-2 sm:p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <Utensils className="w-4 h-4 text-[#00ffba] shrink-0" />
                   <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={assignment.app_users?.photo_url || ''} />
                     <AvatarFallback className="bg-[#cb8954] text-white text-xs">
