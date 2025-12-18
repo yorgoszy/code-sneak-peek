@@ -251,22 +251,45 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     clone.updateWorldMatrix(true, true);
 
     // Calculate the ACTUAL Y boundary for trapezius upper after centering
-    // Original boundary 0.88 + center.y gives us the clipping plane constant
     const trapeziusUpperClipPlane = new THREE.Plane(
       new THREE.Vector3(0, 1, 0),
-      -(TRAPEZIUS_UPPER_BOUNDARY)  // This clips at Y >= 0.88 in centered space
+      -(TRAPEZIUS_UPPER_BOUNDARY)
     );
 
     const sideFromX = (x: number): 'Left' | 'Right' => {
+      // Default convention: Left is x<=0, Right is x>0. flipSides swaps these.
       const side: 'Left' | 'Right' = x <= 0 ? 'Left' : 'Right';
       return flipSides ? (side === 'Left' ? 'Right' : 'Left') : side;
     };
+
+    // Determine if we should render ONLY one side (based on provided labels/targets)
+    const allowedSide: 'Left' | 'Right' | null = (() => {
+      const sides = new Set<'Left' | 'Right'>();
+
+      // Prefer position-derived side
+      musclesToHighlight
+        .filter(m => !!m.position)
+        .forEach(m => {
+          const x = Number(m.position!.x);
+          if (Number.isFinite(x)) sides.add(sideFromX(x - center.x));
+        });
+
+      // Fallback to mesh name suffix
+      if (sides.size === 0) {
+        musclesToHighlight.forEach(m => {
+          if (hasSide(m.meshName, 'Left')) sides.add('Left');
+          if (hasSide(m.meshName, 'Right')) sides.add('Right');
+        });
+      }
+
+      return sides.size === 1 ? Array.from(sides)[0] : null;
+    })();
 
     const strengthenTargets = musclesToHighlight
       .filter(m => m.actionType === 'strengthen' && m.position)
       .map(m => ({
         pos: new THREE.Vector3(m.position!.x, m.position!.y, m.position!.z).sub(center),
-        // Prefer side inferred from X (as set in /dashboard/muscle-mapping/3d-mapper)
+        // Side comes from the sign of X in /dashboard/muscle-mapping/3d-mapper
         side: sideFromX(m.position!.x - center.x),
       }));
 
@@ -379,16 +402,11 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
               emissive: '#333333',
               emissiveIntensity: 0.3,
             });
-          } else {
-            child.material = new THREE.MeshStandardMaterial({
-              color: '#000000',
-              wireframe: true,
-              transparent: true,
-              opacity: 0.25,
-            });
-          }
-          child.visible = true;
-          return;
+           } else {
+             // Show ONLY the muscles that exist in the labels.
+             child.visible = false;
+           }
+           return;
         }
       }
       // Use mesh bounding box center (in the clone's local space after centering)
@@ -399,6 +417,12 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
         const side: 'Left' | 'Right' = meshCenter.x <= 0 ? 'Left' : 'Right';
         return flipSides ? (side === 'Left' ? 'Right' : 'Left') : side;
       })();
+
+      // If labels indicate a single side, render ONLY that half of the body.
+      if (allowedSide && meshSide !== allowedSide) {
+        child.visible = false;
+        return;
+      }
 
       // Preferred: coordinate matching (uses the X sign mapping from /dashboard/muscle-mapping/3d-mapper)
       const matchedByPosition = hasPositionData ? matchByPosition(meshCenter) : null;
@@ -424,10 +448,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       const isStrengthen = isStrengthenByPos || isStrengthenByName;
       const isStretch = isStretchByPos || isStretchByName;
 
-      // We do NOT clip meshes by side here.
-      // Most OBJ exports already split Left/Right into separate meshes.
-      // Clipping was causing one side to disappear depending on model axis.
-      const clippingPlanes: THREE.Plane[] = [];
+      // Clip everything to the chosen side (when a single side is selected)
+      const clippingPlanes: THREE.Plane[] = allowedSide
+        ? [allowedSide === 'Left' ? leftClipPlane : rightClipPlane]
+        : [];
 
       if (isStrengthen) {
         child.material = new THREE.MeshStandardMaterial({
@@ -457,14 +481,8 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
         return;
       }
 
-      // No clipping for background wireframe - show full model
-      child.material = new THREE.MeshStandardMaterial({
-        color: '#000000',
-        wireframe: true,
-        transparent: true,
-        opacity: 0.25,
-      });
-      child.visible = true;
+      // Show ONLY the muscles that exist in the labels.
+      child.visible = false;
     });
 
     return clone;
