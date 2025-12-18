@@ -7,6 +7,7 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface BodyMapCardProps {
   userId: string;
@@ -640,6 +641,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
       setHasData(muscleArray.length > 0);
     } catch (error) {
       console.error('Error fetching muscle data:', error);
+      toast.error('Σφάλμα φόρτωσης muscle map');
       setHasData(false);
     } finally {
       setLoading(false);
@@ -647,11 +649,19 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
   };
 
   if (loading) {
-    return null;
+    return (
+      <div className="w-full max-w-2xl h-[300px] rounded-none bg-white border border-gray-200 flex items-center justify-center text-xs text-gray-500">
+        Φόρτωση muscle map…
+      </div>
+    );
   }
 
   if (!hasData) {
-    return null;
+    return (
+      <div className="w-full max-w-2xl h-[300px] rounded-none bg-white border border-gray-200 flex items-center justify-center text-xs text-gray-500">
+        Δεν υπάρχουν δεδομένα μυών για εμφάνιση
+      </div>
+    );
   }
 
   return (
