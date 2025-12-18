@@ -421,23 +421,10 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
       const isStrengthen = isStrengthenByPos || isStrengthenByName;
       const isStretch = isStretchByPos || isStretchByName;
 
-      // Determine if we should clip to show only left or right half
-      let clipSide: 'left' | 'right' | null = null;
-      if (matchedByPosition) {
-        if (matchedByPosition.isLeft) clipSide = 'left';
-        else if (matchedByPosition.isRight) clipSide = 'right';
-      } else if (isStrengthenByName) {
-        if (strengthenLeft.has(meshBase)) clipSide = 'left';
-        else if (strengthenRight.has(meshBase)) clipSide = 'right';
-      } else if (isStretchByName) {
-        if (stretchLeft.has(meshBase)) clipSide = 'left';
-        else if (stretchRight.has(meshBase)) clipSide = 'right';
-      }
-
-      const clippingPlanes: THREE.Plane[] = 
-        clipSide === 'left' ? [leftClipPlane] : 
-        clipSide === 'right' ? [rightClipPlane] : 
-        [];
+      // We do NOT clip meshes by side here.
+      // Most OBJ exports already split Left/Right into separate meshes.
+      // Clipping was causing one side to disappear depending on model axis.
+      const clippingPlanes: THREE.Plane[] = [];
 
       if (isStrengthen) {
         child.material = new THREE.MeshStandardMaterial({
