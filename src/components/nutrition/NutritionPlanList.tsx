@@ -104,74 +104,71 @@ export const NutritionPlanList: React.FC = () => {
 
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {plans.map((plan) => (
           <Card key={plan.id} className="rounded-none hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center justify-between">
-                <span className="truncate">{plan.name}</span>
+            <CardContent className="p-2 sm:p-3">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-xs sm:text-sm truncate">{plan.name}</h4>
+                  <p className="text-[10px] text-gray-500">
+                    {format(new Date(plan.created_at), 'dd/MM/yyyy')}
+                  </p>
+                </div>
                 {plan.goal && (
-                  <Badge variant="outline" className="rounded-none text-xs">
+                  <Badge variant="outline" className="rounded-none text-[10px] shrink-0">
                     {plan.goal}
                   </Badge>
                 )}
-              </CardTitle>
-              <p className="text-xs text-gray-500">
-                {format(new Date(plan.created_at), 'dd/MM/yyyy')}
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {plan.description && (
-                <p className="text-sm text-gray-600 line-clamp-2">{plan.description}</p>
-              )}
+              </div>
               
               {plan.total_daily_calories && (
-                <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                  <div className="bg-gray-50 p-2 rounded-none">
+                <div className="grid grid-cols-4 gap-1 text-center text-[10px] mb-2">
+                  <div className="bg-gray-50 p-1 rounded-none">
                     <div className="font-semibold text-[#00ffba]">{plan.total_daily_calories}</div>
                     <div className="text-gray-500">kcal</div>
                   </div>
-                  <div className="bg-gray-50 p-2 rounded-none">
+                  <div className="bg-gray-50 p-1 rounded-none">
                     <div className="font-semibold text-blue-600">{plan.protein_target || 0}g</div>
-                    <div className="text-gray-500">Πρωτ.</div>
+                    <div className="text-gray-500">Π</div>
                   </div>
-                  <div className="bg-gray-50 p-2 rounded-none">
+                  <div className="bg-gray-50 p-1 rounded-none">
                     <div className="font-semibold text-orange-600">{plan.carbs_target || 0}g</div>
-                    <div className="text-gray-500">Υδατ.</div>
+                    <div className="text-gray-500">Υ</div>
                   </div>
-                  <div className="bg-gray-50 p-2 rounded-none">
+                  <div className="bg-gray-50 p-1 rounded-none">
                     <div className="font-semibold text-yellow-600">{plan.fat_target || 0}g</div>
-                    <div className="text-gray-500">Λίπη</div>
+                    <div className="text-gray-500">Λ</div>
                   </div>
                 </div>
               )}
               
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-1">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleView(plan)}
-                  className="rounded-none flex-1"
+                  className="rounded-none flex-1 h-7 text-[10px] sm:text-xs px-1"
                 >
-                  <Eye className="w-4 h-4 mr-1" />
+                  <Eye className="w-3 h-3 mr-0.5" />
                   Προβολή
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleAssign(plan)}
-                  className="rounded-none flex-1"
+                  className="rounded-none flex-1 h-7 text-[10px] sm:text-xs px-1"
                 >
-                  <UserPlus className="w-4 h-4 mr-1" />
+                  <UserPlus className="w-3 h-3 mr-0.5" />
                   Ανάθεση
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleDelete(plan.id)}
-                  className="rounded-none text-red-500 hover:text-red-700"
+                  className="rounded-none text-red-500 hover:text-red-700 h-7 w-7 p-0"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
             </CardContent>

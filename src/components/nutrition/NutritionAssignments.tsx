@@ -128,57 +128,56 @@ export const NutritionAssignments: React.FC = () => {
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {assignments.map((assignment) => (
           <Card key={assignment.id} className="rounded-none">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
+            <CardContent className="p-2 sm:p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={assignment.app_users?.photo_url || ''} />
-                    <AvatarFallback className="bg-[#cb8954] text-white">
+                    <AvatarFallback className="bg-[#cb8954] text-white text-xs">
                       {assignment.app_users?.name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-medium text-sm">{assignment.app_users?.name}</p>
-                    <p className="text-xs text-gray-500">{assignment.nutrition_plans?.name}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-xs sm:text-sm truncate">{assignment.app_users?.name}</p>
+                    <p className="text-[10px] text-gray-500 truncate">{assignment.nutrition_plans?.name}</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <div className="text-right text-xs">
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="text-right text-[10px] hidden sm:block">
                     <p className="text-gray-500">
-                      {format(new Date(assignment.start_date), 'dd/MM/yyyy')}
-                      {assignment.end_date && ` - ${format(new Date(assignment.end_date), 'dd/MM/yyyy')}`}
+                      {format(new Date(assignment.start_date), 'dd/MM/yy')}
                     </p>
                     {assignment.nutrition_plans?.total_daily_calories && (
                       <p className="text-[#00ffba] font-medium">
-                        {assignment.nutrition_plans.total_daily_calories} kcal/ημέρα
+                        {assignment.nutrition_plans.total_daily_calories} kcal
                       </p>
                     )}
                   </div>
                   
-                  <Badge className={`rounded-none ${getStatusColor(assignment.status)}`}>
+                  <Badge className={`rounded-none text-[10px] px-1.5 ${getStatusColor(assignment.status)}`}>
                     {getStatusLabel(assignment.status)}
                   </Badge>
                   
-                  <div className="flex gap-1">
+                  <div className="flex gap-0.5">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleViewPlan(assignment.plan_id)}
-                      className="rounded-none"
+                      className="rounded-none h-7 w-7 p-0"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-3.5 h-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(assignment.id)}
-                      className="rounded-none text-red-500 hover:text-red-700"
+                      className="rounded-none h-7 w-7 p-0 text-red-500 hover:text-red-700"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 </div>

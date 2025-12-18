@@ -214,14 +214,15 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
   }, [hasPositionData, musclesToHighlight]);
 
   // Clipping planes (THREE.Plane keeps points where normal.dot(point) + constant >= 0)
+  // Inverted defaults: In most 3D models, anatomical left is at positive X
   const leftClipPlane = useMemo(
-    () => new THREE.Plane(new THREE.Vector3(flipSides ? 1 : -1, 0, 0), 0),
-    [flipSides]
-  ); // keeps left half
-  const rightClipPlane = useMemo(
     () => new THREE.Plane(new THREE.Vector3(flipSides ? -1 : 1, 0, 0), 0),
     [flipSides]
-  ); // keeps right half
+  ); // keeps left half (positive X by default)
+  const rightClipPlane = useMemo(
+    () => new THREE.Plane(new THREE.Vector3(flipSides ? 1 : -1, 0, 0), 0),
+    [flipSides]
+  ); // keeps right half (negative X by default)
 
   // Note: Trapezius clipping is handled via vertex coloring inside clonedObj
 
