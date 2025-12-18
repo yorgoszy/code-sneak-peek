@@ -188,41 +188,22 @@ function HumanModelWithMuscles({ musclesToHighlight }: { musclesToHighlight: Mus
     [musclesToHighlight]
   );
 
-  // Auto-detect if model X axis is mirrored vs our "Left = x<=0" assumption.
-  // If the avg X of "_Left" targets is actually > avg X of "_Right" targets, we flip the clipping planes.
-  const flipSides = useMemo(() => {
-    if (!hasPositionData) return false;
-
-    const leftXs = musclesToHighlight
-      .filter(m => hasSide(m.meshName, 'Left') && m.position)
-      .map(m => Number(m.position!.x))
-      .filter(n => Number.isFinite(n));
-
-    const rightXs = musclesToHighlight
-      .filter(m => hasSide(m.meshName, 'Right') && m.position)
-      .map(m => Number(m.position!.x))
-      .filter(n => Number.isFinite(n));
-
-    if (leftXs.length < 2 || rightXs.length < 2) return false;
-
-    const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
-    const leftAvg = avg(leftXs);
-    const rightAvg = avg(rightXs);
-
-    // Expected: leftAvg < rightAvg. If not, our notion of left/right for X is reversed.
-    return leftAvg > rightAvg;
-  }, [hasPositionData, musclesToHighlight]);
+  // IMPORTANT (per /dashboard/muscle-mapping/3d-mapper mapping):
+  // "Αριστερά" should highlight meshes with X > 0
+  // "Δεξιά" should highlight meshes with X < 0
+  // So, compared to the common convention (Left = X < 0), our model/mapping is mirrored.
+  const flipSides = true;
 
   // Clipping planes (THREE.Plane keeps points where normal.dot(point) + constant >= 0)
-  // Default: anatomical left is at negative X, right is at positive X
+  // With flipSides=true: "Left" side corresponds to +X, "Right" corresponds to -X
   const leftClipPlane = useMemo(
-    () => new THREE.Plane(new THREE.Vector3(flipSides ? 1 : -1, 0, 0), 0),
-    [flipSides]
-  ); // keeps left half (negative X by default)
+    () => new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
+    []
+  );
   const rightClipPlane = useMemo(
-    () => new THREE.Plane(new THREE.Vector3(flipSides ? -1 : 1, 0, 0), 0),
-    [flipSides]
-  ); // keeps right half (positive X by default)
+    () => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0),
+    []
+  );
 
   // Note: Trapezius clipping is handled via vertex coloring inside clonedObj
 
