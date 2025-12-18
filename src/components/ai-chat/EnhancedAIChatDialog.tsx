@@ -472,9 +472,13 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       .slice(0, 2);
   };
 
-  // Φιλτράρισμα του ai-action block από το μήνυμα
+  // Φιλτράρισμα του ai-action block από το μήνυμα (σιωπηλό - δεν φαίνεται στον χρήστη)
   const filterAIActionBlock = (content: string) => {
-    return content.replace(/```ai-action[\s\S]*?```/g, '').trim();
+    // Remove ```ai-action...``` blocks
+    let filtered = content.replace(/```ai-action[\s\S]*?```/g, '');
+    // Also remove any raw JSON action blocks that might not be in code blocks
+    filtered = filtered.replace(/\{[\s\S]*?"action"\s*:\s*"(create_program|open_program_builder|create_nutrition_plan)"[\s\S]*?\}(?:\s*\})*\s*/g, '');
+    return filtered.trim();
   };
 
   return (
