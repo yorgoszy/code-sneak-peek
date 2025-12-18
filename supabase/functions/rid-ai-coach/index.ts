@@ -132,6 +132,45 @@ serve(async (req) => {
       }
     }
 
+    // 🥗 ΦΟΡΤΩΣΗ ΤΡΑΠΕΖΑΣ ΦΑΓΗΤΩΝ (για δημιουργία προγραμμάτων διατροφής)
+    let foodsDatabaseContext = '';
+    if (canAccessProgramBuilder) {
+      const foodsResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/foods?select=id,name,calories_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g,category&order=name.asc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const foodsData = await foodsResponse.json();
+      if (Array.isArray(foodsData) && foodsData.length > 0) {
+        console.log(`✅ Loaded ${foodsData.length} foods from database`);
+        
+        // Group foods by category
+        const foodsByCategory: Record<string, any[]> = {};
+        foodsData.forEach((food: any) => {
+          const cat = food.category || 'Άλλα';
+          if (!foodsByCategory[cat]) {
+            foodsByCategory[cat] = [];
+          }
+          foodsByCategory[cat].push(food);
+        });
+        
+        // Create context string with nutritional info
+        let foodsList = '';
+        Object.entries(foodsByCategory).forEach(([category, foods]) => {
+          foodsList += `\n📌 ${category}:\n`;
+          foods.forEach((f: any) => {
+            foodsList += `  - ${f.name} (ανά 100g: ${f.calories_per_100g || 0}kcal, P:${f.protein_per_100g || 0}g, C:${f.carbs_per_100g || 0}g, F:${f.fat_per_100g || 0}g)\n`;
+          });
+        });
+        
+        foodsDatabaseContext = `\n\n🥗 ΤΡΑΠΕΖΑ ΦΑΓΗΤΩΝ (${foodsData.length} τρόφιμα):${foodsList}\n\n⚠️ ΧΡΗΣΙΜΟΠΟΙΗΣΕ ΜΟΝΟ τρόφιμα από αυτή τη λίστα για προγράμματα διατροφής! Χρησιμοποίησε τα ΑΚΡΙΒΗ ονόματα.`;
+      }
+    }
+
     // Αν είναι admin και έχει δώσει targetUserId, χρησιμοποιούμε αυτό
     // Αλλιώς χρησιμοποιούμε το δικό του userId
     const effectiveUserId = (isAdmin && targetUserId) ? targetUserId : userId;
@@ -3452,6 +3491,48 @@ ${exerciseDatabaseContext}
 ⚠️ ΚΡΙΣΙΜΟ: Χρησιμοποίησε "percentage_1rm" για %, "velocity_ms" για ταχύτητα, "rest" για διάλειμμα!
 ` : `
 ⚠️ Χρειάζεσαι ενεργή συνδρομή για δημιουργία προγραμμάτων.
+`}
+
+🥗 ΔΥΝΑΤΟΤΗΤΑ ΔΗΜΙΟΥΡΓΙΑΣ ΠΡΟΓΡΑΜΜΑΤΩΝ ΔΙΑΤΡΟΦΗΣ:
+${isAdmin ? `
+Ως admin, μπορείς να δημιουργείς προγράμματα διατροφής για ΟΠΟΙΟΝΔΗΠΟΤΕ χρήστη!
+${foodsDatabaseContext}
+
+⚠️⚠️⚠️ ΚΡΙΣΙΜΟ ΓΙΑ NUTRITION PLANS - ΑΚΟΛΟΥΘΑ ΑΥΤΟΥΣ ΤΟΥΣ ΚΑΝΟΝΕΣ:
+
+1. ΠΡΩΤΑ ΤΟ JSON - Βάλε το \`\`\`ai-action block στην ΑΡΧΗ της απάντησης!
+2. ΜΟΝΟ JSON μέσα στο block - ΚΑΝΕΝΑ κείμενο!
+3. ΜΙΑ ΓΡΑΜΜΗ JSON - χωρίς newlines μέσα στο JSON
+
+ΠΑΡΑΔΕΙΓΜΑ NUTRITION PLAN:
+\`\`\`ai-action
+{"action":"create_nutrition_plan","name":"Πρόγραμμα Απώλειας Βάρους","description":"Υψηλή πρωτεΐνη, χαμηλοί υδατάνθρακες","goal":"fat_loss","totalCalories":2000,"proteinTarget":150,"carbsTarget":150,"fatTarget":70,"days":[{"dayNumber":1,"name":"Ημέρα 1","meals":[{"type":"breakfast","order":1,"name":"Πρωινό","foods":[{"name":"Αυγά","quantity":150,"unit":"g","protein":18,"carbs":1,"fat":15,"calories":210},{"name":"Βρώμη","quantity":50,"unit":"g","protein":7,"carbs":33,"fat":3,"calories":190}]},{"type":"lunch","order":2,"name":"Μεσημεριανό","foods":[{"name":"Στήθος κοτόπουλο","quantity":200,"unit":"g","protein":46,"carbs":0,"fat":6,"calories":240}]},{"type":"dinner","order":3,"name":"Βραδινό","foods":[{"name":"Σολομός","quantity":150,"unit":"g","protein":33,"carbs":0,"fat":18,"calories":290}]}]}]}
+\`\`\`
+
+ΣΗΜΑΝΤΙΚΑ ΓΙΑ NUTRITION:
+- Λάβε υπόψη ηλικία (birth_date), φύλο (gender), βάρος (από ανθρωπομετρικά) του χρήστη
+- Χρησιμοποίησε ΜΟΝΟ τρόφιμα από την ΤΡΑΠΕΖΑ ΦΑΓΗΤΩΝ
+- Υπολόγισε θερμίδες και macros με βάση τις ποσότητες
+- goal: "fat_loss", "muscle_gain", "maintenance", "performance"
+- meal types: "breakfast", "snack_morning", "lunch", "snack_afternoon", "dinner", "snack_evening"
+
+ΥΠΟΛΟΓΙΣΜΟΣ ΑΝΑΓΚΩΝ:
+- Βασικός μεταβολισμός (BMR) ανά φύλο:
+  * Άνδρες: 10 × βάρος(kg) + 6.25 × ύψος(cm) - 5 × ηλικία + 5
+  * Γυναίκες: 10 × βάρος(kg) + 6.25 × ύψος(cm) - 5 × ηλικία - 161
+- TDEE = BMR × activity factor (1.2-1.9)
+- Πρωτεΐνη: 1.6-2.2g/kg σωματικού βάρους για αθλητές
+- Για απώλεια: TDEE - 500kcal, για αύξηση: TDEE + 300-500kcal
+` : hasActiveSubscription ? `
+Μπορείς να δημιουργήσεις προγράμματα διατροφής για τον εαυτό σου!
+${foodsDatabaseContext}
+
+ΠΑΡΑΔΕΙΓΜΑ:
+\`\`\`ai-action
+{"action":"create_nutrition_plan","name":"Ημερήσιο Πλάνο","goal":"performance","totalCalories":2500,"proteinTarget":180,"carbsTarget":250,"fatTarget":80,"days":[{"dayNumber":1,"name":"Ημέρα 1","meals":[{"type":"breakfast","order":1,"name":"Πρωινό","foods":[{"name":"Αυγά","quantity":150,"unit":"g","protein":18,"carbs":1,"fat":15,"calories":210}]}]}]}
+\`\`\`
+` : `
+⚠️ Χρειάζεσαι ενεργή συνδρομή για δημιουργία προγραμμάτων διατροφής.
 `}
 
 Θυμάσαι όλες τις προηγούμενες συνομιλίες και χρησιμοποιείς αυτές τις πληροφορίες για να δίνεις καλύτερες συμβουλές.`
