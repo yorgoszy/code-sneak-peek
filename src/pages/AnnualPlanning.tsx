@@ -55,16 +55,6 @@ const PHASES = [
   { value: 'power', label: 'Power Training', shortLabel: 'PWR', color: 'bg-blue-500' },
 ];
 
-// Monthly phases (different from annual)
-const MONTHLY_PHASES = [
-  { value: 'accumulation', label: 'Accumulation', shortLabel: 'ACC', color: 'bg-blue-500' },
-  { value: 'transmutation', label: 'Transmutation', shortLabel: 'TRN', color: 'bg-purple-500' },
-  { value: 'realization', label: 'Realization', shortLabel: 'REA', color: 'bg-green-500' },
-  { value: 'deload', label: 'Deload', shortLabel: 'DL', color: 'bg-gray-400' },
-  { value: 'testing', label: 'Testing', shortLabel: 'TST', color: 'bg-red-500' },
-  { value: 'peak', label: 'Peak', shortLabel: 'PK', color: 'bg-amber-500' },
-];
-
 const MONTHS = ['Ι', 'Φ', 'Μ', 'Α', 'Μ', 'Ι', 'Ι', 'Α', 'Σ', 'Ο', 'Ν', 'Δ'];
 const MONTHS_FULL = ['ΙΑΝ', 'ΦΕΒ', 'ΜΑΡ', 'ΑΠΡ', 'ΜΑΪ', 'ΙΟΥΝ', 'ΙΟΥΛ', 'ΑΥΓ', 'ΣΕΠ', 'ΟΚΤ', 'ΝΟΕ', 'ΔΕΚ'];
 const WEEKS = ['Ε1', 'Ε2', 'Ε3', 'Ε4'];
@@ -663,7 +653,7 @@ const AnnualPlanning: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {MONTHLY_PHASES.map((phase) => (
+                {PHASES.map((phase) => (
                   <tr key={phase.value}>
                     <td className="border p-0.5 font-medium bg-background">
                       <div className="flex items-center gap-0.5">
