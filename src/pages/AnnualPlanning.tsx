@@ -68,8 +68,9 @@ const WEEKLY_PHASES = [
 const MONTHS = ['Ι', 'Φ', 'Μ', 'Α', 'Μ', 'Ι', 'Ι', 'Α', 'Σ', 'Ο', 'Ν', 'Δ'];
 const MONTHS_FULL = ['ΙΑΝ', 'ΦΕΒ', 'ΜΑΡ', 'ΑΠΡ', 'ΜΑΪ', 'ΙΟΥΝ', 'ΙΟΥΛ', 'ΑΥΓ', 'ΣΕΠ', 'ΟΚΤ', 'ΝΟΕ', 'ΔΕΚ'];
 const MONTHS_DROPDOWN = ['Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος', 'Μάιος', 'Ιούνιος', 'Ιούλιος', 'Αύγουστος', 'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'];
-const WEEKS = ['Ε1', 'Ε2', 'Ε3', 'Ε4'];
+const WEEKS = ['Ε1', 'Ε2', 'Ε3', 'Ε4', 'Ε5'];
 const DAYS = ['Δ', 'Τ', 'Τ', 'Π', 'Π', 'Σ', 'Κ'];
+const DAYS_FULL = ['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'];
 
 const normalizeString = (str: string): string => {
   return str
@@ -128,16 +129,33 @@ const AnnualPlanning: React.FC = () => {
     return PHASES.filter(p => uniquePhaseValues.includes(p.value));
   }, [monthlyPhases, selectedWeeklyMonth]);
 
-  // Calculate actual calendar dates for a month
-  const getCalendarDatesForMonth = useMemo(() => {
+  // Calculate actual calendar weeks for a month (Monday-based)
+  const getCalendarWeeksForMonth = useMemo(() => {
+    const firstDay = new Date(year, selectedWeeklyMonth - 1, 1);
     const daysInMonth = new Date(year, selectedWeeklyMonth, 0).getDate();
-    const weeks: number[][] = [];
     
-    for (let week = 0; week < 4; week++) {
-      const weekDates: number[] = [];
+    // Get day of week (0=Sunday, 1=Monday, etc.) and convert to Monday-based (0=Monday)
+    let startDayOfWeek = firstDay.getDay();
+    startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // Convert to Monday=0
+    
+    const weeks: (number | null)[][] = [];
+    let currentDate = 1;
+    
+    // Calculate number of weeks needed
+    const totalDays = startDayOfWeek + daysInMonth;
+    const numWeeks = Math.ceil(totalDays / 7);
+    
+    for (let week = 0; week < numWeeks; week++) {
+      const weekDates: (number | null)[] = [];
       for (let day = 0; day < 7; day++) {
-        const dateNum = week * 7 + day + 1;
-        weekDates.push(dateNum <= daysInMonth ? dateNum : 0);
+        if (week === 0 && day < startDayOfWeek) {
+          weekDates.push(null); // Empty cell before month starts
+        } else if (currentDate > daysInMonth) {
+          weekDates.push(null); // Empty cell after month ends
+        } else {
+          weekDates.push(currentDate);
+          currentDate++;
+        }
       }
       weeks.push(weekDates);
     }
@@ -782,9 +800,10 @@ const AnnualPlanning: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
               <thead>
+                {/* Week headers row */}
                 <tr>
-                  <th className="border p-0.5 sm:p-1 bg-muted text-left w-[40px] sm:w-[80px] md:w-[100px]">Φάση</th>
-                  {WEEKS.map((week, weekIndex) => {
+                  <th className="border p-0.5 sm:p-1 bg-muted text-left w-[40px] sm:w-[80px] md:w-[100px]" rowSpan={3}>Φάση</th>
+                  {getCalendarWeeksForMonth.map((_, weekIndex) => {
                     const monthlyPhase = getMonthlyPhaseForWeek(selectedWeeklyMonth, weekIndex + 1);
                     const phaseInfo = monthlyPhase ? PHASES.find(p => p.value === monthlyPhase.phase) : null;
                     return (
@@ -801,7 +820,7 @@ const AnnualPlanning: React.FC = () => {
                             "text-[8px] sm:text-[10px] font-medium",
                             phaseInfo && "text-white"
                           )}>
-                            {week}
+                            Ε{weekIndex + 1}
                           </span>
                           {phaseInfo && (
                             <span className="text-[6px] sm:text-[8px] text-white/80">
@@ -813,15 +832,28 @@ const AnnualPlanning: React.FC = () => {
                     );
                   })}
                 </tr>
+                {/* Day names row */}
                 <tr>
-                  <th className="border p-0.5 bg-muted text-left text-[7px] sm:text-[9px]">Ημέρα</th>
-                  {WEEKS.map((_, weekIndex) => (
-                    getCalendarDatesForMonth[weekIndex].map((dateNum, dayIndex) => (
+                  {getCalendarWeeksForMonth.map((_, weekIndex) => (
+                    DAYS_FULL.map((dayName, dayIndex) => (
                       <th 
-                        key={`${weekIndex}-${dayIndex}`}
+                        key={`day-${weekIndex}-${dayIndex}`}
+                        className="border p-0.5 bg-muted/70 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium"
+                      >
+                        {dayName}
+                      </th>
+                    ))
+                  ))}
+                </tr>
+                {/* Date numbers row */}
+                <tr>
+                  {getCalendarWeeksForMonth.map((weekDates, weekIndex) => (
+                    weekDates.map((dateNum, dayIndex) => (
+                      <th 
+                        key={`date-${weekIndex}-${dayIndex}`}
                         className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
                       >
-                        {dateNum > 0 ? dateNum : '-'}
+                        {dateNum !== null ? dateNum : '-'}
                       </th>
                     ))
                   ))}
@@ -830,7 +862,7 @@ const AnnualPlanning: React.FC = () => {
               <tbody>
                 {getMonthlyPhasesForMonth.length === 0 ? (
                   <tr>
-                    <td colSpan={29} className="border p-4 text-center text-muted-foreground text-xs">
+                    <td colSpan={1 + getCalendarWeeksForMonth.length * 7} className="border p-4 text-center text-muted-foreground text-xs">
                       Δεν έχουν επιλεγεί φάσεις στον Μηνιαίο Προγραμματισμό για τον {MONTHS_DROPDOWN[selectedWeeklyMonth - 1]}
                     </td>
                   </tr>
@@ -844,12 +876,12 @@ const AnnualPlanning: React.FC = () => {
                           <span className="hidden lg:inline text-xs">{phase.label}</span>
                         </div>
                       </td>
-                      {WEEKS.map((_, weekIndex) => (
-                        getCalendarDatesForMonth[weekIndex].map((dateNum, dayIndex) => {
+                      {getCalendarWeeksForMonth.map((weekDates, weekIndex) => (
+                        weekDates.map((dateNum, dayIndex) => {
                           const week = weekIndex + 1;
                           const day = dayIndex + 1;
                           const isSelected = isWeeklyPhaseSelected(selectedWeeklyMonth, week, day, phase.value);
-                          const isValidDate = dateNum > 0;
+                          const isValidDate = dateNum !== null;
                           
                           return (
                             <td
