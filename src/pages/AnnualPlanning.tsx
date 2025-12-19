@@ -25,17 +25,18 @@ interface UserPhase {
 }
 
 const PHASES = [
-  { value: 'corrective', label: 'Corrective', color: 'bg-red-500' },
-  { value: 'stabilization', label: 'Stabilization Training', color: 'bg-orange-500' },
-  { value: 'strength', label: 'Strength Training', color: 'bg-yellow-500' },
-  { value: 'non-functional-hypertrophy', label: 'Non-Functional Hypertrophy', color: 'bg-lime-500' },
-  { value: 'functional-hypertrophy', label: 'Functional Hypertrophy', color: 'bg-green-500' },
-  { value: 'maximal-strength', label: 'Maximal Strength Training', color: 'bg-teal-500' },
-  { value: 'power', label: 'Power Training', color: 'bg-blue-500' },
-  { value: 'max-power', label: 'Max Power Training', color: 'bg-purple-500' },
+  { value: 'corrective', label: 'Corrective', shortLabel: 'COR', color: 'bg-red-500' },
+  { value: 'stabilization', label: 'Stabilization Training', shortLabel: 'STB', color: 'bg-orange-500' },
+  { value: 'strength', label: 'Strength Training', shortLabel: 'STR', color: 'bg-yellow-500' },
+  { value: 'non-functional-hypertrophy', label: 'Non-Functional Hypertrophy', shortLabel: 'NFH', color: 'bg-lime-500' },
+  { value: 'functional-hypertrophy', label: 'Functional Hypertrophy', shortLabel: 'FH', color: 'bg-green-500' },
+  { value: 'maximal-strength', label: 'Maximal Strength Training', shortLabel: 'MAX', color: 'bg-teal-500' },
+  { value: 'power', label: 'Power Training', shortLabel: 'PWR', color: 'bg-blue-500' },
+  { value: 'max-power', label: 'Max Power Training', shortLabel: 'MPW', color: 'bg-purple-500' },
 ];
 
-const MONTHS = ['ΙΑΝ', 'ΦΕΒ', 'ΜΑΡ', 'ΑΠΡ', 'ΜΑΪ', 'ΙΟΥΝ', 'ΙΟΥΛ', 'ΑΥΓ', 'ΣΕΠ', 'ΟΚΤ', 'ΝΟΕ', 'ΔΕΚ'];
+const MONTHS = ['Ι', 'Φ', 'Μ', 'Α', 'Μ', 'Ι', 'Ι', 'Α', 'Σ', 'Ο', 'Ν', 'Δ'];
+const MONTHS_FULL = ['ΙΑΝ', 'ΦΕΒ', 'ΜΑΡ', 'ΑΠΡ', 'ΜΑΪ', 'ΙΟΥΝ', 'ΙΟΥΛ', 'ΑΥΓ', 'ΣΕΠ', 'ΟΚΤ', 'ΝΟΕ', 'ΔΕΚ'];
 
 const normalizeString = (str: string): string => {
   return str
@@ -300,14 +301,15 @@ const AnnualPlanning: React.FC = () => {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="overflow-x-auto p-2 sm:p-6 -mx-2 sm:mx-0 px-2 sm:px-6">
-            <table className="w-max min-w-full border-collapse text-xs sm:text-sm">
+          <CardContent className="p-1 sm:p-6">
+            <table className="w-full border-collapse text-[9px] sm:text-sm">
               <thead>
                 <tr>
-                  <th className="border p-1 sm:p-2 bg-muted text-left min-w-[120px] sm:min-w-[200px] sticky left-0 z-10">Φάση</th>
+                  <th className="border p-0.5 sm:p-2 bg-muted text-left w-[60px] sm:w-[200px]">Φάση</th>
                   {MONTHS.map((month, index) => (
-                    <th key={index} className="border p-1 sm:p-2 bg-muted text-center min-w-[32px] sm:min-w-[50px]">
-                      {month}
+                    <th key={index} className="border p-0.5 sm:p-2 bg-muted text-center w-[20px] sm:w-auto">
+                      <span className="sm:hidden">{month}</span>
+                      <span className="hidden sm:inline">{MONTHS_FULL[index]}</span>
                     </th>
                   ))}
                 </tr>
@@ -315,10 +317,11 @@ const AnnualPlanning: React.FC = () => {
               <tbody>
                 {PHASES.map((phase) => (
                   <tr key={phase.value}>
-                    <td className="border p-1 sm:p-2 font-medium sticky left-0 bg-background z-10">
-                      <div className="flex items-center gap-1 sm:gap-2">
-                        <div className={cn("w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0", phase.color)} />
-                        <span className="truncate text-[10px] sm:text-sm">{phase.label}</span>
+                    <td className="border p-0.5 sm:p-2 font-medium bg-background">
+                      <div className="flex items-center gap-0.5 sm:gap-2">
+                        <div className={cn("w-1.5 h-1.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0", phase.color)} />
+                        <span className="sm:hidden text-[8px] font-semibold">{phase.shortLabel}</span>
+                        <span className="hidden sm:inline text-sm">{phase.label}</span>
                       </div>
                     </td>
                     {MONTHS.map((_, monthIndex) => {
@@ -330,12 +333,12 @@ const AnnualPlanning: React.FC = () => {
                           key={monthIndex}
                           onClick={() => handleCellClick(month, phase.value)}
                           className={cn(
-                            "border p-1 sm:p-2 text-center cursor-pointer transition-colors hover:bg-muted",
+                            "border p-0 sm:p-2 text-center cursor-pointer transition-colors hover:bg-muted h-5 sm:h-auto",
                             isSelected && phase.color
                           )}
                         >
                           {isSelected && (
-                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mx-auto text-white" />
+                            <Check className="h-2.5 w-2.5 sm:h-4 sm:w-4 mx-auto text-white" />
                           )}
                         </td>
                       );
