@@ -55,9 +55,20 @@ const PHASES = [
   { value: 'power', label: 'Power Training', shortLabel: 'PWR', color: 'bg-blue-500' },
 ];
 
+// Weekly phases (training types)
+const WEEKLY_PHASES = [
+  { value: 'strength', label: 'Strength', shortLabel: 'STR', color: 'bg-red-500' },
+  { value: 'power', label: 'Power', shortLabel: 'PWR', color: 'bg-orange-500' },
+  { value: 'hypertrophy', label: 'Hypertrophy', shortLabel: 'HYP', color: 'bg-yellow-500' },
+  { value: 'cardio', label: 'Cardio', shortLabel: 'CAR', color: 'bg-green-500' },
+  { value: 'recovery', label: 'Recovery', shortLabel: 'REC', color: 'bg-blue-500' },
+];
+
 const MONTHS = ['Ι', 'Φ', 'Μ', 'Α', 'Μ', 'Ι', 'Ι', 'Α', 'Σ', 'Ο', 'Ν', 'Δ'];
 const MONTHS_FULL = ['ΙΑΝ', 'ΦΕΒ', 'ΜΑΡ', 'ΑΠΡ', 'ΜΑΪ', 'ΙΟΥΝ', 'ΙΟΥΛ', 'ΑΥΓ', 'ΣΕΠ', 'ΟΚΤ', 'ΝΟΕ', 'ΔΕΚ'];
+const MONTHS_DROPDOWN = ['Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος', 'Μάιος', 'Ιούνιος', 'Ιούλιος', 'Αύγουστος', 'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'];
 const WEEKS = ['Ε1', 'Ε2', 'Ε3', 'Ε4'];
+const DAYS = ['Δ', 'Τ', 'Τ', 'Π', 'Π', 'Σ', 'Κ'];
 
 const normalizeString = (str: string): string => {
   return str
@@ -95,9 +106,18 @@ const AnnualPlanning: React.FC = () => {
   // Monthly planning state
   const [monthlyPhases, setMonthlyPhases] = useState<{ month: number; week: number; phase: string }[]>([]);
 
+  // Weekly planning state
+  const [selectedWeeklyMonth, setSelectedWeeklyMonth] = useState(new Date().getMonth() + 1);
+  const [weeklyPhases, setWeeklyPhases] = useState<{ month: number; week: number; day: number; phase: string }[]>([]);
+
   // Get annual phase for a specific month
   const getAnnualPhaseForMonth = (month: number) => {
     return selectedPhases.find(p => p.month === month);
+  };
+
+  // Get monthly phase for a specific week
+  const getMonthlyPhaseForWeek = (month: number, week: number) => {
+    return monthlyPhases.find(p => p.month === month && p.week === week);
   };
 
   // Handle monthly phase cell click
@@ -114,6 +134,22 @@ const AnnualPlanning: React.FC = () => {
   // Check if monthly phase is selected
   const isMonthlyPhaseSelected = (month: number, week: number, phase: string) => {
     return monthlyPhases.some(p => p.month === month && p.week === week && p.phase === phase);
+  };
+
+  // Handle weekly phase cell click
+  const handleWeeklyPhaseClick = (month: number, week: number, day: number, phase: string) => {
+    setWeeklyPhases(prev => {
+      const existing = prev.find(p => p.month === month && p.week === week && p.day === day);
+      if (existing?.phase === phase) {
+        return prev.filter(p => !(p.month === month && p.week === week && p.day === day));
+      }
+      return [...prev.filter(p => !(p.month === month && p.week === week && p.day === day)), { month, week, day, phase }];
+    });
+  };
+
+  // Check if weekly phase is selected
+  const isWeeklyPhaseSelected = (month: number, week: number, day: number, phase: string) => {
+    return weeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
   };
 
   useEffect(() => {
@@ -674,6 +710,114 @@ const AnnualPlanning: React.FC = () => {
                           <td
                             key={`${monthIndex}-${weekIndex}`}
                             onClick={() => handleMonthlyPhaseClick(month, week, phase.value)}
+                            className={cn(
+                              "border p-0 text-center cursor-pointer transition-colors hover:bg-muted h-3 sm:h-4",
+                              isSelected && phase.color
+                            )}
+                          >
+                            {isSelected && (
+                              <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
+                            )}
+                          </td>
+                        );
+                      })
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Weekly Planning Container */}
+      <Card className="rounded-none border-l-0 mt-2">
+        <CardHeader className="p-2 sm:p-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <Calendar className="w-4 h-4" />
+              Εβδομαδιαίος Προγραμματισμός
+            </CardTitle>
+            <select
+              value={selectedWeeklyMonth}
+              onChange={(e) => setSelectedWeeklyMonth(Number(e.target.value))}
+              className="rounded-none border px-2 py-1 text-xs sm:text-sm bg-background"
+            >
+              {MONTHS_DROPDOWN.map((month, index) => (
+                <option key={index} value={index + 1}>{month}</option>
+              ))}
+            </select>
+          </div>
+        </CardHeader>
+        <CardContent className="p-2 sm:p-4 pt-0">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
+              <thead>
+                <tr>
+                  <th className="border p-0.5 sm:p-1 bg-muted text-left w-[40px] sm:w-[80px] md:w-[100px]">Φάση</th>
+                  {WEEKS.map((week, weekIndex) => {
+                    const monthlyPhase = getMonthlyPhaseForWeek(selectedWeeklyMonth, weekIndex + 1);
+                    const phaseInfo = monthlyPhase ? PHASES.find(p => p.value === monthlyPhase.phase) : null;
+                    return (
+                      <th 
+                        key={weekIndex} 
+                        colSpan={7}
+                        className={cn(
+                          "border p-0.5 bg-muted text-center",
+                          phaseInfo && phaseInfo.color
+                        )}
+                      >
+                        <div className="flex flex-col">
+                          <span className={cn(
+                            "text-[8px] sm:text-[10px] font-medium",
+                            phaseInfo && "text-white"
+                          )}>
+                            {week}
+                          </span>
+                          {phaseInfo && (
+                            <span className="text-[6px] sm:text-[8px] text-white/80">
+                              {phaseInfo.shortLabel}
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                    );
+                  })}
+                </tr>
+                <tr>
+                  <th className="border p-0.5 bg-muted text-left text-[7px] sm:text-[9px]">Ημέρα</th>
+                  {WEEKS.map((_, weekIndex) => (
+                    DAYS.map((day, dayIndex) => (
+                      <th 
+                        key={`${weekIndex}-${dayIndex}`}
+                        className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
+                      >
+                        {day}
+                      </th>
+                    ))
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {WEEKLY_PHASES.map((phase) => (
+                  <tr key={phase.value}>
+                    <td className="border p-0.5 font-medium bg-background">
+                      <div className="flex items-center gap-0.5">
+                        <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
+                        <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
+                        <span className="hidden lg:inline text-xs">{phase.label}</span>
+                      </div>
+                    </td>
+                    {WEEKS.map((_, weekIndex) => (
+                      DAYS.map((_, dayIndex) => {
+                        const week = weekIndex + 1;
+                        const day = dayIndex + 1;
+                        const isSelected = isWeeklyPhaseSelected(selectedWeeklyMonth, week, day, phase.value);
+                        
+                        return (
+                          <td
+                            key={`${weekIndex}-${dayIndex}`}
+                            onClick={() => handleWeeklyPhaseClick(selectedWeeklyMonth, week, day, phase.value)}
                             className={cn(
                               "border p-0 text-center cursor-pointer transition-colors hover:bg-muted h-3 sm:h-4",
                               isSelected && phase.color
