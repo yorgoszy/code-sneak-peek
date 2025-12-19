@@ -733,6 +733,105 @@ ${calendarDisplay}`;
       }
     }
 
+    // 📅 ADMIN ANNUAL PLANNING CONTEXT: Φόρτωση μακροκύκλων ΟΛΩΝ των χρηστών
+    let adminAnnualPlanningContext = '';
+    if (isAdmin && !targetUserId) {
+      console.log('📅 Admin mode: Loading annual planning for ALL users...');
+      
+      // Φόρτωση ΟΛΩΝ των user_annual_phases
+      const allAnnualPhasesResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_annual_phases?select=*&order=year.desc,month.asc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const allAnnualPhases = await allAnnualPhasesResponse.json();
+      
+      // Φόρτωση ΟΛΩΝ των χρηστών
+      const allUsersForPlanningResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/app_users?select=id,name,email&order=name.asc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const allUsersForPlanning = await allUsersForPlanningResponse.json();
+      const totalUsers = Array.isArray(allUsersForPlanning) ? allUsersForPlanning.length : 0;
+      
+      if (Array.isArray(allAnnualPhases)) {
+        // Βρες μοναδικούς χρήστες με μακροκύκλο
+        const usersWithMacrocycle = [...new Set(allAnnualPhases.map((p: any) => p.user_id))];
+        const usersWithMacrocycleCount = usersWithMacrocycle.length;
+        const usersWithoutMacrocycleCount = totalUsers - usersWithMacrocycleCount;
+        
+        console.log(`✅ Annual Planning: ${usersWithMacrocycleCount} users with macrocycle, ${usersWithoutMacrocycleCount} without`);
+        
+        const PHASE_LABELS: Record<string, string> = {
+          'corrective': 'Διορθωτικές',
+          'stabilization': 'Σταθεροποίηση',
+          'connecting-linking': 'Σύνδεση',
+          'movement-skills': 'Κινητικές Δεξιότητες',
+          'non-functional-hypertrophy': 'Μη Λειτουργική Υπερτροφία',
+          'functional-hypertrophy': 'Λειτουργική Υπερτροφία',
+          'maximal-strength': 'Μέγιστη Δύναμη',
+          'power': 'Ισχύς',
+          'endurance': 'Αντοχή',
+          'competition': 'Αγωνιστική'
+        };
+        
+        adminAnnualPlanningContext = `\n\n📅 ΕΤΗΣΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ (ANNUAL PLANNING / ΜΑΚΡΟΚΥΚΛΟΣ):
+
+📊 ΣΤΑΤΙΣΤΙΚΑ:
+- Συνολικοί χρήστες στην πλατφόρμα: ${totalUsers}
+- Χρήστες ΜΕ ανατεθειμένο μακροκύκλο: ${usersWithMacrocycleCount}
+- Χρήστες ΧΩΡΙΣ μακροκύκλο: ${usersWithoutMacrocycleCount}
+- Συνολικές καταχωρήσεις φάσεων: ${allAnnualPhases.length}
+
+⚠️ ΣΗΜΑΝΤΙΚΟ: Μόνο ${usersWithMacrocycleCount} από τους ${totalUsers} χρήστες έχουν σχεδιασμένο μακροκύκλο!
+
+`;
+        
+        if (usersWithMacrocycleCount > 0 && Array.isArray(allUsersForPlanning)) {
+          // Group phases by user
+          const phasesByUser: Record<string, any[]> = {};
+          allAnnualPhases.forEach((phase: any) => {
+            if (!phasesByUser[phase.user_id]) phasesByUser[phase.user_id] = [];
+            phasesByUser[phase.user_id].push(phase);
+          });
+          
+          adminAnnualPlanningContext += `📋 ΧΡΗΣΤΕΣ ΜΕ ΜΑΚΡΟΚΥΚΛΟ:\n`;
+          
+          const currentYear = new Date().getFullYear();
+          const currentMonth = new Date().getMonth() + 1;
+          const MONTH_NAMES = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιούν', 'Ιούλ', 'Αύγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
+          
+          Object.entries(phasesByUser).slice(0, 20).forEach(([userId, phases]) => {
+            const user = allUsersForPlanning.find((u: any) => u.id === userId);
+            const userName = user?.name || 'Unknown';
+            const userEmail = user?.email || '';
+            
+            // Τρέχουσα φάση
+            const currentPhase = phases.find((p: any) => p.year === currentYear && p.month === currentMonth);
+            const currentPhaseLabel = currentPhase ? (PHASE_LABELS[currentPhase.phase] || currentPhase.phase) : 'Δεν έχει οριστεί';
+            
+            // Πόσοι μήνες έχουν προγραμματιστεί
+            const monthsPlanned = phases.length;
+            
+            adminAnnualPlanningContext += `  • ${userName} (${userEmail}): ${monthsPlanned} μήνες, Τρέχουσα φάση: ${currentPhaseLabel}\n`;
+          });
+          
+          if (usersWithMacrocycleCount > 20) {
+            adminAnnualPlanningContext += `  ... και άλλοι ${usersWithMacrocycleCount - 20} χρήστες\n`;
+          }
+        }
+      }
+    }
+
     // 📋 PROGRAMS MENU: Φόρτωση ΟΛΩΝ των programs (drafts/templates) ΜΟΝΟ για admin overview mode
     let adminProgramsMenuContext = '';
     if (isAdmin && !targetUserId) {
@@ -3409,7 +3508,7 @@ ${isAdmin && !targetUserId ? `
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${phaseConfigContext}${annualPlanningContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
