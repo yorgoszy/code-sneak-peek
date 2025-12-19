@@ -3351,6 +3351,33 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_macrocycles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phases: Json
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          phases?: Json
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phases?: Json
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       school_notes: {
         Row: {
           ai_processed: boolean | null
