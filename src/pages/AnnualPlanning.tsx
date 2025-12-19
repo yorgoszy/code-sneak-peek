@@ -300,8 +300,8 @@ const AnnualPlanning: React.FC = () => {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="overflow-x-auto p-2 sm:p-6">
-            <table className="w-full border-collapse text-xs sm:text-sm">
+          <CardContent className="overflow-x-auto p-2 sm:p-6 -mx-2 sm:mx-0 px-2 sm:px-6">
+            <table className="w-max min-w-full border-collapse text-xs sm:text-sm">
               <thead>
                 <tr>
                   <th className="border p-1 sm:p-2 bg-muted text-left min-w-[120px] sm:min-w-[200px] sticky left-0 z-10">Φάση</th>
