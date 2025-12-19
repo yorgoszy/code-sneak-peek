@@ -121,6 +121,30 @@ const AnnualPlanning: React.FC = () => {
     return monthlyPhases.find(p => p.month === month && p.week === week);
   };
 
+  // Get unique phases selected in monthly planning for the selected month
+  const getMonthlyPhasesForMonth = useMemo(() => {
+    const monthPhases = monthlyPhases.filter(p => p.month === selectedWeeklyMonth);
+    const uniquePhaseValues = [...new Set(monthPhases.map(p => p.phase))];
+    return PHASES.filter(p => uniquePhaseValues.includes(p.value));
+  }, [monthlyPhases, selectedWeeklyMonth]);
+
+  // Calculate actual calendar dates for a month
+  const getCalendarDatesForMonth = useMemo(() => {
+    const daysInMonth = new Date(year, selectedWeeklyMonth, 0).getDate();
+    const weeks: number[][] = [];
+    
+    for (let week = 0; week < 4; week++) {
+      const weekDates: number[] = [];
+      for (let day = 0; day < 7; day++) {
+        const dateNum = week * 7 + day + 1;
+        weekDates.push(dateNum <= daysInMonth ? dateNum : 0);
+      }
+      weeks.push(weekDates);
+    }
+    
+    return weeks;
+  }, [year, selectedWeeklyMonth]);
+
   // Handle monthly phase cell click
   const handleMonthlyPhaseClick = (month: number, week: number, phase: string) => {
     setMonthlyPhases(prev => {
@@ -788,51 +812,61 @@ const AnnualPlanning: React.FC = () => {
                 <tr>
                   <th className="border p-0.5 bg-muted text-left text-[7px] sm:text-[9px]">Ημέρα</th>
                   {WEEKS.map((_, weekIndex) => (
-                    DAYS.map((day, dayIndex) => (
+                    getCalendarDatesForMonth[weekIndex].map((dateNum, dayIndex) => (
                       <th 
                         key={`${weekIndex}-${dayIndex}`}
                         className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
                       >
-                        {day}
+                        {dateNum > 0 ? dateNum : '-'}
                       </th>
                     ))
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {WEEKLY_PHASES.map((phase) => (
-                  <tr key={phase.value}>
-                    <td className="border p-0.5 font-medium bg-background">
-                      <div className="flex items-center gap-0.5">
-                        <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
-                        <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
-                        <span className="hidden lg:inline text-xs">{phase.label}</span>
-                      </div>
+                {getMonthlyPhasesForMonth.length === 0 ? (
+                  <tr>
+                    <td colSpan={29} className="border p-4 text-center text-muted-foreground text-xs">
+                      Δεν έχουν επιλεγεί φάσεις στον Μηνιαίο Προγραμματισμό για τον {MONTHS_DROPDOWN[selectedWeeklyMonth - 1]}
                     </td>
-                    {WEEKS.map((_, weekIndex) => (
-                      DAYS.map((_, dayIndex) => {
-                        const week = weekIndex + 1;
-                        const day = dayIndex + 1;
-                        const isSelected = isWeeklyPhaseSelected(selectedWeeklyMonth, week, day, phase.value);
-                        
-                        return (
-                          <td
-                            key={`${weekIndex}-${dayIndex}`}
-                            onClick={() => handleWeeklyPhaseClick(selectedWeeklyMonth, week, day, phase.value)}
-                            className={cn(
-                              "border p-0 text-center cursor-pointer transition-colors hover:bg-muted h-3 sm:h-4",
-                              isSelected && phase.color
-                            )}
-                          >
-                            {isSelected && (
-                              <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
-                            )}
-                          </td>
-                        );
-                      })
-                    ))}
                   </tr>
-                ))}
+                ) : (
+                  getMonthlyPhasesForMonth.map((phase) => (
+                    <tr key={phase.value}>
+                      <td className="border p-0.5 font-medium bg-background">
+                        <div className="flex items-center gap-0.5">
+                          <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
+                          <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
+                          <span className="hidden lg:inline text-xs">{phase.label}</span>
+                        </div>
+                      </td>
+                      {WEEKS.map((_, weekIndex) => (
+                        getCalendarDatesForMonth[weekIndex].map((dateNum, dayIndex) => {
+                          const week = weekIndex + 1;
+                          const day = dayIndex + 1;
+                          const isSelected = isWeeklyPhaseSelected(selectedWeeklyMonth, week, day, phase.value);
+                          const isValidDate = dateNum > 0;
+                          
+                          return (
+                            <td
+                              key={`${weekIndex}-${dayIndex}`}
+                              onClick={() => isValidDate && handleWeeklyPhaseClick(selectedWeeklyMonth, week, day, phase.value)}
+                              className={cn(
+                                "border p-0 text-center transition-colors h-3 sm:h-4",
+                                isValidDate ? "cursor-pointer hover:bg-muted" : "bg-muted/30 cursor-default",
+                                isSelected && isValidDate && phase.color
+                              )}
+                            >
+                              {isSelected && isValidDate && (
+                                <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
+                              )}
+                            </td>
+                          );
+                        })
+                      ))}
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
