@@ -595,8 +595,10 @@ const AnnualPlanning: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Monthly Planning Container */}
-      <Card className="rounded-none border-l-0 mt-2">
+      {/* Monthly Planning Container - Only show in "Νέο" tab */}
+      {activeTab === 'new' && (
+        <>
+        <Card className="rounded-none border-l-0 mt-2">
         <CardHeader className="p-2 sm:p-4">
           <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
             <Calendar className="w-4 h-4" />
@@ -801,7 +803,9 @@ const AnnualPlanning: React.FC = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+        </>
+      )}
 
       {/* View/Edit Dialog - Responsive */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
