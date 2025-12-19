@@ -10,12 +10,12 @@ export const AnnualPlanningWithSidebar: React.FC = () => {
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      {/* Mobile Sidebar Toggle */}
+      {/* Mobile Sidebar Toggle - Fixed position with background */}
       <Button
         variant="outline"
         size="icon"
         onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-        className="fixed top-2 left-2 z-50 lg:hidden rounded-none h-10 w-10"
+        className="fixed top-2 left-2 z-50 lg:hidden rounded-none h-10 w-10 bg-background shadow-md border-border"
       >
         <Menu className="h-5 w-5" />
       </Button>
