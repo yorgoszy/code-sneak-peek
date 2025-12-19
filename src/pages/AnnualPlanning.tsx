@@ -54,6 +54,7 @@ const PHASES = [
   { value: 'maximal-strength', label: 'Maximal Strength Training', shortLabel: 'MAX', color: 'bg-teal-500' },
   { value: 'power', label: 'Power Training', shortLabel: 'PWR', color: 'bg-blue-500' },
   { value: 'endurance', label: 'Endurance', shortLabel: 'END', color: 'bg-purple-500' },
+  { value: 'competition', label: 'Competition', shortLabel: 'COMP', color: 'bg-pink-500' },
 ];
 
 // Weekly phases (training types)
@@ -68,9 +69,18 @@ const WEEKLY_PHASES = [
 const MONTHS = ['Ι', 'Φ', 'Μ', 'Α', 'Μ', 'Ι', 'Ι', 'Α', 'Σ', 'Ο', 'Ν', 'Δ'];
 const MONTHS_FULL = ['ΙΑΝ', 'ΦΕΒ', 'ΜΑΡ', 'ΑΠΡ', 'ΜΑΪ', 'ΙΟΥΝ', 'ΙΟΥΛ', 'ΑΥΓ', 'ΣΕΠ', 'ΟΚΤ', 'ΝΟΕ', 'ΔΕΚ'];
 const MONTHS_DROPDOWN = ['Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος', 'Μάιος', 'Ιούνιος', 'Ιούλιος', 'Αύγουστος', 'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'];
-const WEEKS = ['Ε1', 'Ε2', 'Ε3', 'Ε4', 'Ε5'];
 const DAYS = ['Δ', 'Τ', 'Τ', 'Π', 'Π', 'Σ', 'Κ'];
 const DAYS_FULL = ['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'];
+
+// Calculate weeks per month for a given year
+const getWeeksInMonth = (year: number, month: number): number => {
+  const firstDay = new Date(year, month - 1, 1);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let startDayOfWeek = firstDay.getDay();
+  startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // Monday=0
+  const totalDays = startDayOfWeek + daysInMonth;
+  return Math.ceil(totalDays / 7);
+};
 
 const normalizeString = (str: string): string => {
   return str
@@ -697,10 +707,11 @@ const AnnualPlanning: React.FC = () => {
                   {MONTHS_FULL.map((month, monthIndex) => {
                     const annualPhase = getAnnualPhaseForMonth(monthIndex + 1);
                     const phaseInfo = annualPhase ? PHASES.find(p => p.value === annualPhase.phase) : null;
+                    const weeksCount = getWeeksInMonth(year, monthIndex + 1);
                     return (
                       <th 
                         key={monthIndex} 
-                        colSpan={4}
+                        colSpan={weeksCount}
                         className={cn(
                           "border p-0.5 bg-muted text-center",
                           phaseInfo && phaseInfo.color
@@ -725,16 +736,17 @@ const AnnualPlanning: React.FC = () => {
                 </tr>
                 <tr>
                   <th className="border p-0.5 bg-muted text-left text-[7px] sm:text-[9px]">Εβδ.</th>
-                  {MONTHS_FULL.map((_, monthIndex) => (
-                    WEEKS.map((week, weekIndex) => (
+                  {MONTHS_FULL.map((_, monthIndex) => {
+                    const weeksCount = getWeeksInMonth(year, monthIndex + 1);
+                    return Array.from({ length: weeksCount }, (_, weekIndex) => (
                       <th 
                         key={`${monthIndex}-${weekIndex}`}
                         className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
                       >
-                        {week}
+                        Ε{weekIndex + 1}
                       </th>
-                    ))
-                  ))}
+                    ));
+                  })}
                 </tr>
               </thead>
               <tbody>
@@ -747,8 +759,9 @@ const AnnualPlanning: React.FC = () => {
                         <span className="hidden lg:inline text-xs">{phase.label}</span>
                       </div>
                     </td>
-                    {MONTHS_FULL.map((_, monthIndex) => (
-                      WEEKS.map((_, weekIndex) => {
+                    {MONTHS_FULL.map((_, monthIndex) => {
+                      const weeksCount = getWeeksInMonth(year, monthIndex + 1);
+                      return Array.from({ length: weeksCount }, (_, weekIndex) => {
                         const month = monthIndex + 1;
                         const week = weekIndex + 1;
                         const isSelected = isMonthlyPhaseSelected(month, week, phase.value);
@@ -767,8 +780,8 @@ const AnnualPlanning: React.FC = () => {
                             )}
                           </td>
                         );
-                      })
-                    ))}
+                      });
+                    })}
                   </tr>
                 ))}
               </tbody>
