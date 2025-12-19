@@ -185,15 +185,15 @@ const AnnualPlanning: React.FC = () => {
   };
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 p-2 sm:p-4 lg:p-0">
       <Card className="rounded-none border-l-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
             Ετήσιος Προγραμματισμός
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-3 sm:p-6">
           {/* User Search */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Αναζήτηση Χρήστη</label>
@@ -249,20 +249,20 @@ const AnnualPlanning: React.FC = () => {
 
           {/* Selected User */}
           {selectedUser && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-none">
-              <Avatar className="h-10 w-10">
+            <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-muted rounded-none">
+              <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
                 <AvatarImage src={selectedUser.avatar_url || undefined} />
-                <AvatarFallback>{getInitials(selectedUser.name)}</AvatarFallback>
+                <AvatarFallback className="text-xs sm:text-sm">{getInitials(selectedUser.name)}</AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <p className="font-medium">{selectedUser.name}</p>
-                <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm sm:text-base truncate">{selectedUser.name}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{selectedUser.email}</p>
               </div>
               <Button 
                 variant="ghost" 
                 size="sm"
                 onClick={() => setSelectedUser(null)}
-                className="rounded-none"
+                className="rounded-none text-xs sm:text-sm"
               >
                 Αλλαγή
               </Button>
@@ -274,9 +274,9 @@ const AnnualPlanning: React.FC = () => {
       {/* Year Navigation & Phases Grid */}
       {selectedUser && (
         <Card className="rounded-none border-l-0">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">
+          <CardHeader className="p-3 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+              <CardTitle className="text-base sm:text-lg">
                 Φάσεις Προπόνησης - {selectedUser.name}
               </CardTitle>
               <div className="flex items-center gap-2">
@@ -284,29 +284,29 @@ const AnnualPlanning: React.FC = () => {
                   variant="outline"
                   size="icon"
                   onClick={() => setYear(y => y - 1)}
-                  className="rounded-none"
+                  className="rounded-none h-8 w-8 sm:h-10 sm:w-10"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-lg font-semibold w-16 text-center">{year}</span>
+                <span className="text-base sm:text-lg font-semibold w-14 sm:w-16 text-center">{year}</span>
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => setYear(y => y + 1)}
-                  className="rounded-none"
+                  className="rounded-none h-8 w-8 sm:h-10 sm:w-10"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <table className="w-full border-collapse">
+          <CardContent className="overflow-x-auto p-2 sm:p-6">
+            <table className="w-full border-collapse text-xs sm:text-sm">
               <thead>
                 <tr>
-                  <th className="border p-2 bg-muted text-left min-w-[200px]">Φάση</th>
+                  <th className="border p-1 sm:p-2 bg-muted text-left min-w-[120px] sm:min-w-[200px] sticky left-0 z-10">Φάση</th>
                   {MONTHS.map((month, index) => (
-                    <th key={index} className="border p-2 bg-muted text-center min-w-[50px]">
+                    <th key={index} className="border p-1 sm:p-2 bg-muted text-center min-w-[32px] sm:min-w-[50px]">
                       {month}
                     </th>
                   ))}
@@ -315,10 +315,10 @@ const AnnualPlanning: React.FC = () => {
               <tbody>
                 {PHASES.map((phase) => (
                   <tr key={phase.value}>
-                    <td className="border p-2 font-medium">
-                      <div className="flex items-center gap-2">
-                        <div className={cn("w-3 h-3 rounded-full", phase.color)} />
-                        {phase.label}
+                    <td className="border p-1 sm:p-2 font-medium sticky left-0 bg-background z-10">
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        <div className={cn("w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0", phase.color)} />
+                        <span className="truncate text-[10px] sm:text-sm">{phase.label}</span>
                       </div>
                     </td>
                     {MONTHS.map((_, monthIndex) => {
@@ -330,12 +330,12 @@ const AnnualPlanning: React.FC = () => {
                           key={monthIndex}
                           onClick={() => handleCellClick(month, phase.value)}
                           className={cn(
-                            "border p-2 text-center cursor-pointer transition-colors hover:bg-muted",
+                            "border p-1 sm:p-2 text-center cursor-pointer transition-colors hover:bg-muted",
                             isSelected && phase.color
                           )}
                         >
                           {isSelected && (
-                            <Check className="h-4 w-4 mx-auto text-white" />
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mx-auto text-white" />
                           )}
                         </td>
                       );
