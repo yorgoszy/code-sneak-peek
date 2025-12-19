@@ -57,14 +57,26 @@ const PHASES = [
   { value: 'competition', label: 'Competition', shortLabel: 'COMP', color: 'bg-pink-500' },
 ];
 
-// Weekly phases (training types)
-const WEEKLY_PHASES = [
-  { value: 'strength', label: 'Strength', shortLabel: 'STR', color: 'bg-red-500' },
-  { value: 'power', label: 'Power', shortLabel: 'PWR', color: 'bg-orange-500' },
-  { value: 'hypertrophy', label: 'Hypertrophy', shortLabel: 'HYP', color: 'bg-yellow-500' },
-  { value: 'cardio', label: 'Cardio', shortLabel: 'CAR', color: 'bg-green-500' },
-  { value: 'recovery', label: 'Recovery', shortLabel: 'REC', color: 'bg-blue-500' },
-];
+// Sub-phases for weekly planning based on monthly phase selection
+const SUB_PHASES: Record<string, { value: string; label: string; shortLabel: string; color: string }[]> = {
+  'maximal-strength': [
+    { value: 'starting-strength', label: 'Starting Strength', shortLabel: 'START', color: 'bg-teal-400' },
+    { value: 'explosive-strength', label: 'Explosive Strength', shortLabel: 'EXPL', color: 'bg-teal-500' },
+    { value: 'reactive-strength', label: 'Reactive Strength', shortLabel: 'REACT', color: 'bg-teal-600' },
+  ],
+  'power': [
+    { value: 'str-spd', label: 'Strength/Speed', shortLabel: 'STR/SPD', color: 'bg-blue-400' },
+    { value: 'pwr', label: 'Power', shortLabel: 'PWR', color: 'bg-blue-500' },
+    { value: 'spd-str', label: 'Speed/Strength', shortLabel: 'SPD/STR', color: 'bg-blue-600' },
+    { value: 'spd', label: 'Speed', shortLabel: 'SPD', color: 'bg-blue-700' },
+  ],
+  'endurance': [
+    { value: 'str-end', label: 'Strength Endurance', shortLabel: 'STR/END', color: 'bg-purple-400' },
+    { value: 'pwr-end', label: 'Power Endurance', shortLabel: 'PWR/END', color: 'bg-purple-500' },
+    { value: 'spd-end', label: 'Speed Endurance', shortLabel: 'SPD/END', color: 'bg-purple-600' },
+    { value: 'aero-end', label: 'Aerobic Endurance', shortLabel: 'AERO/END', color: 'bg-purple-700' },
+  ],
+};
 
 const MONTHS = ['Ι', 'Φ', 'Μ', 'Α', 'Μ', 'Ι', 'Ι', 'Α', 'Σ', 'Ο', 'Ν', 'Δ'];
 const MONTHS_FULL = ['ΙΑΝ', 'ΦΕΒ', 'ΜΑΡ', 'ΑΠΡ', 'ΜΑΪ', 'ΙΟΥΝ', 'ΙΟΥΛ', 'ΑΥΓ', 'ΣΕΠ', 'ΟΚΤ', 'ΝΟΕ', 'ΔΕΚ'];
@@ -132,11 +144,31 @@ const AnnualPlanning: React.FC = () => {
     return monthlyPhases.find(p => p.month === month && p.week === week);
   };
 
-  // Get unique phases selected in monthly planning for the selected month
-  const getMonthlyPhasesForMonth = useMemo(() => {
+  // Get sub-phases for weekly planning based on monthly phase selection
+  const getWeeklySubPhases = useMemo(() => {
     const monthPhases = monthlyPhases.filter(p => p.month === selectedWeeklyMonth);
     const uniquePhaseValues = [...new Set(monthPhases.map(p => p.phase))];
-    return PHASES.filter(p => uniquePhaseValues.includes(p.value));
+    
+    // Collect all sub-phases for selected monthly phases
+    const allSubPhases: { value: string; label: string; shortLabel: string; color: string; parentPhase: string }[] = [];
+    
+    uniquePhaseValues.forEach(phaseValue => {
+      const subPhases = SUB_PHASES[phaseValue];
+      if (subPhases) {
+        // If there are sub-phases, add them
+        subPhases.forEach(sp => {
+          allSubPhases.push({ ...sp, parentPhase: phaseValue });
+        });
+      } else {
+        // Otherwise, use the main phase as-is
+        const mainPhase = PHASES.find(p => p.value === phaseValue);
+        if (mainPhase) {
+          allSubPhases.push({ ...mainPhase, parentPhase: phaseValue });
+        }
+      }
+    });
+    
+    return allSubPhases;
   }, [monthlyPhases, selectedWeeklyMonth]);
 
   // Calculate actual calendar weeks for a month (Monday-based)
@@ -873,14 +905,14 @@ const AnnualPlanning: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {getMonthlyPhasesForMonth.length === 0 ? (
+                {getWeeklySubPhases.length === 0 ? (
                   <tr>
                     <td colSpan={1 + getCalendarWeeksForMonth.length * 7} className="border p-4 text-center text-muted-foreground text-xs">
                       Δεν έχουν επιλεγεί φάσεις στον Μηνιαίο Προγραμματισμό για τον {MONTHS_DROPDOWN[selectedWeeklyMonth - 1]}
                     </td>
                   </tr>
                 ) : (
-                  getMonthlyPhasesForMonth.map((phase) => (
+                  getWeeklySubPhases.map((phase) => (
                     <tr key={phase.value}>
                       <td className="border p-0.5 font-medium bg-background">
                         <div className="flex items-center gap-0.5">
