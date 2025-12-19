@@ -8,7 +8,7 @@ export const AnnualPlanningWithSidebar: React.FC = () => {
   return (
     <div className="flex min-h-screen w-full bg-background">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      <main className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+      <main className="flex-1 transition-all duration-300">
         <AnnualPlanning />
       </main>
     </div>
