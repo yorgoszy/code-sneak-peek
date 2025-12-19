@@ -958,6 +958,92 @@ export type Database = {
           },
         ]
       }
+      corrective_issue_exercises: {
+        Row: {
+          created_at: string | null
+          exercise_id: string
+          exercise_type: string
+          id: string
+          issue_category: string
+          issue_name: string
+          notes: string | null
+          priority: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          exercise_id: string
+          exercise_type?: string
+          id?: string
+          issue_category: string
+          issue_name: string
+          notes?: string | null
+          priority?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          exercise_id?: string
+          exercise_type?: string
+          id?: string
+          issue_category?: string
+          issue_name?: string
+          notes?: string | null
+          priority?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corrective_issue_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      corrective_muscle_exercises: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          exercise_id: string
+          id: string
+          muscle_id: string
+          notes: string | null
+          priority: number | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          exercise_id: string
+          id?: string
+          muscle_id: string
+          notes?: string | null
+          priority?: number | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          exercise_id?: string
+          id?: string
+          muscle_id?: string
+          notes?: string | null
+          priority?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corrective_muscle_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "corrective_muscle_exercises_muscle_id_fkey"
+            columns: ["muscle_id"]
+            isOneToOne: false
+            referencedRelation: "muscles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discount_coupons: {
         Row: {
           code: string
@@ -2761,6 +2847,137 @@ export type Database = {
           },
         ]
       }
+      phase_exercise_categories: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          id: string
+          phase_id: string
+          priority: number | null
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          id?: string
+          phase_id: string
+          priority?: number | null
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          id?: string
+          phase_id?: string
+          priority?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phase_exercise_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phase_exercise_categories_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "training_phase_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phase_exercises: {
+        Row: {
+          created_at: string | null
+          exercise_id: string
+          id: string
+          notes: string | null
+          phase_id: string
+          priority: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          exercise_id: string
+          id?: string
+          notes?: string | null
+          phase_id: string
+          priority?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          exercise_id?: string
+          id?: string
+          notes?: string | null
+          phase_id?: string
+          priority?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phase_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phase_exercises_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "training_phase_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phase_rep_schemes: {
+        Row: {
+          created_at: string | null
+          id: string
+          intensity_percent: number | null
+          is_primary: boolean | null
+          notes: string | null
+          phase_id: string
+          reps: string
+          rest: string | null
+          scheme_name: string
+          sets: number
+          tempo: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          intensity_percent?: number | null
+          is_primary?: boolean | null
+          notes?: string | null
+          phase_id: string
+          reps: string
+          rest?: string | null
+          scheme_name: string
+          sets: number
+          tempo?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          intensity_percent?: number | null
+          is_primary?: boolean | null
+          notes?: string | null
+          phase_id?: string
+          reps?: string
+          rest?: string | null
+          scheme_name?: string
+          sets?: number
+          tempo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phase_rep_schemes_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "training_phase_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -4173,6 +4390,60 @@ export type Database = {
           },
         ]
       }
+      training_phase_config: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          intensity_range_max: number | null
+          intensity_range_min: number | null
+          parent_phase_key: string | null
+          phase_key: string
+          phase_name: string
+          phase_type: string
+          rep_range_max: number | null
+          rep_range_min: number | null
+          rest_range_max: number | null
+          rest_range_min: number | null
+          tempo_recommendation: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          intensity_range_max?: number | null
+          intensity_range_min?: number | null
+          parent_phase_key?: string | null
+          phase_key: string
+          phase_name: string
+          phase_type?: string
+          rep_range_max?: number | null
+          rep_range_min?: number | null
+          rest_range_max?: number | null
+          rest_range_min?: number | null
+          tempo_recommendation?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          intensity_range_max?: number | null
+          intensity_range_min?: number | null
+          parent_phase_key?: string | null
+          phase_key?: string
+          phase_name?: string
+          phase_type?: string
+          rep_range_max?: number | null
+          rep_range_min?: number | null
+          rest_range_max?: number | null
+          rest_range_min?: number | null
+          tempo_recommendation?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       training_type_stats: {
         Row: {
           assignment_id: string | null
@@ -4275,6 +4546,57 @@ export type Database = {
           },
           {
             foreignKeyName: "user_annual_phases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_annual_planning: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          monthly_phases: Json | null
+          notes: string | null
+          updated_at: string | null
+          user_id: string
+          weekly_phases: Json | null
+          year: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          monthly_phases?: Json | null
+          notes?: string | null
+          updated_at?: string | null
+          user_id: string
+          weekly_phases?: Json | null
+          year: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          monthly_phases?: Json | null
+          notes?: string | null
+          updated_at?: string | null
+          user_id?: string
+          weekly_phases?: Json | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_annual_planning_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_annual_planning_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
