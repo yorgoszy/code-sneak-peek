@@ -785,15 +785,33 @@ const AnnualPlanning: React.FC = () => {
               <Calendar className="w-4 h-4" />
               Εβδομαδιαίος Προγραμματισμός
             </CardTitle>
-            <select
-              value={selectedWeeklyMonth}
-              onChange={(e) => setSelectedWeeklyMonth(Number(e.target.value))}
-              className="rounded-none border px-2 py-1 text-xs sm:text-sm bg-background"
-            >
-              {MONTHS_DROPDOWN.map((month, index) => (
-                <option key={index} value={index + 1}>{month}</option>
-              ))}
-            </select>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSelectedWeeklyMonth(prev => prev === 1 ? 12 : prev - 1)}
+                className="rounded-none h-7 w-7 sm:h-8 sm:w-8"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <select
+                value={selectedWeeklyMonth}
+                onChange={(e) => setSelectedWeeklyMonth(Number(e.target.value))}
+                className="rounded-none border px-2 py-1 text-xs sm:text-sm bg-background min-w-[100px] sm:min-w-[120px] text-center"
+              >
+                {MONTHS_DROPDOWN.map((month, index) => (
+                  <option key={index} value={index + 1}>{month}</option>
+                ))}
+              </select>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSelectedWeeklyMonth(prev => prev === 12 ? 1 : prev + 1)}
+                className="rounded-none h-7 w-7 sm:h-8 sm:w-8"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-2 sm:p-4 pt-0">
