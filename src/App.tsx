@@ -57,6 +57,7 @@ import InstallAthletesProgressWidget from "@/pages/InstallAthletesProgressWidget
 import RidAiCoachPage from "@/pages/RidAiCoachPage";
 import { AdminAIKnowledgeWithSidebar } from "@/pages/Dashboard/AdminAIKnowledgeWithSidebar";
 import { NutritionWithSidebar } from "@/pages/Dashboard/NutritionWithSidebar";
+import { AnnualPlanningWithSidebar } from "@/pages/Dashboard/AnnualPlanningWithSidebar";
 import { SprintTimingLanding } from "@/pages/SprintTimingLanding";
 import { SprintTimingMaster } from "@/pages/SprintTimingMaster";
 import { SprintTimingJoin } from "@/pages/SprintTimingJoin";
@@ -135,6 +136,7 @@ function App() {
                 <Route path="/dashboard/rid-ai-coach" element={<ProtectedRoute><RidAiCoachPage /></ProtectedRoute>} />
                 <Route path="/dashboard/ai-knowledge" element={<ProtectedRoute requireAdmin><AdminAIKnowledgeWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/nutrition" element={<ProtectedRoute requireAdmin><NutritionWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/annual-planning" element={<ProtectedRoute requireAdmin><AnnualPlanningWithSidebar /></ProtectedRoute>} />
                 <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
                 
                 {/* Protected user routes */}
