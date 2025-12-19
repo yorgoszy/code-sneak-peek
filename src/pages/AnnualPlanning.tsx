@@ -185,7 +185,7 @@ const AnnualPlanning: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="p-4 space-y-6">
       <Card className="rounded-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
