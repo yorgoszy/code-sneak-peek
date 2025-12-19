@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -82,6 +83,13 @@ const AnnualPlanning: React.FC = () => {
   const [macrocycleName, setMacrocycleName] = useState('');
   const [showUserList, setShowUserList] = useState(false);
   const [activeTab, setActiveTab] = useState('new');
+  
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'view' | 'edit'>('view');
+  const [dialogMacrocycle, setDialogMacrocycle] = useState<AssignedMacrocycle | null>(null);
+  const [dialogPhases, setDialogPhases] = useState<{ month: number; phase: string }[]>([]);
+  const [dialogYear, setDialogYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     fetchUsers();
@@ -284,21 +292,68 @@ const AnnualPlanning: React.FC = () => {
     fetchAssignedMacrocycles();
   };
 
+  const handleViewAssignment = (macrocycle: AssignedMacrocycle) => {
+    setDialogMacrocycle(macrocycle);
+    setDialogPhases(macrocycle.phases.map(p => ({ month: p.month, phase: p.phase })));
+    setDialogYear(macrocycle.year);
+    setDialogMode('view');
+    setDialogOpen(true);
+  };
+
   const handleEditAssignment = (macrocycle: AssignedMacrocycle) => {
-    // Load phases for editing
-    const phasesToLoad = macrocycle.phases.map(p => ({ month: p.month, phase: p.phase }));
-    setSelectedPhases(phasesToLoad);
-    setYear(macrocycle.year);
+    setDialogMacrocycle(macrocycle);
+    setDialogPhases(macrocycle.phases.map(p => ({ month: p.month, phase: p.phase })));
+    setDialogYear(macrocycle.year);
+    setDialogMode('edit');
+    setDialogOpen(true);
+  };
+
+  const handleDialogCellClick = (month: number, phaseValue: string) => {
+    if (dialogMode === 'view') return;
     
-    // Find and set the user
-    const user = users.find(u => u.id === macrocycle.user_id);
-    if (user) setSelectedUser(user);
+    const exists = dialogPhases.some(p => p.month === month && p.phase === phaseValue);
     
-    // Delete existing assignment
-    handleDeleteAssignment(macrocycle);
-    
-    setActiveTab('new');
-    toast.success('Επεξεργασία μακροκύκλου');
+    if (exists) {
+      setDialogPhases(dialogPhases.filter(p => !(p.month === month && p.phase === phaseValue)));
+    } else {
+      setDialogPhases([...dialogPhases, { month, phase: phaseValue }]);
+    }
+  };
+
+  const isDialogPhaseSelected = (month: number, phaseValue: string): boolean => {
+    return dialogPhases.some(p => p.month === month && p.phase === phaseValue);
+  };
+
+  const handleSaveDialogChanges = async () => {
+    if (!dialogMacrocycle) return;
+
+    // Delete old phases
+    const phaseIds = dialogMacrocycle.phases.map(p => p.id);
+    await supabase
+      .from('user_annual_phases')
+      .delete()
+      .in('id', phaseIds);
+
+    // Insert new phases
+    const phasesToInsert = dialogPhases.map(p => ({
+      user_id: dialogMacrocycle.user_id,
+      year: dialogYear,
+      month: p.month,
+      phase: p.phase
+    }));
+
+    const { error } = await supabase
+      .from('user_annual_phases')
+      .insert(phasesToInsert);
+
+    if (error) {
+      toast.error('Σφάλμα κατά την αποθήκευση');
+      return;
+    }
+
+    toast.success('Οι αλλαγές αποθηκεύτηκαν');
+    setDialogOpen(false);
+    fetchAssignedMacrocycles();
   };
 
   return (
@@ -524,13 +579,7 @@ const AnnualPlanning: React.FC = () => {
                               variant="outline"
                               size="icon"
                               className="rounded-none h-7 w-7"
-                              onClick={() => {
-                                // View - load phases to display
-                                const phasesToLoad = macrocycle.phases.map(p => ({ month: p.month, phase: p.phase }));
-                                setSelectedPhases(phasesToLoad);
-                                setYear(macrocycle.year);
-                                setActiveTab('new');
-                              }}
+                              onClick={() => handleViewAssignment(macrocycle)}
                             >
                               <Eye className="h-3 w-3" />
                             </Button>
@@ -624,6 +673,117 @@ const AnnualPlanning: React.FC = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* View/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto rounded-none">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {dialogMacrocycle && (
+                  <>
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={dialogMacrocycle.user_avatar || undefined} />
+                      <AvatarFallback className="text-[10px]">{getInitials(dialogMacrocycle.user_name)}</AvatarFallback>
+                    </Avatar>
+                    <span>{dialogMacrocycle.user_name}</span>
+                  </>
+                )}
+                <span className="text-muted-foreground">- {dialogMode === 'view' ? 'Προβολή' : 'Επεξεργασία'}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setDialogYear(y => y - 1)}
+                  className="rounded-none h-7 w-7"
+                  disabled={dialogMode === 'view'}
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </Button>
+                <span className="text-sm font-semibold w-12 text-center">{dialogYear}</span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setDialogYear(y => y + 1)}
+                  className="rounded-none h-7 w-7"
+                  disabled={dialogMode === 'view'}
+                >
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Phases Grid in Dialog */}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-xs">
+              <thead>
+                <tr>
+                  <th className="border p-1 bg-muted text-left w-[160px]">Φάση</th>
+                  {MONTHS_FULL.map((month, index) => (
+                    <th key={index} className="border p-1 bg-muted text-center">
+                      {month}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {PHASES.map((phase) => (
+                  <tr key={phase.value}>
+                    <td className="border p-1 font-medium bg-background">
+                      <div className="flex items-center gap-1">
+                        <div className={cn("w-2 h-2 rounded-full flex-shrink-0", phase.color)} />
+                        <span className="text-xs">{phase.label}</span>
+                      </div>
+                    </td>
+                    {MONTHS_FULL.map((_, monthIndex) => {
+                      const month = monthIndex + 1;
+                      const isSelected = isDialogPhaseSelected(month, phase.value);
+                      
+                      return (
+                        <td
+                          key={monthIndex}
+                          onClick={() => handleDialogCellClick(month, phase.value)}
+                          className={cn(
+                            "border p-0 text-center transition-colors h-6",
+                            dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
+                            isSelected && phase.color
+                          )}
+                        >
+                          {isSelected && (
+                            <Check className="h-3 w-3 mx-auto text-white" />
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Dialog Actions */}
+          {dialogMode === 'edit' && (
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                className="rounded-none"
+                onClick={() => setDialogOpen(false)}
+              >
+                Ακύρωση
+              </Button>
+              <Button
+                className="rounded-none"
+                style={{ backgroundColor: '#00ffba', color: 'black' }}
+                onClick={handleSaveDialogChanges}
+              >
+                Αποθήκευση Αλλαγών
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
