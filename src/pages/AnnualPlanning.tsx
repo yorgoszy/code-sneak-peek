@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -267,57 +267,89 @@ const AnnualPlanning: React.FC = () => {
     return PHASES.find(p => p.value === phaseValue)?.color || 'bg-gray-500';
   };
 
+  const handleDeleteAssignment = async (macrocycle: AssignedMacrocycle) => {
+    const phaseIds = macrocycle.phases.map(p => p.id);
+    
+    const { error } = await supabase
+      .from('user_annual_phases')
+      .delete()
+      .in('id', phaseIds);
+
+    if (error) {
+      toast.error('Σφάλμα κατά τη διαγραφή');
+      return;
+    }
+
+    toast.success('Ο μακροκύκλος διαγράφηκε');
+    fetchAssignedMacrocycles();
+  };
+
+  const handleEditAssignment = (macrocycle: AssignedMacrocycle) => {
+    // Load phases for editing
+    const phasesToLoad = macrocycle.phases.map(p => ({ month: p.month, phase: p.phase }));
+    setSelectedPhases(phasesToLoad);
+    setYear(macrocycle.year);
+    
+    // Find and set the user
+    const user = users.find(u => u.id === macrocycle.user_id);
+    if (user) setSelectedUser(user);
+    
+    // Delete existing assignment
+    handleDeleteAssignment(macrocycle);
+    
+    setActiveTab('new');
+    toast.success('Επεξεργασία μακροκύκλου');
+  };
+
   return (
-    <div className="space-y-0 p-2 sm:p-4 lg:p-0">
+    <div className="p-2 lg:p-0">
       <Card className="rounded-none border-l-0">
-        <CardHeader className="p-3 sm:p-6">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-            Ετήσιος Προγραμματισμός
+        <CardHeader className="p-2 sm:p-4">
+          <CardTitle className="flex items-center justify-between text-sm sm:text-base">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Ετήσιος Προγραμματισμός
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setYear(y => y - 1)}
+                className="rounded-none h-7 w-7"
+              >
+                <ChevronLeft className="h-3 w-3" />
+              </Button>
+              <span className="text-sm font-semibold w-12 text-center">{year}</span>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setYear(y => y + 1)}
+                className="rounded-none h-7 w-7"
+              >
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
+
         <CardContent className="p-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-3 rounded-none">
-              <TabsTrigger value="new" className="rounded-none">Νέος Μακροκύκλος</TabsTrigger>
-              <TabsTrigger value="assigned" className="rounded-none">Ανατεθημένα</TabsTrigger>
-              <TabsTrigger value="saved" className="rounded-none">Αποθηκευμένα</TabsTrigger>
+            <TabsList className="w-full grid grid-cols-3 rounded-none h-8">
+              <TabsTrigger value="new" className="rounded-none text-xs">Νέος Μακροκύκλος</TabsTrigger>
+              <TabsTrigger value="assigned" className="rounded-none text-xs">Ανατεθημένα</TabsTrigger>
+              <TabsTrigger value="saved" className="rounded-none text-xs">Αποθηκευμένα</TabsTrigger>
             </TabsList>
 
             {/* New Macrocycle Tab */}
-            <TabsContent value="new" className="p-3 sm:p-6 space-y-4">
-              {/* Year Navigation */}
-              <div className="flex items-center justify-between">
-                <h3 className="text-base sm:text-lg font-semibold">Φάσεις Προπόνησης</h3>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setYear(y => y - 1)}
-                    className="rounded-none h-8 w-8 sm:h-10 sm:w-10"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-base sm:text-lg font-semibold w-14 sm:w-16 text-center">{year}</span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setYear(y => y + 1)}
-                    className="rounded-none h-8 w-8 sm:h-10 sm:w-10"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
+            <TabsContent value="new" className="p-2 sm:p-4 space-y-2">
               {/* Phases Grid */}
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-[9px] sm:text-sm">
+                <table className="w-full border-collapse text-[9px] sm:text-xs">
                   <thead>
                     <tr>
-                      <th className="border p-0.5 sm:p-2 bg-muted text-left w-[60px] sm:w-[200px]">Φάση</th>
+                      <th className="border p-0.5 sm:p-1 bg-muted text-left w-[50px] sm:w-[160px]">Φάση</th>
                       {MONTHS.map((month, index) => (
-                        <th key={index} className="border p-0.5 sm:p-2 bg-muted text-center w-[20px] sm:w-auto">
+                        <th key={index} className="border p-0.5 bg-muted text-center w-[18px] sm:w-auto">
                           <span className="sm:hidden">{month}</span>
                           <span className="hidden sm:inline">{MONTHS_FULL[index]}</span>
                         </th>
@@ -327,12 +359,12 @@ const AnnualPlanning: React.FC = () => {
                   <tbody>
                     {PHASES.map((phase) => (
                       <tr key={phase.value}>
-                        <td className="border p-0.5 sm:p-1 lg:p-2 font-medium bg-background">
-                          <div className="flex items-center gap-0.5 sm:gap-1 lg:gap-2">
-                            <div className={cn("w-1.5 h-1.5 sm:w-2 lg:w-3 sm:h-2 lg:h-3 rounded-full flex-shrink-0", phase.color)} />
-                            <span className="md:hidden text-[8px] font-semibold">{phase.shortLabel}</span>
-                            <span className="hidden md:inline lg:hidden text-[10px]">{phase.shortLabel}</span>
-                            <span className="hidden lg:inline text-sm">{phase.label}</span>
+                        <td className="border p-0.5 font-medium bg-background">
+                          <div className="flex items-center gap-0.5 sm:gap-1">
+                            <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
+                            <span className="md:hidden text-[7px] font-semibold">{phase.shortLabel}</span>
+                            <span className="hidden md:inline lg:hidden text-[9px]">{phase.shortLabel}</span>
+                            <span className="hidden lg:inline text-xs">{phase.label}</span>
                           </div>
                         </td>
                         {MONTHS.map((_, monthIndex) => {
@@ -344,12 +376,12 @@ const AnnualPlanning: React.FC = () => {
                               key={monthIndex}
                               onClick={() => handleCellClick(month, phase.value)}
                               className={cn(
-                                "border p-0 sm:p-2 text-center cursor-pointer transition-colors hover:bg-muted h-5 sm:h-auto",
+                                "border p-0 text-center cursor-pointer transition-colors hover:bg-muted h-4 sm:h-5",
                                 isSelected && phase.color
                               )}
                             >
                               {isSelected && (
-                                <Check className="h-2.5 w-2.5 sm:h-4 sm:w-4 mx-auto text-white" />
+                                <Check className="h-2 w-2 sm:h-3 sm:w-3 mx-auto text-white" />
                               )}
                             </td>
                           );
@@ -360,146 +392,176 @@ const AnnualPlanning: React.FC = () => {
                 </table>
               </div>
 
-              {/* User Selection for Assignment */}
-              <div className="space-y-3 pt-4 border-t">
-                <label className="text-sm font-medium">Επιλογή Χρήστη για Ανάθεση</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Αναζήτηση με όνομα ή email..."
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setShowUserList(true);
-                    }}
-                    onFocus={() => setShowUserList(true)}
-                    className="pl-10 rounded-none"
-                  />
+              {/* User Selection & Macrocycle Name - Same Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 pt-2 border-t">
+                {/* User Selection */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Επιλογή Χρήστη</label>
+                  {selectedUser ? (
+                    <div className="flex items-center gap-2 p-1.5 bg-muted rounded-none">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={selectedUser.avatar_url || undefined} />
+                        <AvatarFallback className="text-[10px]">{getInitials(selectedUser.name)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{selectedUser.name}</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setSelectedUser(null)}
+                        className="rounded-none text-[10px] h-6 px-2"
+                      >
+                        Αλλαγή
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                      <Input
+                        placeholder="Αναζήτηση χρήστη..."
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setShowUserList(true);
+                        }}
+                        onFocus={() => setShowUserList(true)}
+                        className="pl-7 rounded-none h-8 text-xs"
+                      />
+                      {showUserList && searchQuery && (
+                        <div className="absolute z-10 w-full max-h-40 overflow-y-auto border rounded-none bg-background shadow-lg">
+                          {filteredUsers.length === 0 ? (
+                            <div className="p-2 text-center text-muted-foreground text-xs">
+                              Δεν βρέθηκαν
+                            </div>
+                          ) : (
+                            filteredUsers.slice(0, 5).map(user => (
+                              <div
+                                key={user.id}
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setSearchQuery('');
+                                  setShowUserList(false);
+                                }}
+                                className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted"
+                              >
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={user.avatar_url || undefined} />
+                                  <AvatarFallback className="text-[10px]">{getInitials(user.name)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium truncate">{user.name}</p>
+                                  <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* User List Dropdown */}
-                {showUserList && searchQuery && (
-                  <div className="max-h-60 overflow-y-auto border rounded-none">
-                    {filteredUsers.length === 0 ? (
-                      <div className="p-4 text-center text-muted-foreground">
-                        Δεν βρέθηκαν χρήστες
-                      </div>
-                    ) : (
-                      filteredUsers.map(user => (
-                        <div
-                          key={user.id}
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setSearchQuery('');
-                            setShowUserList(false);
-                          }}
-                          className={cn(
-                            "flex items-center gap-3 p-3 cursor-pointer hover:bg-muted transition-colors",
-                            selectedUser?.id === user.id && "bg-muted"
-                          )}
-                        >
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.avatar_url || undefined} />
-                            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{user.name}</p>
-                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-
-                {/* Selected User */}
-                {selectedUser && (
-                  <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-muted rounded-none">
-                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                      <AvatarImage src={selectedUser.avatar_url || undefined} />
-                      <AvatarFallback className="text-xs sm:text-sm">{getInitials(selectedUser.name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm sm:text-base truncate">{selectedUser.name}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{selectedUser.email}</p>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setSelectedUser(null)}
-                      className="rounded-none text-xs sm:text-sm"
-                    >
-                      Αλλαγή
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Save Macrocycle Name */}
-              <div className="space-y-2 pt-4 border-t">
-                <label className="text-sm font-medium">Όνομα Μακροκύκλου (για αποθήκευση)</label>
-                <Input
-                  placeholder="π.χ. Προετοιμασία Αγώνων 2025"
-                  value={macrocycleName}
-                  onChange={(e) => setMacrocycleName(e.target.value)}
-                  className="rounded-none"
-                />
+                {/* Macrocycle Name */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Όνομα Μακροκύκλου</label>
+                  <Input
+                    placeholder="π.χ. Προετοιμασία 2025"
+                    value={macrocycleName}
+                    onChange={(e) => setMacrocycleName(e.target.value)}
+                    className="rounded-none h-8 text-xs"
+                  />
+                </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-2 pt-2">
                 <Button
                   onClick={handleSave}
                   variant="outline"
-                  className="rounded-none flex-1"
+                  className="rounded-none flex-1 h-8 text-xs"
                   disabled={selectedPhases.length === 0 || !macrocycleName.trim()}
                 >
-                  <Save className="w-4 h-4 mr-2" />
+                  <Save className="w-3 h-3 mr-1" />
                   Αποθήκευση
                 </Button>
                 <Button
                   onClick={handleAssign}
-                  className="rounded-none flex-1"
+                  className="rounded-none flex-1 h-8 text-xs"
                   style={{ backgroundColor: '#00ffba', color: 'black' }}
                   disabled={selectedPhases.length === 0 || !selectedUser}
                 >
-                  <UserPlus className="w-4 h-4 mr-2" />
+                  <UserPlus className="w-3 h-3 mr-1" />
                   Ανάθεση
                 </Button>
               </div>
             </TabsContent>
 
             {/* Assigned Macrocycles Tab */}
-            <TabsContent value="assigned" className="p-3 sm:p-6">
+            <TabsContent value="assigned" className="p-2 sm:p-4">
               {assignedMacrocycles.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-6 text-muted-foreground text-sm">
                   Δεν υπάρχουν ανατεθειμένοι μακροκύκλοι
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {assignedMacrocycles.map((macrocycle) => (
                     <Card key={macrocycle.id} className="rounded-none">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3 mb-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={macrocycle.user_avatar || undefined} />
-                            <AvatarFallback>{getInitials(macrocycle.user_name)}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{macrocycle.user_name}</p>
-                            <p className="text-sm text-muted-foreground">Έτος: {macrocycle.year}</p>
+                      <CardContent className="p-2 sm:p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={macrocycle.user_avatar || undefined} />
+                              <AvatarFallback className="text-[10px]">{getInitials(macrocycle.user_name)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="text-xs font-medium">{macrocycle.user_name}</p>
+                              <p className="text-[10px] text-muted-foreground">Έτος: {macrocycle.year}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="rounded-none h-7 w-7"
+                              onClick={() => {
+                                // View - load phases to display
+                                const phasesToLoad = macrocycle.phases.map(p => ({ month: p.month, phase: p.phase }));
+                                setSelectedPhases(phasesToLoad);
+                                setYear(macrocycle.year);
+                                setActiveTab('new');
+                              }}
+                            >
+                              <Eye className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="rounded-none h-7 w-7"
+                              onClick={() => handleEditAssignment(macrocycle)}
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="rounded-none h-7 w-7 text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteAssignment(macrocycle)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-0.5 mt-2">
                           {macrocycle.phases.map((phase, idx) => (
                             <span 
                               key={idx} 
                               className={cn(
-                                "text-xs px-2 py-1 text-white",
+                                "text-[9px] px-1.5 py-0.5 text-white",
                                 getPhaseColor(phase.phase)
                               )}
                             >
-                              {MONTHS_FULL[phase.month - 1]} - {PHASES.find(p => p.value === phase.phase)?.shortLabel}
+                              {MONTHS_FULL[phase.month - 1]}-{PHASES.find(p => p.value === phase.phase)?.shortLabel}
                             </span>
                           ))}
                         </div>
@@ -511,25 +573,25 @@ const AnnualPlanning: React.FC = () => {
             </TabsContent>
 
             {/* Saved Macrocycles Tab */}
-            <TabsContent value="saved" className="p-3 sm:p-6">
+            <TabsContent value="saved" className="p-2 sm:p-4">
               {savedMacrocycles.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-6 text-muted-foreground text-sm">
                   Δεν υπάρχουν αποθηκευμένοι μακροκύκλοι
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {savedMacrocycles.map((macrocycle) => (
                     <Card key={macrocycle.id} className="rounded-none">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
+                      <CardContent className="p-2 sm:p-3">
+                        <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium">{macrocycle.name}</p>
-                            <p className="text-sm text-muted-foreground">Έτος: {macrocycle.year}</p>
+                            <p className="text-xs font-medium">{macrocycle.name}</p>
+                            <p className="text-[10px] text-muted-foreground">Έτος: {macrocycle.year}</p>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="rounded-none"
+                            className="rounded-none h-7 text-xs"
                             onClick={() => {
                               setSelectedPhases(macrocycle.phases);
                               setYear(macrocycle.year);
@@ -540,16 +602,16 @@ const AnnualPlanning: React.FC = () => {
                             Χρήση
                           </Button>
                         </div>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-0.5 mt-2">
                           {macrocycle.phases.map((phase, idx) => (
                             <span 
                               key={idx} 
                               className={cn(
-                                "text-xs px-2 py-1 text-white",
+                                "text-[9px] px-1.5 py-0.5 text-white",
                                 getPhaseColor(phase.phase)
                               )}
                             >
-                              {MONTHS_FULL[phase.month - 1]} - {PHASES.find(p => p.value === phase.phase)?.shortLabel}
+                              {MONTHS_FULL[phase.month - 1]}-{PHASES.find(p => p.value === phase.phase)?.shortLabel}
                             </span>
                           ))}
                         </div>
