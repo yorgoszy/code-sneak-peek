@@ -176,7 +176,8 @@ html, body {
   }
 
   .scrollbar-thin::-webkit-scrollbar {
-    width: 1px;
+    width: 4px;
+    height: 4px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
@@ -198,7 +199,31 @@ html, body {
 
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #cb8954 #f3f4f6;
+    scrollbar-color: #cb8954 transparent;
+  }
+
+  /* Gold scrollbar for planning sections */
+  .scrollbar-gold {
+    scrollbar-width: thin;
+    scrollbar-color: #cb8954 transparent;
+  }
+
+  .scrollbar-gold::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-gold::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-gold::-webkit-scrollbar-thumb {
+    background: #cb8954;
+    border-radius: 2px;
+  }
+
+  .scrollbar-gold::-webkit-scrollbar-thumb:hover {
+    background: #b87648;
   }
 
   .scrollbar-none::-webkit-scrollbar {
