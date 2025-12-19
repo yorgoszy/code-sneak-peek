@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Trash2, X, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useUserNamesMap } from "@/components/results/hooks/useUserNamesMap";
@@ -17,6 +19,20 @@ interface AnthropometricHistoryTabProps {
   readOnly?: boolean;
 }
 
+interface EditFormData {
+  height: string;
+  weight: string;
+  muscle_mass_percentage: string;
+  body_fat_percentage: string;
+  visceral_fat_percentage: string;
+  bone_density: string;
+  chest_circumference: string;
+  waist_circumference: string;
+  hip_circumference: string;
+  thigh_circumference: string;
+  arm_circumference: string;
+}
+
 export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
   const { t } = useTranslation();
   const usersMap = useUserNamesMap();
@@ -27,6 +43,23 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  
+  // Edit state
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<EditFormData>({
+    height: '',
+    weight: '',
+    muscle_mass_percentage: '',
+    body_fat_percentage: '',
+    visceral_fat_percentage: '',
+    bone_density: '',
+    chest_circumference: '',
+    waist_circumference: '',
+    hip_circumference: '',
+    thigh_circumference: '',
+    arm_circumference: '',
+  });
 
   // Refetch when component mounts or key changes
   useEffect(() => {
@@ -92,6 +125,54 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
       toast.error('Σφάλμα κατά τη διαγραφή');
       setIsDeleteDialogOpen(false);
       setSessionToDelete(null);
+    }
+  };
+
+  const handleEditClick = (sessionId: string) => {
+    const data = anthropometricData[sessionId];
+    if (data) {
+      setEditFormData({
+        height: data.height?.toString() || '',
+        weight: data.weight?.toString() || '',
+        muscle_mass_percentage: data.muscle_mass_percentage?.toString() || '',
+        body_fat_percentage: data.body_fat_percentage?.toString() || '',
+        visceral_fat_percentage: data.visceral_fat_percentage?.toString() || '',
+        bone_density: data.bone_density?.toString() || '',
+        chest_circumference: data.chest_circumference?.toString() || '',
+        waist_circumference: data.waist_circumference?.toString() || '',
+        hip_circumference: data.hip_circumference?.toString() || '',
+        thigh_circumference: data.thigh_circumference?.toString() || '',
+        arm_circumference: data.arm_circumference?.toString() || '',
+      });
+      setEditingSessionId(sessionId);
+      setIsEditDialogOpen(true);
+    }
+  };
+
+  const handleEditSave = async () => {
+    if (!editingSessionId) return;
+
+    try {
+      const updateData: Record<string, number | null> = {};
+      
+      Object.entries(editFormData).forEach(([key, value]) => {
+        updateData[key] = value ? parseFloat(value) : null;
+      });
+
+      const { error } = await supabase
+        .from('anthropometric_test_data')
+        .update(updateData)
+        .eq('test_session_id', editingSessionId);
+
+      if (error) throw error;
+
+      toast.success('Η καταγραφή ενημερώθηκε επιτυχώς');
+      setIsEditDialogOpen(false);
+      setEditingSessionId(null);
+      await fetchAnthropometricData();
+    } catch (error) {
+      console.error('Error updating record:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση');
     }
   };
 
@@ -241,14 +322,24 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
                   </p>
                 </div>
                 {!readOnly && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteClick(result.id)}
-                    className="rounded-none text-destructive hover:text-destructive h-6 w-6 sm:h-7 sm:w-7"
-                  >
-                    <Trash2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEditClick(result.id)}
+                      className="rounded-none h-6 w-6 sm:h-7 sm:w-7"
+                    >
+                      <Pencil className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(result.id)}
+                      className="rounded-none text-destructive hover:text-destructive h-6 w-6 sm:h-7 sm:w-7"
+                    >
+                      <Trash2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardHeader>
@@ -337,6 +428,141 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
         }}
         onConfirm={handleDeleteConfirm}
       />
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md rounded-none">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Επεξεργασία Σωματομετρικών</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 py-2">
+            <div className="space-y-1">
+              <Label className="text-xs">Ύψος (cm)</Label>
+              <Input
+                type="number"
+                value={editFormData.height}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, height: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Βάρος (kg)</Label>
+              <Input
+                type="number"
+                value={editFormData.weight}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, weight: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Μυϊκή Μάζα (%)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={editFormData.muscle_mass_percentage}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, muscle_mass_percentage: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Λίπος (%)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={editFormData.body_fat_percentage}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, body_fat_percentage: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Σπλαχνικό Λίπος (%)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={editFormData.visceral_fat_percentage}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, visceral_fat_percentage: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Οστική Πυκνότητα (kg)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={editFormData.bone_density}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, bone_density: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Στήθος (cm)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={editFormData.chest_circumference}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, chest_circumference: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Μέση (cm)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={editFormData.waist_circumference}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, waist_circumference: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Ισχία (cm)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={editFormData.hip_circumference}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, hip_circumference: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Μηρός (cm)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={editFormData.thigh_circumference}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, thigh_circumference: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Βραχίονας (cm)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={editFormData.arm_circumference}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, arm_circumference: e.target.value }))}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+              className="rounded-none h-8 text-xs"
+            >
+              Ακύρωση
+            </Button>
+            <Button
+              onClick={handleEditSave}
+              className="rounded-none h-8 text-xs"
+              style={{ backgroundColor: '#00ffba', color: 'black' }}
+            >
+              Αποθήκευση
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
