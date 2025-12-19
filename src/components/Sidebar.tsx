@@ -504,6 +504,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     },
     { type: 'separator' },
     {
+      icon: Calendar,
+      label: "Ετήσιος Προγραμματισμός",
+      path: "/dashboard/annual-planning",
+      badge: null
+    },
+    {
       icon: TrendingUp,
       label: "Πρόοδος",
       path: "/dashboard/progress",
