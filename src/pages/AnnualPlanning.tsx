@@ -481,110 +481,6 @@ const AnnualPlanning: React.FC = () => {
                   </tbody>
                 </table>
               </div>
-
-              {/* User Selection & Macrocycle Name - Same Row */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 pt-2 border-t">
-                {/* User Selection */}
-                <div className="space-y-1">
-                  <label className="text-xs font-medium">Επιλογή Χρήστη</label>
-                  {selectedUser ? (
-                    <div className="flex items-center gap-2 p-1.5 bg-muted rounded-none">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={selectedUser.avatar_url || undefined} />
-                        <AvatarFallback className="text-[10px]">{getInitials(selectedUser.name)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate">{selectedUser.name}</p>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setSelectedUser(null)}
-                        className="rounded-none text-[10px] h-6 px-2"
-                      >
-                        Αλλαγή
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                      <Input
-                        placeholder="Αναζήτηση χρήστη..."
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setShowUserList(true);
-                        }}
-                        onFocus={() => setShowUserList(true)}
-                        className="pl-7 rounded-none h-8 text-xs"
-                      />
-                      {showUserList && searchQuery && (
-                        <div className="absolute z-10 w-full max-h-40 overflow-y-auto border rounded-none bg-background shadow-lg">
-                          {filteredUsers.length === 0 ? (
-                            <div className="p-2 text-center text-muted-foreground text-xs">
-                              Δεν βρέθηκαν
-                            </div>
-                          ) : (
-                            filteredUsers.slice(0, 5).map(user => (
-                              <div
-                                key={user.id}
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setSearchQuery('');
-                                  setShowUserList(false);
-                                }}
-                                className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted"
-                              >
-                                <Avatar className="h-6 w-6">
-                                  <AvatarImage src={user.avatar_url || undefined} />
-                                  <AvatarFallback className="text-[10px]">{getInitials(user.name)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium truncate">{user.name}</p>
-                                  <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Macrocycle Name */}
-                <div className="space-y-1">
-                  <label className="text-xs font-medium">Όνομα Μακροκύκλου</label>
-                  <Input
-                    placeholder="π.χ. Προετοιμασία 2025"
-                    value={macrocycleName}
-                    onChange={(e) => setMacrocycleName(e.target.value)}
-                    className="rounded-none h-8 text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-2">
-                <Button
-                  onClick={handleSave}
-                  variant="outline"
-                  className="rounded-none flex-1 h-8 text-xs"
-                  disabled={selectedPhases.length === 0 || !macrocycleName.trim()}
-                >
-                  <Save className="w-3 h-3 mr-1" />
-                  Αποθήκευση
-                </Button>
-                <Button
-                  onClick={handleAssign}
-                  className="rounded-none flex-1 h-8 text-xs"
-                  style={{ backgroundColor: '#00ffba', color: 'black' }}
-                  disabled={selectedPhases.length === 0 || !selectedUser}
-                >
-                  <UserPlus className="w-3 h-3 mr-1" />
-                  Ανάθεση
-                </Button>
-              </div>
             </TabsContent>
 
             {/* Assigned Macrocycles Tab */}
@@ -802,6 +698,117 @@ const AnnualPlanning: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* User Selection, Macrocycle Name & Actions */}
+      <Card className="rounded-none border-l-0 mt-2">
+        <CardContent className="p-2 sm:p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+            {/* User Selection */}
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Επιλογή Χρήστη</label>
+              {selectedUser ? (
+                <div className="flex items-center gap-2 p-1.5 bg-muted rounded-none">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={selectedUser.avatar_url || undefined} />
+                    <AvatarFallback className="text-[10px]">{getInitials(selectedUser.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{selectedUser.name}</p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setSelectedUser(null)}
+                    className="rounded-none text-[10px] h-6 px-2"
+                  >
+                    Αλλαγή
+                  </Button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <Input
+                    placeholder="Αναζήτηση χρήστη..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowUserList(true);
+                    }}
+                    onFocus={() => setShowUserList(true)}
+                    className="pl-7 rounded-none h-8 text-xs"
+                  />
+                  {showUserList && searchQuery && (
+                    <div className="absolute z-10 w-full max-h-40 overflow-y-auto border rounded-none bg-background shadow-lg">
+                      {filteredUsers.length === 0 ? (
+                        <div className="p-2 text-center text-muted-foreground text-xs">
+                          Δεν βρέθηκαν
+                        </div>
+                      ) : (
+                        filteredUsers.slice(0, 5).map(user => (
+                          <div
+                            key={user.id}
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setSearchQuery('');
+                              setShowUserList(false);
+                            }}
+                            className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted"
+                          >
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={user.avatar_url || undefined} />
+                              <AvatarFallback className="text-[10px]">{getInitials(user.name)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium truncate">{user.name}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Macrocycle Name */}
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Όνομα Μακροκύκλου</label>
+              <Input
+                placeholder="π.χ. Προετοιμασία 2025"
+                value={macrocycleName}
+                onChange={(e) => setMacrocycleName(e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-1">
+              <label className="text-xs font-medium">&nbsp;</label>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSave}
+                  variant="outline"
+                  className="rounded-none flex-1 h-8 text-xs"
+                  disabled={selectedPhases.length === 0 || !macrocycleName.trim()}
+                >
+                  <Save className="w-3 h-3 mr-1" />
+                  Αποθήκευση
+                </Button>
+                <Button
+                  onClick={handleAssign}
+                  className="rounded-none flex-1 h-8 text-xs"
+                  style={{ backgroundColor: '#00ffba', color: 'black' }}
+                  disabled={selectedPhases.length === 0 || !selectedUser}
+                >
+                  <UserPlus className="w-3 h-3 mr-1" />
+                  Ανάθεση
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
