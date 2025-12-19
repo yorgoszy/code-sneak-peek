@@ -149,7 +149,7 @@ const AnnualPlanning: React.FC = () => {
 
   const fetchSavedMacrocycles = async () => {
     const { data, error } = await supabase
-      .from('saved_macrocycles')
+      .from('saved_macrocycles' as any)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -158,7 +158,7 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
-    setSavedMacrocycles(data || []);
+    setSavedMacrocycles((data as unknown as SavedMacrocycle[]) || []);
   };
 
   const handleCellClick = (month: number, phaseValue: string) => {
@@ -187,7 +187,7 @@ const AnnualPlanning: React.FC = () => {
     }
 
     const { error } = await supabase
-      .from('saved_macrocycles')
+      .from('saved_macrocycles' as any)
       .insert({
         name: macrocycleName,
         year,
