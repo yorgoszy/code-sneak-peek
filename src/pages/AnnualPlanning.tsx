@@ -185,8 +185,8 @@ const AnnualPlanning: React.FC = () => {
   };
 
   return (
-    <div className="p-4 space-y-6">
-      <Card className="rounded-none">
+    <div className="space-y-0">
+      <Card className="rounded-none border-l-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
@@ -273,7 +273,7 @@ const AnnualPlanning: React.FC = () => {
 
       {/* Year Navigation & Phases Grid */}
       {selectedUser && (
-        <Card className="rounded-none">
+        <Card className="rounded-none border-l-0">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
