@@ -106,10 +106,11 @@ const AnnualPlanning: React.FC = () => {
   const handleCellClick = async (month: number, phaseValue: string) => {
     if (!selectedUser) return;
 
-    const existingPhase = phases.find(p => p.month === month);
+    // Check if this specific phase exists for this month
+    const existingPhase = phases.find(p => p.month === month && p.phase === phaseValue);
 
-    // If clicking the same phase, remove it
-    if (existingPhase?.phase === phaseValue) {
+    if (existingPhase) {
+      // Remove this phase (toggle off)
       const { error } = await supabase
         .from('user_annual_phases')
         .delete()
@@ -120,26 +121,8 @@ const AnnualPlanning: React.FC = () => {
         return;
       }
       setPhases(phases.filter(p => p.id !== existingPhase.id));
-      return;
-    }
-
-    if (existingPhase) {
-      // Update existing
-      const { error } = await supabase
-        .from('user_annual_phases')
-        .update({ phase: phaseValue, updated_at: new Date().toISOString() })
-        .eq('id', existingPhase.id);
-
-      if (error) {
-        toast.error('Σφάλμα κατά την ενημέρωση');
-        return;
-      }
-
-      setPhases(phases.map(p => 
-        p.id === existingPhase.id ? { ...p, phase: phaseValue } : p
-      ));
     } else {
-      // Insert new
+      // Add new phase (toggle on)
       const { data, error } = await supabase
         .from('user_annual_phases')
         .insert({
@@ -161,8 +144,7 @@ const AnnualPlanning: React.FC = () => {
   };
 
   const isPhaseSelected = (month: number, phaseValue: string): boolean => {
-    const phase = phases.find(p => p.month === month);
-    return phase?.phase === phaseValue;
+    return phases.some(p => p.month === month && p.phase === phaseValue);
   };
 
   const filteredUsers = useMemo(() => {
