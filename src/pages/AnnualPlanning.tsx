@@ -47,12 +47,12 @@ interface AssignedMacrocycle {
 const PHASES = [
   { value: 'corrective', label: 'Corrective', shortLabel: 'COR', color: 'bg-red-500' },
   { value: 'stabilization', label: 'Stabilization Training', shortLabel: 'STB', color: 'bg-orange-500' },
-  { value: 'strength', label: 'Strength Training', shortLabel: 'STR', color: 'bg-yellow-500' },
+  { value: 'connecting-linking', label: 'Connecting Linking', shortLabel: 'CL', color: 'bg-yellow-500' },
+  { value: 'movement-skills', label: 'Movement Skills', shortLabel: 'MS', color: 'bg-amber-500' },
   { value: 'non-functional-hypertrophy', label: 'Non-Functional Hypertrophy', shortLabel: 'NFH', color: 'bg-lime-500' },
   { value: 'functional-hypertrophy', label: 'Functional Hypertrophy', shortLabel: 'FH', color: 'bg-green-500' },
   { value: 'maximal-strength', label: 'Maximal Strength Training', shortLabel: 'MAX', color: 'bg-teal-500' },
   { value: 'power', label: 'Power Training', shortLabel: 'PWR', color: 'bg-blue-500' },
-  { value: 'max-power', label: 'Max Power Training', shortLabel: 'MPW', color: 'bg-purple-500' },
 ];
 
 const MONTHS = ['Ι', 'Φ', 'Μ', 'Α', 'Μ', 'Ι', 'Ι', 'Α', 'Σ', 'Ο', 'Ν', 'Δ'];
