@@ -145,14 +145,16 @@ const AnnualPlanning: React.FC = () => {
     return weeks;
   }, [year, selectedWeeklyMonth]);
 
-  // Handle monthly phase cell click
+  // Handle monthly phase cell click - allows multiple phases per week
   const handleMonthlyPhaseClick = (month: number, week: number, phase: string) => {
     setMonthlyPhases(prev => {
-      const existing = prev.find(p => p.month === month && p.week === week);
-      if (existing?.phase === phase) {
-        return prev.filter(p => !(p.month === month && p.week === week));
+      const existing = prev.find(p => p.month === month && p.week === week && p.phase === phase);
+      if (existing) {
+        // Remove if already selected
+        return prev.filter(p => !(p.month === month && p.week === week && p.phase === phase));
       }
-      return [...prev.filter(p => !(p.month === month && p.week === week)), { month, week, phase }];
+      // Add new phase (without removing existing ones for this week)
+      return [...prev, { month, week, phase }];
     });
   };
 
@@ -161,14 +163,16 @@ const AnnualPlanning: React.FC = () => {
     return monthlyPhases.some(p => p.month === month && p.week === week && p.phase === phase);
   };
 
-  // Handle weekly phase cell click
+  // Handle weekly phase cell click - allows multiple phases per day
   const handleWeeklyPhaseClick = (month: number, week: number, day: number, phase: string) => {
     setWeeklyPhases(prev => {
-      const existing = prev.find(p => p.month === month && p.week === week && p.day === day);
-      if (existing?.phase === phase) {
-        return prev.filter(p => !(p.month === month && p.week === week && p.day === day));
+      const existing = prev.find(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
+      if (existing) {
+        // Remove if already selected
+        return prev.filter(p => !(p.month === month && p.week === week && p.day === day && p.phase === phase));
       }
-      return [...prev.filter(p => !(p.month === month && p.week === week && p.day === day)), { month, week, day, phase }];
+      // Add new phase (without removing existing ones for this day)
+      return [...prev, { month, week, day, phase }];
     });
   };
 
