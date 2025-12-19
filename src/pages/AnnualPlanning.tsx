@@ -53,6 +53,7 @@ const PHASES = [
   { value: 'functional-hypertrophy', label: 'Functional Hypertrophy', shortLabel: 'FH', color: 'bg-green-500' },
   { value: 'maximal-strength', label: 'Maximal Strength Training', shortLabel: 'MAX', color: 'bg-teal-500' },
   { value: 'power', label: 'Power Training', shortLabel: 'PWR', color: 'bg-blue-500' },
+  { value: 'endurance', label: 'Endurance', shortLabel: 'END', color: 'bg-purple-500' },
 ];
 
 // Weekly phases (training types)
