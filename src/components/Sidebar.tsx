@@ -510,6 +510,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: Settings,
+      label: "Ρύθμιση Φάσεων",
+      path: "/dashboard/phase-config",
+      badge: null
+    },
+    {
       icon: TrendingUp,
       label: "Πρόοδος",
       path: "/dashboard/progress",
