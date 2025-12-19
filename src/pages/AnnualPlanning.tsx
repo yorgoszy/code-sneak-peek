@@ -390,7 +390,7 @@ const AnnualPlanning: React.FC = () => {
         <CardContent className="p-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-3 rounded-none h-8">
-              <TabsTrigger value="new" className="rounded-none text-xs">Νέος Μακροκύκλος</TabsTrigger>
+              <TabsTrigger value="new" className="rounded-none text-xs">Νέο</TabsTrigger>
               <TabsTrigger value="assigned" className="rounded-none text-xs">Ανατεθημένα</TabsTrigger>
               <TabsTrigger value="saved" className="rounded-none text-xs">Αποθηκευμένα</TabsTrigger>
             </TabsList>
@@ -674,39 +674,39 @@ const AnnualPlanning: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* View/Edit Dialog */}
+      {/* View/Edit Dialog - Responsive */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto rounded-none">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
+        <DialogContent className="w-[95vw] max-w-5xl h-auto max-h-[95vh] p-2 sm:p-4 rounded-none overflow-hidden">
+          <DialogHeader className="pb-1 sm:pb-2">
+            <DialogTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 text-sm">
               <div className="flex items-center gap-2">
                 {dialogMacrocycle && (
                   <>
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
                       <AvatarImage src={dialogMacrocycle.user_avatar || undefined} />
-                      <AvatarFallback className="text-[10px]">{getInitials(dialogMacrocycle.user_name)}</AvatarFallback>
+                      <AvatarFallback className="text-[8px] sm:text-[10px]">{getInitials(dialogMacrocycle.user_name)}</AvatarFallback>
                     </Avatar>
-                    <span>{dialogMacrocycle.user_name}</span>
+                    <span className="text-xs sm:text-sm">{dialogMacrocycle.user_name}</span>
                   </>
                 )}
-                <span className="text-muted-foreground">- {dialogMode === 'view' ? 'Προβολή' : 'Επεξεργασία'}</span>
+                <span className="text-muted-foreground text-xs">- {dialogMode === 'view' ? 'Προβολή' : 'Επεξεργασία'}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => setDialogYear(y => y - 1)}
-                  className="rounded-none h-7 w-7"
+                  className="rounded-none h-6 w-6"
                   disabled={dialogMode === 'view'}
                 >
                   <ChevronLeft className="h-3 w-3" />
                 </Button>
-                <span className="text-sm font-semibold w-12 text-center">{dialogYear}</span>
+                <span className="text-xs sm:text-sm font-semibold w-10 text-center">{dialogYear}</span>
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => setDialogYear(y => y + 1)}
-                  className="rounded-none h-7 w-7"
+                  className="rounded-none h-6 w-6"
                   disabled={dialogMode === 'view'}
                 >
                   <ChevronRight className="h-3 w-3" />
@@ -715,15 +715,16 @@ const AnnualPlanning: React.FC = () => {
             </DialogTitle>
           </DialogHeader>
 
-          {/* Phases Grid in Dialog */}
+          {/* Phases Grid in Dialog - Responsive */}
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-xs">
+            <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
               <thead>
                 <tr>
-                  <th className="border p-1 bg-muted text-left w-[160px]">Φάση</th>
-                  {MONTHS_FULL.map((month, index) => (
-                    <th key={index} className="border p-1 bg-muted text-center">
-                      {month}
+                  <th className="border p-0.5 sm:p-1 bg-muted text-left w-[40px] sm:w-[80px] md:w-[140px]">Φάση</th>
+                  {MONTHS.map((month, index) => (
+                    <th key={index} className="border p-0.5 bg-muted text-center w-[16px] sm:w-auto">
+                      <span className="sm:hidden">{month}</span>
+                      <span className="hidden sm:inline">{MONTHS_FULL[index]}</span>
                     </th>
                   ))}
                 </tr>
@@ -731,13 +732,14 @@ const AnnualPlanning: React.FC = () => {
               <tbody>
                 {PHASES.map((phase) => (
                   <tr key={phase.value}>
-                    <td className="border p-1 font-medium bg-background">
-                      <div className="flex items-center gap-1">
-                        <div className={cn("w-2 h-2 rounded-full flex-shrink-0", phase.color)} />
-                        <span className="text-xs">{phase.label}</span>
+                    <td className="border p-0.5 font-medium bg-background">
+                      <div className="flex items-center gap-0.5">
+                        <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
+                        <span className="md:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
+                        <span className="hidden md:inline text-xs">{phase.label}</span>
                       </div>
                     </td>
-                    {MONTHS_FULL.map((_, monthIndex) => {
+                    {MONTHS.map((_, monthIndex) => {
                       const month = monthIndex + 1;
                       const isSelected = isDialogPhaseSelected(month, phase.value);
                       
@@ -746,13 +748,13 @@ const AnnualPlanning: React.FC = () => {
                           key={monthIndex}
                           onClick={() => handleDialogCellClick(month, phase.value)}
                           className={cn(
-                            "border p-0 text-center transition-colors h-6",
+                            "border p-0 text-center transition-colors h-3 sm:h-4 md:h-5",
                             dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
                             isSelected && phase.color
                           )}
                         >
                           {isSelected && (
-                            <Check className="h-3 w-3 mx-auto text-white" />
+                            <Check className="h-2 w-2 sm:h-3 sm:w-3 mx-auto text-white" />
                           )}
                         </td>
                       );
@@ -765,20 +767,20 @@ const AnnualPlanning: React.FC = () => {
 
           {/* Dialog Actions */}
           {dialogMode === 'edit' && (
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex justify-end gap-2 pt-2">
               <Button
                 variant="outline"
-                className="rounded-none"
+                className="rounded-none h-7 text-xs"
                 onClick={() => setDialogOpen(false)}
               >
                 Ακύρωση
               </Button>
               <Button
-                className="rounded-none"
+                className="rounded-none h-7 text-xs"
                 style={{ backgroundColor: '#00ffba', color: 'black' }}
                 onClick={handleSaveDialogChanges}
               >
-                Αποθήκευση Αλλαγών
+                Αποθήκευση
               </Button>
             </div>
           )}
