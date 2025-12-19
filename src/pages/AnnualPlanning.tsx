@@ -548,7 +548,7 @@ const AnnualPlanning: React.FC = () => {
             {/* New Macrocycle Tab */}
             <TabsContent value="new" className="p-2 sm:p-4 space-y-2">
               {/* Phases Grid */}
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scrollbar-gold">
                 <table className="w-full border-collapse text-[9px] sm:text-xs">
                   <thead>
                     <tr>
@@ -731,7 +731,7 @@ const AnnualPlanning: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-2 sm:p-4 pt-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-gold">
             <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
               <thead>
                 <tr>
@@ -842,7 +842,7 @@ const AnnualPlanning: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="p-2 sm:p-4 pt-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-gold">
             <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
               <thead>
                 {/* Week headers row */}
@@ -1109,7 +1109,7 @@ const AnnualPlanning: React.FC = () => {
           </DialogHeader>
 
           {/* Phases Grid in Dialog - Responsive */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-gold">
             <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
               <thead>
                 <tr>

@@ -39,7 +39,7 @@ export const AnnualPlanningWithSidebar: React.FC = () => {
         <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       </div>
 
-      <main className="flex-1 overflow-x-auto transition-all duration-300 pt-14 lg:pt-0">
+      <main className="flex-1 overflow-x-auto overflow-y-auto scrollbar-gold transition-all duration-300 pt-14 lg:pt-0">
         <AnnualPlanning />
       </main>
     </div>
