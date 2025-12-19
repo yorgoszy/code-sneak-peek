@@ -660,8 +660,8 @@ const AnnualPlanning: React.FC = () => {
                     <td className="border p-0.5 font-medium bg-background">
                       <div className="flex items-center gap-0.5">
                         <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
-                        <span className="md:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
-                        <span className="hidden md:inline text-xs">{phase.label}</span>
+                        <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
+                        <span className="hidden lg:inline text-xs">{phase.label}</span>
                       </div>
                     </td>
                     {MONTHS_FULL.map((_, monthIndex) => (
