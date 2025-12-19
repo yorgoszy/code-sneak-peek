@@ -2,11 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, ChevronLeft, ChevronRight, Search, User } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Search, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface AppUser {
   id: string;
@@ -25,20 +25,17 @@ interface UserPhase {
 }
 
 const PHASES = [
-  { value: 'preparation', label: 'Προετοιμασία' },
-  { value: 'strength', label: 'Δύναμη' },
-  { value: 'hypertrophy', label: 'Υπερτροφία' },
-  { value: 'power', label: 'Ισχύς' },
-  { value: 'competition', label: 'Αγωνιστική' },
-  { value: 'recovery', label: 'Αποκατάσταση' },
-  { value: 'off-season', label: 'Off-Season' },
+  { value: 'corrective', label: 'Corrective', color: 'bg-red-500' },
+  { value: 'stabilization', label: 'Stabilization Training', color: 'bg-orange-500' },
+  { value: 'strength', label: 'Strength Training', color: 'bg-yellow-500' },
+  { value: 'non-functional-hypertrophy', label: 'Non-Functional Hypertrophy', color: 'bg-lime-500' },
+  { value: 'functional-hypertrophy', label: 'Functional Hypertrophy', color: 'bg-green-500' },
+  { value: 'maximal-strength', label: 'Maximal Strength Training', color: 'bg-teal-500' },
+  { value: 'power', label: 'Power Training', color: 'bg-blue-500' },
+  { value: 'max-power', label: 'Max Power Training', color: 'bg-purple-500' },
 ];
 
-const MONTHS = [
-  'Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος',
-  'Μάιος', 'Ιούνιος', 'Ιούλιος', 'Αύγουστος',
-  'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'
-];
+const MONTHS = ['ΙΑΝ', 'ΦΕΒ', 'ΜΑΡ', 'ΑΠΡ', 'ΜΑΪ', 'ΙΟΥΝ', 'ΙΟΥΛ', 'ΑΥΓ', 'ΣΕΠ', 'ΟΚΤ', 'ΝΟΕ', 'ΔΕΚ'];
 
 const normalizeString = (str: string): string => {
   return str
@@ -54,13 +51,14 @@ const normalizeString = (str: string): string => {
     .replace(/[ώ]/g, 'ω');
 };
 
-export default function AnnualPlanning() {
+const AnnualPlanning: React.FC = () => {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
   const [phases, setPhases] = useState<UserPhase[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showUserList, setShowUserList] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -104,26 +102,23 @@ export default function AnnualPlanning() {
     setLoading(false);
   };
 
-  const handlePhaseChange = async (month: number, phaseValue: string) => {
+  const handleCellClick = async (month: number, phaseValue: string) => {
     if (!selectedUser) return;
 
     const existingPhase = phases.find(p => p.month === month);
 
-    if (phaseValue === 'none') {
-      // Delete phase
-      if (existingPhase) {
-        const { error } = await supabase
-          .from('user_annual_phases')
-          .delete()
-          .eq('id', existingPhase.id);
+    // If clicking the same phase, remove it
+    if (existingPhase?.phase === phaseValue) {
+      const { error } = await supabase
+        .from('user_annual_phases')
+        .delete()
+        .eq('id', existingPhase.id);
 
-        if (error) {
-          toast.error('Σφάλμα κατά τη διαγραφή');
-          return;
-        }
-        setPhases(phases.filter(p => p.id !== existingPhase.id));
-        toast.success('Η φάση διαγράφηκε');
+      if (error) {
+        toast.error('Σφάλμα κατά τη διαγραφή');
+        return;
       }
+      setPhases(phases.filter(p => p.id !== existingPhase.id));
       return;
     }
 
@@ -162,12 +157,11 @@ export default function AnnualPlanning() {
 
       setPhases([...phases, data]);
     }
-    toast.success('Η φάση αποθηκεύτηκε');
   };
 
-  const getPhaseForMonth = (month: number): string => {
+  const isPhaseSelected = (month: number, phaseValue: string): boolean => {
     const phase = phases.find(p => p.month === month);
-    return phase?.phase || 'none';
+    return phase?.phase === phaseValue;
   };
 
   const filteredUsers = useMemo(() => {
@@ -208,14 +202,18 @@ export default function AnnualPlanning() {
               <Input
                 placeholder="Αναζήτηση με όνομα ή email..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowUserList(true);
+                }}
+                onFocus={() => setShowUserList(true)}
                 className="pl-10 rounded-none"
               />
             </div>
           </div>
 
           {/* User List */}
-          {searchQuery && (
+          {showUserList && searchQuery && (
             <div className="max-h-60 overflow-y-auto border rounded-none">
               {filteredUsers.length === 0 ? (
                 <div className="p-4 text-center text-muted-foreground">
@@ -228,10 +226,12 @@ export default function AnnualPlanning() {
                     onClick={() => {
                       setSelectedUser(user);
                       setSearchQuery('');
+                      setShowUserList(false);
                     }}
-                    className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-muted transition-colors ${
-                      selectedUser?.id === user.id ? 'bg-muted' : ''
-                    }`}
+                    className={cn(
+                      "flex items-center gap-3 p-3 cursor-pointer hover:bg-muted transition-colors",
+                      selectedUser?.id === user.id && "bg-muted"
+                    )}
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar_url || undefined} />
@@ -276,8 +276,7 @@ export default function AnnualPlanning() {
         <Card className="rounded-none">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
+              <CardTitle className="text-lg">
                 Φάσεις Προπόνησης - {selectedUser.name}
               </CardTitle>
               <div className="flex items-center gap-2">
@@ -301,38 +300,55 @@ export default function AnnualPlanning() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {MONTHS.map((monthName, index) => {
-                const month = index + 1;
-                const currentPhase = getPhaseForMonth(month);
-                
-                return (
-                  <div key={month} className="space-y-2">
-                    <label className="text-sm font-medium">{monthName}</label>
-                    <Select
-                      value={currentPhase}
-                      onValueChange={(value) => handlePhaseChange(month, value)}
-                    >
-                      <SelectTrigger className="rounded-none">
-                        <SelectValue placeholder="Επιλέξτε φάση" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">-- Καμία --</SelectItem>
-                        {PHASES.map(phase => (
-                          <SelectItem key={phase.value} value={phase.value}>
-                            {phase.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                );
-              })}
-            </div>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="border p-2 bg-muted text-left min-w-[200px]">Φάση</th>
+                  {MONTHS.map((month, index) => (
+                    <th key={index} className="border p-2 bg-muted text-center min-w-[50px]">
+                      {month}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {PHASES.map((phase) => (
+                  <tr key={phase.value}>
+                    <td className="border p-2 font-medium">
+                      <div className="flex items-center gap-2">
+                        <div className={cn("w-3 h-3 rounded-full", phase.color)} />
+                        {phase.label}
+                      </div>
+                    </td>
+                    {MONTHS.map((_, monthIndex) => {
+                      const month = monthIndex + 1;
+                      const isSelected = isPhaseSelected(month, phase.value);
+                      
+                      return (
+                        <td
+                          key={monthIndex}
+                          onClick={() => handleCellClick(month, phase.value)}
+                          className={cn(
+                            "border p-2 text-center cursor-pointer transition-colors hover:bg-muted",
+                            isSelected && phase.color
+                          )}
+                        >
+                          {isSelected && (
+                            <Check className="h-4 w-4 mx-auto text-white" />
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </CardContent>
         </Card>
       )}
     </div>
   );
-}
+};
+
+export default AnnualPlanning;
