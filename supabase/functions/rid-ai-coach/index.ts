@@ -132,6 +132,152 @@ serve(async (req) => {
       }
     }
 
+    // 📅 ΦΟΡΤΩΣΗ ΕΤΗΣΙΟΥ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΥ (Annual Planning)
+    let annualPlanningContext = '';
+    let phaseConfigContext = '';
+    
+    // Φόρτωση training phase configurations
+    const phaseConfigResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/training_phase_config?select=*&order=phase_type.asc`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const phaseConfigData = await phaseConfigResponse.json();
+    
+    // Φόρτωση rep schemes ανά φάση
+    const repSchemesResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/phase_rep_schemes?select=*`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const repSchemesData = await repSchemesResponse.json();
+    
+    // Φόρτωση ασκήσεων ανά φάση
+    const phaseExercisesResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/phase_exercises?select=*,exercises(name)`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const phaseExercisesData = await phaseExercisesResponse.json();
+    
+    // Φόρτωση corrective exercises for issues
+    const correctiveIssuesResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/corrective_issue_exercises?select=*,exercises(name)`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const correctiveIssuesData = await correctiveIssuesResponse.json();
+    
+    // Φόρτωση corrective exercises for muscles
+    const correctiveMusclesResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/corrective_muscle_exercises?select=*,exercises(name),muscles(name)`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const correctiveMusclesData = await correctiveMusclesResponse.json();
+    
+    if (Array.isArray(phaseConfigData) && phaseConfigData.length > 0) {
+      console.log(`✅ Loaded ${phaseConfigData.length} training phase configs`);
+      
+      phaseConfigContext = '\n\n📅 ΡΥΘΜΙΣΕΙΣ ΠΡΟΠΟΝΗΤΙΚΩΝ ΦΑΣΕΩΝ:\n';
+      
+      // Group by phase_type (main phases)
+      const mainPhases = phaseConfigData.filter((p: any) => p.phase_type === 'main');
+      const subPhases = phaseConfigData.filter((p: any) => p.phase_type === 'sub');
+      
+      phaseConfigContext += '\n🎯 ΚΥΡΙΕΣ ΦΑΣΕΙΣ:\n';
+      mainPhases.forEach((phase: any) => {
+        phaseConfigContext += `  - ${phase.phase_name} (${phase.phase_key})\n`;
+        
+        // Rep schemes για αυτή τη φάση
+        const phaseRepSchemes = Array.isArray(repSchemesData) 
+          ? repSchemesData.filter((rs: any) => rs.phase_config_id === phase.id)
+          : [];
+        if (phaseRepSchemes.length > 0) {
+          phaseConfigContext += `    📊 Επαναλήψεις:\n`;
+          phaseRepSchemes.forEach((rs: any) => {
+            phaseConfigContext += `      • ${rs.rep_range || rs.rep_scheme}${rs.notes ? ` (${rs.notes})` : ''}\n`;
+          });
+        }
+        
+        // Ασκήσεις για αυτή τη φάση
+        const phaseExs = Array.isArray(phaseExercisesData) 
+          ? phaseExercisesData.filter((pe: any) => pe.phase_config_id === phase.id)
+          : [];
+        if (phaseExs.length > 0) {
+          phaseConfigContext += `    🏋️ Ασκήσεις: ${phaseExs.map((e: any) => e.exercises?.name || 'Unknown').join(', ')}\n`;
+        }
+      });
+      
+      phaseConfigContext += '\n📍 ΥΠΟ-ΦΑΣΕΙΣ:\n';
+      subPhases.forEach((phase: any) => {
+        phaseConfigContext += `  - ${phase.phase_name} (${phase.phase_key})${phase.parent_phase_key ? ` [ανήκει στο: ${phase.parent_phase_key}]` : ''}\n`;
+      });
+    }
+    
+    // Corrective exercises context
+    if ((Array.isArray(correctiveIssuesData) && correctiveIssuesData.length > 0) || 
+        (Array.isArray(correctiveMusclesData) && correctiveMusclesData.length > 0)) {
+      phaseConfigContext += '\n\n🔧 ΔΙΟΡΘΩΤΙΚΕΣ ΑΣΚΗΣΕΙΣ:\n';
+      
+      if (Array.isArray(correctiveIssuesData) && correctiveIssuesData.length > 0) {
+        // Group by issue_category + issue_name
+        const issueGroups: Record<string, any[]> = {};
+        correctiveIssuesData.forEach((ci: any) => {
+          const key = `${ci.issue_category}|${ci.issue_name}`;
+          if (!issueGroups[key]) issueGroups[key] = [];
+          issueGroups[key].push(ci);
+        });
+        
+        phaseConfigContext += '\n  📋 Ανά Πρόβλημα Κίνησης:\n';
+        Object.entries(issueGroups).forEach(([key, exercises]) => {
+          const [category, issueName] = key.split('|');
+          phaseConfigContext += `    ${category} - ${issueName}:\n`;
+          exercises.forEach((e: any) => {
+            phaseConfigContext += `      • ${e.exercises?.name || 'Unknown'} (${e.exercise_type})${e.notes ? ` - ${e.notes}` : ''}\n`;
+          });
+        });
+      }
+      
+      if (Array.isArray(correctiveMusclesData) && correctiveMusclesData.length > 0) {
+        // Group by muscle
+        const muscleGroups: Record<string, any[]> = {};
+        correctiveMusclesData.forEach((cm: any) => {
+          const muscleName = cm.muscles?.name || 'Unknown';
+          if (!muscleGroups[muscleName]) muscleGroups[muscleName] = [];
+          muscleGroups[muscleName].push(cm);
+        });
+        
+        phaseConfigContext += '\n  💪 Ανά Μυ:\n';
+        Object.entries(muscleGroups).forEach(([muscle, exercises]) => {
+          phaseConfigContext += `    ${muscle}:\n`;
+          exercises.forEach((e: any) => {
+            phaseConfigContext += `      • ${e.exercises?.name || 'Unknown'} (${e.action_type})${e.notes ? ` - ${e.notes}` : ''}\n`;
+          });
+        });
+      }
+    }
+
     // 🥗 ΦΟΡΤΩΣΗ ΤΡΑΠΕΖΑΣ ΦΑΓΗΤΩΝ (για δημιουργία προγραμμάτων διατροφής)
     let foodsDatabaseContext = '';
     if (canAccessProgramBuilder) {
@@ -1085,6 +1231,91 @@ ${drafts.map((p: any, i: number) => {
 
       // Προσθήκη subscription context στο userProfile για χρήση αργότερα
       (userProfile as any).subscriptionContext = subscriptionContext;
+
+      // 📅 ΦΟΡΤΩΣΗ ΕΤΗΣΙΟΥ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΥ ΧΡΗΣΤΗ
+      const userAnnualPhasesResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_annual_phases?user_id=eq.${effectiveUserId}&select=*&order=year.desc,month.asc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const userAnnualPhases = await userAnnualPhasesResponse.json();
+      
+      if (Array.isArray(userAnnualPhases) && userAnnualPhases.length > 0) {
+        console.log(`✅ Loaded ${userAnnualPhases.length} annual phases for user`);
+        
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+        
+        // Group by year
+        const phasesByYear: Record<number, any[]> = {};
+        userAnnualPhases.forEach((phase: any) => {
+          if (!phasesByYear[phase.year]) phasesByYear[phase.year] = [];
+          phasesByYear[phase.year].push(phase);
+        });
+        
+        annualPlanningContext = '\n\n📅 ΕΤΗΣΙΟΣ ΠΡΟΠΟΝΗΤΙΚΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ ΧΡΗΣΤΗ:\n';
+        
+        const PHASE_LABELS: Record<string, string> = {
+          'corrective': 'Διορθωτικές',
+          'stabilization': 'Σταθεροποίηση',
+          'connecting-linking': 'Σύνδεση',
+          'movement-skills': 'Κινητικές Δεξιότητες',
+          'non-functional-hypertrophy': 'Μη Λειτουργική Υπερτροφία',
+          'functional-hypertrophy': 'Λειτουργική Υπερτροφία',
+          'maximal-strength': 'Μέγιστη Δύναμη',
+          'power': 'Ισχύς',
+          'endurance': 'Αντοχή',
+          'competition': 'Αγωνιστική'
+        };
+        
+        const MONTH_NAMES = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιούν', 'Ιούλ', 'Αύγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
+        
+        Object.entries(phasesByYear)
+          .sort(([a], [b]) => Number(b) - Number(a))
+          .forEach(([year, phases]) => {
+            annualPlanningContext += `\n  📆 Έτος ${year}:\n`;
+            phases.sort((a, b) => a.month - b.month).forEach((phase: any) => {
+              const isCurrentMonth = Number(year) === currentYear && phase.month === currentMonth;
+              const indicator = isCurrentMonth ? '👉 ' : '   ';
+              const phaseLabel = PHASE_LABELS[phase.phase] || phase.phase;
+              annualPlanningContext += `${indicator}${MONTH_NAMES[phase.month - 1]}: ${phaseLabel}${phase.notes ? ` (${phase.notes})` : ''}\n`;
+            });
+          });
+        
+        // Τρέχουσα φάση
+        const currentPhase = userAnnualPhases.find((p: any) => p.year === currentYear && p.month === currentMonth);
+        if (currentPhase) {
+          annualPlanningContext += `\n  🎯 ΤΡΕΧΟΥΣΑ ΦΑΣΗ (${MONTH_NAMES[currentMonth - 1]} ${currentYear}): ${PHASE_LABELS[currentPhase.phase] || currentPhase.phase}\n`;
+          
+          // Βρες τις ρυθμίσεις για αυτή τη φάση
+          if (Array.isArray(phaseConfigData)) {
+            const matchingPhaseConfig = phaseConfigData.find((pc: any) => pc.phase_key === currentPhase.phase);
+            if (matchingPhaseConfig) {
+              annualPlanningContext += `\n  📊 ΡΥΘΜΙΣΕΙΣ ΤΡΕΧΟΥΣΑΣ ΦΑΣΗΣ:\n`;
+              
+              // Rep schemes
+              const currentPhaseRepSchemes = Array.isArray(repSchemesData) 
+                ? repSchemesData.filter((rs: any) => rs.phase_config_id === matchingPhaseConfig.id)
+                : [];
+              if (currentPhaseRepSchemes.length > 0) {
+                annualPlanningContext += `    📋 Επαναλήψεις: ${currentPhaseRepSchemes.map((rs: any) => rs.rep_range || rs.rep_scheme).join(', ')}\n`;
+              }
+              
+              // Exercises
+              const currentPhaseExercises = Array.isArray(phaseExercisesData) 
+                ? phaseExercisesData.filter((pe: any) => pe.phase_config_id === matchingPhaseConfig.id)
+                : [];
+              if (currentPhaseExercises.length > 0) {
+                annualPlanningContext += `    🏋️ Συνιστώμενες ασκήσεις: ${currentPhaseExercises.map((e: any) => e.exercises?.name || 'Unknown').join(', ')}\n`;
+              }
+            }
+          }
+        }
+      }
 
     // Φόρτωση ΟΛΩΝ των assignments για το ημερολόγιο (active και completed)
     const assignmentsResponse = await fetch(
@@ -3178,7 +3409,7 @@ ${isAdmin && !targetUserId ? `
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${phaseConfigContext}${annualPlanningContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}

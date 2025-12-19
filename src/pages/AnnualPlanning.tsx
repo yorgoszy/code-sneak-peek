@@ -44,6 +44,19 @@ interface AssignedMacrocycle {
   assigned_at: string;
 }
 
+interface DialogMonthlyPhase {
+  month: number;
+  week: number;
+  phase: string;
+}
+
+interface DialogWeeklyPhase {
+  month: number;
+  week: number;
+  day: number;
+  phase: string;
+}
+
 const PHASES = [
   { value: 'corrective', label: 'Corrective', shortLabel: 'COR', color: 'bg-red-500' },
   { value: 'stabilization', label: 'Stabilization Training', shortLabel: 'STB', color: 'bg-orange-500' },
@@ -126,6 +139,11 @@ const AnnualPlanning: React.FC = () => {
   const [dialogMacrocycle, setDialogMacrocycle] = useState<AssignedMacrocycle | null>(null);
   const [dialogPhases, setDialogPhases] = useState<{ month: number; phase: string }[]>([]);
   const [dialogYear, setDialogYear] = useState(new Date().getFullYear());
+
+  // Dialog monthly and weekly phases
+  const [dialogMonthlyPhases, setDialogMonthlyPhases] = useState<DialogMonthlyPhase[]>([]);
+  const [dialogWeeklyPhases, setDialogWeeklyPhases] = useState<DialogWeeklyPhase[]>([]);
+  const [dialogWeeklyMonth, setDialogWeeklyMonth] = useState(new Date().getMonth() + 1);
 
   // Monthly planning state
   const [monthlyPhases, setMonthlyPhases] = useState<{ month: number; week: number; phase: string }[]>([]);
@@ -447,6 +465,9 @@ const AnnualPlanning: React.FC = () => {
     setDialogPhases(macrocycle.phases.map(p => ({ month: p.month, phase: p.phase })));
     setDialogYear(macrocycle.year);
     setDialogMode('view');
+    setDialogMonthlyPhases([]);
+    setDialogWeeklyPhases([]);
+    setDialogWeeklyMonth(new Date().getMonth() + 1);
     setDialogOpen(true);
   };
 
@@ -455,6 +476,9 @@ const AnnualPlanning: React.FC = () => {
     setDialogPhases(macrocycle.phases.map(p => ({ month: p.month, phase: p.phase })));
     setDialogYear(macrocycle.year);
     setDialogMode('edit');
+    setDialogMonthlyPhases([]);
+    setDialogWeeklyPhases([]);
+    setDialogWeeklyMonth(new Date().getMonth() + 1);
     setDialogOpen(true);
   };
 
@@ -1156,6 +1180,95 @@ const AnnualPlanning: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Dialog Monthly Planning */}
+          <div className="mt-4">
+            <h4 className="text-xs font-semibold mb-2">Μηνιαίος Προγραμματισμός</h4>
+            <div className="overflow-x-auto scrollbar-gold">
+              <table className="w-full border-collapse text-[7px] sm:text-[9px]">
+                <thead>
+                  <tr>
+                    <th className="border p-0.5 bg-muted text-left w-[60px]">Φάση</th>
+                    {MONTHS_FULL.map((month, monthIndex) => {
+                      const annualPhase = dialogPhases.find(p => p.month === monthIndex + 1);
+                      const phaseInfo = annualPhase ? PHASES.find(p => p.value === annualPhase.phase) : null;
+                      const weeksCount = getWeeksInMonth(dialogYear, monthIndex + 1);
+                      return (
+                        <th 
+                          key={monthIndex} 
+                          colSpan={weeksCount}
+                          className={cn("border p-0.5 bg-muted text-center", phaseInfo && phaseInfo.color)}
+                        >
+                          <span className={cn("text-[7px] font-medium", phaseInfo && "text-white")}>{month}</span>
+                        </th>
+                      );
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  {PHASES.slice(0, 5).map((phase) => (
+                    <tr key={phase.value}>
+                      <td className="border p-0.5 font-medium bg-background">
+                        <div className="flex items-center gap-0.5">
+                          <div className={cn("w-1.5 h-1.5 rounded-full", phase.color)} />
+                          <span className="text-[6px]">{phase.shortLabel}</span>
+                        </div>
+                      </td>
+                      {MONTHS_FULL.map((_, monthIndex) => {
+                        const weeksCount = getWeeksInMonth(dialogYear, monthIndex + 1);
+                        return Array.from({ length: weeksCount }, (_, weekIndex) => (
+                          <td key={`${monthIndex}-${weekIndex}`} className="border p-0 h-3 bg-muted/20" />
+                        ));
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Dialog Weekly Planning */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-semibold">Εβδομαδιαίος Προγραμματισμός</h4>
+              <select 
+                value={dialogWeeklyMonth}
+                onChange={(e) => setDialogWeeklyMonth(Number(e.target.value))}
+                className="text-[10px] border rounded-none px-1 py-0.5"
+              >
+                {MONTHS_DROPDOWN.map((month, idx) => (
+                  <option key={idx} value={idx + 1}>{month}</option>
+                ))}
+              </select>
+            </div>
+            <div className="overflow-x-auto scrollbar-gold">
+              <table className="w-full border-collapse text-[7px]">
+                <thead>
+                  <tr>
+                    <th className="border p-0.5 bg-muted text-left w-[60px]">Φάση</th>
+                    {DAYS_FULL.map((day, idx) => (
+                      <th key={idx} className="border p-0.5 bg-muted text-center w-8">{day}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {PHASES.slice(0, 5).map((phase) => (
+                    <tr key={phase.value}>
+                      <td className="border p-0.5 font-medium bg-background">
+                        <div className="flex items-center gap-0.5">
+                          <div className={cn("w-1.5 h-1.5 rounded-full", phase.color)} />
+                          <span className="text-[6px]">{phase.shortLabel}</span>
+                        </div>
+                      </td>
+                      {DAYS_FULL.map((_, dayIdx) => (
+                        <td key={dayIdx} className="border p-0 h-3 bg-muted/20" />
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Dialog Actions */}
