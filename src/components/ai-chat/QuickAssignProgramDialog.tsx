@@ -236,11 +236,37 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
     );
   };
 
-  // Select group
-  const selectGroup = (groupId: string) => {
+  // Select group - fetch members and set
+  const selectGroup = async (groupId: string) => {
     setSelectedUserIds([]); // Clear users when selecting group
     setRecipientUsers([]);
     setSelectedGroupId(groupId);
+    
+    // Fetch group members to get their IDs
+    try {
+      const { data: members } = await supabase
+        .from('group_members')
+        .select('user_id, app_users!group_members_user_id_fkey(id, name, email, avatar_url)')
+        .eq('group_id', groupId);
+      
+      if (members && members.length > 0) {
+        const memberUserIds = members.map(m => m.user_id).filter(Boolean) as string[];
+        setSelectedUserIds(memberUserIds);
+        
+        // Also set the users for display
+        const users = members.map(m => m.app_users).filter(Boolean);
+        setRecipientUsers(users);
+      }
+      
+      // Fetch group info for display
+      const group = allGroups.find(g => g.id === groupId);
+      if (group) {
+        setRecipientGroup({ ...group, member_count: members?.length || 0 });
+      }
+    } catch (err) {
+      console.error('Error fetching group members:', err);
+    }
+    
     setIsUserSelectorOpen(false);
   };
 
@@ -332,9 +358,11 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
       ];
     }
 
-    // Set recipients
-    if (effectiveGroupId) {
-      basePayload.group_id = effectiveGroupId;
+    // Set recipients - always use user_ids when we have them (even from group selection)
+    if (selectedUserIds.length > 1) {
+      basePayload.user_ids = selectedUserIds;
+    } else if (selectedUserIds.length === 1) {
+      basePayload.user_id = selectedUserIds[0];
     } else if (effectiveUserIds.length > 1) {
       basePayload.user_ids = effectiveUserIds;
     } else {
@@ -487,7 +515,7 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
                   )}
                 </div>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-0 rounded-none" align="start">
+              <PopoverContent className="w-80 p-0 rounded-none max-h-[400px]" align="start">
                 <div className="p-3 border-b">
                   <div className="relative">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -499,7 +527,7 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
                     />
                   </div>
                 </div>
-                <ScrollArea className="h-64">
+                <div className="overflow-y-auto max-h-[280px]">
                   {loadingAllUsers ? (
                     <div className="p-4 text-center text-sm text-muted-foreground">Φόρτωση...</div>
                   ) : (
@@ -561,7 +589,7 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
                       </div>
                     </div>
                   )}
-                </ScrollArea>
+                </div>
                 {selectedUserIds.length > 0 && (
                   <div className="p-2 border-t flex justify-end">
                     <Button
@@ -605,11 +633,6 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
                 <strong>Blocks:</strong> {programStats.totalBlocks} | 
                 <strong> Ασκήσεις:</strong> {programStats.totalExercises}
               </p>
-              {programData?.description && (
-                <p className="text-muted-foreground mt-1 text-xs">
-                  {programData.description}
-                </p>
-              )}
             </div>
           )}
 
