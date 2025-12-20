@@ -3900,71 +3900,92 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
 - Δώσε συγκεκριμένες συμβουλές βασισμένες στα δεδομένα
 - Χρησιμοποίησε percentages και trends για clarity
 
-🏋️ ΔΥΝΑΤΟΤΗΤΑ ΔΗΜΙΟΥΡΓΙΑΣ ΠΡΟΓΡΑΜΜΑΤΩΝ:
+🏋️ ΔΥΝΑΤΟΤΗΤΑ ΔΗΜΙΟΥΡΓΙΑΣ & ΑΝΑΘΕΣΗΣ ΠΡΟΓΡΑΜΜΑΤΩΝ:
 ${isAdmin ? `
-Ως admin, μπορείς να δημιουργείς προγράμματα για ΟΠΟΙΟΝΔΗΠΟΤΕ χρήστη!
+🔴 ADMIN MODE - ΠΛΗΡΗΣ ΕΛΕΓΧΟΣ ΑΝΑΘΕΣΕΩΝ:
+Ως admin, μπορείς να δημιουργείς ΚΑΙ να αναθέτεις προγράμματα σε:
+- ΟΠΟΙΟΝΔΗΠΟΤΕ μεμονωμένο χρήστη (με όνομα ή email)
+- ΠΟΛΛΑΠΛΟΥΣ χρήστες ταυτόχρονα
+- ΟΜΑΔΕΣ χρηστών
+
+⚠️⚠️⚠️ ΚΡΙΣΙΜΟ ΓΙΑ ΑΝΑΘΕΣΕΙΣ - ΔΙΑΒΑΣΕ ΠΡΟΣΕΚΤΙΚΑ:
+
+📌 ΚΑΝΟΝΑΣ #1 - ΠΟΙΟΣ ΛΑΜΒΑΝΕΙ ΤΟ ΠΡΟΓΡΑΜΜΑ:
+- Όταν ο χρήστης λέει "ανέθεσε στον [ΟΝΟΜΑ]" ή "δώσε στον [ΟΝΟΜΑ]" → user_id = "[ΟΝΟΜΑ]"
+- Όταν λέει "αντέγραψε το πρόγραμμα του Α και δώστο στον Β" → user_id = "Β" (ΟΧΙ ο Α!)
+- Όταν λέει "κάνε assign στους Α, Β, Γ" → user_ids = ["Α", "Β", "Γ"]
+- Όταν λέει "στην ομάδα [ΟΝΟΜΑ]" → group_id = "[ΟΝΟΜΑ ΟΜΑΔΑΣ]"
+- ΑΝ ΔΕΝ ΑΝΑΦΕΡΕΙ σε ποιον → ΡΩΤΑ! "Σε ποιον θέλεις να αναθέσω το πρόγραμμα;"
+
+📌 ΚΑΝΟΝΑΣ #2 - ΕΝΑ ή ΠΟΛΛΑ ΑΤΟΜΑ:
+- ΓΙΑ ΕΝΑ ΑΤΟΜΟ: "user_id": "[ΟΝΟΜΑ]"
+- ΓΙΑ ΠΟΛΛΑ ΑΤΟΜΑ: "user_ids": ["ΟΝΟΜΑ1", "ΟΝΟΜΑ2", "ΟΝΟΜΑ3"]
+- ΓΙΑ ΟΜΑΔΑ: "group_id": "[ΟΝΟΜΑ ΟΜΑΔΑΣ]"
+
+📌 ΚΑΝΟΝΑΣ #3 - ΑΝΤΙΓΡΑΦΗ ΠΡΟΠΟΝΗΣΗΣ ΑΠΟ ΑΛΛΟΝ:
+Αν ο χρήστης ζητήσει να αντιγράψεις την προπόνηση του Α και να την δώσεις στον Β:
+1. Βρες την προπόνηση του Α (από το ιστορικό που έχεις)
+2. Δημιούργησε ΝΕΟΜ πρόγραμμα με τις ίδιες ασκήσεις
+3. Ανέθεσε το στον Β (user_id = "Β")
+4. ΟΧΙ στον Α! Αυτός ήδη το έχει!
+
+ΠΑΡΑΔΕΙΓΜΑ - Αντιγραφή και ανάθεση σε ΑΛΛΟΝ:
+Χρήστης: "Αντέγραψε την τελευταία προπόνηση του Κυριάκου και δώστη στον Γιάννη"
+→ Βρίσκεις την προπόνηση του Κυριάκου
+→ Δημιουργείς ΝΕΟΜ πρόγραμμα με αυτές τις ασκήσεις
+→ user_id = "Γιάννης" (ΟΧΙ Κυριάκος!)
+
 ${exerciseDatabaseContext}
 
-⚠️⚠️⚠️ ΚΡΙΣΙΜΟ - ΑΚΟΛΟΥΘΑ ΑΥΤΟΥΣ ΤΟΥΣ ΚΑΝΟΝΕΣ ΑΚΡΙΒΩΣ:
+⚠️⚠️⚠️ ΚΡΙΣΙΜΟ - FORMAT JSON:
 
-1. ΠΡΩΤΑ ΤΟ JSON - Βάλε το \`\`\`ai-action block στην ΑΡΧΗ της απάντησης, ΟΧΙ στο τέλος!
+1. ΠΡΩΤΑ ΤΟ JSON - Βάλε το \`\`\`ai-action block στην ΑΡΧΗ της απάντησης!
 2. ΜΟΝΟ JSON μέσα στο block - ΚΑΝΕΝΑ κείμενο/text!
 3. ΜΙΑ ΓΡΑΜΜΗ JSON - χωρίς newlines/enters μέσα στο JSON
 4. MAXIMUM 1 άσκηση ανά block, 2 blocks, 1 ημέρα, 1 εβδομάδα
 
-ΠΑΡΑΔΕΙΓΜΑ ΣΩΣΤΗΣ ΑΠΑΝΤΗΣΗΣ (αντέγραψε αυτή τη δομή):
----
+ΠΑΡΑΔΕΙΓΜΑ - Ανάθεση σε ΕΝΑ ΑΤΟΜΟ:
 \`\`\`ai-action
-{"action":"create_program","name":"Heavy DL","description":"Deadlift focus","user_id":"HYPERKIDS","training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Warm","training_type":"warm up","exercises":[{"exercise_name":"Cat-Cow","sets":2,"reps":"8","rest":"30"}]},{"name":"Main","training_type":"str","exercises":[{"exercise_name":"DL","sets":4,"reps":"3","percentage_1rm":85,"velocity_ms":"0.35","tempo":"2.1.X.0","rest":"180"}]}]}]}]}
+{"action":"create_program","name":"Heavy DL","description":"Deadlift focus","user_id":"Γιάννης Παπαδόπουλος","training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Main","training_type":"str","exercises":[{"exercise_name":"DL","sets":4,"reps":"3","percentage_1rm":85,"rest":"180"}]}]}]}]}
 \`\`\`
 
-Δημιούργησα πρόγραμμα δύναμης με DL για 30 Δεκεμβρίου.
----
+ΠΑΡΑΔΕΙΓΜΑ - Ανάθεση σε ΠΟΛΛΑ ΑΤΟΜΑ:
+\`\`\`ai-action
+{"action":"create_program","name":"Team Strength","user_ids":["Γιάννης","Μαρία","Κώστας"],"training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Main","training_type":"str","exercises":[{"exercise_name":"SQ","sets":4,"reps":"5","percentage_1rm":80,"rest":"150"}]}]}]}]}
+\`\`\`
 
-⚠️ ΕΠΙΤΡΕΠΤΕΣ ΤΙΜΕΣ training_type (ΧΡΗΣΙΜΟΠΟΙΗΣΕ ΜΟΝΟ ΑΥΤΕΣ!):
-- "str" → Δύναμη
-- "str/end" → Αντοχή στη δύναμη (Strength Endurance)
-- "str/spd" → Δύναμη/Ταχύτητα
-- "pwr" → Ισχύς (Power)
-- "pwr/end" → Ισχύς/Αντοχή
-- "end" → Αντοχή
-- "spd/end" → Ταχύτητα/Αντοχή
-- "hpr" → Υπερτροφία
-- "warm up" → Ζέσταμα (ΜΕ ΚΕΝΟ, ΟΧΙ warm_up!)
-- "mobility" → Κινητικότητα
-- "stability" → Σταθερότητα
-- "activation" → Ενεργοποίηση
-- "neural act" → Νευρική ενεργοποίηση
-- "recovery" → Αποκατάσταση
-- "accessory" → Βοηθητικές
-- "rotational" → Στροφικές
+ΠΑΡΑΔΕΙΓΜΑ - Ανάθεση σε ΟΜΑΔΑ:
+\`\`\`ai-action
+{"action":"create_program","name":"Group Training","group_id":"U16 Boys","training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Main","training_type":"str","exercises":[{"exercise_name":"BP","sets":3,"reps":"8","percentage_1rm":70,"rest":"120"}]}]}]}]}
+\`\`\`
+
+⚠️ ΕΠΙΤΡΕΠΤΕΣ ΤΙΜΕΣ training_type:
+"str", "str/end", "str/spd", "pwr", "pwr/end", "end", "spd/end", "hpr", "warm up", "mobility", "stability", "activation", "neural act", "recovery", "accessory", "rotational"
 
 ΚΑΝΟΝΕΣ ΟΝΟΜΑΤΩΝ:
-- name: ΣΥΝΤΟΜΟ όνομα (π.χ. "Heavy DL", "Chest Day", "Speed Work") - ΟΧΙ μεγάλα ονόματα με ημερομηνίες!
-- user_id: Βάλε ΟΝΟΜΑ (πχ "HYPERKIDS") ή email - το σύστημα βρίσκει το ID
-- exercise_name: Χρησιμοποίησε ΜΟΝΟ ονόματα από την ΤΡΑΠΕΖΑ ΑΣΚΗΣΕΩΝ
+- name: ΣΥΝΤΟΜΟ όνομα (π.χ. "Heavy DL", "Chest Day") - ΟΧΙ μεγάλα ονόματα!
+- user_id: Βάλε ΟΝΟΜΑ ή email του χρήστη που θα ΛΑΒΕΙ το πρόγραμμα
+- user_ids: Array με ΟΝΟΜΑΤΑ ή emails για πολλαπλή ανάθεση
+- group_id: ΟΝΟΜΑ της ομάδας
+- exercise_name: ΜΟΝΟ ονόματα από την ΤΡΑΠΕΖΑ ΑΣΚΗΣΕΩΝ
 - training_dates: format "YYYY-MM-DD"
 
-⚠️ ΚΡΙΣΙΜΟ ΓΙΑ ΠΑΡΑΜΕΤΡΟΥΣ ΑΣΚΗΣΕΩΝ:
-- "percentage_1rm": 85 → Για ποσοστό 1RM (αριθμός 1-100)
-- "velocity_ms": "0.35" → Ταχύτητα σε m/s (χρησιμοποίησε τα δεδομένα από το Load-Velocity Profile!)
-- "rest": "120" → Διάλειμμα σε δευτερόλεπτα (ΥΠΟΧΡΕΩΤΙΚΟ!)
-- "tempo": "2.1.X.0" → Tempo άσκησης
-- "kg": "100" → Μόνο αν θέλεις απόλυτο βάρος (ΟΧΙ ποσοστά εδώ!)
-
-ΣΗΜΑΝΤΙΚΟ: Αν έχεις Load-Velocity δεδομένα, χρησιμοποίησε τα για να υπολογίσεις σωστή ταχύτητα!
+⚠️ ΚΡΙΣΙΜΟ: Χρησιμοποίησε "percentage_1rm" για %, "velocity_ms" για ταχύτητα, "rest" για διάλειμμα!
 ` : hasActiveSubscription ? `
-Μπορείς να δημιουργήσεις προγράμματα για τον εαυτό σου!
+🟢 USER MODE - ΑΝΑΘΕΣΗ ΜΟΝΟ ΣΤΟΝ ΕΑΥΤΟ ΣΟΥ:
+Μπορείς να δημιουργήσεις προγράμματα ΜΟΝΟ για τον εαυτό σου!
+ΔΕΝ μπορείς να αναθέσεις σε άλλους χρήστες - αυτό απαιτεί admin δικαιώματα.
+
 ${exerciseDatabaseContext}
 
 ⚠️ ΕΠΙΤΡΕΠΤΕΣ ΤΙΜΕΣ training_type: "str", "str/end", "str/spd", "pwr", "pwr/end", "end", "spd/end", "hpr", "warm up", "mobility", "stability", "activation", "neural act", "recovery", "accessory", "rotational"
 
-ΠΑΡΑΔΕΙΓΜΑ:
+ΠΑΡΑΔΕΙΓΜΑ (ΠΑΝΤΑ user_id = δικό σου ID):
 \`\`\`ai-action
-{"action":"create_program","name":"Leg Day","user_id":"${userId}","training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Main","training_type":"str","exercises":[{"exercise_name":"SQ","sets":4,"reps":"6","percentage_1rm":80,"velocity_ms":"0.45","rest":"120"}]}]}]}]}
+{"action":"create_program","name":"Leg Day","user_id":"${userId}","training_dates":["2025-12-30"],"weeks":[{"name":"W1","days":[{"name":"D1","blocks":[{"name":"Main","training_type":"str","exercises":[{"exercise_name":"SQ","sets":4,"reps":"6","percentage_1rm":80,"rest":"120"}]}]}]}]}
 \`\`\`
 
-⚠️ ΚΡΙΣΙΜΟ: Χρησιμοποίησε "percentage_1rm" για %, "velocity_ms" για ταχύτητα, "rest" για διάλειμμα!
+⚠️ ΣΗΜΑΝΤΙΚΟ: Όλα τα προγράμματα ανατίθενται ΑΥΤΟΜΑΤΑ σε εσένα!
 ` : `
 ⚠️ Χρειάζεσαι ενεργή συνδρομή για δημιουργία προγραμμάτων.
 `}
