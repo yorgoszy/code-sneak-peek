@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User, Users, UsersRound } from "lucide-react";
 
 // Interface για τα δεδομένα προγράμματος από AI
 export interface AIProgramData {
@@ -12,13 +14,27 @@ export interface AIProgramData {
   description?: string;
   training_dates: string[];
   weeks: any[];
+  // Για αναθέσεις σε άλλους χρήστες/ομάδες
+  user_id?: string;
+  user_ids?: string[];
+  group_id?: string;
 }
 
 type QuickAssignProgramDialogProps = {
   isOpen: boolean;
   onClose: () => void;
-  userId: string;
-  programData?: AIProgramData | null; // Δεδομένα από AI συζήτηση
+  userId: string; // Default user (current user)
+  programData?: AIProgramData | null;
+};
+
+// Helper για initials
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 };
 
 export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> = ({
@@ -27,47 +43,104 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
   userId,
   programData,
 }) => {
-  // Αν υπάρχουν δεδομένα από AI, χρησιμοποίησέ τα, αλλιώς default σημερινή ημερομηνία
   const today = new Date().toISOString().split('T')[0];
   
   const [date, setDate] = useState(programData?.training_dates?.[0] || today);
   const [name, setName] = useState(programData?.name || "Πρόγραμμα Προπόνησης");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // State για recipients info
+  const [recipientUsers, setRecipientUsers] = useState<any[]>([]);
+  const [recipientGroup, setRecipientGroup] = useState<any>(null);
+  const [loadingRecipients, setLoadingRecipients] = useState(false);
+
+  // Υπολογισμός recipient IDs
+  const recipientUserIds = useMemo(() => {
+    if (programData?.user_ids && programData.user_ids.length > 0) {
+      return programData.user_ids;
+    }
+    if (programData?.user_id) {
+      return [programData.user_id];
+    }
+    return [userId]; // Default to current user
+  }, [programData, userId]);
+
+  const recipientGroupId = programData?.group_id || null;
+
+  // Fetch recipient details
+  useEffect(() => {
+    const fetchRecipients = async () => {
+      if (!isOpen) return;
+      
+      setLoadingRecipients(true);
+      
+      try {
+        // Fetch users
+        if (recipientUserIds.length > 0) {
+          const { data: users, error } = await supabase
+            .from('app_users')
+            .select('id, name, email, avatar_url')
+            .in('id', recipientUserIds);
+          
+          if (!error && users) {
+            setRecipientUsers(users);
+          }
+        }
+        
+        // Fetch group if exists
+        if (recipientGroupId) {
+          const { data: group, error } = await supabase
+            .from('groups')
+            .select('id, name, description')
+            .eq('id', recipientGroupId)
+            .single();
+          
+          if (!error && group) {
+            // Fetch group member count
+            const { count } = await supabase
+              .from('group_members')
+              .select('*', { count: 'exact', head: true })
+              .eq('group_id', recipientGroupId);
+            
+            setRecipientGroup({ ...group, member_count: count || 0 });
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching recipients:', err);
+      } finally {
+        setLoadingRecipients(false);
+      }
+    };
+    
+    fetchRecipients();
+  }, [isOpen, recipientUserIds, recipientGroupId]);
 
   // Helper για κωδικοποιημένη ονομασία
   const generateCodedName = (description?: string, programName?: string): string => {
     const text = (description || programName || '').toLowerCase();
     const codes: string[] = [];
     
-    // Strength variations
     if (text.includes('strength') || text.includes('δύναμη') || text.includes('δύναμης')) {
       codes.push('STR');
     }
-    // Endurance variations
     if (text.includes('endurance') || text.includes('αντοχή') || text.includes('αντοχής')) {
       codes.push('END');
     }
-    // Power
     if (text.includes('power') || text.includes('ισχύς') || text.includes('εκρηκτικ')) {
       codes.push('PWR');
     }
-    // Hypertrophy
     if (text.includes('hypertrophy') || text.includes('υπερτροφία') || text.includes('μυϊκή')) {
       codes.push('HYP');
     }
-    // Speed
     if (text.includes('speed') || text.includes('ταχύτητα')) {
       codes.push('SPD');
     }
-    // Mobility
     if (text.includes('mobility') || text.includes('κινητικότητα')) {
       codes.push('MOB');
     }
-    // Core
     if (text.includes('core') || text.includes('κορμό') || text.includes('pillar')) {
       codes.push('CORE');
     }
-    // Conditioning
     if (text.includes('conditioning') || text.includes('φυσική κατάσταση')) {
       codes.push('COND');
     }
@@ -89,26 +162,20 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
   }, [programData, today]);
 
   const payload = useMemo(() => {
-    // Αν υπάρχουν δεδομένα από AI, χρησιμοποίησέ τα
-    if (programData && programData.weeks && programData.weeks.length > 0) {
-      return {
-        action: "create_program" as const,
-        name,
-        description: programData.description || `Πρόγραμμα προπόνησης δημιουργημένο από AI`,
-        user_id: userId,
-        training_dates: [date],
-        weeks: programData.weeks,
-      };
-    }
-    
-    // Default πρόγραμμα αν δεν υπάρχουν δεδομένα AI
-    return {
+    // Base payload
+    const basePayload: any = {
       action: "create_program" as const,
       name,
-      description: "Πρόγραμμα προπόνησης",
-      user_id: userId,
+      description: programData?.description || "Πρόγραμμα προπόνησης",
       training_dates: [date],
-      weeks: [
+    };
+
+    // Αν υπάρχουν δεδομένα από AI, χρησιμοποίησέ τα
+    if (programData?.weeks && programData.weeks.length > 0) {
+      basePayload.weeks = programData.weeks;
+    } else {
+      // Default πρόγραμμα
+      basePayload.weeks = [
         {
           name: "Εβδομάδα 1",
           days: [
@@ -133,9 +200,20 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
             },
           ],
         },
-      ],
-    };
-  }, [date, name, userId, programData]);
+      ];
+    }
+
+    // Set recipients
+    if (recipientGroupId) {
+      basePayload.group_id = recipientGroupId;
+    } else if (recipientUserIds.length > 1) {
+      basePayload.user_ids = recipientUserIds;
+    } else {
+      basePayload.user_id = recipientUserIds[0];
+    }
+
+    return basePayload;
+  }, [date, name, programData, recipientUserIds, recipientGroupId]);
 
   const onSubmit = async () => {
     if (!date) {
@@ -158,8 +236,6 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
       }
 
       toast.success(data.message || "Έγινε δημιουργία & ανάθεση!", { id: "quick-assign" });
-
-      // Πήγαινε στο dashboard ενεργών προγραμμάτων για να δεις το ProgramCard
       window.location.href = "/dashboard/active-programs";
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Άγνωστο σφάλμα";
@@ -200,6 +276,73 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* RECIPIENTS SECTION */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              {recipientGroupId ? (
+                <UsersRound className="h-4 w-4" />
+              ) : recipientUserIds.length > 1 ? (
+                <Users className="h-4 w-4" />
+              ) : (
+                <User className="h-4 w-4" />
+              )}
+              {recipientGroupId ? 'Ομάδα' : recipientUserIds.length > 1 ? 'Χρήστες' : 'Χρήστης'}
+            </Label>
+            
+            <div className="bg-muted/50 p-3 rounded-none">
+              {loadingRecipients ? (
+                <p className="text-sm text-muted-foreground">Φόρτωση...</p>
+              ) : recipientGroupId && recipientGroup ? (
+                // Group display
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <UsersRound className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{recipientGroup.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {recipientGroup.member_count} μέλη
+                    </p>
+                  </div>
+                </div>
+              ) : recipientUsers.length > 1 ? (
+                // Multiple users display
+                <div className="space-y-2">
+                  {recipientUsers.map(user => (
+                    <div key={user.id} className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatar_url} />
+                        <AvatarFallback className="text-xs">
+                          {getInitials(user.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : recipientUsers.length === 1 ? (
+                // Single user display
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={recipientUsers[0].avatar_url} />
+                    <AvatarFallback>
+                      {getInitials(recipientUsers[0].name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{recipientUsers[0].name}</p>
+                    <p className="text-xs text-muted-foreground">{recipientUsers[0].email}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Δεν βρέθηκε παραλήπτης</p>
+              )}
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="program-name">Όνομα προγράμματος</Label>
             <Input
