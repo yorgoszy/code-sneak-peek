@@ -67,6 +67,16 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
 
   const recipientGroupId = programData?.group_id || null;
 
+  // Helper για αναζήτηση χρήστη με όνομα (χωρίς τόνους)
+  const normalizeGreek = (str: string): string => {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ά/g, 'α').replace(/έ/g, 'ε').replace(/ή/g, 'η')
+      .replace(/ί/g, 'ι').replace(/ό/g, 'ο').replace(/ύ/g, 'υ').replace(/ώ/g, 'ω');
+  };
+
   // Fetch recipient details
   useEffect(() => {
     const fetchRecipients = async () => {
@@ -75,16 +85,52 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
       setLoadingRecipients(true);
       
       try {
-        // Fetch users
+        // Fetch users - first try by ID, then by name
         if (recipientUserIds.length > 0) {
-          const { data: users, error } = await supabase
-            .from('app_users')
-            .select('id, name, email, avatar_url')
-            .in('id', recipientUserIds);
+          // Check if they look like UUIDs
+          const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
           
-          if (!error && users) {
-            setRecipientUsers(users);
+          const uuids = recipientUserIds.filter(isUUID);
+          const names = recipientUserIds.filter(id => !isUUID(id));
+          
+          let foundUsers: any[] = [];
+          
+          // Fetch by UUID
+          if (uuids.length > 0) {
+            const { data: users, error } = await supabase
+              .from('app_users')
+              .select('id, name, email, avatar_url')
+              .in('id', uuids);
+            
+            if (!error && users) {
+              foundUsers = [...foundUsers, ...users];
+            }
           }
+          
+          // Fetch by name (flexible search)
+          if (names.length > 0) {
+            const { data: allUsers } = await supabase
+              .from('app_users')
+              .select('id, name, email, avatar_url')
+              .limit(500);
+            
+            if (allUsers) {
+              for (const searchName of names) {
+                const normalizedSearch = normalizeGreek(searchName);
+                const matched = allUsers.find(u => {
+                  const normalizedName = normalizeGreek(u.name);
+                  return normalizedName.includes(normalizedSearch) || 
+                         normalizedSearch.includes(normalizedName) ||
+                         normalizedName === normalizedSearch;
+                });
+                if (matched && !foundUsers.some(u => u.id === matched.id)) {
+                  foundUsers.push(matched);
+                }
+              }
+            }
+          }
+          
+          setRecipientUsers(foundUsers);
         }
         
         // Fetch group if exists
