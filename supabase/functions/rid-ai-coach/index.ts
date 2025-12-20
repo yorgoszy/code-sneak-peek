@@ -1479,7 +1479,7 @@ ${drafts.map((p: any, i: number) => {
     let programsData: any[] = [];
     if (programIds.length > 0) {
       const programsResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/programs?id=in.(${programIds.join(',')})&select=id,name,description,training_days,program_weeks!fk_program_weeks_program_id(id,name,week_number,program_days!fk_program_days_week_id(id,name,day_number,estimated_duration_minutes,is_test_day,test_types,is_competition_day,program_blocks!fk_program_blocks_day_id(id,name,block_order,training_type,workout_format,workout_duration,program_exercises!fk_program_exercises_block_id(id,sets,reps,kg,tempo,rest,notes,exercise_order,reps_mode,exercises!fk_program_exercises_exercise_id(id,name,description,video_url)))))`,
+        `${SUPABASE_URL}/rest/v1/programs?id=in.(${programIds.join(',')})&select=id,name,description,training_days,program_weeks!fk_program_weeks_program_id(id,name,week_number,program_days!fk_program_days_week_id(id,name,day_number,estimated_duration_minutes,is_test_day,test_types,is_competition_day,program_blocks!fk_program_blocks_day_id(id,name,block_order,training_type,workout_format,workout_duration,program_exercises!fk_program_exercises_block_id(id,sets,reps,reps_mode,kg,kg_mode,percentage_1rm,velocity_ms,tempo,rest,notes,exercise_order,exercises!fk_program_exercises_exercise_id(id,name,description,video_url)))))`,
         {
           headers: {
             "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1552,6 +1552,28 @@ ${drafts.map((p: any, i: number) => {
     console.log('📊 Workout Stats:', JSON.stringify(workoutStatsData, null, 2));
     console.log('📊 Workout Completions Count:', workoutCompletions.length);
     console.log('📊 Workout Completions Sample:', JSON.stringify(workoutCompletions.slice(0, 3), null, 2));
+
+    // 🏋️ Φόρτωση exercise_results για τα πραγματικά αποτελέσματα των ολοκληρωμένων προπονήσεων
+    const completionIds = workoutCompletions.map((c: any) => c.id).filter(Boolean);
+    let exerciseResults: any[] = [];
+    if (completionIds.length > 0) {
+      const batchSize = 50;
+      for (let i = 0; i < completionIds.length; i += batchSize) {
+        const batchIds = completionIds.slice(i, i + batchSize);
+        const exerciseResultsResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/exercise_results?workout_completion_id=in.(${batchIds.join(',')})&select=*`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const batchData = await exerciseResultsResponse.json();
+        if (Array.isArray(batchData)) exerciseResults.push(...batchData);
+      }
+      console.log('📊 Exercise Results loaded:', exerciseResults.length);
+    }
 
     // Φόρτωση λεπτομερούς ιστορικού δύναμης (για Athletes Progress)
     const strengthAttemptsResponse = await fetch(
@@ -1634,6 +1656,85 @@ ${drafts.map((p: any, i: number) => {
       if (exercises.size > 0) {
         exerciseContext = `\n\nΟι ασκήσεις που έχεις στα προγράμματά σου:\n${Array.from(exercises).join('\n')}`;
       }
+    }
+
+    // 📋 Λεπτομερές ιστορικό προπονήσεων (για «αντιγραφή τελευταίας προπόνησης»)
+    let workoutHistoryContext = '';
+    try {
+      const completed = workoutCompletions
+        .filter((c: any) => c.status === 'completed')
+        .sort((a: any, b: any) => {
+          const da = new Date(a.scheduled_date || a.completed_date || a.created_at).getTime();
+          const db = new Date(b.scheduled_date || b.completed_date || b.created_at).getTime();
+          return db - da;
+        })
+        .slice(0, 10);
+
+      if (completed.length > 0 && Array.isArray(enrichedAssignments) && enrichedAssignments.length > 0) {
+        workoutHistoryContext = `\n\n📋 ΤΕΛΕΥΤΑΙΕΣ ΟΛΟΚΛΗΡΩΜΕΝΕΣ ΠΡΟΠΟΝΗΣΕΙΣ (με πραγματικά αποτελέσματα):\n`;
+
+        completed.forEach((completion: any) => {
+          const assignment = enrichedAssignments.find((a: any) => a.id === completion.assignment_id);
+          const program = assignment?.programs;
+          const userName = assignment?.app_users?.name || userProfile?.name || '';
+
+          const scheduledDate = completion.scheduled_date || completion.completed_date || '';
+
+          // Βρες ποια ημέρα του προγράμματος αντιστοιχεί στο scheduledDate
+          let dayProgram: any = null;
+          if (assignment?.training_dates && program?.program_weeks?.[0]?.program_days?.length) {
+            const idx = assignment.training_dates.findIndex((d: string) => d === completion.scheduled_date);
+            const daysPerWeek = program.program_weeks[0].program_days.length;
+            if (idx >= 0) {
+              dayProgram = program.program_weeks[0].program_days[idx % daysPerWeek];
+            }
+          }
+
+          workoutHistoryContext += `\n✅ ${userName}${program?.name ? ` - ${program.name}` : ''}\nΗμερομηνία: ${scheduledDate}\n${completion.rpe_score ? `RPE: ${completion.rpe_score}\n` : ''}`;
+
+          if (!dayProgram) {
+            workoutHistoryContext += `⚠️ Δεν βρέθηκε το day template για αυτή την ημερομηνία\n`;
+            return;
+          }
+
+          workoutHistoryContext += `Ημέρα: ${dayProgram.name || `Day ${dayProgram.day_number}`}\n`;
+
+          (dayProgram.program_blocks || []).forEach((block: any) => {
+            workoutHistoryContext += `  🔹 ${block.name}${block.training_type ? ` (${block.training_type})` : ''}\n`;
+            (block.program_exercises || []).forEach((pe: any) => {
+              const exName = pe.exercises?.name || 'Άγνωστη άσκηση';
+
+              let line = `    • ${exName}: ${pe.sets || '?'}x${pe.reps || '?'}`;
+              if (pe.kg) line += ` @ ${pe.kg}kg`;
+              if (pe.percentage_1rm) line += ` (${pe.percentage_1rm}%1RM)`;
+              if (pe.velocity_ms) line += ` @ ${pe.velocity_ms}m/s`;
+              if (pe.tempo) line += ` tempo ${pe.tempo}`;
+              if (pe.rest) line += ` rest ${pe.rest}s`;
+              if (pe.notes) line += ` [${pe.notes}]`;
+
+              const result = exerciseResults.find((er: any) => er.workout_completion_id === completion.id && er.program_exercise_id === pe.id);
+              if (result) {
+                const actualParts: string[] = [];
+                if (result.actual_sets) actualParts.push(`${result.actual_sets} sets`);
+                if (result.actual_reps) actualParts.push(`${result.actual_reps} reps`);
+                if (result.actual_kg) actualParts.push(`${result.actual_kg}kg`);
+                if (result.actual_velocity_ms) actualParts.push(`${result.actual_velocity_ms}m/s`);
+                if (result.actual_rest) actualParts.push(`rest ${result.actual_rest}s`);
+                if (actualParts.length > 0) {
+                  line += `\n      ➜ ΠΡΑΓΜΑΤΙΚΑ: ${actualParts.join(', ')}`;
+                }
+                if (result.notes) line += ` [${result.notes}]`;
+              }
+
+              workoutHistoryContext += line + `\n`;
+            });
+          });
+        });
+
+        workoutHistoryContext += `\n\n🎯 ΟΔΗΓΙΑ: Αν ο χρήστης ζητήσει «αντέγραψε την τελευταία προπόνηση και κάν'την assign σήμερα», χρησιμοποίησε την ΠΙΟ ΠΡΟΣΦΑΤΗ ολοκληρωμένη προπόνηση από το section παραπάνω (χωρίς να ζητήσεις να σου δώσουν τα στοιχεία).`;
+      }
+    } catch (e) {
+      console.error('⚠️ workoutHistoryContext build error:', e);
     }
 
     // Context για προγράμματα και ημερολόγιο
@@ -3507,7 +3608,7 @@ ${isAdmin && !targetUserId ? `
 - 📋 ΛΕΠΤΟΜΕΡΗΣ ΠΡΟΒΟΛΗ ΠΡΟΠΟΝΗΣΕΩΝ με όλες τις ασκήσεις κάθε ημέρας
 - 📅 ΗΜΕΡΟΛΟΓΙΟ ΠΡΟΠΟΝΗΣΕΩΝ με το status κάθε προπόνησης
 - 👥 ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ ΑΝΑ ΑΘΛΗΤΗ με πρόοδο και στατιστικά
-- 📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ με τεστ αντοχής, ανθρωπομετρικά, άλματα` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, και το πλήρες ιστορικό προόδου του χρήστη.`}
+- 📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ με τεστ αντοχής, ανθρωπομετρικά, άλματα` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, το ημερολόγιο και τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη. ❌ ΜΗΝ πεις ποτέ «δεν έχω πρόσβαση» — έχεις.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
@@ -3553,7 +3654,7 @@ ${isAdmin && !targetUserId ? `
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
