@@ -67,6 +67,14 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
 
   const recipientGroupId = programData?.group_id || null;
 
+  const recipientFallbackLabel = useMemo(() => {
+    const vals = recipientUserIds
+      .map((v) => String(v ?? "").trim())
+      .filter(Boolean)
+      .map((v) => v.replace(/^['"]|['"]$/g, ""));
+    return vals.join(", ");
+  }, [recipientUserIds]);
+
   // Helper για αναζήτηση χρήστη με όνομα (χωρίς τόνους)
   const normalizeGreek = (str: string): string => {
     return str
@@ -85,51 +93,62 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
       setLoadingRecipients(true);
       
       try {
-        // Fetch users - first try by ID, then by name
+        // Fetch users - first try by ID, then by name/email
         if (recipientUserIds.length > 0) {
-          // Check if they look like UUIDs
-          const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-          
-          const uuids = recipientUserIds.filter(isUUID);
-          const names = recipientUserIds.filter(id => !isUUID(id));
-          
+          const isUUID = (str: string) =>
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+          // Sanitize incoming identifiers (uuid/name/email)
+          const identifiers = recipientUserIds
+            .map((v) => String(v ?? "").trim())
+            .filter(Boolean)
+            .map((v) => v.replace(/^['"]|['"]$/g, ""));
+
+          const uuids = identifiers.filter(isUUID);
+          const queries = identifiers.filter((id) => !isUUID(id));
+
           let foundUsers: any[] = [];
-          
+
           // Fetch by UUID
           if (uuids.length > 0) {
             const { data: users, error } = await supabase
-              .from('app_users')
-              .select('id, name, email, avatar_url')
-              .in('id', uuids);
-            
+              .from("app_users")
+              .select("id, name, email, avatar_url")
+              .in("id", uuids);
+
             if (!error && users) {
               foundUsers = [...foundUsers, ...users];
             }
           }
-          
-          // Fetch by name (flexible search)
-          if (names.length > 0) {
+
+          // Fetch by name/email (flexible search)
+          if (queries.length > 0) {
             const { data: allUsers } = await supabase
-              .from('app_users')
-              .select('id, name, email, avatar_url')
+              .from("app_users")
+              .select("id, name, email, avatar_url")
               .limit(500);
-            
+
             if (allUsers) {
-              for (const searchName of names) {
-                const normalizedSearch = normalizeGreek(searchName);
-                const matched = allUsers.find(u => {
+              for (const q of queries) {
+                const normalizedSearch = normalizeGreek(q);
+                const matched = allUsers.find((u) => {
                   const normalizedName = normalizeGreek(u.name);
-                  return normalizedName.includes(normalizedSearch) || 
-                         normalizedSearch.includes(normalizedName) ||
-                         normalizedName === normalizedSearch;
+                  const email = String(u.email ?? "").toLowerCase();
+                  return (
+                    normalizedName.includes(normalizedSearch) ||
+                    normalizedSearch.includes(normalizedName) ||
+                    normalizedName === normalizedSearch ||
+                    email.includes(q.toLowerCase())
+                  );
                 });
-                if (matched && !foundUsers.some(u => u.id === matched.id)) {
+
+                if (matched && !foundUsers.some((u) => u.id === matched.id)) {
                   foundUsers.push(matched);
                 }
               }
             }
           }
-          
+
           setRecipientUsers(foundUsers);
         }
         
@@ -384,7 +403,9 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Δεν βρέθηκε παραλήπτης</p>
+                <p className="text-sm text-muted-foreground">
+                  Δεν βρέθηκε παραλήπτης{recipientFallbackLabel ? ` (${recipientFallbackLabel})` : ""}
+                </p>
               )}
             </div>
           </div>
