@@ -243,20 +243,49 @@ serve(async (req) => {
                     for (let exIndex = 0; exIndex < block.exercises.length; exIndex++) {
                       const exercise = block.exercises[exIndex];
 
-                      // resolve exercise_id
+                      // resolve exercise_id - προτίμηση σε ΑΚΡΙΒΕΣ match
                       let exerciseId = exercise.exercise_id;
                       if (!exerciseId && exercise.exercise_name) {
-                        const { data: foundEx, error: exError } = await supabase
+                        const searchName = exercise.exercise_name.trim();
+                        const searchNorm = normalizeText(searchName);
+
+                        // 1) Πρώτα δοκίμασε ΑΚΡΙΒΕΣ match (case-insensitive)
+                        const { data: exactMatch } = await supabase
                           .from("exercises")
                           .select("id,name")
-                          .ilike("name", `%${exercise.exercise_name}%`)
+                          .ilike("name", searchName)
                           .limit(1);
 
-                        if (!exError && foundEx && foundEx.length > 0) {
-                          exerciseId = foundEx[0].id;
+                        if (exactMatch && exactMatch.length > 0) {
+                          exerciseId = exactMatch[0].id;
+                          console.log(`✅ Exact match: "${searchName}" -> "${exactMatch[0].name}"`);
                         } else {
-                          console.log(`⚠️ Exercise "${exercise.exercise_name}" not found, skipping`);
-                          continue;
+                          // 2) Αν δεν βρεθεί, δοκίμασε partial match αλλά με scoring
+                          const { data: partialMatches } = await supabase
+                            .from("exercises")
+                            .select("id,name")
+                            .ilike("name", `%${searchName}%`)
+                            .limit(20);
+
+                          if (partialMatches && partialMatches.length > 0) {
+                            // Βρες το καλύτερο match με βάση similarity
+                            const scored = partialMatches.map((ex) => {
+                              const exNorm = normalizeText(ex.name);
+                              // Προτίμησε όσο πιο κοντά είναι το μήκος στο search term
+                              const lengthDiff = Math.abs(exNorm.length - searchNorm.length);
+                              // Bonus αν ξεκινά με το search term
+                              const startsBonus = exNorm.startsWith(searchNorm) ? 100 : 0;
+                              // Bonus αν είναι ακριβώς ίδιο (normalized)
+                              const exactBonus = exNorm === searchNorm ? 200 : 0;
+                              return { ex, score: exactBonus + startsBonus - lengthDiff };
+                            });
+                            scored.sort((a, b) => b.score - a.score);
+                            exerciseId = scored[0].ex.id;
+                            console.log(`🔍 Partial match: "${searchName}" -> "${scored[0].ex.name}" (score: ${scored[0].score})`);
+                          } else {
+                            console.log(`⚠️ Exercise "${exercise.exercise_name}" not found, skipping`);
+                            continue;
+                          }
                         }
                       }
 
