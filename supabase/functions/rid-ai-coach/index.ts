@@ -1114,11 +1114,11 @@ ${drafts.map((p: any, i: number) => {
       if (Array.isArray(allUsersFull) && allUsersFull.length > 0) {
         console.log(`✅ Loaded ${allUsersFull.length} users, ${Array.isArray(allSubscriptions) ? allSubscriptions.length : 0} subscriptions`);
         
-        adminAllUsersContext = '\n\n👥 ΛΙΣΤΑ ΧΡΗΣΤΩΝ (Dashboard/Users) - Ημερομηνίες Εγγραφής:\n';
+        adminAllUsersContext = '\n\n👥 ΛΙΣΤΑ ΧΡΗΣΤΩΝ (Dashboard/Users) - IDs / Emails / Ημερομηνίες Εγγραφής:\n';
         
         allUsersFull.forEach((user: any) => {
           const regDate = user.created_at ? new Date(user.created_at).toLocaleDateString('el-GR') : 'Άγνωστη';
-          adminAllUsersContext += `- ${user.name} (${user.email}): Εγγράφηκε ${regDate}\n`;
+          adminAllUsersContext += `- ${user.name} | ${user.email} | id: ${user.id} | Εγγράφηκε ${regDate}\n`;
         });
         
         // ΥΠΟΛΟΓΙΣΜΟΣ ΣΤΑΤΙΣΤΙΚΩΝ ΣΥΝΔΡΟΜΩΝ
@@ -3590,6 +3590,20 @@ ${isAdmin && !targetUserId ? `
 ✅ ΟΛΑ τα workout completions (ολοκληρωμένες, χαμένες, προγραμματισμένες)
 ✅ Πρόοδο και στατιστικά όλων των αθλητών
 ✅ 📊 ΔΕΔΟΜΕΝΑ ΠΡΟΟΔΟΥ ΑΘΛΗΤΩΝ: Ανθρωπομετρικά, Αντοχή (VO2max, MAS, push-ups, κλπ), Άλματα
+
+⚠️ ΚΡΙΤΙΚΟ ΓΙΑ ΑΝΑΘΕΣΕΙΣ (ASSIGNMENTS) ΣΕ ADMIN MODE:
+- Όταν ο χρήστης λέει «βρες την προπόνηση του Α και ανάθεσέ την στον Β», τότε:
+  1) Ο Α είναι η ΠΗΓΗ (source) της προπόνησης (από ποιον/ποιανού προπόνηση διαβάζεις)
+  2) Ο Β είναι ο ΠΑΡΑΛΗΠΤΗΣ (recipient) που θα πάρει την ανάθεση
+- Στο 
+  \`\`\`ai-action
+  {"action":"create_program", ...}
+  \`\`\`
+  τα πεδία user_id / user_ids / group_id αφορούν ΠΑΝΤΑ τον/τους ΠΑΡΑΛΗΠΤΗ/ΠΑΡΑΛΗΠΤΕΣ.
+- ΠΟΤΕ μην βάζεις user_id = το δικό σου (του admin) εκτός αν ο χρήστης πει ρητά «ανάθεσέ το σε μένα».
+- Για να μην γίνεται λάθος σε κοινά επώνυμα/παρόμοια ονόματα:
+  ✅ ΠΑΝΤΑ χρησιμοποίησε το ΑΚΡΙΒΕΣ UUID id από το section «👥 ΛΙΣΤΑ ΧΡΗΣΤΩΝ» (όχι σκέτο όνομα).
+  ❌ Αν υπάρχουν 2 πιθανοί χρήστες που ταιριάζουν, ΡΩΤΑ διευκρίνιση και ΜΗΝ μαντεύεις.
 
 ΣΗΜΑΝΤΙΚΟ ΓΙΑ ΔΕΔΟΜΕΝΑ ΠΡΟΟΔΟΥ:
 Στο context παρακάτω υπάρχει section με τίτλο "📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ (Athletes Progress Dashboard)" που περιέχει:
