@@ -323,6 +323,7 @@ serve(async (req) => {
 
     // 🔥 ADMIN CONTEXT: Φόρτωση ΟΛΩΝ των active programs αν είναι admin
     let adminActiveProgramsContext = '';
+    let workoutHistoryContext = ''; // Initialize here so it's always defined
     if (isAdmin && !targetUserId) {
       // Φόρτωση ΟΛΩΝ των assignments (για όλους τους χρήστες, ΧΩΡΙΣ date filter - όλων των χρόνων)
       const allAssignmentsResponse = await fetch(
@@ -1659,7 +1660,6 @@ ${drafts.map((p: any, i: number) => {
     }
 
     // 📋 ΠΛΗΡΕΣ ιστορικό ΟΛΩΝ των ολοκληρωμένων προπονήσεων (χωρίς limit)
-    let workoutHistoryContext = '';
     try {
       const completed = workoutCompletions
         .filter((c: any) => c.status === 'completed')
