@@ -324,9 +324,9 @@ serve(async (req) => {
     // 🔥 ADMIN CONTEXT: Φόρτωση ΟΛΩΝ των active programs αν είναι admin
     let adminActiveProgramsContext = '';
     if (isAdmin && !targetUserId) {
-      // Φόρτωση ΟΛΩΝ των active assignments (για όλους τους χρήστες)
+      // Φόρτωση ΟΛΩΝ των assignments (για όλους τους χρήστες, ΧΩΡΙΣ date filter - όλων των χρόνων)
       const allAssignmentsResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/program_assignments?status=in.(active,completed)&end_date=gte.${new Date().toISOString().split('T')[0]}&select=*`,
+        `${SUPABASE_URL}/rest/v1/program_assignments?select=*`,
         {
           headers: {
             "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1461,9 +1461,9 @@ ${drafts.map((p: any, i: number) => {
         }
       }
 
-    // Φόρτωση ΟΛΩΝ των assignments για το ημερολόγιο (active και completed)
+    // Φόρτωση ΟΛΩΝ των assignments του χρήστη (ΧΩΡΙΣ status filter - όλων των χρόνων)
     const assignmentsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${effectiveUserId}&status=in.(active,completed)&select=*`,
+      `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${effectiveUserId}&select=*`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1532,9 +1532,9 @@ ${drafts.map((p: any, i: number) => {
     const workoutStatsData = await workoutStatsResponse.json();
     console.log('📊 Workout Stats loaded:', Array.isArray(workoutStatsData) ? workoutStatsData.length : 0);
     
-    // Φόρτωση workout completions για λεπτομερή στατιστικά
+    // Φόρτωση ΟΛΩΝ των workout completions (χωρίς limit) για πλήρες ιστορικό
     const workoutCompletionsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/workout_completions?user_id=eq.${effectiveUserId}&order=created_at.desc&limit=100&select=*`,
+      `${SUPABASE_URL}/rest/v1/workout_completions?user_id=eq.${effectiveUserId}&order=scheduled_date.desc&select=*`,
       {
         headers: {
           "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1658,7 +1658,7 @@ ${drafts.map((p: any, i: number) => {
       }
     }
 
-    // 📋 Λεπτομερές ιστορικό προπονήσεων (για «αντιγραφή τελευταίας προπόνησης»)
+    // 📋 ΠΛΗΡΕΣ ιστορικό ΟΛΩΝ των ολοκληρωμένων προπονήσεων (χωρίς limit)
     let workoutHistoryContext = '';
     try {
       const completed = workoutCompletions
@@ -1667,11 +1667,11 @@ ${drafts.map((p: any, i: number) => {
           const da = new Date(a.scheduled_date || a.completed_date || a.created_at).getTime();
           const db = new Date(b.scheduled_date || b.completed_date || b.created_at).getTime();
           return db - da;
-        })
-        .slice(0, 10);
+        });
+      // Χωρίς slice - φορτώνουμε ΟΛΕΣ τις ολοκληρωμένες προπονήσεις
 
       if (completed.length > 0 && Array.isArray(enrichedAssignments) && enrichedAssignments.length > 0) {
-        workoutHistoryContext = `\n\n📋 ΤΕΛΕΥΤΑΙΕΣ ΟΛΟΚΛΗΡΩΜΕΝΕΣ ΠΡΟΠΟΝΗΣΕΙΣ (με πραγματικά αποτελέσματα):\n`;
+        workoutHistoryContext = `\n\n📋 ΟΛΕΣ ΟΙ ΟΛΟΚΛΗΡΩΜΕΝΕΣ ΠΡΟΠΟΝΗΣΕΙΣ (${completed.length} συνολικά, με πραγματικά αποτελέσματα):\n`;
 
         completed.forEach((completion: any) => {
           const assignment = enrichedAssignments.find((a: any) => a.id === completion.assignment_id);
@@ -3608,7 +3608,7 @@ ${isAdmin && !targetUserId ? `
 - 📋 ΛΕΠΤΟΜΕΡΗΣ ΠΡΟΒΟΛΗ ΠΡΟΠΟΝΗΣΕΩΝ με όλες τις ασκήσεις κάθε ημέρας
 - 📅 ΗΜΕΡΟΛΟΓΙΟ ΠΡΟΠΟΝΗΣΕΩΝ με το status κάθε προπόνησης
 - 👥 ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ ΑΝΑ ΑΘΛΗΤΗ με πρόοδο και στατιστικά
-- 📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ με τεστ αντοχής, ανθρωπομετρικά, άλματα` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, το ημερολόγιο και τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη. ❌ ΜΗΝ πεις ποτέ «δεν έχω πρόσβαση» — έχεις.`}
+- 📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ με τεστ αντοχής, ανθρωπομετρικά, άλματα` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
