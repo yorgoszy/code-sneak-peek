@@ -274,6 +274,10 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           description: actionData.description,
           training_dates: actionData.training_dates || [new Date().toISOString().split('T')[0]],
           weeks: actionData.weeks || [],
+          // ✅ κρατάμε ΠΑΝΤΑ τον/τους παραλήπτες που έδωσε το AI (admin mode)
+          user_id: actionData.user_id,
+          user_ids: actionData.user_ids,
+          group_id: actionData.group_id,
         });
 
         console.log('📋 AI Program Data saved for QuickAssign:', actionData.name);
