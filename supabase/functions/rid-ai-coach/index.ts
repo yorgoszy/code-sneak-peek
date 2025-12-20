@@ -379,6 +379,31 @@ serve(async (req) => {
         );
         const allCompletions = await allCompletionsResponse.json();
         
+        // 🏋️ Φόρτωση exercise_results για πραγματικά αποτελέσματα προπονήσεων
+        const allCompletionIds = Array.isArray(allCompletions) ? allCompletions.map((c: any) => c.id) : [];
+        let allExerciseResults: any[] = [];
+        if (allCompletionIds.length > 0) {
+          // Batch loading για μεγάλες λίστες
+          const batchSize = 50;
+          for (let i = 0; i < allCompletionIds.length; i += batchSize) {
+            const batchIds = allCompletionIds.slice(i, i + batchSize);
+            const exerciseResultsResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/exercise_results?workout_completion_id=in.(${batchIds.join(',')})&select=*`,
+              {
+                headers: {
+                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+                }
+              }
+            );
+            const exerciseResultsData = await exerciseResultsResponse.json();
+            if (Array.isArray(exerciseResultsData)) {
+              allExerciseResults.push(...exerciseResultsData);
+            }
+          }
+          console.log(`✅ Loaded ${allExerciseResults.length} exercise results`);
+        }
+        
         // 🏋️ Φόρτωση ΠΛΗΡΟΥΣ ΔΟΜΗΣ προγραμμάτων (weeks, days, blocks, exercises)
         const weeksResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/program_weeks?program_id=in.(${allProgramIds.join(',')})&select=*&order=week_number.asc`,
@@ -697,16 +722,36 @@ ${calendarDisplay}`;
                   
                   blockExercises.forEach((pe: any) => {
                     const exercise = allExercisesData.find((e: any) => e.id === pe.exercise_id);
-                    
                     const exerciseName = exercise?.name || 'Unknown Exercise';
-                    detailedWorkoutsContext += `      • ${exerciseName}: ${pe.sets || '?'}x${pe.reps || '?'}`;
                     
-                    if (pe.kg) detailedWorkoutsContext += ` @ ${pe.kg}kg`;
-                    if (pe.tempo) detailedWorkoutsContext += ` tempo ${pe.tempo}`;
-                    if (pe.rest) detailedWorkoutsContext += ` rest ${pe.rest}s`;
-                    if (pe.notes) detailedWorkoutsContext += ` (${pe.notes})`;
+                    // Programmed values
+                    let exerciseLine = `      • ${exerciseName}: ${pe.sets || '?'}x${pe.reps || '?'}`;
+                    if (pe.kg) exerciseLine += ` @ ${pe.kg}kg`;
+                    if (pe.percentage_1rm) exerciseLine += ` (${pe.percentage_1rm}%1RM)`;
+                    if (pe.velocity_ms) exerciseLine += ` @ ${pe.velocity_ms}m/s`;
+                    if (pe.tempo) exerciseLine += ` tempo ${pe.tempo}`;
+                    if (pe.rest) exerciseLine += ` rest ${pe.rest}s`;
+                    if (pe.notes) exerciseLine += ` [${pe.notes}]`;
                     
-                    detailedWorkoutsContext += '\n';
+                    // Actual results if completed
+                    if (completion?.status === 'completed') {
+                      const exerciseResult = allExerciseResults.find((er: any) => 
+                        er.workout_completion_id === completion.id && er.program_exercise_id === pe.id
+                      );
+                      if (exerciseResult) {
+                        exerciseLine += '\n        ➜ ΠΡΑΓΜΑΤΙΚΑ: ';
+                        const actualParts: string[] = [];
+                        if (exerciseResult.actual_sets) actualParts.push(`${exerciseResult.actual_sets} sets`);
+                        if (exerciseResult.actual_reps) actualParts.push(`${exerciseResult.actual_reps} reps`);
+                        if (exerciseResult.actual_kg) actualParts.push(`${exerciseResult.actual_kg}kg`);
+                        if (exerciseResult.actual_velocity_ms) actualParts.push(`${exerciseResult.actual_velocity_ms}m/s`);
+                        if (exerciseResult.actual_rest) actualParts.push(`rest ${exerciseResult.actual_rest}s`);
+                        exerciseLine += actualParts.join(', ');
+                        if (exerciseResult.notes) exerciseLine += ` [${exerciseResult.notes}]`;
+                      }
+                    }
+                    
+                    detailedWorkoutsContext += exerciseLine + '\n';
                   });
                 });
               });
