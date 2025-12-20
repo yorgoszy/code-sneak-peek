@@ -50,11 +50,6 @@ export const ProgramCardHeader: React.FC<ProgramCardHeaderProps> = ({ assignment
           <CardTitle className="text-lg">
             {assignment.programs?.name || 'Άγνωστο Πρόγραμμα'}
           </CardTitle>
-          {assignment.programs?.description && (
-            <p className="text-sm text-gray-600">
-              {assignment.programs.description}
-            </p>
-          )}
           
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <User className="w-4 h-4" />
