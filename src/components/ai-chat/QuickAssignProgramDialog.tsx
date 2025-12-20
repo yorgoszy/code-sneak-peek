@@ -515,8 +515,8 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
                   )}
                 </div>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-0 rounded-none max-h-[400px]" align="start">
-                <div className="p-3 border-b">
+              <PopoverContent className="w-80 p-0 rounded-none overflow-hidden" align="start" style={{ maxHeight: '400px' }}>
+                <div className="p-3 border-b flex-shrink-0">
                   <div className="relative">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -527,7 +527,7 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
                     />
                   </div>
                 </div>
-                <div className="overflow-y-auto max-h-[280px]">
+                <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
                   {loadingAllUsers ? (
                     <div className="p-4 text-center text-sm text-muted-foreground">Φόρτωση...</div>
                   ) : (
