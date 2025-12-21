@@ -480,39 +480,9 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const filterAIActionBlock = (content: string) => {
     // Remove ```ai-action...``` blocks
     let filtered = content.replace(/```ai-action[\s\S]*?```/g, '');
-    
-    // Remove raw JSON action blocks - find the start and extract the full nested object
-    const actionPattern = /"action"\s*:\s*"(create_program|open_program_builder|create_nutrition_plan)"/;
-    let match = filtered.match(actionPattern);
-    
-    while (match && match.index !== undefined) {
-      // Find the opening brace before the action
-      let startIdx = filtered.lastIndexOf('{', match.index);
-      if (startIdx === -1) break;
-      
-      // Count braces to find the matching closing brace
-      let depth = 0;
-      let endIdx = startIdx;
-      for (let i = startIdx; i < filtered.length; i++) {
-        if (filtered[i] === '{') depth++;
-        if (filtered[i] === '}') depth--;
-        if (depth === 0) {
-          endIdx = i + 1;
-          break;
-        }
-      }
-      
-      // Remove the JSON block
-      filtered = filtered.slice(0, startIdx) + filtered.slice(endIdx);
-      
-      // Check for more matches
-      match = filtered.match(actionPattern);
-    }
-    
-    // Clean up any leftover whitespace, newlines
-    filtered = filtered.replace(/\n{3,}/g, '\n\n').trim();
-    
-    return filtered;
+    // Also remove any raw JSON action blocks that might not be in code blocks
+    filtered = filtered.replace(/\{[\s\S]*?"action"\s*:\s*"(create_program|open_program_builder|create_nutrition_plan)"[\s\S]*?\}(?:\s*\})*\s*/g, '');
+    return filtered.trim();
   };
 
   return (
