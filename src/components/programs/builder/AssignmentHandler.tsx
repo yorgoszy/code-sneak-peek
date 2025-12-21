@@ -124,8 +124,7 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
               userId,
               program.name,
               program.weeks,
-              trainingDatesStrings,
-              savedProgram.id
+              trainingDatesStrings
             );
           }
         }
@@ -166,8 +165,7 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
             program.user_id!,
             program.name,
             program.weeks,
-            trainingDatesStrings,
-            savedProgram.id
+            trainingDatesStrings
           );
         }
 
