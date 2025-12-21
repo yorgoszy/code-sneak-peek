@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
+
 interface CompetitionDay {
   dayIndex: number;
   dayName: string;
@@ -21,7 +22,58 @@ interface WeeklyPhase {
 
 export const competitionService = {
   /**
-   * Βρίσκει τις ημέρες αγώνα στο πρόγραμμα και επιστρέφει τα indexes τους
+   * Βρίσκει τις ημέρες αγώνα στο πρόγραμμα από τη βάση δεδομένων
+   */
+  async findCompetitionDaysFromDB(programId: string): Promise<CompetitionDay[]> {
+    console.log('🏆 [CompetitionService] Finding competition days from DB for program:', programId);
+    
+    const { data: weeks, error } = await supabase
+      .from('program_weeks')
+      .select(`
+        id,
+        week_number,
+        name,
+        program_days (
+          id,
+          day_number,
+          name,
+          is_competition_day
+        )
+      `)
+      .eq('program_id', programId)
+      .order('week_number');
+
+    if (error) {
+      console.error('❌ [CompetitionService] Error fetching program weeks:', error);
+      return [];
+    }
+
+    const competitionDays: CompetitionDay[] = [];
+    let dayIndex = 0;
+
+    for (const week of weeks || []) {
+      const days = week.program_days || [];
+      // Ταξινόμηση κατά day_number
+      const sortedDays = [...days].sort((a, b) => a.day_number - b.day_number);
+      
+      for (const day of sortedDays) {
+        if (day.is_competition_day) {
+          competitionDays.push({
+            dayIndex,
+            dayName: day.name || `Ημέρα ${day.day_number}`,
+            weekName: week.name || `Εβδομάδα ${week.week_number}`
+          });
+          console.log(`🏆 Found competition day at index ${dayIndex}: ${day.name}`);
+        }
+        dayIndex++;
+      }
+    }
+
+    return competitionDays;
+  },
+
+  /**
+   * Βρίσκει τις ημέρες αγώνα στο πρόγραμμα από το memory object (fallback)
    */
   findCompetitionDays(weeks: any[]): CompetitionDay[] {
     const competitionDays: CompetitionDay[] = [];
@@ -70,11 +122,24 @@ export const competitionService = {
     userId: string,
     programName: string,
     weeks: any[],
-    trainingDates: string[]
+    trainingDates: string[],
+    programId?: string
   ): Promise<void> {
     console.log('🏆 [CompetitionService] Checking for competition days...');
+    console.log('🏆 [CompetitionService] Program ID:', programId);
+    console.log('🏆 [CompetitionService] Training dates:', trainingDates);
     
-    const competitionDays = this.findCompetitionDays(weeks);
+    // Προτιμούμε να διαβάσουμε από τη βάση αν έχουμε programId
+    let competitionDays: CompetitionDay[] = [];
+    
+    if (programId) {
+      competitionDays = await this.findCompetitionDaysFromDB(programId);
+    }
+    
+    // Fallback στο in-memory object
+    if (competitionDays.length === 0) {
+      competitionDays = this.findCompetitionDays(weeks);
+    }
     
     if (competitionDays.length === 0) {
       console.log('✅ [CompetitionService] No competition days found');
@@ -86,7 +151,13 @@ export const competitionService = {
     for (const compDay of competitionDays) {
       // Ελέγχουμε αν υπάρχει αντίστοιχη ημερομηνία
       if (compDay.dayIndex >= trainingDates.length) {
-        console.warn(`⚠️ [CompetitionService] No date for day index ${compDay.dayIndex}`);
+        console.warn(`⚠️ [CompetitionService] No date for day index ${compDay.dayIndex}, using last available date`);
+        // Χρησιμοποιούμε την τελευταία διαθέσιμη ημερομηνία αν δεν υπάρχει αντιστοίχιση
+        const competitionDate = trainingDates[trainingDates.length - 1];
+        const competitionName = `${programName} - ${compDay.weekName} - ${compDay.dayName}`;
+
+        await this.createCompetitionEntry(userId, competitionDate, competitionName, programName);
+        await this.updateAllPlanningLevels(userId, competitionDate);
         continue;
       }
 
