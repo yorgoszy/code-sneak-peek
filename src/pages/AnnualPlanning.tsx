@@ -9,6 +9,7 @@ import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ensureCompetitionProgramCard } from "@/pages/annual-planning/competitionProgram";
 
 interface AppUser {
   id: string;
@@ -572,6 +573,21 @@ const AnnualPlanning: React.FC = () => {
       await supabase
         .from('user_weekly_phases')
         .insert(weeklyToInsert);
+
+      // Create ProgramCard(s) for competition day(s)
+      const competitionPhases = weeklyPhases.filter(p => p.phase === 'competition');
+      for (const comp of competitionPhases) {
+        try {
+          await ensureCompetitionProgramCard({
+            userId: selectedUser.id,
+            userName: selectedUser.name,
+            year,
+            phase: { month: comp.month, week: comp.week, day: comp.day }
+          });
+        } catch (e) {
+          console.error('ensureCompetitionProgramCard failed:', e);
+        }
+      }
     }
 
     toast.success(`Ο μακροκύκλος ανατέθηκε στον ${selectedUser.name}`);
