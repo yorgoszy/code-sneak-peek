@@ -60,6 +60,8 @@ interface DialogWeeklyPhase {
   week: number;
   day: number;
   phase: string;
+  primary_subphase?: string | null;
+  secondary_subphase?: string | null;
 }
 
 const PHASES = [
@@ -284,7 +286,7 @@ const AnnualPlanning: React.FC = () => {
 
   // Weekly planning state
   const [selectedWeeklyMonth, setSelectedWeeklyMonth] = useState(new Date().getMonth() + 1);
-  const [weeklyPhases, setWeeklyPhases] = useState<{ month: number; week: number; day: number; phase: string }[]>([]);
+  const [weeklyPhases, setWeeklyPhases] = useState<{ month: number; week: number; day: number; phase: string; primary_subphase?: string | null; secondary_subphase?: string | null }[]>([]);
 
   // Get annual phase for a specific month
   const getAnnualPhaseForMonth = (month: number) => {
@@ -446,9 +448,25 @@ const AnnualPlanning: React.FC = () => {
     });
   };
 
-  // Check if weekly phase is selected
+  // Check if weekly phase is selected (including auto-populated subphases)
   const isWeeklyPhaseSelected = (month: number, week: number, day: number, phase: string) => {
-    return weeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
+    // First check if this phase is directly selected
+    const directMatch = weeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
+    if (directMatch) return true;
+    
+    // Check if this phase is a subphase (starting-strength, explosive-strength, reactive-strength)
+    // that was auto-populated via primary_subphase or secondary_subphase
+    const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
+    if (strengthSubphases.includes(phase)) {
+      return weeklyPhases.some(p => 
+        p.month === month && 
+        p.week === week && 
+        p.day === day && 
+        (p.primary_subphase === phase || p.secondary_subphase === phase)
+      );
+    }
+    
+    return false;
   };
 
   // Fetch competition dates for a user from program assignments
@@ -600,7 +618,14 @@ const AnnualPlanning: React.FC = () => {
         .eq('year', dialogYear);
       
       setDialogWeeklyPhases(
-        (weeklyData || []).map(p => ({ month: p.month, week: p.week, day: p.day, phase: p.phase }))
+        (weeklyData || []).map(p => ({ 
+          month: p.month, 
+          week: p.week, 
+          day: p.day, 
+          phase: p.phase,
+          primary_subphase: p.primary_subphase,
+          secondary_subphase: p.secondary_subphase
+        }))
       );
       
       // Fetch competition dates for the year
@@ -917,7 +942,14 @@ const AnnualPlanning: React.FC = () => {
       .eq('year', macrocycle.year);
     
     setDialogWeeklyPhases(
-      (weeklyData || []).map(p => ({ month: p.month, week: p.week, day: p.day, phase: p.phase }))
+      (weeklyData || []).map(p => ({ 
+        month: p.month, 
+        week: p.week, 
+        day: p.day, 
+        phase: p.phase,
+        primary_subphase: p.primary_subphase,
+        secondary_subphase: p.secondary_subphase
+      }))
     );
     
     // Fetch competition dates from program assignments
@@ -953,7 +985,14 @@ const AnnualPlanning: React.FC = () => {
       .eq('year', macrocycle.year);
     
     setDialogWeeklyPhases(
-      (weeklyData || []).map(p => ({ month: p.month, week: p.week, day: p.day, phase: p.phase }))
+      (weeklyData || []).map(p => ({ 
+        month: p.month, 
+        week: p.week, 
+        day: p.day, 
+        phase: p.phase,
+        primary_subphase: p.primary_subphase,
+        secondary_subphase: p.secondary_subphase
+      }))
     );
     
     // Fetch competition dates from program assignments
@@ -994,9 +1033,25 @@ const AnnualPlanning: React.FC = () => {
     return dialogMonthlyPhases.find(p => p.month === month && p.week === week);
   };
 
-  // Dialog Weekly phase check
+  // Dialog Weekly phase check (including auto-populated subphases)
   const isDialogWeeklyPhaseSelected = (month: number, week: number, day: number, phase: string) => {
-    return dialogWeeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
+    // First check if this phase is directly selected
+    const directMatch = dialogWeeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
+    if (directMatch) return true;
+    
+    // Check if this phase is a subphase (starting-strength, explosive-strength, reactive-strength)
+    // that was auto-populated via primary_subphase or secondary_subphase
+    const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
+    if (strengthSubphases.includes(phase)) {
+      return dialogWeeklyPhases.some(p => 
+        p.month === month && 
+        p.week === week && 
+        p.day === day && 
+        (p.primary_subphase === phase || p.secondary_subphase === phase)
+      );
+    }
+    
+    return false;
   };
 
   // Get calendar weeks for dialog
