@@ -230,16 +230,18 @@ const PhaseConfig: React.FC = () => {
                     <SelectValue placeholder="Επέλεξε φάση..." />
                   </SelectTrigger>
                   <SelectContent className="max-h-80 bg-background">
-                    <ScrollArea className="h-72">
-                      {orderedPhases.map(phase => {
-                        const phaseConfig = PHASES_ORDER.find(p => p.value === phase.phase_key);
-                        const color = phaseConfig?.color || 'bg-gray-400';
+                    <ScrollArea className="h-80">
+                      {PHASES_ORDER.map(phaseConfig => {
+                        const dbPhase = phases.find(p => p.phase_key === phaseConfig.value);
                         
                         return (
-                          <SelectItem key={phase.id} value={phase.id}>
+                          <SelectItem 
+                            key={phaseConfig.value} 
+                            value={dbPhase?.id || phaseConfig.value}
+                          >
                             <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${color}`} />
-                              <span>{phase.phase_name}</span>
+                              <div className={`w-2 h-2 rounded-full ${phaseConfig.color}`} />
+                              <span>{phaseConfig.label}</span>
                             </div>
                           </SelectItem>
                         );
