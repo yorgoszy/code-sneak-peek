@@ -292,6 +292,7 @@ const AnnualPlanning: React.FC = () => {
   };
 
   // Fetch competition dates for a user from program assignments
+  // (same mapping logic as AllUpcomingCompetitionsCard)
   const fetchCompetitionDates = async (userId: string, targetYear: number): Promise<Date[]> => {
     const { data, error } = await supabase
       .from('program_assignments')
@@ -300,9 +301,7 @@ const AnnualPlanning: React.FC = () => {
         training_dates,
         programs:program_id (
           program_weeks (
-            week_number,
             program_days (
-              day_number,
               is_competition_day
             )
           )
@@ -318,55 +317,39 @@ const AnnualPlanning: React.FC = () => {
 
     if (!data) return [];
 
-    const competitionDates: Date[] = [];
+    const dateSet = new Set<string>();
 
-    data.forEach((assignment: any) => {
+    for (const assignment of data as any[]) {
       const trainingDates: string[] = assignment.training_dates || [];
-      const weeks = assignment.programs?.program_weeks || [];
+      const program = assignment.programs as any;
+      const weeks = program?.program_weeks || [];
+      if (!weeks?.length) continue;
 
-      // Flatten all template days (week/day order)
-      const allDays: { isCompetition: boolean }[] = [];
-      weeks
-        .slice()
-        .sort((a: any, b: any) => a.week_number - b.week_number)
-        .forEach((week: any) => {
-          const days = week.program_days || [];
-          days
-            .slice()
-            .sort((a: any, b: any) => a.day_number - b.day_number)
-            .forEach((day: any) => {
-              allDays.push({ isCompetition: !!day.is_competition_day });
-            });
+      const daysPerWeek = weeks[0]?.program_days?.length || 0;
+      if (!daysPerWeek) continue;
+
+      weeks.forEach((week: any, weekIndex: number) => {
+        (week.program_days || []).forEach((day: any, dayIndex: number) => {
+          if (!day?.is_competition_day) return;
+
+          const totalDayIndex = weekIndex * daysPerWeek + dayIndex;
+          if (totalDayIndex >= trainingDates.length) return;
+
+          const dateStr = trainingDates[totalDayIndex];
+          if (!dateStr) return;
+
+          const date = new Date(dateStr);
+          if (Number.isNaN(date.getTime())) return;
+          if (date.getFullYear() !== targetYear) return;
+
+          dateSet.add(date.toISOString().slice(0, 10));
         });
-
-      const competitionIndexes = allDays
-        .map((d, idx) => (d.isCompetition ? idx : -1))
-        .filter((idx) => idx >= 0);
-
-      // Normal mapping: competition index -> training_dates[index]
-      competitionIndexes.forEach((idx) => {
-        const dateStr = trainingDates[idx];
-        if (!dateStr) return;
-        const date = new Date(dateStr);
-        if (!Number.isNaN(date.getTime()) && date.getFullYear() === targetYear) {
-          competitionDates.push(date);
-        }
       });
+    }
 
-      // Heuristic: if assignment has ONLY 1 scheduled date but the template has a competition day,
-      // treat that single date as the competition event (common for single-event assignments).
-      if (trainingDates.length === 1 && competitionIndexes.length > 0) {
-        const date = new Date(trainingDates[0]);
-        if (!Number.isNaN(date.getTime()) && date.getFullYear() === targetYear) {
-          const alreadyIncluded = competitionDates.some(
-            (d) => d.toISOString().slice(0, 10) === date.toISOString().slice(0, 10)
-          );
-          if (!alreadyIncluded) competitionDates.push(date);
-        }
-      }
-    });
-
-    return competitionDates;
+    return Array.from(dateSet)
+      .sort((a, b) => a.localeCompare(b))
+      .map((d) => new Date(d));
   };
 
   // Helper to check if a date is a competition day
