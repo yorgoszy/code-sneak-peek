@@ -806,40 +806,63 @@ const AnnualPlanning: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {PHASES.map((phase) => (
-                  <tr key={phase.value}>
-                    <td className="border p-0.5 font-medium bg-background">
-                      <div className="flex items-center gap-0.5">
-                        <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
-                        <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
-                        <span className="hidden lg:inline text-xs">{phase.label}</span>
-                      </div>
-                    </td>
-                    {MONTHS_FULL.map((_, monthIndex) => {
-                      const weeksCount = getWeeksInMonth(year, monthIndex + 1);
-                      return Array.from({ length: weeksCount }, (_, weekIndex) => {
+                {PHASES.map((phase) => {
+                  // Βρίσκουμε σε ποιους μήνες είναι επιλεγμένη αυτή η φάση στον Ετήσιο Προγραμματισμό
+                  const monthsWithThisPhase = selectedPhases
+                    .filter(p => p.phase === phase.value)
+                    .map(p => p.month);
+                  
+                  // Αν δεν υπάρχει σε κανέναν μήνα, δεν εμφανίζουμε τη γραμμή
+                  if (monthsWithThisPhase.length === 0) return null;
+                  
+                  return (
+                    <tr key={phase.value}>
+                      <td className="border p-0.5 font-medium bg-background">
+                        <div className="flex items-center gap-0.5">
+                          <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
+                          <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
+                          <span className="hidden lg:inline text-xs">{phase.label}</span>
+                        </div>
+                      </td>
+                      {MONTHS_FULL.map((_, monthIndex) => {
                         const month = monthIndex + 1;
-                        const week = weekIndex + 1;
-                        const isSelected = isMonthlyPhaseSelected(month, week, phase.value);
+                        const weeksCount = getWeeksInMonth(year, month);
+                        const isPhaseAvailableForMonth = monthsWithThisPhase.includes(month);
                         
-                        return (
-                          <td
-                            key={`${monthIndex}-${weekIndex}`}
-                            onClick={() => handleMonthlyPhaseClick(month, week, phase.value)}
-                            className={cn(
-                              "border p-0 text-center cursor-pointer transition-colors hover:bg-muted h-3 sm:h-4",
-                              isSelected && phase.color
-                            )}
-                          >
-                            {isSelected && (
-                              <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
-                            )}
-                          </td>
-                        );
-                      });
-                    })}
-                  </tr>
-                ))}
+                        return Array.from({ length: weeksCount }, (_, weekIndex) => {
+                          const week = weekIndex + 1;
+                          const isSelected = isMonthlyPhaseSelected(month, week, phase.value);
+                          
+                          // Αν η φάση δεν είναι επιλεγμένη στον Ετήσιο για αυτόν τον μήνα, 
+                          // εμφανίζουμε κενό μη-κλικάρισμα κελί
+                          if (!isPhaseAvailableForMonth) {
+                            return (
+                              <td
+                                key={`${monthIndex}-${weekIndex}`}
+                                className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
+                              />
+                            );
+                          }
+                          
+                          return (
+                            <td
+                              key={`${monthIndex}-${weekIndex}`}
+                              onClick={() => handleMonthlyPhaseClick(month, week, phase.value)}
+                              className={cn(
+                                "border p-0 text-center cursor-pointer transition-colors hover:bg-muted h-3 sm:h-4",
+                                isSelected && phase.color
+                              )}
+                            >
+                              {isSelected && (
+                                <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
+                              )}
+                            </td>
+                          );
+                        });
+                      })}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
