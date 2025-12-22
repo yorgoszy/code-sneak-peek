@@ -1094,7 +1094,7 @@ const AnnualPlanning: React.FC = () => {
     return dialogMonthlyPhases.find(p => p.month === month && p.week === week);
   };
 
-  // Dialog Weekly phase check (including auto-populated subphases)
+  // Dialog Weekly phase check (same logic as main page)
   const isDialogWeeklyPhaseSelected = (month: number, week: number, day: number, phase: string) => {
     // First check if this phase is directly selected
     const directMatch = dialogWeeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
@@ -1113,14 +1113,15 @@ const AnnualPlanning: React.FC = () => {
     return false;
   };
 
-  // Get subphase priority (1 = primary, 2 = secondary, 3 = accessory, null = not a subphase)
+  // Get subphase priority (1 = primary, 2 = secondary, 3 = accessory, null = not a subphase) - same logic as main page
   const getDialogSubphasePriority = (month: number, week: number, day: number, phase: string): number | null => {
     if (!ALL_SUBPHASES.includes(phase)) return null;
     
     const matchingPhase = dialogWeeklyPhases.find(p => 
       p.month === month && 
       p.week === week && 
-      p.day === day
+      p.day === day &&
+      p.phase === phase
     );
     
     if (!matchingPhase) return null;
@@ -2499,56 +2500,43 @@ const AnnualPlanning: React.FC = () => {
                                   const isSubphase = ALL_SUBPHASES.includes(phase.value);
                                   
                                   if (isSubphase) {
-                                    // Find entry that has this subphase in any of the priority fields
-                                    const existingEntry = dialogWeeklyPhases.find(p => 
-                                      p.month === dialogWeeklyMonth && p.week === week && p.day === day && 
-                                      (p.phase === phase.value || p.primary_subphase === phase.value || p.secondary_subphase === phase.value || p.accessory_subphase === phase.value)
+                                    // Cycle: none -> primary (1) -> secondary (2) -> accessory (3) -> none
+                                    const existing = dialogWeeklyPhases.find(p => 
+                                      p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value
                                     );
                                     
-                                    // Determine current priority
-                                    let currentPriority = 0;
-                                    if (existingEntry) {
-                                      if (existingEntry.primary_subphase === phase.value) currentPriority = 1;
-                                      else if (existingEntry.secondary_subphase === phase.value) currentPriority = 2;
-                                      else if (existingEntry.accessory_subphase === phase.value) currentPriority = 3;
-                                    }
-                                    
-                                    // Cycle: none (0) -> primary (1) -> secondary (2) -> accessory (3) -> none (0)
-                                    if (currentPriority === 0) {
-                                      // Add as primary
+                                    if (!existing) {
+                                      // Click 1: Add as primary
                                       setDialogWeeklyPhases([...dialogWeeklyPhases, { 
                                         month: dialogWeeklyMonth, week, day, phase: phase.value,
                                         primary_subphase: phase.value,
                                         secondary_subphase: null,
                                         accessory_subphase: null
                                       }]);
-                                    } else if (currentPriority === 1) {
-                                      // Change to secondary
+                                    } else if (existing.primary_subphase === phase.value && !existing.secondary_subphase && !existing.accessory_subphase) {
+                                      // Click 2: Change to secondary
                                       setDialogWeeklyPhases(dialogWeeklyPhases.map(p => 
-                                        (p.month === dialogWeeklyMonth && p.week === week && p.day === day && 
-                                         (p.phase === phase.value || p.primary_subphase === phase.value))
-                                          ? { ...p, phase: phase.value, primary_subphase: null, secondary_subphase: phase.value, accessory_subphase: null }
+                                        (p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)
+                                          ? { ...p, primary_subphase: null, secondary_subphase: phase.value, accessory_subphase: null }
                                           : p
                                       ));
-                                    } else if (currentPriority === 2) {
-                                      // Change to accessory
+                                    } else if (existing.secondary_subphase === phase.value && !existing.accessory_subphase) {
+                                      // Click 3: Change to accessory
                                       setDialogWeeklyPhases(dialogWeeklyPhases.map(p => 
-                                        (p.month === dialogWeeklyMonth && p.week === week && p.day === day && 
-                                         (p.phase === phase.value || p.secondary_subphase === phase.value))
-                                          ? { ...p, phase: phase.value, primary_subphase: null, secondary_subphase: null, accessory_subphase: phase.value }
+                                        (p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)
+                                          ? { ...p, primary_subphase: null, secondary_subphase: null, accessory_subphase: phase.value }
                                           : p
                                       ));
                                     } else {
-                                      // Remove (currentPriority === 3)
+                                      // Click 4: Remove
                                       setDialogWeeklyPhases(dialogWeeklyPhases.filter(p => 
-                                        !(p.month === dialogWeeklyMonth && p.week === week && p.day === day && 
-                                          (p.phase === phase.value || p.accessory_subphase === phase.value))
+                                        !(p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)
                                       ));
                                     }
                                   } else {
                                     // Normal toggle for non-subphases
-                                    const exists = dialogWeeklyPhases.some(p => p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value);
-                                    if (exists) {
+                                    const existing = dialogWeeklyPhases.find(p => p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value);
+                                    if (existing) {
                                       setDialogWeeklyPhases(dialogWeeklyPhases.filter(p => !(p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)));
                                     } else {
                                       setDialogWeeklyPhases([...dialogWeeklyPhases, { month: dialogWeeklyMonth, week, day, phase: phase.value }]);
