@@ -1577,8 +1577,18 @@ const AnnualPlanning: React.FC = () => {
                             return (
                               <td
                                 key={`${monthIndex}-${weekIndex}`}
+                                onClick={() => {
+                                  if (dialogMode !== 'edit') return;
+                                  const exists = dialogMonthlyPhases.some(p => p.month === month && p.week === week && p.phase === phase.value);
+                                  if (exists) {
+                                    setDialogMonthlyPhases(dialogMonthlyPhases.filter(p => !(p.month === month && p.week === week && p.phase === phase.value)));
+                                  } else {
+                                    setDialogMonthlyPhases([...dialogMonthlyPhases, { month, week, phase: phase.value }]);
+                                  }
+                                }}
                                 className={cn(
                                   "border p-0 text-center h-2 sm:h-2.5",
+                                  dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
                                   isSelected && phase.color
                                 )}
                               >
@@ -1715,8 +1725,18 @@ const AnnualPlanning: React.FC = () => {
                             return (
                               <td
                                 key={`${weekIndex}-${dayIndex}`}
+                                onClick={() => {
+                                  if (dialogMode !== 'edit' || !isValidDate) return;
+                                  const exists = dialogWeeklyPhases.some(p => p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value);
+                                  if (exists) {
+                                    setDialogWeeklyPhases(dialogWeeklyPhases.filter(p => !(p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)));
+                                  } else {
+                                    setDialogWeeklyPhases([...dialogWeeklyPhases, { month: dialogWeeklyMonth, week, day, phase: phase.value }]);
+                                  }
+                                }}
                                 className={cn(
                                   "border p-0 text-center h-2 sm:h-2.5",
+                                  isValidDate && dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
                                   !isValidDate && "bg-muted/30",
                                   isSelected && isValidDate && phase.color
                                 )}
