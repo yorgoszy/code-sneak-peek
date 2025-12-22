@@ -163,6 +163,35 @@ const AnnualPlanning: React.FC = () => {
   };
 
   // Get sub-phases for weekly planning based on monthly phase selection
+  // Get phases available for a specific week based on monthly planning
+  const getWeeklySubPhasesForWeek = (weekNumber: number) => {
+    // Βρίσκουμε τις φάσεις που έχουν επιλεγεί στον Μηνιαίο Προγραμματισμό για αυτή την εβδομάδα
+    const weekPhases = monthlyPhases.filter(p => p.month === selectedWeeklyMonth && p.week === weekNumber);
+    const uniquePhaseValues = [...new Set(weekPhases.map(p => p.phase))];
+    
+    // Collect all sub-phases for selected monthly phases
+    const allSubPhases: { value: string; label: string; shortLabel: string; color: string; parentPhase: string }[] = [];
+    
+    uniquePhaseValues.forEach(phaseValue => {
+      const subPhases = SUB_PHASES[phaseValue];
+      if (subPhases) {
+        // If there are sub-phases, add them
+        subPhases.forEach(sp => {
+          allSubPhases.push({ ...sp, parentPhase: phaseValue });
+        });
+      } else {
+        // Otherwise, use the main phase as-is
+        const mainPhase = PHASES.find(p => p.value === phaseValue);
+        if (mainPhase) {
+          allSubPhases.push({ ...mainPhase, parentPhase: phaseValue });
+        }
+      }
+    });
+    
+    return allSubPhases;
+  };
+
+  // Get all unique sub-phases across all weeks for row rendering
   const getWeeklySubPhases = useMemo(() => {
     const monthPhases = monthlyPhases.filter(p => p.month === selectedWeeklyMonth);
     const uniquePhaseValues = [...new Set(monthPhases.map(p => p.phase))];
@@ -968,12 +997,26 @@ const AnnualPlanning: React.FC = () => {
                           <span className="hidden lg:inline text-xs">{phase.label}</span>
                         </div>
                       </td>
-                      {getCalendarWeeksForMonth.map((weekDates, weekIndex) => (
-                        weekDates.map((dateNum, dayIndex) => {
-                          const week = weekIndex + 1;
+                      {getCalendarWeeksForMonth.map((weekDates, weekIndex) => {
+                        const week = weekIndex + 1;
+                        // Βρίσκουμε αν αυτή η φάση είναι διαθέσιμη για αυτή την εβδομάδα
+                        const weekSubPhases = getWeeklySubPhasesForWeek(week);
+                        const isPhaseAvailableForWeek = weekSubPhases.some(sp => sp.value === phase.value);
+                        
+                        return weekDates.map((dateNum, dayIndex) => {
                           const day = dayIndex + 1;
                           const isSelected = isWeeklyPhaseSelected(selectedWeeklyMonth, week, day, phase.value);
                           const isValidDate = dateNum !== null;
+                          
+                          // Αν η φάση δεν είναι διαθέσιμη για αυτή την εβδομάδα, εμφανίζουμε disabled κελί
+                          if (!isPhaseAvailableForWeek) {
+                            return (
+                              <td
+                                key={`${weekIndex}-${dayIndex}`}
+                                className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
+                              />
+                            );
+                          }
                           
                           return (
                             <td
@@ -990,8 +1033,8 @@ const AnnualPlanning: React.FC = () => {
                               )}
                             </td>
                           );
-                        })
-                      ))}
+                        });
+                      })}
                     </tr>
                   ))
                 )}
