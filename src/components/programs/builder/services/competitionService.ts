@@ -24,23 +24,28 @@ export const competitionService = {
    * Βρίσκει τις ημέρες αγώνα στο πρόγραμμα και επιστρέφει τα indexes τους
    */
   findCompetitionDays(weeks: any[]): CompetitionDay[] {
+    console.log('🔍 [CompetitionService] Searching competition days in weeks:', JSON.stringify(weeks, null, 2));
     const competitionDays: CompetitionDay[] = [];
     let dayIndex = 0;
 
     for (const week of weeks) {
       const days = week.program_days || week.days || [];
+      console.log(`🔍 [CompetitionService] Week "${week.name}" has ${days.length} days`);
       for (const day of days) {
+        console.log(`🔍 [CompetitionService] Day "${day.name}" is_competition_day:`, day.is_competition_day);
         if (day.is_competition_day) {
           competitionDays.push({
             dayIndex,
             dayName: day.name || `Ημέρα ${day.day_number}`,
             weekName: week.name || `Εβδομάδα ${week.week_number}`
           });
+          console.log(`✅ [CompetitionService] Found competition day: ${day.name}`);
         }
         dayIndex++;
       }
     }
 
+    console.log('🏆 [CompetitionService] Total competition days found:', competitionDays.length);
     return competitionDays;
   },
 
