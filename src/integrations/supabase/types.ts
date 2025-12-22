@@ -4899,6 +4899,47 @@ export type Database = {
           },
         ]
       }
+      user_monthly_phases: {
+        Row: {
+          created_at: string
+          id: string
+          month: number
+          phase: string
+          updated_at: string
+          user_id: string
+          week: number
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          month: number
+          phase: string
+          updated_at?: string
+          user_id: string
+          week: number
+          year: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          month?: number
+          phase?: string
+          updated_at?: string
+          user_id?: string
+          week?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_monthly_phases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           assigned_by: string | null
@@ -5105,6 +5146,50 @@ export type Database = {
           },
           {
             foreignKeyName: "fk_user_visits_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_weekly_phases: {
+        Row: {
+          created_at: string
+          day: number
+          id: string
+          month: number
+          phase: string
+          updated_at: string
+          user_id: string
+          week: number
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          day: number
+          id?: string
+          month: number
+          phase: string
+          updated_at?: string
+          user_id: string
+          week: number
+          year: number
+        }
+        Update: {
+          created_at?: string
+          day?: number
+          id?: string
+          month?: number
+          phase?: string
+          updated_at?: string
+          user_id?: string
+          week?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_weekly_phases_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"

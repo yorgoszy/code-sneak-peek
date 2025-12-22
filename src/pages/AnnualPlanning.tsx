@@ -425,7 +425,7 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
-    // Insert all phases for the user
+    // Insert annual phases
     const phasesToInsert = selectedPhases.map(p => ({
       user_id: selectedUser.id,
       year,
@@ -433,17 +433,50 @@ const AnnualPlanning: React.FC = () => {
       phase: p.phase
     }));
 
-    const { error } = await supabase
+    const { error: annualError } = await supabase
       .from('user_annual_phases')
       .insert(phasesToInsert);
 
-    if (error) {
+    if (annualError) {
       toast.error('Σφάλμα κατά την ανάθεση');
       return;
     }
 
+    // Insert monthly phases
+    if (monthlyPhases.length > 0) {
+      const monthlyToInsert = monthlyPhases.map(p => ({
+        user_id: selectedUser.id,
+        year,
+        month: p.month,
+        week: p.week,
+        phase: p.phase
+      }));
+
+      await supabase
+        .from('user_monthly_phases')
+        .insert(monthlyToInsert);
+    }
+
+    // Insert weekly phases
+    if (weeklyPhases.length > 0) {
+      const weeklyToInsert = weeklyPhases.map(p => ({
+        user_id: selectedUser.id,
+        year,
+        month: p.month,
+        week: p.week,
+        day: p.day,
+        phase: p.phase
+      }));
+
+      await supabase
+        .from('user_weekly_phases')
+        .insert(weeklyToInsert);
+    }
+
     toast.success(`Ο μακροκύκλος ανατέθηκε στον ${selectedUser.name}`);
     setSelectedPhases([]);
+    setMonthlyPhases([]);
+    setWeeklyPhases([]);
     setSelectedUser(null);
     fetchAssignedMacrocycles();
   };
@@ -475,6 +508,7 @@ const AnnualPlanning: React.FC = () => {
   const handleDeleteAssignment = async (macrocycle: AssignedMacrocycle) => {
     const phaseIds = macrocycle.phases.map(p => p.id);
     
+    // Delete annual phases
     const { error } = await supabase
       .from('user_annual_phases')
       .delete()
@@ -485,29 +519,85 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
+    // Delete monthly phases
+    await supabase
+      .from('user_monthly_phases')
+      .delete()
+      .eq('user_id', macrocycle.user_id)
+      .eq('year', macrocycle.year);
+
+    // Delete weekly phases
+    await supabase
+      .from('user_weekly_phases')
+      .delete()
+      .eq('user_id', macrocycle.user_id)
+      .eq('year', macrocycle.year);
+
     toast.success('Ο μακροκύκλος διαγράφηκε');
     fetchAssignedMacrocycles();
   };
 
-  const handleViewAssignment = (macrocycle: AssignedMacrocycle) => {
+  const handleViewAssignment = async (macrocycle: AssignedMacrocycle) => {
     setDialogMacrocycle(macrocycle);
     setDialogPhases(macrocycle.phases.map(p => ({ month: p.month, phase: p.phase })));
     setDialogYear(macrocycle.year);
     setDialogMode('view');
-    setDialogMonthlyPhases([]);
-    setDialogWeeklyPhases([]);
     setDialogWeeklyMonth(new Date().getMonth() + 1);
+    
+    // Fetch monthly phases from database
+    const { data: monthlyData } = await supabase
+      .from('user_monthly_phases')
+      .select('*')
+      .eq('user_id', macrocycle.user_id)
+      .eq('year', macrocycle.year);
+    
+    setDialogMonthlyPhases(
+      (monthlyData || []).map(p => ({ month: p.month, week: p.week, phase: p.phase }))
+    );
+    
+    // Fetch weekly phases from database
+    const { data: weeklyData } = await supabase
+      .from('user_weekly_phases')
+      .select('*')
+      .eq('user_id', macrocycle.user_id)
+      .eq('year', macrocycle.year);
+    
+    setDialogWeeklyPhases(
+      (weeklyData || []).map(p => ({ month: p.month, week: p.week, day: p.day, phase: p.phase }))
+    );
+    
     setDialogOpen(true);
   };
 
-  const handleEditAssignment = (macrocycle: AssignedMacrocycle) => {
+  const handleEditAssignment = async (macrocycle: AssignedMacrocycle) => {
     setDialogMacrocycle(macrocycle);
     setDialogPhases(macrocycle.phases.map(p => ({ month: p.month, phase: p.phase })));
     setDialogYear(macrocycle.year);
     setDialogMode('edit');
-    setDialogMonthlyPhases([]);
-    setDialogWeeklyPhases([]);
     setDialogWeeklyMonth(new Date().getMonth() + 1);
+    
+    // Fetch monthly phases from database
+    const { data: monthlyData } = await supabase
+      .from('user_monthly_phases')
+      .select('*')
+      .eq('user_id', macrocycle.user_id)
+      .eq('year', macrocycle.year);
+    
+    setDialogMonthlyPhases(
+      (monthlyData || []).map(p => ({ month: p.month, week: p.week, phase: p.phase }))
+    );
+    
+    // Fetch weekly phases from database
+    const { data: weeklyData } = await supabase
+      .from('user_weekly_phases')
+      .select('*')
+      .eq('user_id', macrocycle.user_id)
+      .eq('year', macrocycle.year);
+    
+    setDialogWeeklyPhases(
+      (weeklyData || []).map(p => ({ month: p.month, week: p.week, day: p.day, phase: p.phase }))
+    );
+    
     setDialogOpen(true);
   };
 
@@ -530,14 +620,14 @@ const AnnualPlanning: React.FC = () => {
   const handleSaveDialogChanges = async () => {
     if (!dialogMacrocycle) return;
 
-    // Delete old phases
+    // Delete old annual phases
     const phaseIds = dialogMacrocycle.phases.map(p => p.id);
     await supabase
       .from('user_annual_phases')
       .delete()
       .in('id', phaseIds);
 
-    // Insert new phases
+    // Insert new annual phases
     const phasesToInsert = dialogPhases.map(p => ({
       user_id: dialogMacrocycle.user_id,
       year: dialogYear,
@@ -545,13 +635,58 @@ const AnnualPlanning: React.FC = () => {
       phase: p.phase
     }));
 
-    const { error } = await supabase
+    const { error: annualError } = await supabase
       .from('user_annual_phases')
       .insert(phasesToInsert);
 
-    if (error) {
+    if (annualError) {
       toast.error('Σφάλμα κατά την αποθήκευση');
       return;
+    }
+
+    // Delete old monthly phases
+    await supabase
+      .from('user_monthly_phases')
+      .delete()
+      .eq('user_id', dialogMacrocycle.user_id)
+      .eq('year', dialogYear);
+
+    // Insert new monthly phases
+    if (dialogMonthlyPhases.length > 0) {
+      const monthlyToInsert = dialogMonthlyPhases.map(p => ({
+        user_id: dialogMacrocycle.user_id,
+        year: dialogYear,
+        month: p.month,
+        week: p.week,
+        phase: p.phase
+      }));
+
+      await supabase
+        .from('user_monthly_phases')
+        .insert(monthlyToInsert);
+    }
+
+    // Delete old weekly phases
+    await supabase
+      .from('user_weekly_phases')
+      .delete()
+      .eq('user_id', dialogMacrocycle.user_id)
+      .eq('year', dialogYear);
+
+    // Insert new weekly phases
+    if (dialogWeeklyPhases.length > 0) {
+      const weeklyToInsert = dialogWeeklyPhases.map(p => ({
+        user_id: dialogMacrocycle.user_id,
+        year: dialogYear,
+        month: p.month,
+        week: p.week,
+        day: p.day,
+        phase: p.phase
+      }));
+
+      await supabase
+        .from('user_weekly_phases')
+        .insert(weeklyToInsert);
     }
 
     toast.success('Οι αλλαγές αποθηκεύτηκαν');
