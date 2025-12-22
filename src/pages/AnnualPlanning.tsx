@@ -1409,7 +1409,7 @@ const AnnualPlanning: React.FC = () => {
                 )}
                 <span className="text-muted-foreground text-[10px]">- {dialogMode === 'view' ? 'Προβολή' : 'Επεξεργασία'}</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="icon"
@@ -1429,6 +1429,24 @@ const AnnualPlanning: React.FC = () => {
                 >
                   <ChevronRight className="h-2.5 w-2.5" />
                 </Button>
+                {dialogMode === 'edit' && (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="rounded-none h-5 text-[10px] px-2"
+                      onClick={() => setDialogOpen(false)}
+                    >
+                      Ακύρωση
+                    </Button>
+                    <Button
+                      className="rounded-none h-5 text-[10px] px-2"
+                      style={{ backgroundColor: '#00ffba', color: 'black' }}
+                      onClick={handleSaveDialogChanges}
+                    >
+                      Αποθήκευση
+                    </Button>
+                  </>
+                )}
               </div>
             </DialogTitle>
           </DialogHeader>
@@ -1756,25 +1774,6 @@ const AnnualPlanning: React.FC = () => {
             </div>
           </div>
 
-          {/* Dialog Actions */}
-          {dialogMode === 'edit' && (
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                className="rounded-none h-7 text-xs"
-                onClick={() => setDialogOpen(false)}
-              >
-                Ακύρωση
-              </Button>
-              <Button
-                className="rounded-none h-7 text-xs"
-                style={{ backgroundColor: '#00ffba', color: 'black' }}
-                onClick={handleSaveDialogChanges}
-              >
-                Αποθήκευση
-              </Button>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
     </div>
