@@ -170,7 +170,8 @@ export const competitionService = {
   },
 
   /**
-   * Ενημερώνει ή δημιουργεί ετήσια φάση competition
+   * Ενημερώνει ή δημιουργεί ετήσια φάση competition στον πίνακα user_annual_phases
+   * Αυτός ο πίνακας χρησιμοποιείται στο /dashboard/annual-planning -> "Ετήσιος Προγραμματισμός"
    */
   async updateAnnualPhase(
     userId: string,
@@ -197,7 +198,7 @@ export const competitionService = {
       return;
     }
 
-    // Δημιουργία νέας φάσης competition στο ετήσιο πλάνο
+    // Δημιουργία νέας φάσης competition στο ετήσιο πλάνο (κλικ στο Competition για τον συγκεκριμένο μήνα)
     const { error: insertError } = await supabase
       .from('user_annual_phases')
       .insert([{
@@ -205,7 +206,7 @@ export const competitionService = {
         year,
         month,
         phase: 'competition',
-        notes: `Αυτόματη δημιουργία - Ημέρα αγώνα`,
+        notes: `Αυτόματη δημιουργία από ημέρα αγώνα`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }]);
@@ -213,7 +214,7 @@ export const competitionService = {
     if (insertError) {
       console.error('❌ [CompetitionService] Error creating annual phase:', insertError);
     } else {
-      console.log(`✅ [CompetitionService] Annual phase updated for ${year}/${month}`);
+      console.log(`✅ [CompetitionService] Competition phase added to annual planning for ${year}/${month}`);
     }
   },
 
