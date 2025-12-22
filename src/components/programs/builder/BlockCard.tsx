@@ -75,6 +75,13 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   const [editingName, setEditingName] = useState(block.name);
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
 
+  // Sync editingName when block.name changes externally
+  React.useEffect(() => {
+    if (!isEditing) {
+      setEditingName(block.name);
+    }
+  }, [block.name, isEditing]);
+
   const handleNameDoubleClick = () => {
     setIsEditing(true);
     setEditingName(block.name);
