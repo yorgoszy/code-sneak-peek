@@ -988,7 +988,7 @@ const AnnualPlanning: React.FC = () => {
                               key={monthIndex}
                               onClick={() => handleCellClick(month, phase.value)}
                               className={cn(
-                                "border p-0 text-center cursor-pointer transition-colors hover:bg-muted h-4 sm:h-5",
+                                "border p-0 text-center cursor-pointer transition-colors h-4 sm:h-5",
                                 isSelected && phase.color
                               )}
                             >
@@ -1132,7 +1132,7 @@ const AnnualPlanning: React.FC = () => {
                               key={`${monthIndex}-${weekIndex}`}
                               onClick={() => handleMonthlyPhaseClick(month, week, phase.value)}
                               className={cn(
-                                "border p-0 text-center cursor-pointer transition-colors hover:bg-muted h-3 sm:h-4",
+                                "border p-0 text-center cursor-pointer transition-colors h-3 sm:h-4",
                                 isSelected && phase.color
                               )}
                             >
@@ -1289,7 +1289,7 @@ const AnnualPlanning: React.FC = () => {
                               onClick={() => isValidDate && handleWeeklyPhaseClick(selectedWeeklyMonth, week, day, phase.value)}
                               className={cn(
                                 "border p-0 text-center transition-colors h-3 sm:h-4",
-                                isValidDate ? "cursor-pointer hover:bg-muted" : "bg-muted/30 cursor-default",
+                                isValidDate ? "cursor-pointer" : "bg-muted/30 cursor-default",
                                 isSelected && isValidDate && phase.color
                               )}
                             >
