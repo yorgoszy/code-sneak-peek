@@ -5160,6 +5160,8 @@ export type Database = {
           id: string
           month: number
           phase: string
+          primary_subphase: string | null
+          secondary_subphase: string | null
           updated_at: string
           user_id: string
           week: number
@@ -5171,6 +5173,8 @@ export type Database = {
           id?: string
           month: number
           phase: string
+          primary_subphase?: string | null
+          secondary_subphase?: string | null
           updated_at?: string
           user_id: string
           week: number
@@ -5182,6 +5186,8 @@ export type Database = {
           id?: string
           month?: number
           phase?: string
+          primary_subphase?: string | null
+          secondary_subphase?: string | null
           updated_at?: string
           user_id?: string
           week?: number
