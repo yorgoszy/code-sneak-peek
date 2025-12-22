@@ -436,10 +436,19 @@ const AnnualPlanning: React.FC = () => {
     return monthlyPhases.some(p => p.month === month && p.week === week && p.phase === phase);
   };
 
+  // All subphases that support primary/secondary/accessory cycle
+  const ALL_SUBPHASES = [
+    // Strength subphases
+    'starting-strength', 'explosive-strength', 'reactive-strength',
+    // Power subphases
+    'str-spd', 'pwr', 'spd-str', 'spd',
+    // Endurance subphases
+    'str-end', 'pwr-end', 'spd-end', 'aero-end'
+  ];
+
   // Handle weekly phase cell click - allows multiple phases per day
   const handleWeeklyPhaseClick = (month: number, week: number, day: number, phase: string) => {
-    const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
-    const isSubphase = strengthSubphases.includes(phase);
+    const isSubphase = ALL_SUBPHASES.includes(phase);
     
     setWeeklyPhases(prev => {
       if (isSubphase) {
@@ -480,8 +489,7 @@ const AnnualPlanning: React.FC = () => {
 
   // Get subphase priority (1 = primary, 2 = secondary, 3 = accessory, null = not a subphase or not selected)
   const getSubphasePriority = (month: number, week: number, day: number, phase: string): number | null => {
-    const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
-    if (!strengthSubphases.includes(phase)) return null;
+    if (!ALL_SUBPHASES.includes(phase)) return null;
     
     const matchingPhase = weeklyPhases.find(p => 
       p.month === month && 
@@ -505,10 +513,8 @@ const AnnualPlanning: React.FC = () => {
     const directMatch = weeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
     if (directMatch) return true;
     
-    // Check if this phase is a subphase (starting-strength, explosive-strength, reactive-strength)
-    // that was auto-populated via primary_subphase, secondary_subphase or accessory_subphase
-    const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
-    if (strengthSubphases.includes(phase)) {
+    // Check if this phase is a subphase that was auto-populated via primary_subphase, secondary_subphase or accessory_subphase
+    if (ALL_SUBPHASES.includes(phase)) {
       return weeklyPhases.some(p => 
         p.month === month && 
         p.week === week && 
@@ -1094,10 +1100,8 @@ const AnnualPlanning: React.FC = () => {
     const directMatch = dialogWeeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
     if (directMatch) return true;
     
-    // Check if this phase is a subphase (starting-strength, explosive-strength, reactive-strength)
-    // that was auto-populated via primary_subphase, secondary_subphase or accessory_subphase
-    const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
-    if (strengthSubphases.includes(phase)) {
+    // Check if this phase is a subphase that was auto-populated via primary_subphase, secondary_subphase or accessory_subphase
+    if (ALL_SUBPHASES.includes(phase)) {
       return dialogWeeklyPhases.some(p => 
         p.month === month && 
         p.week === week && 
@@ -1111,8 +1115,7 @@ const AnnualPlanning: React.FC = () => {
 
   // Get subphase priority (1 = primary, 2 = secondary, 3 = accessory, null = not a subphase)
   const getDialogSubphasePriority = (month: number, week: number, day: number, phase: string): number | null => {
-    const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
-    if (!strengthSubphases.includes(phase)) return null;
+    if (!ALL_SUBPHASES.includes(phase)) return null;
     
     const matchingPhase = dialogWeeklyPhases.find(p => 
       p.month === month && 
@@ -2493,8 +2496,7 @@ const AnnualPlanning: React.FC = () => {
                               onClick={() => {
                                   if (dialogMode !== 'edit' || !isValidDate) return;
                                   
-                                  const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
-                                  const isSubphase = strengthSubphases.includes(phase.value);
+                                  const isSubphase = ALL_SUBPHASES.includes(phase.value);
                                   
                                   if (isSubphase) {
                                     // Cycle: none -> primary (1) -> secondary (2) -> accessory (3) -> none
