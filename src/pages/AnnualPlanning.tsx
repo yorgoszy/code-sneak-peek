@@ -856,32 +856,38 @@ const AnnualPlanning: React.FC = () => {
       if (comp && !alreadyIncluded) allSubPhases.push({ ...comp, parentPhase: 'competition' });
     }
 
-    // Sort phases according to specific sub-phase order (use same values as SUB_PHASES)
+    // Sort phases according to specific sub-phase order (matching values used in PHASES/SUB_PHASES)
     const subPhaseOrder = [
       'corrective',
-      'stabilization-training',
+      'stabilization',
       'connecting-linking',
       'movement-skills',
       'non-functional-hypertrophy',
       'functional-hypertrophy',
+      // Strength sub-phases
       'starting-strength',
       'explosive-strength',
       'reactive-strength',
+      // Power sub-phases
       'str-spd',
       'pwr',
       'spd-str',
       'spd',
+      // Endurance sub-phases
       'str-end',
       'pwr-end',
       'spd-end',
       'aero-end',
-      'competition'
+      // Competition
+      'competition',
     ];
-    allSubPhases.sort((a, b) => {
-      const indexA = subPhaseOrder.indexOf(a.value);
-      const indexB = subPhaseOrder.indexOf(b.value);
-      return indexA - indexB;
-    });
+
+    const orderIndex = (v: string) => {
+      const idx = subPhaseOrder.indexOf(v);
+      return idx === -1 ? Number.MAX_SAFE_INTEGER : idx;
+    };
+
+    allSubPhases.sort((a, b) => orderIndex(a.value) - orderIndex(b.value));
 
     return allSubPhases;
   }, [dialogMonthlyPhases, dialogWeeklyMonth, dialogCompetitionDates, dialogYear]);
@@ -2142,7 +2148,8 @@ const AnnualPlanning: React.FC = () => {
                                   "border p-0 text-center h-2 sm:h-2.5",
                                   isValidDate && dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
                                   !isValidDate && "bg-muted/30",
-                                  showSelected && isValidDate && phase.color,
+                                  // Tint available cells so it's obvious you can click them
+                                  isPhaseAvailableForWeek && isValidDate && cn(phase.color, showSelected ? "bg-opacity-100" : "bg-opacity-15"),
                                   hasCompetition && !isSelected && "bg-opacity-50"
                                 )}
                               >
