@@ -448,8 +448,51 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     try {
       console.log('📅 Creating annual plan:', actionData);
       
-      const year = actionData.year || new Date().getFullYear();
+      // Determine the correct year - if competition month has passed, use next year
+      let year = actionData.year || new Date().getFullYear();
       const phases = actionData.phases || [];
+      
+      // Find competition month from phases
+      const competitionPhase = phases.find((p: any) => {
+        const phaseName = (p.phase || p.phase_name || p.name || '').toLowerCase();
+        return phaseName.includes('αγων') || phaseName.includes('competition') || phaseName.includes('tapering');
+      });
+      
+      if (competitionPhase && !actionData.year) {
+        // Extract competition month
+        const monthNames: Record<string, number> = {
+          'ιανουαριος': 1, 'ιανουάριος': 1, 'january': 1, 'jan': 1,
+          'φεβρουαριος': 2, 'φεβρουάριος': 2, 'february': 2, 'feb': 2,
+          'μαρτιος': 3, 'μάρτιος': 3, 'march': 3, 'mar': 3,
+          'απριλιος': 4, 'απρίλιος': 4, 'april': 4, 'apr': 4,
+          'μαιος': 5, 'μάιος': 5, 'may': 5,
+          'ιουνιος': 6, 'ιούνιος': 6, 'june': 6, 'jun': 6,
+          'ιουλιος': 7, 'ιούλιος': 7, 'july': 7, 'jul': 7,
+          'αυγουστος': 8, 'αύγουστος': 8, 'august': 8, 'aug': 8,
+          'σεπτεμβριος': 9, 'σεπτέμβριος': 9, 'september': 9, 'sep': 9,
+          'οκτωβριος': 10, 'οκτώβριος': 10, 'october': 10, 'oct': 10,
+          'νοεμβριος': 11, 'νοέμβριος': 11, 'november': 11, 'nov': 11,
+          'δεκεμβριος': 12, 'δεκέμβριος': 12, 'december': 12, 'dec': 12,
+        };
+        
+        const compMonthStr = (competitionPhase.month || '').toLowerCase().replace(/[άέήίόύώ]/g, (c: string) => {
+          const map: Record<string, string> = { 'ά': 'α', 'έ': 'ε', 'ή': 'η', 'ί': 'ι', 'ό': 'ο', 'ύ': 'υ', 'ώ': 'ω' };
+          return map[c] || c;
+        });
+        
+        const competitionMonth = monthNames[compMonthStr] || parseInt(compMonthStr) || null;
+        
+        if (competitionMonth) {
+          const currentMonth = new Date().getMonth() + 1; // 1-12
+          const currentYear = new Date().getFullYear();
+          
+          // If competition month has already passed this year, use next year
+          if (competitionMonth <= currentMonth) {
+            year = currentYear + 1;
+            console.log(`📅 Competition month (${competitionMonth}) has passed, using next year: ${year}`);
+          }
+        }
+      }
       
       // Resolve user IDs from names
       let userIds: string[] = [];
