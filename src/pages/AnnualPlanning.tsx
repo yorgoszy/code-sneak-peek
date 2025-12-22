@@ -44,6 +44,8 @@ interface AssignedMacrocycle {
   year: number;
   phases: UserPhase[];
   assigned_at: string;
+  allPhasesByYear?: Record<number, UserPhase[]>;
+  availableYears?: number[];
 }
 
 interface DialogMonthlyPhase {
@@ -121,6 +123,129 @@ const normalizeString = (str: string): string => {
     .replace(/[ό]/g, 'ο')
     .replace(/[ύ]/g, 'υ')
     .replace(/[ώ]/g, 'ω');
+};
+
+// MacrocycleCard component με τοπικό state για το έτος
+interface MacrocycleCardProps {
+  macrocycle: AssignedMacrocycle;
+  getInitials: (name: string) => string;
+  getPhaseColor: (phaseValue: string) => string;
+  onView: (macrocycle: AssignedMacrocycle) => void;
+  onEdit: (macrocycle: AssignedMacrocycle) => void;
+  onDelete: (macrocycle: AssignedMacrocycle) => void;
+  MONTHS_FULL: string[];
+  PHASES: { value: string; label: string; shortLabel: string; color: string }[];
+}
+
+const MacrocycleCard: React.FC<MacrocycleCardProps> = ({
+  macrocycle,
+  getInitials,
+  getPhaseColor,
+  onView,
+  onEdit,
+  onDelete,
+  MONTHS_FULL,
+  PHASES
+}) => {
+  const [currentYear, setCurrentYear] = useState(macrocycle.year);
+  
+  // Λήψη φάσεων για το τρέχον έτος
+  const currentPhases = useMemo(() => {
+    if (macrocycle.allPhasesByYear && macrocycle.allPhasesByYear[currentYear]) {
+      return macrocycle.allPhasesByYear[currentYear];
+    }
+    // Αν δεν υπάρχει για το τρέχον έτος, επιστρέφουμε κενό array (άδειο πλάνο)
+    return [];
+  }, [macrocycle.allPhasesByYear, currentYear]);
+
+  const availableYears = macrocycle.availableYears || [macrocycle.year];
+  
+  // Δημιουργία macrocycle object με το τρέχον έτος για τα callbacks
+  const currentMacrocycle: AssignedMacrocycle = useMemo(() => ({
+    ...macrocycle,
+    year: currentYear,
+    phases: currentPhases
+  }), [macrocycle, currentYear, currentPhases]);
+
+  return (
+    <Card className="rounded-none border-l-0">
+      <CardContent className="p-2 sm:p-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={macrocycle.user_avatar || undefined} />
+              <AvatarFallback className="text-[10px]">{getInitials(macrocycle.user_name)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-xs font-medium">{macrocycle.user_name}</p>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCurrentYear(y => y - 1)}
+                  className="rounded-none h-4 w-4 p-0"
+                >
+                  <ChevronLeft className="h-2.5 w-2.5" />
+                </Button>
+                <span className="text-[10px] text-muted-foreground w-8 text-center">{currentYear}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCurrentYear(y => y + 1)}
+                  className="rounded-none h-4 w-4 p-0"
+                >
+                  <ChevronRight className="h-2.5 w-2.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-none h-7 w-7"
+              onClick={() => onView(currentMacrocycle)}
+            >
+              <Eye className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-none h-7 w-7"
+              onClick={() => onEdit(currentMacrocycle)}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-none h-7 w-7 text-destructive hover:text-destructive"
+              onClick={() => onDelete(currentMacrocycle)}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-0.5 mt-2">
+          {currentPhases.length === 0 ? (
+            <span className="text-[9px] text-muted-foreground">Δεν υπάρχει πλάνο για το {currentYear}</span>
+          ) : (
+            currentPhases.map((phase, idx) => (
+              <span 
+                key={idx} 
+                className={cn(
+                  "text-[9px] px-1.5 py-0.5 text-white",
+                  getPhaseColor(phase.phase)
+                )}
+              >
+                {MONTHS_FULL[phase.month - 1]}-{PHASES.find(p => p.value === phase.phase)?.shortLabel}
+              </span>
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 
 const AnnualPlanning: React.FC = () => {
@@ -507,8 +632,10 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
-    const grouped = (data || []).reduce((acc, item) => {
-      const key = `${item.user_id}-${item.year}`;
+    // Ομαδοποίηση μόνο ανά χρήστη (όχι ανά user_id-year)
+    // Κρατάμε όλα τα έτη ανά χρήστη
+    const groupedByUser = (data || []).reduce((acc, item) => {
+      const key = item.user_id;
       const user = (item.app_users as any) || null;
       const userAvatar = user?.avatar_url || user?.photo_url || null;
 
@@ -518,16 +645,31 @@ const AnnualPlanning: React.FC = () => {
           user_id: item.user_id,
           user_name: user?.name || 'Άγνωστος',
           user_avatar: userAvatar,
-          year: item.year,
+          year: item.year, // Αρχικό έτος (το πιο πρόσφατο)
           phases: [],
-          assigned_at: item.created_at
+          assigned_at: item.created_at,
+          allPhasesByYear: {} as Record<number, UserPhase[]>,
+          availableYears: [] as number[]
         };
       }
-      acc[key].phases.push(item);
+      // Προσθήκη φάσεων ανά έτος
+      if (!acc[key].allPhasesByYear[item.year]) {
+        acc[key].allPhasesByYear[item.year] = [];
+      }
+      acc[key].allPhasesByYear[item.year].push(item);
       return acc;
-    }, {} as Record<string, AssignedMacrocycle>);
+    }, {} as Record<string, AssignedMacrocycle & { allPhasesByYear: Record<number, UserPhase[]>; availableYears: number[] }>);
 
-    setAssignedMacrocycles(Object.values(grouped));
+    // Ορισμός διαθέσιμων ετών και phases για το πρώτο (πιο πρόσφατο) έτος
+    Object.values(groupedByUser).forEach(user => {
+      user.availableYears = Object.keys(user.allPhasesByYear).map(Number).sort((a, b) => b - a);
+      if (user.availableYears.length > 0) {
+        user.year = user.availableYears[0]; // Το πιο πρόσφατο έτος
+        user.phases = user.allPhasesByYear[user.year] || [];
+      }
+    });
+
+    setAssignedMacrocycles(Object.values(groupedByUser) as any);
   };
 
   const fetchSavedMacrocycles = async () => {
@@ -1708,61 +1850,17 @@ const AnnualPlanning: React.FC = () => {
           ) : (
             <div className="space-y-2">
               {assignedMacrocycles.map((macrocycle) => (
-                <Card key={macrocycle.id} className="rounded-none border-l-0">
-                  <CardContent className="p-2 sm:p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={macrocycle.user_avatar || undefined} />
-                          <AvatarFallback className="text-[10px]">{getInitials(macrocycle.user_name)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="text-xs font-medium">{macrocycle.user_name}</p>
-                          <p className="text-[10px] text-muted-foreground">Έτος: {macrocycle.year}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="rounded-none h-7 w-7"
-                          onClick={() => handleViewAssignment(macrocycle)}
-                        >
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="rounded-none h-7 w-7"
-                          onClick={() => handleEditAssignment(macrocycle)}
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="rounded-none h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteAssignment(macrocycle)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-0.5 mt-2">
-                      {macrocycle.phases.map((phase, idx) => (
-                        <span 
-                          key={idx} 
-                          className={cn(
-                            "text-[9px] px-1.5 py-0.5 text-white",
-                            getPhaseColor(phase.phase)
-                          )}
-                        >
-                          {MONTHS_FULL[phase.month - 1]}-{PHASES.find(p => p.value === phase.phase)?.shortLabel}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                <MacrocycleCard 
+                  key={macrocycle.id}
+                  macrocycle={macrocycle}
+                  getInitials={getInitials}
+                  getPhaseColor={getPhaseColor}
+                  onView={handleViewAssignment}
+                  onEdit={handleEditAssignment}
+                  onDelete={handleDeleteAssignment}
+                  MONTHS_FULL={MONTHS_FULL}
+                  PHASES={PHASES}
+                />
               ))}
             </div>
           )}
