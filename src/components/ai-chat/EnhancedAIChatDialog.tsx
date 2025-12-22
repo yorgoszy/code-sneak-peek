@@ -643,7 +643,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             const n = s
               .toLowerCase()
               .normalize('NFD')
-              .replace(/[00-6f]/g, '')
+              .replace(/[\u0300-\u036f]/g, '')
               .trim();
 
             const dict: Record<string, number> = {
