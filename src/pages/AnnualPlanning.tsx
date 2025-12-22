@@ -1133,7 +1133,8 @@ const AnnualPlanning: React.FC = () => {
                               onClick={() => handleMonthlyPhaseClick(month, week, phase.value)}
                               className={cn(
                                 "border p-0 text-center cursor-pointer transition-colors h-3 sm:h-4",
-                                isSelected && phase.color
+                                phase.color,
+                                isSelected ? "" : "bg-opacity-10"
                               )}
                             >
                               {isSelected && (
