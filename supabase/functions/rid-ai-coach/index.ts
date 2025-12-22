@@ -4046,6 +4046,59 @@ ${foodsDatabaseContext}
 ⚠️ Χρειάζεσαι ενεργή συνδρομή για δημιουργία προγραμμάτων διατροφής.
 `}
 
+📅 ΔΥΝΑΤΟΤΗΤΑ ΔΙΑΧΕΙΡΙΣΗΣ ΕΤΗΣΙΟΥ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΥ (ANNUAL PLAN):
+${isAdmin ? `
+🔴 ADMIN MODE - ΠΛΗΡΗΣ ΕΛΕΓΧΟΣ ΜΑΚΡΟΚΥΚΛΩΝ:
+Μπορείς να δημιουργείς, να επεξεργάζεσαι και να αναθέτεις ετήσιους μακροκύκλους σε αθλητές!
+
+📋 ΔΙΑΘΕΣΙΜΕΣ ΦΑΣΕΙΣ (ΕΠΙΛΕΞΕ ΑΠΟ ΑΥΤΕΣ):
+- corrective: Διορθωτικές
+- stabilization: Σταθεροποίηση
+- connecting-linking: Σύνδεση
+- movement-skills: Κινητικές Δεξιότητες
+- non-functional-hypertrophy: Μη Λειτουργική Υπερτροφία
+- functional-hypertrophy: Λειτουργική Υπερτροφία
+- maximal-strength: Μέγιστη Δύναμη
+- power: Ισχύς
+- endurance: Αντοχή
+- competition: Αγωνιστική
+
+⚠️⚠️⚠️ ΚΡΙΣΙΜΟ ΓΙΑ ANNUAL PLAN - ΑΚΟΛΟΥΘΑ ΑΥΤΟΥΣ ΤΟΥΣ ΚΑΝΟΝΕΣ:
+
+1. ΠΡΩΤΑ ΤΟ JSON - Βάλε το \`\`\`ai-action block στην ΑΡΧΗ της απάντησης!
+2. ΜΟΝΟ JSON μέσα στο block - ΚΑΝΕΝΑ κείμενο!
+3. ΜΙΑ ΓΡΑΜΜΗ JSON - χωρίς newlines μέσα στο JSON
+
+ΠΑΡΑΔΕΙΓΜΑ ΔΗΜΙΟΥΡΓΙΑΣ/ΑΝΑΘΕΣΗΣ ANNUAL PLAN:
+\`\`\`ai-action
+{"action":"create_annual_plan","user_id":"Γιάννης Παπαδόπουλος","year":2025,"phases":[{"month":1,"phase":"corrective"},{"month":2,"phase":"stabilization"},{"month":3,"phase":"functional-hypertrophy"},{"month":4,"phase":"functional-hypertrophy"},{"month":5,"phase":"maximal-strength"},{"month":6,"phase":"maximal-strength"},{"month":7,"phase":"power"},{"month":8,"phase":"power"},{"month":9,"phase":"endurance"},{"month":10,"phase":"competition"},{"month":11,"phase":"competition"},{"month":12,"phase":"corrective"}]}
+\`\`\`
+
+ΠΑΡΑΔΕΙΓΜΑ ΑΝΑΘΕΣΗΣ ΣΕ ΠΟΛΛΟΥΣ ΧΡΗΣΤΕΣ:
+\`\`\`ai-action
+{"action":"create_annual_plan","user_ids":["Γιάννης","Μαρία","Κώστας"],"year":2025,"phases":[{"month":1,"phase":"corrective"},{"month":2,"phase":"stabilization"},{"month":3,"phase":"functional-hypertrophy"}]}
+\`\`\`
+
+ΠΑΡΑΔΕΙΓΜΑ ΔΙΑΓΡΑΦΗΣ ANNUAL PLAN:
+\`\`\`ai-action
+{"action":"delete_annual_plan","user_id":"Γιάννης Παπαδόπουλος","year":2025}
+\`\`\`
+
+📖 ΔΙΑΒΑΣΜΑ ANNUAL PLAN:
+Για να δεις τον μακροκύκλο ενός χρήστη, χρησιμοποίησε τα δεδομένα από το section "📅 ΕΤΗΣΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ" που έχεις στο context.
+Αν ο χρήστης ρωτήσει "τι μακροκύκλο έχει ο Χ;", κοίτα στα δεδομένα που σου δίνονται παραπάνω.
+
+ΚΑΝΟΝΕΣ:
+- user_id: Βάλε ΟΝΟΜΑ ή email του χρήστη που θα ΛΑΒΕΙ τον μακροκύκλο
+- user_ids: Array με ΟΝΟΜΑΤΑ ή emails για πολλαπλή ανάθεση
+- year: Το έτος (π.χ. 2025)
+- phases: Array με objects που έχουν month (1-12) και phase (από τη λίστα παραπάνω)
+- Αν δεν δοθεί year, χρησιμοποίησε το τρέχον έτος
+- Αν ο χρήστης πει "για όλο τον χρόνο", δημιούργησε phases για όλους τους 12 μήνες
+` : `
+⚠️ Μόνο οι admin μπορούν να διαχειρίζονται τον ετήσιο προγραμματισμό.
+`}
+
 Θυμάσαι όλες τις προηγούμενες συνομιλίες και χρησιμοποιείς αυτές τις πληροφορίες για να δίνεις καλύτερες συμβουλές.`
     };
 
