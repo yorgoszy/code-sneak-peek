@@ -1691,7 +1691,7 @@ const AnnualPlanning: React.FC = () => {
                         </Avatar>
                         <div>
                           <p className="text-xs font-medium">{macrocycle.user_name}</p>
-                          <p className="text-[10px] text-muted-foreground">Έτος: {macrocycle.year}{macrocycle.years.length > 1 ? ` (+${macrocycle.years.length - 1})` : ''}</p>
+                          <p className="text-[10px] text-muted-foreground">Έτος: {macrocycle.year}{(macrocycle.years?.length ?? 0) > 1 ? ` (+${macrocycle.years.length - 1})` : ''}</p>
                         </div>
                       </div>
                       <div className="flex gap-1">
