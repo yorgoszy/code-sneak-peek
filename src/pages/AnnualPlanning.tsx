@@ -1394,53 +1394,53 @@ const AnnualPlanning: React.FC = () => {
 
       {/* View/Edit Dialog - Responsive */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-5xl h-auto max-h-[95vh] p-2 sm:p-4 rounded-none overflow-hidden">
-          <DialogHeader className="pb-1 sm:pb-2">
-            <DialogTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 text-sm">
+        <DialogContent className="w-[95vw] max-w-5xl h-auto max-h-[95vh] p-2 sm:p-3 rounded-none overflow-y-auto">
+          <DialogHeader className="pb-0.5 sm:pb-1">
+            <DialogTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-sm">
               <div className="flex items-center gap-2">
                 {dialogMacrocycle && (
                   <>
-                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
+                    <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
                       <AvatarImage src={dialogMacrocycle.user_avatar || undefined} />
-                      <AvatarFallback className="text-[8px] sm:text-[10px]">{getInitials(dialogMacrocycle.user_name)}</AvatarFallback>
+                      <AvatarFallback className="text-[7px] sm:text-[9px]">{getInitials(dialogMacrocycle.user_name)}</AvatarFallback>
                     </Avatar>
                     <span className="text-xs sm:text-sm">{dialogMacrocycle.user_name}</span>
                   </>
                 )}
-                <span className="text-muted-foreground text-xs">- {dialogMode === 'view' ? 'Προβολή' : 'Επεξεργασία'}</span>
+                <span className="text-muted-foreground text-[10px]">- {dialogMode === 'view' ? 'Προβολή' : 'Επεξεργασία'}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => setDialogYear(y => y - 1)}
-                  className="rounded-none h-6 w-6"
+                  className="rounded-none h-5 w-5"
                   disabled={dialogMode === 'view'}
                 >
-                  <ChevronLeft className="h-3 w-3" />
+                  <ChevronLeft className="h-2.5 w-2.5" />
                 </Button>
-                <span className="text-xs sm:text-sm font-semibold w-10 text-center">{dialogYear}</span>
+                <span className="text-xs font-semibold w-9 text-center">{dialogYear}</span>
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => setDialogYear(y => y + 1)}
-                  className="rounded-none h-6 w-6"
+                  className="rounded-none h-5 w-5"
                   disabled={dialogMode === 'view'}
                 >
-                  <ChevronRight className="h-3 w-3" />
+                  <ChevronRight className="h-2.5 w-2.5" />
                 </Button>
               </div>
             </DialogTitle>
           </DialogHeader>
 
-          {/* Phases Grid in Dialog - Responsive */}
+          {/* Phases Grid in Dialog - Compact */}
           <div className="overflow-x-auto scrollbar-gold">
-            <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
+            <table className="w-full border-collapse text-[6px] sm:text-[8px] md:text-[10px]">
               <thead>
                 <tr>
-                  <th className="border p-0.5 sm:p-1 bg-muted text-left w-[40px] sm:w-[80px] md:w-[140px]">Φάση</th>
+                  <th className="border p-0.5 bg-muted text-left w-[35px] sm:w-[70px] md:w-[120px]">Φάση</th>
                   {MONTHS.map((month, index) => (
-                    <th key={index} className="border p-0.5 bg-muted text-center w-[16px] sm:w-auto">
+                    <th key={index} className="border p-0.5 bg-muted text-center w-[14px] sm:w-auto">
                       <span className="sm:hidden">{month}</span>
                       <span className="hidden sm:inline">{MONTHS_FULL[index]}</span>
                     </th>
@@ -1452,9 +1452,9 @@ const AnnualPlanning: React.FC = () => {
                   <tr key={phase.value}>
                     <td className="border p-0.5 font-medium bg-background">
                       <div className="flex items-center gap-0.5">
-                        <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
-                        <span className="md:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
-                        <span className="hidden md:inline text-xs">{phase.label}</span>
+                        <div className={cn("w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full flex-shrink-0", phase.color)} />
+                        <span className="md:hidden text-[5px] sm:text-[7px] font-semibold">{phase.shortLabel}</span>
+                        <span className="hidden md:inline text-[10px]">{phase.label}</span>
                       </div>
                     </td>
                     {MONTHS.map((_, monthIndex) => {
@@ -1466,13 +1466,13 @@ const AnnualPlanning: React.FC = () => {
                           key={monthIndex}
                           onClick={() => handleDialogCellClick(month, phase.value)}
                           className={cn(
-                            "border p-0 text-center transition-colors h-3 sm:h-4 md:h-5",
+                            "border p-0 text-center transition-colors h-2.5 sm:h-3 md:h-4",
                             dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
                             isSelected && phase.color
                           )}
                         >
                           {isSelected && (
-                            <Check className="h-2 w-2 sm:h-3 sm:w-3 mx-auto text-white" />
+                            <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
                           )}
                         </td>
                       );
@@ -1483,17 +1483,17 @@ const AnnualPlanning: React.FC = () => {
             </table>
           </div>
 
-          {/* Dialog Monthly Planning - Same as "νέο" tab */}
-          <div className="mt-4">
-            <h4 className="text-xs font-semibold mb-2 flex items-center gap-2">
-              <Calendar className="w-3 h-3" />
+          {/* Dialog Monthly Planning - Same as "νέο" tab - Compact */}
+          <div className="mt-2">
+            <h4 className="text-[10px] font-semibold mb-1 flex items-center gap-1">
+              <Calendar className="w-2.5 h-2.5" />
               Μηνιαίος Προγραμματισμός
             </h4>
             <div className="overflow-x-auto scrollbar-gold">
-              <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
+              <table className="w-full border-collapse text-[5px] sm:text-[7px] md:text-[9px]">
                 <thead>
                   <tr>
-                    <th className="border p-0.5 sm:p-1 bg-muted text-left w-[40px] sm:w-[80px] md:w-[120px]">Φάση</th>
+                    <th className="border p-0.5 bg-muted text-left w-[35px] sm:w-[70px] md:w-[100px]">Φάση</th>
                     {MONTHS_FULL.map((month, monthIndex) => {
                       const annualPhase = getDialogAnnualPhaseForMonth(monthIndex + 1);
                       const phaseInfo = annualPhase ? PHASES.find(p => p.value === annualPhase.phase) : null;
@@ -1509,13 +1509,13 @@ const AnnualPlanning: React.FC = () => {
                         >
                           <div className="flex flex-col">
                             <span className={cn(
-                              "text-[8px] sm:text-[10px] font-medium",
+                              "text-[6px] sm:text-[8px] font-medium",
                               phaseInfo && "text-white"
                             )}>
                               {month}
                             </span>
                             {phaseInfo && (
-                              <span className="text-[6px] sm:text-[8px] text-white/80">
+                              <span className="text-[5px] sm:text-[6px] text-white/80">
                                 {phaseInfo.shortLabel}
                               </span>
                             )}
@@ -1525,13 +1525,13 @@ const AnnualPlanning: React.FC = () => {
                     })}
                   </tr>
                   <tr>
-                    <th className="border p-0.5 bg-muted text-left text-[7px] sm:text-[9px]">Εβδ.</th>
+                    <th className="border p-0.5 bg-muted text-left text-[5px] sm:text-[7px]">Εβδ.</th>
                     {MONTHS_FULL.map((_, monthIndex) => {
                       const weeksCount = getWeeksInMonth(dialogYear, monthIndex + 1);
                       return Array.from({ length: weeksCount }, (_, weekIndex) => (
                         <th 
                           key={`${monthIndex}-${weekIndex}`}
-                          className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
+                          className="border p-0.5 bg-muted/50 text-center text-[5px] sm:text-[6px] w-[12px] sm:w-[14px]"
                         >
                           Ε{weekIndex + 1}
                         </th>
@@ -1551,9 +1551,9 @@ const AnnualPlanning: React.FC = () => {
                       <tr key={phase.value}>
                         <td className="border p-0.5 font-medium bg-background">
                           <div className="flex items-center gap-0.5">
-                            <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
-                            <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
-                            <span className="hidden lg:inline text-xs">{phase.label}</span>
+                            <div className={cn("w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full flex-shrink-0", phase.color)} />
+                            <span className="lg:hidden text-[5px] sm:text-[6px] font-semibold">{phase.shortLabel}</span>
+                            <span className="hidden lg:inline text-[9px]">{phase.label}</span>
                           </div>
                         </td>
                         {MONTHS_FULL.map((_, monthIndex) => {
@@ -1569,7 +1569,7 @@ const AnnualPlanning: React.FC = () => {
                               return (
                                 <td
                                   key={`${monthIndex}-${weekIndex}`}
-                                  className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
+                                  className="border p-0 text-center bg-muted/30 h-2 sm:h-2.5"
                                 />
                               );
                             }
@@ -1578,12 +1578,12 @@ const AnnualPlanning: React.FC = () => {
                               <td
                                 key={`${monthIndex}-${weekIndex}`}
                                 className={cn(
-                                  "border p-0 text-center h-3 sm:h-4",
+                                  "border p-0 text-center h-2 sm:h-2.5",
                                   isSelected && phase.color
                                 )}
                               >
                                 {isSelected && (
-                                  <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
+                                  <Check className="h-1 w-1 sm:h-1.5 sm:w-1.5 mx-auto text-white" />
                                 )}
                               </td>
                             );
@@ -1597,17 +1597,17 @@ const AnnualPlanning: React.FC = () => {
             </div>
           </div>
 
-          {/* Dialog Weekly Planning - Same as "νέο" tab */}
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-semibold flex items-center gap-2">
-                <Calendar className="w-3 h-3" />
+          {/* Dialog Weekly Planning - Same as "νέο" tab - Compact */}
+          <div className="mt-2">
+            <div className="flex items-center justify-between mb-1">
+              <h4 className="text-[10px] font-semibold flex items-center gap-1">
+                <Calendar className="w-2.5 h-2.5" />
                 Εβδομαδιαίος Προγραμματισμός
               </h4>
               <select
                 value={dialogWeeklyMonth}
                 onChange={(e) => setDialogWeeklyMonth(Number(e.target.value))}
-                className="rounded-none border px-2 py-1 text-xs sm:text-sm bg-background"
+                className="rounded-none border px-1.5 py-0.5 text-[10px] sm:text-xs bg-background"
               >
                 {MONTHS_DROPDOWN.map((month, index) => (
                   <option key={index} value={index + 1}>{month}</option>
@@ -1615,11 +1615,11 @@ const AnnualPlanning: React.FC = () => {
               </select>
             </div>
             <div className="overflow-x-auto scrollbar-gold">
-              <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
+              <table className="w-full border-collapse text-[5px] sm:text-[7px] md:text-[9px]">
                 <thead>
                   {/* Week headers row */}
                   <tr>
-                    <th className="border p-0.5 sm:p-1 bg-muted text-left w-[40px] sm:w-[80px] md:w-[100px]" rowSpan={3}>Φάση</th>
+                    <th className="border p-0.5 bg-muted text-left w-[35px] sm:w-[70px] md:w-[90px]" rowSpan={3}>Φάση</th>
                     {getDialogCalendarWeeksForMonth.map((_, weekIndex) => {
                       const monthlyPhase = getDialogMonthlyPhaseForWeek(dialogWeeklyMonth, weekIndex + 1);
                       const phaseInfo = monthlyPhase ? PHASES.find(p => p.value === monthlyPhase.phase) : null;
@@ -1634,13 +1634,13 @@ const AnnualPlanning: React.FC = () => {
                         >
                           <div className="flex flex-col">
                             <span className={cn(
-                              "text-[8px] sm:text-[10px] font-medium",
+                              "text-[6px] sm:text-[8px] font-medium",
                               phaseInfo && "text-white"
                             )}>
                               Ε{weekIndex + 1}
                             </span>
                             {phaseInfo && (
-                              <span className="text-[6px] sm:text-[8px] text-white/80">
+                              <span className="text-[5px] sm:text-[6px] text-white/80">
                                 {phaseInfo.shortLabel}
                               </span>
                             )}
@@ -1655,7 +1655,7 @@ const AnnualPlanning: React.FC = () => {
                       DAYS_FULL.map((dayName, dayIndex) => (
                         <th 
                           key={`day-${weekIndex}-${dayIndex}`}
-                          className="border p-0.5 bg-muted/70 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium"
+                          className="border p-0.5 bg-muted/70 text-center text-[5px] sm:text-[6px] w-[12px] sm:w-[14px] font-medium"
                         >
                           {dayName}
                         </th>
@@ -1668,7 +1668,7 @@ const AnnualPlanning: React.FC = () => {
                       weekDates.map((dateNum, dayIndex) => (
                         <th 
                           key={`date-${weekIndex}-${dayIndex}`}
-                          className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
+                          className="border p-0.5 bg-muted/50 text-center text-[5px] sm:text-[6px] w-[12px] sm:w-[14px]"
                         >
                           {dateNum !== null ? dateNum : '-'}
                         </th>
@@ -1679,7 +1679,7 @@ const AnnualPlanning: React.FC = () => {
                 <tbody>
                   {getDialogWeeklySubPhases.length === 0 ? (
                     <tr>
-                      <td colSpan={1 + getDialogCalendarWeeksForMonth.length * 7} className="border p-4 text-center text-muted-foreground text-xs">
+                      <td colSpan={1 + getDialogCalendarWeeksForMonth.length * 7} className="border p-2 text-center text-muted-foreground text-[10px]">
                         Δεν έχουν επιλεγεί φάσεις στον Μηνιαίο Προγραμματισμό για τον {MONTHS_DROPDOWN[dialogWeeklyMonth - 1]}
                       </td>
                     </tr>
@@ -1688,9 +1688,9 @@ const AnnualPlanning: React.FC = () => {
                       <tr key={phase.value}>
                         <td className="border p-0.5 font-medium bg-background">
                           <div className="flex items-center gap-0.5">
-                            <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
-                            <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
-                            <span className="hidden lg:inline text-xs">{phase.label}</span>
+                            <div className={cn("w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full flex-shrink-0", phase.color)} />
+                            <span className="lg:hidden text-[5px] sm:text-[6px] font-semibold">{phase.shortLabel}</span>
+                            <span className="hidden lg:inline text-[9px]">{phase.label}</span>
                           </div>
                         </td>
                         {getDialogCalendarWeeksForMonth.map((weekDates, weekIndex) => {
@@ -1707,7 +1707,7 @@ const AnnualPlanning: React.FC = () => {
                               return (
                                 <td
                                   key={`${weekIndex}-${dayIndex}`}
-                                  className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
+                                  className="border p-0 text-center bg-muted/30 h-2 sm:h-2.5"
                                 />
                               );
                             }
@@ -1716,13 +1716,13 @@ const AnnualPlanning: React.FC = () => {
                               <td
                                 key={`${weekIndex}-${dayIndex}`}
                                 className={cn(
-                                  "border p-0 text-center h-3 sm:h-4",
+                                  "border p-0 text-center h-2 sm:h-2.5",
                                   !isValidDate && "bg-muted/30",
                                   isSelected && isValidDate && phase.color
                                 )}
                               >
                                 {isSelected && isValidDate && (
-                                  <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
+                                  <Check className="h-1 w-1 sm:h-1.5 sm:w-1.5 mx-auto text-white" />
                                 )}
                               </td>
                             );
