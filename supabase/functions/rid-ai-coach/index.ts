@@ -4069,14 +4069,24 @@ ${isAdmin ? `
 2. ΜΟΝΟ JSON μέσα στο block - ΚΑΝΕΝΑ κείμενο!
 3. ΜΙΑ ΓΡΑΜΜΗ JSON - χωρίς newlines μέσα στο JSON
 
-ΠΑΡΑΔΕΙΓΜΑ ΔΗΜΙΟΥΡΓΙΑΣ/ΑΝΑΘΕΣΗΣ ANNUAL PLAN:
+ΚΑΝΟΝΕΣ ΓΙΑ YEAR (ΓΙΑ ΝΑ ΜΗΝ ΠΕΦΤΕΙ ΛΑΘΟΣ ΣΤΟ 2025):
+- Αν ο χρήστης ΔΕΝ αναφέρει ρητά έτος (π.χ. "Απρίλιο"), ΜΗΝ βάζεις καθόλου πεδίο year στο JSON.
+- Αν ο χρήστης αναφέρει ρητά έτος (π.χ. "Απρίλιο 2026"), τότε βάλε year: 2026.
+
+ΚΑΝΟΝΕΣ ΓΙΑ ΕΒΔΟΜΑΔΙΑΙΟ (TRAINING DAYS):
+- Αν ο χρήστης έχει πει ποιες μέρες θα κάνει προπόνηση, ΠΡΕΠΕΙ να συμπεριλάβεις training_days.
+- training_days: array με weekdays (Δευτέρα=1 ... Κυριακή=7). Παράδειγμα: [1,3,5]
+- days_per_week: αριθμός προπονήσεων/εβδομάδα (π.χ. 3, 4, 5)
+- Αν δεν ξέρεις τις μέρες, ΡΩΤΑ: "Ποιες ημέρες θέλεις προπόνηση;" και ΜΗΝ δημιουργήσεις μακροκύκλο.
+
+ΠΑΡΑΔΕΙΓΜΑ ΔΗΜΙΟΥΡΓΙΑΣ/ΑΝΑΘΕΣΗΣ ANNUAL PLAN (ΧΩΡΙΣ year, με training_days):
 \`\`\`ai-action
-{"action":"create_annual_plan","user_id":"Γιάννης Παπαδόπουλος","year":2025,"phases":[{"month":1,"phase":"corrective"},{"month":2,"phase":"stabilization"},{"month":3,"phase":"functional-hypertrophy"},{"month":4,"phase":"functional-hypertrophy"},{"month":5,"phase":"maximal-strength"},{"month":6,"phase":"maximal-strength"},{"month":7,"phase":"power"},{"month":8,"phase":"power"},{"month":9,"phase":"endurance"},{"month":10,"phase":"competition"},{"month":11,"phase":"competition"},{"month":12,"phase":"corrective"}]}
+{"action":"create_annual_plan","user_id":"Γιάννης Παπαδόπουλος","training_days":[1,3,5],"days_per_week":3,"phases":[{"month":1,"phase":"corrective"},{"month":2,"phase":"stabilization"},{"month":3,"phase":"functional-hypertrophy"},{"month":4,"phase":"competition"}]}
 \`\`\`
 
 ΠΑΡΑΔΕΙΓΜΑ ΑΝΑΘΕΣΗΣ ΣΕ ΠΟΛΛΟΥΣ ΧΡΗΣΤΕΣ:
 \`\`\`ai-action
-{"action":"create_annual_plan","user_ids":["Γιάννης","Μαρία","Κώστας"],"year":2025,"phases":[{"month":1,"phase":"corrective"},{"month":2,"phase":"stabilization"},{"month":3,"phase":"functional-hypertrophy"}]}
+{"action":"create_annual_plan","user_ids":["Γιάννης","Μαρία","Κώστας"],"training_days":[2,4,6],"days_per_week":3,"phases":[{"month":1,"phase":"corrective"},{"month":2,"phase":"stabilization"},{"month":3,"phase":"functional-hypertrophy"}]}
 \`\`\`
 
 ΠΑΡΑΔΕΙΓΜΑ ΔΙΑΓΡΑΦΗΣ ANNUAL PLAN:
@@ -4086,14 +4096,11 @@ ${isAdmin ? `
 
 📖 ΔΙΑΒΑΣΜΑ ANNUAL PLAN:
 Για να δεις τον μακροκύκλο ενός χρήστη, χρησιμοποίησε τα δεδομένα από το section "📅 ΕΤΗΣΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ" που έχεις στο context.
-Αν ο χρήστης ρωτήσει "τι μακροκύκλο έχει ο Χ;", κοίτα στα δεδομένα που σου δίνονται παραπάνω.
 
-ΚΑΝΟΝΕΣ:
+ΥΠΕΝΘΥΜΙΣΗ:
 - user_id: Βάλε ΟΝΟΜΑ ή email του χρήστη που θα ΛΑΒΕΙ τον μακροκύκλο
 - user_ids: Array με ΟΝΟΜΑΤΑ ή emails για πολλαπλή ανάθεση
-- year: Το έτος (π.χ. 2025)
 - phases: Array με objects που έχουν month (1-12) και phase (από τη λίστα παραπάνω)
-- Αν δεν δοθεί year, χρησιμοποίησε το τρέχον έτος
 - Αν ο χρήστης πει "για όλο τον χρόνο", δημιούργησε phases για όλους τους 12 μήνες
 ` : `
 ⚠️ Μόνο οι admin μπορούν να διαχειρίζονται τον ετήσιο προγραμματισμό.

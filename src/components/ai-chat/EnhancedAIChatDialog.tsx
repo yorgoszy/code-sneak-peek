@@ -448,23 +448,24 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     try {
       console.log('📅 Creating annual plan:', actionData);
       
-      // Determine the correct year - if competition month has passed, use next year
+      // Determine the correct year.
+      // Goal: if user says "αγώνας τον Απρίλιο" and we're already past April in the CURRENT year,
+      // we must schedule it for NEXT year (e.g. April 2026 when today is Dec 2025).
       let year = actionData.year || new Date().getFullYear();
       const phases = actionData.phases || [];
-      
+
       // Find competition month from phases
       const competitionPhase = phases.find((p: any) => {
         const phaseName = (p.phase || p.phase_name || p.name || '').toLowerCase();
         return phaseName.includes('αγων') || phaseName.includes('competition') || phaseName.includes('tapering');
       });
-      
-      if (competitionPhase && !actionData.year) {
+
+      const inferCompetitionMonth = (): number | null => {
+        if (!competitionPhase) return null;
+
         // Extract competition month - can be number or string
-        let competitionMonth: number | null = null;
-        
-        if (typeof competitionPhase.month === 'number') {
-          competitionMonth = competitionPhase.month;
-        } else if (typeof competitionPhase.month === 'string') {
+        if (typeof competitionPhase.month === 'number') return competitionPhase.month;
+        if (typeof competitionPhase.month === 'string') {
           const monthNames: Record<string, number> = {
             'ιανουαριος': 1, 'ιανουάριος': 1, 'january': 1, 'jan': 1,
             'φεβρουαριος': 2, 'φεβρουάριος': 2, 'february': 2, 'feb': 2,
@@ -479,24 +480,39 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             'νοεμβριος': 11, 'νοέμβριος': 11, 'november': 11, 'nov': 11,
             'δεκεμβριος': 12, 'δεκέμβριος': 12, 'december': 12, 'dec': 12,
           };
-          
-          const compMonthStr = competitionPhase.month.toLowerCase().replace(/[άέήίόύώ]/g, (c: string) => {
-            const map: Record<string, string> = { 'ά': 'α', 'έ': 'ε', 'ή': 'η', 'ί': 'ι', 'ό': 'ο', 'ύ': 'υ', 'ώ': 'ω' };
-            return map[c] || c;
-          });
-          
-          competitionMonth = monthNames[compMonthStr] || parseInt(compMonthStr) || null;
+
+          const compMonthStr = competitionPhase.month
+            .toLowerCase()
+            .replace(/[άέήίόύώ]/g, (c: string) => {
+              const map: Record<string, string> = {
+                'ά': 'α',
+                'έ': 'ε',
+                'ή': 'η',
+                'ί': 'ι',
+                'ό': 'ο',
+                'ύ': 'υ',
+                'ώ': 'ω',
+              };
+              return map[c] || c;
+            })
+            .trim();
+
+          return monthNames[compMonthStr] || (Number.isFinite(parseInt(compMonthStr)) ? parseInt(compMonthStr) : null);
         }
-        
-        if (competitionMonth) {
-          const currentMonth = new Date().getMonth() + 1; // 1-12
-          const currentYear = new Date().getFullYear();
-          
-          // If competition month has already passed this year, use next year
-          if (competitionMonth <= currentMonth) {
-            year = currentYear + 1;
-            console.log(`📅 Competition month (${competitionMonth}) has passed, using next year: ${year}`);
-          }
+
+        return null;
+      };
+
+      const competitionMonth = inferCompetitionMonth();
+      if (competitionMonth) {
+        const currentMonth = new Date().getMonth() + 1; // 1-12
+        const currentYear = new Date().getFullYear();
+
+        // If we're past the competition month in the CURRENT year, the target year must be next year.
+        // Apply even when the AI provided year=currentYear (it often "defaults" wrong).
+        if (year === currentYear && competitionMonth <= currentMonth) {
+          year = currentYear + 1;
+          console.log(`📅 Competition month (${competitionMonth}) has passed in ${currentYear}, using next year: ${year}`);
         }
       }
       
@@ -609,10 +625,75 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           }
         }
 
-        // Also create weekly phases (7 days per week)
+        // Also create weekly phases based on training days.
+        // If the AI provides training_days, we only mark those weekdays; otherwise fall back to all 7 days.
         const weeklyPhasesToInsert: any[] = [];
+
+        const parseTrainingDays = (raw: any): number[] | null => {
+          if (!raw) return null;
+
+          // Numbers (1-7)
+          if (Array.isArray(raw) && raw.every((v) => typeof v === 'number')) {
+            const unique = Array.from(new Set(raw as number[])).filter((d) => d >= 1 && d <= 7);
+            return unique.length ? unique : null;
+          }
+
+          // Strings (Greek/English day names)
+          const mapDay = (s: string): number | null => {
+            const n = s
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[00-6f]/g, '')
+              .trim();
+
+            const dict: Record<string, number> = {
+              // Greek
+              'δευτερα': 1,
+              'τριτη': 2,
+              'τεταρτη': 3,
+              'πεμπτη': 4,
+              'παρασκευη': 5,
+              'σαββατο': 6,
+              'κυριακη': 7,
+              // English
+              'monday': 1,
+              'mon': 1,
+              'tuesday': 2,
+              'tue': 2,
+              'wednesday': 3,
+              'wed': 3,
+              'thursday': 4,
+              'thu': 4,
+              'friday': 5,
+              'fri': 5,
+              'saturday': 6,
+              'sat': 6,
+              'sunday': 7,
+              'sun': 7,
+            };
+
+            return dict[n] ?? null;
+          };
+
+          if (Array.isArray(raw) && raw.every((v) => typeof v === 'string')) {
+            const mapped = (raw as string[]).map(mapDay).filter((v): v is number => typeof v === 'number');
+            const unique = Array.from(new Set(mapped)).filter((d) => d >= 1 && d <= 7);
+            return unique.length ? unique : null;
+          }
+
+          return null;
+        };
+
+        const trainingDays =
+          parseTrainingDays(actionData.training_days) ||
+          parseTrainingDays(actionData.trainingDays) ||
+          parseTrainingDays(actionData.workout_days) ||
+          null;
+
+        const daysToMark = trainingDays ?? [1, 2, 3, 4, 5, 6, 7];
+
         for (const monthlyPhase of monthlyPhasesToInsert) {
-          for (let day = 1; day <= 7; day++) {
+          for (const day of daysToMark) {
             weeklyPhasesToInsert.push({
               user_id: userId,
               year,
