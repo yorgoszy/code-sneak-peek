@@ -226,8 +226,7 @@ export const assignmentService = {
                 day_number: day.day_number,
                 estimated_duration_minutes: day.estimated_duration_minutes || 60,
                 is_test_day: !!day.is_test_day,
-                test_types: day.test_types || [],
-                is_competition_day: !!day.is_competition_day
+                test_types: day.test_types || []
               }])
               .select()
               .single();

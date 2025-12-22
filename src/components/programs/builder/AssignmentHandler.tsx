@@ -5,7 +5,6 @@ import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { programService } from './services/programService';
 import { assignmentService } from './services/assignmentService';
 import { workoutCompletionService } from './services/workoutCompletionService';
-import { competitionService } from './services/competitionService';
 
 interface AssignmentHandlerProps {
   program: ProgramStructure;
@@ -118,14 +117,6 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
               trainingDatesStrings,
               program
             );
-
-            // Δημιουργία αγώνων στο ετήσιο πλάνο
-            await competitionService.createCompetitionsForUser(
-              userId,
-              program.name,
-              program.weeks,
-              trainingDatesStrings
-            );
           }
         }
 
@@ -158,14 +149,6 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
             program.user_id!,
             trainingDatesStrings,
             program
-          );
-
-          // Δημιουργία αγώνων στο ετήσιο πλάνο
-          await competitionService.createCompetitionsForUser(
-            program.user_id!,
-            program.name,
-            program.weeks,
-            trainingDatesStrings
           );
         }
 
