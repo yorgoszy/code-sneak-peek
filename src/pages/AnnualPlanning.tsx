@@ -1016,15 +1016,6 @@ const AnnualPlanning: React.FC = () => {
               Μηνιαίος Προγραμματισμός
             </div>
             <div className="flex items-center gap-2">
-              <select
-                value={selectedWeeklyMonth}
-                onChange={(e) => setSelectedWeeklyMonth(Number(e.target.value))}
-                className="rounded-none border px-2 py-1 text-xs sm:text-sm bg-background"
-              >
-                {MONTHS_DROPDOWN.map((month, index) => (
-                  <option key={index} value={index + 1}>{month}</option>
-                ))}
-              </select>
               <Button
                 variant="outline"
                 size="icon"
