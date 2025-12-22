@@ -1856,6 +1856,14 @@ const AnnualPlanning: React.FC = () => {
               Εβδομαδιαίος Προγραμματισμός
             </CardTitle>
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSelectedWeeklyMonth(prev => prev > 1 ? prev - 1 : 12)}
+                className="rounded-none h-6 w-6"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
               <select
                 value={selectedWeeklyMonth}
                 onChange={(e) => setSelectedWeeklyMonth(Number(e.target.value))}
@@ -1865,6 +1873,14 @@ const AnnualPlanning: React.FC = () => {
                   <option key={index} value={index + 1}>{month}</option>
                 ))}
               </select>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSelectedWeeklyMonth(prev => prev < 12 ? prev + 1 : 1)}
+                className="rounded-none h-6 w-6"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
               <Button
                 variant="outline"
                 size="icon"
@@ -2380,15 +2396,33 @@ const AnnualPlanning: React.FC = () => {
                 <Calendar className="w-2.5 h-2.5" />
                 Εβδομαδιαίος Προγραμματισμός
               </h4>
-              <select
-                value={dialogWeeklyMonth}
-                onChange={(e) => setDialogWeeklyMonth(Number(e.target.value))}
-                className="rounded-none border px-1.5 py-0.5 text-[10px] sm:text-xs bg-background"
-              >
-                {MONTHS_DROPDOWN.map((month, index) => (
-                  <option key={index} value={index + 1}>{month}</option>
-                ))}
-              </select>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDialogWeeklyMonth(prev => prev > 1 ? prev - 1 : 12)}
+                  className="rounded-none h-5 w-5"
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </Button>
+                <select
+                  value={dialogWeeklyMonth}
+                  onChange={(e) => setDialogWeeklyMonth(Number(e.target.value))}
+                  className="rounded-none border px-1.5 py-0.5 text-[10px] sm:text-xs bg-background"
+                >
+                  {MONTHS_DROPDOWN.map((month, index) => (
+                    <option key={index} value={index + 1}>{month}</option>
+                  ))}
+                </select>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDialogWeeklyMonth(prev => prev < 12 ? prev + 1 : 1)}
+                  className="rounded-none h-5 w-5"
+                >
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
             <div className="overflow-x-auto scrollbar-gold">
               <table className="w-full border-collapse text-[5px] sm:text-[7px] md:text-[9px]">
