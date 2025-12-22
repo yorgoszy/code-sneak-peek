@@ -75,12 +75,11 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   const [editingName, setEditingName] = useState(block.name);
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
 
-  // Sync editingName when block.name changes externally
+  // Sync editingName when block.name changes externally (without clobbering while saving)
   React.useEffect(() => {
-    if (!isEditing) {
-      setEditingName(block.name);
-    }
-  }, [block.name, isEditing]);
+    if (!isEditing) setEditingName(block.name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [block.name]);
 
   const handleNameDoubleClick = () => {
     setIsEditing(true);
@@ -112,12 +111,13 @@ export const BlockCard: React.FC<BlockCardProps> = ({
     setShowExerciseDialog(false);
   };
 
-  // Όταν αλλάζει το training type, αλλάζει και το όνομα του block
+  // Όταν αλλάζει το training type, ενημερώνουμε ΜΟΝΟ το training type.
+  // Το όνομα ενημερώνεται μέσα από το updateBlockTrainingType (στο state layer), αλλιώς γίνεται overwrite με stale state.
   const handleTrainingTypeChange = (trainingType: string) => {
     onUpdateBlockTrainingType(trainingType);
-    // Ενημέρωση του ονόματος με το label του training type
+
+    // UI-only: δείχνουμε άμεσα το label στο local state (θα συγχρονιστεί και από props μετά)
     const newName = TRAINING_TYPE_LABELS[trainingType] || trainingType;
-    onUpdateBlockName(newName);
     setEditingName(newName);
   };
 
