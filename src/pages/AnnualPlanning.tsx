@@ -2557,7 +2557,7 @@ const AnnualPlanning: React.FC = () => {
                                 }}
                                 className={cn(
                                   "border p-0 text-center h-2 sm:h-2.5",
-                                  isValidDate && dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
+                                  isValidDate && dialogMode === 'edit' ? "cursor-pointer" : "cursor-default",
                                   !isValidDate && "bg-muted/30",
                                   // Tint available cells so it's obvious you can click them
                                   isPhaseAvailableForWeek && isValidDate && (showSelected ? phase.color : `${phase.color}/15`),
