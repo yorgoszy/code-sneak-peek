@@ -242,16 +242,84 @@ const AnnualPlanning: React.FC = () => {
   };
 
   // Handle weekly phase cell click - allows multiple phases per day
-  const handleWeeklyPhaseClick = (month: number, week: number, day: number, phase: string) => {
+  // Αν είναι competition, δημιουργεί εγγραφή στο competitions table
+  const handleWeeklyPhaseClick = async (month: number, week: number, day: number, phase: string) => {
+    const isAdding = !weeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
+    
     setWeeklyPhases(prev => {
       const existing = prev.find(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
       if (existing) {
-        // Remove if already selected
         return prev.filter(p => !(p.month === month && p.week === week && p.day === day && p.phase === phase));
       }
-      // Add new phase (without removing existing ones for this day)
       return [...prev, { month, week, day, phase }];
     });
+
+    // Αν προσθέτουμε competition και έχουμε επιλεγμένο χρήστη, δημιούργησε εγγραφή στο competitions
+    if (isAdding && phase === 'competition' && selectedUser) {
+      await createCompetitionFromWeeklyPhase(selectedUser.id, year, month, week, day);
+    }
+  };
+
+  // Δημιουργία εγγραφής competition από weekly phase click
+  const createCompetitionFromWeeklyPhase = async (
+    userId: string,
+    planYear: number,
+    month: number,
+    weekOfMonth: number,
+    dayOfWeek: number
+  ) => {
+    // Υπολογισμός ακριβούς ημερομηνίας
+    const competitionDate = calculateExactDate(planYear, month, weekOfMonth, dayOfWeek);
+    if (!competitionDate) return;
+
+    const competitionDateStr = competitionDate.toISOString().split('T')[0];
+
+    // Έλεγχος αν υπάρχει ήδη
+    const { data: existing } = await supabase
+      .from('competitions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('competition_date', competitionDateStr)
+      .maybeSingle();
+
+    if (existing) {
+      console.log('ℹ️ Competition already exists for', competitionDateStr);
+      return;
+    }
+
+    // Δημιουργία competition
+    const { error } = await supabase
+      .from('competitions')
+      .insert({
+        user_id: userId,
+        competition_date: competitionDateStr,
+        name: `Αγώνας - ${MONTHS_DROPDOWN[month - 1]} ${planYear}`,
+        notes: 'Δημιουργήθηκε από Ετήσιο Προγραμματισμό'
+      });
+
+    if (error) {
+      console.error('Error creating competition:', error);
+    } else {
+      console.log('✅ Competition created for', competitionDateStr);
+      toast.success(`Αγώνας προστέθηκε: ${competitionDateStr}`);
+    }
+  };
+
+  // Υπολογισμός ακριβούς ημερομηνίας από week/day
+  const calculateExactDate = (planYear: number, month: number, weekOfMonth: number, dayOfWeek: number): Date | null => {
+    const firstDay = new Date(planYear, month - 1, 1);
+    let startDayOfWeek = firstDay.getDay();
+    startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // Monday=0
+    
+    // Υπολογισμός της πρώτης μέρας της εβδομάδας
+    const firstDayOfWeek = 1 + (weekOfMonth - 1) * 7 - startDayOfWeek;
+    const dayOfMonth = firstDayOfWeek + (dayOfWeek - 1);
+    
+    // Έλεγχος ότι είναι valid ημερομηνία για τον μήνα
+    const daysInMonth = new Date(planYear, month, 0).getDate();
+    if (dayOfMonth < 1 || dayOfMonth > daysInMonth) return null;
+    
+    return new Date(planYear, month - 1, dayOfMonth);
   };
 
   // Check if weekly phase is selected
@@ -396,7 +464,7 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
-    // Insert all phases for the user
+    // 1. Insert all annual phases for the user
     const phasesToInsert = selectedPhases.map(p => ({
       user_id: selectedUser.id,
       year,
@@ -413,10 +481,71 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
+    // 2. Αποθήκευση monthly και weekly phases στο user_annual_planning
+    if (monthlyPhases.length > 0 || weeklyPhases.length > 0) {
+      await saveUserAnnualPlanning(selectedUser.id, year, monthlyPhases, weeklyPhases);
+    }
+
+    // 3. Δημιουργία competitions για τις ημέρες με competition phase
+    await createCompetitionsFromWeeklyPhases(selectedUser.id, year);
+
     toast.success(`Ο μακροκύκλος ανατέθηκε στον ${selectedUser.name}`);
     setSelectedPhases([]);
+    setMonthlyPhases([]);
+    setWeeklyPhases([]);
     setSelectedUser(null);
     fetchAssignedMacrocycles();
+  };
+
+  // Αποθήκευση monthly/weekly planning
+  const saveUserAnnualPlanning = async (
+    userId: string, 
+    planYear: number, 
+    monthly: { month: number; week: number; phase: string }[],
+    weekly: { month: number; week: number; day: number; phase: string }[]
+  ) => {
+    // Έλεγχος αν υπάρχει ήδη
+    const { data: existing } = await supabase
+      .from('user_annual_planning')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('year', planYear)
+      .maybeSingle();
+
+    if (existing) {
+      // Update
+      const { error } = await supabase
+        .from('user_annual_planning')
+        .update({
+          monthly_phases: JSON.parse(JSON.stringify(monthly)),
+          weekly_phases: JSON.parse(JSON.stringify(weekly)),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id);
+      
+      if (error) console.error('Error updating annual planning:', error);
+    } else {
+      // Insert
+      const { error } = await supabase
+        .from('user_annual_planning')
+        .insert({
+          user_id: userId,
+          year: planYear,
+          monthly_phases: JSON.parse(JSON.stringify(monthly)),
+          weekly_phases: JSON.parse(JSON.stringify(weekly))
+        });
+      
+      if (error) console.error('Error inserting annual planning:', error);
+    }
+  };
+
+  // Δημιουργία competitions για όλες τις ημέρες με competition phase
+  const createCompetitionsFromWeeklyPhases = async (userId: string, planYear: number) => {
+    const competitionPhases = weeklyPhases.filter(p => p.phase === 'competition');
+    
+    for (const phase of competitionPhases) {
+      await createCompetitionFromWeeklyPhase(userId, planYear, phase.month, phase.week, phase.day);
+    }
   };
 
   const filteredUsers = useMemo(() => {
@@ -460,26 +589,63 @@ const AnnualPlanning: React.FC = () => {
     fetchAssignedMacrocycles();
   };
 
-  const handleViewAssignment = (macrocycle: AssignedMacrocycle) => {
+  const handleViewAssignment = async (macrocycle: AssignedMacrocycle) => {
     setDialogMacrocycle(macrocycle);
     setDialogPhases(macrocycle.phases.map(p => ({ month: p.month, phase: p.phase })));
     setDialogYear(macrocycle.year);
     setDialogMode('view');
-    setDialogMonthlyPhases([]);
-    setDialogWeeklyPhases([]);
     setDialogWeeklyMonth(new Date().getMonth() + 1);
+    
+    // Φόρτωση monthly/weekly phases από user_annual_planning
+    await loadUserAnnualPlanning(macrocycle.user_id, macrocycle.year, true);
+    
     setDialogOpen(true);
   };
 
-  const handleEditAssignment = (macrocycle: AssignedMacrocycle) => {
+  const handleEditAssignment = async (macrocycle: AssignedMacrocycle) => {
     setDialogMacrocycle(macrocycle);
     setDialogPhases(macrocycle.phases.map(p => ({ month: p.month, phase: p.phase })));
     setDialogYear(macrocycle.year);
     setDialogMode('edit');
-    setDialogMonthlyPhases([]);
-    setDialogWeeklyPhases([]);
     setDialogWeeklyMonth(new Date().getMonth() + 1);
+    
+    // Φόρτωση monthly/weekly phases από user_annual_planning
+    await loadUserAnnualPlanning(macrocycle.user_id, macrocycle.year, true);
+    
     setDialogOpen(true);
+  };
+
+  // Φόρτωση monthly/weekly planning από βάση
+  const loadUserAnnualPlanning = async (userId: string, planYear: number, isDialog = false) => {
+    const { data, error } = await supabase
+      .from('user_annual_planning')
+      .select('monthly_phases, weekly_phases')
+      .eq('user_id', userId)
+      .eq('year', planYear)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error loading annual planning:', error);
+      return;
+    }
+
+    if (data) {
+      const monthly = (data.monthly_phases as any[]) || [];
+      const weekly = (data.weekly_phases as any[]) || [];
+      
+      if (isDialog) {
+        setDialogMonthlyPhases(monthly);
+        setDialogWeeklyPhases(weekly);
+      } else {
+        setMonthlyPhases(monthly);
+        setWeeklyPhases(weekly);
+      }
+    } else {
+      if (isDialog) {
+        setDialogMonthlyPhases([]);
+        setDialogWeeklyPhases([]);
+      }
+    }
   };
 
   const handleDialogCellClick = (month: number, phaseValue: string) => {

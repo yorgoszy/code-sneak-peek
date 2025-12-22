@@ -24,28 +24,38 @@ export const competitionService = {
    * Βρίσκει τις ημέρες αγώνα στο πρόγραμμα και επιστρέφει τα indexes τους
    */
   findCompetitionDays(weeks: any[]): CompetitionDay[] {
-    console.log('🔍 [CompetitionService] Searching competition days in weeks:', JSON.stringify(weeks, null, 2));
+    console.log('🔍 [CompetitionService] Searching competition days in weeks:', weeks?.length || 0);
     const competitionDays: CompetitionDay[] = [];
+    
+    if (!weeks || !Array.isArray(weeks)) {
+      console.warn('⚠️ [CompetitionService] No weeks array provided');
+      return competitionDays;
+    }
+    
     let dayIndex = 0;
 
     for (const week of weeks) {
+      // Πρώτα ελέγχουμε για program_days (από database), μετά days (από builder)
       const days = week.program_days || week.days || [];
-      console.log(`🔍 [CompetitionService] Week "${week.name}" has ${days.length} days`);
+      console.log(`🔍 [CompetitionService] Week "${week.name || week.week_number}" has ${days.length} days`);
+      
       for (const day of days) {
-        console.log(`🔍 [CompetitionService] Day "${day.name}" is_competition_day:`, day.is_competition_day);
-        if (day.is_competition_day) {
+        console.log(`🔍 [CompetitionService] Day "${day.name || day.day_number}" is_competition_day:`, day.is_competition_day, typeof day.is_competition_day);
+        
+        // Ελέγχουμε για is_competition_day (boolean ή string "true")
+        if (day.is_competition_day === true || day.is_competition_day === 'true') {
           competitionDays.push({
             dayIndex,
             dayName: day.name || `Ημέρα ${day.day_number}`,
             weekName: week.name || `Εβδομάδα ${week.week_number}`
           });
-          console.log(`✅ [CompetitionService] Found competition day: ${day.name}`);
+          console.log(`✅ [CompetitionService] Found competition day: ${day.name || day.day_number} at index ${dayIndex}`);
         }
         dayIndex++;
       }
     }
 
-    console.log('🏆 [CompetitionService] Total competition days found:', competitionDays.length);
+    console.log('🏆 [CompetitionService] Total competition days found:', competitionDays.length, competitionDays);
     return competitionDays;
   },
 
