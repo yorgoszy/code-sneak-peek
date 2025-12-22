@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2, X, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -836,6 +836,18 @@ const AnnualPlanning: React.FC = () => {
             {/* New Macrocycle Tab */}
             <TabsContent value="new" className="p-2 sm:p-4 space-y-2">
               {/* Phases Grid */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">Ετήσιος</span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setSelectedPhases([])}
+                  className="rounded-none h-6 w-6"
+                  title="Καθαρισμός Ετήσιου"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                </Button>
+              </div>
               <div className="overflow-x-auto scrollbar-gold">
                 <table className="w-full border-collapse text-[9px] sm:text-xs">
                   <thead>
@@ -1013,9 +1025,20 @@ const AnnualPlanning: React.FC = () => {
         <>
         <Card className="rounded-none border-l-0 mt-2">
         <CardHeader className="p-2 sm:p-4">
-          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-            <Calendar className="w-4 h-4" />
-            Μηνιαίος Προγραμματισμός
+          <CardTitle className="flex items-center justify-between text-sm sm:text-base">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Μηνιαίος Προγραμματισμός
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setMonthlyPhases([])}
+              className="rounded-none h-6 w-6"
+              title="Καθαρισμός Μηνιαίου"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-2 sm:p-4 pt-0">
@@ -1141,15 +1164,26 @@ const AnnualPlanning: React.FC = () => {
               <Calendar className="w-4 h-4" />
               Εβδομαδιαίος Προγραμματισμός
             </CardTitle>
-            <select
-              value={selectedWeeklyMonth}
-              onChange={(e) => setSelectedWeeklyMonth(Number(e.target.value))}
-              className="rounded-none border px-2 py-1 text-xs sm:text-sm bg-background"
-            >
-              {MONTHS_DROPDOWN.map((month, index) => (
-                <option key={index} value={index + 1}>{month}</option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setWeeklyPhases([])}
+                className="rounded-none h-6 w-6"
+                title="Καθαρισμός Εβδομαδιαίου"
+              >
+                <RotateCcw className="h-3 w-3" />
+              </Button>
+              <select
+                value={selectedWeeklyMonth}
+                onChange={(e) => setSelectedWeeklyMonth(Number(e.target.value))}
+                className="rounded-none border px-2 py-1 text-xs sm:text-sm bg-background"
+              >
+                {MONTHS_DROPDOWN.map((month, index) => (
+                  <option key={index} value={index + 1}>{month}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-2 sm:p-4 pt-0">
