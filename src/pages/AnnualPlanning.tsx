@@ -1347,7 +1347,7 @@ const AnnualPlanning: React.FC = () => {
                   {selectedUser ? (
                     <div className="flex items-center gap-2 p-1.5 bg-muted rounded-none">
                       <Avatar className="h-6 w-6">
-                        <AvatarImage src={selectedUser.avatar_url || undefined} />
+                        <AvatarImage src={selectedUser.avatar_url || selectedUser.photo_url || undefined} />
                         <AvatarFallback className="text-[10px]">{getInitials(selectedUser.name)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
