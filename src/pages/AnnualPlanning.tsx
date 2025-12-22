@@ -1153,15 +1153,6 @@ const AnnualPlanning: React.FC = () => {
               Εβδομαδιαίος Προγραμματισμός
             </CardTitle>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setWeeklyPhases([])}
-                className="rounded-none h-6 w-6"
-                title="Καθαρισμός Εβδομαδιαίου"
-              >
-                <RotateCcw className="h-3 w-3" />
-              </Button>
               <select
                 value={selectedWeeklyMonth}
                 onChange={(e) => setSelectedWeeklyMonth(Number(e.target.value))}
@@ -1171,6 +1162,15 @@ const AnnualPlanning: React.FC = () => {
                   <option key={index} value={index + 1}>{month}</option>
                 ))}
               </select>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setWeeklyPhases([])}
+                className="rounded-none h-6 w-6"
+                title="Καθαρισμός Εβδομαδιαίου"
+              >
+                <RotateCcw className="h-3 w-3" />
+              </Button>
             </div>
           </div>
         </CardHeader>
