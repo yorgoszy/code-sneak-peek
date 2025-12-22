@@ -15,6 +15,7 @@ interface AppUser {
   name: string;
   email: string;
   avatar_url: string | null;
+  photo_url?: string | null;
 }
 
 interface UserPhase {
@@ -299,7 +300,7 @@ const AnnualPlanning: React.FC = () => {
       .select(
         `
         training_dates,
-        programs:program_id (
+        programs!fk_program_assignments_program_id (
           program_weeks (
             program_days (
               is_competition_day
@@ -394,7 +395,7 @@ const AnnualPlanning: React.FC = () => {
   const fetchUsers = async () => {
     const { data, error } = await supabase
       .from('app_users')
-      .select('id, name, email, avatar_url')
+      .select('id, name, email, avatar_url, photo_url')
       .order('name');
 
     if (error) {
@@ -418,7 +419,8 @@ const AnnualPlanning: React.FC = () => {
         created_at,
         app_users!user_annual_phases_user_id_fkey (
           name,
-          avatar_url
+          avatar_url,
+          photo_url
         )
       `)
       .order('created_at', { ascending: false });
@@ -428,15 +430,17 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
-    // Group by user_id and year
     const grouped = (data || []).reduce((acc, item) => {
       const key = `${item.user_id}-${item.year}`;
+      const user = (item.app_users as any) || null;
+      const userAvatar = user?.avatar_url || user?.photo_url || null;
+
       if (!acc[key]) {
         acc[key] = {
           id: key,
           user_id: item.user_id,
-          user_name: (item.app_users as any)?.name || 'Άγνωστος',
-          user_avatar: (item.app_users as any)?.avatar_url,
+          user_name: user?.name || 'Άγνωστος',
+          user_avatar: userAvatar,
           year: item.year,
           phases: [],
           assigned_at: item.created_at
