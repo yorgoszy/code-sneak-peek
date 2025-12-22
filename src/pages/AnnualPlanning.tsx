@@ -1054,6 +1054,25 @@ const AnnualPlanning: React.FC = () => {
     return false;
   };
 
+  // Get subphase priority (1 = primary, 2 = secondary, null = not a subphase)
+  const getDialogSubphasePriority = (month: number, week: number, day: number, phase: string): number | null => {
+    const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
+    if (!strengthSubphases.includes(phase)) return null;
+    
+    const matchingPhase = dialogWeeklyPhases.find(p => 
+      p.month === month && 
+      p.week === week && 
+      p.day === day
+    );
+    
+    if (!matchingPhase) return null;
+    
+    if (matchingPhase.primary_subphase === phase) return 1;
+    if (matchingPhase.secondary_subphase === phase) return 2;
+    
+    return null;
+  };
+
   // Get calendar weeks for dialog
   const getDialogCalendarWeeksForMonth = useMemo(() => {
     const firstDay = new Date(dialogYear, dialogWeeklyMonth - 1, 1);
@@ -2423,7 +2442,15 @@ const AnnualPlanning: React.FC = () => {
                                 )}
                               >
                                 {showSelected && isValidDate && (
-                                  <Check className="h-1 w-1 sm:h-1.5 sm:w-1.5 mx-auto text-white" />
+                                  (() => {
+                                    const priority = getDialogSubphasePriority(dialogWeeklyMonth, week, day, phase.value);
+                                    if (priority) {
+                                      return (
+                                        <span className="text-[6px] sm:text-[8px] font-bold text-white">{priority}</span>
+                                      );
+                                    }
+                                    return <Check className="h-1 w-1 sm:h-1.5 sm:w-1.5 mx-auto text-white" />;
+                                  })()
                                 )}
                               </td>
                             );
