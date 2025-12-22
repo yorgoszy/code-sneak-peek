@@ -2423,13 +2423,46 @@ const AnnualPlanning: React.FC = () => {
                             return (
                               <td
                                 key={`${weekIndex}-${dayIndex}`}
-                                onClick={() => {
+                              onClick={() => {
                                   if (dialogMode !== 'edit' || !isValidDate) return;
-                                  const exists = dialogWeeklyPhases.some(p => p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value);
-                                  if (exists) {
-                                    setDialogWeeklyPhases(dialogWeeklyPhases.filter(p => !(p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)));
+                                  
+                                  const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
+                                  const isSubphase = strengthSubphases.includes(phase.value);
+                                  
+                                  if (isSubphase) {
+                                    // Cycle: none -> primary -> secondary -> none
+                                    const existingPhase = dialogWeeklyPhases.find(p => 
+                                      p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value
+                                    );
+                                    
+                                    if (!existingPhase) {
+                                      // Click 1: Add as primary
+                                      setDialogWeeklyPhases([...dialogWeeklyPhases, { 
+                                        month: dialogWeeklyMonth, week, day, phase: phase.value,
+                                        primary_subphase: phase.value,
+                                        secondary_subphase: null
+                                      }]);
+                                    } else if (existingPhase.primary_subphase === phase.value && !existingPhase.secondary_subphase) {
+                                      // Click 2: Change to secondary
+                                      setDialogWeeklyPhases(dialogWeeklyPhases.map(p => 
+                                        (p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)
+                                          ? { ...p, primary_subphase: null, secondary_subphase: phase.value }
+                                          : p
+                                      ));
+                                    } else {
+                                      // Click 3: Remove
+                                      setDialogWeeklyPhases(dialogWeeklyPhases.filter(p => 
+                                        !(p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)
+                                      ));
+                                    }
                                   } else {
-                                    setDialogWeeklyPhases([...dialogWeeklyPhases, { month: dialogWeeklyMonth, week, day, phase: phase.value }]);
+                                    // Normal toggle for non-subphases
+                                    const exists = dialogWeeklyPhases.some(p => p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value);
+                                    if (exists) {
+                                      setDialogWeeklyPhases(dialogWeeklyPhases.filter(p => !(p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)));
+                                    } else {
+                                      setDialogWeeklyPhases([...dialogWeeklyPhases, { month: dialogWeeklyMonth, week, day, phase: phase.value }]);
+                                    }
                                   }
                                 }}
                                 className={cn(
