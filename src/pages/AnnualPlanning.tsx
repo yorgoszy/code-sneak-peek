@@ -329,9 +329,12 @@ const AnnualPlanning: React.FC = () => {
       const daysPerWeek = weeks[0]?.program_days?.length || 0;
       if (!daysPerWeek) continue;
 
+      // Normal mapping (same as AllUpcomingCompetitionsCard)
+      let hasAnyCompetitionDay = false;
       weeks.forEach((week: any, weekIndex: number) => {
         (week.program_days || []).forEach((day: any, dayIndex: number) => {
           if (!day?.is_competition_day) return;
+          hasAnyCompetitionDay = true;
 
           const totalDayIndex = weekIndex * daysPerWeek + dayIndex;
           if (totalDayIndex >= trainingDates.length) return;
@@ -346,6 +349,15 @@ const AnnualPlanning: React.FC = () => {
           dateSet.add(date.toISOString().slice(0, 10));
         });
       });
+
+      // Fallback: if assignment has only 1 scheduled date and the template contains a competition day,
+      // treat that single date as the competition day.
+      if (trainingDates.length === 1 && hasAnyCompetitionDay) {
+        const date = new Date(trainingDates[0]);
+        if (!Number.isNaN(date.getTime()) && date.getFullYear() === targetYear) {
+          dateSet.add(date.toISOString().slice(0, 10));
+        }
+      }
     }
 
     return Array.from(dateSet)
