@@ -1284,6 +1284,9 @@ const AnnualPlanning: React.FC = () => {
                             );
                           }
                           
+                          // Ελέγχουμε αν η φάση είναι επιλεγμένη στο Monthly για αυτή την εβδομάδα
+                          const isMonthlySelected = isMonthlyPhaseSelected(selectedWeeklyMonth, week, phase.value);
+                          
                           return (
                             <td
                               key={`${weekIndex}-${dayIndex}`}
@@ -1291,7 +1294,8 @@ const AnnualPlanning: React.FC = () => {
                               className={cn(
                                 "border p-0 text-center transition-colors h-3 sm:h-4",
                                 isValidDate ? "cursor-pointer" : "bg-muted/30 cursor-default",
-                                isSelected && isValidDate && phase.color
+                                isValidDate && phase.color,
+                                isSelected ? "" : (isMonthlySelected ? "bg-opacity-10" : "bg-opacity-0")
                               )}
                             >
                               {isSelected && isValidDate && (
