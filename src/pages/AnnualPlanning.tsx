@@ -1394,7 +1394,7 @@ const AnnualPlanning: React.FC = () => {
 
       {/* View/Edit Dialog - Responsive */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-5xl h-auto max-h-[95vh] p-2 sm:p-3 rounded-none overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-5xl h-auto max-h-[95vh] p-2 sm:p-3 rounded-none overflow-y-auto [&>button]:hidden">
           <DialogHeader className="pb-0.5 sm:pb-1">
             <DialogTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-sm">
               <div className="flex items-center gap-2">
