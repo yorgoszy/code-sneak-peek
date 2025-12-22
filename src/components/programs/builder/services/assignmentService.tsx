@@ -216,7 +216,7 @@ export const assignmentService = {
 
         if (week.program_days && week.program_days.length > 0) {
           for (const day of week.program_days) {
-            console.log('📋 Creating day:', day.name);
+            console.log('📋 Creating day:', day.name, 'is_competition_day:', day.is_competition_day);
             
             const { data: dayData, error: dayError } = await supabase
               .from('program_days')
