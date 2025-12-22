@@ -1447,6 +1447,16 @@ const AnnualPlanning: React.FC = () => {
                     </Button>
                   </>
                 )}
+                {dialogMode === 'view' && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-none h-5 w-5 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                    onClick={() => setDialogOpen(false)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
             </DialogTitle>
           </DialogHeader>
