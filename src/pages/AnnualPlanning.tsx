@@ -915,6 +915,144 @@ const AnnualPlanning: React.FC = () => {
         .insert(weeklyToInsert);
     }
 
+    // Create program_days with is_competition_day for competition phases
+    const competitionPhases = dialogWeeklyPhases.filter(p => p.phase === 'competition');
+    if (competitionPhases.length > 0) {
+      for (const compPhase of competitionPhases) {
+        // Calculate actual date from month/week/day
+        const firstDayOfMonth = new Date(dialogYear, compPhase.month - 1, 1);
+        const dayOfWeek = firstDayOfMonth.getDay();
+        const offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert Sunday=0 to Monday=0
+        const firstMondayOffset = offset === 0 ? 0 : 7 - offset;
+        const weekStartDate = new Date(dialogYear, compPhase.month - 1, 1 + firstMondayOffset + (compPhase.week - 1) * 7);
+        const competitionDate = new Date(weekStartDate);
+        competitionDate.setDate(weekStartDate.getDate() + (compPhase.day - 1));
+        const competitionDateStr = competitionDate.toISOString().split('T')[0];
+
+        // Check if a program exists for this user for the year
+        const programName = `Competition ${dialogYear} - ${dialogMacrocycle.user_name}`;
+        let { data: existingProgram } = await supabase
+          .from('programs')
+          .select('id')
+          .eq('user_id', dialogMacrocycle.user_id)
+          .eq('name', programName)
+          .single();
+
+        let programId: string;
+        if (!existingProgram) {
+          // Create program
+          const { data: newProgram, error: programError } = await supabase
+            .from('programs')
+            .insert({
+              name: programName,
+              user_id: dialogMacrocycle.user_id,
+              type: 'competition',
+              status: 'active',
+              is_template: false
+            })
+            .select('id')
+            .single();
+
+          if (programError || !newProgram) {
+            console.error('Error creating competition program:', programError);
+            continue;
+          }
+          programId = newProgram.id;
+        } else {
+          programId = existingProgram.id;
+        }
+
+        // Check if week exists
+        const weekName = `Εβδομάδα ${compPhase.week} - ${MONTHS_DROPDOWN[compPhase.month - 1]}`;
+        let { data: existingWeek } = await supabase
+          .from('program_weeks')
+          .select('id')
+          .eq('program_id', programId)
+          .eq('week_number', compPhase.week)
+          .single();
+
+        let weekId: string;
+        if (!existingWeek) {
+          const { data: newWeek, error: weekError } = await supabase
+            .from('program_weeks')
+            .insert({
+              program_id: programId,
+              name: weekName,
+              week_number: compPhase.week
+            })
+            .select('id')
+            .single();
+
+          if (weekError || !newWeek) {
+            console.error('Error creating program week:', weekError);
+            continue;
+          }
+          weekId = newWeek.id;
+        } else {
+          weekId = existingWeek.id;
+        }
+
+        // Check if day exists
+        const dayName = `Ημέρα Αγώνα - ${competitionDateStr}`;
+        const { data: existingDay } = await supabase
+          .from('program_days')
+          .select('id')
+          .eq('week_id', weekId)
+          .eq('is_competition_day', true)
+          .eq('day_number', compPhase.day)
+          .single();
+
+        if (!existingDay) {
+          const { error: dayError } = await supabase
+            .from('program_days')
+            .insert({
+              week_id: weekId,
+              name: dayName,
+              day_number: compPhase.day,
+              is_competition_day: true
+            });
+
+          if (dayError) {
+            console.error('Error creating competition day:', dayError);
+          }
+        }
+
+        // Create assignment if not exists
+        const { data: existingAssignment } = await supabase
+          .from('program_assignments')
+          .select('id')
+          .eq('program_id', programId)
+          .eq('user_id', dialogMacrocycle.user_id)
+          .single();
+
+        if (!existingAssignment) {
+          await supabase
+            .from('program_assignments')
+            .insert({
+              program_id: programId,
+              user_id: dialogMacrocycle.user_id,
+              status: 'active',
+              training_dates: [competitionDateStr]
+            });
+        } else {
+          // Update training_dates to include new competition date
+          const { data: assignmentData } = await supabase
+            .from('program_assignments')
+            .select('training_dates')
+            .eq('id', existingAssignment.id)
+            .single();
+
+          const existingDates = assignmentData?.training_dates || [];
+          if (!existingDates.includes(competitionDateStr)) {
+            await supabase
+              .from('program_assignments')
+              .update({ training_dates: [...existingDates, competitionDateStr] })
+              .eq('id', existingAssignment.id);
+          }
+        }
+      }
+    }
+
     toast.success('Οι αλλαγές αποθηκεύτηκαν');
     setDialogOpen(false);
     fetchAssignedMacrocycles();
