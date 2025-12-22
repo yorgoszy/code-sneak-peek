@@ -856,6 +856,14 @@ const AnnualPlanning: React.FC = () => {
       if (comp && !alreadyIncluded) allSubPhases.push({ ...comp, parentPhase: 'competition' });
     }
 
+    // Sort phases according to PHASES order
+    const phaseOrder = PHASES.map(p => p.value);
+    allSubPhases.sort((a, b) => {
+      const indexA = phaseOrder.indexOf(a.parentPhase);
+      const indexB = phaseOrder.indexOf(b.parentPhase);
+      return indexA - indexB;
+    });
+
     return allSubPhases;
   }, [dialogMonthlyPhases, dialogWeeklyMonth, dialogCompetitionDates, dialogYear]);
 
