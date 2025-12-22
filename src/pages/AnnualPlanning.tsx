@@ -335,7 +335,7 @@ const AnnualPlanning: React.FC = () => {
         `
         training_dates,
         programs!fk_program_assignments_program_id (
-          program_weeks (
+          program_weeks!fk_program_weeks_program_id (
             program_days (
               is_competition_day
             )
@@ -591,75 +591,112 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
-    // Insert annual phases
-    const phasesToInsert = selectedPhases.map(p => ({
-      user_id: selectedUser.id,
-      year,
-      month: p.month,
-      phase: p.phase
-    }));
-
-    const { error: annualError } = await supabase
-      .from('user_annual_phases')
-      .insert(phasesToInsert);
-
-    if (annualError) {
-      toast.error('Σφάλμα κατά την ανάθεση');
-      return;
-    }
-
-    // Insert monthly phases
-    if (monthlyPhases.length > 0) {
-      const monthlyToInsert = monthlyPhases.map(p => ({
-        user_id: selectedUser.id,
-        year,
-        month: p.month,
-        week: p.week,
-        phase: p.phase
-      }));
+    try {
+      // Overwrite existing plan for this user+year (prevents duplicate constraint errors)
+      await supabase
+        .from('user_annual_phases')
+        .delete()
+        .eq('user_id', selectedUser.id)
+        .eq('year', year);
 
       await supabase
         .from('user_monthly_phases')
-        .insert(monthlyToInsert);
-    }
-
-    // Insert weekly phases
-    if (weeklyPhases.length > 0) {
-      const weeklyToInsert = weeklyPhases.map(p => ({
-        user_id: selectedUser.id,
-        year,
-        month: p.month,
-        week: p.week,
-        day: p.day,
-        phase: p.phase
-      }));
+        .delete()
+        .eq('user_id', selectedUser.id)
+        .eq('year', year);
 
       await supabase
         .from('user_weekly_phases')
-        .insert(weeklyToInsert);
+        .delete()
+        .eq('user_id', selectedUser.id)
+        .eq('year', year);
 
-      // Create ProgramCard(s) for competition day(s)
-      const competitionPhases = weeklyPhases.filter(p => p.phase === 'competition');
-      for (const comp of competitionPhases) {
-        try {
-          await ensureCompetitionProgramCard({
-            userId: selectedUser.id,
-            userName: selectedUser.name,
-            year,
-            phase: { month: comp.month, week: comp.week, day: comp.day }
-          });
-        } catch (e) {
-          console.error('ensureCompetitionProgramCard failed:', e);
+      // Insert annual phases
+      const phasesToInsert = selectedPhases.map((p) => ({
+        user_id: selectedUser.id,
+        year,
+        month: p.month,
+        phase: p.phase,
+      }));
+
+      const { error: annualError } = await supabase
+        .from('user_annual_phases')
+        .insert(phasesToInsert);
+
+      if (annualError) {
+        console.error('Annual assign error:', annualError);
+        toast.error(`Σφάλμα κατά την ανάθεση: ${annualError.message}`);
+        return;
+      }
+
+      // Insert monthly phases
+      if (monthlyPhases.length > 0) {
+        const monthlyToInsert = monthlyPhases.map((p) => ({
+          user_id: selectedUser.id,
+          year,
+          month: p.month,
+          week: p.week,
+          phase: p.phase,
+        }));
+
+        const { error: monthlyError } = await supabase
+          .from('user_monthly_phases')
+          .insert(monthlyToInsert);
+
+        if (monthlyError) {
+          console.error('Monthly assign error:', monthlyError);
+          toast.error(`Σφάλμα κατά την ανάθεση (monthly): ${monthlyError.message}`);
+          return;
         }
       }
-    }
 
-    toast.success(`Ο μακροκύκλος ανατέθηκε στον ${selectedUser.name}`);
-    setSelectedPhases([]);
-    setMonthlyPhases([]);
-    setWeeklyPhases([]);
-    setSelectedUser(null);
-    fetchAssignedMacrocycles();
+      // Insert weekly phases
+      if (weeklyPhases.length > 0) {
+        const weeklyToInsert = weeklyPhases.map((p) => ({
+          user_id: selectedUser.id,
+          year,
+          month: p.month,
+          week: p.week,
+          day: p.day,
+          phase: p.phase,
+        }));
+
+        const { error: weeklyError } = await supabase
+          .from('user_weekly_phases')
+          .insert(weeklyToInsert);
+
+        if (weeklyError) {
+          console.error('Weekly assign error:', weeklyError);
+          toast.error(`Σφάλμα κατά την ανάθεση (weekly): ${weeklyError.message}`);
+          return;
+        }
+
+        // Create ProgramCard(s) for competition day(s)
+        const competitionPhases = weeklyPhases.filter((p) => p.phase === 'competition');
+        for (const comp of competitionPhases) {
+          try {
+            await ensureCompetitionProgramCard({
+              userId: selectedUser.id,
+              userName: selectedUser.name,
+              year,
+              phase: { month: comp.month, week: comp.week, day: comp.day },
+            });
+          } catch (e) {
+            console.error('ensureCompetitionProgramCard failed:', e);
+          }
+        }
+      }
+
+      toast.success(`Ο μακροκύκλος ανατέθηκε στον ${selectedUser.name}`);
+      setSelectedPhases([]);
+      setMonthlyPhases([]);
+      setWeeklyPhases([]);
+      setSelectedUser(null);
+      fetchAssignedMacrocycles();
+    } catch (e: any) {
+      console.error('Assign failed:', e);
+      toast.error('Σφάλμα κατά την ανάθεση');
+    }
   };
 
   const filteredUsers = useMemo(() => {
