@@ -817,27 +817,44 @@ const AnnualPlanning: React.FC = () => {
 
   // Get all unique dialog weekly sub-phases for row rendering
   const getDialogWeeklySubPhases = useMemo(() => {
-    const monthPhases = dialogMonthlyPhases.filter(p => p.month === dialogWeeklyMonth);
-    const uniquePhaseValues = [...new Set(monthPhases.map(p => p.phase))];
-    
-    const allSubPhases: { value: string; label: string; shortLabel: string; color: string; parentPhase: string }[] = [];
-    
-    uniquePhaseValues.forEach(phaseValue => {
+    const monthPhases = dialogMonthlyPhases.filter((p) => p.month === dialogWeeklyMonth);
+    const uniquePhaseValues = [...new Set(monthPhases.map((p) => p.phase))];
+
+    const allSubPhases: {
+      value: string;
+      label: string;
+      shortLabel: string;
+      color: string;
+      parentPhase: string;
+    }[] = [];
+
+    uniquePhaseValues.forEach((phaseValue) => {
       const subPhases = SUB_PHASES[phaseValue];
       if (subPhases) {
-        subPhases.forEach(sp => {
+        subPhases.forEach((sp) => {
           allSubPhases.push({ ...sp, parentPhase: phaseValue });
         });
       } else {
-        const mainPhase = PHASES.find(p => p.value === phaseValue);
+        const mainPhase = PHASES.find((p) => p.value === phaseValue);
         if (mainPhase) {
           allSubPhases.push({ ...mainPhase, parentPhase: phaseValue });
         }
       }
     });
-    
+
+    // Ensure Competition row exists in weekly grid if there are competition dates in this month
+    const hasCompetitionInMonth = dialogCompetitionDates.some(
+      (d) => d.getFullYear() === dialogYear && d.getMonth() + 1 === dialogWeeklyMonth
+    );
+
+    if (hasCompetitionInMonth) {
+      const comp = PHASES.find((p) => p.value === 'competition');
+      const alreadyIncluded = allSubPhases.some((p) => p.value === 'competition');
+      if (comp && !alreadyIncluded) allSubPhases.push({ ...comp, parentPhase: 'competition' });
+    }
+
     return allSubPhases;
-  }, [dialogMonthlyPhases, dialogWeeklyMonth]);
+  }, [dialogMonthlyPhases, dialogWeeklyMonth, dialogCompetitionDates, dialogYear]);
 
   const handleSaveDialogChanges = async () => {
     if (!dialogMacrocycle) return;
@@ -1737,12 +1754,28 @@ const AnnualPlanning: React.FC = () => {
                 </thead>
                 <tbody>
                   {PHASES.map((phase) => {
-                    const monthsWithThisPhase = dialogPhases
-                      .filter(p => p.phase === phase.value)
-                      .map(p => p.month);
-                    
+                    const monthsSelected = dialogPhases
+                      .filter((p) => p.phase === phase.value)
+                      .map((p) => p.month);
+
+                    const monthsFromCompetitionDates =
+                      phase.value === 'competition'
+                        ? Array.from(
+                            new Set(
+                              dialogCompetitionDates
+                                .filter((d) => d.getFullYear() === dialogYear)
+                                .map((d) => d.getMonth() + 1)
+                            )
+                          )
+                        : [];
+
+                    const monthsWithThisPhase = Array.from(
+                      new Set([...monthsSelected, ...monthsFromCompetitionDates])
+                    );
+
+                    // Show row even if user hasn't selected Competition phase, as long as competition dates exist.
                     if (monthsWithThisPhase.length === 0) return null;
-                    
+
                     return (
                       <tr key={phase.value}>
                         <td className="border p-0.5 font-medium bg-background">
