@@ -297,10 +297,144 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         });
         console.log('🥗 AI Nutrition Data saved for QuickAssign:', actionData.name);
       }
+
+      // Handle annual plan creation/assignment
+      if (actionData.action === 'create_annual_plan') {
+        await handleCreateAnnualPlan(actionData);
+      }
+
+      // Handle annual plan deletion
+      if (actionData.action === 'delete_annual_plan') {
+        await handleDeleteAnnualPlan(actionData);
+      }
     } catch (error) {
       console.error('Error processing AI action:', error, 'JSON:', jsonStr);
       toast.error('Σφάλμα επεξεργασίας AI action');
     }
+  };
+
+  // Handle create annual plan action
+  const handleCreateAnnualPlan = async (actionData: any) => {
+    try {
+      console.log('📅 Creating annual plan:', actionData);
+      
+      const year = actionData.year || new Date().getFullYear();
+      const phases = actionData.phases || [];
+      
+      // Resolve user IDs from names
+      let userIds: string[] = [];
+      
+      if (actionData.user_ids && Array.isArray(actionData.user_ids)) {
+        // Multiple users
+        for (const nameOrEmail of actionData.user_ids) {
+          const userId = await resolveUserIdByName(nameOrEmail);
+          if (userId) userIds.push(userId);
+        }
+      } else if (actionData.user_id) {
+        // Single user
+        const userId = await resolveUserIdByName(actionData.user_id);
+        if (userId) userIds.push(userId);
+      }
+      
+      if (userIds.length === 0) {
+        toast.error('Δεν βρέθηκαν χρήστες για την ανάθεση');
+        return;
+      }
+      
+      // Create phases for each user
+      for (const userId of userIds) {
+        const phasesToInsert = phases.map((p: any) => ({
+          user_id: userId,
+          year,
+          month: p.month,
+          phase: p.phase
+        }));
+        
+        const { error } = await supabase
+          .from('user_annual_phases')
+          .insert(phasesToInsert);
+        
+        if (error) {
+          console.error('Error inserting phases:', error);
+          toast.error(`Σφάλμα κατά την ανάθεση μακροκύκλου`);
+          return;
+        }
+      }
+      
+      toast.success(`Ο μακροκύκλος ανατέθηκε σε ${userIds.length} χρήστη(ες)!`);
+      console.log('✅ Annual plan created successfully');
+    } catch (error) {
+      console.error('Error creating annual plan:', error);
+      toast.error('Σφάλμα κατά τη δημιουργία μακροκύκλου');
+    }
+  };
+
+  // Handle delete annual plan action
+  const handleDeleteAnnualPlan = async (actionData: any) => {
+    try {
+      console.log('🗑️ Deleting annual plan:', actionData);
+      
+      const year = actionData.year || new Date().getFullYear();
+      const userId = await resolveUserIdByName(actionData.user_id);
+      
+      if (!userId) {
+        toast.error('Δεν βρέθηκε ο χρήστης');
+        return;
+      }
+      
+      // Delete annual phases
+      const { error: annualError } = await supabase
+        .from('user_annual_phases')
+        .delete()
+        .eq('user_id', userId)
+        .eq('year', year);
+      
+      if (annualError) {
+        console.error('Error deleting annual phases:', annualError);
+        toast.error('Σφάλμα κατά τη διαγραφή');
+        return;
+      }
+      
+      // Also delete monthly and weekly phases
+      await supabase
+        .from('user_monthly_phases')
+        .delete()
+        .eq('user_id', userId)
+        .eq('year', year);
+      
+      await supabase
+        .from('user_weekly_phases')
+        .delete()
+        .eq('user_id', userId)
+        .eq('year', year);
+      
+      toast.success('Ο μακροκύκλος διαγράφηκε!');
+      console.log('✅ Annual plan deleted successfully');
+    } catch (error) {
+      console.error('Error deleting annual plan:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή μακροκύκλου');
+    }
+  };
+
+  // Resolve user ID from name or email
+  const resolveUserIdByName = async (nameOrEmail: string): Promise<string | null> => {
+    if (!nameOrEmail) return null;
+    
+    // Check if it's already a UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(nameOrEmail)) {
+      return nameOrEmail;
+    }
+    
+    // Search by name or email
+    const { data } = await supabase
+      .from('app_users')
+      .select('id')
+      .or(`name.ilike.%${nameOrEmail}%,email.ilike.%${nameOrEmail}%`)
+      .limit(1)
+      .maybeSingle();
+    
+    return data?.id || null;
   };
 
   // Φιλτράρισμα του ai-action block από το μήνυμα (σιωπηλό - δεν φαίνεται στον χρήστη)
@@ -308,7 +442,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     // Remove ```ai-action...``` blocks
     let filtered = content.replace(/```ai-action[\s\S]*?```/g, '');
     // Also remove any raw JSON action blocks that might not be in code blocks
-    filtered = filtered.replace(/\{[\s\S]*?"action"\s*:\s*"(create_program|open_program_builder|create_nutrition_plan)"[\s\S]*?\}(?:\s*\})*\s*/g, '');
+    filtered = filtered.replace(/\{[\s\S]*?"action"\s*:\s*"(create_program|open_program_builder|create_nutrition_plan|create_annual_plan|delete_annual_plan)"[\s\S]*?\}(?:\s*\})*\s*/g, '');
     return filtered.trim();
   };
 
