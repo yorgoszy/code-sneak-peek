@@ -4079,6 +4079,22 @@ ${isAdmin ? `
 - days_per_week: αριθμός προπονήσεων/εβδομάδα (π.χ. 3, 4, 5)
 - Αν δεν ξέρεις τις μέρες, ΡΩΤΑ: "Ποιες ημέρες θέλεις προπόνηση;" και ΜΗΝ δημιουργήσεις μακροκύκλο.
 
+🏃 ΥΠΟΦΑΣΕΙΣ ΔΥΝΑΜΗΣ (ΑΥΤΟΜΑΤΗ ΣΥΜΠΛΗΡΩΣΗ):
+Οι υποφάσεις (Starting/Explosive/Reactive Strength) στον Εβδομαδιαίο Προγραμματισμό συμπληρώνονται ΑΥΤΟΜΑΤΑ με βάση το αλτικό προφίλ του αθλητή:
+
+ΛΟΓΙΚΗ ΑΛΤΙΚΟΥ ΠΡΟΦΙΛ:
+- Αν Non-CMJ < CMJ και Non-CMJ < Depth Jump → Primary: Starting Strength, Secondary: Reactive Strength
+- Αν CMJ < Non-CMJ και CMJ < Depth Jump → Primary: Explosive Strength, Secondary: Starting Strength
+- Αν Depth Jump < Non-CMJ και Depth Jump < CMJ → Primary: Reactive Strength, Secondary: Explosive Strength
+
+ΑΝ ΔΕΝ ΥΠΑΡΧΕΙ ΑΛΤΙΚΟ ΠΡΟΦΙΛ → Γίνεται 3-εβδομαδιαία εναλλαγή:
+- Εβδομάδες 1-3: Primary: Starting Strength, Secondary: Explosive Strength
+- Εβδομάδες 4-6: Primary: Explosive Strength, Secondary: Reactive Strength
+- Εβδομάδες 7-9: Primary: Reactive Strength, Secondary: Starting Strength
+(και συνεχίζεται ο κύκλος)
+
+ΣΗΜΑΝΤΙΚΟ: Οι υποφάσεις εφαρμόζονται ΜΟΝΟ στις φάσεις maximal-strength και power!
+
 ΠΑΡΑΔΕΙΓΜΑ ΔΗΜΙΟΥΡΓΙΑΣ/ΑΝΑΘΕΣΗΣ ANNUAL PLAN (ΧΩΡΙΣ year, με training_days):
 \`\`\`ai-action
 {"action":"create_annual_plan","user_id":"Γιάννης Παπαδόπουλος","training_days":[1,3,5],"days_per_week":3,"phases":[{"month":1,"phase":"corrective"},{"month":2,"phase":"stabilization"},{"month":3,"phase":"functional-hypertrophy"},{"month":4,"phase":"competition"}]}

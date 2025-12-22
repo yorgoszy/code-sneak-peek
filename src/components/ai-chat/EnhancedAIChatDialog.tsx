@@ -692,7 +692,89 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
         const daysToMark = trainingDays ?? [1, 2, 3, 4, 5, 6, 7];
 
+        // Fetch jump profile to determine strength sub-phases
+        const { data: jumpSessions } = await supabase
+          .from('jump_test_sessions')
+          .select(`
+            id,
+            test_date,
+            jump_test_data (
+              non_counter_movement_jump,
+              counter_movement_jump,
+              depth_jump
+            )
+          `)
+          .eq('user_id', userId)
+          .order('test_date', { ascending: false })
+          .limit(1);
+
+        // Determine primary/secondary strength based on jump profile
+        let primaryStrength = 'starting-strength';
+        let secondaryStrength = 'explosive-strength';
+        let hasJumpProfile = false;
+
+        if (jumpSessions && jumpSessions.length > 0 && jumpSessions[0].jump_test_data?.length > 0) {
+          const jumpData = jumpSessions[0].jump_test_data[0];
+          const nonCmj = jumpData.non_counter_movement_jump;
+          const cmj = jumpData.counter_movement_jump;
+          const depthJump = jumpData.depth_jump;
+
+          if (nonCmj !== null && cmj !== null && depthJump !== null) {
+            hasJumpProfile = true;
+            
+            // If Non-CMJ < CMJ and Non-CMJ < Depth Jump → Primary: Starting, Secondary: Reactive
+            if (nonCmj < cmj && nonCmj < depthJump) {
+              primaryStrength = 'starting-strength';
+              secondaryStrength = 'reactive-strength';
+            }
+            // If CMJ < Non-CMJ and CMJ < Depth Jump → Primary: Explosive, Secondary: Starting
+            else if (cmj < nonCmj && cmj < depthJump) {
+              primaryStrength = 'explosive-strength';
+              secondaryStrength = 'starting-strength';
+            }
+            // If Depth Jump < Non-CMJ and Depth Jump < CMJ → Primary: Reactive, Secondary: Explosive
+            else if (depthJump < nonCmj && depthJump < cmj) {
+              primaryStrength = 'reactive-strength';
+              secondaryStrength = 'explosive-strength';
+            }
+            
+            console.log(`🏃 Jump Profile: Non-CMJ=${nonCmj}, CMJ=${cmj}, Depth=${depthJump}`);
+            console.log(`💪 Strength: Primary=${primaryStrength}, Secondary=${secondaryStrength}`);
+          }
+        }
+
+        // If no jump profile, we'll use 3-week rotation logic
+        // Week 1-3: Starting (primary) / Explosive (secondary)
+        // Week 4-6: Explosive (primary) / Reactive (secondary)
+        // Week 7-9: Reactive (primary) / Starting (secondary)
+        const getStrengthByWeekRotation = (weekIndex: number): { primary: string; secondary: string } => {
+          const cycle = Math.floor(weekIndex / 3) % 3;
+          switch (cycle) {
+            case 0:
+              return { primary: 'starting-strength', secondary: 'explosive-strength' };
+            case 1:
+              return { primary: 'explosive-strength', secondary: 'reactive-strength' };
+            case 2:
+              return { primary: 'reactive-strength', secondary: 'starting-strength' };
+            default:
+              return { primary: 'starting-strength', secondary: 'explosive-strength' };
+          }
+        };
+
+        let weekCounter = 0;
         for (const monthlyPhase of monthlyPhasesToInsert) {
+          // Only add sub-phases for strength-related phases
+          const isStrengthPhase = ['maximal-strength', 'power'].includes(monthlyPhase.phase);
+          
+          let currentPrimary = primaryStrength;
+          let currentSecondary = secondaryStrength;
+          
+          if (!hasJumpProfile && isStrengthPhase) {
+            const rotation = getStrengthByWeekRotation(weekCounter);
+            currentPrimary = rotation.primary;
+            currentSecondary = rotation.secondary;
+          }
+          
           for (const day of daysToMark) {
             weeklyPhasesToInsert.push({
               user_id: userId,
@@ -701,7 +783,16 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
               week: monthlyPhase.week,
               day,
               phase: monthlyPhase.phase,
+              // Add sub-phases for strength phases
+              ...(isStrengthPhase && {
+                primary_subphase: currentPrimary,
+                secondary_subphase: currentSecondary,
+              }),
             });
+          }
+          
+          if (isStrengthPhase) {
+            weekCounter++;
           }
         }
 
