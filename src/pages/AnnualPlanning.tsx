@@ -200,10 +200,10 @@ const AnnualPlanning: React.FC = () => {
   const getWeeklySubPhases = useMemo(() => {
     const monthPhases = monthlyPhases.filter(p => p.month === selectedWeeklyMonth);
     const uniquePhaseValues = [...new Set(monthPhases.map(p => p.phase))];
-    
+
     // Collect all sub-phases for selected monthly phases
     const allSubPhases: { value: string; label: string; shortLabel: string; color: string; parentPhase: string }[] = [];
-    
+
     uniquePhaseValues.forEach(phaseValue => {
       const subPhases = SUB_PHASES[phaseValue];
       if (subPhases) {
@@ -219,7 +219,36 @@ const AnnualPlanning: React.FC = () => {
         }
       }
     });
-    
+
+    // Fixed, business-defined ordering (NOT click order)
+    const weeklyOrder = [
+      'corrective',
+      'stabilization',
+      'connecting-linking',
+      'movement-skills',
+      'non-functional-hypertrophy',
+      'functional-hypertrophy',
+      'starting-strength',
+      'explosive-strength',
+      'reactive-strength',
+      'str-spd',
+      'pwr',
+      'spd-str',
+      'spd',
+      'str-end',
+      'pwr-end',
+      'spd-end',
+      'aero-end',
+      'competition',
+    ];
+
+    const orderIndex = (v: string) => {
+      const idx = weeklyOrder.indexOf(v);
+      return idx === -1 ? Number.MAX_SAFE_INTEGER : idx;
+    };
+
+    allSubPhases.sort((a, b) => orderIndex(a.value) - orderIndex(b.value));
+
     return allSubPhases;
   }, [monthlyPhases, selectedWeeklyMonth]);
 
@@ -1598,8 +1627,8 @@ const AnnualPlanning: React.FC = () => {
                               className={cn(
                                 "border p-0 text-center transition-colors h-3 sm:h-4",
                                 isValidDate ? "cursor-pointer" : "bg-muted/30 cursor-default",
-                                isValidDate && phase.color,
-                                isSelected ? "" : (isMonthlySelected ? "bg-opacity-10" : "bg-opacity-0")
+                                // Always tint available cells so it's obvious they are clickable
+                                isValidDate && (isSelected ? phase.color : `${phase.color}/15`)
                               )}
                             >
                               {isSelected && isValidDate && (
@@ -2149,7 +2178,7 @@ const AnnualPlanning: React.FC = () => {
                                   isValidDate && dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
                                   !isValidDate && "bg-muted/30",
                                   // Tint available cells so it's obvious you can click them
-                                  isPhaseAvailableForWeek && isValidDate && cn(phase.color, showSelected ? "bg-opacity-100" : "bg-opacity-15"),
+                                  isPhaseAvailableForWeek && isValidDate && (showSelected ? phase.color : `${phase.color}/15`),
                                   hasCompetition && !isSelected && "bg-opacity-50"
                                 )}
                               >
