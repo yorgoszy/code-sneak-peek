@@ -153,6 +153,36 @@ export const useBlockActions = (
   };
 
   const updateBlockTrainingType = (weekId: string, dayId: string, blockId: string, trainingType: string) => {
+    // Get the label for the training type
+    const TRAINING_TYPE_LABELS: Record<string, string> = {
+      'warm up': 'warm up',
+      'pillar prep': 'pillar prep',
+      'movement prep': 'mov prep',
+      activation: 'activation',
+      plyos: 'plyos',
+      'movement skills': 'mov skills',
+      'med ball': 'med ball',
+      power: 'power',
+      str: 'str',
+      'str/spd': 'str/spd',
+      pwr: 'pwr',
+      'spd/str': 'spd/str',
+      spd: 'spd',
+      'str/end': 'str/end',
+      'pwr/end': 'pwr/end',
+      'spd/end': 'spd/end',
+      end: 'end',
+      hpr: 'hpr',
+      mobility: 'mobility',
+      'neural act': 'neural act',
+      stability: 'stability',
+      recovery: 'rec',
+      accessory: 'acc',
+      rotational: 'rot',
+    };
+    
+    const blockName = TRAINING_TYPE_LABELS[trainingType] || trainingType;
+    
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
@@ -162,7 +192,7 @@ export const useBlockActions = (
               return {
                 ...day,
                 program_blocks: (day.program_blocks || []).map(block =>
-                  block.id === blockId ? { ...block, training_type: trainingType as any, name: trainingType } : block
+                  block.id === blockId ? { ...block, training_type: trainingType as any, name: blockName } : block
                 )
               };
             }
