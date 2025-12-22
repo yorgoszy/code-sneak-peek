@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ensureCompetitionProgramCard } from "@/pages/annual-planning/competitionProgram";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface AppUser {
   id: string;
@@ -249,6 +250,9 @@ const MacrocycleCard: React.FC<MacrocycleCardProps> = ({
 };
 
 const AnnualPlanning: React.FC = () => {
+  const { isAdmin, userProfile, loading: roleLoading } = useRoleCheck();
+  const isAdminUser = isAdmin();
+  
   const [users, setUsers] = useState<AppUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -546,6 +550,19 @@ const AnnualPlanning: React.FC = () => {
     fetchAssignedMacrocycles();
     fetchSavedMacrocycles();
   }, []);
+
+  // Auto-select current user if not admin
+  useEffect(() => {
+    if (!roleLoading && !isAdminUser && userProfile && !selectedUser) {
+      setSelectedUser({
+        id: userProfile.id,
+        name: userProfile.name,
+        email: userProfile.email,
+        avatar_url: userProfile.avatar_url || userProfile.photo_url || null,
+        photo_url: userProfile.photo_url || null
+      });
+    }
+  }, [roleLoading, isAdminUser, userProfile, selectedUser]);
 
   // Load data when dialog year changes
   useEffect(() => {
@@ -1330,10 +1347,12 @@ const AnnualPlanning: React.FC = () => {
   return (
     <div className="p-2 lg:p-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-3 rounded-none h-8">
+        <TabsList className={cn("w-full rounded-none h-8", isAdminUser ? "grid-cols-3" : "grid-cols-2")} style={{ display: 'grid', gridTemplateColumns: isAdminUser ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
           <TabsTrigger value="new" className="rounded-none text-xs">Νέο</TabsTrigger>
           <TabsTrigger value="assigned" className="rounded-none text-xs">Ανατεθημένα</TabsTrigger>
-          <TabsTrigger value="saved" className="rounded-none text-xs">Αποθηκευμένα</TabsTrigger>
+          {isAdminUser && (
+            <TabsTrigger value="saved" className="rounded-none text-xs">Αποθηκευμένα</TabsTrigger>
+          )}
         </TabsList>
 
         {/* New Macrocycle Tab */}
@@ -1342,9 +1361,11 @@ const AnnualPlanning: React.FC = () => {
           <Card className="rounded-none border-l-0">
             <CardContent className="p-2 sm:p-4">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
-                {/* User Selection */}
+                {/* User Selection - Only show for admins */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium">Επιλογή Χρήστη</label>
+                  <label className="text-xs font-medium">
+                    {isAdminUser ? 'Επιλογή Χρήστη' : 'Χρήστης'}
+                  </label>
                   {selectedUser ? (
                     <div className="flex items-center gap-2 p-1.5 bg-muted rounded-none">
                       <Avatar className="h-6 w-6">
@@ -1354,16 +1375,18 @@ const AnnualPlanning: React.FC = () => {
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">{selectedUser.name}</p>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setSelectedUser(null)}
-                        className="rounded-none text-[10px] h-6 px-2"
-                      >
-                        Αλλαγή
-                      </Button>
+                      {isAdminUser && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => setSelectedUser(null)}
+                          className="rounded-none text-[10px] h-6 px-2"
+                        >
+                          Αλλαγή
+                        </Button>
+                      )}
                     </div>
-                  ) : (
+                  ) : isAdminUser ? (
                     <div className="relative">
                       <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                       <Input
@@ -1407,6 +1430,10 @@ const AnnualPlanning: React.FC = () => {
                         </div>
                       )}
                     </div>
+                  ) : (
+                    <div className="p-1.5 bg-muted rounded-none text-xs text-muted-foreground">
+                      Φόρτωση...
+                    </div>
                   )}
                 </div>
 
@@ -1425,15 +1452,17 @@ const AnnualPlanning: React.FC = () => {
                 <div className="space-y-1">
                   <label className="text-xs font-medium">&nbsp;</label>
                   <div className="flex gap-2">
-                    <Button
-                      onClick={handleSave}
-                      variant="outline"
-                      className="rounded-none flex-1 h-8 text-xs"
-                      disabled={selectedPhases.length === 0 || !macrocycleName.trim()}
-                    >
-                      <Save className="w-3 h-3 mr-1" />
-                      Αποθήκευση
-                    </Button>
+                    {isAdminUser && (
+                      <Button
+                        onClick={handleSave}
+                        variant="outline"
+                        className="rounded-none flex-1 h-8 text-xs"
+                        disabled={selectedPhases.length === 0 || !macrocycleName.trim()}
+                      >
+                        <Save className="w-3 h-3 mr-1" />
+                        Αποθήκευση
+                      </Button>
+                    )}
                     <Button
                       onClick={handleAssign}
                       className="rounded-none flex-1 h-8 text-xs"
@@ -1845,31 +1874,38 @@ const AnnualPlanning: React.FC = () => {
 
         {/* Assigned Macrocycles Tab */}
         <TabsContent value="assigned" className="mt-2">
-          {assignedMacrocycles.length === 0 ? (
-            <Card className="rounded-none border-l-0">
-              <CardContent className="p-6">
-                <div className="text-center text-muted-foreground text-sm">
-                  Δεν υπάρχουν ανατεθειμένοι μακροκύκλοι
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {assignedMacrocycles.map((macrocycle) => (
-                <MacrocycleCard 
-                  key={macrocycle.id}
-                  macrocycle={macrocycle}
-                  getInitials={getInitials}
-                  getPhaseColor={getPhaseColor}
-                  onView={handleViewAssignment}
-                  onEdit={handleEditAssignment}
-                  onDelete={handleDeleteAssignment}
-                  MONTHS_FULL={MONTHS_FULL}
-                  PHASES={PHASES}
-                />
-              ))}
-            </div>
-          )}
+          {(() => {
+            // Filter macrocycles for non-admin users
+            const filteredMacrocycles = isAdminUser 
+              ? assignedMacrocycles 
+              : assignedMacrocycles.filter(m => m.user_id === userProfile?.id);
+            
+            return filteredMacrocycles.length === 0 ? (
+              <Card className="rounded-none border-l-0">
+                <CardContent className="p-6">
+                  <div className="text-center text-muted-foreground text-sm">
+                    Δεν υπάρχουν ανατεθειμένοι μακροκύκλοι
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                {filteredMacrocycles.map((macrocycle) => (
+                  <MacrocycleCard 
+                    key={macrocycle.id}
+                    macrocycle={macrocycle}
+                    getInitials={getInitials}
+                    getPhaseColor={getPhaseColor}
+                    onView={handleViewAssignment}
+                    onEdit={handleEditAssignment}
+                    onDelete={handleDeleteAssignment}
+                    MONTHS_FULL={MONTHS_FULL}
+                    PHASES={PHASES}
+                  />
+                ))}
+              </div>
+            );
+          })()}
         </TabsContent>
 
         {/* Saved Macrocycles Tab */}
