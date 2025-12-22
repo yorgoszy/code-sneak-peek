@@ -12,40 +12,27 @@ import { Dumbbell, Settings, AlertTriangle, Trash2, Plus, Search } from 'lucide-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// Phases matching AnnualPlanning structure
-const PHASES_CONFIG = [
-  { value: 'corrective', label: 'Corrective', shortLabel: 'COR', color: 'bg-red-500', category: 'Ετήσιος Προγραμματισμός' },
-  { value: 'stabilization', label: 'Stabilization Training', shortLabel: 'STB', color: 'bg-orange-500', category: 'Ετήσιος Προγραμματισμός' },
-  { value: 'connecting-linking', label: 'Connecting Linking', shortLabel: 'CL', color: 'bg-yellow-500', category: 'Ετήσιος Προγραμματισμός' },
-  { value: 'movement-skills', label: 'Movement Skills', shortLabel: 'MS', color: 'bg-amber-500', category: 'Ετήσιος Προγραμματισμός' },
-  { value: 'non-functional-hypertrophy', label: 'Non-Functional Hypertrophy', shortLabel: 'NFH', color: 'bg-lime-500', category: 'Μηνιαίος Προγραμματισμός' },
-  { value: 'functional-hypertrophy', label: 'Functional Hypertrophy', shortLabel: 'FH', color: 'bg-green-500', category: 'Μηνιαίος Προγραμματισμός' },
-  { value: 'maximal-strength', label: 'Maximal Strength Training', shortLabel: 'MAX', color: 'bg-teal-500', category: 'Μηνιαίος Προγραμματισμός' },
-  { value: 'power', label: 'Power Training', shortLabel: 'PWR', color: 'bg-blue-500', category: 'Μηνιαίος Προγραμματισμός' },
-  { value: 'endurance', label: 'Endurance', shortLabel: 'END', color: 'bg-purple-500', category: 'Μηνιαίος Προγραμματισμός' },
-  { value: 'competition', label: 'Competition', shortLabel: 'COMP', color: 'bg-pink-500', category: 'Ετήσιος Προγραμματισμός' },
+// Phases in exact order from Weekly Planning (Εβδομαδιαίος Προγραμματισμός)
+const PHASES_ORDER = [
+  { value: 'corrective', label: 'Corrective', color: 'bg-red-500' },
+  { value: 'stabilization', label: 'Stabilization Training', color: 'bg-orange-500' },
+  { value: 'connecting-linking', label: 'Connecting Linking', color: 'bg-yellow-500' },
+  { value: 'movement-skills', label: 'Movement Skills', color: 'bg-amber-500' },
+  { value: 'non-functional-hypertrophy', label: 'Non-Functional Hypertrophy', color: 'bg-lime-500' },
+  { value: 'functional-hypertrophy', label: 'Functional Hypertrophy', color: 'bg-green-500' },
+  { value: 'starting-strength', label: 'Starting Strength', color: 'bg-teal-400' },
+  { value: 'explosive-strength', label: 'Explosive Strength', color: 'bg-teal-500' },
+  { value: 'reactive-strength', label: 'Reactive Strength', color: 'bg-teal-600' },
+  { value: 'str-spd', label: 'Strength/Speed', color: 'bg-blue-400' },
+  { value: 'pwr', label: 'Power', color: 'bg-blue-500' },
+  { value: 'spd-str', label: 'Speed/Strength', color: 'bg-blue-600' },
+  { value: 'spd', label: 'Speed', color: 'bg-blue-700' },
+  { value: 'str-end', label: 'Strength Endurance', color: 'bg-purple-400' },
+  { value: 'pwr-end', label: 'Power Endurance', color: 'bg-purple-500' },
+  { value: 'spd-end', label: 'Speed Endurance', color: 'bg-purple-600' },
+  { value: 'aero-end', label: 'Aerobic Endurance', color: 'bg-purple-700' },
+  { value: 'competition', label: 'Competition', color: 'bg-pink-500' },
 ];
-
-// Sub-phases for weekly planning (Εβδομαδιαίος Προγραμματισμός)
-const SUB_PHASES_CONFIG = {
-  'maximal-strength': [
-    { value: 'starting-strength', label: 'Starting Strength', shortLabel: 'START', color: 'bg-teal-400' },
-    { value: 'explosive-strength', label: 'Explosive Strength', shortLabel: 'EXPL', color: 'bg-teal-500' },
-    { value: 'reactive-strength', label: 'Reactive Strength', shortLabel: 'REACT', color: 'bg-teal-600' },
-  ],
-  'power': [
-    { value: 'str-spd', label: 'Strength/Speed', shortLabel: 'STR/SPD', color: 'bg-blue-400' },
-    { value: 'pwr', label: 'Power', shortLabel: 'PWR', color: 'bg-blue-500' },
-    { value: 'spd-str', label: 'Speed/Strength', shortLabel: 'SPD/STR', color: 'bg-blue-600' },
-    { value: 'spd', label: 'Speed', shortLabel: 'SPD', color: 'bg-blue-700' },
-  ],
-  'endurance': [
-    { value: 'str-end', label: 'Strength Endurance', shortLabel: 'STR/END', color: 'bg-purple-400' },
-    { value: 'pwr-end', label: 'Power Endurance', shortLabel: 'PWR/END', color: 'bg-purple-500' },
-    { value: 'spd-end', label: 'Speed Endurance', shortLabel: 'SPD/END', color: 'bg-purple-600' },
-    { value: 'aero-end', label: 'Aerobic Endurance', shortLabel: 'AERO/END', color: 'bg-purple-700' },
-  ],
-};
 
 // Functional test issues
 const FUNCTIONAL_ISSUES = [
@@ -113,41 +100,16 @@ const PhaseConfig: React.FC = () => {
     loadMuscles();
   }, []);
 
-  // Group phases by category from PHASES_CONFIG
-  const groupedPhases = useMemo(() => {
-    const groups: Record<string, TrainingPhase[]> = {
-      'Ετήσιος Προγραμματισμός': [],
-      'Μηνιαίος Προγραμματισμός': [],
-      'Εβδομαδιαίος Προγραμματισμός - Strength': [],
-      'Εβδομαδιαίος Προγραμματισμός - Power': [],
-      'Εβδομαδιαίος Προγραμματισμός - Endurance': [],
-    };
-    
-    phases.forEach(phase => {
-      // Check if it's a main phase from PHASES_CONFIG
-      const configPhase = PHASES_CONFIG.find(p => p.value === phase.phase_key);
-      if (configPhase) {
-        groups[configPhase.category].push(phase);
-        return;
-      }
-      
-      // Check if it's a sub-phase
-      for (const [parentKey, subPhases] of Object.entries(SUB_PHASES_CONFIG)) {
-        const subPhase = subPhases.find(sp => sp.value === phase.phase_key);
-        if (subPhase) {
-          if (parentKey === 'maximal-strength') {
-            groups['Εβδομαδιαίος Προγραμματισμός - Strength'].push(phase);
-          } else if (parentKey === 'power') {
-            groups['Εβδομαδιαίος Προγραμματισμός - Power'].push(phase);
-          } else if (parentKey === 'endurance') {
-            groups['Εβδομαδιαίος Προγραμματισμός - Endurance'].push(phase);
-          }
-          return;
-        }
-      }
+  // Sort phases by PHASES_ORDER
+  const orderedPhases = useMemo(() => {
+    return [...phases].sort((a, b) => {
+      const indexA = PHASES_ORDER.findIndex(p => p.value === a.phase_key);
+      const indexB = PHASES_ORDER.findIndex(p => p.value === b.phase_key);
+      // If not found in order, put at end
+      const orderA = indexA === -1 ? 999 : indexA;
+      const orderB = indexB === -1 ? 999 : indexB;
+      return orderA - orderB;
     });
-    
-    return groups;
   }, [phases]);
 
   const mainPhases = useMemo(() => phases.filter(p => p.phase_type === 'main'), [phases]);
@@ -267,31 +229,21 @@ const PhaseConfig: React.FC = () => {
                   <SelectTrigger className="rounded-none">
                     <SelectValue placeholder="Επέλεξε φάση..." />
                   </SelectTrigger>
-                  <SelectContent className="max-h-80">
+                  <SelectContent className="max-h-80 bg-background">
                     <ScrollArea className="h-72">
-                      {Object.entries(groupedPhases).map(([category, categoryPhases]) => (
-                        categoryPhases.length > 0 && (
-                          <React.Fragment key={category}>
-                            <div className="text-xs font-semibold px-2 py-1.5 text-gray-500 bg-muted/50 sticky top-0">
-                              {category}
+                      {orderedPhases.map(phase => {
+                        const phaseConfig = PHASES_ORDER.find(p => p.value === phase.phase_key);
+                        const color = phaseConfig?.color || 'bg-gray-400';
+                        
+                        return (
+                          <SelectItem key={phase.id} value={phase.id}>
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${color}`} />
+                              <span>{phase.phase_name}</span>
                             </div>
-                            {categoryPhases.map(phase => {
-                              const configPhase = PHASES_CONFIG.find(p => p.value === phase.phase_key);
-                              const subPhaseConfig = Object.values(SUB_PHASES_CONFIG).flat().find(sp => sp.value === phase.phase_key);
-                              const color = configPhase?.color || subPhaseConfig?.color || 'bg-gray-400';
-                              
-                              return (
-                                <SelectItem key={phase.id} value={phase.id} className="pl-4">
-                                  <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full ${color}`} />
-                                    <span>{phase.phase_name}</span>
-                                  </div>
-                                </SelectItem>
-                              );
-                            })}
-                          </React.Fragment>
-                        )
-                      ))}
+                          </SelectItem>
+                        );
+                      })}
                     </ScrollArea>
                   </SelectContent>
                 </Select>
