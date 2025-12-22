@@ -62,6 +62,7 @@ interface DialogWeeklyPhase {
   phase: string;
   primary_subphase?: string | null;
   secondary_subphase?: string | null;
+  accessory_subphase?: string | null;
 }
 
 const PHASES = [
@@ -286,7 +287,7 @@ const AnnualPlanning: React.FC = () => {
 
   // Weekly planning state
   const [selectedWeeklyMonth, setSelectedWeeklyMonth] = useState(new Date().getMonth() + 1);
-  const [weeklyPhases, setWeeklyPhases] = useState<{ month: number; week: number; day: number; phase: string; primary_subphase?: string | null; secondary_subphase?: string | null }[]>([]);
+  const [weeklyPhases, setWeeklyPhases] = useState<{ month: number; week: number; day: number; phase: string; primary_subphase?: string | null; secondary_subphase?: string | null; accessory_subphase?: string | null }[]>([]);
 
   // Get annual phase for a specific month
   const getAnnualPhaseForMonth = (month: number) => {
@@ -442,21 +443,28 @@ const AnnualPlanning: React.FC = () => {
     
     setWeeklyPhases(prev => {
       if (isSubphase) {
-        // Cycle: none -> primary -> secondary -> none
+        // Cycle: none -> primary (1) -> secondary (2) -> accessory (3) -> none
         const existing = prev.find(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
         
         if (!existing) {
           // Click 1: Add as primary
-          return [...prev, { month, week, day, phase, primary_subphase: phase, secondary_subphase: null }];
-        } else if (existing.primary_subphase === phase && !existing.secondary_subphase) {
+          return [...prev, { month, week, day, phase, primary_subphase: phase, secondary_subphase: null, accessory_subphase: null }];
+        } else if (existing.primary_subphase === phase && !existing.secondary_subphase && !existing.accessory_subphase) {
           // Click 2: Change to secondary
           return prev.map(p => 
             (p.month === month && p.week === week && p.day === day && p.phase === phase)
-              ? { ...p, primary_subphase: null, secondary_subphase: phase }
+              ? { ...p, primary_subphase: null, secondary_subphase: phase, accessory_subphase: null }
+              : p
+          );
+        } else if (existing.secondary_subphase === phase && !existing.accessory_subphase) {
+          // Click 3: Change to accessory
+          return prev.map(p => 
+            (p.month === month && p.week === week && p.day === day && p.phase === phase)
+              ? { ...p, primary_subphase: null, secondary_subphase: null, accessory_subphase: phase }
               : p
           );
         } else {
-          // Click 3: Remove
+          // Click 4: Remove
           return prev.filter(p => !(p.month === month && p.week === week && p.day === day && p.phase === phase));
         }
       } else {
@@ -470,7 +478,7 @@ const AnnualPlanning: React.FC = () => {
     });
   };
 
-  // Get subphase priority (1 = primary, 2 = secondary, null = not a subphase or not selected)
+  // Get subphase priority (1 = primary, 2 = secondary, 3 = accessory, null = not a subphase or not selected)
   const getSubphasePriority = (month: number, week: number, day: number, phase: string): number | null => {
     const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
     if (!strengthSubphases.includes(phase)) return null;
@@ -486,6 +494,7 @@ const AnnualPlanning: React.FC = () => {
     
     if (matchingPhase.primary_subphase === phase) return 1;
     if (matchingPhase.secondary_subphase === phase) return 2;
+    if (matchingPhase.accessory_subphase === phase) return 3;
     
     return null;
   };
@@ -497,14 +506,14 @@ const AnnualPlanning: React.FC = () => {
     if (directMatch) return true;
     
     // Check if this phase is a subphase (starting-strength, explosive-strength, reactive-strength)
-    // that was auto-populated via primary_subphase or secondary_subphase
+    // that was auto-populated via primary_subphase, secondary_subphase or accessory_subphase
     const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
     if (strengthSubphases.includes(phase)) {
       return weeklyPhases.some(p => 
         p.month === month && 
         p.week === week && 
         p.day === day && 
-        (p.primary_subphase === phase || p.secondary_subphase === phase)
+        (p.primary_subphase === phase || p.secondary_subphase === phase || p.accessory_subphase === phase)
       );
     }
     
@@ -666,7 +675,8 @@ const AnnualPlanning: React.FC = () => {
           day: p.day, 
           phase: p.phase,
           primary_subphase: p.primary_subphase,
-          secondary_subphase: p.secondary_subphase
+          secondary_subphase: p.secondary_subphase,
+          accessory_subphase: p.accessory_subphase
         }))
       );
       
@@ -869,7 +879,10 @@ const AnnualPlanning: React.FC = () => {
         month: p.month,
         week: p.week,
         day: p.day,
-        phase: p.phase
+        phase: p.phase,
+        primary_subphase: p.primary_subphase || null,
+        secondary_subphase: p.secondary_subphase || null,
+        accessory_subphase: p.accessory_subphase || null
       }));
 
       await supabase
@@ -1082,21 +1095,21 @@ const AnnualPlanning: React.FC = () => {
     if (directMatch) return true;
     
     // Check if this phase is a subphase (starting-strength, explosive-strength, reactive-strength)
-    // that was auto-populated via primary_subphase or secondary_subphase
+    // that was auto-populated via primary_subphase, secondary_subphase or accessory_subphase
     const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
     if (strengthSubphases.includes(phase)) {
       return dialogWeeklyPhases.some(p => 
         p.month === month && 
         p.week === week && 
         p.day === day && 
-        (p.primary_subphase === phase || p.secondary_subphase === phase)
+        (p.primary_subphase === phase || p.secondary_subphase === phase || p.accessory_subphase === phase)
       );
     }
     
     return false;
   };
 
-  // Get subphase priority (1 = primary, 2 = secondary, null = not a subphase)
+  // Get subphase priority (1 = primary, 2 = secondary, 3 = accessory, null = not a subphase)
   const getDialogSubphasePriority = (month: number, week: number, day: number, phase: string): number | null => {
     const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
     if (!strengthSubphases.includes(phase)) return null;
@@ -1111,6 +1124,7 @@ const AnnualPlanning: React.FC = () => {
     
     if (matchingPhase.primary_subphase === phase) return 1;
     if (matchingPhase.secondary_subphase === phase) return 2;
+    if (matchingPhase.accessory_subphase === phase) return 3;
     
     return null;
   };
@@ -1309,7 +1323,10 @@ const AnnualPlanning: React.FC = () => {
         month: p.month,
         week: p.week,
         day: p.day,
-        phase: p.phase
+        phase: p.phase,
+        primary_subphase: p.primary_subphase || null,
+        secondary_subphase: p.secondary_subphase || null,
+        accessory_subphase: p.accessory_subphase || null
       }));
 
       await supabase
@@ -2480,7 +2497,7 @@ const AnnualPlanning: React.FC = () => {
                                   const isSubphase = strengthSubphases.includes(phase.value);
                                   
                                   if (isSubphase) {
-                                    // Cycle: none -> primary -> secondary -> none
+                                    // Cycle: none -> primary (1) -> secondary (2) -> accessory (3) -> none
                                     const existingPhase = dialogWeeklyPhases.find(p => 
                                       p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value
                                     );
@@ -2490,17 +2507,25 @@ const AnnualPlanning: React.FC = () => {
                                       setDialogWeeklyPhases([...dialogWeeklyPhases, { 
                                         month: dialogWeeklyMonth, week, day, phase: phase.value,
                                         primary_subphase: phase.value,
-                                        secondary_subphase: null
+                                        secondary_subphase: null,
+                                        accessory_subphase: null
                                       }]);
-                                    } else if (existingPhase.primary_subphase === phase.value && !existingPhase.secondary_subphase) {
+                                    } else if (existingPhase.primary_subphase === phase.value && !existingPhase.secondary_subphase && !existingPhase.accessory_subphase) {
                                       // Click 2: Change to secondary
                                       setDialogWeeklyPhases(dialogWeeklyPhases.map(p => 
                                         (p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)
-                                          ? { ...p, primary_subphase: null, secondary_subphase: phase.value }
+                                          ? { ...p, primary_subphase: null, secondary_subphase: phase.value, accessory_subphase: null }
+                                          : p
+                                      ));
+                                    } else if (existingPhase.secondary_subphase === phase.value && !existingPhase.accessory_subphase) {
+                                      // Click 3: Change to accessory
+                                      setDialogWeeklyPhases(dialogWeeklyPhases.map(p => 
+                                        (p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)
+                                          ? { ...p, primary_subphase: null, secondary_subphase: null, accessory_subphase: phase.value }
                                           : p
                                       ));
                                     } else {
-                                      // Click 3: Remove
+                                      // Click 4: Remove
                                       setDialogWeeklyPhases(dialogWeeklyPhases.filter(p => 
                                         !(p.month === dialogWeeklyMonth && p.week === week && p.day === day && p.phase === phase.value)
                                       ));
