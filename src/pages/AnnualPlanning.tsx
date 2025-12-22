@@ -617,6 +617,106 @@ const AnnualPlanning: React.FC = () => {
     return dialogPhases.some(p => p.month === month && p.phase === phaseValue);
   };
 
+  // Dialog Monthly phase check
+  const isDialogMonthlyPhaseSelected = (month: number, week: number, phase: string) => {
+    return dialogMonthlyPhases.some(p => p.month === month && p.week === week && p.phase === phase);
+  };
+
+  // Get dialog annual phase for a specific month
+  const getDialogAnnualPhaseForMonth = (month: number) => {
+    return dialogPhases.find(p => p.month === month);
+  };
+
+  // Get dialog monthly phase for a specific week
+  const getDialogMonthlyPhaseForWeek = (month: number, week: number) => {
+    return dialogMonthlyPhases.find(p => p.month === month && p.week === week);
+  };
+
+  // Dialog Weekly phase check
+  const isDialogWeeklyPhaseSelected = (month: number, week: number, day: number, phase: string) => {
+    return dialogWeeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
+  };
+
+  // Get calendar weeks for dialog
+  const getDialogCalendarWeeksForMonth = useMemo(() => {
+    const firstDay = new Date(dialogYear, dialogWeeklyMonth - 1, 1);
+    const daysInMonth = new Date(dialogYear, dialogWeeklyMonth, 0).getDate();
+    
+    let startDayOfWeek = firstDay.getDay();
+    startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+    
+    const weeks: (number | null)[][] = [];
+    let currentDate = 1;
+    
+    const totalDays = startDayOfWeek + daysInMonth;
+    const numWeeks = Math.ceil(totalDays / 7);
+    
+    for (let week = 0; week < numWeeks; week++) {
+      const weekDates: (number | null)[] = [];
+      for (let day = 0; day < 7; day++) {
+        if (week === 0 && day < startDayOfWeek) {
+          weekDates.push(null);
+        } else if (currentDate > daysInMonth) {
+          weekDates.push(null);
+        } else {
+          weekDates.push(currentDate);
+          currentDate++;
+        }
+      }
+      weeks.push(weekDates);
+    }
+    
+    return weeks;
+  }, [dialogYear, dialogWeeklyMonth]);
+
+  // Get dialog weekly sub-phases for a specific week
+  const getDialogWeeklySubPhasesForWeek = (weekNumber: number) => {
+    const weekPhases = dialogMonthlyPhases.filter(p => p.month === dialogWeeklyMonth && p.week === weekNumber);
+    const uniquePhaseValues = [...new Set(weekPhases.map(p => p.phase))];
+    
+    const allSubPhases: { value: string; label: string; shortLabel: string; color: string; parentPhase: string }[] = [];
+    
+    uniquePhaseValues.forEach(phaseValue => {
+      const subPhases = SUB_PHASES[phaseValue];
+      if (subPhases) {
+        subPhases.forEach(sp => {
+          allSubPhases.push({ ...sp, parentPhase: phaseValue });
+        });
+      } else {
+        const mainPhase = PHASES.find(p => p.value === phaseValue);
+        if (mainPhase) {
+          allSubPhases.push({ ...mainPhase, parentPhase: phaseValue });
+        }
+      }
+    });
+    
+    return allSubPhases;
+  };
+
+  // Get all unique dialog weekly sub-phases for row rendering
+  const getDialogWeeklySubPhases = useMemo(() => {
+    const monthPhases = dialogMonthlyPhases.filter(p => p.month === dialogWeeklyMonth);
+    const uniquePhaseValues = [...new Set(monthPhases.map(p => p.phase))];
+    
+    const allSubPhases: { value: string; label: string; shortLabel: string; color: string; parentPhase: string }[] = [];
+    
+    uniquePhaseValues.forEach(phaseValue => {
+      const subPhases = SUB_PHASES[phaseValue];
+      if (subPhases) {
+        subPhases.forEach(sp => {
+          allSubPhases.push({ ...sp, parentPhase: phaseValue });
+        });
+      } else {
+        const mainPhase = PHASES.find(p => p.value === phaseValue);
+        if (mainPhase) {
+          allSubPhases.push({ ...mainPhase, parentPhase: phaseValue });
+        }
+      }
+    });
+    
+    return allSubPhases;
+  }, [dialogMonthlyPhases, dialogWeeklyMonth]);
+
   const handleSaveDialogChanges = async () => {
     if (!dialogMacrocycle) return;
 
@@ -1383,90 +1483,254 @@ const AnnualPlanning: React.FC = () => {
             </table>
           </div>
 
-          {/* Dialog Monthly Planning */}
+          {/* Dialog Monthly Planning - Same as "νέο" tab */}
           <div className="mt-4">
-            <h4 className="text-xs font-semibold mb-2">Μηνιαίος Προγραμματισμός</h4>
+            <h4 className="text-xs font-semibold mb-2 flex items-center gap-2">
+              <Calendar className="w-3 h-3" />
+              Μηνιαίος Προγραμματισμός
+            </h4>
             <div className="overflow-x-auto scrollbar-gold">
-              <table className="w-full border-collapse text-[7px] sm:text-[9px]">
+              <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
                 <thead>
                   <tr>
-                    <th className="border p-0.5 bg-muted text-left w-[60px]">Φάση</th>
+                    <th className="border p-0.5 sm:p-1 bg-muted text-left w-[40px] sm:w-[80px] md:w-[120px]">Φάση</th>
                     {MONTHS_FULL.map((month, monthIndex) => {
-                      const annualPhase = dialogPhases.find(p => p.month === monthIndex + 1);
+                      const annualPhase = getDialogAnnualPhaseForMonth(monthIndex + 1);
                       const phaseInfo = annualPhase ? PHASES.find(p => p.value === annualPhase.phase) : null;
                       const weeksCount = getWeeksInMonth(dialogYear, monthIndex + 1);
                       return (
                         <th 
                           key={monthIndex} 
                           colSpan={weeksCount}
-                          className={cn("border p-0.5 bg-muted text-center", phaseInfo && phaseInfo.color)}
+                          className={cn(
+                            "border p-0.5 bg-muted text-center",
+                            phaseInfo && phaseInfo.color
+                          )}
                         >
-                          <span className={cn("text-[7px] font-medium", phaseInfo && "text-white")}>{month}</span>
+                          <div className="flex flex-col">
+                            <span className={cn(
+                              "text-[8px] sm:text-[10px] font-medium",
+                              phaseInfo && "text-white"
+                            )}>
+                              {month}
+                            </span>
+                            {phaseInfo && (
+                              <span className="text-[6px] sm:text-[8px] text-white/80">
+                                {phaseInfo.shortLabel}
+                              </span>
+                            )}
+                          </div>
                         </th>
                       );
                     })}
                   </tr>
+                  <tr>
+                    <th className="border p-0.5 bg-muted text-left text-[7px] sm:text-[9px]">Εβδ.</th>
+                    {MONTHS_FULL.map((_, monthIndex) => {
+                      const weeksCount = getWeeksInMonth(dialogYear, monthIndex + 1);
+                      return Array.from({ length: weeksCount }, (_, weekIndex) => (
+                        <th 
+                          key={`${monthIndex}-${weekIndex}`}
+                          className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
+                        >
+                          Ε{weekIndex + 1}
+                        </th>
+                      ));
+                    })}
+                  </tr>
                 </thead>
                 <tbody>
-                  {PHASES.slice(0, 5).map((phase) => (
-                    <tr key={phase.value}>
-                      <td className="border p-0.5 font-medium bg-background">
-                        <div className="flex items-center gap-0.5">
-                          <div className={cn("w-1.5 h-1.5 rounded-full", phase.color)} />
-                          <span className="text-[6px]">{phase.shortLabel}</span>
-                        </div>
-                      </td>
-                      {MONTHS_FULL.map((_, monthIndex) => {
-                        const weeksCount = getWeeksInMonth(dialogYear, monthIndex + 1);
-                        return Array.from({ length: weeksCount }, (_, weekIndex) => (
-                          <td key={`${monthIndex}-${weekIndex}`} className="border p-0 h-3 bg-muted/20" />
-                        ));
-                      })}
-                    </tr>
-                  ))}
+                  {PHASES.map((phase) => {
+                    const monthsWithThisPhase = dialogPhases
+                      .filter(p => p.phase === phase.value)
+                      .map(p => p.month);
+                    
+                    if (monthsWithThisPhase.length === 0) return null;
+                    
+                    return (
+                      <tr key={phase.value}>
+                        <td className="border p-0.5 font-medium bg-background">
+                          <div className="flex items-center gap-0.5">
+                            <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
+                            <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
+                            <span className="hidden lg:inline text-xs">{phase.label}</span>
+                          </div>
+                        </td>
+                        {MONTHS_FULL.map((_, monthIndex) => {
+                          const month = monthIndex + 1;
+                          const weeksCount = getWeeksInMonth(dialogYear, month);
+                          const isPhaseAvailableForMonth = monthsWithThisPhase.includes(month);
+                          
+                          return Array.from({ length: weeksCount }, (_, weekIndex) => {
+                            const week = weekIndex + 1;
+                            const isSelected = isDialogMonthlyPhaseSelected(month, week, phase.value);
+                            
+                            if (!isPhaseAvailableForMonth) {
+                              return (
+                                <td
+                                  key={`${monthIndex}-${weekIndex}`}
+                                  className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
+                                />
+                              );
+                            }
+                            
+                            return (
+                              <td
+                                key={`${monthIndex}-${weekIndex}`}
+                                className={cn(
+                                  "border p-0 text-center h-3 sm:h-4",
+                                  isSelected && phase.color
+                                )}
+                              >
+                                {isSelected && (
+                                  <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
+                                )}
+                              </td>
+                            );
+                          });
+                        })}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Dialog Weekly Planning */}
+          {/* Dialog Weekly Planning - Same as "νέο" tab */}
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-semibold">Εβδομαδιαίος Προγραμματισμός</h4>
-              <select 
+              <h4 className="text-xs font-semibold flex items-center gap-2">
+                <Calendar className="w-3 h-3" />
+                Εβδομαδιαίος Προγραμματισμός
+              </h4>
+              <select
                 value={dialogWeeklyMonth}
                 onChange={(e) => setDialogWeeklyMonth(Number(e.target.value))}
-                className="text-[10px] border rounded-none px-1 py-0.5"
+                className="rounded-none border px-2 py-1 text-xs sm:text-sm bg-background"
               >
-                {MONTHS_DROPDOWN.map((month, idx) => (
-                  <option key={idx} value={idx + 1}>{month}</option>
+                {MONTHS_DROPDOWN.map((month, index) => (
+                  <option key={index} value={index + 1}>{month}</option>
                 ))}
               </select>
             </div>
             <div className="overflow-x-auto scrollbar-gold">
-              <table className="w-full border-collapse text-[7px]">
+              <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
                 <thead>
+                  {/* Week headers row */}
                   <tr>
-                    <th className="border p-0.5 bg-muted text-left w-[60px]">Φάση</th>
-                    {DAYS_FULL.map((day, idx) => (
-                      <th key={idx} className="border p-0.5 bg-muted text-center w-8">{day}</th>
+                    <th className="border p-0.5 sm:p-1 bg-muted text-left w-[40px] sm:w-[80px] md:w-[100px]" rowSpan={3}>Φάση</th>
+                    {getDialogCalendarWeeksForMonth.map((_, weekIndex) => {
+                      const monthlyPhase = getDialogMonthlyPhaseForWeek(dialogWeeklyMonth, weekIndex + 1);
+                      const phaseInfo = monthlyPhase ? PHASES.find(p => p.value === monthlyPhase.phase) : null;
+                      return (
+                        <th 
+                          key={weekIndex} 
+                          colSpan={7}
+                          className={cn(
+                            "border p-0.5 bg-muted text-center",
+                            phaseInfo && phaseInfo.color
+                          )}
+                        >
+                          <div className="flex flex-col">
+                            <span className={cn(
+                              "text-[8px] sm:text-[10px] font-medium",
+                              phaseInfo && "text-white"
+                            )}>
+                              Ε{weekIndex + 1}
+                            </span>
+                            {phaseInfo && (
+                              <span className="text-[6px] sm:text-[8px] text-white/80">
+                                {phaseInfo.shortLabel}
+                              </span>
+                            )}
+                          </div>
+                        </th>
+                      );
+                    })}
+                  </tr>
+                  {/* Day names row */}
+                  <tr>
+                    {getDialogCalendarWeeksForMonth.map((_, weekIndex) => (
+                      DAYS_FULL.map((dayName, dayIndex) => (
+                        <th 
+                          key={`day-${weekIndex}-${dayIndex}`}
+                          className="border p-0.5 bg-muted/70 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium"
+                        >
+                          {dayName}
+                        </th>
+                      ))
+                    ))}
+                  </tr>
+                  {/* Date numbers row */}
+                  <tr>
+                    {getDialogCalendarWeeksForMonth.map((weekDates, weekIndex) => (
+                      weekDates.map((dateNum, dayIndex) => (
+                        <th 
+                          key={`date-${weekIndex}-${dayIndex}`}
+                          className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
+                        >
+                          {dateNum !== null ? dateNum : '-'}
+                        </th>
+                      ))
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {PHASES.slice(0, 5).map((phase) => (
-                    <tr key={phase.value}>
-                      <td className="border p-0.5 font-medium bg-background">
-                        <div className="flex items-center gap-0.5">
-                          <div className={cn("w-1.5 h-1.5 rounded-full", phase.color)} />
-                          <span className="text-[6px]">{phase.shortLabel}</span>
-                        </div>
+                  {getDialogWeeklySubPhases.length === 0 ? (
+                    <tr>
+                      <td colSpan={1 + getDialogCalendarWeeksForMonth.length * 7} className="border p-4 text-center text-muted-foreground text-xs">
+                        Δεν έχουν επιλεγεί φάσεις στον Μηνιαίο Προγραμματισμό για τον {MONTHS_DROPDOWN[dialogWeeklyMonth - 1]}
                       </td>
-                      {DAYS_FULL.map((_, dayIdx) => (
-                        <td key={dayIdx} className="border p-0 h-3 bg-muted/20" />
-                      ))}
                     </tr>
-                  ))}
+                  ) : (
+                    getDialogWeeklySubPhases.map((phase) => (
+                      <tr key={phase.value}>
+                        <td className="border p-0.5 font-medium bg-background">
+                          <div className="flex items-center gap-0.5">
+                            <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
+                            <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
+                            <span className="hidden lg:inline text-xs">{phase.label}</span>
+                          </div>
+                        </td>
+                        {getDialogCalendarWeeksForMonth.map((weekDates, weekIndex) => {
+                          const week = weekIndex + 1;
+                          const weekSubPhases = getDialogWeeklySubPhasesForWeek(week);
+                          const isPhaseAvailableForWeek = weekSubPhases.some(sp => sp.value === phase.value);
+                          
+                          return weekDates.map((dateNum, dayIndex) => {
+                            const day = dayIndex + 1;
+                            const isSelected = isDialogWeeklyPhaseSelected(dialogWeeklyMonth, week, day, phase.value);
+                            const isValidDate = dateNum !== null;
+                            
+                            if (!isPhaseAvailableForWeek) {
+                              return (
+                                <td
+                                  key={`${weekIndex}-${dayIndex}`}
+                                  className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
+                                />
+                              );
+                            }
+                            
+                            return (
+                              <td
+                                key={`${weekIndex}-${dayIndex}`}
+                                className={cn(
+                                  "border p-0 text-center h-3 sm:h-4",
+                                  !isValidDate && "bg-muted/30",
+                                  isSelected && isValidDate && phase.color
+                                )}
+                              >
+                                {isSelected && isValidDate && (
+                                  <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
+                                )}
+                              </td>
+                            );
+                          });
+                        })}
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
