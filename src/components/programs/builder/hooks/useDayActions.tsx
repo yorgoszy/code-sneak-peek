@@ -126,9 +126,14 @@ export const useDayActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          program_days: (week.program_days || []).map(day =>
-            day.id === dayId ? { ...day, is_competition_day: isCompetitionDay } : day
-          )
+          program_days: (week.program_days || []).map(day => {
+            if (day.id === dayId) {
+              // Αν ενεργοποιείται η ημέρα αγώνα, αλλάζουμε και το όνομα σε "Ημέρα Αγώνα"
+              const newName = isCompetitionDay ? 'Ημέρα Αγώνα' : day.name;
+              return { ...day, is_competition_day: isCompetitionDay, name: newName };
+            }
+            return day;
+          })
         };
       }
       return week;
