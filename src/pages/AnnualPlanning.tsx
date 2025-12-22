@@ -422,6 +422,53 @@ const AnnualPlanning: React.FC = () => {
     fetchSavedMacrocycles();
   }, []);
 
+  // Load data when dialog year changes
+  useEffect(() => {
+    const loadYearData = async () => {
+      if (!dialogOpen || !dialogMacrocycle) return;
+      
+      const userId = dialogMacrocycle.user_id;
+      
+      // Check if there's data for the new year
+      const { data: yearPhases } = await supabase
+        .from('user_annual_phases')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('year', dialogYear);
+      
+      // Update dialog phases for the year
+      setDialogPhases((yearPhases || []).map(p => ({ month: p.month, phase: p.phase })));
+      
+      // Fetch monthly phases for the year
+      const { data: monthlyData } = await supabase
+        .from('user_monthly_phases')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('year', dialogYear);
+      
+      setDialogMonthlyPhases(
+        (monthlyData || []).map(p => ({ month: p.month, week: p.week, phase: p.phase }))
+      );
+      
+      // Fetch weekly phases for the year
+      const { data: weeklyData } = await supabase
+        .from('user_weekly_phases')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('year', dialogYear);
+      
+      setDialogWeeklyPhases(
+        (weeklyData || []).map(p => ({ month: p.month, week: p.week, day: p.day, phase: p.phase }))
+      );
+      
+      // Fetch competition dates for the year
+      const competitionDates = await fetchCompetitionDates(userId, dialogYear);
+      setDialogCompetitionDates(competitionDates);
+    };
+    
+    loadYearData();
+  }, [dialogYear, dialogOpen, dialogMacrocycle]);
+
   const fetchUsers = async () => {
     const { data, error } = await supabase
       .from('app_users')
