@@ -970,8 +970,8 @@ const AnnualPlanning: React.FC = () => {
                   </thead>
                   <tbody>
                     {PHASES.map((phase) => (
-                      <tr key={phase.value}>
-                        <td className="border p-0.5 font-medium bg-background">
+                      <tr key={phase.value} className={cn(phase.color, "bg-opacity-10")}>
+                        <td className="border p-0.5 font-medium">
                           <div className="flex items-center gap-0.5 sm:gap-1">
                             <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
                             <span className="md:hidden text-[7px] font-semibold">{phase.shortLabel}</span>
