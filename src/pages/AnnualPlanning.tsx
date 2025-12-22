@@ -809,9 +809,10 @@ const AnnualPlanning: React.FC = () => {
     }
 
     toast.success(`Ο μακροκύκλος ανατέθηκε στον ${selectedUser.name}`);
-    setSelectedPhases([]);
-    setMonthlyPhases([]);
-    setWeeklyPhases([]);
+    // Κρατάμε τα phases ώστε να μπορεί ο χρήστης να κάνει νέα ανάθεση σε άλλον χρήστη
+    // setSelectedPhases([]);
+    // setMonthlyPhases([]);
+    // setWeeklyPhases([]);
     setSelectedUser(null);
     fetchAssignedMacrocycles();
   };
