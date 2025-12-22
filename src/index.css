@@ -226,6 +226,14 @@ html, body {
     background: #b87648;
   }
 
+  /* Thinner scrollbar on mobile and tablet (70% reduction) */
+  @media (max-width: 1024px) {
+    .scrollbar-gold::-webkit-scrollbar {
+      width: 1.2px;
+      height: 1.2px;
+    }
+  }
+
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
