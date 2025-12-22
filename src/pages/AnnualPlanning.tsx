@@ -144,6 +144,9 @@ const AnnualPlanning: React.FC = () => {
   const [dialogMonthlyPhases, setDialogMonthlyPhases] = useState<DialogMonthlyPhase[]>([]);
   const [dialogWeeklyPhases, setDialogWeeklyPhases] = useState<DialogWeeklyPhase[]>([]);
   const [dialogWeeklyMonth, setDialogWeeklyMonth] = useState(new Date().getMonth() + 1);
+  
+  // Competition dates from program assignments
+  const [dialogCompetitionDates, setDialogCompetitionDates] = useState<Date[]>([]);
 
   // Monthly planning state
   const [monthlyPhases, setMonthlyPhases] = useState<{ month: number; week: number; phase: string }[]>([]);
@@ -286,6 +289,92 @@ const AnnualPlanning: React.FC = () => {
   // Check if weekly phase is selected
   const isWeeklyPhaseSelected = (month: number, week: number, day: number, phase: string) => {
     return weeklyPhases.some(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
+  };
+
+  // Fetch competition dates for a user from program assignments
+  const fetchCompetitionDates = async (userId: string, targetYear: number): Promise<Date[]> => {
+    const { data } = await supabase
+      .from('program_assignments')
+      .select(`
+        training_dates,
+        programs:program_id (
+          program_weeks (
+            week_number,
+            program_days (
+              day_number,
+              is_competition_day
+            )
+          )
+        )
+      `)
+      .eq('user_id', userId);
+    
+    if (!data) return [];
+    
+    const competitionDates: Date[] = [];
+    
+    data.forEach((assignment: any) => {
+      const trainingDates = assignment.training_dates || [];
+      const weeks = assignment.programs?.program_weeks || [];
+      
+      // Flatten all days in order
+      const allDays: { weekNumber: number; dayNumber: number; isCompetition: boolean }[] = [];
+      weeks.sort((a: any, b: any) => a.week_number - b.week_number).forEach((week: any) => {
+        const days = week.program_days || [];
+        days.sort((a: any, b: any) => a.day_number - b.day_number).forEach((day: any) => {
+          allDays.push({
+            weekNumber: week.week_number,
+            dayNumber: day.day_number,
+            isCompetition: day.is_competition_day || false
+          });
+        });
+      });
+      
+      // Match training dates with days
+      trainingDates.forEach((dateStr: string, index: number) => {
+        if (allDays[index]?.isCompetition) {
+          const date = new Date(dateStr);
+          if (date.getFullYear() === targetYear) {
+            competitionDates.push(date);
+          }
+        }
+      });
+    });
+    
+    return competitionDates;
+  };
+
+  // Helper to check if a date is a competition day
+  const isDialogCompetitionMonth = (month: number): boolean => {
+    return dialogCompetitionDates.some(d => d.getMonth() + 1 === month);
+  };
+
+  const isDialogCompetitionWeek = (month: number, week: number): boolean => {
+    return dialogCompetitionDates.some(d => {
+      if (d.getMonth() + 1 !== month) return false;
+      const dayOfMonth = d.getDate();
+      const firstDay = new Date(dialogYear, month - 1, 1);
+      let startDayOfWeek = firstDay.getDay();
+      startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+      const weekOfMonth = Math.ceil((dayOfMonth + startDayOfWeek) / 7);
+      return weekOfMonth === week;
+    });
+  };
+
+  const isDialogCompetitionDay = (month: number, week: number, dayOfWeek: number): boolean => {
+    return dialogCompetitionDates.some(d => {
+      if (d.getMonth() + 1 !== month) return false;
+      const dayOfMonth = d.getDate();
+      const firstDay = new Date(dialogYear, month - 1, 1);
+      let startDayOfWeek = firstDay.getDay();
+      startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+      const weekOfMonth = Math.ceil((dayOfMonth + startDayOfWeek) / 7);
+      if (weekOfMonth !== week) return false;
+      // Calculate the day of week (1-7, Monday=1)
+      let dow = d.getDay();
+      dow = dow === 0 ? 7 : dow; // Sunday becomes 7
+      return dow === dayOfWeek;
+    });
   };
 
   useEffect(() => {
@@ -566,6 +655,10 @@ const AnnualPlanning: React.FC = () => {
       (weeklyData || []).map(p => ({ month: p.month, week: p.week, day: p.day, phase: p.phase }))
     );
     
+    // Fetch competition dates from program assignments
+    const competitionDates = await fetchCompetitionDates(macrocycle.user_id, macrocycle.year);
+    setDialogCompetitionDates(competitionDates);
+    
     setDialogOpen(true);
   };
 
@@ -597,6 +690,10 @@ const AnnualPlanning: React.FC = () => {
     setDialogWeeklyPhases(
       (weeklyData || []).map(p => ({ month: p.month, week: p.week, day: p.day, phase: p.phase }))
     );
+    
+    // Fetch competition dates from program assignments
+    const competitionDates = await fetchCompetitionDates(macrocycle.user_id, macrocycle.year);
+    setDialogCompetitionDates(competitionDates);
     
     setDialogOpen(true);
   };
@@ -1530,6 +1627,9 @@ const AnnualPlanning: React.FC = () => {
                     {MONTHS.map((_, monthIndex) => {
                       const month = monthIndex + 1;
                       const isSelected = isDialogPhaseSelected(month, phase.value);
+                      // For competition phase, also check if there's a competition day in this month
+                      const hasCompetition = phase.value === 'competition' && isDialogCompetitionMonth(month);
+                      const showSelected = isSelected || hasCompetition;
                       
                       return (
                         <td
@@ -1538,10 +1638,11 @@ const AnnualPlanning: React.FC = () => {
                           className={cn(
                             "border p-0 text-center transition-colors h-2.5 sm:h-3 md:h-4",
                             dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
-                            isSelected && phase.color
+                            showSelected && phase.color,
+                            hasCompetition && !isSelected && "bg-opacity-50"
                           )}
                         >
-                          {isSelected && (
+                          {showSelected && (
                             <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
                           )}
                         </td>
@@ -1634,8 +1735,11 @@ const AnnualPlanning: React.FC = () => {
                           return Array.from({ length: weeksCount }, (_, weekIndex) => {
                             const week = weekIndex + 1;
                             const isSelected = isDialogMonthlyPhaseSelected(month, week, phase.value);
+                            // For competition phase, check if there's a competition day in this week
+                            const hasCompetition = phase.value === 'competition' && isDialogCompetitionWeek(month, week);
+                            const showSelected = isSelected || hasCompetition;
                             
-                            if (!isPhaseAvailableForMonth) {
+                            if (!isPhaseAvailableForMonth && !hasCompetition) {
                               return (
                                 <td
                                   key={`${monthIndex}-${weekIndex}`}
@@ -1659,10 +1763,11 @@ const AnnualPlanning: React.FC = () => {
                                 className={cn(
                                   "border p-0 text-center h-2 sm:h-2.5",
                                   dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
-                                  isSelected && phase.color
+                                  showSelected && phase.color,
+                                  hasCompetition && !isSelected && "bg-opacity-50"
                                 )}
                               >
-                                {isSelected && (
+                                {showSelected && (
                                   <Check className="h-1 w-1 sm:h-1.5 sm:w-1.5 mx-auto text-white" />
                                 )}
                               </td>
@@ -1782,8 +1887,11 @@ const AnnualPlanning: React.FC = () => {
                             const day = dayIndex + 1;
                             const isSelected = isDialogWeeklyPhaseSelected(dialogWeeklyMonth, week, day, phase.value);
                             const isValidDate = dateNum !== null;
+                            // For competition phase, check if this specific day is a competition day
+                            const hasCompetition = phase.value === 'competition' && isValidDate && isDialogCompetitionDay(dialogWeeklyMonth, week, day);
+                            const showSelected = isSelected || hasCompetition;
                             
-                            if (!isPhaseAvailableForWeek) {
+                            if (!isPhaseAvailableForWeek && !hasCompetition) {
                               return (
                                 <td
                                   key={`${weekIndex}-${dayIndex}`}
@@ -1808,10 +1916,11 @@ const AnnualPlanning: React.FC = () => {
                                   "border p-0 text-center h-2 sm:h-2.5",
                                   isValidDate && dialogMode === 'edit' ? "cursor-pointer hover:bg-muted" : "cursor-default",
                                   !isValidDate && "bg-muted/30",
-                                  isSelected && isValidDate && phase.color
+                                  showSelected && isValidDate && phase.color,
+                                  hasCompetition && !isSelected && "bg-opacity-50"
                                 )}
                               >
-                                {isSelected && isValidDate && (
+                                {showSelected && isValidDate && (
                                   <Check className="h-1 w-1 sm:h-1.5 sm:w-1.5 mx-auto text-white" />
                                 )}
                               </td>
