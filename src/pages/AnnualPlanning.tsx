@@ -1799,7 +1799,6 @@ const AnnualPlanning: React.FC = () => {
                   size="icon"
                   onClick={() => setDialogYear(y => y - 1)}
                   className="rounded-none h-5 w-5"
-                  disabled={dialogMode === 'view'}
                 >
                   <ChevronLeft className="h-2.5 w-2.5" />
                 </Button>
@@ -1809,7 +1808,6 @@ const AnnualPlanning: React.FC = () => {
                   size="icon"
                   onClick={() => setDialogYear(y => y + 1)}
                   className="rounded-none h-5 w-5"
-                  disabled={dialogMode === 'view'}
                 >
                   <ChevronRight className="h-2.5 w-2.5" />
                 </Button>
