@@ -473,6 +473,19 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       
       // Create phases for each user
       for (const userId of userIds) {
+        // Overwrite existing plan for this year (avoid duplicates / partial data)
+        const { error: deleteError } = await supabase
+          .from('user_annual_phases')
+          .delete()
+          .eq('user_id', userId)
+          .eq('year', year);
+
+        if (deleteError) {
+          console.error('Error clearing existing annual phases:', deleteError);
+          toast.error('Σφάλμα: δεν μπόρεσα να καθαρίσω το υπάρχον πλάνο');
+          return;
+        }
+
         const phasesToInsert = phases
           .map((p: any) => {
             const month = extractMonth(p);
@@ -480,30 +493,37 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
               console.warn('Could not extract month from phase:', p);
               return null;
             }
+
+            const phaseKey = mapPhaseToKey(p.phase || p.phase_name || p.name || '');
+            if (!phaseKey) {
+              console.warn('Could not map phase name to key:', p);
+              return null;
+            }
+
             return {
               user_id: userId,
               year,
               month,
-              phase: mapPhaseToKey(p.phase || p.phase_name || '')
+              phase: phaseKey,
             };
           })
           .filter(Boolean);
-        
+
         if (phasesToInsert.length === 0) {
           console.error('No valid phases to insert. Raw phases:', phases);
           toast.error('Δεν βρέθηκαν έγκυρες φάσεις για ανάθεση');
           return;
         }
-        
+
         console.log('📊 Phases to insert:', phasesToInsert);
-        
+
         const { error } = await supabase
           .from('user_annual_phases')
           .insert(phasesToInsert);
-        
+
         if (error) {
           console.error('Error inserting phases:', error);
-          toast.error(`Σφάλμα κατά την ανάθεση μακροκύκλου`);
+          toast.error('Σφάλμα κατά την ανάθεση μακροκύκλου');
           return;
         }
       }
