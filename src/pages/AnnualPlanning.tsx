@@ -856,25 +856,25 @@ const AnnualPlanning: React.FC = () => {
       if (comp && !alreadyIncluded) allSubPhases.push({ ...comp, parentPhase: 'competition' });
     }
 
-    // Sort phases according to specific sub-phase order
+    // Sort phases according to specific sub-phase order (use same values as SUB_PHASES)
     const subPhaseOrder = [
       'corrective',
-      'stabilization_training',
-      'connecting_linking',
-      'movement_skills',
-      'non_functional_hypertrophy',
-      'functional_hypertrophy',
-      'starting_strength',
-      'explosive_strength',
-      'reactive_strength',
-      'strength_speed',
-      'power',
-      'speed_strength',
-      'speed',
-      'strength_endurance',
-      'power_endurance',
-      'speed_endurance',
-      'aerobic_endurance',
+      'stabilization-training',
+      'connecting-linking',
+      'movement-skills',
+      'non-functional-hypertrophy',
+      'functional-hypertrophy',
+      'starting-strength',
+      'explosive-strength',
+      'reactive-strength',
+      'str-spd',
+      'pwr',
+      'spd-str',
+      'spd',
+      'str-end',
+      'pwr-end',
+      'spd-end',
+      'aero-end',
       'competition'
     ];
     allSubPhases.sort((a, b) => {
