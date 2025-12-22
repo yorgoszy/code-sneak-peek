@@ -1478,9 +1478,13 @@ const AnnualPlanning: React.FC = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => setSelectedPhases([])}
+                    onClick={() => {
+                      setSelectedPhases([]);
+                      setMonthlyPhases([]);
+                      setWeeklyPhases([]);
+                    }}
                     className="rounded-none h-6 w-6"
-                    title="Καθαρισμός Ετήσιου"
+                    title="Καθαρισμός όλων"
                   >
                     <RotateCcw className="h-3 w-3" />
                   </Button>
