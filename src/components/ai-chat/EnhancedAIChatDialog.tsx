@@ -459,28 +459,34 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       });
       
       if (competitionPhase && !actionData.year) {
-        // Extract competition month
-        const monthNames: Record<string, number> = {
-          'ιανουαριος': 1, 'ιανουάριος': 1, 'january': 1, 'jan': 1,
-          'φεβρουαριος': 2, 'φεβρουάριος': 2, 'february': 2, 'feb': 2,
-          'μαρτιος': 3, 'μάρτιος': 3, 'march': 3, 'mar': 3,
-          'απριλιος': 4, 'απρίλιος': 4, 'april': 4, 'apr': 4,
-          'μαιος': 5, 'μάιος': 5, 'may': 5,
-          'ιουνιος': 6, 'ιούνιος': 6, 'june': 6, 'jun': 6,
-          'ιουλιος': 7, 'ιούλιος': 7, 'july': 7, 'jul': 7,
-          'αυγουστος': 8, 'αύγουστος': 8, 'august': 8, 'aug': 8,
-          'σεπτεμβριος': 9, 'σεπτέμβριος': 9, 'september': 9, 'sep': 9,
-          'οκτωβριος': 10, 'οκτώβριος': 10, 'october': 10, 'oct': 10,
-          'νοεμβριος': 11, 'νοέμβριος': 11, 'november': 11, 'nov': 11,
-          'δεκεμβριος': 12, 'δεκέμβριος': 12, 'december': 12, 'dec': 12,
-        };
+        // Extract competition month - can be number or string
+        let competitionMonth: number | null = null;
         
-        const compMonthStr = (competitionPhase.month || '').toLowerCase().replace(/[άέήίόύώ]/g, (c: string) => {
-          const map: Record<string, string> = { 'ά': 'α', 'έ': 'ε', 'ή': 'η', 'ί': 'ι', 'ό': 'ο', 'ύ': 'υ', 'ώ': 'ω' };
-          return map[c] || c;
-        });
-        
-        const competitionMonth = monthNames[compMonthStr] || parseInt(compMonthStr) || null;
+        if (typeof competitionPhase.month === 'number') {
+          competitionMonth = competitionPhase.month;
+        } else if (typeof competitionPhase.month === 'string') {
+          const monthNames: Record<string, number> = {
+            'ιανουαριος': 1, 'ιανουάριος': 1, 'january': 1, 'jan': 1,
+            'φεβρουαριος': 2, 'φεβρουάριος': 2, 'february': 2, 'feb': 2,
+            'μαρτιος': 3, 'μάρτιος': 3, 'march': 3, 'mar': 3,
+            'απριλιος': 4, 'απρίλιος': 4, 'april': 4, 'apr': 4,
+            'μαιος': 5, 'μάιος': 5, 'may': 5,
+            'ιουνιος': 6, 'ιούνιος': 6, 'june': 6, 'jun': 6,
+            'ιουλιος': 7, 'ιούλιος': 7, 'july': 7, 'jul': 7,
+            'αυγουστος': 8, 'αύγουστος': 8, 'august': 8, 'aug': 8,
+            'σεπτεμβριος': 9, 'σεπτέμβριος': 9, 'september': 9, 'sep': 9,
+            'οκτωβριος': 10, 'οκτώβριος': 10, 'october': 10, 'oct': 10,
+            'νοεμβριος': 11, 'νοέμβριος': 11, 'november': 11, 'nov': 11,
+            'δεκεμβριος': 12, 'δεκέμβριος': 12, 'december': 12, 'dec': 12,
+          };
+          
+          const compMonthStr = competitionPhase.month.toLowerCase().replace(/[άέήίόύώ]/g, (c: string) => {
+            const map: Record<string, string> = { 'ά': 'α', 'έ': 'ε', 'ή': 'η', 'ί': 'ι', 'ό': 'ο', 'ύ': 'υ', 'ώ': 'ω' };
+            return map[c] || c;
+          });
+          
+          competitionMonth = monthNames[compMonthStr] || parseInt(compMonthStr) || null;
+        }
         
         if (competitionMonth) {
           const currentMonth = new Date().getMonth() + 1; // 1-12
@@ -568,6 +574,73 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           console.error('Error inserting phases:', error);
           toast.error('Σφάλμα κατά την ανάθεση μακροκύκλου');
           return;
+        }
+
+        // Also create monthly phases (4 weeks per month)
+        const monthlyPhasesToInsert: any[] = [];
+        for (const annualPhase of phasesToInsert) {
+          for (let week = 1; week <= 4; week++) {
+            monthlyPhasesToInsert.push({
+              user_id: userId,
+              year,
+              month: annualPhase.month,
+              week,
+              phase: annualPhase.phase,
+            });
+          }
+        }
+
+        // Delete existing monthly phases for this user/year
+        await supabase
+          .from('user_monthly_phases')
+          .delete()
+          .eq('user_id', userId)
+          .eq('year', year);
+
+        if (monthlyPhasesToInsert.length > 0) {
+          const { error: monthlyError } = await supabase
+            .from('user_monthly_phases')
+            .insert(monthlyPhasesToInsert);
+
+          if (monthlyError) {
+            console.error('Error inserting monthly phases:', monthlyError);
+          } else {
+            console.log(`📅 Inserted ${monthlyPhasesToInsert.length} monthly phases`);
+          }
+        }
+
+        // Also create weekly phases (7 days per week)
+        const weeklyPhasesToInsert: any[] = [];
+        for (const monthlyPhase of monthlyPhasesToInsert) {
+          for (let day = 1; day <= 7; day++) {
+            weeklyPhasesToInsert.push({
+              user_id: userId,
+              year,
+              month: monthlyPhase.month,
+              week: monthlyPhase.week,
+              day,
+              phase: monthlyPhase.phase,
+            });
+          }
+        }
+
+        // Delete existing weekly phases for this user/year
+        await supabase
+          .from('user_weekly_phases')
+          .delete()
+          .eq('user_id', userId)
+          .eq('year', year);
+
+        if (weeklyPhasesToInsert.length > 0) {
+          const { error: weeklyError } = await supabase
+            .from('user_weekly_phases')
+            .insert(weeklyPhasesToInsert);
+
+          if (weeklyError) {
+            console.error('Error inserting weekly phases:', weeklyError);
+          } else {
+            console.log(`📅 Inserted ${weeklyPhasesToInsert.length} weekly phases`);
+          }
         }
       }
       
