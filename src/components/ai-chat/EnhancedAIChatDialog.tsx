@@ -402,8 +402,14 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             const parsed = JSON.parse(data);
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
-              // Μην εμφανίζεις τίποτα κατά το streaming — μόνο "Σκέφτομαι..."
               fullResponse += content;
+              // Φιλτράρισμα ai-action block real-time κατά το streaming
+              const filteredContent = filterAIActionBlock(fullResponse);
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === assistantMessageId ? { ...msg, content: filteredContent } : msg
+                )
+              );
             }
           } catch {
             // Incomplete JSON split across chunks: put back & wait for more
@@ -428,8 +434,14 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
             const parsed = JSON.parse(data);
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
-              // Μην εμφανίζεις τίποτα κατά το streaming — μόνο "Σκέφτομαι..."
               fullResponse += content;
+              // Φιλτράρισμα ai-action block real-time κατά το streaming
+              const filteredContent = filterAIActionBlock(fullResponse);
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === assistantMessageId ? { ...msg, content: filteredContent } : msg
+                )
+              );
             }
           } catch {
             // ignore leftovers
@@ -438,16 +450,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       }
 
       console.log('✅ Streaming completed');
-
-      // Εμφάνιση τελικής απάντησης (χωρίς ai-action/json)
-      const finalVisibleResponse = filterAIActionBlock(fullResponse);
-      setMessages(prev =>
-        prev.map(msg =>
-          msg.id === assistantMessageId ? { ...msg, content: finalVisibleResponse } : msg
-        )
-      );
-
-      // Έλεγχος για AI actions στην πλήρη απάντηση
+      
+      // Έλεγχος για AI actions στην απάντηση
       await processAIActions(fullResponse);
       
     } catch (error) {
@@ -560,55 +564,49 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
                   <span className="text-gray-500">Φόρτωση ιστορικού...</span>
                 </div>
               ) : (
-                messages
-                  .map((message) => {
-                    if (message.role === 'assistant' && !message.content.trim()) return null;
-
-                    return (
-                      <div
-                        key={message.id}
-                        className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div className={`flex gap-2 sm:gap-3 max-w-[90%] sm:max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                          <div className="flex-shrink-0">
-                            {message.role === 'user' ? (
-                              <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
-                                <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
-                                <AvatarFallback className="bg-blue-500 text-white text-[10px] sm:text-xs">
-                                  {getUserInitials(athleteName)}
-                                </AvatarFallback>
-                              </Avatar>
-                            ) : (
-                              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#cb8954] text-white flex items-center justify-center flex-shrink-0">
-                                <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
-                              </div>
-                            )}
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex gap-2 sm:gap-3 max-w-[90%] sm:max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className="flex-shrink-0">
+                        {message.role === 'user' ? (
+                          <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
+                            <AvatarImage src={athletePhotoUrl} alt={athleteName || 'User'} />
+                            <AvatarFallback className="bg-blue-500 text-white text-[10px] sm:text-xs">
+                              {getUserInitials(athleteName)}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#cb8954] text-white flex items-center justify-center flex-shrink-0">
+                            <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
                           </div>
-                          <div className={`p-2 sm:p-3 rounded-lg ${
-                            message.role === 'user'
-                              ? 'bg-blue-500 text-white rounded-br-none'
-                              : 'bg-gray-100 text-gray-900 rounded-bl-none'
-                          }`}>
-                            <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{filterAIActionBlock(message.content)}</p>
-                            <div className="flex items-center justify-between mt-1">
-                              <p className="text-[10px] sm:text-xs opacity-70">
-                                {message.timestamp.toLocaleTimeString('el-GR', {
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
-                              {message.role === 'assistant' && (
-                                <span className="text-[10px] sm:text-xs opacity-70 ml-2">
-                                  RidAI
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                        )}
+                      </div>
+                      <div className={`p-2 sm:p-3 rounded-lg ${
+                        message.role === 'user'
+                          ? 'bg-blue-500 text-white rounded-br-none'
+                          : 'bg-gray-100 text-gray-900 rounded-bl-none'
+                      }`}>
+                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{filterAIActionBlock(message.content)}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-[10px] sm:text-xs opacity-70">
+                            {message.timestamp.toLocaleTimeString('el-GR', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                          {message.role === 'assistant' && (
+                            <span className="text-[10px] sm:text-xs opacity-70 ml-2">
+                              RidAI
+                            </span>
+                          )}
                         </div>
                       </div>
-                    );
-                  })
-                  .filter(Boolean)
+                    </div>
+                  </div>
+                ))
               )}
               
               {isLoading && (
