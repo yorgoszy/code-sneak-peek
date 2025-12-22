@@ -5155,6 +5155,7 @@ export type Database = {
       }
       user_weekly_phases: {
         Row: {
+          accessory_subphase: string | null
           created_at: string
           day: number
           id: string
@@ -5168,6 +5169,7 @@ export type Database = {
           year: number
         }
         Insert: {
+          accessory_subphase?: string | null
           created_at?: string
           day: number
           id?: string
@@ -5181,6 +5183,7 @@ export type Database = {
           year: number
         }
         Update: {
+          accessory_subphase?: string | null
           created_at?: string
           day?: number
           id?: string
