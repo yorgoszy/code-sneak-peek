@@ -814,7 +814,8 @@ const AnnualPlanning: React.FC = () => {
     // setMonthlyPhases([]);
     // setWeeklyPhases([]);
     setSelectedUser(null);
-    fetchAssignedMacrocycles();
+    // Refresh τη λίστα με τους ανατεθειμένους μακροκύκλους
+    await fetchAssignedMacrocycles();
   };
 
   const filteredUsers = useMemo(() => {
