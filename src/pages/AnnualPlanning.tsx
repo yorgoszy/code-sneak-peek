@@ -41,7 +41,11 @@ interface AssignedMacrocycle {
   user_id: string;
   user_name: string;
   user_avatar: string | null;
+  /** Latest year that has data for this user */
   year: number;
+  /** All years that have a macrocycle for this user (desc) */
+  years: number[];
+  /** Phases for the currently selected year (usually latest) */
   phases: UserPhase[];
   assigned_at: string;
 }
@@ -460,8 +464,9 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
+    // One card per user. Inside the dialog you can navigate years.
     const grouped = (data || []).reduce((acc, item) => {
-      const key = `${item.user_id}-${item.year}`;
+      const key = `${item.user_id}`;
       const user = (item.app_users as any) || null;
       const userAvatar = user?.avatar_url || user?.photo_url || null;
 
@@ -472,15 +477,45 @@ const AnnualPlanning: React.FC = () => {
           user_name: user?.name || 'Άγνωστος',
           user_avatar: userAvatar,
           year: item.year,
+          years: [],
           phases: [],
-          assigned_at: item.created_at
+          assigned_at: item.created_at,
+          _byYear: {} as Record<number, UserPhase[]>,
         };
       }
-      acc[key].phases.push(item);
-      return acc;
-    }, {} as Record<string, AssignedMacrocycle>);
 
-    setAssignedMacrocycles(Object.values(grouped));
+      // track years
+      if (!acc[key].years.includes(item.year)) acc[key].years.push(item.year);
+
+      // keep latest year for the card preview
+      if (item.year > acc[key].year) acc[key].year = item.year;
+
+      // group phases per year
+      acc[key]._byYear[item.year] = acc[key]._byYear[item.year] || [];
+      acc[key]._byYear[item.year].push(item);
+
+      // keep the newest assigned_at for display
+      if (item.created_at > acc[key].assigned_at) acc[key].assigned_at = item.created_at;
+
+      return acc;
+    }, {} as Record<string, (AssignedMacrocycle & { _byYear: Record<number, UserPhase[]> })>);
+
+    const result: AssignedMacrocycle[] = Object.values(grouped).map((g) => {
+      const yearsDesc = [...g.years].sort((a, b) => b - a);
+      const previewYear = yearsDesc[0] ?? g.year;
+      return {
+        id: g.id,
+        user_id: g.user_id,
+        user_name: g.user_name,
+        user_avatar: g.user_avatar,
+        year: previewYear,
+        years: yearsDesc,
+        phases: (g._byYear[previewYear] || []).sort((a, b) => a.month - b.month),
+        assigned_at: g.assigned_at,
+      };
+    });
+
+    setAssignedMacrocycles(result);
   };
 
   const fetchSavedMacrocycles = async () => {
@@ -683,75 +718,60 @@ const AnnualPlanning: React.FC = () => {
     fetchAssignedMacrocycles();
   };
 
-  const handleViewAssignment = async (macrocycle: AssignedMacrocycle) => {
-    setDialogMacrocycle(macrocycle);
-    setDialogPhases(macrocycle.phases.map(p => ({ month: p.month, phase: p.phase })));
-    setDialogYear(macrocycle.year);
-    setDialogMode('view');
-    setDialogWeeklyMonth(new Date().getMonth() + 1);
-    
-    // Fetch monthly phases from database
+  const loadDialogDataForYear = async (userId: string, targetYear: number) => {
+    // Annual phases
+    const { data: annualData } = await supabase
+      .from('user_annual_phases')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('year', targetYear);
+
+    setDialogPhases((annualData || []).map((p: any) => ({ month: p.month, phase: p.phase })));
+
+    // Monthly phases
     const { data: monthlyData } = await supabase
       .from('user_monthly_phases')
       .select('*')
-      .eq('user_id', macrocycle.user_id)
-      .eq('year', macrocycle.year);
-    
-    setDialogMonthlyPhases(
-      (monthlyData || []).map(p => ({ month: p.month, week: p.week, phase: p.phase }))
-    );
-    
-    // Fetch weekly phases from database
+      .eq('user_id', userId)
+      .eq('year', targetYear);
+
+    setDialogMonthlyPhases((monthlyData || []).map((p: any) => ({ month: p.month, week: p.week, phase: p.phase })));
+
+    // Weekly phases
     const { data: weeklyData } = await supabase
       .from('user_weekly_phases')
       .select('*')
-      .eq('user_id', macrocycle.user_id)
-      .eq('year', macrocycle.year);
-    
-    setDialogWeeklyPhases(
-      (weeklyData || []).map(p => ({ month: p.month, week: p.week, day: p.day, phase: p.phase }))
-    );
-    
-    // Fetch competition dates from program assignments
-    const competitionDates = await fetchCompetitionDates(macrocycle.user_id, macrocycle.year);
+      .eq('user_id', userId)
+      .eq('year', targetYear);
+
+    setDialogWeeklyPhases((weeklyData || []).map((p: any) => ({ month: p.month, week: p.week, day: p.day, phase: p.phase })));
+
+    // Competition dates
+    const competitionDates = await fetchCompetitionDates(userId, targetYear);
     setDialogCompetitionDates(competitionDates);
-    
+
+    // Update dialog macrocycle preview state (so the header/year is consistent)
+    setDialogMacrocycle((prev) => (prev ? { ...prev, year: targetYear } : prev));
+    setDialogYear(targetYear);
+  };
+
+  const handleViewAssignment = async (macrocycle: AssignedMacrocycle) => {
+    setDialogMacrocycle(macrocycle);
+    setDialogMode('view');
+    setDialogWeeklyMonth(new Date().getMonth() + 1);
+
+    await loadDialogDataForYear(macrocycle.user_id, macrocycle.year);
+
     setDialogOpen(true);
   };
 
   const handleEditAssignment = async (macrocycle: AssignedMacrocycle) => {
     setDialogMacrocycle(macrocycle);
-    setDialogPhases(macrocycle.phases.map(p => ({ month: p.month, phase: p.phase })));
-    setDialogYear(macrocycle.year);
     setDialogMode('edit');
     setDialogWeeklyMonth(new Date().getMonth() + 1);
-    
-    // Fetch monthly phases from database
-    const { data: monthlyData } = await supabase
-      .from('user_monthly_phases')
-      .select('*')
-      .eq('user_id', macrocycle.user_id)
-      .eq('year', macrocycle.year);
-    
-    setDialogMonthlyPhases(
-      (monthlyData || []).map(p => ({ month: p.month, week: p.week, phase: p.phase }))
-    );
-    
-    // Fetch weekly phases from database
-    const { data: weeklyData } = await supabase
-      .from('user_weekly_phases')
-      .select('*')
-      .eq('user_id', macrocycle.user_id)
-      .eq('year', macrocycle.year);
-    
-    setDialogWeeklyPhases(
-      (weeklyData || []).map(p => ({ month: p.month, week: p.week, day: p.day, phase: p.phase }))
-    );
-    
-    // Fetch competition dates from program assignments
-    const competitionDates = await fetchCompetitionDates(macrocycle.user_id, macrocycle.year);
-    setDialogCompetitionDates(competitionDates);
-    
+
+    await loadDialogDataForYear(macrocycle.user_id, macrocycle.year);
+
     setDialogOpen(true);
   };
 
@@ -1671,7 +1691,7 @@ const AnnualPlanning: React.FC = () => {
                         </Avatar>
                         <div>
                           <p className="text-xs font-medium">{macrocycle.user_name}</p>
-                          <p className="text-[10px] text-muted-foreground">Έτος: {macrocycle.year}</p>
+                          <p className="text-[10px] text-muted-foreground">Έτος: {macrocycle.year}{macrocycle.years.length > 1 ? ` (+${macrocycle.years.length - 1})` : ''}</p>
                         </div>
                       </div>
                       <div className="flex gap-1">
@@ -1793,26 +1813,32 @@ const AnnualPlanning: React.FC = () => {
                 )}
                 <span className="text-muted-foreground text-[10px]">- {dialogMode === 'view' ? 'Προβολή' : 'Επεξεργασία'}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setDialogYear(y => y - 1)}
-                  className="rounded-none h-5 w-5"
-                  disabled={dialogMode === 'view'}
-                >
-                  <ChevronLeft className="h-2.5 w-2.5" />
-                </Button>
-                <span className="text-xs font-semibold w-9 text-center">{dialogYear}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setDialogYear(y => y + 1)}
-                  className="rounded-none h-5 w-5"
-                  disabled={dialogMode === 'view'}
-                >
-                  <ChevronRight className="h-2.5 w-2.5" />
-                </Button>
+               <div className="flex items-center gap-2">
+                 <Button
+                   variant="outline"
+                   size="icon"
+                   onClick={async () => {
+                     if (!dialogMacrocycle) return;
+                     if (dialogMode === 'edit') return;
+                     await loadDialogDataForYear(dialogMacrocycle.user_id, dialogYear - 1);
+                   }}
+                   className="rounded-none h-5 w-5"
+                 >
+                   <ChevronLeft className="h-2.5 w-2.5" />
+                 </Button>
+                 <span className="text-xs font-semibold w-9 text-center">{dialogYear}</span>
+                 <Button
+                   variant="outline"
+                   size="icon"
+                   onClick={async () => {
+                     if (!dialogMacrocycle) return;
+                     if (dialogMode === 'edit') return;
+                     await loadDialogDataForYear(dialogMacrocycle.user_id, dialogYear + 1);
+                   }}
+                   className="rounded-none h-5 w-5"
+                 >
+                   <ChevronRight className="h-2.5 w-2.5" />
+                 </Button>
                 {dialogMode === 'edit' && (
                   <>
                     <Button
