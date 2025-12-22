@@ -313,6 +313,80 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     }
   };
 
+  // Helper to extract month from various formats
+  const extractMonth = (phaseData: any): number | null => {
+    // Direct month number
+    if (typeof phaseData.month === 'number') return phaseData.month;
+    if (typeof phaseData.month === 'string' && !isNaN(parseInt(phaseData.month))) {
+      return parseInt(phaseData.month);
+    }
+    
+    // Try to extract from start_date (e.g., "2025-01-01" or "01/01/2025")
+    if (phaseData.start_date) {
+      const dateStr = phaseData.start_date;
+      // Try YYYY-MM-DD format
+      const isoMatch = dateStr.match(/^\d{4}-(\d{2})-\d{2}/);
+      if (isoMatch) return parseInt(isoMatch[1]);
+      // Try DD/MM/YYYY format
+      const euMatch = dateStr.match(/^\d{2}\/(\d{2})\/\d{4}/);
+      if (euMatch) return parseInt(euMatch[1]);
+    }
+    
+    // Try month_name in Greek
+    const monthNames: Record<string, number> = {
+      'ιανουάριος': 1, 'ιανουαριος': 1,
+      'φεβρουάριος': 2, 'φεβρουαριος': 2,
+      'μάρτιος': 3, 'μαρτιος': 3,
+      'απρίλιος': 4, 'απριλιος': 4,
+      'μάιος': 5, 'μαιος': 5,
+      'ιούνιος': 6, 'ιουνιος': 6,
+      'ιούλιος': 7, 'ιουλιος': 7,
+      'αύγουστος': 8, 'αυγουστος': 8,
+      'σεπτέμβριος': 9, 'σεπτεμβριος': 9,
+      'οκτώβριος': 10, 'οκτωβριος': 10,
+      'νοέμβριος': 11, 'νοεμβριος': 11,
+      'δεκέμβριος': 12, 'δεκεμβριος': 12
+    };
+    if (phaseData.month_name) {
+      const normalized = phaseData.month_name.toLowerCase().trim();
+      if (monthNames[normalized]) return monthNames[normalized];
+    }
+    
+    return null;
+  };
+
+  // Helper to map phase names to valid phase keys
+  const mapPhaseToKey = (phaseName: string): string => {
+    const phaseMap: Record<string, string> = {
+      'υπερτροφία': 'functional-hypertrophy',
+      'υπερτροφια': 'functional-hypertrophy',
+      'hypertrophy': 'functional-hypertrophy',
+      'μέγιστη δύναμη': 'maximal-strength',
+      'μεγιστη δυναμη': 'maximal-strength',
+      'maximal strength': 'maximal-strength',
+      'ισχύς': 'power',
+      'ισχυς': 'power',
+      'str/spd': 'power',
+      'power': 'power',
+      'αγώνας': 'competition',
+      'αγωνας': 'competition',
+      'competition': 'competition',
+      'tapering': 'competition',
+      'διορθωτικές': 'corrective',
+      'διορθωτικες': 'corrective',
+      'corrective': 'corrective',
+      'σταθεροποίηση': 'stabilization',
+      'σταθεροποιηση': 'stabilization',
+      'stabilization': 'stabilization',
+      'αντοχή': 'endurance',
+      'αντοχη': 'endurance',
+      'endurance': 'endurance'
+    };
+    
+    const normalized = phaseName.toLowerCase().trim();
+    return phaseMap[normalized] || phaseName;
+  };
+
   // Handle create annual plan action
   const handleCreateAnnualPlan = async (actionData: any) => {
     try {
@@ -343,12 +417,29 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       
       // Create phases for each user
       for (const userId of userIds) {
-        const phasesToInsert = phases.map((p: any) => ({
-          user_id: userId,
-          year,
-          month: p.month,
-          phase: p.phase
-        }));
+        const phasesToInsert = phases
+          .map((p: any) => {
+            const month = extractMonth(p);
+            if (!month) {
+              console.warn('Could not extract month from phase:', p);
+              return null;
+            }
+            return {
+              user_id: userId,
+              year,
+              month,
+              phase: mapPhaseToKey(p.phase || p.phase_name || '')
+            };
+          })
+          .filter(Boolean);
+        
+        if (phasesToInsert.length === 0) {
+          console.error('No valid phases to insert. Raw phases:', phases);
+          toast.error('Δεν βρέθηκαν έγκυρες φάσεις για ανάθεση');
+          return;
+        }
+        
+        console.log('📊 Phases to insert:', phasesToInsert);
         
         const { error } = await supabase
           .from('user_annual_phases')
