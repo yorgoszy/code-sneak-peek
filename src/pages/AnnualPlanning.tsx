@@ -437,15 +437,57 @@ const AnnualPlanning: React.FC = () => {
 
   // Handle weekly phase cell click - allows multiple phases per day
   const handleWeeklyPhaseClick = (month: number, week: number, day: number, phase: string) => {
+    const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
+    const isSubphase = strengthSubphases.includes(phase);
+    
     setWeeklyPhases(prev => {
-      const existing = prev.find(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
-      if (existing) {
-        // Remove if already selected
-        return prev.filter(p => !(p.month === month && p.week === week && p.day === day && p.phase === phase));
+      if (isSubphase) {
+        // Cycle: none -> primary -> secondary -> none
+        const existing = prev.find(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
+        
+        if (!existing) {
+          // Click 1: Add as primary
+          return [...prev, { month, week, day, phase, primary_subphase: phase, secondary_subphase: null }];
+        } else if (existing.primary_subphase === phase && !existing.secondary_subphase) {
+          // Click 2: Change to secondary
+          return prev.map(p => 
+            (p.month === month && p.week === week && p.day === day && p.phase === phase)
+              ? { ...p, primary_subphase: null, secondary_subphase: phase }
+              : p
+          );
+        } else {
+          // Click 3: Remove
+          return prev.filter(p => !(p.month === month && p.week === week && p.day === day && p.phase === phase));
+        }
+      } else {
+        // Normal toggle for non-subphases
+        const existing = prev.find(p => p.month === month && p.week === week && p.day === day && p.phase === phase);
+        if (existing) {
+          return prev.filter(p => !(p.month === month && p.week === week && p.day === day && p.phase === phase));
+        }
+        return [...prev, { month, week, day, phase }];
       }
-      // Add new phase (without removing existing ones for this day)
-      return [...prev, { month, week, day, phase }];
     });
+  };
+
+  // Get subphase priority (1 = primary, 2 = secondary, null = not a subphase or not selected)
+  const getSubphasePriority = (month: number, week: number, day: number, phase: string): number | null => {
+    const strengthSubphases = ['starting-strength', 'explosive-strength', 'reactive-strength'];
+    if (!strengthSubphases.includes(phase)) return null;
+    
+    const matchingPhase = weeklyPhases.find(p => 
+      p.month === month && 
+      p.week === week && 
+      p.day === day &&
+      p.phase === phase
+    );
+    
+    if (!matchingPhase) return null;
+    
+    if (matchingPhase.primary_subphase === phase) return 1;
+    if (matchingPhase.secondary_subphase === phase) return 2;
+    
+    return null;
   };
 
   // Check if weekly phase is selected (including auto-populated subphases)
@@ -1930,7 +1972,15 @@ const AnnualPlanning: React.FC = () => {
                               )}
                             >
                               {isSelected && isValidDate && (
-                                <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />
+                                (() => {
+                                  const priority = getSubphasePriority(selectedWeeklyMonth, week, day, phase.value);
+                                  if (priority) {
+                                    return (
+                                      <span className="text-[8px] sm:text-[10px] font-bold text-white">{priority}</span>
+                                    );
+                                  }
+                                  return <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />;
+                                })()
                               )}
                             </td>
                           );
