@@ -355,36 +355,92 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     return null;
   };
 
+  // Helper to normalize Greek text (remove accents)
+  const normalizeGreek = (str: string): string => {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[ά]/g, 'α')
+      .replace(/[έ]/g, 'ε')
+      .replace(/[ή]/g, 'η')
+      .replace(/[ί]/g, 'ι')
+      .replace(/[ό]/g, 'ο')
+      .replace(/[ύ]/g, 'υ')
+      .replace(/[ώ]/g, 'ω')
+      .trim();
+  };
+
   // Helper to map phase names to valid phase keys
   const mapPhaseToKey = (phaseName: string): string => {
+    if (!phaseName) return '';
+    
+    const normalized = normalizeGreek(phaseName);
+    console.log('🔄 Mapping phase:', phaseName, '→ normalized:', normalized);
+    
+    // Direct phase keys (already valid)
+    const validPhases = [
+      'corrective', 'stabilization', 'connecting-linking', 'movement-skills',
+      'non-functional-hypertrophy', 'functional-hypertrophy', 'maximal-strength',
+      'power', 'endurance', 'competition'
+    ];
+    if (validPhases.includes(normalized)) return normalized;
+    
+    // Greek to English mapping (supports variations with/without accents)
     const phaseMap: Record<string, string> = {
-      'υπερτροφία': 'functional-hypertrophy',
+      // Hypertrophy
       'υπερτροφια': 'functional-hypertrophy',
       'hypertrophy': 'functional-hypertrophy',
-      'μέγιστη δύναμη': 'maximal-strength',
+      'functional hypertrophy': 'functional-hypertrophy',
+      'non functional hypertrophy': 'non-functional-hypertrophy',
+      'μη λειτουργικη υπερτροφια': 'non-functional-hypertrophy',
+      // Maximal Strength
       'μεγιστη δυναμη': 'maximal-strength',
       'maximal strength': 'maximal-strength',
-      'ισχύς': 'power',
+      'max strength': 'maximal-strength',
+      // Power
       'ισχυς': 'power',
       'str/spd': 'power',
       'power': 'power',
-      'αγώνας': 'competition',
+      'power training': 'power',
+      // Competition
       'αγωνας': 'competition',
       'competition': 'competition',
       'tapering': 'competition',
-      'διορθωτικές': 'corrective',
+      // Corrective
       'διορθωτικες': 'corrective',
       'corrective': 'corrective',
-      'σταθεροποίηση': 'stabilization',
+      // Stabilization
       'σταθεροποιηση': 'stabilization',
       'stabilization': 'stabilization',
-      'αντοχή': 'endurance',
+      'stabilization training': 'stabilization',
+      // Endurance
       'αντοχη': 'endurance',
-      'endurance': 'endurance'
+      'endurance': 'endurance',
+      // Movement Skills
+      'κινητικες δεξιοτητες': 'movement-skills',
+      'movement skills': 'movement-skills',
+      // Connecting Linking
+      'συνδεση': 'connecting-linking',
+      'connecting linking': 'connecting-linking',
     };
     
-    const normalized = phaseName.toLowerCase().trim();
-    return phaseMap[normalized] || phaseName;
+    // Try direct match
+    if (phaseMap[normalized]) {
+      console.log('✅ Found match:', phaseMap[normalized]);
+      return phaseMap[normalized];
+    }
+    
+    // Try partial match (for cases like "Υπερτροφία" matching "υπερτροφια")
+    for (const [key, value] of Object.entries(phaseMap)) {
+      if (normalized.includes(key) || key.includes(normalized)) {
+        console.log('✅ Found partial match:', value);
+        return value;
+      }
+    }
+    
+    console.warn('⚠️ No phase match found for:', phaseName);
+    return '';
   };
 
   // Handle create annual plan action
