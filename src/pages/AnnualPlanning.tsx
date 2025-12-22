@@ -928,15 +928,6 @@ const AnnualPlanning: React.FC = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => setSelectedPhases([])}
-                    className="rounded-none h-6 w-6"
-                    title="Καθαρισμός Ετήσιου"
-                  >
-                    <RotateCcw className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
                     onClick={() => setYear(y => y - 1)}
                     className="rounded-none h-7 w-7"
                   >
@@ -950,6 +941,15 @@ const AnnualPlanning: React.FC = () => {
                     className="rounded-none h-7 w-7"
                   >
                     <ChevronRight className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSelectedPhases([])}
+                    className="rounded-none h-6 w-6"
+                    title="Καθαρισμός Ετήσιου"
+                  >
+                    <RotateCcw className="h-3 w-3" />
                   </Button>
                 </div>
               </CardTitle>
@@ -1015,15 +1015,26 @@ const AnnualPlanning: React.FC = () => {
               <Calendar className="w-4 h-4" />
               Μηνιαίος Προγραμματισμός
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setMonthlyPhases([])}
-              className="rounded-none h-6 w-6"
-              title="Καθαρισμός Μηνιαίου"
-            >
-              <RotateCcw className="h-3 w-3" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedWeeklyMonth}
+                onChange={(e) => setSelectedWeeklyMonth(Number(e.target.value))}
+                className="rounded-none border px-2 py-1 text-xs sm:text-sm bg-background"
+              >
+                {MONTHS_DROPDOWN.map((month, index) => (
+                  <option key={index} value={index + 1}>{month}</option>
+                ))}
+              </select>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setMonthlyPhases([])}
+                className="rounded-none h-6 w-6"
+                title="Καθαρισμός Μηνιαίου"
+              >
+                <RotateCcw className="h-3 w-3" />
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-2 sm:p-4 pt-0">
