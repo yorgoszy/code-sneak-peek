@@ -856,11 +856,30 @@ const AnnualPlanning: React.FC = () => {
       if (comp && !alreadyIncluded) allSubPhases.push({ ...comp, parentPhase: 'competition' });
     }
 
-    // Sort phases according to PHASES order
-    const phaseOrder = PHASES.map(p => p.value);
+    // Sort phases according to specific sub-phase order
+    const subPhaseOrder = [
+      'corrective',
+      'stabilization_training',
+      'connecting_linking',
+      'movement_skills',
+      'non_functional_hypertrophy',
+      'functional_hypertrophy',
+      'starting_strength',
+      'explosive_strength',
+      'reactive_strength',
+      'strength_speed',
+      'power',
+      'speed_strength',
+      'speed',
+      'strength_endurance',
+      'power_endurance',
+      'speed_endurance',
+      'aerobic_endurance',
+      'competition'
+    ];
     allSubPhases.sort((a, b) => {
-      const indexA = phaseOrder.indexOf(a.parentPhase);
-      const indexB = phaseOrder.indexOf(b.parentPhase);
+      const indexA = subPhaseOrder.indexOf(a.value);
+      const indexB = subPhaseOrder.indexOf(b.value);
       return indexA - indexB;
     });
 
