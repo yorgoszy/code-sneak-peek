@@ -733,8 +733,8 @@ const PhaseConfig: React.FC = () => {
                           const thumbnailUrl = hasVideo ? getVideoThumbnail(videoUrl) : null;
                           
                           return (
-                            <div key={pe.id} className="flex items-center justify-between p-2 bg-gray-50 border text-sm">
-                              <div className="flex items-center gap-2">
+                            <div key={pe.id} className="flex items-center justify-between gap-2 p-2 bg-gray-50 border text-sm">
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
                                 {/* Video Thumbnail */}
                                 {thumbnailUrl ? (
                                   <div 
@@ -758,7 +758,7 @@ const PhaseConfig: React.FC = () => {
                                     <Dumbbell className="w-4 h-4 text-gray-400" />
                                   </div>
                                 )}
-                                <span className="truncate">{pe.exercises?.name}</span>
+                                <span className="truncate" title={pe.exercises?.name}>{pe.exercises?.name}</span>
                               </div>
                               <Button
                                 variant="ghost"
