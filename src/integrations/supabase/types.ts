@@ -2934,39 +2934,51 @@ export type Database = {
           id: string
           intensity_percent: number | null
           is_primary: boolean | null
+          kg: string | null
+          kg_mode: string | null
           notes: string | null
           phase_id: string
           reps: string
+          reps_mode: string | null
           rest: string | null
           scheme_name: string
           sets: number
           tempo: string | null
+          velocity_ms: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
           intensity_percent?: number | null
           is_primary?: boolean | null
+          kg?: string | null
+          kg_mode?: string | null
           notes?: string | null
           phase_id: string
           reps: string
+          reps_mode?: string | null
           rest?: string | null
           scheme_name: string
           sets: number
           tempo?: string | null
+          velocity_ms?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
           intensity_percent?: number | null
           is_primary?: boolean | null
+          kg?: string | null
+          kg_mode?: string | null
           notes?: string | null
           phase_id?: string
           reps?: string
+          reps_mode?: string | null
           rest?: string | null
           scheme_name?: string
           sets?: number
           tempo?: string | null
+          velocity_ms?: string | null
         }
         Relationships: [
           {

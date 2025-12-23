@@ -29,6 +29,10 @@ export interface PhaseRepScheme {
   intensity_percent: number | null;
   is_primary: boolean;
   notes: string | null;
+  kg: string | null;
+  velocity_ms: string | null;
+  reps_mode: string | null;
+  kg_mode: string | null;
 }
 
 export interface PhaseExercise {
