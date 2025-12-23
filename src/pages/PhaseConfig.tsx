@@ -65,6 +65,7 @@ const PhaseConfig: React.FC = () => {
     loading,
     addRepScheme,
     deleteRepScheme,
+    updateRepScheme,
     addPhaseExercise,
     removePhaseExercise,
     addPhaseCategory,
@@ -472,10 +473,17 @@ const PhaseConfig: React.FC = () => {
                           <div key={scheme.id} className="p-2 bg-gray-50 border">
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-sm">{scheme.scheme_name}</span>
-                                {scheme.is_primary && (
-                                  <Badge className="bg-[#00ffba] text-black text-xs">Primary</Badge>
-                                )}
+                                <Input
+                                  value={scheme.scheme_name}
+                                  onChange={e => updateRepScheme(scheme.id, { scheme_name: e.target.value })}
+                                  className="rounded-none text-sm font-medium h-6 w-24 px-1"
+                                />
+                                <button
+                                  onClick={() => updateRepScheme(scheme.id, { is_primary: !scheme.is_primary })}
+                                  className={`text-xs px-1.5 py-0.5 border ${scheme.is_primary ? 'bg-[#00ffba] text-black' : 'bg-gray-200 text-gray-600'}`}
+                                >
+                                  Primary
+                                </button>
                               </div>
                               <Button
                                 variant="ghost"
@@ -487,33 +495,83 @@ const PhaseConfig: React.FC = () => {
                               </Button>
                             </div>
                             <div className="grid grid-cols-7 gap-1 text-xs">
-                              <div className="text-center">
-                                <span className="text-gray-500 block">Sets</span>
-                                <span className="font-medium">{scheme.sets || '-'}</span>
+                              <div className="flex flex-col items-center">
+                                <span className="text-gray-500 block text-[10px]">Sets</span>
+                                <Input
+                                  type="number"
+                                  value={scheme.sets || ''}
+                                  onChange={e => updateRepScheme(scheme.id, { sets: parseInt(e.target.value) || 0 })}
+                                  className="rounded-none text-xs h-6 text-center px-1 w-full"
+                                />
                               </div>
-                              <div className="text-center">
-                                <span className="text-gray-500 block">{scheme.reps_mode === 'time' ? 'Time' : scheme.reps_mode === 'meter' ? 'Meter' : 'Reps'}</span>
-                                <span className="font-medium">{scheme.reps || '-'}</span>
+                              <div className="flex flex-col items-center">
+                                <span 
+                                  className="text-gray-500 block text-[10px] cursor-pointer hover:text-[#00ffba]"
+                                  onClick={() => {
+                                    const modes = ['reps', 'time', 'meter'];
+                                    const currentIndex = modes.indexOf(scheme.reps_mode || 'reps');
+                                    const nextMode = modes[(currentIndex + 1) % modes.length];
+                                    updateRepScheme(scheme.id, { reps_mode: nextMode });
+                                  }}
+                                >
+                                  {scheme.reps_mode === 'time' ? 'Time' : scheme.reps_mode === 'meter' ? 'Meter' : 'Reps'}
+                                </span>
+                                <Input
+                                  value={scheme.reps || ''}
+                                  onChange={e => updateRepScheme(scheme.id, { reps: e.target.value })}
+                                  className="rounded-none text-xs h-6 text-center px-1 w-full"
+                                />
                               </div>
-                              <div className="text-center">
-                                <span className="text-gray-500 block">%1RM</span>
-                                <span className="font-medium">{scheme.intensity_percent || '-'}</span>
+                              <div className="flex flex-col items-center">
+                                <span className="text-gray-500 block text-[10px]">%1RM</span>
+                                <Input
+                                  type="number"
+                                  value={scheme.intensity_percent || ''}
+                                  onChange={e => updateRepScheme(scheme.id, { intensity_percent: parseInt(e.target.value) || null })}
+                                  className="rounded-none text-xs h-6 text-center px-1 w-full"
+                                />
                               </div>
-                              <div className="text-center">
-                                <span className="text-gray-500 block">{scheme.kg_mode === 'rpm' ? 'rpm' : scheme.kg_mode === 'meter' ? 'meter' : scheme.kg_mode === 's/m' ? 's/m' : scheme.kg_mode === 'km/h' ? 'km/h' : 'Kg'}</span>
-                                <span className="font-medium">{scheme.kg || '-'}</span>
+                              <div className="flex flex-col items-center">
+                                <span 
+                                  className="text-gray-500 block text-[10px] cursor-pointer hover:text-[#00ffba]"
+                                  onClick={() => {
+                                    const modes = ['kg', 'rpm', 'meter', 's/m', 'km/h'];
+                                    const currentIndex = modes.indexOf(scheme.kg_mode || 'kg');
+                                    const nextMode = modes[(currentIndex + 1) % modes.length];
+                                    updateRepScheme(scheme.id, { kg_mode: nextMode });
+                                  }}
+                                >
+                                  {scheme.kg_mode === 'rpm' ? 'rpm' : scheme.kg_mode === 'meter' ? 'meter' : scheme.kg_mode === 's/m' ? 's/m' : scheme.kg_mode === 'km/h' ? 'km/h' : 'Kg'}
+                                </span>
+                                <Input
+                                  value={scheme.kg || ''}
+                                  onChange={e => updateRepScheme(scheme.id, { kg: e.target.value })}
+                                  className="rounded-none text-xs h-6 text-center px-1 w-full"
+                                />
                               </div>
-                              <div className="text-center">
-                                <span className="text-gray-500 block">m/s</span>
-                                <span className="font-medium">{scheme.velocity_ms || '-'}</span>
+                              <div className="flex flex-col items-center">
+                                <span className="text-gray-500 block text-[10px]">m/s</span>
+                                <Input
+                                  value={scheme.velocity_ms || ''}
+                                  onChange={e => updateRepScheme(scheme.id, { velocity_ms: e.target.value })}
+                                  className="rounded-none text-xs h-6 text-center px-1 w-full"
+                                />
                               </div>
-                              <div className="text-center">
-                                <span className="text-gray-500 block">Tempo</span>
-                                <span className="font-medium">{scheme.tempo || '-'}</span>
+                              <div className="flex flex-col items-center">
+                                <span className="text-gray-500 block text-[10px]">Tempo</span>
+                                <Input
+                                  value={scheme.tempo || ''}
+                                  onChange={e => updateRepScheme(scheme.id, { tempo: e.target.value })}
+                                  className="rounded-none text-xs h-6 text-center px-1 w-full"
+                                />
                               </div>
-                              <div className="text-center">
-                                <span className="text-gray-500 block">Rest</span>
-                                <span className="font-medium">{scheme.rest || '-'}</span>
+                              <div className="flex flex-col items-center">
+                                <span className="text-gray-500 block text-[10px]">Rest</span>
+                                <Input
+                                  value={scheme.rest || ''}
+                                  onChange={e => updateRepScheme(scheme.id, { rest: e.target.value })}
+                                  className="rounded-none text-xs h-6 text-center px-1 w-full"
+                                />
                               </div>
                             </div>
                           </div>

@@ -253,6 +253,21 @@ export const useTrainingPhaseConfig = () => {
     }
   };
 
+  const updateRepScheme = async (id: string, updates: Partial<PhaseRepScheme>) => {
+    try {
+      const { error } = await supabase
+        .from('phase_rep_schemes')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+      await fetchRepSchemes();
+    } catch (error) {
+      console.error('Error updating rep scheme:', error);
+      toast.error('Σφάλμα ενημέρωσης scheme');
+    }
+  };
+
   // CRUD for phase exercises
   const addPhaseExercise = async (phaseId: string, exerciseId: string, priority: number = 1) => {
     try {
@@ -439,6 +454,7 @@ export const useTrainingPhaseConfig = () => {
     refreshAll,
     addRepScheme,
     deleteRepScheme,
+    updateRepScheme,
     addPhaseExercise,
     removePhaseExercise,
     addPhaseCategory,
