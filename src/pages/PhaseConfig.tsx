@@ -441,6 +441,17 @@ const PhaseConfig: React.FC = () => {
                     {currentPhase.description && (
                       <p className="text-gray-600 text-xs mt-2">{currentPhase.description}</p>
                     )}
+                    
+                    {/* Training Philosophy */}
+                    <div className="mt-4 pt-3 border-t">
+                      <span className="text-gray-500 text-xs block mb-1">Φιλοσοφία/Λογική Φάσης:</span>
+                      <textarea
+                        value={currentPhase.training_philosophy || ''}
+                        onChange={e => updatePhase(currentPhase.id, { training_philosophy: e.target.value || null })}
+                        placeholder="π.χ. Κύκλοι με: lower push unilateral, upper pull vertical, plyometric, biceps curl..."
+                        className="w-full h-24 text-xs p-2 border rounded-none resize-none bg-background"
+                      />
+                    </div>
                   </div>
                 )}
               </CardContent>
