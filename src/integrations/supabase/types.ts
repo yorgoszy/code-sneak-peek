@@ -4415,6 +4415,7 @@ export type Database = {
           phase_type: string
           rep_range_max: number | null
           rep_range_min: number | null
+          reps_mode: string | null
           rest_range_max: number | null
           rest_range_min: number | null
           tempo_recommendation: string | null
@@ -4432,6 +4433,7 @@ export type Database = {
           phase_type?: string
           rep_range_max?: number | null
           rep_range_min?: number | null
+          reps_mode?: string | null
           rest_range_max?: number | null
           rest_range_min?: number | null
           tempo_recommendation?: string | null
@@ -4449,6 +4451,7 @@ export type Database = {
           phase_type?: string
           rep_range_max?: number | null
           rep_range_min?: number | null
+          reps_mode?: string | null
           rest_range_max?: number | null
           rest_range_min?: number | null
           tempo_recommendation?: string | null

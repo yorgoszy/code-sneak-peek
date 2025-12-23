@@ -16,6 +16,7 @@ export interface TrainingPhase {
   rest_range_max: number | null;
   tempo_recommendation: string | null;
   description: string | null;
+  reps_mode: string | null;
 }
 
 export interface PhaseRepScheme {
@@ -392,6 +393,23 @@ export const useTrainingPhaseConfig = () => {
     }
   };
 
+  // Update phase
+  const updatePhase = async (phaseId: string, updates: Partial<TrainingPhase>) => {
+    try {
+      const { error } = await supabase
+        .from('training_phase_config')
+        .update(updates)
+        .eq('id', phaseId);
+
+      if (error) throw error;
+      toast.success('Η φάση ενημερώθηκε');
+      await fetchPhases();
+    } catch (error) {
+      console.error('Error updating phase:', error);
+      toast.error('Σφάλμα ενημέρωσης φάσης');
+    }
+  };
+
   // Get phase config for AI
   const getPhaseConfigForAI = (phaseKey: string) => {
     const phase = phases.find(p => p.phase_key === phaseKey);
@@ -428,6 +446,7 @@ export const useTrainingPhaseConfig = () => {
     removeCorrectiveIssue,
     addCorrectiveMuscle,
     removeCorrectiveMuscle,
+    updatePhase,
     getPhaseConfigForAI,
   };
 };
