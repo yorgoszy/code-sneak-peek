@@ -3896,6 +3896,59 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
   * Senior: [benchmarks]
 - "Για να φτάσεις elite level, χρειάζεσαι +20% στο squat και +15% στο VO2max"
 
+🎯 FEATURE #22 - EXOS EXERCISE SELECTION FRAMEWORK:
+Χρησιμοποίησε το EXOS framework για έξυπνη επιλογή ασκήσεων βάσει φάσης και τύπου:
+
+📌 LOADING STRATEGIES (από Mechanical → Metabolic Stress):
+1. Supra Maximal Eccentrics (110-115% 1RM) - Μέγιστο mechanical stress
+2. Maximal Loads & Speed (95-100% 1RM)
+3. Clusters (intra-rep rest 15-30s) - π.χ. 2 reps + 10s + 1 rep @ 90%
+4. Accommodating Resistance - Chains (Strength), Bands (Power), Air (Both)
+5. High Intensity Training (HIT) - Strength + HIT sets = ↑↑ anabolic hormones
+6. Strip Sets (intra-set load variations) - Max→80→60→40
+7. Drop Sets - Συνεχόμενα σετ με μειωμένο φορτίο
+8. Timed Sets - Reps per time interval - Μέγιστο metabolic stress
+
+📌 STRENGTH QUALITIES MATRIX - Επιλογή τύπου προπόνησης ανά φάση:
+| Exercise Type       | Foundational      | Hypertrophy              | Strength  | Power          |
+|---------------------|-------------------|--------------------------|-----------|----------------|
+| Total Body Power    | Foundational      | Foundational Hypertrophy | Power     | Strength Speed |
+| Primary/Secondary   | Foundational      | Functional Hypertrophy   | Strength  | Speed Strength |
+| Rotational          | Foundational      | Non-Functional Hypertrophy| Power    | Speed Strength |
+| Auxiliary           | Foundational      | Non-Functional Hypertrophy| Func.Hyp | Func.Hyp       |
+
+📌 PHASE → QUALITY MAPPING:
+- Corrective, Stabilization, Movement Skills → Foundational
+- Non-Functional/Functional Hypertrophy → Hypertrophy  
+- Starting/Explosive/Reactive Strength → Strength
+- Str/Spd, Power, Spd/Str, Speed → Power
+- Str-End → Hypertrophy (metabolic focus)
+- Pwr-End → Strength (power endurance)
+- Spd-End → Power (speed endurance)
+
+📌 ΚΑΝΟΝΕΣ ΕΠΙΛΟΓΗΣ ΑΣΚΗΣΕΩΝ:
+1. Βρες τη ΦΑΣΗ του αθλητή (π.χ. Functional Hypertrophy)
+2. Αντιστοίχισε σε QUALITY (Hypertrophy)
+3. Για κάθε ΤΥΠΟ άσκησης, χρησιμοποίησε τον πίνακα:
+   - Total Body Power → Foundational Hypertrophy
+   - Primary/Secondary → Functional Hypertrophy
+   - Rotational → Non-Functional Hypertrophy
+   - Auxiliary → Non-Functional Hypertrophy
+4. Επέλεξε κατάλληλη LOADING STRATEGY βάσει stress που θέλεις
+
+📌 ΠΑΡΑΔΕΙΓΜΑ:
+Φάση: Power → Quality: Power
+- Total Body Power exercises: Strength Speed focus → Explosive, velocity-based
+- Primary/Secondary: Speed Strength → Sub-max loads, max speed
+- Rotational: Speed Strength → Medicine ball throws, rotational plyos
+- Auxiliary: Functional Hypertrophy → Moderate load, controlled tempo
+
+Όταν προτείνεις πρόγραμμα ή ασκήσεις, ΠΑΝΤΑ λαμβάνεις υπόψη:
+- Τη ΦΑΣΗ που βρίσκεται ο αθλητής
+- Τον ΤΥΠΟ της άσκησης
+- Το επιθυμητό STRESS (mechanical vs metabolic)
+- Την κατάλληλη LOADING STRATEGY
+
 Οι απαντήσεις σου πρέπει να είναι:
 - Προσωπικές και βασισμένες στα ΠΡΑΓΜΑΤΙΚΑ δεδομένα του χρήστη
 - Φιλικές και εμπνευσμένες από την εμπειρία και τις ανάγκες του

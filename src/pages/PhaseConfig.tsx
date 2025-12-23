@@ -8,12 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTrainingPhaseConfig, TrainingPhase, PhaseRepScheme } from '@/hooks/useTrainingPhaseConfig';
 import { useExercises } from '@/hooks/useExercises';
-import { Dumbbell, Settings, AlertTriangle, Trash2, Plus, Search, Library, Play } from 'lucide-react';
+import { Dumbbell, Settings, AlertTriangle, Trash2, Plus, Search, Library, Play, BookOpen } from 'lucide-react';
 import { ExerciseSelectionDialog } from '@/components/programs/builder/ExerciseSelectionDialog';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ExosReferenceTable } from '@/components/phase-config/ExosReferenceTable';
 
 // Phases in exact order from Weekly Planning (Εβδομαδιαίος Προγραμματισμός)
 const PHASES_ORDER = [
@@ -268,6 +269,10 @@ const PhaseConfig: React.FC = () => {
           <TabsTrigger value="corrective" className="rounded-none">
             <AlertTriangle className="w-4 h-4 mr-2" />
             Corrective Exercises
+          </TabsTrigger>
+          <TabsTrigger value="exos" className="rounded-none">
+            <BookOpen className="w-4 h-4 mr-2" />
+            EXOS Reference
           </TabsTrigger>
         </TabsList>
 
@@ -1062,6 +1067,11 @@ const PhaseConfig: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* EXOS Reference Tab */}
+        <TabsContent value="exos" className="space-y-4">
+          <ExosReferenceTable />
         </TabsContent>
       </Tabs>
     </div>
