@@ -279,6 +279,51 @@ export const useTrainingPhaseConfig = () => {
     }
   };
 
+  // CRUD for phase categories
+  const addPhaseCategory = async (phaseId: string, categoryId: string) => {
+    try {
+      // Check if already exists
+      const existingCategory = phaseCategories.find(
+        c => c.phase_id === phaseId && c.category_id === categoryId
+      );
+      if (existingCategory) {
+        toast.error('Η κατηγορία υπάρχει ήδη');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('phase_exercise_categories')
+        .insert({
+          phase_id: phaseId,
+          category_id: categoryId,
+          priority: phaseCategories.filter(c => c.phase_id === phaseId).length + 1,
+        });
+
+      if (error) throw error;
+      toast.success('Η κατηγορία προστέθηκε');
+      await fetchPhaseCategories();
+    } catch (error) {
+      console.error('Error adding phase category:', error);
+      toast.error('Σφάλμα προσθήκης κατηγορίας');
+    }
+  };
+
+  const removePhaseCategory = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('phase_exercise_categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Η κατηγορία αφαιρέθηκε');
+      await fetchPhaseCategories();
+    } catch (error) {
+      console.error('Error removing phase category:', error);
+      toast.error('Σφάλμα αφαίρεσης κατηγορίας');
+    }
+  };
+
   // CRUD for corrective issues
   const addCorrectiveIssue = async (data: Omit<CorrectiveIssueExercise, 'id' | 'exercises'>) => {
     try {
@@ -373,6 +418,8 @@ export const useTrainingPhaseConfig = () => {
     deleteRepScheme,
     addPhaseExercise,
     removePhaseExercise,
+    addPhaseCategory,
+    removePhaseCategory,
     addCorrectiveIssue,
     removeCorrectiveIssue,
     addCorrectiveMuscle,
