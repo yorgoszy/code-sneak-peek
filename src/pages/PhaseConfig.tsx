@@ -318,14 +318,14 @@ const PhaseConfig: React.FC = () => {
                           type="number"
                           value={currentPhase.rep_range_min || ''}
                           onChange={e => updatePhase(currentPhase.id, { rep_range_min: parseInt(e.target.value) || null })}
-                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                          className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span>-</span>
                         <Input
                           type="number"
                           value={currentPhase.rep_range_max || ''}
                           onChange={e => updatePhase(currentPhase.id, { rep_range_max: parseInt(e.target.value) || null })}
-                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                          className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
                     </div>
@@ -336,14 +336,14 @@ const PhaseConfig: React.FC = () => {
                           type="number"
                           value={currentPhase.intensity_range_min || ''}
                           onChange={e => updatePhase(currentPhase.id, { intensity_range_min: parseInt(e.target.value) || null })}
-                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                          className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span>-</span>
                         <Input
                           type="number"
                           value={currentPhase.intensity_range_max || ''}
                           onChange={e => updatePhase(currentPhase.id, { intensity_range_max: parseInt(e.target.value) || null })}
-                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                          className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span className="text-xs">%</span>
                       </div>
@@ -355,14 +355,14 @@ const PhaseConfig: React.FC = () => {
                           type="number"
                           value={currentPhase.rest_range_min || ''}
                           onChange={e => updatePhase(currentPhase.id, { rest_range_min: parseInt(e.target.value) || null })}
-                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                          className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span>-</span>
                         <Input
                           type="number"
                           value={currentPhase.rest_range_max || ''}
                           onChange={e => updatePhase(currentPhase.id, { rest_range_max: parseInt(e.target.value) || null })}
-                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                          className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span className="text-xs">s</span>
                       </div>
