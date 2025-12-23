@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTrainingPhaseConfig, TrainingPhase, PhaseRepScheme } from '@/hooks/useTrainingPhaseConfig';
 import { useExercises } from '@/hooks/useExercises';
-import { Dumbbell, Settings, AlertTriangle, Trash2, Plus, Search } from 'lucide-react';
+import { Dumbbell, Settings, AlertTriangle, Trash2, Plus, Search, Library } from 'lucide-react';
+import { ExerciseSelectionDialog } from '@/components/programs/builder/ExerciseSelectionDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -76,6 +77,7 @@ const PhaseConfig: React.FC = () => {
   const [selectedIssue, setSelectedIssue] = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState('');
   const [selectedAction, setSelectedAction] = useState<'stretch' | 'strengthen'>('stretch');
+  const [exerciseLibraryOpen, setExerciseLibraryOpen] = useState(false);
 
   // New rep scheme form state
   const [newScheme, setNewScheme] = useState({
@@ -368,7 +370,20 @@ const PhaseConfig: React.FC = () => {
             {/* Phase Exercises */}
             <Card className="rounded-none">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Ασκήσεις Φάσης</CardTitle>
+                <CardTitle className="text-sm flex items-center justify-between">
+                  <span>Ασκήσεις Φάσης</span>
+                  {selectedPhase && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setExerciseLibraryOpen(true)}
+                      className="rounded-none h-7 text-xs"
+                    >
+                      <Library className="w-3 h-3 mr-1" />
+                      Τράπεζα Ασκήσεων
+                    </Button>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {selectedPhase && (
@@ -423,6 +438,17 @@ const PhaseConfig: React.FC = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Exercise Selection Dialog */}
+            <ExerciseSelectionDialog
+              open={exerciseLibraryOpen}
+              onOpenChange={setExerciseLibraryOpen}
+              exercises={exercises}
+              onSelectExercise={(exerciseId) => {
+                handleAddExercise(exerciseId);
+                setExerciseLibraryOpen(false);
+              }}
+            />
           </div>
         </TabsContent>
 
