@@ -88,6 +88,7 @@ const PhaseConfig: React.FC = () => {
   const [exerciseLibraryOpen, setExerciseLibraryOpen] = useState(false);
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
   const [selectedExerciseForVideo, setSelectedExerciseForVideo] = useState<any>(null);
+  const [philosophyDraft, setPhilosophyDraft] = useState<string>('');
 
   // New rep scheme form state
   const [newScheme, setNewScheme] = useState({
@@ -148,6 +149,11 @@ const PhaseConfig: React.FC = () => {
     phases.find(p => p.id === selectedPhase), 
     [phases, selectedPhase]
   );
+
+  // Sync philosophy draft when phase changes
+  React.useEffect(() => {
+    setPhilosophyDraft(currentPhase?.training_philosophy || '');
+  }, [currentPhase?.id, currentPhase?.training_philosophy]);
 
   const currentRepSchemes = useMemo(() => 
     repSchemes.filter(s => s.phase_id === selectedPhase),
@@ -447,11 +453,20 @@ const PhaseConfig: React.FC = () => {
                     <div className="mt-4 pt-3 border-t">
                       <span className="text-gray-500 text-xs block mb-1">Φιλοσοφία/Λογική Φάσης:</span>
                       <textarea
-                        value={currentPhase.training_philosophy || ''}
-                        onChange={e => updatePhase(currentPhase.id, { training_philosophy: e.target.value || null })}
+                        value={philosophyDraft}
+                        onChange={e => setPhilosophyDraft(e.target.value)}
                         placeholder="π.χ. Κύκλοι με: lower push unilateral, upper pull vertical, plyometric, biceps curl..."
                         className="w-full h-24 text-xs p-2 border rounded-none resize-none bg-background"
                       />
+                      {philosophyDraft !== (currentPhase.training_philosophy || '') && (
+                        <Button
+                          size="sm"
+                          onClick={() => updatePhase(currentPhase.id, { training_philosophy: philosophyDraft || null })}
+                          className="mt-2 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                        >
+                          Αποθήκευση
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}
