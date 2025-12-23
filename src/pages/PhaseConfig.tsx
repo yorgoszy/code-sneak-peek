@@ -73,6 +73,7 @@ const PhaseConfig: React.FC = () => {
     removeCorrectiveIssue,
     addCorrectiveMuscle,
     removeCorrectiveMuscle,
+    updatePhase,
   } = useTrainingPhaseConfig();
 
   const { exercises } = useExercises();
@@ -299,17 +300,72 @@ const PhaseConfig: React.FC = () => {
 
                 {currentPhase && (
                   <div className="mt-4 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Επαναλήψεις:</span>
-                      <span>{currentPhase.rep_range_min}-{currentPhase.rep_range_max}</span>
+                    <div className="flex justify-between items-center gap-2">
+                      <span 
+                        className="text-gray-500 cursor-pointer hover:text-[#00ffba]"
+                        onClick={() => {
+                          const modes = ['reps', 'time', 'meter'];
+                          const currentMode = currentPhase.reps_mode || 'reps';
+                          const nextIndex = (modes.indexOf(currentMode) + 1) % modes.length;
+                          updatePhase(currentPhase.id, { reps_mode: modes[nextIndex] });
+                        }}
+                        title="Κλικ για αλλαγή mode"
+                      >
+                        {currentPhase.reps_mode === 'time' ? 'Χρόνος:' : currentPhase.reps_mode === 'meter' ? 'Μέτρα:' : 'Επαναλήψεις:'}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          type="number"
+                          value={currentPhase.rep_range_min || ''}
+                          onChange={e => updatePhase(currentPhase.id, { rep_range_min: parseInt(e.target.value) || null })}
+                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                        />
+                        <span>-</span>
+                        <Input
+                          type="number"
+                          value={currentPhase.rep_range_max || ''}
+                          onChange={e => updatePhase(currentPhase.id, { rep_range_max: parseInt(e.target.value) || null })}
+                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                        />
+                      </div>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center gap-2">
                       <span className="text-gray-500">Ένταση:</span>
-                      <span>{currentPhase.intensity_range_min}-{currentPhase.intensity_range_max}%</span>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          type="number"
+                          value={currentPhase.intensity_range_min || ''}
+                          onChange={e => updatePhase(currentPhase.id, { intensity_range_min: parseInt(e.target.value) || null })}
+                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                        />
+                        <span>-</span>
+                        <Input
+                          type="number"
+                          value={currentPhase.intensity_range_max || ''}
+                          onChange={e => updatePhase(currentPhase.id, { intensity_range_max: parseInt(e.target.value) || null })}
+                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                        />
+                        <span className="text-xs">%</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center gap-2">
                       <span className="text-gray-500">Διάλειμμα:</span>
-                      <span>{currentPhase.rest_range_min}-{currentPhase.rest_range_max}s</span>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          type="number"
+                          value={currentPhase.rest_range_min || ''}
+                          onChange={e => updatePhase(currentPhase.id, { rest_range_min: parseInt(e.target.value) || null })}
+                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                        />
+                        <span>-</span>
+                        <Input
+                          type="number"
+                          value={currentPhase.rest_range_max || ''}
+                          onChange={e => updatePhase(currentPhase.id, { rest_range_max: parseInt(e.target.value) || null })}
+                          className="w-14 h-6 text-xs rounded-none text-center p-1"
+                        />
+                        <span className="text-xs">s</span>
+                      </div>
                     </div>
                     {currentPhase.description && (
                       <p className="text-gray-600 text-xs mt-2">{currentPhase.description}</p>
