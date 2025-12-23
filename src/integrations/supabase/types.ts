@@ -4419,6 +4419,7 @@ export type Database = {
           rest_range_max: number | null
           rest_range_min: number | null
           tempo_recommendation: string | null
+          training_philosophy: string | null
           updated_at: string | null
         }
         Insert: {
@@ -4437,6 +4438,7 @@ export type Database = {
           rest_range_max?: number | null
           rest_range_min?: number | null
           tempo_recommendation?: string | null
+          training_philosophy?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -4455,6 +4457,7 @@ export type Database = {
           rest_range_max?: number | null
           rest_range_min?: number | null
           tempo_recommendation?: string | null
+          training_philosophy?: string | null
           updated_at?: string | null
         }
         Relationships: []

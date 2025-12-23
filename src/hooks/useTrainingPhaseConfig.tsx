@@ -17,6 +17,7 @@ export interface TrainingPhase {
   tempo_recommendation: string | null;
   description: string | null;
   reps_mode: string | null;
+  training_philosophy: string | null;
 }
 
 export interface PhaseRepScheme {
