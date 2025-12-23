@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTrainingPhaseConfig, TrainingPhase, PhaseRepScheme } from '@/hooks/useTrainingPhaseConfig';
 import { useExercises } from '@/hooks/useExercises';
-import { Dumbbell, Settings, AlertTriangle, Trash2, Plus, Search, Library } from 'lucide-react';
+import { Dumbbell, Settings, AlertTriangle, Trash2, Plus, Search, Library, Play } from 'lucide-react';
 import { ExerciseSelectionDialog } from '@/components/programs/builder/ExerciseSelectionDialog';
+import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -389,21 +390,46 @@ const PhaseConfig: React.FC = () => {
                 {selectedPhase && (
                   <>
                     {/* Current exercises */}
-                    <ScrollArea className="h-32">
+                    <ScrollArea className="h-40">
                       <div className="space-y-1">
-                        {currentPhaseExercises.map(pe => (
-                          <div key={pe.id} className="flex items-center justify-between p-2 bg-gray-50 border text-sm">
-                            <span>{pe.exercises?.name}</span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removePhaseExercise(pe.id)}
-                              className="h-6 w-6 text-red-500 hover:text-red-700"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
+                        {currentPhaseExercises.map(pe => {
+                          const videoUrl = pe.exercises?.video_url;
+                          const hasVideo = videoUrl && isValidVideoUrl(videoUrl);
+                          const thumbnailUrl = hasVideo ? getVideoThumbnail(videoUrl) : null;
+                          
+                          return (
+                            <div key={pe.id} className="flex items-center justify-between p-2 bg-gray-50 border text-sm">
+                              <div className="flex items-center gap-2">
+                                {/* Video Thumbnail */}
+                                {thumbnailUrl ? (
+                                  <div className="relative w-10 h-8 flex-shrink-0">
+                                    <img 
+                                      src={thumbnailUrl}
+                                      alt={pe.exercises?.name}
+                                      className="w-full h-full object-cover rounded-sm"
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                      <Play className="w-3 h-3 text-white fill-white" />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="w-10 h-8 bg-gray-200 flex items-center justify-center rounded-sm flex-shrink-0">
+                                    <Dumbbell className="w-4 h-4 text-gray-400" />
+                                  </div>
+                                )}
+                                <span className="truncate">{pe.exercises?.name}</span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removePhaseExercise(pe.id)}
+                                className="h-6 w-6 text-red-500 hover:text-red-700 flex-shrink-0"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
                     </ScrollArea>
 

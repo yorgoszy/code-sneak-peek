@@ -41,6 +41,7 @@ export interface PhaseExercise {
     id: string;
     name: string;
     description?: string;
+    video_url?: string;
   };
 }
 
@@ -132,7 +133,7 @@ export const useTrainingPhaseConfig = () => {
         .from('phase_exercises')
         .select(`
           *,
-          exercises:exercise_id (id, name, description)
+          exercises:exercise_id (id, name, description, video_url)
         `)
         .order('priority', { ascending: true });
 
