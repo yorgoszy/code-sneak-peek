@@ -59,6 +59,7 @@ const PhaseConfig: React.FC = () => {
     phases,
     repSchemes,
     phaseExercises,
+    phaseCategories,
     correctiveIssues,
     correctiveMuscles,
     loading,
@@ -66,6 +67,8 @@ const PhaseConfig: React.FC = () => {
     deleteRepScheme,
     addPhaseExercise,
     removePhaseExercise,
+    addPhaseCategory,
+    removePhaseCategory,
     addCorrectiveIssue,
     removeCorrectiveIssue,
     addCorrectiveMuscle,
@@ -74,6 +77,7 @@ const PhaseConfig: React.FC = () => {
 
   const { exercises } = useExercises();
   const [muscles, setMuscles] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [selectedPhase, setSelectedPhase] = useState<string>('');
   const [searchExercise, setSearchExercise] = useState('');
   const [selectedIssue, setSelectedIssue] = useState('');
@@ -106,6 +110,19 @@ const PhaseConfig: React.FC = () => {
     loadMuscles();
   }, []);
 
+  // Load categories
+  React.useEffect(() => {
+    const loadCategories = async () => {
+      const { data } = await supabase
+        .from('exercise_categories')
+        .select('*')
+        .order('type')
+        .order('name');
+      setCategories(data || []);
+    };
+    loadCategories();
+  }, []);
+
   // Sort phases by PHASES_ORDER
   const orderedPhases = useMemo(() => {
     return [...phases].sort((a, b) => {
@@ -135,6 +152,22 @@ const PhaseConfig: React.FC = () => {
     phaseExercises.filter(e => e.phase_id === selectedPhase),
     [phaseExercises, selectedPhase]
   );
+
+  const currentPhaseCategories = useMemo(() =>
+    phaseCategories.filter(c => c.phase_id === selectedPhase),
+    [phaseCategories, selectedPhase]
+  );
+
+  // Group categories by type
+  const categoriesByType = useMemo(() => {
+    const grouped: Record<string, any[]> = {};
+    categories.forEach(cat => {
+      const type = cat.type || 'other';
+      if (!grouped[type]) grouped[type] = [];
+      grouped[type].push(cat);
+    });
+    return grouped;
+  }, [categories]);
 
   const filteredExercises = useMemo(() => {
     if (!searchExercise) return exercises.slice(0, 20);
@@ -224,7 +257,7 @@ const PhaseConfig: React.FC = () => {
 
         {/* Phases & Exercises Tab */}
         <TabsContent value="phases" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {/* Phase Selection */}
             <Card className="rounded-none">
               <CardHeader className="pb-2">
@@ -469,6 +502,71 @@ const PhaseConfig: React.FC = () => {
                         ))}
                       </div>
                     </ScrollArea>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Phase Categories */}
+            <Card className="rounded-none">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Κατηγορίες Ασκήσεων</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {selectedPhase && (
+                  <>
+                    {/* Current categories */}
+                    <ScrollArea className="h-32">
+                      <div className="space-y-1">
+                        {currentPhaseCategories.map(pc => (
+                          <div key={pc.id} className="flex items-center justify-between p-2 bg-gray-50 border text-sm">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="rounded-none text-xs">
+                                {pc.exercise_categories?.type}
+                              </Badge>
+                              <span>{pc.exercise_categories?.name}</span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removePhaseCategory(pc.id)}
+                              className="h-6 w-6 text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+
+                    {/* Add categories by type */}
+                    <div className="space-y-2 border-t pt-2">
+                      <span className="text-xs text-gray-500">Προσθήκη κατηγορίας:</span>
+                      <ScrollArea className="h-40">
+                        <div className="space-y-2">
+                          {Object.entries(categoriesByType).map(([type, cats]) => (
+                            <div key={type} className="space-y-1">
+                              <span className="text-xs font-medium text-gray-600 uppercase">{type}</span>
+                              <div className="flex flex-wrap gap-1">
+                                {cats.map((cat: any) => (
+                                  <Button
+                                    key={cat.id}
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => addPhaseCategory(selectedPhase, cat.id)}
+                                    disabled={currentPhaseCategories.some(pc => pc.category_id === cat.id)}
+                                    className="rounded-none text-xs h-7"
+                                  >
+                                    <Plus className="w-3 h-3 mr-1" />
+                                    {cat.name}
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
                   </>
                 )}
               </CardContent>
