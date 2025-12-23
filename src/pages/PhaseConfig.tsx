@@ -314,19 +314,65 @@ const PhaseConfig: React.FC = () => {
                         {currentPhase.reps_mode === 'time' ? 'Χρόνος:' : currentPhase.reps_mode === 'meter' ? 'Μέτρα:' : 'Επαναλήψεις:'}
                       </span>
                       <div className="flex items-center gap-1">
-                        <Input
-                          type="number"
-                          value={currentPhase.rep_range_min || ''}
-                          onChange={e => updatePhase(currentPhase.id, { rep_range_min: parseInt(e.target.value) || null })}
-                          className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                        <span>-</span>
-                        <Input
-                          type="number"
-                          value={currentPhase.rep_range_max || ''}
-                          onChange={e => updatePhase(currentPhase.id, { rep_range_max: parseInt(e.target.value) || null })}
-                          className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
+                        {currentPhase.reps_mode === 'time' ? (
+                          <>
+                            <Input
+                              type="text"
+                              value={(() => {
+                                const secs = currentPhase.rep_range_min || 0;
+                                const mins = Math.floor(secs / 60);
+                                const remainingSecs = secs % 60;
+                                return `${mins.toString().padStart(2, '0')}:${remainingSecs.toString().padStart(2, '0')}`;
+                              })()}
+                              onChange={e => {
+                                const parts = e.target.value.split(':');
+                                if (parts.length === 2) {
+                                  const mins = parseInt(parts[0]) || 0;
+                                  const secs = parseInt(parts[1]) || 0;
+                                  updatePhase(currentPhase.id, { rep_range_min: mins * 60 + secs });
+                                }
+                              }}
+                              placeholder="00:00"
+                              className="w-16 h-6 text-xs rounded-none text-center p-1"
+                            />
+                            <span>-</span>
+                            <Input
+                              type="text"
+                              value={(() => {
+                                const secs = currentPhase.rep_range_max || 0;
+                                const mins = Math.floor(secs / 60);
+                                const remainingSecs = secs % 60;
+                                return `${mins.toString().padStart(2, '0')}:${remainingSecs.toString().padStart(2, '0')}`;
+                              })()}
+                              onChange={e => {
+                                const parts = e.target.value.split(':');
+                                if (parts.length === 2) {
+                                  const mins = parseInt(parts[0]) || 0;
+                                  const secs = parseInt(parts[1]) || 0;
+                                  updatePhase(currentPhase.id, { rep_range_max: mins * 60 + secs });
+                                }
+                              }}
+                              placeholder="00:00"
+                              className="w-16 h-6 text-xs rounded-none text-center p-1"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <Input
+                              type="number"
+                              value={currentPhase.rep_range_min || ''}
+                              onChange={e => updatePhase(currentPhase.id, { rep_range_min: parseInt(e.target.value) || null })}
+                              className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <span>-</span>
+                            <Input
+                              type="number"
+                              value={currentPhase.rep_range_max || ''}
+                              onChange={e => updatePhase(currentPhase.id, { rep_range_max: parseInt(e.target.value) || null })}
+                              className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className="flex justify-between items-center gap-2">
@@ -352,19 +398,44 @@ const PhaseConfig: React.FC = () => {
                       <span className="text-gray-500">Διάλειμμα:</span>
                       <div className="flex items-center gap-1">
                         <Input
-                          type="number"
-                          value={currentPhase.rest_range_min || ''}
-                          onChange={e => updatePhase(currentPhase.id, { rest_range_min: parseInt(e.target.value) || null })}
-                          className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          type="text"
+                          value={(() => {
+                            const secs = currentPhase.rest_range_min || 0;
+                            const mins = Math.floor(secs / 60);
+                            const remainingSecs = secs % 60;
+                            return `${mins.toString().padStart(2, '0')}:${remainingSecs.toString().padStart(2, '0')}`;
+                          })()}
+                          onChange={e => {
+                            const parts = e.target.value.split(':');
+                            if (parts.length === 2) {
+                              const mins = parseInt(parts[0]) || 0;
+                              const secs = parseInt(parts[1]) || 0;
+                              updatePhase(currentPhase.id, { rest_range_min: mins * 60 + secs });
+                            }
+                          }}
+                          placeholder="00:00"
+                          className="w-16 h-6 text-xs rounded-none text-center p-1"
                         />
                         <span>-</span>
                         <Input
-                          type="number"
-                          value={currentPhase.rest_range_max || ''}
-                          onChange={e => updatePhase(currentPhase.id, { rest_range_max: parseInt(e.target.value) || null })}
-                          className="w-14 h-6 text-xs rounded-none text-center p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          type="text"
+                          value={(() => {
+                            const secs = currentPhase.rest_range_max || 0;
+                            const mins = Math.floor(secs / 60);
+                            const remainingSecs = secs % 60;
+                            return `${mins.toString().padStart(2, '0')}:${remainingSecs.toString().padStart(2, '0')}`;
+                          })()}
+                          onChange={e => {
+                            const parts = e.target.value.split(':');
+                            if (parts.length === 2) {
+                              const mins = parseInt(parts[0]) || 0;
+                              const secs = parseInt(parts[1]) || 0;
+                              updatePhase(currentPhase.id, { rest_range_max: mins * 60 + secs });
+                            }
+                          }}
+                          placeholder="00:00"
+                          className="w-16 h-6 text-xs rounded-none text-center p-1"
                         />
-                        <span className="text-xs">s</span>
                       </div>
                     </div>
                     {currentPhase.description && (
