@@ -10,6 +10,7 @@ import { useTrainingPhaseConfig, TrainingPhase, PhaseRepScheme } from '@/hooks/u
 import { useExercises } from '@/hooks/useExercises';
 import { Dumbbell, Settings, AlertTriangle, Trash2, Plus, Search, Library, Play } from 'lucide-react';
 import { ExerciseSelectionDialog } from '@/components/programs/builder/ExerciseSelectionDialog';
+import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -79,6 +80,8 @@ const PhaseConfig: React.FC = () => {
   const [selectedMuscle, setSelectedMuscle] = useState('');
   const [selectedAction, setSelectedAction] = useState<'stretch' | 'strengthen'>('stretch');
   const [exerciseLibraryOpen, setExerciseLibraryOpen] = useState(false);
+  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+  const [selectedExerciseForVideo, setSelectedExerciseForVideo] = useState<any>(null);
 
   // New rep scheme form state
   const [newScheme, setNewScheme] = useState({
@@ -402,13 +405,19 @@ const PhaseConfig: React.FC = () => {
                               <div className="flex items-center gap-2">
                                 {/* Video Thumbnail */}
                                 {thumbnailUrl ? (
-                                  <div className="relative w-10 h-8 flex-shrink-0">
+                                  <div 
+                                    className="relative w-10 h-8 flex-shrink-0 cursor-pointer"
+                                    onClick={() => {
+                                      setSelectedExerciseForVideo(pe);
+                                      setVideoDialogOpen(true);
+                                    }}
+                                  >
                                     <img 
                                       src={thumbnailUrl}
                                       alt={pe.exercises?.name}
                                       className="w-full h-full object-cover rounded-sm"
                                     />
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/50 transition-colors">
                                       <Play className="w-3 h-3 text-white fill-white" />
                                     </div>
                                   </div>
@@ -474,6 +483,16 @@ const PhaseConfig: React.FC = () => {
                 handleAddExercise(exerciseId);
                 setExerciseLibraryOpen(false);
               }}
+            />
+
+            {/* Video Dialog */}
+            <ExerciseVideoDialog
+              isOpen={videoDialogOpen}
+              onClose={() => {
+                setVideoDialogOpen(false);
+                setSelectedExerciseForVideo(null);
+              }}
+              exercise={selectedExerciseForVideo}
             />
           </div>
         </TabsContent>
