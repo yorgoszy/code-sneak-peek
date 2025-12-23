@@ -93,9 +93,13 @@ const PhaseConfig: React.FC = () => {
     sets: 3,
     reps: '8',
     tempo: '',
-    rest: '60sec',
+    rest: '',
     intensity_percent: 70,
     is_primary: false,
+    kg: '',
+    velocity_ms: '',
+    reps_mode: 'reps' as string,
+    kg_mode: 'kg' as string,
   });
 
   // Load muscles
@@ -189,9 +193,13 @@ const PhaseConfig: React.FC = () => {
       sets: 3,
       reps: '8',
       tempo: '',
-      rest: '60sec',
+      rest: '',
       intensity_percent: 70,
       is_primary: false,
+      kg: '',
+      velocity_ms: '',
+      reps_mode: 'reps',
+      kg_mode: 'kg',
     });
   };
 
@@ -257,7 +265,7 @@ const PhaseConfig: React.FC = () => {
 
         {/* Phases & Exercises Tab */}
         <TabsContent value="phases" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             {/* Phase Selection */}
             <Card className="rounded-none">
               <CardHeader className="pb-2">
@@ -312,7 +320,7 @@ const PhaseConfig: React.FC = () => {
             </Card>
 
             {/* Rep Schemes */}
-            <Card className="rounded-none">
+            <Card className="rounded-none lg:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">Rep Schemes</CardTitle>
               </CardHeader>
@@ -320,27 +328,56 @@ const PhaseConfig: React.FC = () => {
                 {selectedPhase && (
                   <>
                     {/* Current schemes */}
-                    <ScrollArea className="h-40">
+                    <ScrollArea className="h-48">
                       <div className="space-y-2">
                         {currentRepSchemes.map(scheme => (
-                          <div key={scheme.id} className="flex items-center justify-between p-2 bg-gray-50 border">
-                            <div>
-                              <span className="font-medium">{scheme.scheme_name}</span>
-                              <span className="text-xs text-gray-500 ml-2">
-                                {scheme.sets}x{scheme.reps} @ {scheme.intensity_percent}%
-                              </span>
-                              {scheme.is_primary && (
-                                <Badge className="ml-2 bg-[#00ffba] text-black text-xs">Primary</Badge>
-                              )}
+                          <div key={scheme.id} className="p-2 bg-gray-50 border">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-sm">{scheme.scheme_name}</span>
+                                {scheme.is_primary && (
+                                  <Badge className="bg-[#00ffba] text-black text-xs">Primary</Badge>
+                                )}
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => deleteRepScheme(scheme.id)}
+                                className="h-6 w-6 text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => deleteRepScheme(scheme.id)}
-                              className="h-6 w-6 text-red-500 hover:text-red-700"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                            <div className="grid grid-cols-7 gap-1 text-xs">
+                              <div className="text-center">
+                                <span className="text-gray-500 block">Sets</span>
+                                <span className="font-medium">{scheme.sets || '-'}</span>
+                              </div>
+                              <div className="text-center">
+                                <span className="text-gray-500 block">{scheme.reps_mode === 'time' ? 'Time' : scheme.reps_mode === 'meter' ? 'Meter' : 'Reps'}</span>
+                                <span className="font-medium">{scheme.reps || '-'}</span>
+                              </div>
+                              <div className="text-center">
+                                <span className="text-gray-500 block">%1RM</span>
+                                <span className="font-medium">{scheme.intensity_percent || '-'}</span>
+                              </div>
+                              <div className="text-center">
+                                <span className="text-gray-500 block">{scheme.kg_mode === 'rpm' ? 'rpm' : scheme.kg_mode === 'meter' ? 'meter' : scheme.kg_mode === 's/m' ? 's/m' : scheme.kg_mode === 'km/h' ? 'km/h' : 'Kg'}</span>
+                                <span className="font-medium">{scheme.kg || '-'}</span>
+                              </div>
+                              <div className="text-center">
+                                <span className="text-gray-500 block">m/s</span>
+                                <span className="font-medium">{scheme.velocity_ms || '-'}</span>
+                              </div>
+                              <div className="text-center">
+                                <span className="text-gray-500 block">Tempo</span>
+                                <span className="font-medium">{scheme.tempo || '-'}</span>
+                              </div>
+                              <div className="text-center">
+                                <span className="text-gray-500 block">Rest</span>
+                                <span className="font-medium">{scheme.rest || '-'}</span>
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -354,41 +391,87 @@ const PhaseConfig: React.FC = () => {
                         onChange={e => setNewScheme({ ...newScheme, scheme_name: e.target.value })}
                         className="rounded-none text-sm"
                       />
-                      <div className="grid grid-cols-3 gap-2">
-                        <Input
-                          type="number"
-                          placeholder="Sets"
-                          value={newScheme.sets}
-                          onChange={e => setNewScheme({ ...newScheme, sets: parseInt(e.target.value) || 0 })}
-                          className="rounded-none text-sm"
-                        />
-                        <Input
-                          placeholder="Reps"
-                          value={newScheme.reps}
-                          onChange={e => setNewScheme({ ...newScheme, reps: e.target.value })}
-                          className="rounded-none text-sm"
-                        />
-                        <Input
-                          type="number"
-                          placeholder="%1RM"
-                          value={newScheme.intensity_percent}
-                          onChange={e => setNewScheme({ ...newScheme, intensity_percent: parseInt(e.target.value) || 0 })}
-                          className="rounded-none text-sm"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="Tempo (π.χ. 3.1.1)"
-                          value={newScheme.tempo}
-                          onChange={e => setNewScheme({ ...newScheme, tempo: e.target.value })}
-                          className="rounded-none text-sm"
-                        />
-                        <Input
-                          placeholder="Rest (π.χ. 90sec)"
-                          value={newScheme.rest}
-                          onChange={e => setNewScheme({ ...newScheme, rest: e.target.value })}
-                          className="rounded-none text-sm"
-                        />
+                      <div className="grid grid-cols-7 gap-1">
+                        <div className="flex flex-col items-center">
+                          <label className="text-[10px] text-gray-500 mb-1">Sets</label>
+                          <Input
+                            type="number"
+                            value={newScheme.sets}
+                            onChange={e => setNewScheme({ ...newScheme, sets: parseInt(e.target.value) || 0 })}
+                            className="rounded-none text-xs h-7 text-center px-1"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <label 
+                            className="text-[10px] text-gray-500 mb-1 cursor-pointer hover:text-[#00ffba]"
+                            onClick={() => {
+                              const modes = ['reps', 'time', 'meter'];
+                              const currentIndex = modes.indexOf(newScheme.reps_mode);
+                              const nextMode = modes[(currentIndex + 1) % modes.length];
+                              setNewScheme({ ...newScheme, reps_mode: nextMode });
+                            }}
+                          >
+                            {newScheme.reps_mode === 'time' ? 'Time' : newScheme.reps_mode === 'meter' ? 'Meter' : 'Reps'}
+                          </label>
+                          <Input
+                            value={newScheme.reps}
+                            onChange={e => setNewScheme({ ...newScheme, reps: e.target.value })}
+                            className="rounded-none text-xs h-7 text-center px-1"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <label className="text-[10px] text-gray-500 mb-1">%1RM</label>
+                          <Input
+                            type="number"
+                            value={newScheme.intensity_percent}
+                            onChange={e => setNewScheme({ ...newScheme, intensity_percent: parseInt(e.target.value) || 0 })}
+                            className="rounded-none text-xs h-7 text-center px-1"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <label 
+                            className="text-[10px] text-gray-500 mb-1 cursor-pointer hover:text-[#00ffba]"
+                            onClick={() => {
+                              const modes = ['kg', 'rpm', 'meter', 's/m', 'km/h'];
+                              const currentIndex = modes.indexOf(newScheme.kg_mode);
+                              const nextMode = modes[(currentIndex + 1) % modes.length];
+                              setNewScheme({ ...newScheme, kg_mode: nextMode });
+                            }}
+                          >
+                            {newScheme.kg_mode === 'rpm' ? 'rpm' : newScheme.kg_mode === 'meter' ? 'meter' : newScheme.kg_mode === 's/m' ? 's/m' : newScheme.kg_mode === 'km/h' ? 'km/h' : 'Kg'}
+                          </label>
+                          <Input
+                            value={newScheme.kg}
+                            onChange={e => setNewScheme({ ...newScheme, kg: e.target.value })}
+                            className="rounded-none text-xs h-7 text-center px-1"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <label className="text-[10px] text-gray-500 mb-1">m/s</label>
+                          <Input
+                            value={newScheme.velocity_ms}
+                            onChange={e => setNewScheme({ ...newScheme, velocity_ms: e.target.value })}
+                            className="rounded-none text-xs h-7 text-center px-1"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <label className="text-[10px] text-gray-500 mb-1">Tempo</label>
+                          <Input
+                            placeholder="1.1.1"
+                            value={newScheme.tempo}
+                            onChange={e => setNewScheme({ ...newScheme, tempo: e.target.value })}
+                            className="rounded-none text-xs h-7 text-center px-1"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <label className="text-[10px] text-gray-500 mb-1">Rest</label>
+                          <Input
+                            placeholder="00:00"
+                            value={newScheme.rest}
+                            onChange={e => setNewScheme({ ...newScheme, rest: e.target.value })}
+                            className="rounded-none text-xs h-7 text-center px-1"
+                          />
+                        </div>
                       </div>
                       <Button
                         onClick={handleAddScheme}
