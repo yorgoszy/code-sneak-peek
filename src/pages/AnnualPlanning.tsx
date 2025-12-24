@@ -796,6 +796,45 @@ const AnnualPlanning: React.FC = () => {
     }
   };
 
+  const handleDeleteSavedMacrocycle = async (macrocycleId: string) => {
+    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον μακροκύκλο;')) {
+      return;
+    }
+    
+    try {
+      const { error } = await (supabase as any)
+        .from('saved_macrocycles')
+        .delete()
+        .eq('id', macrocycleId);
+
+      if (error) {
+        toast.error('Σφάλμα κατά τη διαγραφή');
+        return;
+      }
+
+      toast.success('Ο μακροκύκλος διαγράφηκε');
+      fetchSavedMacrocycles();
+    } catch (err) {
+      console.error('Error deleting saved macrocycle:', err);
+      toast.error('Σφάλμα κατά τη διαγραφή');
+    }
+  };
+
+  const handleViewSavedMacrocycle = (macrocycle: SavedMacrocycle) => {
+    setSelectedPhases(macrocycle.phases);
+    setYear(macrocycle.year);
+    setActiveTab('new');
+    toast.success('Ο μακροκύκλος φορτώθηκε για προβολή');
+  };
+
+  const handleEditSavedMacrocycle = (macrocycle: SavedMacrocycle) => {
+    setSelectedPhases(macrocycle.phases);
+    setYear(macrocycle.year);
+    setMacrocycleName(macrocycle.name);
+    setActiveTab('new');
+    toast.success('Ο μακροκύκλος φορτώθηκε για επεξεργασία');
+  };
+
   const handleCellClick = (month: number, phaseValue: string) => {
     const exists = selectedPhases.some(p => p.month === month && p.phase === phaseValue);
     
@@ -2105,19 +2144,48 @@ const AnnualPlanning: React.FC = () => {
                         <p className="text-xs font-medium">{macrocycle.name}</p>
                         <p className="text-[10px] text-muted-foreground">Έτος: {macrocycle.year}</p>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-none h-7 text-xs"
-                        onClick={() => {
-                          setSelectedPhases(macrocycle.phases);
-                          setYear(macrocycle.year);
-                          setActiveTab('new');
-                          toast.success('Ο μακροκύκλος φορτώθηκε');
-                        }}
-                      >
-                        Χρήση
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="rounded-none h-7 w-7"
+                          onClick={() => handleViewSavedMacrocycle(macrocycle)}
+                          title="Προβολή"
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="rounded-none h-7 w-7"
+                          onClick={() => handleEditSavedMacrocycle(macrocycle)}
+                          title="Επεξεργασία"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="rounded-none h-7 w-7 text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteSavedMacrocycle(macrocycle.id)}
+                          title="Διαγραφή"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none h-7 text-xs"
+                          onClick={() => {
+                            setSelectedPhases(macrocycle.phases);
+                            setYear(macrocycle.year);
+                            setActiveTab('new');
+                            toast.success('Ο μακροκύκλος φορτώθηκε');
+                          }}
+                        >
+                          Χρήση
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-0.5 mt-2">
                       {macrocycle.phases.map((phase, idx) => (
