@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ensureCompetitionProgramCard } from "@/pages/annual-planning/competitionProgram";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { MultipleRecipientSelection } from "@/components/annual-planning/MultipleRecipientSelection";
 
 interface AppUser {
   id: string;
@@ -260,6 +261,11 @@ const AnnualPlanning: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
+  
+  // Multiple recipients selection state
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+  const [isAssigning, setIsAssigning] = useState(false);
   const [selectedPhases, setSelectedPhases] = useState<{ month: number; phase: string }[]>([]);
   const [assignedMacrocycles, setAssignedMacrocycles] = useState<AssignedMacrocycle[]>([]);
   const [savedMacrocycles, setSavedMacrocycles] = useState<SavedMacrocycle[]>([]);
@@ -835,8 +841,11 @@ const AnnualPlanning: React.FC = () => {
   };
 
   const handleAssign = async () => {
-    if (!selectedUser) {
-      toast.error('Επιλέξτε χρήστη');
+    // Check if using new multiple selection or old single selection
+    const hasMultipleRecipients = selectedUserIds.length > 0 || selectedGroupIds.length > 0;
+    
+    if (!hasMultipleRecipients && !selectedUser) {
+      toast.error('Επιλέξτε χρήστη ή ομάδα');
       return;
     }
 
@@ -845,80 +854,146 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
-    // Insert annual phases
-    const phasesToInsert = selectedPhases.map(p => ({
-      user_id: selectedUser.id,
-      year,
-      month: p.month,
-      phase: p.phase
-    }));
+    setIsAssigning(true);
+    
+    try {
+      // Collect all user IDs to assign (from individual users and from group members)
+      let allUserIds: string[] = [...selectedUserIds];
+      const userNames: string[] = [];
+      
+      // Get user names for selected users
+      if (selectedUserIds.length > 0) {
+        const { data: selectedUsersData } = await supabase
+          .from('app_users')
+          .select('id, name')
+          .in('id', selectedUserIds);
+        
+        selectedUsersData?.forEach(u => userNames.push(u.name));
+      }
+      
+      // Get group members for selected groups
+      if (selectedGroupIds.length > 0) {
+        const { data: groupMembers } = await supabase
+          .from('group_members')
+          .select(`
+            user_id,
+            app_users!inner(id, name)
+          `)
+          .in('group_id', selectedGroupIds);
+        
+        groupMembers?.forEach(gm => {
+          if (!allUserIds.includes(gm.user_id!)) {
+            allUserIds.push(gm.user_id!);
+            userNames.push((gm.app_users as any).name);
+          }
+        });
+      }
+      
+      // Fallback to single user selection
+      if (allUserIds.length === 0 && selectedUser) {
+        allUserIds = [selectedUser.id];
+        userNames.push(selectedUser.name);
+      }
+      
+      if (allUserIds.length === 0) {
+        toast.error('Δεν βρέθηκαν χρήστες για ανάθεση');
+        setIsAssigning(false);
+        return;
+      }
 
-    const { error: annualError } = await supabase
-      .from('user_annual_phases')
-      .insert(phasesToInsert);
+      let successCount = 0;
+      
+      for (const userId of allUserIds) {
+        // Insert annual phases
+        const phasesToInsert = selectedPhases.map(p => ({
+          user_id: userId,
+          year,
+          month: p.month,
+          phase: p.phase
+        }));
 
-    if (annualError) {
-      toast.error('Σφάλμα κατά την ανάθεση');
-      return;
-    }
+        const { error: annualError } = await supabase
+          .from('user_annual_phases')
+          .insert(phasesToInsert);
 
-    // Insert monthly phases
-    if (monthlyPhases.length > 0) {
-      const monthlyToInsert = monthlyPhases.map(p => ({
-        user_id: selectedUser.id,
-        year,
-        month: p.month,
-        week: p.week,
-        phase: p.phase
-      }));
+        if (annualError) {
+          console.error('Error inserting annual phases for user:', userId, annualError);
+          continue;
+        }
 
-      await supabase
-        .from('user_monthly_phases')
-        .insert(monthlyToInsert);
-    }
-
-    // Insert weekly phases
-    if (weeklyPhases.length > 0) {
-      const weeklyToInsert = weeklyPhases.map(p => ({
-        user_id: selectedUser.id,
-        year,
-        month: p.month,
-        week: p.week,
-        day: p.day,
-        phase: p.phase,
-        primary_subphase: p.primary_subphase || null,
-        secondary_subphase: p.secondary_subphase || null,
-        accessory_subphase: p.accessory_subphase || null
-      }));
-
-      await supabase
-        .from('user_weekly_phases')
-        .insert(weeklyToInsert);
-
-      // Create ProgramCard(s) for competition day(s)
-      const competitionPhases = weeklyPhases.filter(p => p.phase === 'competition');
-      for (const comp of competitionPhases) {
-        try {
-          await ensureCompetitionProgramCard({
-            userId: selectedUser.id,
-            userName: selectedUser.name,
+        // Insert monthly phases
+        if (monthlyPhases.length > 0) {
+          const monthlyToInsert = monthlyPhases.map(p => ({
+            user_id: userId,
             year,
-            phase: { month: comp.month, week: comp.week, day: comp.day }
-          });
-        } catch (e) {
-          console.error('ensureCompetitionProgramCard failed:', e);
+            month: p.month,
+            week: p.week,
+            phase: p.phase
+          }));
+
+          await supabase
+            .from('user_monthly_phases')
+            .insert(monthlyToInsert);
+        }
+
+        // Insert weekly phases
+        if (weeklyPhases.length > 0) {
+          const weeklyToInsert = weeklyPhases.map(p => ({
+            user_id: userId,
+            year,
+            month: p.month,
+            week: p.week,
+            day: p.day,
+            phase: p.phase,
+            primary_subphase: p.primary_subphase || null,
+            secondary_subphase: p.secondary_subphase || null,
+            accessory_subphase: p.accessory_subphase || null
+          }));
+
+          await supabase
+            .from('user_weekly_phases')
+            .insert(weeklyToInsert);
+
+          // Create ProgramCard(s) for competition day(s)
+          const competitionPhases = weeklyPhases.filter(p => p.phase === 'competition');
+          const userName = userNames[allUserIds.indexOf(userId)] || 'Unknown';
+          for (const comp of competitionPhases) {
+            try {
+              await ensureCompetitionProgramCard({
+                userId: userId,
+                userName: userName,
+                year,
+                phase: { month: comp.month, week: comp.week, day: comp.day }
+              });
+            } catch (e) {
+              console.error('ensureCompetitionProgramCard failed:', e);
+            }
+          }
+        }
+        
+        successCount++;
+      }
+
+      if (successCount > 0) {
+        if (successCount === 1) {
+          toast.success(`Ο μακροκύκλος ανατέθηκε σε 1 χρήστη`);
+        } else {
+          toast.success(`Ο μακροκύκλος ανατέθηκε σε ${successCount} χρήστες`);
         }
       }
+      
+      // Clear selection
+      setSelectedUser(null);
+      setSelectedUserIds([]);
+      setSelectedGroupIds([]);
+      await fetchAssignedMacrocycles();
+      
+    } catch (error) {
+      console.error('Error assigning macrocycle:', error);
+      toast.error('Σφάλμα κατά την ανάθεση');
+    } finally {
+      setIsAssigning(false);
     }
-
-    toast.success(`Ο μακροκύκλος ανατέθηκε στον ${selectedUser.name}`);
-    // Κρατάμε τα phases ώστε να μπορεί ο χρήστης να κάνει νέα ανάθεση σε άλλον χρήστη
-    // setSelectedPhases([]);
-    // setMonthlyPhases([]);
-    // setWeeklyPhases([]);
-    setSelectedUser(null);
-    // Refresh τη λίστα με τους ανατεθειμένους μακροκύκλους
-    await fetchAssignedMacrocycles();
   };
 
   const filteredUsers = useMemo(() => {
@@ -1498,75 +1573,16 @@ const AnnualPlanning: React.FC = () => {
           <Card className="rounded-none border-l-0">
             <CardContent className="p-2 sm:p-4">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
-                {/* User Selection - Only show for admins */}
+                {/* User/Group Selection - Only show for admins */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium">
-                    {isAdminUser ? 'Επιλογή Χρήστη' : 'Χρήστης'}
-                  </label>
-                  {selectedUser ? (
-                    <div className="flex items-center gap-2 p-1.5 bg-muted rounded-none">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={selectedUser.avatar_url || selectedUser.photo_url || undefined} />
-                        <AvatarFallback className="text-[10px]">{getInitials(selectedUser.name)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate">{selectedUser.name}</p>
-                      </div>
-                      {isAdminUser && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => setSelectedUser(null)}
-                          className="rounded-none text-[10px] h-6 px-2"
-                        >
-                          Αλλαγή
-                        </Button>
-                      )}
-                    </div>
-                  ) : isAdminUser ? (
-                    <div className="relative">
-                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                      <Input
-                        placeholder="Αναζήτηση χρήστη..."
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setShowUserList(true);
-                        }}
-                        onFocus={() => setShowUserList(true)}
-                        className="pl-7 rounded-none h-8 text-xs"
-                      />
-                      {showUserList && searchQuery && (
-                        <div className="absolute z-10 w-full max-h-40 overflow-y-auto border rounded-none bg-background shadow-lg">
-                          {filteredUsers.length === 0 ? (
-                            <div className="p-2 text-center text-muted-foreground text-xs">
-                              Δεν βρέθηκαν
-                            </div>
-                          ) : (
-                            filteredUsers.slice(0, 5).map(user => (
-                              <div
-                                key={user.id}
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setSearchQuery('');
-                                  setShowUserList(false);
-                                }}
-                                className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted"
-                              >
-                                <Avatar className="h-6 w-6">
-                                  <AvatarImage src={user.avatar_url || user.photo_url || undefined} />
-                                  <AvatarFallback className="text-[10px]">{getInitials(user.name)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium truncate">{user.name}</p>
-                                  <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      )}
-                    </div>
+                  {isAdminUser ? (
+                    <MultipleRecipientSelection
+                      selectedUserIds={selectedUserIds}
+                      selectedGroupIds={selectedGroupIds}
+                      onUserIdsChange={setSelectedUserIds}
+                      onGroupIdsChange={setSelectedGroupIds}
+                      disabled={isAssigning}
+                    />
                   ) : (
                     <div className="p-1.5 bg-muted rounded-none text-xs text-muted-foreground">
                       Φόρτωση...
@@ -1604,10 +1620,10 @@ const AnnualPlanning: React.FC = () => {
                       onClick={handleAssign}
                       className="rounded-none flex-1 h-8 text-xs"
                       style={{ backgroundColor: '#00ffba', color: 'black' }}
-                      disabled={selectedPhases.length === 0 || !selectedUser}
+                      disabled={selectedPhases.length === 0 || (selectedUserIds.length === 0 && selectedGroupIds.length === 0) || isAssigning}
                     >
                       <UserPlus className="w-3 h-3 mr-1" />
-                      Ανάθεση
+                      {isAssigning ? 'Ανάθεση...' : 'Ανάθεση'}
                     </Button>
                   </div>
                 </div>
