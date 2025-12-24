@@ -2154,150 +2154,204 @@ const AnnualPlanning: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="p-2 sm:p-4 pt-0">
-          <ScrollArea className="w-full">
-            <div className="flex gap-2 pb-4">
-              {MONTHS_DROPDOWN.map((monthName, monthIdx) => {
-                const currentMonth = monthIdx + 1;
-                const calendarWeeks = getCalendarWeeksForMonthByIndex(currentMonth);
-                const weeklySubPhases = getWeeklySubPhasesForMonth(currentMonth);
-                
-                return (
-                  <div key={monthIdx} className="flex-shrink-0">
-                    <div className="bg-muted/50 p-1 mb-1 text-center border">
-                      <span className="text-xs sm:text-sm font-semibold">{monthName}</span>
-                    </div>
-                    <table className="border-collapse text-[7px] sm:text-[9px] md:text-xs">
-                      <thead>
-                        {/* Week headers row */}
-                        <tr>
-                          <th className="border p-0.5 bg-muted text-left w-[40px] sm:w-[60px]" rowSpan={3}>Φάση</th>
-                          {calendarWeeks.map((_, weekIndex) => {
-                            const monthlyPhase = getMonthlyPhaseForWeekByMonth(currentMonth, weekIndex + 1);
-                            const phaseInfo = monthlyPhase ? PHASES.find(p => p.value === monthlyPhase.phase) : null;
-                            return (
-                              <th 
-                                key={weekIndex} 
-                                colSpan={7}
-                                className={cn(
-                                  "border p-0.5 bg-muted text-center",
-                                  phaseInfo && phaseInfo.color
-                                )}
-                              >
-                                <div className="flex flex-col">
-                                  <span className={cn(
-                                    "text-[8px] sm:text-[10px] font-medium",
-                                    phaseInfo && "text-white"
-                                  )}>
-                                    Ε{weekIndex + 1}
-                                  </span>
-                                  {phaseInfo && (
-                                    <span className="text-[6px] sm:text-[8px] text-white/80">
-                                      {phaseInfo.shortLabel}
-                                    </span>
-                                  )}
-                                </div>
-                              </th>
-                            );
-                          })}
+          {/* Get all unique phases from all months for the fixed column */}
+          {(() => {
+            const allPhasesFromAllMonths = new Set<string>();
+            MONTHS_DROPDOWN.forEach((_, monthIdx) => {
+              const monthPhases = getWeeklySubPhasesForMonth(monthIdx + 1);
+              monthPhases.forEach(p => allPhasesFromAllMonths.add(p.value));
+            });
+            
+            const weeklyOrder = [
+              'corrective', 'stabilization', 'connecting-linking', 'movement-skills',
+              'non-functional-hypertrophy', 'functional-hypertrophy',
+              'starting-strength', 'explosive-strength', 'reactive-strength',
+              'str-spd', 'pwr', 'spd-str', 'spd',
+              'str-end', 'pwr-end', 'spd-end', 'aero-end', 'competition',
+            ];
+            
+            const allPhasesList = Array.from(allPhasesFromAllMonths).sort((a, b) => {
+              const idxA = weeklyOrder.indexOf(a);
+              const idxB = weeklyOrder.indexOf(b);
+              return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+            }).map(phaseValue => {
+              // Find phase info from SUB_PHASES or PHASES
+              for (const [parentPhase, subPhases] of Object.entries(SUB_PHASES)) {
+                const found = subPhases.find(sp => sp.value === phaseValue);
+                if (found) return { ...found, parentPhase };
+              }
+              const mainPhase = PHASES.find(p => p.value === phaseValue);
+              if (mainPhase) return { ...mainPhase, parentPhase: phaseValue };
+              return null;
+            }).filter(Boolean) as { value: string; label: string; shortLabel: string; color: string; parentPhase: string }[];
+
+            if (allPhasesList.length === 0) {
+              return (
+                <div className="text-center text-muted-foreground text-sm py-4">
+                  Δεν έχουν επιλεγεί φάσεις στον Μηνιαίο Προγραμματισμό
+                </div>
+              );
+            }
+
+            return (
+              <div className="flex">
+                {/* Fixed phases column */}
+                <div className="flex-shrink-0 sticky left-0 z-10 bg-background">
+                  <table className="border-collapse text-[7px] sm:text-[9px] md:text-xs">
+                    <thead>
+                      <tr>
+                        <th className="border p-0.5 bg-muted text-left w-[50px] sm:w-[70px] h-[28px] sm:h-[36px]">Φάση</th>
+                      </tr>
+                      <tr>
+                        <th className="border p-0.5 bg-muted/70 h-[16px] sm:h-[20px]"></th>
+                      </tr>
+                      <tr>
+                        <th className="border p-0.5 bg-muted/50 h-[16px] sm:h-[20px]"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allPhasesList.map((phase) => (
+                        <tr key={phase.value}>
+                          <td className="border p-0.5 font-medium bg-background whitespace-nowrap">
+                            <div className="flex items-center gap-0.5">
+                              <div className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", phase.color)} />
+                              <span className="text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
+                            </div>
+                          </td>
                         </tr>
-                        {/* Day names row */}
-                        <tr>
-                          {calendarWeeks.map((_, weekIndex) => (
-                            DAYS_FULL.map((dayName, dayIndex) => (
-                              <th 
-                                key={`day-${weekIndex}-${dayIndex}`}
-                                className="border p-0.5 bg-muted/70 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium"
-                              >
-                                {dayName}
-                              </th>
-                            ))
-                          ))}
-                        </tr>
-                        {/* Date numbers row */}
-                        <tr>
-                          {calendarWeeks.map((weekDates, weekIndex) => (
-                            weekDates.map((dateNum, dayIndex) => (
-                              <th 
-                                key={`date-${weekIndex}-${dayIndex}`}
-                                className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
-                              >
-                                {dateNum !== null ? dateNum : '-'}
-                              </th>
-                            ))
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {weeklySubPhases.length === 0 ? (
-                          <tr>
-                            <td colSpan={1 + calendarWeeks.length * 7} className="border p-2 text-center text-muted-foreground text-[8px]">
-                              Δεν υπάρχουν φάσεις
-                            </td>
-                          </tr>
-                        ) : (
-                          weeklySubPhases.map((phase, phaseIndex) => (
-                            <tr key={phase.value}>
-                              <td className="border p-0.5 font-medium bg-background">
-                                <div className="flex items-center gap-0.5">
-                                  <div className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", phase.color)} />
-                                  <span className="text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
-                                </div>
-                              </td>
-                              {calendarWeeks.map((weekDates, weekIndex) => {
-                                const week = weekIndex + 1;
-                                const weekSubPhasesForWeek = getWeeklySubPhasesForWeekByMonth(currentMonth, week);
-                                const isPhaseAvailableForWeek = weekSubPhasesForWeek.some(sp => sp.value === phase.value);
-                                
-                                return weekDates.map((dateNum, dayIndex) => {
-                                  const day = dayIndex + 1;
-                                  const isSelected = isWeeklyPhaseSelected(currentMonth, week, day, phase.value);
-                                  const isValidDate = dateNum !== null;
-                                  
-                                  if (!isPhaseAvailableForWeek) {
-                                    return (
-                                      <td
-                                        key={`${weekIndex}-${dayIndex}`}
-                                        className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
-                                      />
-                                    );
-                                  }
-                                  
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Scrollable months area */}
+                <ScrollArea className="flex-1">
+                  <div className="flex pb-4">
+                    {MONTHS_DROPDOWN.map((monthName, monthIdx) => {
+                      const currentMonth = monthIdx + 1;
+                      const calendarWeeks = getCalendarWeeksForMonthByIndex(currentMonth);
+                      
+                      return (
+                        <div key={monthIdx} className="flex-shrink-0">
+                          <table className="border-collapse text-[7px] sm:text-[9px] md:text-xs">
+                            <thead>
+                              {/* Month name + Week headers row */}
+                              <tr>
+                                {calendarWeeks.map((_, weekIndex) => {
+                                  const monthlyPhase = getMonthlyPhaseForWeekByMonth(currentMonth, weekIndex + 1);
+                                  const phaseInfo = monthlyPhase ? PHASES.find(p => p.value === monthlyPhase.phase) : null;
                                   return (
-                                    <td
-                                      key={`${weekIndex}-${dayIndex}`}
-                                      onClick={() => isValidDate && !isViewMode && handleWeeklyPhaseClick(currentMonth, week, day, phase.value)}
+                                    <th 
+                                      key={weekIndex} 
+                                      colSpan={7}
                                       className={cn(
-                                        "border p-0 text-center transition-colors h-3 sm:h-4",
-                                        isValidDate && !isViewMode ? "cursor-pointer" : "bg-muted/30 cursor-default",
-                                        isValidDate && (isSelected ? phase.color : `${phase.color}/15`)
+                                        "border p-0.5 bg-muted text-center",
+                                        phaseInfo && phaseInfo.color
                                       )}
                                     >
-                                      {isSelected && isValidDate && (
-                                        (() => {
-                                          const priority = getSubphasePriority(currentMonth, week, day, phase.value);
-                                          if (priority) {
-                                            return (
-                                              <span className="text-[8px] sm:text-[10px] font-bold text-white">{priority}</span>
-                                            );
-                                          }
-                                          return <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />;
-                                        })()
-                                      )}
-                                    </td>
+                                      <div className="flex flex-col">
+                                        {weekIndex === 0 && (
+                                          <span className="text-[7px] sm:text-[9px] font-bold">{monthName}</span>
+                                        )}
+                                        <span className={cn(
+                                          "text-[6px] sm:text-[8px] font-medium",
+                                          phaseInfo && "text-white"
+                                        )}>
+                                          Ε{weekIndex + 1}
+                                          {phaseInfo && ` (${phaseInfo.shortLabel})`}
+                                        </span>
+                                      </div>
+                                    </th>
                                   );
-                                });
-                              })}
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
+                                })}
+                              </tr>
+                              {/* Day names row */}
+                              <tr>
+                                {calendarWeeks.map((_, weekIndex) => (
+                                  DAYS_FULL.map((dayName, dayIndex) => (
+                                    <th 
+                                      key={`day-${weekIndex}-${dayIndex}`}
+                                      className="border p-0.5 bg-muted/70 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium"
+                                    >
+                                      {dayName}
+                                    </th>
+                                  ))
+                                ))}
+                              </tr>
+                              {/* Date numbers row */}
+                              <tr>
+                                {calendarWeeks.map((weekDates, weekIndex) => (
+                                  weekDates.map((dateNum, dayIndex) => (
+                                    <th 
+                                      key={`date-${weekIndex}-${dayIndex}`}
+                                      className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
+                                    >
+                                      {dateNum !== null ? dateNum : '-'}
+                                    </th>
+                                  ))
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {allPhasesList.map((phase) => (
+                                <tr key={phase.value}>
+                                  {calendarWeeks.map((weekDates, weekIndex) => {
+                                    const week = weekIndex + 1;
+                                    const weekSubPhasesForWeek = getWeeklySubPhasesForWeekByMonth(currentMonth, week);
+                                    const isPhaseAvailableForWeek = weekSubPhasesForWeek.some(sp => sp.value === phase.value);
+                                    
+                                    return weekDates.map((dateNum, dayIndex) => {
+                                      const day = dayIndex + 1;
+                                      const isSelected = isWeeklyPhaseSelected(currentMonth, week, day, phase.value);
+                                      const isValidDate = dateNum !== null;
+                                      
+                                      if (!isPhaseAvailableForWeek) {
+                                        return (
+                                          <td
+                                            key={`${weekIndex}-${dayIndex}`}
+                                            className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
+                                          />
+                                        );
+                                      }
+                                      
+                                      return (
+                                        <td
+                                          key={`${weekIndex}-${dayIndex}`}
+                                          onClick={() => isValidDate && !isViewMode && handleWeeklyPhaseClick(currentMonth, week, day, phase.value)}
+                                          className={cn(
+                                            "border p-0 text-center transition-colors h-3 sm:h-4",
+                                            isValidDate && !isViewMode ? "cursor-pointer" : "bg-muted/30 cursor-default",
+                                            isValidDate && (isSelected ? phase.color : `${phase.color}/15`)
+                                          )}
+                                        >
+                                          {isSelected && isValidDate && (
+                                            (() => {
+                                              const priority = getSubphasePriority(currentMonth, week, day, phase.value);
+                                              if (priority) {
+                                                return (
+                                                  <span className="text-[8px] sm:text-[10px] font-bold text-white">{priority}</span>
+                                                );
+                                              }
+                                              return <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />;
+                                            })()
+                                          )}
+                                        </td>
+                                      );
+                                    });
+                                  })}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              </div>
+            );
+          })()}
         </CardContent>
         </Card>
         </TabsContent>
