@@ -1820,7 +1820,7 @@ const AnnualPlanning: React.FC = () => {
                       >
                         <td className={cn(
                           "border p-0.5 font-medium transition-colors",
-                          annualHoverRow === phaseIndex && "bg-muted/50"
+                          annualHoverRow === phaseIndex && "bg-muted-foreground/30"
                         )}>
                           <div className="flex items-center gap-0.5 sm:gap-1">
                             <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
@@ -1964,7 +1964,7 @@ const AnnualPlanning: React.FC = () => {
                     >
                       <td className={cn(
                         "border p-0.5 font-medium bg-background transition-colors",
-                        monthlyHoverRow === phaseIndex && "bg-muted/50"
+                        monthlyHoverRow === phaseIndex && "bg-muted-foreground/30"
                       )}>
                         <div className="flex items-center gap-0.5">
                           <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
@@ -2176,7 +2176,7 @@ const AnnualPlanning: React.FC = () => {
                       >
                         <td className={cn(
                           "border p-0.5 font-medium bg-background transition-colors",
-                          weeklyHoverRow === phaseIndex && "bg-muted/50"
+                          weeklyHoverRow === phaseIndex && "bg-muted-foreground/30"
                         )}>
                           <div className="flex items-center gap-0.5">
                             <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
