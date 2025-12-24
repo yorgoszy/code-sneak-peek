@@ -1377,9 +1377,9 @@ ${drafts.map((p: any, i: number) => {
       // Προσθήκη subscription context στο userProfile για χρήση αργότερα
       (userProfile as any).subscriptionContext = subscriptionContext;
 
-      // 📅 ΦΟΡΤΩΣΗ ΕΤΗΣΙΟΥ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΥ ΧΡΗΣΤΗ
-      const userAnnualPhasesResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/user_annual_phases?user_id=eq.${effectiveUserId}&select=*&order=year.desc,month.asc`,
+      // 📅 ΦΟΡΤΩΣΗ ΕΤΗΣΙΟΥ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΥ ΧΡΗΣΤΗ (από user_annual_planning table)
+      const userAnnualPlanningResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_annual_planning?user_id=eq.${effectiveUserId}&select=*`,
         {
           headers: {
             "apikey": SUPABASE_SERVICE_ROLE_KEY!,
@@ -1387,202 +1387,143 @@ ${drafts.map((p: any, i: number) => {
           }
         }
       );
-      const userAnnualPhases = await userAnnualPhasesResponse.json();
+      const userAnnualPlanningData = await userAnnualPlanningResponse.json();
       
-      if (Array.isArray(userAnnualPhases) && userAnnualPhases.length > 0) {
-        console.log(`✅ Loaded ${userAnnualPhases.length} annual phases for user`);
+      const PHASE_LABELS: Record<string, string> = {
+        'corrective': 'Διορθωτικές',
+        'stabilization': 'Σταθεροποίηση',
+        'connecting-linking': 'Σύνδεση',
+        'movement-skills': 'Κινητικές Δεξιότητες',
+        'non-functional-hypertrophy': 'Μη Λειτουργική Υπερτροφία',
+        'functional-hypertrophy': 'Λειτουργική Υπερτροφία',
+        'maximal-strength': 'Μέγιστη Δύναμη',
+        'power': 'Ισχύς',
+        'endurance': 'Αντοχή',
+        'competition': 'Αγωνιστική',
+        'pwr-end': 'Power/Endurance',
+        'spd-end': 'Speed/Endurance',
+        'str-spd': 'Strength/Speed'
+      };
+      
+      const MONTH_NAMES = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιούν', 'Ιούλ', 'Αύγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
+      const DAY_NAMES = ['', 'Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ', 'Κυρ'];
+      
+      if (Array.isArray(userAnnualPlanningData) && userAnnualPlanningData.length > 0) {
+        const planning = userAnnualPlanningData[0]; // Παίρνουμε το πρώτο (θα έπρεπε να υπάρχει μόνο ένα ανά χρήστη/έτος)
+        console.log(`✅ Loaded annual planning for user (year: ${planning.year})`);
         
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth() + 1;
         
-        // Group by year
-        const phasesByYear: Record<number, any[]> = {};
-        userAnnualPhases.forEach((phase: any) => {
-          if (!phasesByYear[phase.year]) phasesByYear[phase.year] = [];
-          phasesByYear[phase.year].push(phase);
-        });
-        
         annualPlanningContext = '\n\n📅 ΕΤΗΣΙΟΣ ΠΡΟΠΟΝΗΤΙΚΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ ΧΡΗΣΤΗ:\n';
+        annualPlanningContext += `📆 Έτος: ${planning.year}\n`;
         
-        const PHASE_LABELS: Record<string, string> = {
-          'corrective': 'Διορθωτικές',
-          'stabilization': 'Σταθεροποίηση',
-          'connecting-linking': 'Σύνδεση',
-          'movement-skills': 'Κινητικές Δεξιότητες',
-          'non-functional-hypertrophy': 'Μη Λειτουργική Υπερτροφία',
-          'functional-hypertrophy': 'Λειτουργική Υπερτροφία',
-          'maximal-strength': 'Μέγιστη Δύναμη',
-          'power': 'Ισχύς',
-          'endurance': 'Αντοχή',
-          'competition': 'Αγωνιστική'
-        };
-        
-        const MONTH_NAMES = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιούν', 'Ιούλ', 'Αύγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
-        
-        Object.entries(phasesByYear)
-          .sort(([a], [b]) => Number(b) - Number(a))
-          .forEach(([year, phases]) => {
-            annualPlanningContext += `\n  📆 Έτος ${year}:\n`;
-            phases.sort((a, b) => a.month - b.month).forEach((phase: any) => {
-              const isCurrentMonth = Number(year) === currentYear && phase.month === currentMonth;
-              const indicator = isCurrentMonth ? '👉 ' : '   ';
-              const phaseLabel = PHASE_LABELS[phase.phase] || phase.phase;
-              annualPlanningContext += `${indicator}${MONTH_NAMES[phase.month - 1]}: ${phaseLabel}${phase.notes ? ` (${phase.notes})` : ''}\n`;
-            });
+        // ΜΗΝΙΑΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ (monthly_phases JSON array)
+        if (planning.monthly_phases && Array.isArray(planning.monthly_phases)) {
+          annualPlanningContext += '\n📊 ΜΗΝΙΑΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ:\n';
+          
+          // Ταξινόμηση κατά μήνα και εβδομάδα
+          const sortedMonthlyPhases = [...planning.monthly_phases].sort((a: any, b: any) => {
+            if (a.month !== b.month) return a.month - b.month;
+            return (a.week || 0) - (b.week || 0);
           });
-        
-        // Τρέχουσα φάση
-        const currentPhase = userAnnualPhases.find((p: any) => p.year === currentYear && p.month === currentMonth);
-        if (currentPhase) {
-          annualPlanningContext += `\n  🎯 ΤΡΕΧΟΥΣΑ ΦΑΣΗ (${MONTH_NAMES[currentMonth - 1]} ${currentYear}): ${PHASE_LABELS[currentPhase.phase] || currentPhase.phase}\n`;
           
-          // Βρες τις ρυθμίσεις για αυτή τη φάση
-          if (Array.isArray(phaseConfigData)) {
-            const matchingPhaseConfig = phaseConfigData.find((pc: any) => pc.phase_key === currentPhase.phase);
-            if (matchingPhaseConfig) {
-              annualPlanningContext += `\n  📊 ΡΥΘΜΙΣΕΙΣ ΤΡΕΧΟΥΣΑΣ ΦΑΣΗΣ:\n`;
-              
-              // Rep schemes
-              const currentPhaseRepSchemes = Array.isArray(repSchemesData) 
-                ? repSchemesData.filter((rs: any) => rs.phase_config_id === matchingPhaseConfig.id)
-                : [];
-              if (currentPhaseRepSchemes.length > 0) {
-                annualPlanningContext += `    📋 Επαναλήψεις: ${currentPhaseRepSchemes.map((rs: any) => rs.rep_range || rs.rep_scheme).join(', ')}\n`;
-              }
-              
-              // Exercises
-              const currentPhaseExercises = Array.isArray(phaseExercisesData) 
-                ? phaseExercisesData.filter((pe: any) => pe.phase_config_id === matchingPhaseConfig.id)
-                : [];
-              if (currentPhaseExercises.length > 0) {
-                annualPlanningContext += `    🏋️ Συνιστώμενες ασκήσεις: ${currentPhaseExercises.map((e: any) => e.exercises?.name || 'Unknown').join(', ')}\n`;
-              }
-            }
-          }
-        }
-      }
-
-      // 📅 ΦΟΡΤΩΣΗ ΕΒΔΟΜΑΔΙΑΙΟΥ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΥ (Weekly Phases) με πραγματικές ημερομηνίες
-      let weeklyPlanningContext = '';
-      const userWeeklyPhasesResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/user_weekly_phases?user_id=eq.${effectiveUserId}&select=*&order=year.asc,month.asc,week.asc,day.asc`,
-        {
-          headers: {
-            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-          }
-        }
-      );
-      const userWeeklyPhases = await userWeeklyPhasesResponse.json();
-      
-      if (Array.isArray(userWeeklyPhases) && userWeeklyPhases.length > 0) {
-        console.log(`✅ Loaded ${userWeeklyPhases.length} weekly phases for user`);
-        
-        // Helper function to convert year/month/week/day to actual date
-        const getDateFromWeekDay = (year: number, month: number, week: number, dayOfWeek: number): string => {
-          // Βρίσκουμε την πρώτη ημέρα του μήνα
-          const firstOfMonth = new Date(year, month - 1, 1);
-          // Βρίσκουμε τη Δευτέρα της πρώτης εβδομάδας του μήνα
-          // Αν η πρώτη του μήνα είναι Κυριακή (0), πάμε πίσω 6 μέρες
-          // Αλλιώς πάμε πίσω (dayOfWeek - 1) μέρες
-          const firstDayOfWeek = firstOfMonth.getDay(); // 0=Κυριακή, 1=Δευτέρα, κτλ
-          const daysToMonday = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-          
-          // Η πρώτη Δευτέρα της πρώτης εβδομάδας
-          const firstMonday = new Date(year, month - 1, 1 - daysToMonday);
-          
-          // Προσθέτουμε εβδομάδες και μέρες
-          // week=1 σημαίνει πρώτη εβδομάδα, day=1 σημαίνει Δευτέρα
-          const targetDate = new Date(firstMonday);
-          targetDate.setDate(firstMonday.getDate() + (week - 1) * 7 + (dayOfWeek - 1));
-          
-          return targetDate.toISOString().split('T')[0];
-        };
-        
-        const DAY_NAMES = ['', 'Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ', 'Κυρ'];
-        const PHASE_LABELS: Record<string, string> = {
-          'corrective': 'Διορθωτικές',
-          'stabilization': 'Σταθεροποίηση',
-          'connecting-linking': 'Σύνδεση',
-          'movement-skills': 'Κινητικές Δεξιότητες',
-          'non-functional-hypertrophy': 'Μη Λειτουργική Υπερτροφία',
-          'functional-hypertrophy': 'Λειτουργική Υπερτροφία',
-          'maximal-strength': 'Μέγιστη Δύναμη',
-          'power': 'Ισχύς',
-          'endurance': 'Αντοχή',
-          'competition': 'Αγωνιστική',
-          'pwr-end': 'Power/Endurance',
-          'spd-end': 'Speed/Endurance',
-          'str-spd': 'Strength/Speed'
-        };
-        
-        weeklyPlanningContext = '\n\n📆 ΕΒΔΟΜΑΔΙΑΙΟΣ ΠΡΟΠΟΝΗΤΙΚΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ (με πραγματικές ημερομηνίες):\n';
-        weeklyPlanningContext += '⚠️ ΚΡΙΣΙΜΟ: Όταν δημιουργείς πρόγραμμα, χρησιμοποίησε ΑΥΤΕΣ τις ημερομηνίες για training_dates!\n\n';
-        
-        // Group by year/month/week
-        const groupedPhases: Record<string, any[]> = {};
-        userWeeklyPhases.forEach((phase: any) => {
-          const key = `${phase.year}-${String(phase.month).padStart(2, '0')}-W${phase.week}`;
-          if (!groupedPhases[key]) groupedPhases[key] = [];
-          groupedPhases[key].push(phase);
-        });
-        
-        // Φιλτράρισμα μόνο μελλοντικών ή τρεχουσών εβδομάδων
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const currentDateStr = today.toISOString().split('T')[0];
-        
-        let upcomingTrainingDates: string[] = [];
-        
-        Object.entries(groupedPhases)
-          .sort(([a], [b]) => a.localeCompare(b))
-          .forEach(([weekKey, phases]) => {
-            const firstPhase = phases[0];
-            
-            // Εμφάνιση ημερών της εβδομάδας
-            const daysInfo: string[] = [];
-            phases.forEach((p: any) => {
-              const actualDate = getDateFromWeekDay(p.year, p.month, p.week, p.day);
-              const phaseLabel = PHASE_LABELS[p.phase] || p.phase;
-              const dayName = DAY_NAMES[p.day] || `Day${p.day}`;
-              
-              // Συλλογή μελλοντικών ημερομηνιών για training_dates
-              if (actualDate >= currentDateStr) {
-                upcomingTrainingDates.push(actualDate);
-              }
-              
-              let subPhases = '';
-              if (p.primary_subphase || p.secondary_subphase) {
-                const subs = [];
-                if (p.primary_subphase) subs.push(`P:${p.primary_subphase}`);
-                if (p.secondary_subphase) subs.push(`S:${p.secondary_subphase}`);
-                subPhases = ` [${subs.join(', ')}]`;
-              }
-              
-              daysInfo.push(`    • ${dayName} ${actualDate}: ${phaseLabel}${subPhases}`);
-            });
-            
-            if (daysInfo.length > 0) {
-              weeklyPlanningContext += `  📅 ${weekKey}:\n${daysInfo.join('\n')}\n`;
-            }
+          sortedMonthlyPhases.forEach((phase: any) => {
+            const isCurrentMonth = planning.year === currentYear && phase.month === currentMonth;
+            const indicator = isCurrentMonth ? '👉 ' : '   ';
+            const phaseLabel = PHASE_LABELS[phase.phase] || phase.phase;
+            const weekInfo = phase.week ? ` (Εβδ. ${phase.week})` : '';
+            annualPlanningContext += `${indicator}${MONTH_NAMES[phase.month - 1]}${weekInfo}: ${phaseLabel}\n`;
           });
-        
-        // Αφαίρεση διπλότυπων και ταξινόμηση
-        upcomingTrainingDates = [...new Set(upcomingTrainingDates)].sort();
-        
-        if (upcomingTrainingDates.length > 0) {
-          weeklyPlanningContext += `\n🎯 ΕΠΟΜΕΝΕΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΕΝΕΣ ΗΜΕΡΟΜΗΝΙΕΣ ΠΡΟΠΟΝΗΣΗΣ:\n`;
-          weeklyPlanningContext += `  ${upcomingTrainingDates.slice(0, 20).join(', ')}\n`;
-          if (upcomingTrainingDates.length > 20) {
-            weeklyPlanningContext += `  ... και ${upcomingTrainingDates.length - 20} ακόμη\n`;
+          
+          // Τρέχουσα μηνιαία φάση
+          const currentMonthPhase = sortedMonthlyPhases.find((p: any) => 
+            planning.year === currentYear && p.month === currentMonth
+          );
+          if (currentMonthPhase) {
+            annualPlanningContext += `\n🎯 ΤΡΕΧΟΥΣΑ ΜΗΝΙΑΙΑ ΦΑΣΗ: ${PHASE_LABELS[currentMonthPhase.phase] || currentMonthPhase.phase}\n`;
           }
-          weeklyPlanningContext += `\n⚠️ ΣΗΜΑΝΤΙΚΟ: Όταν ο χρήστης ζητάει να δημιουργήσεις πρόγραμμα ΧΩΡΙΣ να καθορίσει ημερομηνία:\n`;
-          weeklyPlanningContext += `  - Χρησιμοποίησε ΑΥΤΕΣ τις ημερομηνίες από τον Εβδομαδιαίο Προγραμματισμό!\n`;
-          weeklyPlanningContext += `  - Δηλαδή: training_dates: ["${upcomingTrainingDates.slice(0, 5).join('","')}"${upcomingTrainingDates.length > 5 ? ',...' : ''}"]\n`;
         }
         
-        // Προσθήκη στο annual planning context
-        annualPlanningContext += weeklyPlanningContext;
+        // ΕΒΔΟΜΑΔΙΑΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ (weekly_phases JSON array)
+        if (planning.weekly_phases && Array.isArray(planning.weekly_phases) && planning.weekly_phases.length > 0) {
+          annualPlanningContext += '\n📆 ΕΒΔΟΜΑΔΙΑΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ (με πραγματικές ημερομηνίες):\n';
+          annualPlanningContext += '⚠️ ΚΡΙΣΙΜΟ: Όταν δημιουργείς πρόγραμμα, χρησιμοποίησε ΑΥΤΕΣ τις ημερομηνίες για training_dates!\n\n';
+          
+          // Helper function to convert year/month/week/day to actual date
+          const getDateFromWeekDay = (year: number, month: number, week: number, dayOfWeek: number): string => {
+            const firstOfMonth = new Date(year, month - 1, 1);
+            const firstDayOfWeek = firstOfMonth.getDay();
+            const daysToMonday = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+            const firstMonday = new Date(year, month - 1, 1 - daysToMonday);
+            const targetDate = new Date(firstMonday);
+            targetDate.setDate(firstMonday.getDate() + (week - 1) * 7 + (dayOfWeek - 1));
+            return targetDate.toISOString().split('T')[0];
+          };
+          
+          // Ταξινόμηση κατά μήνα, εβδομάδα, ημέρα
+          const sortedWeeklyPhases = [...planning.weekly_phases].sort((a: any, b: any) => {
+            if (a.month !== b.month) return a.month - b.month;
+            if (a.week !== b.week) return a.week - b.week;
+            return (a.day || 0) - (b.day || 0);
+          });
+          
+          // Group by week
+          const groupedByWeek: Record<string, any[]> = {};
+          sortedWeeklyPhases.forEach((phase: any) => {
+            const key = `${planning.year}-${String(phase.month).padStart(2, '0')}-W${phase.week}`;
+            if (!groupedByWeek[key]) groupedByWeek[key] = [];
+            groupedByWeek[key].push(phase);
+          });
+          
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const currentDateStr = today.toISOString().split('T')[0];
+          
+          let upcomingTrainingDates: string[] = [];
+          
+          Object.entries(groupedByWeek)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .forEach(([weekKey, phases]) => {
+              const daysInfo: string[] = [];
+              phases.forEach((p: any) => {
+                const actualDate = getDateFromWeekDay(planning.year, p.month, p.week, p.day);
+                const phaseLabel = PHASE_LABELS[p.phase] || p.phase;
+                const dayName = DAY_NAMES[p.day] || `Day${p.day}`;
+                
+                if (actualDate >= currentDateStr) {
+                  upcomingTrainingDates.push(actualDate);
+                }
+                
+                daysInfo.push(`    • ${dayName} ${actualDate}: ${phaseLabel}`);
+              });
+              
+              if (daysInfo.length > 0) {
+                annualPlanningContext += `  📅 ${weekKey}:\n${daysInfo.join('\n')}\n`;
+              }
+            });
+          
+          upcomingTrainingDates = [...new Set(upcomingTrainingDates)].sort();
+          
+          if (upcomingTrainingDates.length > 0) {
+            annualPlanningContext += `\n🎯 ΕΠΟΜΕΝΕΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΕΝΕΣ ΗΜΕΡΟΜΗΝΙΕΣ ΠΡΟΠΟΝΗΣΗΣ:\n`;
+            annualPlanningContext += `  ${upcomingTrainingDates.slice(0, 20).join(', ')}\n`;
+            if (upcomingTrainingDates.length > 20) {
+              annualPlanningContext += `  ... και ${upcomingTrainingDates.length - 20} ακόμη\n`;
+            }
+            annualPlanningContext += `\n⚠️ ΣΗΜΑΝΤΙΚΟ: Όταν ο χρήστης ζητάει να δημιουργήσεις πρόγραμμα ΧΩΡΙΣ να καθορίσει ημερομηνία:\n`;
+            annualPlanningContext += `  - Χρησιμοποίησε ΑΥΤΕΣ τις ημερομηνίες από τον Εβδομαδιαίο Προγραμματισμό!\n`;
+            annualPlanningContext += `  - Δηλαδή: training_dates: ["${upcomingTrainingDates.slice(0, 5).join('","')}"${upcomingTrainingDates.length > 5 ? ',...' : ''}"]\n`;
+          }
+        }
+        
+        if (planning.notes) {
+          annualPlanningContext += `\n📝 Σημειώσεις: ${planning.notes}\n`;
+        }
+      } else {
+        console.log(`⚠️ No annual planning found for user ${effectiveUserId}`);
+        annualPlanningContext = '\n\n⚠️ ΠΡΟΣΟΧΗ: Δεν βρέθηκε Ετήσιος/Μηνιαίος/Εβδομαδιαίος Προγραμματισμός για αυτόν τον χρήστη!\n';
+        annualPlanningContext += 'Αν ο χρήστης ζητήσει πρόγραμμα βασισμένο στο annual plan, ενημέρωσέ τον ότι δεν υπάρχει προγραμματισμός.\n';
       }
 
     // Φόρτωση ΟΛΩΝ των assignments του χρήστη (ΧΩΡΙΣ status filter - όλων των χρόνων)
