@@ -2222,20 +2222,27 @@ const AnnualPlanning: React.FC = () => {
                 <div className="flex-shrink-0 sticky left-0 z-10 bg-background">
                   <table className="border-collapse text-[7px] sm:text-[9px] md:text-xs">
                     <thead>
+                      {/* Row 1: Month name equivalent */}
                       <tr>
-                        <th className="border p-0.5 bg-muted text-left w-[50px] sm:w-[70px] h-[28px] sm:h-[36px]">Φάση</th>
+                        <th className="border p-0.5 bg-muted text-left w-[50px] sm:w-[70px]">&nbsp;</th>
                       </tr>
+                      {/* Row 2: Week headers equivalent */}
                       <tr>
-                        <th className="border p-0.5 bg-muted/70 h-[16px] sm:h-[20px]"></th>
+                        <th className="border p-0.5 bg-muted text-left">Φάση</th>
                       </tr>
+                      {/* Row 3: Day names equivalent */}
                       <tr>
-                        <th className="border p-0.5 bg-muted/50 h-[16px] sm:h-[20px]"></th>
+                        <th className="border p-0.5 bg-muted/70">&nbsp;</th>
+                      </tr>
+                      {/* Row 4: Date numbers equivalent */}
+                      <tr>
+                        <th className="border p-0.5 bg-muted/50">&nbsp;</th>
                       </tr>
                     </thead>
                     <tbody>
                       {allPhasesList.map((phase) => (
                         <tr key={phase.value}>
-                          <td className="border p-0.5 font-medium bg-background whitespace-nowrap">
+                          <td className="border p-0.5 font-medium bg-background whitespace-nowrap h-3 sm:h-4">
                             <div className="flex items-center gap-0.5">
                               <div className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", phase.color)} />
                               <span className="text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
