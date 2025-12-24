@@ -303,6 +303,14 @@ const AnnualPlanning: React.FC = () => {
   const [selectedWeeklyMonth, setSelectedWeeklyMonth] = useState(new Date().getMonth() + 1);
   const [weeklyPhases, setWeeklyPhases] = useState<{ month: number; week: number; day: number; phase: string; primary_subphase?: string | null; secondary_subphase?: string | null; accessory_subphase?: string | null }[]>([]);
 
+  // Hover state for table crosshair effect
+  const [annualHoverRow, setAnnualHoverRow] = useState<number | null>(null);
+  const [annualHoverCol, setAnnualHoverCol] = useState<number | null>(null);
+  const [monthlyHoverRow, setMonthlyHoverRow] = useState<number | null>(null);
+  const [monthlyHoverCol, setMonthlyHoverCol] = useState<number | null>(null);
+  const [weeklyHoverRow, setWeeklyHoverRow] = useState<number | null>(null);
+  const [weeklyHoverCol, setWeeklyHoverCol] = useState<number | null>(null);
+
   // Get annual phase for a specific month
   const getAnnualPhaseForMonth = (month: number) => {
     return selectedPhases.find(p => p.month === month);
@@ -1798,9 +1806,16 @@ const AnnualPlanning: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {PHASES.map((phase) => (
-                      <tr key={phase.value} className={cn(phase.color, "bg-opacity-10")}>
-                        <td className="border p-0.5 font-medium">
+                    {PHASES.map((phase, phaseIndex) => (
+                      <tr 
+                        key={phase.value} 
+                        className={cn(phase.color, "bg-opacity-10")}
+                        onMouseLeave={() => setAnnualHoverRow(null)}
+                      >
+                        <td className={cn(
+                          "border p-0.5 font-medium transition-colors",
+                          annualHoverRow === phaseIndex && "bg-muted/50"
+                        )}>
                           <div className="flex items-center gap-0.5 sm:gap-1">
                             <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
                             <span className="md:hidden text-[7px] font-semibold">{phase.shortLabel}</span>
@@ -1811,14 +1826,23 @@ const AnnualPlanning: React.FC = () => {
                         {MONTHS.map((_, monthIndex) => {
                           const month = monthIndex + 1;
                           const isSelected = isPhaseSelected(month, phase.value);
+                          const isHovered = annualHoverRow === phaseIndex || annualHoverCol === monthIndex;
                           
                           return (
                             <td
                               key={monthIndex}
-                              onClick={() => handleCellClick(month, phase.value)}
+                              onClick={() => !isViewMode && handleCellClick(month, phase.value)}
+                              onMouseEnter={() => {
+                                setAnnualHoverRow(phaseIndex);
+                                setAnnualHoverCol(monthIndex);
+                              }}
+                              onMouseLeave={() => setAnnualHoverCol(null)}
                               className={cn(
-                                "border p-0 text-center cursor-pointer transition-colors h-4 sm:h-5",
-                                isSelected && phase.color
+                                "border p-0 text-center transition-colors h-4 sm:h-5",
+                                !isViewMode && "cursor-pointer",
+                                isViewMode && "cursor-default",
+                                isSelected && phase.color,
+                                !isSelected && isHovered && "bg-muted/40"
                               )}
                             >
                               {isSelected && (
@@ -1909,7 +1933,7 @@ const AnnualPlanning: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {PHASES.map((phase) => {
+                {PHASES.map((phase, phaseIndex) => {
                   // Βρίσκουμε σε ποιους μήνες είναι επιλεγμένη αυτή η φάση στον Ετήσιο Προγραμματισμό
                   const monthsWithThisPhase = selectedPhases
                     .filter(p => p.phase === phase.value)
@@ -1918,9 +1942,18 @@ const AnnualPlanning: React.FC = () => {
                   // Αν δεν υπάρχει σε κανέναν μήνα, δεν εμφανίζουμε τη γραμμή
                   if (monthsWithThisPhase.length === 0) return null;
                   
+                  // Calculate global column index for hover
+                  let globalColIndex = 0;
+                  
                   return (
-                    <tr key={phase.value}>
-                      <td className="border p-0.5 font-medium bg-background">
+                    <tr 
+                      key={phase.value}
+                      onMouseLeave={() => setMonthlyHoverRow(null)}
+                    >
+                      <td className={cn(
+                        "border p-0.5 font-medium bg-background transition-colors",
+                        monthlyHoverRow === phaseIndex && "bg-muted/50"
+                      )}>
                         <div className="flex items-center gap-0.5">
                           <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
                           <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
@@ -1935,6 +1968,8 @@ const AnnualPlanning: React.FC = () => {
                         return Array.from({ length: weeksCount }, (_, weekIndex) => {
                           const week = weekIndex + 1;
                           const isSelected = isMonthlyPhaseSelected(month, week, phase.value);
+                          const currentColIndex = globalColIndex++;
+                          const isHovered = monthlyHoverRow === phaseIndex || monthlyHoverCol === currentColIndex;
                           
                           // Αν η φάση δεν είναι επιλεγμένη στον Ετήσιο για αυτόν τον μήνα, 
                           // εμφανίζουμε κενό μη-κλικάρισμα κελί
@@ -1942,7 +1977,15 @@ const AnnualPlanning: React.FC = () => {
                             return (
                               <td
                                 key={`${monthIndex}-${weekIndex}`}
-                                className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
+                                className={cn(
+                                  "border p-0 text-center bg-muted/30 h-3 sm:h-4 transition-colors",
+                                  isHovered && "bg-muted/50"
+                                )}
+                                onMouseEnter={() => {
+                                  setMonthlyHoverRow(phaseIndex);
+                                  setMonthlyHoverCol(currentColIndex);
+                                }}
+                                onMouseLeave={() => setMonthlyHoverCol(null)}
                               />
                             );
                           }
@@ -1950,11 +1993,19 @@ const AnnualPlanning: React.FC = () => {
                           return (
                             <td
                               key={`${monthIndex}-${weekIndex}`}
-                              onClick={() => handleMonthlyPhaseClick(month, week, phase.value)}
+                              onClick={() => !isViewMode && handleMonthlyPhaseClick(month, week, phase.value)}
+                              onMouseEnter={() => {
+                                setMonthlyHoverRow(phaseIndex);
+                                setMonthlyHoverCol(currentColIndex);
+                              }}
+                              onMouseLeave={() => setMonthlyHoverCol(null)}
                               className={cn(
-                                "border p-0 text-center cursor-pointer transition-colors h-3 sm:h-4",
+                                "border p-0 text-center transition-colors h-3 sm:h-4",
+                                !isViewMode && "cursor-pointer",
+                                isViewMode && "cursor-default",
                                 phase.color,
-                                isSelected ? "" : "bg-opacity-10"
+                                isSelected ? "" : "bg-opacity-10",
+                                !isSelected && isHovered && "bg-opacity-30"
                               )}
                             >
                               {isSelected && (
@@ -2090,67 +2141,90 @@ const AnnualPlanning: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  getWeeklySubPhases.map((phase) => (
-                    <tr key={phase.value}>
-                      <td className="border p-0.5 font-medium bg-background">
-                        <div className="flex items-center gap-0.5">
-                          <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
-                          <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
-                          <span className="hidden lg:inline text-xs">{phase.label}</span>
-                        </div>
-                      </td>
-                      {getCalendarWeeksForMonth.map((weekDates, weekIndex) => {
-                        const week = weekIndex + 1;
-                        // Βρίσκουμε αν αυτή η φάση είναι διαθέσιμη για αυτή την εβδομάδα
-                        const weekSubPhases = getWeeklySubPhasesForWeek(week);
-                        const isPhaseAvailableForWeek = weekSubPhases.some(sp => sp.value === phase.value);
-                        
-                        return weekDates.map((dateNum, dayIndex) => {
-                          const day = dayIndex + 1;
-                          const isSelected = isWeeklyPhaseSelected(selectedWeeklyMonth, week, day, phase.value);
-                          const isValidDate = dateNum !== null;
+                  getWeeklySubPhases.map((phase, phaseIndex) => {
+                    let globalColIndex = 0;
+                    
+                    return (
+                      <tr 
+                        key={phase.value}
+                        onMouseLeave={() => setWeeklyHoverRow(null)}
+                      >
+                        <td className={cn(
+                          "border p-0.5 font-medium bg-background transition-colors",
+                          weeklyHoverRow === phaseIndex && "bg-muted/50"
+                        )}>
+                          <div className="flex items-center gap-0.5">
+                            <div className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0", phase.color)} />
+                            <span className="lg:hidden text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
+                            <span className="hidden lg:inline text-xs">{phase.label}</span>
+                          </div>
+                        </td>
+                        {getCalendarWeeksForMonth.map((weekDates, weekIndex) => {
+                          const week = weekIndex + 1;
+                          // Βρίσκουμε αν αυτή η φάση είναι διαθέσιμη για αυτή την εβδομάδα
+                          const weekSubPhases = getWeeklySubPhasesForWeek(week);
+                          const isPhaseAvailableForWeek = weekSubPhases.some(sp => sp.value === phase.value);
                           
-                          // Αν η φάση δεν είναι διαθέσιμη για αυτή την εβδομάδα, εμφανίζουμε disabled κελί
-                          if (!isPhaseAvailableForWeek) {
+                          return weekDates.map((dateNum, dayIndex) => {
+                            const day = dayIndex + 1;
+                            const isSelected = isWeeklyPhaseSelected(selectedWeeklyMonth, week, day, phase.value);
+                            const isValidDate = dateNum !== null;
+                            const currentColIndex = globalColIndex++;
+                            const isHovered = weeklyHoverRow === phaseIndex || weeklyHoverCol === currentColIndex;
+                            
+                            // Αν η φάση δεν είναι διαθέσιμη για αυτή την εβδομάδα, εμφανίζουμε disabled κελί
+                            if (!isPhaseAvailableForWeek) {
+                              return (
+                                <td
+                                  key={`${weekIndex}-${dayIndex}`}
+                                  className={cn(
+                                    "border p-0 text-center bg-muted/30 h-3 sm:h-4 transition-colors",
+                                    isHovered && "bg-muted/50"
+                                  )}
+                                  onMouseEnter={() => {
+                                    setWeeklyHoverRow(phaseIndex);
+                                    setWeeklyHoverCol(currentColIndex);
+                                  }}
+                                  onMouseLeave={() => setWeeklyHoverCol(null)}
+                                />
+                              );
+                            }
+                            
                             return (
                               <td
                                 key={`${weekIndex}-${dayIndex}`}
-                                className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
-                              />
+                                onClick={() => isValidDate && !isViewMode && handleWeeklyPhaseClick(selectedWeeklyMonth, week, day, phase.value)}
+                                onMouseEnter={() => {
+                                  setWeeklyHoverRow(phaseIndex);
+                                  setWeeklyHoverCol(currentColIndex);
+                                }}
+                                onMouseLeave={() => setWeeklyHoverCol(null)}
+                                className={cn(
+                                  "border p-0 text-center transition-colors h-3 sm:h-4",
+                                  isValidDate && !isViewMode ? "cursor-pointer" : "bg-muted/30 cursor-default",
+                                  // Always tint available cells so it's obvious they are clickable
+                                  isValidDate && (isSelected ? phase.color : `${phase.color}/15`),
+                                  !isSelected && isHovered && "bg-opacity-40"
+                                )}
+                              >
+                                {isSelected && isValidDate && (
+                                  (() => {
+                                    const priority = getSubphasePriority(selectedWeeklyMonth, week, day, phase.value);
+                                    if (priority) {
+                                      return (
+                                        <span className="text-[8px] sm:text-[10px] font-bold text-white">{priority}</span>
+                                      );
+                                    }
+                                    return <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />;
+                                  })()
+                                )}
+                              </td>
                             );
-                          }
-                          
-                          // Ελέγχουμε αν η φάση είναι επιλεγμένη στο Monthly για αυτή την εβδομάδα
-                          const isMonthlySelected = isMonthlyPhaseSelected(selectedWeeklyMonth, week, phase.value);
-                          
-                          return (
-                            <td
-                              key={`${weekIndex}-${dayIndex}`}
-                              onClick={() => isValidDate && handleWeeklyPhaseClick(selectedWeeklyMonth, week, day, phase.value)}
-                              className={cn(
-                                "border p-0 text-center transition-colors h-3 sm:h-4",
-                                isValidDate ? "cursor-pointer" : "bg-muted/30 cursor-default",
-                                // Always tint available cells so it's obvious they are clickable
-                                isValidDate && (isSelected ? phase.color : `${phase.color}/15`)
-                              )}
-                            >
-                              {isSelected && isValidDate && (
-                                (() => {
-                                  const priority = getSubphasePriority(selectedWeeklyMonth, week, day, phase.value);
-                                  if (priority) {
-                                    return (
-                                      <span className="text-[8px] sm:text-[10px] font-bold text-white">{priority}</span>
-                                    );
-                                  }
-                                  return <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />;
-                                })()
-                              )}
-                            </td>
-                          );
-                        });
-                      })}
-                    </tr>
-                  ))
+                          });
+                        })}
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
