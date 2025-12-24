@@ -2226,15 +2226,11 @@ const AnnualPlanning: React.FC = () => {
                       <tr>
                         <th className="border p-0.5 bg-muted text-left w-[50px] sm:w-[70px]">&nbsp;</th>
                       </tr>
-                      {/* Row 2: Week headers equivalent */}
+                      {/* Row 2: Day names equivalent */}
                       <tr>
-                        <th className="border p-0.5 bg-muted text-left">Φάση</th>
+                        <th className="border p-0.5 bg-muted/70 text-left">Φάση</th>
                       </tr>
-                      {/* Row 3: Day names equivalent */}
-                      <tr>
-                        <th className="border p-0.5 bg-muted/70">&nbsp;</th>
-                      </tr>
-                      {/* Row 4: Date numbers equivalent */}
+                      {/* Row 3: Date numbers equivalent */}
                       <tr>
                         <th className="border p-0.5 bg-muted/50">&nbsp;</th>
                       </tr>
@@ -2260,19 +2256,6 @@ const AnnualPlanning: React.FC = () => {
                     {MONTHS_DROPDOWN.map((monthName, monthIdx) => {
                       const currentMonth = monthIdx + 1;
                       const actualDays = getActualDaysForMonth(currentMonth);
-                      const calendarWeeks = getCalendarWeeksForMonthByIndex(currentMonth);
-                      const numWeeks = calendarWeeks.length;
-                      
-                      // Group days by week for week headers
-                      const weekGroups: { weekNumber: number; days: typeof actualDays }[] = [];
-                      actualDays.forEach(day => {
-                        const existing = weekGroups.find(w => w.weekNumber === day.weekNumber);
-                        if (existing) {
-                          existing.days.push(day);
-                        } else {
-                          weekGroups.push({ weekNumber: day.weekNumber, days: [day] });
-                        }
-                      });
                       
                       return (
                         <div key={monthIdx} className="flex-shrink-0">
@@ -2287,41 +2270,25 @@ const AnnualPlanning: React.FC = () => {
                                   <span className="text-[7px] sm:text-[9px] font-bold">{monthName}</span>
                                 </th>
                               </tr>
-                              {/* Week headers row */}
+                              {/* Day names row */}
                               <tr>
-                                {weekGroups.map((weekGroup) => {
-                                  const monthlyPhase = getMonthlyPhaseForWeekByMonth(currentMonth, weekGroup.weekNumber);
+                                {actualDays.map((day, idx) => {
+                                  // Get phase for this day's week to color the cell
+                                  const monthlyPhase = getMonthlyPhaseForWeekByMonth(currentMonth, day.weekNumber);
                                   const phaseInfo = monthlyPhase ? PHASES.find(p => p.value === monthlyPhase.phase) : null;
                                   return (
                                     <th 
-                                      key={weekGroup.weekNumber} 
-                                      colSpan={weekGroup.days.length}
+                                      key={`day-${idx}`}
                                       className={cn(
-                                        "border p-0.5 bg-muted text-center",
-                                        phaseInfo && phaseInfo.color
+                                        "border p-0.5 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium",
+                                        phaseInfo ? phaseInfo.color : "bg-muted/70",
+                                        phaseInfo && "text-white"
                                       )}
                                     >
-                                      <span className={cn(
-                                        "text-[6px] sm:text-[8px] font-medium",
-                                        phaseInfo && "text-white"
-                                      )}>
-                                        Ε{weekGroup.weekNumber}
-                                        {phaseInfo && ` (${phaseInfo.shortLabel})`}
-                                      </span>
+                                      {DAYS_FULL[day.dayOfWeek]}
                                     </th>
                                   );
                                 })}
-                              </tr>
-                              {/* Day names row */}
-                              <tr>
-                                {actualDays.map((day, idx) => (
-                                  <th 
-                                    key={`day-${idx}`}
-                                    className="border p-0.5 bg-muted/70 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium"
-                                  >
-                                    {DAYS_FULL[day.dayOfWeek]}
-                                  </th>
-                                ))}
                               </tr>
                               {/* Date numbers row */}
                               <tr>
