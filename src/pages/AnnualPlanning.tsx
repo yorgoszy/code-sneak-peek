@@ -273,8 +273,13 @@ const AnnualPlanning: React.FC = () => {
   const [savedMacrocycles, setSavedMacrocycles] = useState<SavedMacrocycle[]>([]);
   const [macrocycleName, setMacrocycleName] = useState('');
   const [editingMacrocycleId, setEditingMacrocycleId] = useState<string | null>(null);
+  const [isViewMode, setIsViewMode] = useState(false);
   const [showUserList, setShowUserList] = useState(false);
   const [activeTab, setActiveTab] = useState('new');
+  
+  // Delete confirmation dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [macrocycleToDelete, setMacrocycleToDelete] = useState<string | null>(null);
   
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -799,16 +804,14 @@ const AnnualPlanning: React.FC = () => {
     }
   };
 
-  const handleDeleteSavedMacrocycle = async (macrocycleId: string) => {
-    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον μακροκύκλο;')) {
-      return;
-    }
+  const handleDeleteSavedMacrocycle = async () => {
+    if (!macrocycleToDelete) return;
     
     try {
       const { error } = await (supabase as any)
         .from('saved_macrocycles')
         .delete()
-        .eq('id', macrocycleId);
+        .eq('id', macrocycleToDelete);
 
       if (error) {
         toast.error('Σφάλμα κατά τη διαγραφή');
@@ -820,7 +823,15 @@ const AnnualPlanning: React.FC = () => {
     } catch (err) {
       console.error('Error deleting saved macrocycle:', err);
       toast.error('Σφάλμα κατά τη διαγραφή');
+    } finally {
+      setDeleteDialogOpen(false);
+      setMacrocycleToDelete(null);
     }
+  };
+
+  const openDeleteDialog = (macrocycleId: string) => {
+    setMacrocycleToDelete(macrocycleId);
+    setDeleteDialogOpen(true);
   };
 
   const handleViewSavedMacrocycle = (macrocycle: SavedMacrocycle) => {
@@ -828,6 +839,9 @@ const AnnualPlanning: React.FC = () => {
     setYear(macrocycle.year);
     setMonthlyPhases(macrocycle.monthly_phases || []);
     setWeeklyPhases(macrocycle.weekly_phases || []);
+    setMacrocycleName(macrocycle.name);
+    setIsViewMode(true);
+    setEditingMacrocycleId(null);
     setActiveTab('new');
     toast.success('Ο μακροκύκλος φορτώθηκε για προβολή');
   };
@@ -839,6 +853,7 @@ const AnnualPlanning: React.FC = () => {
     setMonthlyPhases(macrocycle.monthly_phases || []);
     setWeeklyPhases(macrocycle.weekly_phases || []);
     setEditingMacrocycleId(macrocycle.id);
+    setIsViewMode(false);
     setActiveTab('new');
     toast.success('Ο μακροκύκλος φορτώθηκε για επεξεργασία');
   };
@@ -1664,12 +1679,17 @@ const AnnualPlanning: React.FC = () => {
 
                 {/* Macrocycle Name */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium">Όνομα Μακροκύκλου</label>
+                  <label className="text-xs font-medium">
+                    Όνομα Μακροκύκλου
+                    {isViewMode && <span className="text-muted-foreground ml-2">(Προβολή)</span>}
+                  </label>
                   <Input
                     placeholder="π.χ. Προετοιμασία 2025"
                     value={macrocycleName}
                     onChange={(e) => setMacrocycleName(e.target.value)}
                     className="rounded-none h-8 text-xs"
+                    readOnly={isViewMode}
+                    disabled={isViewMode}
                   />
                 </div>
 
@@ -1677,7 +1697,7 @@ const AnnualPlanning: React.FC = () => {
                 <div className="space-y-1">
                   <label className="text-xs font-medium">&nbsp;</label>
                   <div className="flex gap-2">
-                    {isAdminUser && (
+                    {isAdminUser && !isViewMode && (
                       <Button
                         onClick={handleSave}
                         variant="outline"
@@ -1685,18 +1705,36 @@ const AnnualPlanning: React.FC = () => {
                         disabled={selectedPhases.length === 0 || !macrocycleName.trim()}
                       >
                         <Save className="w-3 h-3 mr-1" />
-                        Αποθήκευση
+                        {editingMacrocycleId ? 'Ενημέρωση' : 'Αποθήκευση'}
                       </Button>
                     )}
-                    <Button
-                      onClick={handleAssign}
-                      className="rounded-none flex-1 h-8 text-xs"
-                      style={{ backgroundColor: '#00ffba', color: 'black' }}
-                      disabled={selectedPhases.length === 0 || (selectedUserIds.length === 0 && selectedGroupIds.length === 0) || isAssigning}
-                    >
-                      <UserPlus className="w-3 h-3 mr-1" />
-                      {isAssigning ? 'Ανάθεση...' : 'Ανάθεση'}
-                    </Button>
+                    {isViewMode && (
+                      <Button
+                        onClick={() => {
+                          setIsViewMode(false);
+                          setMacrocycleName('');
+                          setSelectedPhases([]);
+                          setMonthlyPhases([]);
+                          setWeeklyPhases([]);
+                        }}
+                        variant="outline"
+                        className="rounded-none flex-1 h-8 text-xs"
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Κλείσιμο Προβολής
+                      </Button>
+                    )}
+                    {!isViewMode && (
+                      <Button
+                        onClick={handleAssign}
+                        className="rounded-none flex-1 h-8 text-xs"
+                        style={{ backgroundColor: '#00ffba', color: 'black' }}
+                        disabled={selectedPhases.length === 0 || (selectedUserIds.length === 0 && selectedGroupIds.length === 0) || isAssigning}
+                      >
+                        <UserPlus className="w-3 h-3 mr-1" />
+                        {isAssigning ? 'Ανάθεση...' : 'Ανάθεση'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2200,7 +2238,7 @@ const AnnualPlanning: React.FC = () => {
                           variant="outline"
                           size="icon"
                           className="rounded-none h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteSavedMacrocycle(macrocycle.id)}
+                          onClick={() => openDeleteDialog(macrocycle.id)}
                           title="Διαγραφή"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -2726,6 +2764,34 @@ const AnnualPlanning: React.FC = () => {
             </div>
           </div>
 
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md rounded-none">
+          <DialogHeader>
+            <DialogTitle>Διαγραφή Μακροκύκλου</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground py-4">
+            Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον μακροκύκλο;
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              className="rounded-none"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Ακύρωση
+            </Button>
+            <Button
+              variant="destructive"
+              className="rounded-none"
+              onClick={handleDeleteSavedMacrocycle}
+            >
+              Διαγραφή
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
