@@ -2262,9 +2262,10 @@ const AnnualPlanning: React.FC = () => {
                                 <th
                                   key={`dow-${day.month}-${day.date}-${idx}`}
                                   className={cn(
-                                    "border p-0.5 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium h-4 sm:h-5 leading-none",
+                                    "border p-0.5 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium h-4 sm:h-5 leading-none transition-colors",
                                     phaseInfo ? phaseInfo.color : "bg-muted/70",
-                                    phaseInfo && "text-white"
+                                    phaseInfo && "text-white",
+                                    weeklyHoverCol === idx && "brightness-75"
                                   )}
                                 >
                                   {DAYS_FULL[day.dayOfWeek]}
@@ -2279,7 +2280,10 @@ const AnnualPlanning: React.FC = () => {
                             {allDays.map((day, idx) => (
                               <th
                                 key={`date-${day.month}-${day.date}-${idx}`}
-                                className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] h-4 sm:h-5 leading-none"
+                                className={cn(
+                                  "border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] h-4 sm:h-5 leading-none transition-colors",
+                                  weeklyHoverCol === idx && "bg-muted-foreground/20"
+                                )}
                               >
                                 {day.date}
                               </th>
@@ -2288,9 +2292,15 @@ const AnnualPlanning: React.FC = () => {
                         </thead>
 
                         <tbody>
-                          {allPhasesList.map((phase) => (
-                            <tr key={phase.value}>
-                              <td className="sticky left-0 z-10 bg-background border p-0 h-3 sm:h-4 align-middle">
+                          {allPhasesList.map((phase, phaseIndex) => (
+                            <tr 
+                              key={phase.value}
+                              onMouseLeave={() => setWeeklyHoverRow(null)}
+                            >
+                              <td className={cn(
+                                "sticky left-0 z-10 bg-background border p-0 h-3 sm:h-4 align-middle transition-colors",
+                                weeklyHoverRow === phaseIndex && "bg-muted-foreground/30"
+                              )}>
                                 <div className="flex items-center gap-0.5 px-0.5 leading-none whitespace-nowrap">
                                   <div className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", phase.color)} />
                                   <span className="text-[6px] sm:text-[8px] font-semibold leading-none">{phase.shortLabel}</span>
@@ -2308,6 +2318,11 @@ const AnnualPlanning: React.FC = () => {
                                     <td
                                       key={`cell-${day.month}-${day.date}-${idx}`}
                                       className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
+                                      onMouseEnter={() => {
+                                        setWeeklyHoverRow(phaseIndex);
+                                        setWeeklyHoverCol(idx);
+                                      }}
+                                      onMouseLeave={() => setWeeklyHoverCol(null)}
                                     />
                                   );
                                 }
@@ -2316,6 +2331,11 @@ const AnnualPlanning: React.FC = () => {
                                   <td
                                     key={`cell-${day.month}-${day.date}-${idx}`}
                                     onClick={() => !isViewMode && handleWeeklyPhaseClick(day.month, day.weekNumber, dayOfWeekForClick, phase.value)}
+                                    onMouseEnter={() => {
+                                      setWeeklyHoverRow(phaseIndex);
+                                      setWeeklyHoverCol(idx);
+                                    }}
+                                    onMouseLeave={() => setWeeklyHoverCol(null)}
                                     className={cn(
                                       "border p-0 text-center transition-colors h-3 sm:h-4",
                                       !isViewMode ? "cursor-pointer" : "cursor-default",
