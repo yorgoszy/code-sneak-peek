@@ -2224,24 +2224,24 @@ const AnnualPlanning: React.FC = () => {
                     <thead>
                       {/* Row 1: Month name equivalent */}
                       <tr>
-                        <th className="border p-0.5 bg-muted text-left w-[50px] sm:w-[70px]">&nbsp;</th>
+                        <th className="border p-0.5 bg-muted text-left w-[50px] sm:w-[70px] h-5 sm:h-6 leading-none">&nbsp;</th>
                       </tr>
                       {/* Row 2: Day names equivalent */}
                       <tr>
-                        <th className="border p-0.5 bg-muted/70 text-left">Φάση</th>
+                        <th className="border p-0.5 bg-muted/70 text-left h-4 sm:h-5 leading-none">Φάση</th>
                       </tr>
                       {/* Row 3: Date numbers equivalent */}
                       <tr>
-                        <th className="border p-0.5 bg-muted/50">&nbsp;</th>
+                        <th className="border p-0.5 bg-muted/50 h-4 sm:h-5 leading-none">&nbsp;</th>
                       </tr>
                     </thead>
                     <tbody>
                       {allPhasesList.map((phase) => (
                         <tr key={phase.value}>
-                          <td className="border p-0.5 font-medium bg-background whitespace-nowrap h-3 sm:h-4">
-                            <div className="flex items-center gap-0.5">
+                          <td className="border p-0 bg-background whitespace-nowrap h-3 sm:h-4 align-middle">
+                            <div className="flex items-center gap-0.5 px-0.5 leading-none">
                               <div className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", phase.color)} />
-                              <span className="text-[6px] sm:text-[8px] font-semibold">{phase.shortLabel}</span>
+                              <span className="text-[6px] sm:text-[8px] font-semibold leading-none">{phase.shortLabel}</span>
                             </div>
                           </td>
                         </tr>
@@ -2265,9 +2265,9 @@ const AnnualPlanning: React.FC = () => {
                               <tr>
                                 <th 
                                   colSpan={actualDays.length}
-                                  className="border p-0.5 bg-muted text-center"
+                                  className="border p-0.5 bg-muted text-center h-5 sm:h-6 leading-none"
                                 >
-                                  <span className="text-[7px] sm:text-[9px] font-bold">{monthName}</span>
+                                  <span className="text-[7px] sm:text-[9px] font-bold leading-none">{monthName}</span>
                                 </th>
                               </tr>
                               {/* Day names row */}
@@ -2280,7 +2280,7 @@ const AnnualPlanning: React.FC = () => {
                                     <th 
                                       key={`day-${idx}`}
                                       className={cn(
-                                        "border p-0.5 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium",
+                                        "border p-0.5 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium h-4 sm:h-5 leading-none",
                                         phaseInfo ? phaseInfo.color : "bg-muted/70",
                                         phaseInfo && "text-white"
                                       )}
@@ -2295,7 +2295,7 @@ const AnnualPlanning: React.FC = () => {
                                 {actualDays.map((day, idx) => (
                                   <th 
                                     key={`date-${idx}`}
-                                    className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
+                                    className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] h-4 sm:h-5 leading-none"
                                   >
                                     {day.date}
                                   </th>
