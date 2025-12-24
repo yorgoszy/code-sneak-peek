@@ -1377,17 +1377,7 @@ ${drafts.map((p: any, i: number) => {
       // Προσθήκη subscription context στο userProfile για χρήση αργότερα
       (userProfile as any).subscriptionContext = subscriptionContext;
 
-      // 📅 ΦΟΡΤΩΣΗ ΕΤΗΣΙΟΥ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΥ ΧΡΗΣΤΗ (από user_annual_planning table)
-      const userAnnualPlanningResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/user_annual_planning?user_id=eq.${effectiveUserId}&select=*`,
-        {
-          headers: {
-            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-          }
-        }
-      );
-      const userAnnualPlanningData = await userAnnualPlanningResponse.json();
+      // 📅 ΦΟΡΤΩΣΗ ΕΤΗΣΙΟΥ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΥ ΧΡΗΣΤΗ (από ΟΛΟΥΣ τους πίνακες)
       
       const PHASE_LABELS: Record<string, string> = {
         'corrective': 'Διορθωτικές',
@@ -1408,21 +1398,100 @@ ${drafts.map((p: any, i: number) => {
       const MONTH_NAMES = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιούν', 'Ιούλ', 'Αύγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
       const DAY_NAMES = ['', 'Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ', 'Κυρ'];
       
+      // 1️⃣ ΠΡΩΤΑ: Φόρτωση από user_annual_phases (χειροκίνητο annual planning από UI)
+      const userAnnualPhasesResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_annual_phases?user_id=eq.${effectiveUserId}&select=*&order=year.desc,month.asc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const userAnnualPhases = await userAnnualPhasesResponse.json();
+      
+      // 2️⃣ ΔΕΥΤΕΡΟΝ: Φόρτωση από user_annual_planning (AI-generated planning με JSON)
+      const userAnnualPlanningResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_annual_planning?user_id=eq.${effectiveUserId}&select=*`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const userAnnualPlanningData = await userAnnualPlanningResponse.json();
+      
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth() + 1;
+      
+      let hasAnnualPlan = false;
+      
+      // ============= ΦΟΡΤΩΣΗ ΑΠΟ user_annual_phases (ΧΕΙΡΟΚΙΝΗΤΟ) =============
+      if (Array.isArray(userAnnualPhases) && userAnnualPhases.length > 0) {
+        hasAnnualPlan = true;
+        console.log(`✅ Loaded ${userAnnualPhases.length} annual phases from user_annual_phases (manual)`);
+        
+        // Group by year
+        const phasesByYear: Record<number, any[]> = {};
+        userAnnualPhases.forEach((phase: any) => {
+          if (!phasesByYear[phase.year]) phasesByYear[phase.year] = [];
+          phasesByYear[phase.year].push(phase);
+        });
+        
+        annualPlanningContext = '\n\n📅 ΕΤΗΣΙΟΣ ΠΡΟΠΟΝΗΤΙΚΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ ΧΡΗΣΤΗ (Χειροκίνητος):\n';
+        
+        Object.entries(phasesByYear)
+          .sort(([a], [b]) => Number(b) - Number(a))
+          .forEach(([year, phases]) => {
+            annualPlanningContext += `\n  📆 Έτος ${year}:\n`;
+            
+            // Group by month
+            const phasesByMonth: Record<number, any[]> = {};
+            phases.forEach((phase: any) => {
+              if (!phasesByMonth[phase.month]) phasesByMonth[phase.month] = [];
+              phasesByMonth[phase.month].push(phase);
+            });
+            
+            Object.entries(phasesByMonth)
+              .sort(([a], [b]) => Number(a) - Number(b))
+              .forEach(([month, monthPhases]) => {
+                const isCurrentMonth = Number(year) === currentYear && Number(month) === currentMonth;
+                const indicator = isCurrentMonth ? '👉 ' : '   ';
+                const phaseLabels = monthPhases.map((p: any) => PHASE_LABELS[p.phase] || p.phase).join(', ');
+                annualPlanningContext += `${indicator}${MONTH_NAMES[Number(month) - 1]}: ${phaseLabels}\n`;
+              });
+          });
+        
+        // Τρέχουσες φάσεις για τον τρέχοντα μήνα
+        const currentPhases = userAnnualPhases.filter((p: any) => p.year === currentYear && p.month === currentMonth);
+        if (currentPhases.length > 0) {
+          const currentPhaseLabels = currentPhases.map((p: any) => PHASE_LABELS[p.phase] || p.phase).join(', ');
+          annualPlanningContext += `\n  🎯 ΤΡΕΧΟΥΣΕΣ ΦΑΣΕΙΣ (${MONTH_NAMES[currentMonth - 1]} ${currentYear}): ${currentPhaseLabels}\n`;
+        }
+        
+        // Φάσεις για τον ζητούμενο μήνα (αν ο χρήστης ρωτάει για συγκεκριμένο μήνα)
+        annualPlanningContext += `\n  ℹ️ ΣΗΜΑΝΤΙΚΟ: Όταν ο χρήστης ζητάει πρόγραμμα για συγκεκριμένο μήνα, χρησιμοποίησε τις φάσεις αυτού του μήνα!\n`;
+      }
+      
+      // ============= ΦΟΡΤΩΣΗ ΑΠΟ user_annual_planning (AI-GENERATED) =============
       if (Array.isArray(userAnnualPlanningData) && userAnnualPlanningData.length > 0) {
-        const planning = userAnnualPlanningData[0]; // Παίρνουμε το πρώτο (θα έπρεπε να υπάρχει μόνο ένα ανά χρήστη/έτος)
-        console.log(`✅ Loaded annual planning for user (year: ${planning.year})`);
+        const planning = userAnnualPlanningData[0];
+        console.log(`✅ Loaded annual planning from user_annual_planning (AI-generated, year: ${planning.year})`);
         
-        const currentYear = new Date().getFullYear();
-        const currentMonth = new Date().getMonth() + 1;
+        if (!hasAnnualPlan) {
+          annualPlanningContext = '\n\n📅 ΕΤΗΣΙΟΣ ΠΡΟΠΟΝΗΤΙΚΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ ΧΡΗΣΤΗ:\n';
+        } else {
+          annualPlanningContext += '\n\n📅 ΕΠΙΠΛΕΟΝ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ (AI-Generated):\n';
+        }
+        hasAnnualPlan = true;
         
-        annualPlanningContext = '\n\n📅 ΕΤΗΣΙΟΣ ΠΡΟΠΟΝΗΤΙΚΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ ΧΡΗΣΤΗ:\n';
         annualPlanningContext += `📆 Έτος: ${planning.year}\n`;
         
         // ΜΗΝΙΑΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ (monthly_phases JSON array)
         if (planning.monthly_phases && Array.isArray(planning.monthly_phases)) {
           annualPlanningContext += '\n📊 ΜΗΝΙΑΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ:\n';
           
-          // Ταξινόμηση κατά μήνα και εβδομάδα
           const sortedMonthlyPhases = [...planning.monthly_phases].sort((a: any, b: any) => {
             if (a.month !== b.month) return a.month - b.month;
             return (a.week || 0) - (b.week || 0);
@@ -1435,14 +1504,6 @@ ${drafts.map((p: any, i: number) => {
             const weekInfo = phase.week ? ` (Εβδ. ${phase.week})` : '';
             annualPlanningContext += `${indicator}${MONTH_NAMES[phase.month - 1]}${weekInfo}: ${phaseLabel}\n`;
           });
-          
-          // Τρέχουσα μηνιαία φάση
-          const currentMonthPhase = sortedMonthlyPhases.find((p: any) => 
-            planning.year === currentYear && p.month === currentMonth
-          );
-          if (currentMonthPhase) {
-            annualPlanningContext += `\n🎯 ΤΡΕΧΟΥΣΑ ΜΗΝΙΑΙΑ ΦΑΣΗ: ${PHASE_LABELS[currentMonthPhase.phase] || currentMonthPhase.phase}\n`;
-          }
         }
         
         // ΕΒΔΟΜΑΔΙΑΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ (weekly_phases JSON array)
@@ -1450,7 +1511,6 @@ ${drafts.map((p: any, i: number) => {
           annualPlanningContext += '\n📆 ΕΒΔΟΜΑΔΙΑΙΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ (με πραγματικές ημερομηνίες):\n';
           annualPlanningContext += '⚠️ ΚΡΙΣΙΜΟ: Όταν δημιουργείς πρόγραμμα, χρησιμοποίησε ΑΥΤΕΣ τις ημερομηνίες για training_dates!\n\n';
           
-          // Helper function to convert year/month/week/day to actual date
           const getDateFromWeekDay = (year: number, month: number, week: number, dayOfWeek: number): string => {
             const firstOfMonth = new Date(year, month - 1, 1);
             const firstDayOfWeek = firstOfMonth.getDay();
@@ -1461,14 +1521,12 @@ ${drafts.map((p: any, i: number) => {
             return targetDate.toISOString().split('T')[0];
           };
           
-          // Ταξινόμηση κατά μήνα, εβδομάδα, ημέρα
           const sortedWeeklyPhases = [...planning.weekly_phases].sort((a: any, b: any) => {
             if (a.month !== b.month) return a.month - b.month;
             if (a.week !== b.week) return a.week - b.week;
             return (a.day || 0) - (b.day || 0);
           });
           
-          // Group by week
           const groupedByWeek: Record<string, any[]> = {};
           sortedWeeklyPhases.forEach((phase: any) => {
             const key = `${planning.year}-${String(phase.month).padStart(2, '0')}-W${phase.week}`;
@@ -1520,8 +1578,11 @@ ${drafts.map((p: any, i: number) => {
         if (planning.notes) {
           annualPlanningContext += `\n📝 Σημειώσεις: ${planning.notes}\n`;
         }
-      } else {
-        console.log(`⚠️ No annual planning found for user ${effectiveUserId}`);
+      }
+      
+      // ============= ΔΕΝ ΒΡΕΘΗΚΕ ΚΑΝΕΝΑ ANNUAL PLAN =============
+      if (!hasAnnualPlan) {
+        console.log(`⚠️ No annual planning found for user ${effectiveUserId} in any table`);
         annualPlanningContext = '\n\n⚠️ ΠΡΟΣΟΧΗ: Δεν βρέθηκε Ετήσιος/Μηνιαίος/Εβδομαδιαίος Προγραμματισμός για αυτόν τον χρήστη!\n';
         annualPlanningContext += 'Αν ο χρήστης ζητήσει πρόγραμμα βασισμένο στο annual plan, ενημέρωσέ τον ότι δεν υπάρχει προγραμματισμός.\n';
       }
