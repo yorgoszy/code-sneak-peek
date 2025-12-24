@@ -439,6 +439,29 @@ const AnnualPlanning: React.FC = () => {
     return weeks;
   };
 
+  // Get only actual days for a month (no empty cells) - returns array of {date, dayOfWeek (0-6)}
+  const getActualDaysForMonth = (monthIndex: number): { date: number; dayOfWeek: number; weekNumber: number }[] => {
+    const firstDay = new Date(year, monthIndex - 1, 1);
+    const daysInMonth = new Date(year, monthIndex, 0).getDate();
+    
+    const days: { date: number; dayOfWeek: number; weekNumber: number }[] = [];
+    
+    for (let d = 1; d <= daysInMonth; d++) {
+      const currentDay = new Date(year, monthIndex - 1, d);
+      let dayOfWeek = currentDay.getDay();
+      dayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert to Monday=0
+      
+      // Calculate week number within month
+      const firstDayOfWeek = firstDay.getDay();
+      const firstDayAdjusted = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+      const weekNumber = Math.ceil((d + firstDayAdjusted) / 7);
+      
+      days.push({ date: d, dayOfWeek, weekNumber });
+    }
+    
+    return days;
+  };
+
   // Get monthly phase for a specific week by month
   const getMonthlyPhaseForWeekByMonth = (month: number, week: number) => {
     return monthlyPhases.find(p => p.month === month && p.week === week);
@@ -2229,115 +2252,123 @@ const AnnualPlanning: React.FC = () => {
                   <div className="flex pb-4">
                     {MONTHS_DROPDOWN.map((monthName, monthIdx) => {
                       const currentMonth = monthIdx + 1;
+                      const actualDays = getActualDaysForMonth(currentMonth);
                       const calendarWeeks = getCalendarWeeksForMonthByIndex(currentMonth);
+                      const numWeeks = calendarWeeks.length;
+                      
+                      // Group days by week for week headers
+                      const weekGroups: { weekNumber: number; days: typeof actualDays }[] = [];
+                      actualDays.forEach(day => {
+                        const existing = weekGroups.find(w => w.weekNumber === day.weekNumber);
+                        if (existing) {
+                          existing.days.push(day);
+                        } else {
+                          weekGroups.push({ weekNumber: day.weekNumber, days: [day] });
+                        }
+                      });
                       
                       return (
                         <div key={monthIdx} className="flex-shrink-0">
                           <table className="border-collapse text-[7px] sm:text-[9px] md:text-xs">
                             <thead>
-                              {/* Month name + Week headers row */}
+                              {/* Month name row */}
                               <tr>
-                                {calendarWeeks.map((_, weekIndex) => {
-                                  const monthlyPhase = getMonthlyPhaseForWeekByMonth(currentMonth, weekIndex + 1);
+                                <th 
+                                  colSpan={actualDays.length}
+                                  className="border p-0.5 bg-muted text-center"
+                                >
+                                  <span className="text-[7px] sm:text-[9px] font-bold">{monthName}</span>
+                                </th>
+                              </tr>
+                              {/* Week headers row */}
+                              <tr>
+                                {weekGroups.map((weekGroup) => {
+                                  const monthlyPhase = getMonthlyPhaseForWeekByMonth(currentMonth, weekGroup.weekNumber);
                                   const phaseInfo = monthlyPhase ? PHASES.find(p => p.value === monthlyPhase.phase) : null;
                                   return (
                                     <th 
-                                      key={weekIndex} 
-                                      colSpan={7}
+                                      key={weekGroup.weekNumber} 
+                                      colSpan={weekGroup.days.length}
                                       className={cn(
                                         "border p-0.5 bg-muted text-center",
                                         phaseInfo && phaseInfo.color
                                       )}
                                     >
-                                      <div className="flex flex-col">
-                                        {weekIndex === 0 && (
-                                          <span className="text-[7px] sm:text-[9px] font-bold">{monthName}</span>
-                                        )}
-                                        <span className={cn(
-                                          "text-[6px] sm:text-[8px] font-medium",
-                                          phaseInfo && "text-white"
-                                        )}>
-                                          Ε{weekIndex + 1}
-                                          {phaseInfo && ` (${phaseInfo.shortLabel})`}
-                                        </span>
-                                      </div>
+                                      <span className={cn(
+                                        "text-[6px] sm:text-[8px] font-medium",
+                                        phaseInfo && "text-white"
+                                      )}>
+                                        Ε{weekGroup.weekNumber}
+                                        {phaseInfo && ` (${phaseInfo.shortLabel})`}
+                                      </span>
                                     </th>
                                   );
                                 })}
                               </tr>
                               {/* Day names row */}
                               <tr>
-                                {calendarWeeks.map((_, weekIndex) => (
-                                  DAYS_FULL.map((dayName, dayIndex) => (
-                                    <th 
-                                      key={`day-${weekIndex}-${dayIndex}`}
-                                      className="border p-0.5 bg-muted/70 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium"
-                                    >
-                                      {dayName}
-                                    </th>
-                                  ))
+                                {actualDays.map((day, idx) => (
+                                  <th 
+                                    key={`day-${idx}`}
+                                    className="border p-0.5 bg-muted/70 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px] font-medium"
+                                  >
+                                    {DAYS_FULL[day.dayOfWeek]}
+                                  </th>
                                 ))}
                               </tr>
                               {/* Date numbers row */}
                               <tr>
-                                {calendarWeeks.map((weekDates, weekIndex) => (
-                                  weekDates.map((dateNum, dayIndex) => (
-                                    <th 
-                                      key={`date-${weekIndex}-${dayIndex}`}
-                                      className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
-                                    >
-                                      {dateNum !== null ? dateNum : '-'}
-                                    </th>
-                                  ))
+                                {actualDays.map((day, idx) => (
+                                  <th 
+                                    key={`date-${idx}`}
+                                    className="border p-0.5 bg-muted/50 text-center text-[6px] sm:text-[8px] w-[14px] sm:w-[18px]"
+                                  >
+                                    {day.date}
+                                  </th>
                                 ))}
                               </tr>
                             </thead>
                             <tbody>
                               {allPhasesList.map((phase) => (
                                 <tr key={phase.value}>
-                                  {calendarWeeks.map((weekDates, weekIndex) => {
-                                    const week = weekIndex + 1;
-                                    const weekSubPhasesForWeek = getWeeklySubPhasesForWeekByMonth(currentMonth, week);
+                                  {actualDays.map((day, idx) => {
+                                    const weekSubPhasesForWeek = getWeeklySubPhasesForWeekByMonth(currentMonth, day.weekNumber);
                                     const isPhaseAvailableForWeek = weekSubPhasesForWeek.some(sp => sp.value === phase.value);
+                                    const dayOfWeekForClick = day.dayOfWeek + 1; // Convert to 1-7
+                                    const isSelected = isWeeklyPhaseSelected(currentMonth, day.weekNumber, dayOfWeekForClick, phase.value);
                                     
-                                    return weekDates.map((dateNum, dayIndex) => {
-                                      const day = dayIndex + 1;
-                                      const isSelected = isWeeklyPhaseSelected(currentMonth, week, day, phase.value);
-                                      const isValidDate = dateNum !== null;
-                                      
-                                      if (!isPhaseAvailableForWeek) {
-                                        return (
-                                          <td
-                                            key={`${weekIndex}-${dayIndex}`}
-                                            className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
-                                          />
-                                        );
-                                      }
-                                      
+                                    if (!isPhaseAvailableForWeek) {
                                       return (
                                         <td
-                                          key={`${weekIndex}-${dayIndex}`}
-                                          onClick={() => isValidDate && !isViewMode && handleWeeklyPhaseClick(currentMonth, week, day, phase.value)}
-                                          className={cn(
-                                            "border p-0 text-center transition-colors h-3 sm:h-4",
-                                            isValidDate && !isViewMode ? "cursor-pointer" : "bg-muted/30 cursor-default",
-                                            isValidDate && (isSelected ? phase.color : `${phase.color}/15`)
-                                          )}
-                                        >
-                                          {isSelected && isValidDate && (
-                                            (() => {
-                                              const priority = getSubphasePriority(currentMonth, week, day, phase.value);
-                                              if (priority) {
-                                                return (
-                                                  <span className="text-[8px] sm:text-[10px] font-bold text-white">{priority}</span>
-                                                );
-                                              }
-                                              return <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />;
-                                            })()
-                                          )}
-                                        </td>
+                                          key={`${idx}`}
+                                          className="border p-0 text-center bg-muted/30 h-3 sm:h-4"
+                                        />
                                       );
-                                    });
+                                    }
+                                    
+                                    return (
+                                      <td
+                                        key={`${idx}`}
+                                        onClick={() => !isViewMode && handleWeeklyPhaseClick(currentMonth, day.weekNumber, dayOfWeekForClick, phase.value)}
+                                        className={cn(
+                                          "border p-0 text-center transition-colors h-3 sm:h-4",
+                                          !isViewMode ? "cursor-pointer" : "cursor-default",
+                                          isSelected ? phase.color : `${phase.color}/15`
+                                        )}
+                                      >
+                                        {isSelected && (
+                                          (() => {
+                                            const priority = getSubphasePriority(currentMonth, day.weekNumber, dayOfWeekForClick, phase.value);
+                                            if (priority) {
+                                              return (
+                                                <span className="text-[8px] sm:text-[10px] font-bold text-white">{priority}</span>
+                                              );
+                                            }
+                                            return <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 mx-auto text-white" />;
+                                          })()
+                                        )}
+                                      </td>
+                                    );
                                   })}
                                 </tr>
                               ))}
