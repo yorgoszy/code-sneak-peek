@@ -35,6 +35,8 @@ interface SavedMacrocycle {
   name: string;
   year: number;
   phases: { month: number; phase: string }[];
+  monthly_phases?: { month: number; week: number; phase: string }[];
+  weekly_phases?: { month: number; week: number; day: number; phase: string; primary_subphase?: string | null; secondary_subphase?: string | null; accessory_subphase?: string | null }[];
   created_at: string;
 }
 
@@ -824,6 +826,8 @@ const AnnualPlanning: React.FC = () => {
   const handleViewSavedMacrocycle = (macrocycle: SavedMacrocycle) => {
     setSelectedPhases(macrocycle.phases);
     setYear(macrocycle.year);
+    setMonthlyPhases(macrocycle.monthly_phases || []);
+    setWeeklyPhases(macrocycle.weekly_phases || []);
     setActiveTab('new');
     toast.success('Ο μακροκύκλος φορτώθηκε για προβολή');
   };
@@ -832,6 +836,8 @@ const AnnualPlanning: React.FC = () => {
     setSelectedPhases(macrocycle.phases);
     setYear(macrocycle.year);
     setMacrocycleName(macrocycle.name);
+    setMonthlyPhases(macrocycle.monthly_phases || []);
+    setWeeklyPhases(macrocycle.weekly_phases || []);
     setEditingMacrocycleId(macrocycle.id);
     setActiveTab('new');
     toast.success('Ο μακροκύκλος φορτώθηκε για επεξεργασία');
@@ -869,7 +875,9 @@ const AnnualPlanning: React.FC = () => {
         .update({
           name: macrocycleName,
           year,
-          phases: selectedPhases
+          phases: selectedPhases,
+          monthly_phases: monthlyPhases,
+          weekly_phases: weeklyPhases
         })
         .eq('id', editingMacrocycleId);
 
@@ -887,7 +895,9 @@ const AnnualPlanning: React.FC = () => {
         .insert({
           name: macrocycleName,
           year,
-          phases: selectedPhases
+          phases: selectedPhases,
+          monthly_phases: monthlyPhases,
+          weekly_phases: weeklyPhases
         });
 
       if (error) {
@@ -898,8 +908,7 @@ const AnnualPlanning: React.FC = () => {
       toast.success('Ο μακροκύκλος αποθηκεύτηκε');
     }
 
-    setMacrocycleName('');
-    setSelectedPhases([]);
+    // Don't clear the data - keep it for the user
     fetchSavedMacrocycles();
   };
 
