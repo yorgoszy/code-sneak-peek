@@ -270,6 +270,7 @@ const AnnualPlanning: React.FC = () => {
   const [assignedMacrocycles, setAssignedMacrocycles] = useState<AssignedMacrocycle[]>([]);
   const [savedMacrocycles, setSavedMacrocycles] = useState<SavedMacrocycle[]>([]);
   const [macrocycleName, setMacrocycleName] = useState('');
+  const [editingMacrocycleId, setEditingMacrocycleId] = useState<string | null>(null);
   const [showUserList, setShowUserList] = useState(false);
   const [activeTab, setActiveTab] = useState('new');
   
@@ -831,6 +832,7 @@ const AnnualPlanning: React.FC = () => {
     setSelectedPhases(macrocycle.phases);
     setYear(macrocycle.year);
     setMacrocycleName(macrocycle.name);
+    setEditingMacrocycleId(macrocycle.id);
     setActiveTab('new');
     toast.success('Ο μακροκύκλος φορτώθηκε για επεξεργασία');
   };
@@ -860,20 +862,42 @@ const AnnualPlanning: React.FC = () => {
       return;
     }
 
-    const { error } = await (supabase as any)
-      .from('saved_macrocycles')
-      .insert({
-        name: macrocycleName,
-        year,
-        phases: selectedPhases
-      });
+    // If editing existing macrocycle, update it
+    if (editingMacrocycleId) {
+      const { error } = await (supabase as any)
+        .from('saved_macrocycles')
+        .update({
+          name: macrocycleName,
+          year,
+          phases: selectedPhases
+        })
+        .eq('id', editingMacrocycleId);
 
-    if (error) {
-      toast.error('Σφάλμα κατά την αποθήκευση');
-      return;
+      if (error) {
+        toast.error('Σφάλμα κατά την ενημέρωση');
+        return;
+      }
+
+      toast.success('Ο μακροκύκλος ενημερώθηκε');
+      setEditingMacrocycleId(null);
+    } else {
+      // Create new macrocycle
+      const { error } = await (supabase as any)
+        .from('saved_macrocycles')
+        .insert({
+          name: macrocycleName,
+          year,
+          phases: selectedPhases
+        });
+
+      if (error) {
+        toast.error('Σφάλμα κατά την αποθήκευση');
+        return;
+      }
+
+      toast.success('Ο μακροκύκλος αποθηκεύτηκε');
     }
 
-    toast.success('Ο μακροκύκλος αποθηκεύτηκε');
     setMacrocycleName('');
     setSelectedPhases([]);
     fetchSavedMacrocycles();
