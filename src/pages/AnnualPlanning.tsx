@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,13 +6,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2, X, RotateCcw } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2, X, RotateCcw, Dumbbell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ensureCompetitionProgramCard } from "@/pages/annual-planning/competitionProgram";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { MultipleRecipientSelection } from "@/components/annual-planning/MultipleRecipientSelection";
+import { TrainingWeeks } from "@/components/programs/builder/TrainingWeeks";
+import { useProgramBuilderState } from "@/components/programs/builder/hooks/useProgramBuilderState";
+import { useWeekActions } from "@/components/programs/builder/hooks/useWeekActions";
+import { useDayActions } from "@/components/programs/builder/hooks/useDayActions";
+import { useBlockActions } from "@/components/programs/builder/hooks/useBlockActions";
+import { useExerciseActions } from "@/components/programs/builder/hooks/useExerciseActions";
+import { useReorderActions } from "@/components/programs/builder/hooks/useReorderActions";
+import { useExercises } from "@/hooks/useExercises";
 
 interface AppUser {
   id: string;
@@ -311,6 +319,22 @@ const AnnualPlanning: React.FC = () => {
   const [monthlyHoverCol, setMonthlyHoverCol] = useState<number | null>(null);
   const [weeklyHoverRow, setWeeklyHoverRow] = useState<number | null>(null);
   const [weeklyHoverCol, setWeeklyHoverCol] = useState<number | null>(null);
+
+  // Program Builder state for TrainingWeeks
+  const { exercises: exercisesList } = useExercises();
+  const exercisesForBuilder = useMemo(() => exercisesList.map(ex => ({
+    id: ex.id,
+    name: ex.name,
+    description: ex.description || undefined,
+    video_url: ex.video_url || undefined
+  })), [exercisesList]);
+  
+  const { program, updateProgram, generateId } = useProgramBuilderState(exercisesForBuilder);
+  const { addWeek, removeWeek, duplicateWeek, updateWeekName } = useWeekActions(program, updateProgram, generateId);
+  const { addDay, removeDay, duplicateDay, updateDayName, updateDayTestDay, updateDayCompetitionDay } = useDayActions(program, updateProgram, generateId);
+  const { addBlock, removeBlock, duplicateBlock, updateBlockName, updateBlockTrainingType, updateBlockWorkoutFormat, updateBlockWorkoutDuration, updateBlockSets } = useBlockActions(program, updateProgram, generateId);
+  const { addExercise, removeExercise, updateExercise, duplicateExercise } = useExerciseActions(program, updateProgram, generateId, exercisesForBuilder);
+  const { reorderWeeks, reorderDays, reorderBlocks, reorderExercises } = useReorderActions(program, updateProgram);
 
   // Get annual phase for a specific month
   const getAnnualPhaseForMonth = (month: number) => {
@@ -2369,6 +2393,38 @@ const AnnualPlanning: React.FC = () => {
           })()}
         </CardContent>
         </Card>
+
+        {/* Program Builder - Training Weeks */}
+        <TrainingWeeks
+          weeks={program.weeks}
+          exercises={exercisesForBuilder}
+          onAddWeek={addWeek}
+          onRemoveWeek={removeWeek}
+          onDuplicateWeek={duplicateWeek}
+          onUpdateWeekName={updateWeekName}
+          onAddDay={addDay}
+          onRemoveDay={removeDay}
+          onDuplicateDay={duplicateDay}
+          onUpdateDayName={updateDayName}
+          onUpdateDayTestDay={updateDayTestDay}
+          onUpdateDayCompetitionDay={updateDayCompetitionDay}
+          onAddBlock={addBlock}
+          onRemoveBlock={removeBlock}
+          onDuplicateBlock={duplicateBlock}
+          onUpdateBlockName={updateBlockName}
+          onUpdateBlockTrainingType={updateBlockTrainingType}
+          onUpdateBlockWorkoutFormat={updateBlockWorkoutFormat}
+          onUpdateBlockWorkoutDuration={updateBlockWorkoutDuration}
+          onUpdateBlockSets={updateBlockSets}
+          onAddExercise={addExercise}
+          onRemoveExercise={removeExercise}
+          onUpdateExercise={updateExercise}
+          onDuplicateExercise={duplicateExercise}
+          onReorderWeeks={reorderWeeks}
+          onReorderDays={reorderDays}
+          onReorderBlocks={reorderBlocks}
+          onReorderExercises={reorderExercises}
+        />
         </TabsContent>
 
         {/* Assigned Macrocycles Tab */}
