@@ -3584,25 +3584,31 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          monthly_phases: Json | null
           name: string
           phases: Json
           updated_at: string
+          weekly_phases: Json | null
           year: number
         }
         Insert: {
           created_at?: string
           id?: string
+          monthly_phases?: Json | null
           name: string
           phases?: Json
           updated_at?: string
+          weekly_phases?: Json | null
           year: number
         }
         Update: {
           created_at?: string
           id?: string
+          monthly_phases?: Json | null
           name?: string
           phases?: Json
           updated_at?: string
+          weekly_phases?: Json | null
           year?: number
         }
         Relationships: []
