@@ -127,13 +127,20 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
   const trainingDates = program.training_dates || [];
   const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
-  
+
+  // Flatten όλα τα days από όλες τις εβδομάδες (και κάνε cycle αν οι ημερομηνίες είναι περισσότερες)
+  const allProgramDays = (program.programs?.program_weeks || [])
+    .slice()
+    .sort((a: any, b: any) => (a.week_number || 0) - (b.week_number || 0))
+    .flatMap((w: any) => (w.program_days || []).slice().sort((a: any, b: any) => (a.day_number || 0) - (b.day_number || 0)));
+
   let dayProgram = null;
   let dayNumber = 1;
-  if (dateIndex >= 0 && program.programs?.program_weeks?.[0]?.program_days) {
-    const programDays = program.programs.program_weeks[0].program_days;
-    dayProgram = programDays[dateIndex % programDays.length];
-    dayNumber = (dateIndex % programDays.length) + 1;
+
+  if (dateIndex >= 0 && allProgramDays.length > 0) {
+    const idx = dateIndex % allProgramDays.length;
+    dayProgram = allProgramDays[idx];
+    dayNumber = (dayProgram?.day_number as number) || (idx + 1);
   }
 
   return (
