@@ -101,16 +101,20 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   // Helper function to get current day number based on selected date
   const getDayNumber = (exerciseId: string) => {
     if (!program?.training_dates || !selectedDate) return 1;
-    
+
     const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
     const dateIndex = program.training_dates.findIndex(date => date === selectedDateStr);
     if (dateIndex < 0) return 1;
-    
-    // Calculate days per week from first week
-    const daysPerWeek = program.programs?.program_weeks?.[0]?.program_days?.length || 1;
-    
-    // Get day number within the week (1-based)
-    return (dateIndex % daysPerWeek) + 1;
+
+    const allProgramDays = (program.programs?.program_weeks || [])
+      .slice()
+      .sort((a: any, b: any) => (a.week_number || 0) - (b.week_number || 0))
+      .flatMap((w: any) =>
+        (w.program_days || []).slice().sort((a: any, b: any) => (a.day_number || 0) - (b.day_number || 0))
+      );
+
+    const cycleLength = allProgramDays.length || 1;
+    return (dateIndex % cycleLength) + 1;
   };
 
   const getActualExerciseId = (exercise: any) => {
@@ -120,61 +124,25 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     return undefined;
   };
 
-  // ΔΙΟΡΘΩΣΗ: Σωστή λογική εύρεσης προγράμματος ημέρας που υποστηρίζει πολλαπλές εβδομάδες
+  // Βρες το day program κάνοντας cycle πάνω σε όλες τις ημέρες του προγράμματος
   const getDayProgram = () => {
     const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
     const trainingDates = program.training_dates || [];
     const dateIndex = trainingDates.findIndex(date => date === selectedDateStr);
-    
-    console.log('🔍 DayProgram search:', {
-      selectedDateStr,
-      dateIndex,
-      trainingDatesLength: trainingDates.length,
-      programName: program.programs?.name
-    });
-    
-    if (dateIndex === -1) {
-      console.log('❌ Date not found in training dates');
-      return null;
-    }
 
-    const weeks = program.programs?.program_weeks || [];
-    if (weeks.length === 0) {
-      console.log('❌ No weeks found');
-      return null;
-    }
+    if (dateIndex === -1) return null;
 
-    // Υπολογίζουμε σε ποια εβδομάδα και ποια ημέρα αντιστοιχεί το dateIndex
-    const sortedWeeks = [...weeks].sort((a, b) => (a.week_number || 0) - (b.week_number || 0));
-    
-    let cumulativeDays = 0;
-    for (const week of sortedWeeks) {
-      const sortedDays = [...(week.program_days || [])].sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
-      const daysInWeek = sortedDays.length;
-      
-      // Αν το dateIndex βρίσκεται σε αυτή την εβδομάδα
-      if (dateIndex < cumulativeDays + daysInWeek) {
-        const dayIndexInWeek = dateIndex - cumulativeDays;
-        const dayProgram = sortedDays[dayIndexInWeek];
-        
-        console.log('✅ Found program:', {
-          weekName: week.name,
-          weekNumber: week.week_number,
-          dayName: dayProgram?.name,
-          dayNumber: dayProgram?.day_number,
-          dayIndexInWeek,
-          cumulativeDays,
-          blocksCount: dayProgram?.program_blocks?.length
-        });
-        
-        return dayProgram;
-      }
-      
-      cumulativeDays += daysInWeek;
-    }
+    const allProgramDays = (program.programs?.program_weeks || [])
+      .slice()
+      .sort((a: any, b: any) => (a.week_number || 0) - (b.week_number || 0))
+      .flatMap((w: any) =>
+        (w.program_days || []).slice().sort((a: any, b: any) => (a.day_number || 0) - (b.day_number || 0))
+      );
 
-    console.log('❌ Day program not found after iterating all weeks');
-    return null;
+    if (allProgramDays.length === 0) return null;
+
+    const idx = dateIndex % allProgramDays.length;
+    return allProgramDays[idx] || null;
   };
 
   const dayProgram = getDayProgram();
