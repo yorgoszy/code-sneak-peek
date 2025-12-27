@@ -316,13 +316,19 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
     }
   }, [programData, today]);
 
+  const trainingDatesToAssign = useMemo(() => {
+    const dates = programData?.training_dates?.filter(Boolean) || [];
+    if (dates.length > 0) return dates;
+    return date ? [date] : [];
+  }, [programData, date]);
+
   const payload = useMemo(() => {
     // Base payload
     const basePayload: any = {
       action: "create_program" as const,
       name,
       description: programData?.description || "Πρόγραμμα προπόνησης",
-      training_dates: [date],
+      training_dates: trainingDatesToAssign,
     };
 
     // Αν υπάρχουν δεδομένα από AI, χρησιμοποίησέ τα
@@ -370,11 +376,11 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
     }
 
     return basePayload;
-  }, [date, name, programData, effectiveUserIds, effectiveGroupId]);
+  }, [name, programData, effectiveUserIds, selectedUserIds, trainingDatesToAssign]);
 
   const onSubmit = async () => {
-    if (!date) {
-      toast.error("Διάλεξε ημερομηνία");
+    if (!trainingDatesToAssign.length) {
+      toast.error("Δεν υπάρχουν ημερομηνίες προπόνησης");
       return;
     }
 
@@ -616,14 +622,29 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="program-date">Ημερομηνία προπόνησης</Label>
-            <Input
-              id="program-date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="rounded-none"
-            />
+            <Label htmlFor="program-date">Ημερομηνίες προπόνησης</Label>
+
+            {programData?.training_dates && programData.training_dates.length > 1 ? (
+              <div className="bg-muted/50 p-3 rounded-none text-sm">
+                <p className="text-muted-foreground">
+                  Θα ανατεθούν <strong>{programData.training_dates.length}</strong> ημερομηνίες
+                  {programData.training_dates[0] ? (
+                    <> από <strong>{programData.training_dates[0]}</strong></>
+                  ) : null}
+                  {programData.training_dates[programData.training_dates.length - 1] ? (
+                    <> έως <strong>{programData.training_dates[programData.training_dates.length - 1]}</strong></>
+                  ) : null}.
+                </p>
+              </div>
+            ) : (
+              <Input
+                id="program-date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="rounded-none"
+              />
+            )}
           </div>
 
           {/* Εμφάνιση στατιστικών αν υπάρχουν δεδομένα AI */}
