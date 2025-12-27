@@ -1,8 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Menu, X } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { AddExerciseDialog } from "@/components/AddExerciseDialog";
@@ -24,11 +24,24 @@ interface Exercise {
 const Exercises = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
   const [selectedVideoExercise, setSelectedVideoExercise] = useState<any>(null);
+
+  // Detect mobile/tablet
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobileOrTablet(window.innerWidth < 1024);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const {
     exercises,
@@ -86,28 +99,63 @@ const Exercises = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      {/* Desktop Sidebar */}
+      {!isMobileOrTablet && (
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      )}
 
-      <div className="flex-1 flex flex-col">
-        <nav className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Ασκήσεις</h1>
-              <p className="text-sm text-gray-600">
-                Διαχείριση τραπέζας ασκήσεων
-              </p>
+      {/* Mobile/Tablet Sidebar Overlay */}
+      {isMobileOrTablet && isMobileSidebarOpen && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+          <div className="fixed left-0 top-0 h-full z-50">
+            <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />
+          </div>
+        </>
+      )}
+
+      <div className="flex-1 flex flex-col min-w-0">
+        <nav className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
+          <div className="flex justify-between items-center gap-4">
+            <div className="flex items-center gap-3">
+              {/* Mobile Menu Button */}
+              {isMobileOrTablet && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                  className="rounded-none"
+                >
+                  {isMobileSidebarOpen ? (
+                    <X className="h-5 w-5" />
+                  ) : (
+                    <Menu className="h-5 w-5" />
+                  )}
+                </Button>
+              )}
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Ασκήσεις</h1>
+                <p className="text-xs lg:text-sm text-gray-600 hidden sm:block">
+                  Διαχείριση τραπέζας ασκήσεων
+                </p>
+              </div>
             </div>
             <Button 
               onClick={() => setIsAddDialogOpen(true)}
-              className="rounded-none"
+              className="rounded-none text-sm"
+              size={isMobileOrTablet ? "sm" : "default"}
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Προσθήκη Άσκησης
+              <Plus className="h-4 w-4 mr-1 lg:mr-2" />
+              <span className="hidden sm:inline">Προσθήκη Άσκησης</span>
+              <span className="sm:hidden">Νέα</span>
             </Button>
           </div>
         </nav>
 
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-4 lg:p-6 overflow-auto">
           <ExercisesFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
