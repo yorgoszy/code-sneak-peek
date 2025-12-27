@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2, X, RotateCcw, Dumbbell } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2, X, RotateCcw, Dumbbell, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,10 @@ import { useBlockActions } from "@/components/programs/builder/hooks/useBlockAct
 import { useExerciseActions } from "@/components/programs/builder/hooks/useExerciseActions";
 import { useReorderActions } from "@/components/programs/builder/hooks/useReorderActions";
 import { useExercises } from "@/hooks/useExercises";
+import { ProgramBuilderDialog } from "@/components/programs/ProgramBuilderDialog";
+import { usePrograms } from "@/hooks/usePrograms";
+import { useProgramsData } from "@/hooks/useProgramsData";
+import { Program } from "@/components/programs/types";
 
 interface AppUser {
   id: string;
@@ -334,6 +338,37 @@ const AnnualPlanning: React.FC = () => {
   const { addDay, removeDay, duplicateDay, updateDayName, updateDayTestDay, updateDayCompetitionDay } = useDayActions(program, updateProgram, generateId);
   const { addBlock, removeBlock, duplicateBlock, updateBlockName, updateBlockTrainingType, updateBlockWorkoutFormat, updateBlockWorkoutDuration, updateBlockSets } = useBlockActions(program, updateProgram, generateId);
   const { addExercise, removeExercise, updateExercise, duplicateExercise } = useExerciseActions(program, updateProgram, generateId, exercisesForBuilder);
+
+  // ProgramBuilderDialog state - for full program builder
+  const [programBuilderOpen, setProgramBuilderOpen] = useState(false);
+  const [editingProgramForBuilder, setEditingProgramForBuilder] = useState<Program | null>(null);
+  const { users: programUsers, exercises: programExercises } = useProgramsData();
+  const { saveProgram, fetchProgramsWithAssignments } = usePrograms();
+
+  const handleCreateProgram = async (programData: any) => {
+    try {
+      console.log('📝 AnnualPlanning - Creating/updating program:', programData);
+      const savedProgram = await saveProgram(programData);
+      console.log('✅ Program saved:', savedProgram);
+      setProgramBuilderOpen(false);
+      setEditingProgramForBuilder(null);
+      toast.success('Το πρόγραμμα αποθηκεύτηκε!');
+      return savedProgram;
+    } catch (error) {
+      console.error('Error creating program:', error);
+      throw error;
+    }
+  };
+
+  const handleOpenProgramBuilder = () => {
+    setEditingProgramForBuilder(null);
+    setProgramBuilderOpen(true);
+  };
+
+  const handleCloseProgramBuilder = () => {
+    setProgramBuilderOpen(false);
+    setEditingProgramForBuilder(null);
+  };
   const { reorderWeeks, reorderDays, reorderBlocks, reorderExercises } = useReorderActions(program, updateProgram);
 
   // Get annual phase for a specific month
@@ -2394,8 +2429,26 @@ const AnnualPlanning: React.FC = () => {
         </CardContent>
         </Card>
 
-        {/* Program Builder - Training Weeks */}
-        <TrainingWeeks
+        {/* Program Builder Section with Button */}
+        <Card className="rounded-none border-l-0">
+          <CardHeader className="p-2 sm:p-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Dumbbell className="w-4 h-4" />
+                Εβδομαδιαίος Προγραμματισμός
+              </CardTitle>
+              <Button
+                onClick={handleOpenProgramBuilder}
+                size="sm"
+                className="rounded-none text-xs"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Νέο Πρόγραμμα
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-2 sm:p-3 pt-0">
+            <TrainingWeeks
           weeks={program.weeks}
           exercises={exercisesForBuilder}
           onAddWeek={addWeek}
@@ -2425,6 +2478,8 @@ const AnnualPlanning: React.FC = () => {
           onReorderBlocks={reorderBlocks}
           onReorderExercises={reorderExercises}
         />
+          </CardContent>
+        </Card>
         </TabsContent>
 
         {/* Assigned Macrocycles Tab */}
@@ -3062,6 +3117,18 @@ const AnnualPlanning: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Program Builder Dialog */}
+      {programBuilderOpen && (
+        <ProgramBuilderDialog
+          users={programUsers}
+          exercises={programExercises}
+          onCreateProgram={handleCreateProgram}
+          editingProgram={editingProgramForBuilder}
+          isOpen={programBuilderOpen}
+          onOpenChange={handleCloseProgramBuilder}
+        />
+      )}
     </div>
   );
 };
