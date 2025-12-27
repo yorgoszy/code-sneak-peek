@@ -35,16 +35,20 @@ export const useWorkoutState = (
   // Helper function to get the current day number based on selectedDate
   const getCurrentDayNumber = useCallback(() => {
     if (!program?.training_dates || !selectedDate) return 1;
-    
+
     const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
     const dateIndex = program.training_dates.findIndex(date => date === selectedDateStr);
     if (dateIndex < 0) return 1;
-    
-    // Calculate days per week from first week
-    const daysPerWeek = program.programs?.program_weeks?.[0]?.program_days?.length || 1;
-    
-    // Get day number within the week (1-based)
-    return (dateIndex % daysPerWeek) + 1;
+
+    const allProgramDays: any[] = [];
+    (program.programs?.program_weeks || []).forEach((week: any) => {
+      (week.program_days || []).forEach((day: any) => allProgramDays.push(day));
+    });
+
+    // Cycle length: προτιμάμε τις ημέρες της 1ης εβδομάδας (template), αλλιώς όλες τις ημέρες
+    const cycleLength = program.programs?.program_weeks?.[0]?.program_days?.length || allProgramDays.length || 1;
+
+    return (dateIndex % cycleLength) + 1;
   }, [program, selectedDate]);
 
   // Helper function to get day number for an exercise (uses current day)
@@ -54,17 +58,20 @@ export const useWorkoutState = (
 
   // Helper function to get exercise_id from exercises table (not program_exercise_id)
   const getExerciseId = useCallback((programExerciseId: string) => {
-    if (!program?.programs?.program_weeks?.[0]?.program_days) return null;
-    
-    for (const day of program.programs.program_weeks[0].program_days) {
-      for (const block of day.program_blocks || []) {
-        for (const exercise of block.program_exercises || []) {
-          if (exercise.id === programExerciseId) {
-            return exercise.exercise_id; // This is the reference to exercises table
+    const weeks = program?.programs?.program_weeks || [];
+
+    for (const week of weeks) {
+      for (const day of week.program_days || []) {
+        for (const block of day.program_blocks || []) {
+          for (const exercise of block.program_exercises || []) {
+            if (exercise.id === programExerciseId) {
+              return exercise.exercise_id; // reference to exercises table
+            }
           }
         }
       }
     }
+
     return null;
   }, [program]);
 
