@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -384,6 +384,45 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
   }, [programData, date, generatedTrainingDates]);
 
 
+  const buildExpandedWeeks = useCallback((
+    sourceWeeks: any[],
+    weeksCount: number,
+    daysPerWeek: number,
+    weekdayOrder: number[],
+  ) => {
+    const safeWeeks = Array.isArray(sourceWeeks) ? sourceWeeks : [];
+    const sourceDays: any[] = safeWeeks.flatMap((w: any) => Array.isArray(w?.days) ? w.days : []);
+
+    // Αν το AI δεν έδωσε καθόλου ημέρες, αφήνουμε το default (θα καλυφθεί από το fallback payload)
+    if (sourceDays.length === 0) return safeWeeks;
+
+    const weekdayLabelByValue = new Map<number, string>(WEEKDAY_OPTIONS.map((o) => [o.value, o.label]));
+
+    const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj));
+
+    const resultWeeks = Array.from({ length: Math.max(1, weeksCount) }, (_, weekIndex) => {
+      const days = Array.from({ length: Math.max(1, daysPerWeek) }, (_, dayIndex) => {
+        const template = sourceDays[(weekIndex * daysPerWeek + dayIndex) % sourceDays.length];
+        const cloned = deepClone(template);
+
+        const weekdayValue = weekdayOrder[dayIndex];
+        const weekdayLabel = weekdayLabelByValue.get(weekdayValue) || `Ημέρα ${dayIndex + 1}`;
+
+        return {
+          ...cloned,
+          name: cloned?.name || weekdayLabel,
+        };
+      });
+
+      return {
+        name: `Εβδομάδα ${weekIndex + 1}`,
+        days,
+      };
+    });
+
+    return resultWeeks;
+  }, []);
+
   const payload = useMemo(() => {
     // Base payload
     const basePayload: any = {
@@ -393,37 +432,49 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
       training_dates: trainingDatesToAssign,
     };
 
-    // Αν υπάρχουν δεδομένα από AI, χρησιμοποίησέ τα
+    // ✅ Αν έχουμε generator (start date + weeks + weekdays), πρέπει να στείλουμε ΚΑΙ δομή weeks/days αντίστοιχη
+    const generatorActive = generatedTrainingDates.length > 0;
+    const desiredWeeksCount = generatorActive ? durationWeeks : (programData?.weeks?.length || 1);
+    const desiredDaysPerWeek = generatorActive ? weekdays.length : (programData?.weeks?.[0]?.days?.length || 1);
+    const weekdayOrder = [...weekdays].sort((a, b) => a - b);
+
     if (programData?.weeks && programData.weeks.length > 0) {
-      basePayload.weeks = programData.weeks;
+      basePayload.weeks = generatorActive
+        ? buildExpandedWeeks(programData.weeks, desiredWeeksCount, desiredDaysPerWeek, weekdayOrder)
+        : programData.weeks;
     } else {
       // Default πρόγραμμα
-      basePayload.weeks = [
-        {
-          name: "Εβδομάδα 1",
-          days: [
-            {
-              name: "Ημέρα 1",
-              blocks: [
-                {
-                  name: "pillar prep",
-                  training_type: "pillar prep",
-                  exercises: [
-                    {
-                      exercise_name: "Plank",
-                      sets: 3,
-                      reps: "30",
-                      reps_mode: "time",
-                      rest: "30",
-                      notes: "Σφιχτός κορμός",
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ];
+      basePayload.weeks = buildExpandedWeeks(
+        [
+          {
+            name: "Εβδομάδα 1",
+            days: [
+              {
+                name: "Ημέρα 1",
+                blocks: [
+                  {
+                    name: "pillar prep",
+                    training_type: "pillar prep",
+                    exercises: [
+                      {
+                        exercise_name: "Plank",
+                        sets: 3,
+                        reps: "30",
+                        reps_mode: "time",
+                        rest: "30",
+                        notes: "Σφιχτός κορμός",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        desiredWeeksCount,
+        desiredDaysPerWeek,
+        weekdayOrder,
+      );
     }
 
     // Set recipients - always use user_ids when we have them (even from group selection)
@@ -438,7 +489,17 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
     }
 
     return basePayload;
-  }, [name, programData, effectiveUserIds, selectedUserIds, trainingDatesToAssign]);
+  }, [
+    name,
+    programData,
+    effectiveUserIds,
+    selectedUserIds,
+    trainingDatesToAssign,
+    generatedTrainingDates.length,
+    durationWeeks,
+    weekdays,
+    buildExpandedWeeks,
+  ]);
 
   const onSubmit = async () => {
     if (!trainingDatesToAssign.length) {
