@@ -6,9 +6,12 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Users, UsersRound, Edit2, Check, Plus, Search, X } from "lucide-react";
+import { User, Users, UsersRound, Edit2, Check, Plus, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { createDateForDisplay, formatDateForStorage } from "@/utils/dateUtils";
+
+
 
 // Interface για τα δεδομένα προγράμματος από AI
 export interface AIProgramData {
@@ -39,17 +42,35 @@ const getInitials = (name: string) => {
     .slice(0, 2);
 };
 
+const WEEKDAY_OPTIONS = [
+  { label: 'Δευ', value: 1 },
+  { label: 'Τρι', value: 2 },
+  { label: 'Τετ', value: 3 },
+  { label: 'Πεμ', value: 4 },
+  { label: 'Παρ', value: 5 },
+  { label: 'Σαβ', value: 6 },
+  { label: 'Κυρ', value: 0 }
+];
+
+
 export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> = ({
   isOpen,
   onClose,
   userId,
   programData,
 }) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = formatDateForStorage(new Date());
   
   const [date, setDate] = useState(programData?.training_dates?.[0] || today);
   const [name, setName] = useState(programData?.name || "Πρόγραμμα Προπόνησης");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Assignment calendar (ίδιο μοντέλο με ProgramBuilder): start date + εβδομάδες + ημέρες εβδομάδας
+  const [startDate, setStartDate] = useState<string>(programData?.training_dates?.[0] || today);
+  const [durationWeeks, setDurationWeeks] = useState<number>(4);
+  const [weekdays, setWeekdays] = useState<number[]>([1, 3, 5]);
+  const [generatedTrainingDates, setGeneratedTrainingDates] = useState<string[]>([]);
+
   
   // State για recipients info
   const [recipientUsers, setRecipientUsers] = useState<any[]>([]);
@@ -270,8 +291,42 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
     setIsUserSelectorOpen(false);
   };
 
+  // Assignment calendar helpers
+  const toggleWeekday = (day: number) => {
+    setWeekdays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort()));
+  };
+
+  const computedTotalDays = useMemo(() => {
+    const total = durationWeeks * weekdays.length;
+    return Math.max(0, total);
+  }, [durationWeeks, weekdays.length]);
+
+  const generateTrainingDates = () => {
+    if (!startDate) return;
+    if (weekdays.length === 0) return;
+
+    const start = createDateForDisplay(startDate);
+    if (Number.isNaN(start.getTime())) return;
+
+    const end = new Date(start);
+    end.setDate(end.getDate() + durationWeeks * 7 - 1);
+
+    const result: string[] = [];
+    const cursor = new Date(start);
+
+    while (cursor <= end && result.length < computedTotalDays) {
+      if (weekdays.includes(cursor.getDay())) {
+        result.push(formatDateForStorage(cursor));
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    setGeneratedTrainingDates(result);
+  };
+
   // Helper για κωδικοποιημένη ονομασία
   const generateCodedName = (description?: string, programName?: string): string => {
+
     const text = (description || programName || '').toLowerCase();
     const codes: string[] = [];
     
@@ -313,14 +368,21 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
       const code = generateCodedName(programData.description, programData.name);
       setName(code);
       setDate(programData.training_dates?.[0] || today);
+      setStartDate(programData.training_dates?.[0] || today);
+      setGeneratedTrainingDates([]);
     }
   }, [programData, today]);
 
+
   const trainingDatesToAssign = useMemo(() => {
+    if (generatedTrainingDates.length > 0) return generatedTrainingDates;
+
     const dates = programData?.training_dates?.filter(Boolean) || [];
     if (dates.length > 0) return dates;
+
     return date ? [date] : [];
-  }, [programData, date]);
+  }, [programData, date, generatedTrainingDates]);
+
 
   const payload = useMemo(() => {
     // Base payload
@@ -622,30 +684,104 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="program-date">Ημερομηνίες προπόνησης</Label>
+            <Label>Ημερολόγιο ανάθεσης</Label>
 
-            {programData?.training_dates && programData.training_dates.length > 1 ? (
+            <div className="border rounded-none p-3 space-y-3">
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="space-y-1">
+                  <Label htmlFor="qa-start-date">Έναρξη</Label>
+                  <Input
+                    id="qa-start-date"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => {
+                      setStartDate(e.target.value);
+                      setGeneratedTrainingDates([]);
+                    }}
+                    className="rounded-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="qa-duration-weeks">Διάρκεια (εβδομάδες)</Label>
+                  <Input
+                    id="qa-duration-weeks"
+                    type="number"
+                    min={1}
+                    value={durationWeeks}
+                    onChange={(e) => {
+                      setDurationWeeks(Math.max(1, Number(e.target.value || 1)));
+                      setGeneratedTrainingDates([]);
+                    }}
+                    className="rounded-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Ημέρες προπόνησης</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {WEEKDAY_OPTIONS.map((opt) => {
+                      const active = weekdays.includes(opt.value);
+                      return (
+                        <Button
+                          key={opt.value}
+                          type="button"
+                          variant={active ? 'default' : 'outline'}
+                          onClick={() => {
+                            toggleWeekday(opt.value);
+                            setGeneratedTrainingDates([]);
+                          }}
+                          className={cn(
+                            'rounded-none h-8 px-2 text-xs',
+                            active && 'bg-[#00ffba] text-black hover:bg-[#00ffba]/90'
+                          )}
+                        >
+                          {opt.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xs text-muted-foreground">
+                  Θα δημιουργηθούν <strong>{computedTotalDays}</strong> ημερομηνίες ({durationWeeks} εβδομάδες × {weekdays.length} ημέρες/εβδομάδα)
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setGeneratedTrainingDates([])}
+                    className="rounded-none"
+                  >
+                    Καθαρισμός
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={generateTrainingDates}
+                    disabled={!startDate || weekdays.length === 0 || computedTotalDays === 0}
+                    className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                  >
+                    Δημιουργία
+                  </Button>
+                </div>
+              </div>
+
               <div className="bg-muted/50 p-3 rounded-none text-sm">
                 <p className="text-muted-foreground">
-                  Θα ανατεθούν <strong>{programData.training_dates.length}</strong> ημερομηνίες
-                  {programData.training_dates[0] ? (
-                    <> από <strong>{programData.training_dates[0]}</strong></>
+                  Θα ανατεθούν <strong>{trainingDatesToAssign.length}</strong> ημερομηνίες
+                  {trainingDatesToAssign[0] ? (
+                    <> από <strong>{trainingDatesToAssign[0]}</strong></>
                   ) : null}
-                  {programData.training_dates[programData.training_dates.length - 1] ? (
-                    <> έως <strong>{programData.training_dates[programData.training_dates.length - 1]}</strong></>
+                  {trainingDatesToAssign[trainingDatesToAssign.length - 1] ? (
+                    <> έως <strong>{trainingDatesToAssign[trainingDatesToAssign.length - 1]}</strong></>
                   ) : null}.
                 </p>
               </div>
-            ) : (
-              <Input
-                id="program-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="rounded-none"
-              />
-            )}
+            </div>
           </div>
+
 
           {/* Εμφάνιση στατιστικών αν υπάρχουν δεδομένα AI */}
           {programStats && (

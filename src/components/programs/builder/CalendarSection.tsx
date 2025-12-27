@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { createDateForDisplay } from '@/utils/dateUtils';
 
 interface CalendarSectionProps {
   program: ProgramStructure;
@@ -64,7 +65,8 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     if (!startDate) return;
     if (weekdays.length === 0) return;
 
-    const start = new Date(`${startDate}T00:00:00`);
+    // ΣΗΜΑΝΤΙΚΟ: Δημιουργούμε ημερομηνίες στο "μεσημέρι" (12:00) για να αποφύγουμε timezone/DST shift.
+    const start = createDateForDisplay(startDate);
     if (Number.isNaN(start.getTime())) return;
 
     const end = new Date(start);
@@ -72,7 +74,6 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
 
     const result: Date[] = [];
     const cursor = new Date(start);
-    cursor.setHours(0, 0, 0, 0);
 
     while (cursor <= end && result.length < computedTotalDays) {
       if (weekdays.includes(cursor.getDay())) {
@@ -171,3 +172,4 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     </div>
   );
 };
+
