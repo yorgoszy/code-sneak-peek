@@ -9,18 +9,30 @@ export const useCalendarLogic = (
   totalDays: number,
   onTrainingDatesChange: (dates: Date[]) => void
 ) => {
-  // Υπολογισμός ημερών ανά εβδομάδα από τη δομή του προγράμματος
+  // Υπολογισμός εβδομαδιαίας δομής για την ανάθεση ημερομηνιών.
+  // ΣΗΜΑΝΤΙΚΟ: Το totalDays αφορά το ΠΟΣΕΣ προπονήσεις θα ανατεθούν συνολικά (π.χ. 12),
+  // και μπορεί να είναι μεγαλύτερο από τις ημέρες που υπάρχουν σε μία "template" εβδομάδα.
   const getWeekDaysStructure = () => {
-    if (!program.weeks || program.weeks.length === 0) return [];
-    
-    return program.weeks.map(week => ({
-      weekNumber: week.week_number,
-      daysCount: week.program_days?.length || 0,
-      name: week.name || `Εβδομάδα ${week.week_number}`
-    }));
+    const templateDaysPerWeek = program.weeks?.[0]?.program_days?.length || 0;
+    const daysPerWeek = Math.max(1, templateDaysPerWeek);
+
+    if (!totalDays || totalDays <= 0) return [];
+
+    const totalWeeks = Math.ceil(totalDays / daysPerWeek);
+
+    return Array.from({ length: totalWeeks }, (_, i) => {
+      const remaining = totalDays - i * daysPerWeek;
+      const weekDaysCount = Math.max(0, Math.min(daysPerWeek, remaining));
+
+      return {
+        weekNumber: i + 1,
+        daysCount: weekDaysCount,
+        name: `Εβδομάδα ${i + 1}`
+      };
+    }).filter(w => w.daysCount > 0);
   };
 
-  const weekStructure = useMemo(() => getWeekDaysStructure(), [program.weeks]);
+  const weekStructure = useMemo(() => getWeekDaysStructure(), [program.weeks, totalDays]);
 
   // ΔΙΟΡΘΩΣΗ: Convert training_dates χρησιμοποιώντας τις νέες utility functions με σωστό type annotation
   const selectedDatesAsStrings = useMemo(() => {
@@ -83,28 +95,30 @@ export const useCalendarLogic = (
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
-    
-    // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε τη νέα function για σωστή μετατροπή
+
     const dateString = formatDateForStorage(date);
     const currentDates = selectedDatesAsStrings.slice();
-    
+
     console.log('📅 Date selection debug:', {
       originalDate: date,
-      dateString: dateString,
-      currentDates: currentDates
+      dateString,
+      currentDates,
+      totalDays
     });
-    
+
     if (currentDates.includes(dateString)) {
-      // Remove date if already selected (αποεπιλογή)
       const newDates = currentDates.filter(d => d !== dateString);
       const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
       onTrainingDatesChange(datesAsObjects);
-    } else if (currentWeekInfo && currentWeekInfo.remainingForThisWeek > 0) {
-      // Add date if there's still room in the current program week
-      const newDates = [...currentDates, dateString].sort();
-      const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
-      onTrainingDatesChange(datesAsObjects);
+      return;
     }
+
+    // επιτρέπουμε επιλογές μέχρι να συμπληρωθούν totalDays συνολικά
+    if (currentDates.length >= totalDays) return;
+
+    const newDates = [...currentDates, dateString].sort();
+    const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
+    onTrainingDatesChange(datesAsObjects);
   };
 
   const handleClearAllDates = () => {
@@ -118,17 +132,11 @@ export const useCalendarLogic = (
   };
 
   const isDateDisabled = (date: Date) => {
-    // Αφαίρεση του περιορισμού για παλιές ημερομηνίες
-    // Επιτρέπουμε όλες τις ημερομηνίες
-    
     // If date is already selected, allow it (for deselection)
     if (isDateSelected(date)) return false;
 
-    // If no current week is being filled, disable all dates
-    if (!currentWeekInfo) return true;
-
-    // Don't allow more selections if current program week is full
-    return currentWeekInfo.remainingForThisWeek <= 0;
+    // Μόνο όριο στο πλήθος συνολικών προπονήσεων
+    return selectedDatesAsStrings.length >= totalDays;
   };
 
   const getWeekProgress = () => {
@@ -155,32 +163,25 @@ export const useCalendarLogic = (
   const weekProgress = useMemo(() => getWeekProgress(), [selectedDatesAsStrings, weekStructure]);
 
   // Συνάρτηση για να βρούμε τι τύπος ημέρας είναι (test/competition) μια επιλεγμένη ημερομηνία
+  // Σε "template" πρόγραμμα (π.χ. 1 εβδομάδα), επαναλαμβάνουμε τα day flags ανά εβδομάδα.
   const getDayInfoForDate = (date: Date) => {
     const dateString = formatDateForStorage(date);
     const dateIndex = selectedDatesAsStrings.indexOf(dateString);
-    
+
     if (dateIndex === -1) return null;
-    
-    // Βρίσκουμε σε ποια εβδομάδα και ποια ημέρα αντιστοιχεί
-    let totalDaysAssigned = 0;
-    for (const week of program.weeks || []) {
-      const daysInWeek = week.program_days?.length || 0;
-      
-      if (dateIndex >= totalDaysAssigned && dateIndex < totalDaysAssigned + daysInWeek) {
-        const dayIndexInWeek = dateIndex - totalDaysAssigned;
-        const day = week.program_days?.[dayIndexInWeek];
-        
-        return {
-          is_test_day: day?.is_test_day || false,
-          test_types: day?.test_types || [],
-          is_competition_day: day?.is_competition_day || false
-        };
-      }
-      
-      totalDaysAssigned += daysInWeek;
-    }
-    
-    return null;
+
+    const templateWeek = program.weeks?.[0];
+    const templateDays = templateWeek?.program_days || [];
+    const templateDaysPerWeek = Math.max(1, templateDays.length);
+
+    const dayIndexInTemplate = dateIndex % templateDaysPerWeek;
+    const day = templateDays[dayIndexInTemplate];
+
+    return {
+      is_test_day: day?.is_test_day || false,
+      test_types: day?.test_types || [],
+      is_competition_day: day?.is_competition_day || false
+    };
   };
 
   return {
