@@ -4,7 +4,7 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Search, Menu, CreditCard } from "lucide-react";
+import { LogOut, Search, Menu, CreditCard, Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { matchesSearchTerm } from "@/lib/utils";
 import {
@@ -259,6 +259,10 @@ const CoachSubscriptions = () => {
                     <CreditCard className="h-5 w-5" />
                     Συνδρομές ({filteredSubscriptions.length})
                   </CardTitle>
+                  <Button className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Νέα Συνδρομή
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
