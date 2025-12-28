@@ -14,6 +14,7 @@ interface CoachUser {
   avatar_url?: string;
   notes?: string;
   status: string;
+  subscription_status?: string;
   created_at: string;
   updated_at: string;
 }
@@ -59,12 +60,12 @@ export const ViewCoachUserDialog = ({
               <Badge 
                 variant="outline" 
                 className={`rounded-none text-xs ${
-                  user.status === 'active' 
+                  user.subscription_status === 'active' 
                     ? 'bg-green-100 text-green-800 border-green-200' 
                     : 'bg-red-100 text-red-800 border-red-200'
                 }`}
               >
-                {user.status === 'active' ? 'Ενεργός' : 'Ανενεργός'}
+                {user.subscription_status === 'active' ? 'Ενεργός' : 'Ανενεργός'}
               </Badge>
             </div>
           </div>
