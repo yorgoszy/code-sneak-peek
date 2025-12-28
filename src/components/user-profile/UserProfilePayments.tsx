@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Receipt, FileText, Eye, Package, User, Calendar, CreditCard } from "lucide-react";
+import { Receipt, FileText, Eye, Package, User, Calendar, CreditCard, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
 import { format } from "date-fns";
+import { UserSubscriptionCard } from "./UserSubscriptionCard";
 
 interface UserProfilePaymentsProps {
   payments: any[];
@@ -58,6 +59,8 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   const { t } = useTranslation();
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [subscriptionTypes, setSubscriptionTypes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -66,6 +69,8 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
     if (userProfile?.id) {
       loadUserReceipts();
       loadUserPurchases();
+      loadUserSubscriptions();
+      loadSubscriptionTypes();
     }
   }, [userProfile?.id]);
 
@@ -158,6 +163,41 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
     } catch (error) {
       console.error('Error loading purchases:', error);
       toast.error(t('payments.errorLoadingPurchases'));
+    }
+  };
+
+  const loadUserSubscriptions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select(`
+          *,
+          subscription_types (id, name, price, duration_months)
+        `)
+        .eq('user_id', userProfile.id)
+        .in('status', ['active', 'expired'])
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setSubscriptions(data || []);
+    } catch (error) {
+      console.error('Error loading subscriptions:', error);
+    }
+  };
+
+  const loadSubscriptionTypes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subscription_types')
+        .select('id, name, price, duration_months')
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      setSubscriptionTypes(data || []);
+    } catch (error) {
+      console.error('Error loading subscription types:', error);
     }
   };
 
@@ -364,8 +404,12 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
 
   return (
     <>
-      <Tabs defaultValue="purchases" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 rounded-none">
+      <Tabs defaultValue="subscriptions" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 rounded-none">
+          <TabsTrigger value="subscriptions" className="rounded-none">
+            <Crown className="w-4 h-4 mr-2" />
+            Συνδρομές ({subscriptions.filter(s => s.status === 'active').length})
+          </TabsTrigger>
           <TabsTrigger value="purchases" className="rounded-none">
             <Package className="w-4 h-4 mr-2" />
             {t('payments.purchases')} ({purchases.length})
@@ -375,6 +419,34 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
             {t('payments.receipts')} ({receipts.length})
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="subscriptions" className="mt-4">
+          <Card className="rounded-none">
+            <CardContent className="p-6">
+              {loading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Φόρτωση συνδρομών...</p>
+                </div>
+              ) : subscriptions.length === 0 ? (
+                <div className="text-center py-8">
+                  <Crown className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500">Δεν υπάρχουν συνδρομές</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {subscriptions.map(sub => (
+                    <UserSubscriptionCard
+                      key={sub.id}
+                      subscription={sub}
+                      onRefresh={loadUserSubscriptions}
+                      subscriptionTypes={subscriptionTypes}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="purchases" className="mt-4">
           <Card className="rounded-none">
