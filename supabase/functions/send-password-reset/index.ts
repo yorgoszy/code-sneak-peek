@@ -132,7 +132,8 @@ serve(async (req) => {
 
     // Generate password reset link using Supabase with fallbacks
     // Use the redirectTo from request, fallback to production URL
-    const redirect = redirectTo || `${Deno.env.get("SUPABASE_URL")}/auth/v1/verify`;
+    // IMPORTANT: This must match a URL configured in Supabase Auth > URL Configuration > Redirect URLs
+    const redirect = redirectTo || 'https://www.hyperkids.gr/auth/reset-password';
     console.log("🔗 Using redirect URL:", redirect);
     
     let linkData: any = null;
