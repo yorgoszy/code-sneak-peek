@@ -27,7 +27,7 @@ export const CoachSidebar = ({ isCollapsed, setIsCollapsed }: CoachSidebarProps)
     { 
       icon: Home, 
       label: "Επισκόπηση", 
-      path: "/dashboard",
+      path: "/dashboard/coach-overview",
       badge: null
     },
     { 
