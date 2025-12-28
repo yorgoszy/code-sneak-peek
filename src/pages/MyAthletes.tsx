@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,9 @@ interface CoachUser {
 
 const MyAthletes = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
-  const { isCoach, isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
+  const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
+  const [searchParams] = useSearchParams();
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -57,52 +59,58 @@ const MyAthletes = () => {
   const [viewUserDialogOpen, setViewUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<CoachUser | null>(null);
 
+  const effectiveCoachId = useMemo(() => {
+    const coachIdParam = searchParams.get("coachId");
+
+    // Επιτρέπουμε προβολή/διαχείριση αθλητών άλλου coach ΜΟΝΟ σε admin.
+    if (coachIdParam && isAdmin() && coachIdParam !== userProfile?.id) return coachIdParam;
+
+    return userProfile?.id ?? null;
+  }, [searchParams, isAdmin, userProfile?.id]);
+
   // Check for tablet size
   useEffect(() => {
     const checkTabletSize = () => {
       setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
     };
-    
+
     checkTabletSize();
-    window.addEventListener('resize', checkTabletSize);
-    
-    return () => window.removeEventListener('resize', checkTabletSize);
+    window.addEventListener("resize", checkTabletSize);
+
+    return () => window.removeEventListener("resize", checkTabletSize);
   }, []);
 
   const fetchAthletes = async () => {
-    if (loadingAthletes || !userProfile?.id) return;
-    
+    if (loadingAthletes || !effectiveCoachId) return;
+
     setLoadingAthletes(true);
     try {
-      console.log('📊 Fetching coach athletes...');
-      
       const { data, error } = await supabase
-        .from('coach_users')
-        .select('*')
-        .eq('coach_id', userProfile.id)
-        .order('created_at', { ascending: false });
+        .from("coach_users")
+        .select("*")
+        .eq("coach_id", effectiveCoachId)
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error('❌ Error fetching athletes:', error);
-        toast.error('Σφάλμα κατά τη φόρτωση αθλητών');
+        console.error("❌ Error fetching athletes:", error);
+        toast.error("Σφάλμα κατά τη φόρτωση αθλητών");
         return;
       }
 
-      console.log('✅ Athletes fetched:', data?.length);
       setAthletes(data || []);
-      
     } catch (error) {
-      console.error('💥 Error:', error);
+      console.error("💥 Error:", error);
     } finally {
       setLoadingAthletes(false);
     }
   };
 
   useEffect(() => {
-    if (!rolesLoading && userProfile?.id && userProfile?.role === 'coach') {
+    if (!rolesLoading && effectiveCoachId) {
       fetchAthletes();
     }
-  }, [rolesLoading, userProfile?.id, userProfile?.role]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rolesLoading, effectiveCoachId]);
 
   if (loading || rolesLoading) {
     return (
@@ -481,7 +489,7 @@ const MyAthletes = () => {
         open={newUserDialogOpen}
         onOpenChange={setNewUserDialogOpen}
         onSuccess={handleUserCreated}
-        coachId={userProfile?.id || ''}
+        coachId={effectiveCoachId || ""}
       />
 
       {selectedUser && (

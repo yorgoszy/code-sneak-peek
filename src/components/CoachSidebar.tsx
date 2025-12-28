@@ -14,35 +14,47 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface CoachSidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
+  /**
+   * When an admin is viewing a coach profile, we want sidebar actions
+   * (like "Οι Αθλητές μου") to act "as that coach".
+   */
+  contextCoachId?: string;
 }
 
-export const CoachSidebar = ({ isCollapsed, setIsCollapsed }: CoachSidebarProps) => {
+export const CoachSidebar = ({
+  isCollapsed,
+  setIsCollapsed,
+  contextCoachId,
+}: CoachSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userProfile } = useRoleCheck();
+  const { userProfile, isAdmin } = useRoleCheck();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const isMobile = useIsMobile();
 
+  const effectiveCoachId =
+    contextCoachId && isAdmin() ? contextCoachId : (userProfile?.id as string | undefined);
+
   const menuItems = [
-    { 
-      icon: Home, 
-      label: "Επισκόπηση", 
+    {
+      icon: Home,
+      label: "Επισκόπηση",
       path: "/dashboard/coach-overview",
-      badge: null
+      badge: null,
     },
-    { 
-      icon: Users, 
-      label: "Οι Αθλητές μου", 
-      path: "/dashboard/my-athletes",
-      badge: null
+    {
+      icon: Users,
+      label: "Οι Αθλητές μου",
+      path: effectiveCoachId ? `/dashboard/my-athletes?coachId=${effectiveCoachId}` : "/dashboard/my-athletes",
+      badge: null,
     },
-    { type: 'separator' },
+    { type: "separator" },
     {
       icon: ArrowLeft,
       label: "Επιστροφή στην Αρχική",
       path: "/",
-      badge: null
-    }
+      badge: null,
+    },
   ];
 
   const handleMenuClick = (item: any) => {
@@ -75,7 +87,11 @@ export const CoachSidebar = ({ isCollapsed, setIsCollapsed }: CoachSidebarProps)
           return <div key={`separator-${index}`} className="my-2 h-px bg-border" />;
         }
 
-        const isActive = location.pathname === item.path;
+        const isActive =
+          location.pathname === item.path ||
+          (typeof item.path === "string" &&
+            item.path.startsWith("/dashboard/my-athletes") &&
+            location.pathname === "/dashboard/my-athletes");
 
         return (
           <button

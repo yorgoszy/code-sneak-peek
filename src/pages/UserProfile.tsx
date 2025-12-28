@@ -135,7 +135,11 @@ const UserProfile = () => {
       {/* Desktop Sidebar - Large screens only */}
       <div className="hidden lg:block">
         {showCoachSidebar ? (
-          <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+          <CoachSidebar
+            isCollapsed={isCollapsed}
+            setIsCollapsed={setIsCollapsed}
+            contextCoachId={userId}
+          />
         ) : (
           <UserProfileSidebar
             ref={sidebarRef}
@@ -158,7 +162,11 @@ const UserProfile = () => {
           />
           <div className="relative w-64 h-full">
             {showCoachSidebar ? (
-              <CoachSidebar isCollapsed={false} setIsCollapsed={setIsCollapsed} />
+              <CoachSidebar
+                isCollapsed={false}
+                setIsCollapsed={setIsCollapsed}
+                contextCoachId={userId}
+              />
             ) : (
               <UserProfileSidebar
                 isCollapsed={false}
