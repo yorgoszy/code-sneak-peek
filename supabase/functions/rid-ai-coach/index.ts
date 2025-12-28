@@ -79,7 +79,7 @@ serve(async (req) => {
     // Admin: φόρτωση ΟΛΩΝ των συνδρομών για overview
     if (isAdmin && !targetUserId) {
       const allSubscriptionsResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/user_subscriptions?select=*,subscription_types(name),app_users(name)&order=created_at.desc&limit=100`,
+        `${SUPABASE_URL}/rest/v1/user_subscriptions?select=*,subscription_types(name),app_users!user_subscriptions_user_id_fkey(name)&order=created_at.desc&limit=100`,
         {
           headers: {
             "apikey": SUPABASE_SERVICE_ROLE_KEY!,

@@ -5669,6 +5669,7 @@ export type Database = {
       cleanup_expired_ai_chat_files: { Args: never; Returns: undefined }
       cleanup_expired_waiting_list: { Args: never; Returns: undefined }
       create_exercise_tables: { Args: never; Returns: undefined }
+      current_app_user_id: { Args: never; Returns: string }
       exec_sql: { Args: { query: string }; Returns: Json }
       force_delete_athlete: { Args: { athlete_id: string }; Returns: undefined }
       generate_coupon_code: { Args: never; Returns: string }
