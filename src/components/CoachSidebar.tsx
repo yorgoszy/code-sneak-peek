@@ -2,7 +2,8 @@ import {
   Home, 
   Users, 
   ArrowLeft,
-  Brain
+  Brain,
+  CreditCard
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -48,6 +49,12 @@ export const CoachSidebar = ({
       path: effectiveCoachId ? `/dashboard/my-athletes?coachId=${effectiveCoachId}` : "/dashboard/my-athletes",
       badge: null,
     },
+    {
+      icon: CreditCard,
+      label: "Συνδρομές",
+      path: effectiveCoachId ? `/dashboard/coach-subscriptions?coachId=${effectiveCoachId}` : "/dashboard/coach-subscriptions",
+      badge: null,
+    },
     { type: "separator" },
     {
       icon: ArrowLeft,
@@ -87,11 +94,13 @@ export const CoachSidebar = ({
           return <div key={`separator-${index}`} className="my-2 h-px bg-border" />;
         }
 
+        const pathWithoutQuery = typeof item.path === "string" ? item.path.split("?")[0] : "";
         const isActive =
-          location.pathname === item.path ||
-          (typeof item.path === "string" &&
-            item.path.startsWith("/dashboard/my-athletes") &&
-            location.pathname === "/dashboard/my-athletes");
+          location.pathname === pathWithoutQuery ||
+          (pathWithoutQuery.startsWith("/dashboard/my-athletes") &&
+            location.pathname === "/dashboard/my-athletes") ||
+          (pathWithoutQuery.startsWith("/dashboard/coach-subscriptions") &&
+            location.pathname === "/dashboard/coach-subscriptions");
 
         return (
           <button
