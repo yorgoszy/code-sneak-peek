@@ -139,7 +139,7 @@ export const CoachJumpHistoryTab: React.FC<CoachJumpHistoryTabProps> = ({ coachI
         </div>
       )}
 
-      <DeleteConfirmDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onConfirm={handleDeleteConfirm} title="Διαγραφή" description="Είστε σίγουροι;" />
+      <DeleteConfirmDialog isOpen={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} onConfirm={handleDeleteConfirm} title="Διαγραφή" description="Είστε σίγουροι;" />
     </div>
   );
 };
