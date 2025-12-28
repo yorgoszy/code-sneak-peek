@@ -945,6 +945,7 @@ export type Database = {
           coach_id: string
           created_at: string | null
           email: string
+          gender: string | null
           id: string
           name: string
           notes: string | null
@@ -958,6 +959,7 @@ export type Database = {
           coach_id: string
           created_at?: string | null
           email: string
+          gender?: string | null
           id?: string
           name: string
           notes?: string | null
@@ -971,6 +973,7 @@ export type Database = {
           coach_id?: string
           created_at?: string | null
           email?: string
+          gender?: string | null
           id?: string
           name?: string
           notes?: string | null
