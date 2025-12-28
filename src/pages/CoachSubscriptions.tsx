@@ -28,23 +28,21 @@ import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubsc
 
 interface CoachSubscription {
   id: string;
-  user_id: string;
+  coach_user_id: string;
   start_date: string;
   end_date: string;
   status: string;
   is_paused: boolean;
-  is_paid: boolean;
   notes: string | null;
   created_at: string;
   subscription_types?: {
     name: string;
     price: number;
   } | null;
-  app_users?: {
+  coach_users?: {
     name: string;
     email: string;
     avatar_url: string | null;
-    photo_url: string | null;
   } | null;
 }
 
@@ -86,11 +84,11 @@ const CoachSubscriptions = () => {
     setLoadingSubscriptions(true);
     try {
       const { data, error } = await supabase
-        .from("user_subscriptions")
+        .from("coach_subscriptions")
         .select(`
           *,
           subscription_types (name, price),
-          app_users!user_subscriptions_user_id_fkey (name, email, avatar_url, photo_url)
+          coach_users (name, email, avatar_url)
         `)
         .eq("coach_id", effectiveCoachId)
         .order("created_at", { ascending: false });
@@ -161,8 +159,8 @@ const CoachSubscriptions = () => {
   };
 
   const filteredSubscriptions = subscriptions.filter((sub) => {
-    const userName = sub.app_users?.name || "";
-    const userEmail = sub.app_users?.email || "";
+    const userName = sub.coach_users?.name || "";
+    const userEmail = sub.coach_users?.email || "";
     return matchesSearchTerm(userName, searchTerm) || matchesSearchTerm(userEmail, searchTerm);
   });
 
@@ -318,7 +316,6 @@ const CoachSubscriptions = () => {
                                 <TableHead>Έναρξη</TableHead>
                                 <TableHead>Λήξη</TableHead>
                                 <TableHead>Κατάσταση</TableHead>
-                                <TableHead>Πληρωμένη</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -328,16 +325,16 @@ const CoachSubscriptions = () => {
                                     <div className="flex items-center space-x-3">
                                       <Avatar className="h-8 w-8">
                                         <AvatarImage
-                                          src={sub.app_users?.avatar_url || sub.app_users?.photo_url || ""}
+                                          src={sub.coach_users?.avatar_url || ""}
                                         />
                                         <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
-                                          {sub.app_users?.name?.charAt(0)?.toUpperCase() || "?"}
+                                          {sub.coach_users?.name?.charAt(0)?.toUpperCase() || "?"}
                                         </AvatarFallback>
                                       </Avatar>
                                       <div>
-                                        <p className="font-medium">{sub.app_users?.name || "Άγνωστος"}</p>
+                                        <p className="font-medium">{sub.coach_users?.name || "Άγνωστος"}</p>
                                         <p className="text-xs text-muted-foreground">
-                                          {sub.app_users?.email || "-"}
+                                          {sub.coach_users?.email || "-"}
                                         </p>
                                       </div>
                                     </div>
@@ -355,17 +352,6 @@ const CoachSubscriptions = () => {
                                       {getStatusLabel(sub.status, sub.is_paused)}
                                     </span>
                                   </TableCell>
-                                  <TableCell>
-                                    <span
-                                      className={`px-2 py-1 text-xs rounded ${
-                                        sub.is_paid
-                                          ? "bg-green-100 text-green-800"
-                                          : "bg-red-100 text-red-800"
-                                      }`}
-                                    >
-                                      {sub.is_paid ? "Ναι" : "Όχι"}
-                                    </span>
-                                  </TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
@@ -381,14 +367,14 @@ const CoachSubscriptions = () => {
                                   <div className="flex items-center space-x-3">
                                     <Avatar className="h-10 w-10">
                                       <AvatarImage
-                                        src={sub.app_users?.avatar_url || sub.app_users?.photo_url || ""}
+                                        src={sub.coach_users?.avatar_url || ""}
                                       />
                                       <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
-                                        {sub.app_users?.name?.charAt(0)?.toUpperCase() || "?"}
+                                        {sub.coach_users?.name?.charAt(0)?.toUpperCase() || "?"}
                                       </AvatarFallback>
                                     </Avatar>
                                     <div>
-                                      <p className="font-medium">{sub.app_users?.name || "Άγνωστος"}</p>
+                                      <p className="font-medium">{sub.coach_users?.name || "Άγνωστος"}</p>
                                       <p className="text-sm text-gray-500">
                                         {sub.subscription_types?.name || "-"}
                                       </p>
@@ -403,19 +389,8 @@ const CoachSubscriptions = () => {
                                     {getStatusLabel(sub.status, sub.is_paused)}
                                   </span>
                                 </div>
-                                <div className="mt-3 flex justify-between text-sm text-gray-600">
-                                  <span>
-                                    {formatDate(sub.start_date)} - {formatDate(sub.end_date)}
-                                  </span>
-                                  <span
-                                    className={`px-2 py-1 text-xs rounded ${
-                                      sub.is_paid
-                                        ? "bg-green-100 text-green-800"
-                                        : "bg-red-100 text-red-800"
-                                    }`}
-                                  >
-                                    {sub.is_paid ? "Πληρωμένη" : "Απλήρωτη"}
-                                  </span>
+                                <div className="mt-3 text-sm text-gray-600">
+                                  {formatDate(sub.start_date)} - {formatDate(sub.end_date)}
                                 </div>
                               </CardContent>
                             </Card>

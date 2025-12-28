@@ -109,9 +109,9 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
       );
 
       const { error } = await supabase
-        .from('user_subscriptions')
+        .from('coach_subscriptions')
         .insert({
-          user_id: selectedAthlete.id,
+          coach_user_id: selectedAthlete.id,
           subscription_type_id: selectedTypeId,
           coach_id: coachId,
           start_date: startDate,

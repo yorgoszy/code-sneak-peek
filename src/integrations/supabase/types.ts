@@ -938,6 +938,76 @@ export type Database = {
           },
         ]
       }
+      coach_subscriptions: {
+        Row: {
+          coach_id: string
+          coach_user_id: string
+          created_at: string
+          end_date: string
+          id: string
+          is_paused: boolean | null
+          notes: string | null
+          paused_at: string | null
+          paused_days_remaining: number | null
+          start_date: string
+          status: string
+          subscription_type_id: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          coach_user_id: string
+          created_at?: string
+          end_date: string
+          id?: string
+          is_paused?: boolean | null
+          notes?: string | null
+          paused_at?: string | null
+          paused_days_remaining?: number | null
+          start_date: string
+          status?: string
+          subscription_type_id: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          coach_user_id?: string
+          created_at?: string
+          end_date?: string
+          id?: string
+          is_paused?: boolean | null
+          notes?: string | null
+          paused_at?: string | null
+          paused_days_remaining?: number | null
+          start_date?: string
+          status?: string
+          subscription_type_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_subscriptions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_subscriptions_coach_user_id_fkey"
+            columns: ["coach_user_id"]
+            isOneToOne: false
+            referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_subscriptions_subscription_type_id_fkey"
+            columns: ["subscription_type_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_users: {
         Row: {
           avatar_url: string | null
