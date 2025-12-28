@@ -66,12 +66,11 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
 
   const fetchData = async () => {
     try {
-      // Fetch coach's athletes
+      // Fetch coach's athletes from coach_users table
       const { data: athletesData, error: athletesError } = await supabase
-        .from('app_users')
+        .from('coach_users')
         .select('id, name, email, avatar_url')
         .eq('coach_id', coachId)
-        .eq('role', 'user')
         .order('name');
 
       if (athletesError) throw athletesError;
