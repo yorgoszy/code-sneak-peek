@@ -41,7 +41,7 @@ interface CoachUser {
 
 const MyAthletes = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
-  const { isCoach, userProfile, loading: rolesLoading } = useRoleCheck();
+  const { isCoach, isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -482,6 +482,7 @@ const MyAthletes = () => {
         onOpenChange={setNewUserDialogOpen}
         onSuccess={handleUserCreated}
         coachId={userProfile?.id || ''}
+        isAdmin={isAdmin()}
       />
 
       {selectedUser && (
