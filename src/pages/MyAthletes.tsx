@@ -38,7 +38,7 @@ interface CoachUser {
   created_at: string;
   updated_at: string;
   // Computed from subscriptions
-  subscriptionStatus?: 'active' | 'paused' | 'inactive';
+  subscriptionStatus?: 'active' | 'paused' | 'inactive' | 'unpaid';
 }
 
 const MyAthletes = () => {
@@ -108,12 +108,12 @@ const MyAthletes = () => {
       // Fetch subscriptions for these athletes
       const athleteIds = (athletesData || []).map(a => a.id);
       
-      let subscriptionsMap: Record<string, { status: string; is_paused: boolean; end_date: string }[]> = {};
+      let subscriptionsMap: Record<string, { status: string; is_paused: boolean; end_date: string; is_paid: boolean | null }[]> = {};
       
       if (athleteIds.length > 0) {
         const { data: subscriptionsData, error: subscriptionsError } = await supabase
           .from("coach_subscriptions")
-          .select("coach_user_id, status, is_paused, end_date")
+          .select("coach_user_id, status, is_paused, end_date, is_paid")
           .in("coach_user_id", athleteIds);
 
         if (!subscriptionsError && subscriptionsData) {
@@ -141,10 +141,12 @@ const MyAthletes = () => {
           return endDate >= today && sub.status === 'active';
         });
 
-        let subscriptionStatus: 'active' | 'paused' | 'inactive' = 'inactive';
+        let subscriptionStatus: 'active' | 'paused' | 'inactive' | 'unpaid' = 'inactive';
         
         if (activeSub) {
-          if (activeSub.is_paused) {
+          if (activeSub.is_paid === false) {
+            subscriptionStatus = 'unpaid';
+          } else if (activeSub.is_paused) {
             subscriptionStatus = 'paused';
           } else {
             subscriptionStatus = 'active';
@@ -293,12 +295,14 @@ const MyAthletes = () => {
     return new Date(dateString).toLocaleDateString('el-GR');
   };
 
-  const getSubscriptionStatusColor = (status?: 'active' | 'paused' | 'inactive') => {
+  const getSubscriptionStatusColor = (status?: 'active' | 'paused' | 'inactive' | 'unpaid') => {
     switch (status) {
       case 'active':
         return 'bg-green-100 text-green-800';
       case 'paused':
         return 'bg-yellow-100 text-yellow-800';
+      case 'unpaid':
+        return 'bg-orange-100 text-orange-800';
       case 'inactive':
         return 'bg-red-100 text-red-800';
       default:
@@ -306,12 +310,14 @@ const MyAthletes = () => {
     }
   };
 
-  const getSubscriptionStatusText = (status?: 'active' | 'paused' | 'inactive') => {
+  const getSubscriptionStatusText = (status?: 'active' | 'paused' | 'inactive' | 'unpaid') => {
     switch (status) {
       case 'active':
         return 'Ενεργός';
       case 'paused':
         return 'Σε παύση';
+      case 'unpaid':
+        return 'Απλήρωτη';
       case 'inactive':
         return 'Ανενεργός';
       default:
