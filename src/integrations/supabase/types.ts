@@ -5661,6 +5661,10 @@ export type Database = {
         Args: { athlete_id: string }
         Returns: undefined
       }
+      can_access_coach_data: {
+        Args: { data_coach_id: string }
+        Returns: boolean
+      }
       can_cancel_booking: { Args: { booking_id: string }; Returns: boolean }
       check_and_update_expired_subscriptions: {
         Args: never
