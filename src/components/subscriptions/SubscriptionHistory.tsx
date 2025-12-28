@@ -74,7 +74,7 @@ export const SubscriptionHistory: React.FC = () => {
       }
       
       console.log('✅ Historical subscriptions loaded:', historicalSubs?.length);
-      setHistoricalSubscriptions(historicalSubs || []);
+      setHistoricalSubscriptions((historicalSubs || []) as HistoricalSubscription[]);
 
     } catch (error) {
       console.error('❌ Error loading historical data:', error);
