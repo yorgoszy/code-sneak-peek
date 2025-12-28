@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
+import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu } from "lucide-react";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
@@ -47,30 +48,36 @@ export const DashboardContainer = () => {
     }
   }, [isMobile]);
 
-  // Redirect non-admin users to their personal profile
+  // Check if user is coach
+  const isCoach = userProfile?.role === 'coach';
+
+  // Redirect non-admin and non-coach users to their personal profile
   useEffect(() => {
     console.log('🚦 DashboardContainer: Checking redirect conditions:', {
       authLoading,
       rolesLoading, 
       isAuthenticated,
       userProfileId: userProfile?.id,
+      userRole: userProfile?.role,
       isAdminResult: isAdmin(),
+      isCoach,
       hasCheckedRedirect
     });
 
     // Only proceed if all loading is complete and user is authenticated
     if (!authLoading && !rolesLoading && isAuthenticated && !hasCheckedRedirect) {
-      console.log('🔍 DashboardContainer: Ready to check admin status');
+      console.log('🔍 DashboardContainer: Ready to check admin/coach status');
       
       if (userProfile?.id) {
         const adminStatus = isAdmin();
-        console.log('🎭 DashboardContainer: Admin check result:', adminStatus);
+        console.log('🎭 DashboardContainer: Role check result - Admin:', adminStatus, 'Coach:', isCoach);
         
-        if (!adminStatus) {
-          console.log('🔄 DashboardContainer: Redirecting non-admin user to profile:', userProfile.id);
+        // Allow both admin and coach to access dashboard
+        if (!adminStatus && !isCoach) {
+          console.log('🔄 DashboardContainer: Redirecting non-admin/non-coach user to profile:', userProfile.id);
           navigate(`/dashboard/user-profile/${userProfile.id}`);
         } else {
-          console.log('👑 DashboardContainer: Admin user confirmed, staying on dashboard');
+          console.log('👑 DashboardContainer: Admin/Coach user confirmed, staying on dashboard');
         }
         setHasCheckedRedirect(true);
       } else if (userProfile === null) {
@@ -79,7 +86,7 @@ export const DashboardContainer = () => {
         setHasCheckedRedirect(true);
       }
     }
-  }, [authLoading, rolesLoading, isAuthenticated, userProfile, isAdmin, navigate, hasCheckedRedirect]);
+  }, [authLoading, rolesLoading, isAuthenticated, userProfile, isAdmin, isCoach, navigate, hasCheckedRedirect]);
 
   // Show loading while any authentication process is happening
   if (authLoading || rolesLoading) {
@@ -92,8 +99,8 @@ export const DashboardContainer = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // If we're still checking for redirect or if user is not admin and we have userProfile, don't render yet
-  if (!hasCheckedRedirect || (!isAdmin() && userProfile?.id)) {
+  // If we're still checking for redirect or if user is not admin/coach and we have userProfile, don't render yet
+  if (!hasCheckedRedirect || (!isAdmin() && !isCoach && userProfile?.id)) {
     console.log('🔄 DashboardContainer: Waiting for redirect check or redirecting...');
     return <CustomLoadingScreen />;
   }
@@ -102,14 +109,17 @@ export const DashboardContainer = () => {
     await signOut();
   };
 
-  console.log('✅ DashboardContainer: Rendering dashboard for admin user');
+  console.log('✅ DashboardContainer: Rendering dashboard for', isCoach ? 'coach' : 'admin', 'user');
+
+  // Choose the appropriate sidebar based on role
+  const SidebarComponent = isCoach ? CoachSidebar : Sidebar;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar - Large screens only */}
         <div className="hidden lg:block">
-          <Sidebar
+          <SidebarComponent
             isCollapsed={isCollapsed}
             setIsCollapsed={setIsCollapsed}
           />
@@ -123,7 +133,7 @@ export const DashboardContainer = () => {
               onClick={() => setShowMobileSidebar(false)}
             />
             <div className="absolute left-0 top-0 h-full bg-white shadow-xl">
-              <Sidebar
+              <SidebarComponent
                 isCollapsed={false}
                 setIsCollapsed={() => {}}
               />
@@ -168,7 +178,7 @@ export const DashboardContainer = () => {
                 <div>
                   <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
                   <p className="text-gray-600 text-sm lg:text-base">
-                    Καλώς ήρθατε, {isAdmin() ? 'Admin User!' : dashboardUserProfile?.name || user?.email}
+                    Καλώς ήρθατε, {isAdmin() ? 'Admin!' : isCoach ? 'Coach!' : dashboardUserProfile?.name || user?.email}
                   </p>
                 </div>
                 
@@ -176,6 +186,7 @@ export const DashboardContainer = () => {
                   <span className="text-xs lg:text-sm text-gray-600 hidden md:block">
                     {dashboardUserProfile?.name || user?.email}
                     {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                    {isCoach && <span className="ml-2 px-2 py-1 bg-[#00ffba]/20 text-[#00ffba] text-xs rounded">Coach</span>}
                   </span>
                   <Button 
                     variant="outline" 
@@ -194,8 +205,9 @@ export const DashboardContainer = () => {
             {(isMobile || isTablet) && (
               <div className="mb-4 px-2">
                 <p className="text-sm text-gray-600">
-                  Καλώς ήρθατε, {isAdmin() ? 'Admin' : dashboardUserProfile?.name || 'User'}
+                  Καλώς ήρθατε, {isAdmin() ? 'Admin' : isCoach ? 'Coach' : dashboardUserProfile?.name || 'User'}
                   {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                  {isCoach && <span className="ml-2 px-2 py-1 bg-[#00ffba]/20 text-[#00ffba] text-xs rounded">Coach</span>}
                 </p>
               </div>
             )}
