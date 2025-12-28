@@ -4190,6 +4190,95 @@ ${exerciseDatabaseContext}
 - Ή μπορεί να επαναλαμβάνει το ίδιο template με προόδευση (π.χ. εβδομάδα 1: 70%, εβδομάδα 2: 75%, εβδομάδα 3: 80%)
 - ΠΑΝΤΑ δημιούργησε πλήρες πρόγραμμα με το σωστό αριθμό weeks και days!
 
+🏋️ ΜΕΘΟΔΟΛΟΓΙΑ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΥ ΠΡΟΠΟΝΗΣΗΣ (TOTAL BODY APPROACH):
+
+📦 ΔΟΜΗ BLOCKS ΚΑΙ ΕΝΑΛΛΑΓΗ PUSH/PULL:
+Κάθε ημέρα χωρίζεται σε 2-3 blocks με συγκεκριμένη λογική:
+
+BLOCK 1 (STR - Strength):
+- Lower Body: Push (π.χ. SQ) ή Pull (π.χ. DL)
+- Upper Body: Το ΑΝΤΙΘΕΤΟ (αν lower=push τότε upper=pull)
+- Core: Πάντα συμπεριλαμβάνεται
+Παράδειγμα: SQ (lower push) + Pull Ups (upper pull) + Roll Out (core)
+
+BLOCK 2 (END - Endurance ή PWR - Power):
+- Lower Body: Το ΑΝΤΙΘΕΤΟ από Block 1
+- Upper Body: Το ΑΝΤΙΘΕΤΟ από Block 1
+- Core: Anti-rotation/Stability
+Παράδειγμα: BP (upper push) + DL (lower pull) + Anti-Rotation Press (core)
+
+BLOCK 3 (ACCESSORY):
+- Upper Body Push Accessory (π.χ. Tricep Kick Back)
+- Upper Body Pull Stability (π.χ. Overhead Press isolation DB)
+- Lower Body Power (π.χ. Jump SQ continuous)
+- Μπορεί να έχει 3-5 ασκήσεις
+
+🔄 ΚΑΝΟΝΑΣ ΕΝΑΛΛΑΓΗΣ:
+- Αν Block 1 έχει Lower Push → Block 2 έχει Lower Pull
+- Αν Block 1 έχει Upper Pull → Block 2 έχει Upper Push
+- Στο ίδιο block: αν Lower=Push τότε Upper=Pull (και αντίστροφα)
+
+📊 SET x REPS SCHEMAS (ΕΠΕΛΕΞΕ ΑΝΑΛΟΓΑ ΜΕ ΣΤΟΧΟ):
+
+🔹 STRENGTH (STR) Block Schemas:
+1. CYCLE: 9 sets x 3 reps (κύκλος με όλες τις ασκήσεις)
+   - Κάνεις 3 σετ από κάθε άσκηση με εναλλαγή
+
+2. WAVE LOADING (Πυραμίδα) - 3 sets x 3.2.1 reps:
+   Set 1: 3 reps (85%), 2 reps (87%), 1 rep (90%)
+   Set 2: 3 reps (87%), 2 reps (90%), 1 rep (93%)
+   Set 3: 3 reps (90%), 2 reps (93%), 1 rep (95%)
+
+3. VELOCITY TRAINING - 3 sets x 5.3.2.5.3.2.5.3.2 reps:
+   Ίδια ένταση (75% 1RM) σε όλα
+   Στόχος: αύξηση ταχύτητας (m/s) καθώς πέφτουν οι επαναλήψεις
+
+4. WAVE LOADING 10.8.6 - 10.8.6.10.8.6 reps:
+   - 10 reps (60%), 8 reps (65%), 6 reps (70%)
+   - 10 reps (63%), 8 reps (68%), 6 reps (73%)
+
+5. WAVE LOADING 6.4.2 - 6.4.2.6.4.2 reps:
+   - 6 reps (70%), 4 reps (80%), 2 reps (90%)
+   - 6 reps (73%), 4 reps (83%), 2 reps (93%)
+
+🔹 ENDURANCE (END) Block Schemas:
+1. TIME CAP: 15:00 min nonstop
+   - BP 4 reps + SQ 4 reps + Anti-Rotation 4 reps (επαναλαμβάνεται)
+
+2. STRAIGHT SETS: BP 15 reps + SQ 15 reps + Anti-Rotation 15 reps
+
+3. PROGRESSIVE LADDER: 5 sets
+   - BP: 3+5+7 reps, SQ: 3+5+7 reps, Anti-Rotation: 15 reps
+
+🔹 ACCESSORY Block Schemas:
+1. CIRCUIT NONSTOP: 3 sets x 30sec ανά άσκηση χωρίς διάλειμμα
+   - Upper Push Accessory 30sec
+   - Upper Pull Stability 30sec
+   - Lower Power 30sec
+
+📝 ΠΑΡΑΔΕΙΓΜΑ ΠΛΗΡΟΥΣ ΗΜΕΡΑΣ (TOTAL BODY):
+Block 1 (STR - training_type: "str"):
+- SQ (lower push): 9 sets x 3 reps (κύκλος)
+- Pull Ups (upper pull): 9 sets x 3 reps (κύκλος)
+- Roll Out TRX (core): 9 sets x 3 reps (κύκλος)
+
+Block 2 (END - training_type: "end"):
+- BP (upper push): 15:00 nonstop, 4 reps κάθε γύρο
+- DL (lower pull): 15:00 nonstop, 4 reps κάθε γύρο
+- Anti-Rotation Press (core): 15:00 nonstop, 4 reps κάθε γύρο
+
+Block 3 (ACCESSORY - training_type: "accessory"):
+- Tricep Kick Back: 3 sets x 30sec
+- OH Press DB isolation: 3 sets x 30sec
+- Jump SQ continuous: 3 sets x 30sec
+
+⚠️ ΚΑΝΟΝΕΣ ΠΟΥ ΠΡΕΠΕΙ ΝΑ ΑΚΟΛΟΥΘΕΙΣ:
+1. Κάθε block έχει τουλάχιστον: 1 lower body + 1 upper body + 1 core
+2. Push/Pull εναλλάσσονται μεταξύ blocks
+3. Στο ίδιο block: αν lower=push τότε upper=pull
+4. Block 3 (accessory) έχει 3-5 isolation ασκήσεις
+5. Επίλεξε set/rep scheme ανάλογα με τον στόχο (str, end, pwr)
+
 ⚠️ ΣΗΜΑΝΤΙΚΟ: Αν ο χρήστης ζητά 4 εβδομάδες με 3 ημέρες ανά εβδομάδα:
 1. Δημιούργησε weeks array με 4 εβδομάδες, κάθε μία με 3 ημέρες (days) - ΥΠΟΧΡΕΩΤΙΚΟ!
 2. Βάλε 12 ημερομηνίες στο training_dates (3 ανά εβδομάδα x 4 εβδομάδες)
