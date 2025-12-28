@@ -163,7 +163,7 @@ export const SubscriptionManagement: React.FC = () => {
         .select(`
           *,
           subscription_types (*),
-          app_users (name, email, subscription_status, role, user_status)
+          app_users!user_subscriptions_user_id_fkey (name, email, subscription_status, role, user_status)
         `)
         .or(`status.eq.active,and(status.eq.expired,end_date.gte.${thirtyDaysAgoStr})`)
         .order('end_date', { ascending: true });
