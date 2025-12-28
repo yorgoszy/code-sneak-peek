@@ -482,7 +482,6 @@ const MyAthletes = () => {
         onOpenChange={setNewUserDialogOpen}
         onSuccess={handleUserCreated}
         coachId={userProfile?.id || ''}
-        isAdmin={isAdmin()}
       />
 
       {selectedUser && (
