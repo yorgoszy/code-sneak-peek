@@ -49,8 +49,7 @@ const MyAthletes = () => {
   const [athletes, setAthletes] = useState<CoachUser[]>([]);
   const [loadingAthletes, setLoadingAthletes] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasInitialized, setHasInitialized] = useState(false);
-  
+
   // Dialog states
   const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
@@ -100,14 +99,10 @@ const MyAthletes = () => {
   };
 
   useEffect(() => {
-    if (!rolesLoading && !hasInitialized && userProfile?.id) {
-      if (isCoach()) {
-        console.log('👑 Coach confirmed, fetching athletes');
-        fetchAthletes();
-      }
-      setHasInitialized(true);
+    if (!rolesLoading && userProfile?.id && userProfile?.role === 'coach') {
+      fetchAthletes();
     }
-  }, [isCoach, rolesLoading, hasInitialized, userProfile?.id]);
+  }, [rolesLoading, userProfile?.id, userProfile?.role]);
 
   if (loading || rolesLoading) {
     return (
