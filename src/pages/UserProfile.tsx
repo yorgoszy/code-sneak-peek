@@ -30,8 +30,8 @@ const UserProfile = () => {
   const isMobile = useIsMobile();
   const sidebarRef = useRef<{ refreshOffers: () => void }>(null);
 
-  const { isCoach, isAdmin } = useRoleCheck();
-  const showCoachSidebar = isCoach() && !isAdmin();
+  const { userProfile: currentAppUser, loading: roleLoading } = useRoleCheck();
+  const showCoachSidebar = !roleLoading && currentAppUser?.role === "coach";
 
   // Check for tablet size
   useEffect(() => {
