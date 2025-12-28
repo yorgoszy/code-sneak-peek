@@ -33,7 +33,7 @@ export const CoachSidebar = ({ isCollapsed, setIsCollapsed }: CoachSidebarProps)
     { 
       icon: Users, 
       label: "Οι Αθλητές μου", 
-      path: "/dashboard/users",
+      path: "/dashboard/my-athletes",
       badge: null
     },
     { type: 'separator' },
