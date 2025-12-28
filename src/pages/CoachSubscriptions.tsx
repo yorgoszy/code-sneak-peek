@@ -18,10 +18,13 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
+import { SubscriptionTypesTab } from "@/components/coach/subscriptions/SubscriptionTypesTab";
+import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
 
 interface CoachSubscription {
   id: string;
@@ -60,6 +63,8 @@ const CoachSubscriptions = () => {
   const [subscriptions, setSubscriptions] = useState<CoachSubscription[]>([]);
   const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("subscriptions");
+  const [newSubscriptionOpen, setNewSubscriptionOpen] = useState(false);
 
   const effectiveCoachId = useMemo(() => {
     if (coachIdParam && isAdmin() && coachIdParam !== userProfile?.id) return coachIdParam;
@@ -252,160 +257,192 @@ const CoachSubscriptions = () => {
 
           {/* Subscriptions Content */}
           <div className="flex-1 p-2 lg:p-6 space-y-6">
-            <Card className="rounded-none">
-              <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <CreditCard className="h-5 w-5" />
-                    Συνδρομές ({filteredSubscriptions.length})
-                  </CardTitle>
-                  <Button className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Νέα Συνδρομή
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* Search */}
-                <div className="mb-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Αναζήτηση με όνομα ή email..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 rounded-none"
-                    />
-                  </div>
-                </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="rounded-none mb-4">
+                <TabsTrigger value="subscriptions" className="rounded-none">
+                  Συνδρομές
+                </TabsTrigger>
+                <TabsTrigger value="types" className="rounded-none">
+                  Τύποι
+                </TabsTrigger>
+              </TabsList>
 
-                {loadingSubscriptions ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">Φόρτωση συνδρομών...</p>
-                  </div>
-                ) : filteredSubscriptions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">Δεν βρέθηκαν συνδρομές</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Desktop Table */}
-                    <div className="hidden md:block">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Αθλητής</TableHead>
-                            <TableHead>Τύπος Συνδρομής</TableHead>
-                            <TableHead>Έναρξη</TableHead>
-                            <TableHead>Λήξη</TableHead>
-                            <TableHead>Κατάσταση</TableHead>
-                            <TableHead>Πληρωμένη</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
+              <TabsContent value="subscriptions">
+                <Card className="rounded-none">
+                  <CardHeader className="pb-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <CreditCard className="h-5 w-5" />
+                        Συνδρομές ({filteredSubscriptions.length})
+                      </CardTitle>
+                      <Button 
+                        onClick={() => setNewSubscriptionOpen(true)}
+                        className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Νέα Συνδρομή
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Search */}
+                    <div className="mb-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Αναζήτηση με όνομα ή email..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10 rounded-none"
+                        />
+                      </div>
+                    </div>
+
+                    {loadingSubscriptions ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">Φόρτωση συνδρομών...</p>
+                      </div>
+                    ) : filteredSubscriptions.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">Δεν βρέθηκαν συνδρομές</p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Desktop Table */}
+                        <div className="hidden md:block">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Αθλητής</TableHead>
+                                <TableHead>Τύπος Συνδρομής</TableHead>
+                                <TableHead>Έναρξη</TableHead>
+                                <TableHead>Λήξη</TableHead>
+                                <TableHead>Κατάσταση</TableHead>
+                                <TableHead>Πληρωμένη</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {filteredSubscriptions.map((sub) => (
+                                <TableRow key={sub.id}>
+                                  <TableCell>
+                                    <div className="flex items-center space-x-3">
+                                      <Avatar className="h-8 w-8">
+                                        <AvatarImage
+                                          src={sub.app_users?.avatar_url || sub.app_users?.photo_url || ""}
+                                        />
+                                        <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
+                                          {sub.app_users?.name?.charAt(0)?.toUpperCase() || "?"}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <p className="font-medium">{sub.app_users?.name || "Άγνωστος"}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {sub.app_users?.email || "-"}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>{sub.subscription_types?.name || "-"}</TableCell>
+                                  <TableCell>{formatDate(sub.start_date)}</TableCell>
+                                  <TableCell>{formatDate(sub.end_date)}</TableCell>
+                                  <TableCell>
+                                    <span
+                                      className={`px-2 py-1 text-xs rounded ${getStatusColor(
+                                        sub.status,
+                                        sub.is_paused
+                                      )}`}
+                                    >
+                                      {getStatusLabel(sub.status, sub.is_paused)}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>
+                                    <span
+                                      className={`px-2 py-1 text-xs rounded ${
+                                        sub.is_paid
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-red-100 text-red-800"
+                                      }`}
+                                    >
+                                      {sub.is_paid ? "Ναι" : "Όχι"}
+                                    </span>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+
+                        {/* Mobile Cards */}
+                        <div className="md:hidden space-y-3">
                           {filteredSubscriptions.map((sub) => (
-                            <TableRow key={sub.id}>
-                              <TableCell>
-                                <div className="flex items-center space-x-3">
-                                  <Avatar className="h-8 w-8">
-                                    <AvatarImage
-                                      src={sub.app_users?.avatar_url || sub.app_users?.photo_url || ""}
-                                    />
-                                    <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
-                                      {sub.app_users?.name?.charAt(0)?.toUpperCase() || "?"}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p className="font-medium">{sub.app_users?.name || "Άγνωστος"}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {sub.app_users?.email || "-"}
-                                    </p>
+                            <Card key={sub.id} className="rounded-none">
+                              <CardContent className="p-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-3">
+                                    <Avatar className="h-10 w-10">
+                                      <AvatarImage
+                                        src={sub.app_users?.avatar_url || sub.app_users?.photo_url || ""}
+                                      />
+                                      <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
+                                        {sub.app_users?.name?.charAt(0)?.toUpperCase() || "?"}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <p className="font-medium">{sub.app_users?.name || "Άγνωστος"}</p>
+                                      <p className="text-sm text-gray-500">
+                                        {sub.subscription_types?.name || "-"}
+                                      </p>
+                                    </div>
                                   </div>
+                                  <span
+                                    className={`px-2 py-1 text-xs rounded ${getStatusColor(
+                                      sub.status,
+                                      sub.is_paused
+                                    )}`}
+                                  >
+                                    {getStatusLabel(sub.status, sub.is_paused)}
+                                  </span>
                                 </div>
-                              </TableCell>
-                              <TableCell>{sub.subscription_types?.name || "-"}</TableCell>
-                              <TableCell>{formatDate(sub.start_date)}</TableCell>
-                              <TableCell>{formatDate(sub.end_date)}</TableCell>
-                              <TableCell>
-                                <span
-                                  className={`px-2 py-1 text-xs rounded ${getStatusColor(
-                                    sub.status,
-                                    sub.is_paused
-                                  )}`}
-                                >
-                                  {getStatusLabel(sub.status, sub.is_paused)}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <span
-                                  className={`px-2 py-1 text-xs rounded ${
-                                    sub.is_paid
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-red-100 text-red-800"
-                                  }`}
-                                >
-                                  {sub.is_paid ? "Ναι" : "Όχι"}
-                                </span>
-                              </TableCell>
-                            </TableRow>
+                                <div className="mt-3 flex justify-between text-sm text-gray-600">
+                                  <span>
+                                    {formatDate(sub.start_date)} - {formatDate(sub.end_date)}
+                                  </span>
+                                  <span
+                                    className={`px-2 py-1 text-xs rounded ${
+                                      sub.is_paid
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {sub.is_paid ? "Πληρωμένη" : "Απλήρωτη"}
+                                  </span>
+                                </div>
+                              </CardContent>
+                            </Card>
                           ))}
-                        </TableBody>
-                      </Table>
-                    </div>
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-                    {/* Mobile Cards */}
-                    <div className="md:hidden space-y-3">
-                      {filteredSubscriptions.map((sub) => (
-                        <Card key={sub.id} className="rounded-none">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <Avatar className="h-10 w-10">
-                                  <AvatarImage
-                                    src={sub.app_users?.avatar_url || sub.app_users?.photo_url || ""}
-                                  />
-                                  <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
-                                    {sub.app_users?.name?.charAt(0)?.toUpperCase() || "?"}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p className="font-medium">{sub.app_users?.name || "Άγνωστος"}</p>
-                                  <p className="text-sm text-gray-500">
-                                    {sub.subscription_types?.name || "-"}
-                                  </p>
-                                </div>
-                              </div>
-                              <span
-                                className={`px-2 py-1 text-xs rounded ${getStatusColor(
-                                  sub.status,
-                                  sub.is_paused
-                                )}`}
-                              >
-                                {getStatusLabel(sub.status, sub.is_paused)}
-                              </span>
-                            </div>
-                            <div className="mt-3 flex justify-between text-sm text-gray-600">
-                              <span>
-                                {formatDate(sub.start_date)} - {formatDate(sub.end_date)}
-                              </span>
-                              <span
-                                className={`px-2 py-1 text-xs rounded ${
-                                  sub.is_paid
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {sub.is_paid ? "Πληρωμένη" : "Απλήρωτη"}
-                              </span>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </>
+              <TabsContent value="types">
+                {effectiveCoachId && (
+                  <SubscriptionTypesTab coachId={effectiveCoachId} />
                 )}
-              </CardContent>
-            </Card>
+              </TabsContent>
+            </Tabs>
+
+            {/* New Subscription Dialog */}
+            {effectiveCoachId && (
+              <NewSubscriptionDialog
+                open={newSubscriptionOpen}
+                onOpenChange={setNewSubscriptionOpen}
+                coachId={effectiveCoachId}
+                onSuccess={fetchSubscriptions}
+              />
+            )}
           </div>
         </div>
       </div>

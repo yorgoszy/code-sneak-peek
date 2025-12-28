@@ -4227,6 +4227,7 @@ export type Database = {
         Row: {
           allowed_sections: string[] | null
           available_in_shop: boolean
+          coach_id: string | null
           created_at: string
           description: string | null
           duration_months: number
@@ -4244,6 +4245,7 @@ export type Database = {
         Insert: {
           allowed_sections?: string[] | null
           available_in_shop?: boolean
+          coach_id?: string | null
           created_at?: string
           description?: string | null
           duration_months?: number
@@ -4261,6 +4263,7 @@ export type Database = {
         Update: {
           allowed_sections?: string[] | null
           available_in_shop?: boolean
+          coach_id?: string | null
           created_at?: string
           description?: string | null
           duration_months?: number
@@ -4276,6 +4279,13 @@ export type Database = {
           visit_expiry_months?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "subscription_types_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "subscription_types_program_id_fkey"
             columns: ["program_id"]
