@@ -93,10 +93,24 @@ const Users = () => {
     setLoadingUsers(true);
     try {
       console.log('📊 Fetching users...');
-      const { data: usersData, error } = await supabase
+      
+      // Build query - for coaches, filter by coach_id
+      let query = supabase
         .from('app_users')
         .select('*')
         .order('created_at', { ascending: false });
+      
+      // If user is a coach, only fetch users assigned to them
+      if (isCoach() && !isAdmin()) {
+        query = query.eq('coach_id', userProfile?.id);
+      }
+      
+      // Exclude admin users for coaches
+      if (isCoach() && !isAdmin()) {
+        query = query.neq('role', 'admin');
+      }
+      
+      const { data: usersData, error } = await query;
 
       if (error) {
         console.error('❌ Error fetching users:', error);
@@ -321,7 +335,10 @@ const Users = () => {
   };
 
   // Filter users based on search term and filters
-  const filteredUsers = allUsers.filter(user => {
+  // For coaches, use all users directly (no acknowledged logic)
+  const usersToFilter = isCoach() && !isAdmin() ? users : allUsers;
+  
+  const filteredUsers = usersToFilter.filter(user => {
     const matchesSearch = matchesSearchTerm(user.name, searchTerm) ||
                           matchesSearchTerm(user.email, searchTerm);
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
@@ -342,6 +359,8 @@ const Users = () => {
     switch (role.toLowerCase()) {
       case 'admin':
         return 'bg-red-100 text-red-800';
+      case 'coach':
+        return 'bg-[#00ffba]/20 text-[#00ffba]';
       case 'trainer':
         return 'bg-blue-100 text-blue-800';
       case 'athlete':
@@ -381,7 +400,7 @@ const Users = () => {
     }
   };
 
-  console.log('👑 Rendering Users page for admin');
+  console.log('👑 Rendering Users page for', isCoach() ? 'coach' : 'admin');
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -425,7 +444,9 @@ const Users = () => {
                   >
                     <Menu className="h-4 w-4" />
                   </Button>
-                  <h1 className="ml-4 text-lg font-semibold text-gray-900">Users</h1>
+                  <h1 className="ml-4 text-lg font-semibold text-gray-900">
+                    {isCoach() && !isAdmin() ? 'Οι Αθλητές μου' : 'Users'}
+                  </h1>
                 </div>
                 <Button 
                   variant="outline" 
@@ -444,9 +465,11 @@ const Users = () => {
             <nav className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
               <div className="flex justify-between items-center">
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">Users</h1>
+                  <h1 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">
+                    {isCoach() && !isAdmin() ? 'Οι Αθλητές μου' : 'Users'}
+                  </h1>
                   <p className="text-xs lg:text-sm text-gray-600 hidden sm:block">
-                    Διαχείριση χρηστών συστήματος
+                    {isCoach() && !isAdmin() ? 'Διαχείριση των αθλητών σας' : 'Διαχείριση χρηστών συστήματος'}
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 lg:space-x-4">
@@ -454,7 +477,8 @@ const Users = () => {
                     <span className="truncate max-w-32 lg:max-w-none">
                       {userProfile?.name || user?.email}
                     </span>
-                    <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>
+                    {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
+                    {isCoach() && !isAdmin() && <span className="ml-2 px-2 py-1 bg-[#00ffba]/20 text-[#00ffba] text-xs rounded">Coach</span>}
                   </div>
                   <Button 
                     variant="outline" 
@@ -471,8 +495,8 @@ const Users = () => {
 
           {/* Users Content */}
         <div className="flex-1 p-2 lg:p-6 space-y-6">
-          {/* New Registrations Card */}
-          {newRegistrations.length > 0 && (
+          {/* New Registrations Card - Only for admins */}
+          {isAdmin() && newRegistrations.length > 0 && (
             <Card>
               <CardHeader className="pb-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
