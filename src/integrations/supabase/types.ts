@@ -938,6 +938,536 @@ export type Database = {
           },
         ]
       }
+      coach_anthropometric_test_data: {
+        Row: {
+          arm_circumference: number | null
+          body_fat_percentage: number | null
+          bone_density: number | null
+          chest_circumference: number | null
+          created_at: string | null
+          height: number | null
+          hip_circumference: number | null
+          id: string
+          muscle_mass_percentage: number | null
+          test_session_id: string
+          thigh_circumference: number | null
+          updated_at: string | null
+          visceral_fat_percentage: number | null
+          waist_circumference: number | null
+          weight: number | null
+        }
+        Insert: {
+          arm_circumference?: number | null
+          body_fat_percentage?: number | null
+          bone_density?: number | null
+          chest_circumference?: number | null
+          created_at?: string | null
+          height?: number | null
+          hip_circumference?: number | null
+          id?: string
+          muscle_mass_percentage?: number | null
+          test_session_id: string
+          thigh_circumference?: number | null
+          updated_at?: string | null
+          visceral_fat_percentage?: number | null
+          waist_circumference?: number | null
+          weight?: number | null
+        }
+        Update: {
+          arm_circumference?: number | null
+          body_fat_percentage?: number | null
+          bone_density?: number | null
+          chest_circumference?: number | null
+          created_at?: string | null
+          height?: number | null
+          hip_circumference?: number | null
+          id?: string
+          muscle_mass_percentage?: number | null
+          test_session_id?: string
+          thigh_circumference?: number | null
+          updated_at?: string | null
+          visceral_fat_percentage?: number | null
+          waist_circumference?: number | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_anthropometric_test_data_test_session_id_fkey"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "coach_anthropometric_test_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_anthropometric_test_sessions: {
+        Row: {
+          coach_id: string
+          coach_user_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          test_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          coach_id: string
+          coach_user_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          test_date?: string
+          updated_at?: string | null
+        }
+        Update: {
+          coach_id?: string
+          coach_user_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          test_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_anthropometric_test_sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_anthropometric_test_sessions_coach_user_id_fkey"
+            columns: ["coach_user_id"]
+            isOneToOne: false
+            referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_endurance_test_data: {
+        Row: {
+          created_at: string | null
+          crunches: number | null
+          farmer_kg: number | null
+          farmer_meters: number | null
+          farmer_seconds: number | null
+          id: string
+          mas_kmh: number | null
+          mas_meters: number | null
+          mas_minutes: number | null
+          mas_ms: number | null
+          max_hr: number | null
+          pull_ups: number | null
+          push_ups: number | null
+          resting_hr_1min: number | null
+          sprint_meters: number | null
+          sprint_resistance: string | null
+          sprint_seconds: number | null
+          sprint_watt: number | null
+          t2b: number | null
+          test_session_id: string
+          updated_at: string | null
+          vo2_max: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          crunches?: number | null
+          farmer_kg?: number | null
+          farmer_meters?: number | null
+          farmer_seconds?: number | null
+          id?: string
+          mas_kmh?: number | null
+          mas_meters?: number | null
+          mas_minutes?: number | null
+          mas_ms?: number | null
+          max_hr?: number | null
+          pull_ups?: number | null
+          push_ups?: number | null
+          resting_hr_1min?: number | null
+          sprint_meters?: number | null
+          sprint_resistance?: string | null
+          sprint_seconds?: number | null
+          sprint_watt?: number | null
+          t2b?: number | null
+          test_session_id: string
+          updated_at?: string | null
+          vo2_max?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          crunches?: number | null
+          farmer_kg?: number | null
+          farmer_meters?: number | null
+          farmer_seconds?: number | null
+          id?: string
+          mas_kmh?: number | null
+          mas_meters?: number | null
+          mas_minutes?: number | null
+          mas_ms?: number | null
+          max_hr?: number | null
+          pull_ups?: number | null
+          push_ups?: number | null
+          resting_hr_1min?: number | null
+          sprint_meters?: number | null
+          sprint_resistance?: string | null
+          sprint_seconds?: number | null
+          sprint_watt?: number | null
+          t2b?: number | null
+          test_session_id?: string
+          updated_at?: string | null
+          vo2_max?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_endurance_test_data_test_session_id_fkey"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "coach_endurance_test_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_endurance_test_sessions: {
+        Row: {
+          coach_id: string
+          coach_user_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          test_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          coach_id: string
+          coach_user_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          test_date?: string
+          updated_at?: string | null
+        }
+        Update: {
+          coach_id?: string
+          coach_user_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          test_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_endurance_test_sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_endurance_test_sessions_coach_user_id_fkey"
+            columns: ["coach_user_id"]
+            isOneToOne: false
+            referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_functional_test_data: {
+        Row: {
+          created_at: string | null
+          flamingo_balance: number | null
+          fms_detailed_scores: Json | null
+          fms_score: number | null
+          id: string
+          muscles_need_strengthening: string[] | null
+          muscles_need_stretching: string[] | null
+          posture_assessment: string | null
+          posture_issues: string[] | null
+          shoulder_mobility_left: number | null
+          shoulder_mobility_right: number | null
+          single_leg_squat_issues: string[] | null
+          sit_and_reach: number | null
+          squat_issues: string[] | null
+          test_session_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          flamingo_balance?: number | null
+          fms_detailed_scores?: Json | null
+          fms_score?: number | null
+          id?: string
+          muscles_need_strengthening?: string[] | null
+          muscles_need_stretching?: string[] | null
+          posture_assessment?: string | null
+          posture_issues?: string[] | null
+          shoulder_mobility_left?: number | null
+          shoulder_mobility_right?: number | null
+          single_leg_squat_issues?: string[] | null
+          sit_and_reach?: number | null
+          squat_issues?: string[] | null
+          test_session_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          flamingo_balance?: number | null
+          fms_detailed_scores?: Json | null
+          fms_score?: number | null
+          id?: string
+          muscles_need_strengthening?: string[] | null
+          muscles_need_stretching?: string[] | null
+          posture_assessment?: string | null
+          posture_issues?: string[] | null
+          shoulder_mobility_left?: number | null
+          shoulder_mobility_right?: number | null
+          single_leg_squat_issues?: string[] | null
+          sit_and_reach?: number | null
+          squat_issues?: string[] | null
+          test_session_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_functional_test_data_test_session_id_fkey"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "coach_functional_test_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_functional_test_sessions: {
+        Row: {
+          coach_id: string
+          coach_user_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          test_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          coach_id: string
+          coach_user_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          test_date?: string
+          updated_at?: string | null
+        }
+        Update: {
+          coach_id?: string
+          coach_user_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          test_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_functional_test_sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_functional_test_sessions_coach_user_id_fkey"
+            columns: ["coach_user_id"]
+            isOneToOne: false
+            referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_jump_test_data: {
+        Row: {
+          broad_jump: number | null
+          counter_movement_jump: number | null
+          created_at: string | null
+          depth_jump: number | null
+          id: string
+          non_counter_movement_jump: number | null
+          test_session_id: string
+          triple_jump_left: number | null
+          triple_jump_right: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          broad_jump?: number | null
+          counter_movement_jump?: number | null
+          created_at?: string | null
+          depth_jump?: number | null
+          id?: string
+          non_counter_movement_jump?: number | null
+          test_session_id: string
+          triple_jump_left?: number | null
+          triple_jump_right?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          broad_jump?: number | null
+          counter_movement_jump?: number | null
+          created_at?: string | null
+          depth_jump?: number | null
+          id?: string
+          non_counter_movement_jump?: number | null
+          test_session_id?: string
+          triple_jump_left?: number | null
+          triple_jump_right?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_jump_test_data_test_session_id_fkey"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "coach_jump_test_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_jump_test_sessions: {
+        Row: {
+          coach_id: string
+          coach_user_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          test_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          coach_id: string
+          coach_user_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          test_date?: string
+          updated_at?: string | null
+        }
+        Update: {
+          coach_id?: string
+          coach_user_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          test_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_jump_test_sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_jump_test_sessions_coach_user_id_fkey"
+            columns: ["coach_user_id"]
+            isOneToOne: false
+            referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_strength_test_data: {
+        Row: {
+          created_at: string | null
+          exercise_id: string | null
+          id: string
+          is_1rm: boolean | null
+          test_session_id: string
+          updated_at: string | null
+          velocity_ms: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          exercise_id?: string | null
+          id?: string
+          is_1rm?: boolean | null
+          test_session_id: string
+          updated_at?: string | null
+          velocity_ms?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          exercise_id?: string | null
+          id?: string
+          is_1rm?: boolean | null
+          test_session_id?: string
+          updated_at?: string | null
+          velocity_ms?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_strength_test_data_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_strength_test_data_test_session_id_fkey"
+            columns: ["test_session_id"]
+            isOneToOne: false
+            referencedRelation: "coach_strength_test_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_strength_test_sessions: {
+        Row: {
+          coach_id: string
+          coach_user_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          test_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          coach_id: string
+          coach_user_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          test_date?: string
+          updated_at?: string | null
+        }
+        Update: {
+          coach_id?: string
+          coach_user_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          test_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_strength_test_sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_strength_test_sessions_coach_user_id_fkey"
+            columns: ["coach_user_id"]
+            isOneToOne: false
+            referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_subscriptions: {
         Row: {
           coach_id: string
