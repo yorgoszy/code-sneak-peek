@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +10,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, X } from "lucide-react";
 
+interface Coach {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface NewCoachUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   coachId: string;
+  isAdmin?: boolean;
 }
 
 export const NewCoachUserDialog = ({
@@ -22,10 +29,13 @@ export const NewCoachUserDialog = ({
   onOpenChange,
   onSuccess,
   coachId,
+  isAdmin = false,
 }: NewCoachUserDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [coaches, setCoaches] = useState<Coach[]>([]);
+  const [selectedCoachId, setSelectedCoachId] = useState(coachId);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -35,6 +45,33 @@ export const NewCoachUserDialog = ({
     gender: "",
     notes: "",
   });
+
+  // Fetch coaches if admin
+  useEffect(() => {
+    if (isAdmin && open) {
+      fetchCoaches();
+    }
+  }, [isAdmin, open]);
+
+  // Reset selected coach when dialog opens
+  useEffect(() => {
+    if (open) {
+      setSelectedCoachId(coachId);
+    }
+  }, [open, coachId]);
+
+  const fetchCoaches = async () => {
+    const { data, error } = await supabase
+      .from('app_users')
+      .select('id, name, email')
+      .eq('role', 'coach')
+      .order('name');
+    
+    if (!error && data) {
+      setCoaches(data);
+    }
+  };
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,9 +100,10 @@ export const NewCoachUserDialog = ({
   const uploadAvatar = async (userId: string): Promise<string | null> => {
     if (!avatarFile) return null;
 
+    const targetCoachId = isAdmin ? selectedCoachId : coachId;
     const fileExt = avatarFile.name.split('.').pop();
     const fileName = `${userId}.${fileExt}`;
-    const filePath = `${coachId}/${fileName}`;
+    const filePath = `${targetCoachId}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('coach-user-avatars')
@@ -91,13 +129,20 @@ export const NewCoachUserDialog = ({
       return;
     }
 
+    const targetCoachId = isAdmin ? selectedCoachId : coachId;
+    
+    if (!targetCoachId) {
+      toast.error("Παρακαλώ επιλέξτε προπονητή");
+      return;
+    }
+
     setLoading(true);
     try {
       // Δημιουργία αθλητή πρώτα
       const { data: newUser, error } = await supabase
         .from('coach_users')
         .insert({
-          coach_id: coachId,
+          coach_id: targetCoachId,
           name: formData.name.trim(),
           email: formData.email.trim(),
           phone: formData.phone.trim() || null,
@@ -107,6 +152,7 @@ export const NewCoachUserDialog = ({
         })
         .select()
         .single();
+
 
       if (error) throw error;
 
@@ -148,6 +194,31 @@ export const NewCoachUserDialog = ({
           <DialogTitle className="text-base">Νέος Αθλητής</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Coach Selector for Admin */}
+          {isAdmin && (
+            <div>
+              <Label htmlFor="coach" className="text-xs">Προπονητής *</Label>
+              <Select
+                value={selectedCoachId}
+                onValueChange={setSelectedCoachId}
+              >
+                <SelectTrigger className="rounded-none h-8 text-sm">
+                  <SelectValue placeholder="Επιλέξτε προπονητή" />
+                </SelectTrigger>
+                <SelectContent>
+                  {coaches.map((coach) => (
+                    <SelectItem key={coach.id} value={coach.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{coach.name}</span>
+                        <span className="text-xs text-muted-foreground">({coach.email})</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Avatar + Name Row */}
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
@@ -186,6 +257,7 @@ export const NewCoachUserDialog = ({
               />
             </div>
           </div>
+
 
           {/* Email + Phone Row */}
           <div className="grid grid-cols-2 gap-3">
