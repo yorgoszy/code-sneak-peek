@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, X } from "lucide-react";
@@ -16,6 +17,7 @@ interface CoachUser {
   email: string;
   phone?: string;
   birth_date?: string;
+  gender?: string;
   avatar_url?: string;
   notes?: string;
   status: string;
@@ -45,6 +47,7 @@ export const EditCoachUserDialog = ({
     email: "",
     phone: "",
     birth_date: "",
+    gender: "",
     notes: "",
   });
 
@@ -55,6 +58,7 @@ export const EditCoachUserDialog = ({
         email: user.email || "",
         phone: user.phone || "",
         birth_date: user.birth_date || "",
+        gender: user.gender || "",
         notes: user.notes || "",
       });
       setAvatarPreview(user.avatar_url || null);
@@ -129,6 +133,7 @@ export const EditCoachUserDialog = ({
           email: formData.email.trim(),
           phone: formData.phone.trim() || null,
           birth_date: formData.birth_date || null,
+          gender: formData.gender || null,
           notes: formData.notes.trim() || null,
           avatar_url: avatarUrl,
         })
@@ -236,6 +241,22 @@ export const EditCoachUserDialog = ({
               onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
               className="rounded-none"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="gender">Φύλο</Label>
+            <Select
+              value={formData.gender}
+              onValueChange={(value) => setFormData({ ...formData, gender: value })}
+            >
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε φύλο" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Άνδρας</SelectItem>
+                <SelectItem value="female">Γυναίκα</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
           <div>
