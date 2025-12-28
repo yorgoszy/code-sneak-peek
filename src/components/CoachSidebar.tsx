@@ -3,7 +3,8 @@ import {
   Users, 
   ArrowLeft,
   Brain,
-  CreditCard
+  CreditCard,
+  TrendingUp
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -55,6 +56,12 @@ export const CoachSidebar = ({
       path: effectiveCoachId ? `/dashboard/coach-subscriptions?coachId=${effectiveCoachId}` : "/dashboard/coach-subscriptions",
       badge: null,
     },
+    {
+      icon: TrendingUp,
+      label: "Πρόοδος",
+      path: effectiveCoachId ? `/dashboard/coach-progress?coachId=${effectiveCoachId}` : "/dashboard/coach-progress",
+      badge: null,
+    },
     { type: "separator" },
     {
       icon: ArrowLeft,
@@ -100,7 +107,9 @@ export const CoachSidebar = ({
           (pathWithoutQuery.startsWith("/dashboard/my-athletes") &&
             location.pathname === "/dashboard/my-athletes") ||
           (pathWithoutQuery.startsWith("/dashboard/coach-subscriptions") &&
-            location.pathname === "/dashboard/coach-subscriptions");
+            location.pathname === "/dashboard/coach-subscriptions") ||
+          (pathWithoutQuery.startsWith("/dashboard/coach-progress") &&
+            location.pathname === "/dashboard/coach-progress");
 
         return (
           <button

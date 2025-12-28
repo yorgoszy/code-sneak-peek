@@ -18,9 +18,10 @@ import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
 interface HistoryTabProps {
   selectedUserId?: string;
   readOnly?: boolean;
+  coachUserIds?: string[];
 }
 
-export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
+export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
@@ -40,7 +41,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
 
   useEffect(() => {
     fetchSessions();
-  }, [selectedUserId]);
+  }, [selectedUserId, coachUserIds]);
 
   const fetchSessions = async () => {
     try {
@@ -73,6 +74,8 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
       // Filter by specific user if selectedUserId is provided
       if (selectedUserId) {
         query = query.eq('user_id', selectedUserId);
+      } else if (coachUserIds && coachUserIds.length > 0) {
+        query = query.in('user_id', coachUserIds);
       }
 
       const [sessionsRes, usersRes] = await Promise.all([

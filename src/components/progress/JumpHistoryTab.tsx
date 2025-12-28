@@ -32,9 +32,10 @@ interface JumpSession {
 interface JumpHistoryTabProps {
   selectedUserId?: string;
   readOnly?: boolean;
+  coachUserIds?: string[];
 }
 
-export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
+export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<JumpSession[]>([]);
@@ -52,7 +53,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
 
   useEffect(() => {
     fetchSessions();
-  }, [selectedUserId]);
+  }, [selectedUserId, coachUserIds]);
 
   const fetchSessions = async () => {
     try {
@@ -92,6 +93,8 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
       // Filter by specific user if selectedUserId is provided
       if (selectedUserId) {
         sessionsQuery = sessionsQuery.eq('user_id', selectedUserId);
+      } else if (coachUserIds && coachUserIds.length > 0) {
+        sessionsQuery = sessionsQuery.in('user_id', coachUserIds);
       }
 
       const { data, error } = await sessionsQuery;

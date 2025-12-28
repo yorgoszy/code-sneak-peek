@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { TestResult } from "../types";
 
-export const useAnthropometricTestResults = (usersMap: Map<string, string>, selectedUserId?: string) => {
+export const useAnthropometricTestResults = (usersMap: Map<string, string>, selectedUserId?: string, coachUserIds?: string[]) => {
   const [results, setResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,6 +17,8 @@ export const useAnthropometricTestResults = (usersMap: Map<string, string>, sele
     // Filter by specific user if selectedUserId is provided
     if (selectedUserId) {
       query = query.eq('user_id', selectedUserId);
+    } else if (coachUserIds && coachUserIds.length > 0) {
+      query = query.in('user_id', coachUserIds);
     }
     
     const { data: sessions, error } = await query;
@@ -49,7 +51,7 @@ export const useAnthropometricTestResults = (usersMap: Map<string, string>, sele
     }
     setResults(newResults);
     setLoading(false);
-  }, [usersMap, selectedUserId]);
+  }, [usersMap, selectedUserId, coachUserIds]);
 
   useEffect(() => {
     fetchAnthroTests();

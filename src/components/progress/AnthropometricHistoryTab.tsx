@@ -17,6 +17,7 @@ import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 interface AnthropometricHistoryTabProps {
   selectedUserId?: string;
   readOnly?: boolean;
+  coachUserIds?: string[];
 }
 
 interface EditFormData {
@@ -33,10 +34,10 @@ interface EditFormData {
   arm_circumference: string;
 }
 
-export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
+export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds }) => {
   const { t } = useTranslation();
   const usersMap = useUserNamesMap();
-  const { results, loading, refetch } = useAnthropometricTestResults(usersMap, selectedUserId);
+  const { results, loading, refetch } = useAnthropometricTestResults(usersMap, selectedUserId, coachUserIds);
   const [anthropometricData, setAnthropometricData] = useState<Record<string, any>>({});
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [userSearch, setUserSearch] = useState<string>("");
