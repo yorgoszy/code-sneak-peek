@@ -4,7 +4,7 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Search, Menu, Eye, Mail } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Search, Menu, Eye, Mail, ArrowRightLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { matchesSearchTerm } from "@/lib/utils";
 import {
@@ -44,6 +44,9 @@ const MyAthletes = () => {
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const [searchParams] = useSearchParams();
 
+  const coachIdParam = searchParams.get("coachId");
+  const isAdminViewingCoach = !!coachIdParam && isAdmin() && coachIdParam !== userProfile?.id;
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -51,6 +54,10 @@ const MyAthletes = () => {
   const [athletes, setAthletes] = useState<CoachUser[]>([]);
   const [loadingAthletes, setLoadingAthletes] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Admin-only: athletes currently attached to admin (legacy/wrong) that can be reassigned
+  const [adminAthletes, setAdminAthletes] = useState<CoachUser[]>([]);
+  const [loadingAdminAthletes, setLoadingAdminAthletes] = useState(false);
 
   // Dialog states
   const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
@@ -60,13 +67,11 @@ const MyAthletes = () => {
   const [selectedUser, setSelectedUser] = useState<CoachUser | null>(null);
 
   const effectiveCoachId = useMemo(() => {
-    const coachIdParam = searchParams.get("coachId");
-
     // Επιτρέπουμε προβολή/διαχείριση αθλητών άλλου coach ΜΟΝΟ σε admin.
     if (coachIdParam && isAdmin() && coachIdParam !== userProfile?.id) return coachIdParam;
 
     return userProfile?.id ?? null;
-  }, [searchParams, isAdmin, userProfile?.id]);
+  }, [coachIdParam, isAdmin, userProfile?.id]);
 
   // Check for tablet size
   useEffect(() => {
@@ -105,12 +110,64 @@ const MyAthletes = () => {
     }
   };
 
+  const fetchAdminAthletes = async () => {
+    if (!isAdminViewingCoach || loadingAdminAthletes || !userProfile?.id) {
+      setAdminAthletes([]);
+      return;
+    }
+
+    setLoadingAdminAthletes(true);
+    try {
+      const { data, error } = await supabase
+        .from("coach_users")
+        .select("*")
+        .eq("coach_id", userProfile.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("❌ Error fetching admin athletes:", error);
+        return;
+      }
+
+      setAdminAthletes(data || []);
+    } finally {
+      setLoadingAdminAthletes(false);
+    }
+  };
+
+  const reassignAthleteToCoach = async (athleteId: string) => {
+    if (!effectiveCoachId) return;
+
+    try {
+      const { error } = await supabase
+        .from("coach_users")
+        .update({ coach_id: effectiveCoachId })
+        .eq("id", athleteId);
+
+      if (error) {
+        console.error("❌ Error reassigning athlete:", error);
+        toast.error("Αποτυχία μεταφοράς αθλητή");
+        return;
+      }
+
+      toast.success("Ο αθλητής μεταφέρθηκε στον coach");
+      fetchAthletes();
+      fetchAdminAthletes();
+    } catch (e) {
+      console.error(e);
+      toast.error("Αποτυχία μεταφοράς αθλητή");
+    }
+  };
+
   useEffect(() => {
     if (!rolesLoading && effectiveCoachId) {
       fetchAthletes();
     }
+    if (!rolesLoading) {
+      fetchAdminAthletes();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rolesLoading, effectiveCoachId]);
+  }, [rolesLoading, effectiveCoachId, isAdminViewingCoach, userProfile?.id]);
 
   if (loading || rolesLoading) {
     return (
@@ -316,6 +373,60 @@ const MyAthletes = () => {
                     />
                   </div>
                 </div>
+
+                {/* Admin mapping helper: show athletes that are currently attached to admin (legacy) */}
+                {isAdminViewingCoach && (loadingAdminAthletes || adminAthletes.length > 0) && (
+                  <div className="mb-4 border border-border rounded-none">
+                    <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">Αθλητές για αντιστοίχιση</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          Αυτοί οι αθλητές έχουν αποθηκευτεί στον admin. Πάτα “Μεταφορά” για να μπουν στον coach.
+                        </p>
+                      </div>
+                      <div className="text-xs text-muted-foreground shrink-0">
+                        {loadingAdminAthletes ? "..." : `${adminAthletes.length}`}
+                      </div>
+                    </div>
+
+                    <div className="divide-y divide-border">
+                      {loadingAdminAthletes ? (
+                        <div className="px-3 py-3 text-sm text-muted-foreground">Φόρτωση...</div>
+                      ) : (
+                        adminAthletes
+                          .filter((a) =>
+                            matchesSearchTerm(a.name, searchTerm) || matchesSearchTerm(a.email, searchTerm)
+                          )
+                          .slice(0, 30)
+                          .map((a) => (
+                            <div key={a.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={a.avatar_url || ""} />
+                                  <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
+                                    {a.name?.charAt(0)?.toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{a.name}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{a.email}</p>
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-none"
+                                onClick={() => reassignAthleteToCoach(a.id)}
+                              >
+                                <ArrowRightLeft className="h-4 w-4 mr-2" />
+                                Μεταφορά
+                              </Button>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {loadingAthletes ? (
                   <div className="text-center py-8">
