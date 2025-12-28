@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-type UserRole = 'admin' | 'trainer' | 'athlete' | 'general' | 'parent' | 'coach';
+type UserRole = 'admin' | 'trainer' | 'athlete' | 'general' | 'parent';
 
 export const useRoleCheck = () => {
   const { user, loading: authLoading } = useAuth();
@@ -104,10 +104,6 @@ export const useRoleCheck = () => {
     return userRoles.includes('parent');
   };
 
-  const isCoach = (): boolean => {
-    return userRoles.includes('coach');
-  };
-
   console.log('🔄 useRoleCheck: Current state:', {
     userRoles, 
     loading: loading || authLoading, 
@@ -126,7 +122,6 @@ export const useRoleCheck = () => {
     isAthlete,
     isGeneral,
     isParent,
-    isCoach,
     loading: loading || authLoading
   };
 };

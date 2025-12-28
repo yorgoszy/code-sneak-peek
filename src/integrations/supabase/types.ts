@@ -388,7 +388,6 @@ export type Database = {
       }
       anthropometric_test_sessions: {
         Row: {
-          coach_id: string | null
           created_at: string | null
           created_by: string | null
           id: string
@@ -398,7 +397,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -408,7 +406,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -421,13 +418,6 @@ export type Database = {
           {
             foreignKeyName: "anthropometric_test_sessions_athlete_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "anthropometric_test_sessions_coach_id_fkey"
-            columns: ["coach_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -455,7 +445,6 @@ export type Database = {
           birth_date: string | null
           category: string | null
           child_birth_date: string | null
-          coach_id: string | null
           created_at: string | null
           email: string
           gender: string | null
@@ -476,7 +465,6 @@ export type Database = {
           birth_date?: string | null
           category?: string | null
           child_birth_date?: string | null
-          coach_id?: string | null
           created_at?: string | null
           email: string
           gender?: string | null
@@ -497,7 +485,6 @@ export type Database = {
           birth_date?: string | null
           category?: string | null
           child_birth_date?: string | null
-          coach_id?: string | null
           created_at?: string | null
           email?: string
           gender?: string | null
@@ -512,15 +499,7 @@ export type Database = {
           updated_at?: string | null
           user_status?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "app_users_coach_id_fkey"
-            columns: ["coach_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       articles: {
         Row: {
@@ -1211,7 +1190,6 @@ export type Database = {
       }
       endurance_test_sessions: {
         Row: {
-          coach_id: string | null
           created_at: string | null
           created_by: string | null
           id: string
@@ -1221,7 +1199,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -1231,7 +1208,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -1244,13 +1220,6 @@ export type Database = {
           {
             foreignKeyName: "endurance_test_sessions_athlete_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "endurance_test_sessions_coach_id_fkey"
-            columns: ["coach_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -1551,7 +1520,6 @@ export type Database = {
       }
       exercises: {
         Row: {
-          coach_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -1560,7 +1528,6 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
-          coach_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -1569,7 +1536,6 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
-          coach_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -1577,15 +1543,7 @@ export type Database = {
           updated_at?: string | null
           video_url?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "exercises_coach_id_fkey"
-            columns: ["coach_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       expenses: {
         Row: {
@@ -1997,7 +1955,6 @@ export type Database = {
       }
       groups: {
         Row: {
-          coach_id: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
@@ -2005,7 +1962,6 @@ export type Database = {
           name: string
         }
         Insert: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -2013,7 +1969,6 @@ export type Database = {
           name: string
         }
         Update: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -2021,13 +1976,6 @@ export type Database = {
           name?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "groups_coach_id_fkey"
-            columns: ["coach_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "groups_created_by_fkey"
             columns: ["created_by"]
@@ -2626,7 +2574,6 @@ export type Database = {
       nutrition_plans: {
         Row: {
           carbs_target: number | null
-          coach_id: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -2640,7 +2587,6 @@ export type Database = {
         }
         Insert: {
           carbs_target?: number | null
-          coach_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -2654,7 +2600,6 @@ export type Database = {
         }
         Update: {
           carbs_target?: number | null
-          coach_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -2667,13 +2612,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "nutrition_plans_coach_id_fkey"
-            columns: ["coach_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "nutrition_plans_created_by_fkey"
             columns: ["created_by"]
@@ -3083,7 +3021,6 @@ export type Database = {
         Row: {
           assigned_by: string | null
           assignment_type: string | null
-          coach_id: string | null
           created_at: string | null
           end_date: string | null
           group_id: string | null
@@ -3101,7 +3038,6 @@ export type Database = {
         Insert: {
           assigned_by?: string | null
           assignment_type?: string | null
-          coach_id?: string | null
           created_at?: string | null
           end_date?: string | null
           group_id?: string | null
@@ -3119,7 +3055,6 @@ export type Database = {
         Update: {
           assigned_by?: string | null
           assignment_type?: string | null
-          coach_id?: string | null
           created_at?: string | null
           end_date?: string | null
           group_id?: string | null
@@ -3159,13 +3094,6 @@ export type Database = {
           {
             foreignKeyName: "fk_program_assignments_user_id"
             columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "program_assignments_coach_id_fkey"
-            columns: ["coach_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -3447,7 +3375,6 @@ export type Database = {
       }
       programs: {
         Row: {
-          coach_id: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
@@ -3463,7 +3390,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -3479,7 +3405,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -3517,13 +3442,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "programs_coach_id_fkey"
-            columns: ["coach_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "programs_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -3541,7 +3459,6 @@ export type Database = {
       }
       receipts: {
         Row: {
-          coach_id: string | null
           created_at: string
           created_by: string | null
           customer_email: string | null
@@ -3562,7 +3479,6 @@ export type Database = {
           vat: number
         }
         Insert: {
-          coach_id?: string | null
           created_at?: string
           created_by?: string | null
           customer_email?: string | null
@@ -3583,7 +3499,6 @@ export type Database = {
           vat?: number
         }
         Update: {
-          coach_id?: string | null
           created_at?: string
           created_by?: string | null
           customer_email?: string | null
@@ -3604,13 +3519,6 @@ export type Database = {
           vat?: number
         }
         Relationships: [
-          {
-            foreignKeyName: "receipts_coach_id_fkey"
-            columns: ["coach_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "receipts_payment_id_fkey"
             columns: ["payment_id"]
@@ -4031,7 +3939,6 @@ export type Database = {
       }
       strength_test_sessions: {
         Row: {
-          coach_id: string | null
           created_at: string | null
           created_by: string | null
           id: string
@@ -4041,7 +3948,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -4051,7 +3957,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -4064,13 +3969,6 @@ export type Database = {
           {
             foreignKeyName: "strength_test_sessions_athlete_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "strength_test_sessions_coach_id_fkey"
-            columns: ["coach_id"]
             isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -4455,7 +4353,6 @@ export type Database = {
       }
       tests: {
         Row: {
-          coach_id: string | null
           created_at: string | null
           created_by: string | null
           date: string
@@ -4469,7 +4366,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           date: string
@@ -4483,7 +4379,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          coach_id?: string | null
           created_at?: string | null
           created_by?: string | null
           date?: string
@@ -4497,13 +4392,6 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "tests_coach_id_fkey"
-            columns: ["coach_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "tests_test_type_id_fkey"
             columns: ["test_type_id"]
@@ -5104,7 +4992,6 @@ export type Database = {
         Row: {
           archived_at: string | null
           auto_renewal: boolean | null
-          coach_id: string | null
           created_at: string
           end_date: string
           id: string
@@ -5123,7 +5010,6 @@ export type Database = {
         Insert: {
           archived_at?: string | null
           auto_renewal?: boolean | null
-          coach_id?: string | null
           created_at?: string
           end_date: string
           id?: string
@@ -5142,7 +5028,6 @@ export type Database = {
         Update: {
           archived_at?: string | null
           auto_renewal?: boolean | null
-          coach_id?: string | null
           created_at?: string
           end_date?: string
           id?: string
@@ -5159,13 +5044,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "user_subscriptions_coach_id_fkey"
-            columns: ["coach_id"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "user_subscriptions_payment_id_fkey"
             columns: ["payment_id"]
@@ -5672,7 +5550,6 @@ export type Database = {
       exec_sql: { Args: { query: string }; Returns: Json }
       force_delete_athlete: { Args: { athlete_id: string }; Returns: undefined }
       generate_coupon_code: { Args: never; Returns: string }
-      get_app_user_id_safe: { Args: { user_auth_id: string }; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
       get_latest_1rm: {
         Args: { athlete_id: string; exercise_id: string }
@@ -5690,7 +5567,6 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
       }
-      get_user_role_safe: { Args: { user_auth_id: string }; Returns: string }
       has_active_subscription: { Args: { user_uuid: string }; Returns: boolean }
       has_role: {
         Args: {
@@ -5699,8 +5575,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin_safe: { Args: { user_auth_id: string }; Returns: boolean }
-      is_coach_safe: { Args: { user_auth_id: string }; Returns: boolean }
       join_waiting_list:
         | {
             Args: {

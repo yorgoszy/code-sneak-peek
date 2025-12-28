@@ -62,7 +62,7 @@ export const SubscriptionHistory: React.FC = () => {
         .select(`
           *,
           subscription_types (name, price, duration_months),
-          app_users!user_subscriptions_user_id_fkey (name, email)
+          app_users (name, email)
         `)
         .eq('status', 'expired')
         .order('archived_at', { ascending: false, nullsFirst: false })

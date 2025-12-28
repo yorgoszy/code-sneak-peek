@@ -202,7 +202,6 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="coach">Coach</SelectItem>
                 <SelectItem value="trainer">Trainer</SelectItem>
                 <SelectItem value="athlete">Athlete</SelectItem>
                 <SelectItem value="general">General</SelectItem>
