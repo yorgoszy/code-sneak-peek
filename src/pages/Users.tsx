@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
+import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
 import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye, Mail, Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -51,7 +52,7 @@ interface UserWithSubscription extends AppUser {
 
 const Users = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
-  const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
+  const { isAdmin, isCoach, userProfile, loading: rolesLoading } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -222,20 +223,21 @@ const Users = () => {
   useEffect(() => {
     console.log('👥 Users page useEffect:', {
       isAdminResult: isAdmin(),
+      isCoachResult: isCoach(),
       rolesLoading,
       userProfile: userProfile?.id,
       hasInitialized
     });
 
-    // Only initialize once when roles are loaded and user is admin
+    // Only initialize once when roles are loaded and user is admin or coach
     if (!rolesLoading && !hasInitialized) {
-      if (isAdmin()) {
-        console.log('👑 Admin confirmed, fetching users');
+      if (isAdmin() || isCoach()) {
+        console.log('👑 Admin/Coach confirmed, fetching users');
         fetchUsers();
       }
       setHasInitialized(true);
     }
-  }, [isAdmin, rolesLoading, hasInitialized]);
+  }, [isAdmin, isCoach, rolesLoading, hasInitialized]);
 
   if (loading || rolesLoading) {
     console.log('⏳ Users page loading:', { loading, rolesLoading });
@@ -253,11 +255,14 @@ const Users = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // Only allow admin users to access the users page
-  if (!isAdmin()) {
-    console.log('🔄 Non-admin trying to access Users page, redirecting to profile');
+  // Only allow admin and coach users to access the users page
+  if (!isAdmin() && !isCoach()) {
+    console.log('🔄 Non-admin/non-coach trying to access Users page, redirecting to profile');
     return <Navigate to={`/dashboard/user-profile/${userProfile?.id}`} replace />;
   }
+
+  // Choose appropriate sidebar
+  const SidebarComponent = isCoach() ? CoachSidebar : Sidebar;
 
   const handleEditUser = (user: AppUser) => {
     console.log('✏️ Edit user:', user.id);
@@ -383,7 +388,7 @@ const Users = () => {
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar - Large screens only */}
         <div className="hidden lg:block">
-          <Sidebar
+          <SidebarComponent
             isCollapsed={isCollapsed}
             setIsCollapsed={setIsCollapsed}
           />
@@ -397,7 +402,7 @@ const Users = () => {
               onClick={() => setShowMobileSidebar(false)}
             />
             <div className="absolute left-0 top-0 h-full bg-white shadow-xl">
-              <Sidebar
+              <SidebarComponent
                 isCollapsed={false}
                 setIsCollapsed={() => {}}
               />
