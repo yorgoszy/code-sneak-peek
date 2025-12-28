@@ -14,6 +14,7 @@ import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 interface FunctionalHistoryTabProps {
   selectedUserId?: string;
   readOnly?: boolean;
+  coachUserIds?: string[];
 }
 
 interface FunctionalResult {
@@ -23,7 +24,7 @@ interface FunctionalResult {
   user_id: string;
 }
 
-export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
+export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds }) => {
   const usersMap = useUserNamesMap();
   const [results, setResults] = useState<FunctionalResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +46,8 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
       // Αν έχουμε selectedUserId, φιλτράρουμε απευθείας
       if (selectedUserId) {
         query = query.eq('user_id', selectedUserId);
+      } else if (coachUserIds && coachUserIds.length > 0) {
+        query = query.in('user_id', coachUserIds);
       }
 
       const { data: sessions, error } = await query;

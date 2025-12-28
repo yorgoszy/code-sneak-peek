@@ -14,9 +14,10 @@ import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
 interface EnduranceHistoryTabProps {
   selectedUserId?: string;
   readOnly?: boolean;
+  coachUserIds?: string[];
 }
 
-export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ selectedUserId, readOnly = false }) => {
+export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
@@ -32,7 +33,7 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
 
   useEffect(() => {
     fetchSessions();
-  }, [selectedUserId]);
+  }, [selectedUserId, coachUserIds]);
 
   const fetchSessions = async () => {
     try {
@@ -75,6 +76,8 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
       // Filter by specific user if selectedUserId is provided
       if (selectedUserId) {
         sessionsQuery = sessionsQuery.eq('user_id', selectedUserId);
+      } else if (coachUserIds && coachUserIds.length > 0) {
+        sessionsQuery = sessionsQuery.in('user_id', coachUserIds);
       }
 
       const [sessionsRes, usersRes] = await Promise.all([
