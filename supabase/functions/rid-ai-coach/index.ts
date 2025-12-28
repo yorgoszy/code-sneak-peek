@@ -50,6 +50,165 @@ serve(async (req) => {
     );
     const callerUserData = await callerUserResponse.json();
     const isAdmin = callerUserData[0]?.role === 'admin';
+    const isCoach = callerUserData[0]?.role === 'coach';
+    const isAdminOrCoach = isAdmin || isCoach;
+
+    // 🏋️ ΦΟΡΤΩΣΗ COACH DATA (Αθλητές και Συνδρομές Coach)
+    let coachAthletesContext = '';
+    let coachSubscriptionsContext = '';
+    
+    if (isAdminOrCoach) {
+      console.log(`🏋️ Loading coach data for ${isAdmin ? 'admin' : 'coach'} mode...`);
+      
+      // Φόρτωση αθλητών του coach (coach_users)
+      const coachUsersResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/coach_users?coach_id=eq.${userId}&select=*&order=created_at.desc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const coachUsersData = await coachUsersResponse.json();
+      
+      if (Array.isArray(coachUsersData) && coachUsersData.length > 0) {
+        console.log(`✅ Loaded ${coachUsersData.length} coach athletes`);
+        
+        // Φόρτωση συνδρομών για αυτούς τους αθλητές
+        const coachUserIds = coachUsersData.map((u: any) => u.id);
+        const coachSubsResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/coach_subscriptions?coach_user_id=in.(${coachUserIds.join(',')})&select=*,subscription_types(name,price,duration_months)&order=end_date.desc`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const coachSubsData = await coachSubsResponse.json();
+        
+        // Map subscriptions by coach_user_id
+        const subsMap: Record<string, any[]> = {};
+        if (Array.isArray(coachSubsData)) {
+          coachSubsData.forEach((sub: any) => {
+            if (!subsMap[sub.coach_user_id]) subsMap[sub.coach_user_id] = [];
+            subsMap[sub.coach_user_id].push(sub);
+          });
+        }
+        
+        // Υπολογισμός κατάστασης συνδρομής για κάθε αθλητή
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const getSubscriptionStatus = (subs: any[]) => {
+          if (!subs || subs.length === 0) return { status: 'inactive', label: 'Ανενεργός' };
+          
+          const activeSub = subs.find(sub => {
+            const endDate = new Date(sub.end_date);
+            endDate.setHours(23, 59, 59, 999);
+            return endDate >= today && sub.status === 'active';
+          });
+          
+          if (!activeSub) return { status: 'inactive', label: 'Ανενεργός' };
+          if (activeSub.is_paid === false) return { status: 'unpaid', label: 'Απλήρωτη' };
+          if (activeSub.is_paused) return { status: 'paused', label: 'Σε παύση' };
+          return { status: 'active', label: 'Ενεργός' };
+        };
+        
+        // Build athletes context
+        const activeAthletes = coachUsersData.filter((u: any) => {
+          const subs = subsMap[u.id] || [];
+          const status = getSubscriptionStatus(subs);
+          return status.status === 'active';
+        });
+        const inactiveAthletes = coachUsersData.filter((u: any) => {
+          const subs = subsMap[u.id] || [];
+          const status = getSubscriptionStatus(subs);
+          return status.status === 'inactive';
+        });
+        const unpaidAthletes = coachUsersData.filter((u: any) => {
+          const subs = subsMap[u.id] || [];
+          const status = getSubscriptionStatus(subs);
+          return status.status === 'unpaid';
+        });
+        const pausedAthletes = coachUsersData.filter((u: any) => {
+          const subs = subsMap[u.id] || [];
+          const status = getSubscriptionStatus(subs);
+          return status.status === 'paused';
+        });
+        
+        coachAthletesContext = `\n\n🏋️ ΑΘΛΗΤΕΣ COACH (coach_users):
+📊 ΣΤΑΤΙΣΤΙΚΑ:
+- Συνολικοί αθλητές: ${coachUsersData.length}
+- Ενεργοί (με ενεργή συνδρομή): ${activeAthletes.length}
+- Ανενεργοί (χωρίς συνδρομή ή ληγμένη): ${inactiveAthletes.length}
+- Απλήρωτες συνδρομές: ${unpaidAthletes.length}
+- Σε παύση: ${pausedAthletes.length}
+
+📋 ΛΙΣΤΑ ΑΘΛΗΤΩΝ:
+`;
+        
+        coachUsersData.forEach((athlete: any) => {
+          const subs = subsMap[athlete.id] || [];
+          const status = getSubscriptionStatus(subs);
+          const activeSub = subs.find((s: any) => {
+            const endDate = new Date(s.end_date);
+            endDate.setHours(23, 59, 59, 999);
+            return endDate >= today && s.status === 'active';
+          });
+          
+          let subInfo = '';
+          if (activeSub) {
+            const endDate = new Date(activeSub.end_date);
+            const daysUntil = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+            const typeName = activeSub.subscription_types?.name || 'Unknown';
+            subInfo = ` | ${typeName} λήγει ${activeSub.end_date} (${daysUntil > 0 ? `σε ${daysUntil} ημέρες` : 'ΛΗΓΜΕΝΗ'})`;
+          }
+          
+          coachAthletesContext += `  • ${athlete.name} (${athlete.email}) - ${status.label}${subInfo}\n`;
+        });
+        
+        // Subscriptions overview
+        if (Array.isArray(coachSubsData) && coachSubsData.length > 0) {
+          const activeSubsCount = coachSubsData.filter((s: any) => {
+            const endDate = new Date(s.end_date);
+            endDate.setHours(23, 59, 59, 999);
+            return endDate >= today && s.status === 'active';
+          }).length;
+          const unpaidSubsCount = coachSubsData.filter((s: any) => s.is_paid === false).length;
+          const pausedSubsCount = coachSubsData.filter((s: any) => s.is_paused === true).length;
+          
+          coachSubscriptionsContext = `\n\n💳 ΣΥΝΔΡΟΜΕΣ COACH (coach_subscriptions):
+📊 ΣΤΑΤΙΣΤΙΚΑ:
+- Συνολικές συνδρομές: ${coachSubsData.length}
+- Ενεργές: ${activeSubsCount}
+- Απλήρωτες: ${unpaidSubsCount}
+- Σε παύση: ${pausedSubsCount}
+
+📋 ΛΙΣΤΑ ΣΥΝΔΡΟΜΩΝ (πρόσφατες):
+`;
+          
+          coachSubsData.slice(0, 20).forEach((sub: any) => {
+            const athlete = coachUsersData.find((u: any) => u.id === sub.coach_user_id);
+            const athleteName = athlete?.name || 'Unknown';
+            const typeName = sub.subscription_types?.name || 'Unknown';
+            const endDate = new Date(sub.end_date);
+            const daysUntil = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+            
+            let statusEmoji = '✅';
+            if (sub.is_paid === false) statusEmoji = '💰';
+            else if (sub.is_paused) statusEmoji = '⏸️';
+            else if (daysUntil < 0) statusEmoji = '❌';
+            else if (daysUntil <= 7) statusEmoji = '⚠️';
+            
+            coachSubscriptionsContext += `  ${statusEmoji} ${athleteName}: ${typeName} | ${sub.start_date} - ${sub.end_date} (${daysUntil > 0 ? `σε ${daysUntil} ημέρες` : `ΛΗΓΜΕΝΗ πριν ${Math.abs(daysUntil)} ημέρες`})${sub.is_paid === false ? ' [ΑΠΛΗΡΩΤΗ]' : ''}${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\n`;
+          });
+        }
+      } else {
+        coachAthletesContext = '\n\n🏋️ ΑΘΛΗΤΕΣ COACH: Δεν βρέθηκαν αθλητές για αυτόν τον coach.\n';
+      }
+    }
 
     // 📦 ΦΟΡΤΩΣΗ SUBSCRIPTION STATUS ΤΟΥ ΧΡΗΣΤΗ
     let userSubscriptionStatus = 'inactive';
@@ -3715,6 +3874,7 @@ ${isAdmin && !targetUserId ? `
 ✅ ΟΛΑ τα workout completions (ολοκληρωμένες, χαμένες, προγραμματισμένες)
 ✅ Πρόοδο και στατιστικά όλων των αθλητών
 ✅ 📊 ΔΕΔΟΜΕΝΑ ΠΡΟΟΔΟΥ ΑΘΛΗΤΩΝ: Ανθρωπομετρικά, Αντοχή (VO2max, MAS, push-ups, κλπ), Άλματα
+✅ 🏋️ COACH DATA: Αθλητές coach (coach_users) και συνδρομές coach (coach_subscriptions)
 
 ⚠️ ΚΡΙΤΙΚΟ ΓΙΑ ΑΝΑΘΕΣΕΙΣ (ASSIGNMENTS) ΣΕ ADMIN MODE:
 - Όταν ο χρήστης λέει «βρες την προπόνηση του Α και ανάθεσέ την στον Β», τότε:
@@ -3747,7 +3907,29 @@ ${isAdmin && !targetUserId ? `
 - 📋 ΛΕΠΤΟΜΕΡΗΣ ΠΡΟΒΟΛΗ ΠΡΟΠΟΝΗΣΕΩΝ με όλες τις ασκήσεις κάθε ημέρας
 - 📅 ΗΜΕΡΟΛΟΓΙΟ ΠΡΟΠΟΝΗΣΕΩΝ με το status κάθε προπόνησης
 - 👥 ΕΝΕΡΓΑ ΠΡΟΓΡΑΜΜΑΤΑ ΑΝΑ ΑΘΛΗΤΗ με πρόοδο και στατιστικά
-- 📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ με τεστ αντοχής, ανθρωπομετρικά, άλματα` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
+- 📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ με τεστ αντοχής, ανθρωπομετρικά, άλματα
+- 🏋️ ΑΘΛΗΤΕΣ COACH με κατάσταση συνδρομής κάθε αθλητή
+- 💳 ΣΥΝΔΡΟΜΕΣ COACH με λίστα ενεργών, απλήρωτων, σε παύση συνδρομών` : isCoach && !targetUserId ? `
+
+🏋️ ΛΕΙΤΟΥΡΓΙΑ COACH MODE 🏋️
+Είσαι σε COACH MODE και έχεις πρόσβαση στα δεδομένα των αθλητών σου!
+
+COACH DATA - Έχεις πρόσβαση σε:
+✅ Λίστα των αθλητών σου (coach_users)
+✅ Συνδρομές των αθλητών σου (coach_subscriptions)
+✅ Κατάσταση κάθε αθλητή (ενεργός, ανενεργός, απλήρωτη, σε παύση)
+✅ Ημερομηνίες λήξης συνδρομών
+✅ Ποιες συνδρομές λήγουν σύντομα
+
+ΣΗΜΑΝΤΙΚΟ: Μπορείς να απαντήσεις ερωτήσεις όπως:
+- "Πόσους αθλητές έχω;"
+- "Ποιοι αθλητές έχουν απλήρωτες συνδρομές;"
+- "Ποιες συνδρομές λήγουν σύντομα;"
+- "Ποιοι αθλητές είναι ανενεργοί;"
+
+Το context που έχεις περιλαμβάνει:
+- 🏋️ ΑΘΛΗΤΕΣ COACH με κατάσταση συνδρομής κάθε αθλητή
+- 💳 ΣΥΝΔΡΟΜΕΣ COACH με λίστα ενεργών, απλήρωτων, σε παύση συνδρομών` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
@@ -3793,7 +3975,7 @@ ${isAdmin && !targetUserId ? `
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${coachAthletesContext}${coachSubscriptionsContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
