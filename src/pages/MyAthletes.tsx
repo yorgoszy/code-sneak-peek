@@ -37,6 +37,8 @@ interface CoachUser {
   status: string;
   created_at: string;
   updated_at: string;
+  // Computed from subscriptions
+  subscriptionStatus?: 'active' | 'paused' | 'inactive';
 }
 
 const MyAthletes = () => {
@@ -90,19 +92,72 @@ const MyAthletes = () => {
 
     setLoadingAthletes(true);
     try {
-      const { data, error } = await supabase
+      // Fetch athletes
+      const { data: athletesData, error: athletesError } = await supabase
         .from("coach_users")
         .select("*")
         .eq("coach_id", effectiveCoachId)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("❌ Error fetching athletes:", error);
+      if (athletesError) {
+        console.error("❌ Error fetching athletes:", athletesError);
         toast.error("Σφάλμα κατά τη φόρτωση αθλητών");
         return;
       }
 
-      setAthletes(data || []);
+      // Fetch subscriptions for these athletes
+      const athleteIds = (athletesData || []).map(a => a.id);
+      
+      let subscriptionsMap: Record<string, { status: string; is_paused: boolean; end_date: string }[]> = {};
+      
+      if (athleteIds.length > 0) {
+        const { data: subscriptionsData, error: subscriptionsError } = await supabase
+          .from("coach_subscriptions")
+          .select("coach_user_id, status, is_paused, end_date")
+          .in("coach_user_id", athleteIds);
+
+        if (!subscriptionsError && subscriptionsData) {
+          // Group subscriptions by coach_user_id
+          subscriptionsData.forEach(sub => {
+            if (!subscriptionsMap[sub.coach_user_id]) {
+              subscriptionsMap[sub.coach_user_id] = [];
+            }
+            subscriptionsMap[sub.coach_user_id].push(sub);
+          });
+        }
+      }
+
+      // Calculate subscription status for each athlete
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const athletesWithStatus = (athletesData || []).map(athlete => {
+        const subs = subscriptionsMap[athlete.id] || [];
+        
+        // Check for active subscription (not expired)
+        const activeSub = subs.find(sub => {
+          const endDate = new Date(sub.end_date);
+          endDate.setHours(23, 59, 59, 999);
+          return endDate >= today && sub.status === 'active';
+        });
+
+        let subscriptionStatus: 'active' | 'paused' | 'inactive' = 'inactive';
+        
+        if (activeSub) {
+          if (activeSub.is_paused) {
+            subscriptionStatus = 'paused';
+          } else {
+            subscriptionStatus = 'active';
+          }
+        }
+
+        return {
+          ...athlete,
+          subscriptionStatus
+        };
+      });
+
+      setAthletes(athletesWithStatus);
     } catch (error) {
       console.error("💥 Error:", error);
     } finally {
@@ -238,14 +293,29 @@ const MyAthletes = () => {
     return new Date(dateString).toLocaleDateString('el-GR');
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+  const getSubscriptionStatusColor = (status?: 'active' | 'paused' | 'inactive') => {
+    switch (status) {
       case 'active':
         return 'bg-green-100 text-green-800';
+      case 'paused':
+        return 'bg-yellow-100 text-yellow-800';
       case 'inactive':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getSubscriptionStatusText = (status?: 'active' | 'paused' | 'inactive') => {
+    switch (status) {
+      case 'active':
+        return 'Ενεργός';
+      case 'paused':
+        return 'Σε παύση';
+      case 'inactive':
+        return 'Ανενεργός';
+      default:
+        return 'Ανενεργός';
     }
   };
 
@@ -476,8 +546,8 @@ const MyAthletes = () => {
                               <TableCell>{athlete.email}</TableCell>
                               <TableCell>{athlete.phone || '-'}</TableCell>
                               <TableCell>
-                                <span className={`px-2 py-1 text-xs rounded ${getStatusColor(athlete.status)}`}>
-                                  {athlete.status === 'active' ? 'Ενεργός' : 'Ανενεργός'}
+                                <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(athlete.subscriptionStatus)}`}>
+                                  {getSubscriptionStatusText(athlete.subscriptionStatus)}
                                 </span>
                               </TableCell>
                               <TableCell>{formatDate(athlete.created_at)}</TableCell>
@@ -545,8 +615,8 @@ const MyAthletes = () => {
                                   <p className="text-sm text-gray-500">{athlete.email}</p>
                                 </div>
                               </div>
-                              <span className={`px-2 py-1 text-xs rounded ${getStatusColor(athlete.status)}`}>
-                                {athlete.status === 'active' ? 'Ενεργός' : 'Ανενεργός'}
+                              <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(athlete.subscriptionStatus)}`}>
+                                {getSubscriptionStatusText(athlete.subscriptionStatus)}
                               </span>
                             </div>
                             <div className="mt-3 flex justify-end space-x-1">
