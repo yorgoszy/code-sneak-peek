@@ -259,12 +259,17 @@ const MyAthletes = () => {
 
   const handleSendPasswordReset = async (user: CoachUser) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      const redirectUrl = `${window.location.origin}/auth/reset-password`;
+      
+      const { error } = await supabase.functions.invoke('send-password-reset', {
+        body: {
+          email: user.email,
+          redirectTo: redirectUrl,
+        },
       });
-      
+
       if (error) throw error;
-      
+
       toast.success(`Email επαναφοράς κωδικού στάλθηκε στο ${user.email}`);
     } catch (error: any) {
       console.error('Error sending password reset:', error);
