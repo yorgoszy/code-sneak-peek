@@ -59,59 +59,59 @@ export const CoachSidebar = ({ isCollapsed, setIsCollapsed }: CoachSidebarProps)
 
   const headerContent = (
     <div>
-      <h2 className={`font-semibold text-gray-800 ${isMobile ? 'text-base' : 'text-sm'}`}>
+      <h2 className={`font-semibold text-foreground ${isMobile ? "text-base" : "text-sm"}`}>
         Coach Panel
       </h2>
-      <p className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-xs'}`}>Διαχείριση αθλητών</p>
+      <p className={`text-muted-foreground ${isMobile ? "text-sm" : "text-xs"}`}>
+        Διαχείριση αθλητών
+      </p>
     </div>
   );
 
   const navigationContent = (
-    <div className={`space-y-1 ${isMobile ? 'md:space-y-2' : 'space-y-2'}`}>
+    <div className={`space-y-1 ${isMobile ? "md:space-y-2" : "space-y-2"}`}>
       {menuItems.map((item, index) => {
-        // Separator rendering
-        if (item.type === 'separator') {
-          return (
-            <div 
-              key={`separator-${index}`} 
-              className="my-2 h-px bg-gray-300" 
-            />
-          );
+        if (item.type === "separator") {
+          return <div key={`separator-${index}`} className="my-2 h-px bg-border" />;
         }
 
-        // Regular menu item rendering
         const isActive = location.pathname === item.path;
+
         return (
           <button
             key={item.path}
             onClick={() => handleMenuClick(item)}
-            className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none ${
-              isActive ? 'bg-[#cb8954]/10 text-black border-r-2 border-[#cb8954]' : 'text-gray-700'
-            }`}
+            className={
+              "w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors rounded-none " +
+              (isActive
+                ? "bg-sidebar-accent text-sidebar-accent-foreground border-r-2 border-r-[hsl(var(--auth-gold))]"
+                : "text-sidebar-foreground hover:bg-sidebar-accent")
+            }
           >
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 min-w-0">
               <item.icon className="h-5 w-5 flex-shrink-0" />
               {(!isCollapsed || isMobile) && <span className="truncate">{item.label}</span>}
             </div>
+
             {(!isCollapsed || isMobile) && item.badge && (
-              <span className="text-xs px-2 py-1 rounded-full flex-shrink-0 bg-[#fa3055] text-white">
+              <span className="text-xs px-2 py-1 rounded-none flex-shrink-0 bg-destructive text-destructive-foreground">
                 {item.badge}
               </span>
             )}
           </button>
         );
       })}
-      
+
       {/* RidAI Προπονητής Button */}
       <button
         onClick={handleAIChatClick}
-        className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none border-t border-gray-200 mt-2 pt-4`}
+        className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent rounded-none border-t border-border mt-2 pt-4"
       >
-        <Brain className="h-5 w-5 flex-shrink-0 text-[#cb8954]" />
+        <Brain className="h-5 w-5 flex-shrink-0 text-[hsl(var(--auth-gold))]" />
         {(!isCollapsed || isMobile) && (
           <div className="flex flex-col items-start min-w-0">
             <span className="text-sm font-medium truncate">RidAI Προπονητής</span>
-            <span className="text-xs text-gray-500 truncate">powered by hyperteam</span>
+            <span className="text-xs text-muted-foreground truncate">powered by hyperteam</span>
           </div>
         )}
       </button>
