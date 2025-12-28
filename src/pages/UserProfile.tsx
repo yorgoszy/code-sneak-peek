@@ -30,8 +30,10 @@ const UserProfile = () => {
   const isMobile = useIsMobile();
   const sidebarRef = useRef<{ refreshOffers: () => void }>(null);
 
-  const { isCoach, isAdmin } = useRoleCheck();
-  const showCoachSidebar = isCoach() && !isAdmin();
+  const { isAdmin } = useRoleCheck();
+  
+  // Εμφάνιση sidebar βάσει του ρόλου του ΠΡΟΒΑΛΛΟΜΕΝΟΥ χρήστη, όχι του logged-in user
+  const showCoachSidebar = userProfile?.role === 'coach';
 
   // Check for tablet size
   useEffect(() => {
