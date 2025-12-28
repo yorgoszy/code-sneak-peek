@@ -333,11 +333,29 @@ const CoachSubscriptions = () => {
     }
   };
 
-  const filteredSubscriptions = subscriptions.filter((sub) => {
-    const userName = sub.coach_users?.name || "";
-    const userEmail = sub.coach_users?.email || "";
-    return matchesSearchTerm(userName, searchTerm) || matchesSearchTerm(userEmail, searchTerm);
-  });
+  const filteredSubscriptions = subscriptions
+    .filter((sub) => {
+      const userName = sub.coach_users?.name || "";
+      const userEmail = sub.coach_users?.email || "";
+      return matchesSearchTerm(userName, searchTerm) || matchesSearchTerm(userEmail, searchTerm);
+    })
+    .sort((a, b) => {
+      const today = new Date();
+      const aEnd = new Date(a.end_date);
+      const bEnd = new Date(b.end_date);
+      const aDays = Math.ceil((aEnd.getTime() - today.getTime()) / (1000 * 3600 * 24));
+      const bDays = Math.ceil((bEnd.getTime() - today.getTime()) / (1000 * 3600 * 24));
+      
+      // Ληγμένες πρώτα (αρνητικές ημέρες)
+      const aExpired = aDays < 0;
+      const bExpired = bDays < 0;
+      
+      if (aExpired && !bExpired) return -1;
+      if (!aExpired && bExpired) return 1;
+      
+      // Μέσα στην ίδια κατηγορία, ταξινόμηση κατά ημερομηνία λήξης
+      return aEnd.getTime() - bEnd.getTime();
+    });
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "dd MMM yyyy", { locale: el });
