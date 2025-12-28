@@ -19,12 +19,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { SubscriptionTypesTab } from "@/components/coach/subscriptions/SubscriptionTypesTab";
 import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
+import { CoachSubscriptionActions } from "@/components/coach/subscriptions/CoachSubscriptionActions";
+import { CoachSubscriptionDeleteDialog } from "@/components/coach/subscriptions/CoachSubscriptionDeleteDialog";
+import { CoachSubscriptionEditDialog } from "@/components/coach/subscriptions/CoachSubscriptionEditDialog";
+
+interface SubscriptionType {
+  id: string;
+  name: string;
+  price: number;
+  duration_months: number;
+}
 
 interface CoachSubscription {
   id: string;
@@ -33,11 +44,14 @@ interface CoachSubscription {
   end_date: string;
   status: string;
   is_paused: boolean;
+  is_paid?: boolean;
   notes: string | null;
   created_at: string;
   subscription_types?: {
+    id: string;
     name: string;
     price: number;
+    duration_months: number;
   } | null;
   coach_users?: {
     name: string;
@@ -59,10 +73,17 @@ const CoachSubscriptions = () => {
   const [isTablet, setIsTablet] = useState(false);
   const isMobile = useIsMobile();
   const [subscriptions, setSubscriptions] = useState<CoachSubscription[]>([]);
+  const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("subscriptions");
   const [newSubscriptionOpen, setNewSubscriptionOpen] = useState(false);
+  
+  // Action dialogs state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [subscriptionToDelete, setSubscriptionToDelete] = useState<string | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [subscriptionToEdit, setSubscriptionToEdit] = useState<CoachSubscription | null>(null);
 
   const effectiveCoachId = useMemo(() => {
     if (coachIdParam && isAdmin() && coachIdParam !== userProfile?.id) return coachIdParam;
@@ -87,7 +108,7 @@ const CoachSubscriptions = () => {
         .from("coach_subscriptions")
         .select(`
           *,
-          subscription_types (name, price),
+          subscription_types (id, name, price, duration_months),
           coach_users (name, email, avatar_url)
         `)
         .eq("coach_id", effectiveCoachId)
@@ -107,9 +128,164 @@ const CoachSubscriptions = () => {
     }
   };
 
+  const fetchSubscriptionTypes = async () => {
+    if (!effectiveCoachId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("subscription_types")
+        .select("id, name, price, duration_months")
+        .eq("coach_id", effectiveCoachId);
+
+      if (error) throw error;
+      setSubscriptionTypes(data || []);
+    } catch (error) {
+      console.error("Error fetching subscription types:", error);
+    }
+  };
+
+  // Action handlers
+  const togglePaymentStatus = async (id: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("coach_subscriptions")
+        .update({ is_paid: !currentStatus })
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success(currentStatus ? "Η συνδρομή σημειώθηκε ως μη πληρωμένη" : "Η συνδρομή σημειώθηκε ως πληρωμένη");
+      fetchSubscriptions();
+    } catch (error: any) {
+      toast.error("Σφάλμα: " + error.message);
+    }
+  };
+
+  const pauseSubscription = async (id: string) => {
+    try {
+      const subscription = subscriptions.find(s => s.id === id);
+      if (!subscription) return;
+
+      const endDate = new Date(subscription.end_date);
+      const today = new Date();
+      const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+
+      const { error } = await supabase
+        .from("coach_subscriptions")
+        .update({
+          is_paused: true,
+          paused_at: new Date().toISOString(),
+          paused_days_remaining: Math.max(0, remainingDays)
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success("Η συνδρομή τέθηκε σε παύση");
+      fetchSubscriptions();
+    } catch (error: any) {
+      toast.error("Σφάλμα: " + error.message);
+    }
+  };
+
+  const resumeSubscription = async (id: string) => {
+    try {
+      const subscription = subscriptions.find(s => s.id === id);
+      if (!subscription) return;
+
+      const today = new Date();
+      const remainingDays = (subscription as any).paused_days_remaining || 0;
+      const newEndDate = new Date(today);
+      newEndDate.setDate(today.getDate() + remainingDays);
+
+      const { error } = await supabase
+        .from("coach_subscriptions")
+        .update({
+          is_paused: false,
+          paused_at: null,
+          paused_days_remaining: null,
+          end_date: newEndDate.toISOString().split("T")[0]
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success("Η συνδρομή συνεχίζεται");
+      fetchSubscriptions();
+    } catch (error: any) {
+      toast.error("Σφάλμα: " + error.message);
+    }
+  };
+
+  const renewSubscription = async (id: string) => {
+    try {
+      const subscription = subscriptions.find(s => s.id === id);
+      if (!subscription || !subscription.subscription_types) return;
+
+      const durationMonths = subscription.subscription_types.duration_months || 1;
+      const currentEndDate = new Date(subscription.end_date);
+      const today = new Date();
+      
+      // Start from whichever is later: today or end_date
+      const newStartDate = currentEndDate > today ? currentEndDate : today;
+      const newEndDate = new Date(newStartDate);
+      newEndDate.setMonth(newEndDate.getMonth() + durationMonths);
+      newEndDate.setDate(newEndDate.getDate() - 1);
+
+      const { error } = await supabase
+        .from("coach_subscriptions")
+        .insert({
+          coach_id: effectiveCoachId,
+          coach_user_id: subscription.coach_user_id,
+          subscription_type_id: subscription.subscription_types.id,
+          start_date: newStartDate.toISOString().split("T")[0],
+          end_date: newEndDate.toISOString().split("T")[0],
+          status: "active",
+          is_paused: false,
+          is_paid: false
+        });
+
+      if (error) throw error;
+      toast.success("Η συνδρομή ανανεώθηκε επιτυχώς");
+      fetchSubscriptions();
+    } catch (error: any) {
+      toast.error("Σφάλμα: " + error.message);
+    }
+  };
+
+  const openEditDialog = (id: string) => {
+    const subscription = subscriptions.find(s => s.id === id);
+    if (subscription) {
+      setSubscriptionToEdit(subscription);
+      setEditDialogOpen(true);
+    }
+  };
+
+  const openDeleteDialog = (id: string) => {
+    setSubscriptionToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteSubscription = async () => {
+    if (!subscriptionToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("coach_subscriptions")
+        .delete()
+        .eq("id", subscriptionToDelete);
+
+      if (error) throw error;
+      toast.success("Η συνδρομή διαγράφηκε επιτυχώς");
+      fetchSubscriptions();
+    } catch (error: any) {
+      toast.error("Σφάλμα: " + error.message);
+    } finally {
+      setSubscriptionToDelete(null);
+    }
+  };
+
   useEffect(() => {
     if (!rolesLoading && effectiveCoachId) {
       fetchSubscriptions();
+      fetchSubscriptionTypes();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rolesLoading, effectiveCoachId]);
