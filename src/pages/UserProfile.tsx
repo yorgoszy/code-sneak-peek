@@ -2,11 +2,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Button } from "@/components/ui/button";
 import { LogOut, ArrowLeft, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfileSidebar } from "@/components/user-profile/UserProfileSidebar";
+import { CoachSidebar } from "@/components/CoachSidebar";
 import { UserProfileContent } from "@/components/user-profile/UserProfileContent";
 import { useUserProfileData } from "@/components/user-profile/hooks/useUserProfileData";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -27,6 +29,9 @@ const UserProfile = () => {
   const [isTablet, setIsTablet] = useState(false);
   const isMobile = useIsMobile();
   const sidebarRef = useRef<{ refreshOffers: () => void }>(null);
+
+  const { isCoach, isAdmin } = useRoleCheck();
+  const showCoachSidebar = isCoach() && !isAdmin();
 
   // Check for tablet size
   useEffect(() => {
@@ -127,33 +132,41 @@ const UserProfile = () => {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Desktop Sidebar - Large screens only */}
       <div className="hidden lg:block">
-        <UserProfileSidebar 
-          ref={sidebarRef}
-          isCollapsed={isCollapsed} 
-          setIsCollapsed={setIsCollapsed}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          userProfile={userProfile}
-          stats={stats}
-        />
+        {showCoachSidebar ? (
+          <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        ) : (
+          <UserProfileSidebar
+            ref={sidebarRef}
+            isCollapsed={isCollapsed}
+            setIsCollapsed={setIsCollapsed}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            userProfile={userProfile}
+            stats={stats}
+          />
+        )}
       </div>
 
       {/* Mobile/Tablet Sidebar Overlay */}
       {showMobileSidebar && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div 
+          <div
             className="absolute inset-0 bg-black bg-opacity-50"
             onClick={() => setShowMobileSidebar(false)}
           />
           <div className="relative w-64 h-full">
-            <UserProfileSidebar 
-              isCollapsed={false} 
-              setIsCollapsed={setIsCollapsed}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              userProfile={userProfile}
-              stats={stats}
-            />
+            {showCoachSidebar ? (
+              <CoachSidebar isCollapsed={false} setIsCollapsed={setIsCollapsed} />
+            ) : (
+              <UserProfileSidebar
+                isCollapsed={false}
+                setIsCollapsed={setIsCollapsed}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                userProfile={userProfile}
+                stats={stats}
+              />
+            )}
           </div>
         </div>
       )}
