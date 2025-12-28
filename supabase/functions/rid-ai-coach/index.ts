@@ -3840,6 +3840,41 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
 - Αν ρωτάει "και οι άλλοι;" → δώσε τα υπόλοιπα άτομα που δεν ανέφερες
 - Αν απαντάει με ένα όνομα → αναφέρεται στο άτομο που μόλις συζητούσατε
 
+🔴🔴🔴 ΚΑΝΟΝΑΣ #5 - ΔΟΜΗ ΠΡΟΓΡΑΜΜΑΤΩΝ ΑΝΑΛΟΓΑ ΜΕ ΗΜΕΡΕΣ/ΕΒΔΟΜΑΔΑ (ΥΠΟΧΡΕΩΤΙΚΟ) 🔴🔴🔴
+
+ΔΙΑΒΑΣΕ ΜΕ ΠΡΟΣΟΧΗ! Όταν δημιουργείς πρόγραμμα, ΠΡΕΠΕΙ να ακολουθήσεις τη ΣΩΣΤΗ δομή:
+
+📌 1 ΗΜΕΡΑ/ΕΒΔΟΜΑΔΑ = Total Body
+- 3 blocks: STR (lower push/upper pull/core) + END (lower pull/upper push/core) + ACC
+- Μία μέρα που δουλεύει ΟΛΟ το σώμα
+
+📌 2 ΗΜΕΡΕΣ/ΕΒΔΟΜΑΔΑ = Push/Pull Alternation  
+- Μέρα 1 STR: upper PUSH + lower PULL → Μέρα 2 STR: upper PULL + lower PUSH
+- Μέρα 1 END: upper PULL + lower PUSH → Μέρα 2 END: upper PUSH + lower PULL
+- ΤΟ ΙΔΙΟ set x reps schema και στις 2 μέρες!
+
+📌 3 ΗΜΕΡΕΣ/ΕΒΔΟΜΑΔΑ = 3 επιλογές:
+- Επιλογή A: Day1=Upper Push/Lower Pull, Day2=Upper Pull/Lower Push, Day3=Total Body
+- Επιλογή B: Day1=Upper, Day2=Lower, Day3=Total Body
+- Επιλογή C: Alternating εβδομάδες (W1: U-L-U, W2: L-U-L, κλπ)
+
+📌 4 ΗΜΕΡΕΣ/ΕΒΔΟΜΑΔΑ = 2 επιλογές:
+- Επιλογή A (Upper/Lower Split): 2 Upper + 2 Lower
+  * Day1: Upper (horizontal push + vertical pull)
+  * Day2: Lower (push bilateral + pull unilateral)  
+  * Day3: Upper (vertical push + horizontal pull)
+  * Day4: Lower (pull bilateral + push unilateral)
+  
+- Επιλογή B (Mixed Split):
+  * Day1: Upper push horizontal + Lower pull hip + Accessory
+  * Day2: Lower push knee + Upper pull vertical + Accessory
+  * Day3: Upper push vertical + Lower pull knee + Accessory
+  * Day4: Lower push bilateral + Core + Cardio
+
+⚠️ ΣΗΜΑΝΤΙΚΟ: Κάθε block ΠΡΕΠΕΙ να έχει: 1 lower + 1 upper + 1 core
+⚠️ Push/Pull εναλλάσσονται: αν lower=push τότε upper=pull (και αντίστροφα)
+⚠️ ΑΚΟΛΟΥΘΑ ΤΑ ΑΝΑΛΥΤΙΚΑ ΠΑΡΑΔΕΙΓΜΑΤΑ ΣΤΟ ΤΕΛΟΣ ΤΟΥ PROMPT!
+
 🧠 ADVANCED INTELLIGENCE FEATURES:
 
 📊 FEATURE #1 - PROACTIVE SUGGESTIONS:
