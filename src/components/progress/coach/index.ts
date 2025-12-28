@@ -1,0 +1,10 @@
+export { CoachEnduranceRecordTab } from './CoachEnduranceRecordTab';
+export { CoachEnduranceHistoryTab } from './CoachEnduranceHistoryTab';
+export { CoachStrengthRecordTab } from './CoachStrengthRecordTab';
+export { CoachStrengthHistoryTab } from './CoachStrengthHistoryTab';
+export { CoachJumpRecordTab } from './CoachJumpRecordTab';
+export { CoachJumpHistoryTab } from './CoachJumpHistoryTab';
+export { CoachAnthropometricRecordTab } from './CoachAnthropometricRecordTab';
+export { CoachAnthropometricHistoryTab } from './CoachAnthropometricHistoryTab';
+export { CoachFunctionalRecordTab } from './CoachFunctionalRecordTab';
+export { CoachFunctionalHistoryTab } from './CoachFunctionalHistoryTab';
