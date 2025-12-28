@@ -131,8 +131,8 @@ export const CoachStrengthHistoryTab: React.FC<CoachStrengthHistoryTabProps> = (
       ))}
 
       <DeleteConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Διαγραφή Καταγραφής"
         description="Είστε σίγουροι;"

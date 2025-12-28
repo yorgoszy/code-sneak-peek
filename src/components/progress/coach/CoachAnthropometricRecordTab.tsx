@@ -73,17 +73,19 @@ export const CoachAnthropometricRecordTab: React.FC<CoachAnthropometricRecordTab
 
       if (sessionError) throw sessionError;
 
-      const dataToInsert: Record<string, any> = { test_session_id: session.id };
-      if (form.height) dataToInsert.height = parseFloat(form.height);
-      if (form.weight) dataToInsert.weight = parseFloat(form.weight);
-      if (form.muscleMassPercentage) dataToInsert.muscle_mass_percentage = parseFloat(form.muscleMassPercentage);
-      if (form.boneDensity) dataToInsert.bone_density = parseFloat(form.boneDensity);
-      if (form.bodyFatPercentage) dataToInsert.body_fat_percentage = parseFloat(form.bodyFatPercentage);
-      if (form.visceralFatPercentage) dataToInsert.visceral_fat_percentage = parseFloat(form.visceralFatPercentage);
+      const dataToInsert = {
+        test_session_id: session.id,
+        height: form.height ? parseFloat(form.height) : null,
+        weight: form.weight ? parseFloat(form.weight) : null,
+        muscle_mass_percentage: form.muscleMassPercentage ? parseFloat(form.muscleMassPercentage) : null,
+        bone_density: form.boneDensity ? parseFloat(form.boneDensity) : null,
+        body_fat_percentage: form.bodyFatPercentage ? parseFloat(form.bodyFatPercentage) : null,
+        visceral_fat_percentage: form.visceralFatPercentage ? parseFloat(form.visceralFatPercentage) : null
+      };
 
       const { error: dataError } = await supabase
         .from('coach_anthropometric_test_data')
-        .insert(dataToInsert);
+        .insert([dataToInsert]);
 
       if (dataError) throw dataError;
 

@@ -98,7 +98,7 @@ export const CoachAnthropometricHistoryTab: React.FC<CoachAnthropometricHistoryT
         );
       })}
 
-      <DeleteConfirmDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onConfirm={handleDeleteConfirm} title="Διαγραφή" description="Είστε σίγουροι;" />
+      <DeleteConfirmDialog isOpen={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} onConfirm={handleDeleteConfirm} title="Διαγραφή" description="Είστε σίγουροι;" />
     </div>
   );
 };

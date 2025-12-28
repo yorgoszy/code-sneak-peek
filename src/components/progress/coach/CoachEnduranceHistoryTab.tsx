@@ -169,8 +169,8 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
       )}
 
       <DeleteConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Διαγραφή Καταγραφής"
         description="Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την καταγραφή;"

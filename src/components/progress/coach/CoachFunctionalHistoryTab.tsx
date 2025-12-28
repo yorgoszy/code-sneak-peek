@@ -110,7 +110,7 @@ export const CoachFunctionalHistoryTab: React.FC<CoachFunctionalHistoryTabProps>
         );
       })}
 
-      <DeleteConfirmDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onConfirm={handleDeleteConfirm} title="Διαγραφή" description="Είστε σίγουροι;" />
+      <DeleteConfirmDialog isOpen={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} onConfirm={handleDeleteConfirm} title="Διαγραφή" description="Είστε σίγουροι;" />
     </div>
   );
 };
