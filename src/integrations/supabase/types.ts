@@ -5661,10 +5661,6 @@ export type Database = {
         Args: { athlete_id: string }
         Returns: undefined
       }
-      can_access_coach_data: {
-        Args: { data_coach_id: string }
-        Returns: boolean
-      }
       can_cancel_booking: { Args: { booking_id: string }; Returns: boolean }
       check_and_update_expired_subscriptions: {
         Args: never
@@ -5676,8 +5672,7 @@ export type Database = {
       exec_sql: { Args: { query: string }; Returns: Json }
       force_delete_athlete: { Args: { athlete_id: string }; Returns: undefined }
       generate_coupon_code: { Args: never; Returns: string }
-      get_current_app_user_id: { Args: never; Returns: string }
-      get_current_user_coach_id: { Args: never; Returns: string }
+      get_app_user_id_safe: { Args: { user_auth_id: string }; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
       get_latest_1rm: {
         Args: { athlete_id: string; exercise_id: string }
@@ -5695,6 +5690,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      get_user_role_safe: { Args: { user_auth_id: string }; Returns: string }
       has_active_subscription: { Args: { user_uuid: string }; Returns: boolean }
       has_role: {
         Args: {
@@ -5703,8 +5699,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_current_user_admin: { Args: never; Returns: boolean }
-      is_current_user_coach: { Args: never; Returns: boolean }
+      is_admin_safe: { Args: { user_auth_id: string }; Returns: boolean }
+      is_coach_safe: { Args: { user_auth_id: string }; Returns: boolean }
       join_waiting_list:
         | {
             Args: {
