@@ -121,9 +121,7 @@ const MyAthletes = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (!isCoach()) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  // Επιτρέπουμε πρόσβαση μόνο σε coaches (χωρίς redirect αν δεν υπάρχει coach role ακόμα)
 
   const handleEditUser = (user: CoachUser) => {
     setSelectedUser(user);
