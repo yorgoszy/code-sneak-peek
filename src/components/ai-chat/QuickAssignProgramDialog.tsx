@@ -554,92 +554,80 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-none">
-        <DialogHeader>
-          <DialogTitle>
-            {programData ? "Ανάθεση AI Προγράμματος" : "Γρήγορη δημιουργία & ανάθεση"}
+      <DialogContent className="max-w-sm rounded-none p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base">
+            {programData ? "Ανάθεση AI Προγράμματος" : "Γρήγορη ανάθεση"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* RECIPIENTS SECTION - Clickable */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
+          <div className="space-y-1">
+            <Label className="flex items-center gap-1 text-xs">
               {effectiveGroupId ? (
-                <UsersRound className="h-4 w-4" />
+                <UsersRound className="h-3 w-3" />
               ) : effectiveUserIds.length > 1 ? (
-                <Users className="h-4 w-4" />
+                <Users className="h-3 w-3" />
               ) : (
-                <User className="h-4 w-4" />
+                <User className="h-3 w-3" />
               )}
               {effectiveGroupId ? 'Ομάδα' : effectiveUserIds.length > 1 ? 'Χρήστες' : 'Χρήστης'}
             </Label>
             
             <Popover open={isUserSelectorOpen} onOpenChange={setIsUserSelectorOpen}>
               <PopoverTrigger asChild>
-                <div className="bg-muted/50 p-3 rounded-none cursor-pointer hover:bg-muted/70 transition-colors border border-transparent hover:border-primary/30">
+                <div className="bg-muted/50 p-2 rounded-none cursor-pointer hover:bg-muted/70 transition-colors border border-transparent hover:border-primary/30">
                   {loadingRecipients ? (
-                    <p className="text-sm text-muted-foreground">Φόρτωση...</p>
+                    <p className="text-xs text-muted-foreground">Φόρτωση...</p>
                   ) : effectiveGroupId && recipientGroup ? (
-                    // Group display
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <UsersRound className="h-5 w-5 text-primary" />
+                      <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+                          <UsersRound className="h-3.5 w-3.5 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium">{recipientGroup.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {recipientGroup.member_count} μέλη
-                          </p>
+                          <p className="text-sm font-medium">{recipientGroup.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{recipientGroup.member_count} μέλη</p>
                         </div>
                       </div>
-                      <Edit2 className="h-4 w-4 text-muted-foreground" />
+                      <Edit2 className="h-3 w-3 text-muted-foreground" />
                     </div>
                   ) : recipientUsers.length > 1 ? (
-                    // Multiple users display
                     <div className="flex items-center justify-between">
-                      <div className="space-y-2">
-                        {recipientUsers.map(user => (
-                          <div key={user.id} className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={user.avatar_url} />
-                              <AvatarFallback className="text-xs">
-                                {getInitials(user.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-sm font-medium">{user.name}</p>
-                              <p className="text-xs text-muted-foreground">{user.email}</p>
-                            </div>
-                          </div>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {recipientUsers.slice(0, 3).map(user => (
+                          <Avatar key={user.id} className="h-6 w-6 -ml-1 first:ml-0 border-2 border-background">
+                            <AvatarImage src={user.avatar_url} />
+                            <AvatarFallback className="text-[8px]">{getInitials(user.name)}</AvatarFallback>
+                          </Avatar>
                         ))}
+                        <span className="text-xs text-muted-foreground ml-1">
+                          {recipientUsers.length} χρήστες
+                        </span>
                       </div>
-                      <Edit2 className="h-4 w-4 text-muted-foreground" />
+                      <Edit2 className="h-3 w-3 text-muted-foreground" />
                     </div>
                   ) : recipientUsers.length === 1 ? (
-                    // Single user display
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-7 w-7">
                           <AvatarImage src={recipientUsers[0].avatar_url} />
-                          <AvatarFallback>
-                            {getInitials(recipientUsers[0].name)}
-                          </AvatarFallback>
+                          <AvatarFallback className="text-[10px]">{getInitials(recipientUsers[0].name)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium">{recipientUsers[0].name}</p>
-                          <p className="text-xs text-muted-foreground">{recipientUsers[0].email}</p>
+                          <p className="text-sm font-medium">{recipientUsers[0].name}</p>
+                          <p className="text-[10px] text-muted-foreground">{recipientUsers[0].email}</p>
                         </div>
                       </div>
-                      <Edit2 className="h-4 w-4 text-muted-foreground" />
+                      <Edit2 className="h-3 w-3 text-muted-foreground" />
                     </div>
                   ) : (
                     <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Δεν βρέθηκε παραλήπτης{recipientFallbackLabel ? ` (${recipientFallbackLabel})` : ""}
                       </p>
-                      <Edit2 className="h-4 w-4 text-muted-foreground" />
+                      <Edit2 className="h-3 w-3 text-muted-foreground" />
                     </div>
                   )}
                 </div>
@@ -734,23 +722,23 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
             </Popover>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="program-name">Όνομα προγράμματος</Label>
+          <div className="space-y-1">
+            <Label htmlFor="program-name" className="text-xs">Όνομα</Label>
             <Input
               id="program-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-none"
+              className="rounded-none h-8 text-sm"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Ημερολόγιο ανάθεσης</Label>
+          <div className="space-y-1">
+            <Label className="text-xs">Ημερολόγιο</Label>
 
-            <div className="border rounded-none p-3 space-y-3">
-              <div className="grid gap-3 md:grid-cols-3">
-                <div className="space-y-1">
-                  <Label htmlFor="qa-start-date">Έναρξη</Label>
+            <div className="border rounded-none p-2 space-y-2">
+              <div className="grid gap-2 grid-cols-2">
+                <div className="space-y-0.5">
+                  <Label htmlFor="qa-start-date" className="text-[10px] text-muted-foreground">Έναρξη</Label>
                   <Input
                     id="qa-start-date"
                     type="date"
@@ -759,12 +747,12 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
                       setStartDate(e.target.value);
                       setGeneratedTrainingDates([]);
                     }}
-                    className="rounded-none"
+                    className="rounded-none h-7 text-xs"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="qa-duration-weeks">Διάρκεια (εβδομάδες)</Label>
+                <div className="space-y-0.5">
+                  <Label htmlFor="qa-duration-weeks" className="text-[10px] text-muted-foreground">Εβδομάδες</Label>
                   <Input
                     id="qa-duration-weeks"
                     type="number"
@@ -774,92 +762,88 @@ export const QuickAssignProgramDialog: React.FC<QuickAssignProgramDialogProps> =
                       setDurationWeeks(Math.max(1, Number(e.target.value || 1)));
                       setGeneratedTrainingDates([]);
                     }}
-                    className="rounded-none"
+                    className="rounded-none h-7 text-xs"
                   />
-                </div>
-
-                <div className="space-y-1">
-                  <Label>Ημέρες προπόνησης</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {WEEKDAY_OPTIONS.map((opt) => {
-                      const active = weekdays.includes(opt.value);
-                      return (
-                        <Button
-                          key={opt.value}
-                          type="button"
-                          variant={active ? 'default' : 'outline'}
-                          onClick={() => {
-                            toggleWeekday(opt.value);
-                            setGeneratedTrainingDates([]);
-                          }}
-                          className={cn(
-                            'rounded-none h-8 px-2 text-xs',
-                            active && 'bg-[#00ffba] text-black hover:bg-[#00ffba]/90'
-                          )}
-                        >
-                          {opt.label}
-                        </Button>
-                      );
-                    })}
-                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-xs text-muted-foreground">
-                  Θα δημιουργηθούν <strong>{computedTotalDays}</strong> ημερομηνίες ({durationWeeks} εβδομάδες × {weekdays.length} ημέρες/εβδομάδα)
+              <div className="space-y-0.5">
+                <Label className="text-[10px] text-muted-foreground">Ημέρες</Label>
+                <div className="flex flex-wrap gap-1">
+                  {WEEKDAY_OPTIONS.map((opt) => {
+                    const active = weekdays.includes(opt.value);
+                    return (
+                      <Button
+                        key={opt.value}
+                        type="button"
+                        variant={active ? 'default' : 'outline'}
+                        onClick={() => {
+                          toggleWeekday(opt.value);
+                          setGeneratedTrainingDates([]);
+                        }}
+                        className={cn(
+                          'rounded-none h-6 px-1.5 text-[10px]',
+                          active && 'bg-[#00ffba] text-black hover:bg-[#00ffba]/90'
+                        )}
+                      >
+                        {opt.label}
+                      </Button>
+                    );
+                  })}
                 </div>
-                <div className="flex items-center gap-2">
+              </div>
+
+              <div className="flex items-center justify-between gap-1">
+                <div className="text-[10px] text-muted-foreground">
+                  <strong>{computedTotalDays}</strong> ημέρες ({durationWeeks}×{weekdays.length})
+                </div>
+                <div className="flex items-center gap-1">
                   <Button
                     type="button"
                     variant="outline"
+                    size="sm"
                     onClick={() => setGeneratedTrainingDates([])}
-                    className="rounded-none"
+                    className="rounded-none h-6 text-[10px] px-2"
                   >
-                    Καθαρισμός
+                    Reset
                   </Button>
                   <Button
                     type="button"
+                    size="sm"
                     onClick={generateTrainingDates}
                     disabled={!startDate || weekdays.length === 0 || computedTotalDays === 0}
-                    className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                    className="rounded-none h-6 text-[10px] px-2 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
                   >
                     Δημιουργία
                   </Button>
                 </div>
               </div>
 
-              <div className="bg-muted/50 p-3 rounded-none text-sm">
+              <div className="bg-muted/50 p-1.5 rounded-none text-[10px]">
                 <p className="text-muted-foreground">
-                  Θα ανατεθούν <strong>{trainingDatesToAssign.length}</strong> ημερομηνίες
-                  {trainingDatesToAssign[0] ? (
-                    <> από <strong>{trainingDatesToAssign[0]}</strong></>
+                  <strong>{trainingDatesToAssign.length}</strong> ημερομηνίες
+                  {trainingDatesToAssign[0] && trainingDatesToAssign[trainingDatesToAssign.length - 1] ? (
+                    <> ({trainingDatesToAssign[0]} - {trainingDatesToAssign[trainingDatesToAssign.length - 1]})</>
                   ) : null}
-                  {trainingDatesToAssign[trainingDatesToAssign.length - 1] ? (
-                    <> έως <strong>{trainingDatesToAssign[trainingDatesToAssign.length - 1]}</strong></>
-                  ) : null}.
                 </p>
               </div>
             </div>
           </div>
 
-
-          {/* Εμφάνιση στατιστικών αν υπάρχουν δεδομένα AI */}
           {programStats && (
-            <div className="bg-muted/50 p-3 rounded-none text-sm">
+            <div className="bg-muted/50 p-1.5 rounded-none text-[10px]">
               <p className="text-muted-foreground">
-                <strong>Blocks:</strong> {programStats.totalBlocks} | 
-                <strong> Ασκήσεις:</strong> {programStats.totalExercises}
+                <strong>Blocks:</strong> {programStats.totalBlocks} | <strong>Ασκήσεις:</strong> {programStats.totalExercises}
               </p>
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2">
-            <Button variant="outline" onClick={onClose} className="rounded-none">
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <Button variant="outline" size="sm" onClick={onClose} className="rounded-none h-7 text-xs">
               Άκυρο
             </Button>
-            <Button onClick={onSubmit} disabled={isSubmitting} className="rounded-none">
-              {programData ? "Ανάθεση" : "Δημιουργία & Ανάθεση"}
+            <Button size="sm" onClick={onSubmit} disabled={isSubmitting} className="rounded-none h-7 text-xs">
+              {programData ? "Ανάθεση" : "Ανάθεση"}
             </Button>
           </div>
         </div>
