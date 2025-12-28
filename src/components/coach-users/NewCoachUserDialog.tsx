@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, X } from "lucide-react";
@@ -31,6 +32,7 @@ export const NewCoachUserDialog = ({
     email: "",
     phone: "",
     birth_date: "",
+    gender: "",
     notes: "",
   });
 
@@ -120,7 +122,7 @@ export const NewCoachUserDialog = ({
       }
 
       toast.success("Ο αθλητής προστέθηκε επιτυχώς");
-      setFormData({ name: "", email: "", phone: "", birth_date: "", notes: "" });
+      setFormData({ name: "", email: "", phone: "", birth_date: "", gender: "", notes: "" });
       clearAvatar();
       onSuccess();
     } catch (error: any) {
@@ -133,7 +135,7 @@ export const NewCoachUserDialog = ({
 
   const handleClose = (isOpen: boolean) => {
     if (!isOpen) {
-      setFormData({ name: "", email: "", phone: "", birth_date: "", notes: "" });
+      setFormData({ name: "", email: "", phone: "", birth_date: "", gender: "", notes: "" });
       clearAvatar();
     }
     onOpenChange(isOpen);
@@ -229,6 +231,22 @@ export const NewCoachUserDialog = ({
               onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
               className="rounded-none"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="gender">Φύλο</Label>
+            <Select
+              value={formData.gender}
+              onValueChange={(value) => setFormData({ ...formData, gender: value })}
+            >
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε φύλο" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Άνδρας</SelectItem>
+                <SelectItem value="female">Γυναίκα</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
           <div>
