@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { PhotoUpload } from "./PhotoUpload";
 import { ChildrenFields } from "./edit-user/ChildrenFields";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface Child {
   name: string;
@@ -44,6 +45,7 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { isCoach, isAdmin, userProfile } = useRoleCheck();
 
   const handleSubmit = async () => {
     if (!name.trim() || !email.trim()) {
@@ -70,6 +72,11 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
       if (gender) userData.gender = gender;
       if (birthDate) userData.birth_date = birthDate;
       if (photoUrl) userData.photo_url = photoUrl;
+      
+      // If creator is a coach, assign the new user to them
+      if (isCoach() && !isAdmin() && userProfile?.id) {
+        userData.coach_id = userProfile.id;
+      }
 
       const { data: newUser, error } = await supabase
         .from('app_users')
@@ -201,8 +208,9 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
                 <SelectValue placeholder="Επιλέξτε ρόλο" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="coach">Coach</SelectItem>
+                {/* Only show admin/coach options for admins */}
+                {isAdmin() && <SelectItem value="admin">Admin</SelectItem>}
+                {isAdmin() && <SelectItem value="coach">Coach</SelectItem>}
                 <SelectItem value="trainer">Trainer</SelectItem>
                 <SelectItem value="athlete">Athlete</SelectItem>
                 <SelectItem value="general">General</SelectItem>
