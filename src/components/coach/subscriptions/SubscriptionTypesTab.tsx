@@ -12,7 +12,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SubscriptionType {
   id: string;
@@ -31,6 +42,8 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
   const [types, setTypes] = useState<SubscriptionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [typeToDelete, setTypeToDelete] = useState<SubscriptionType | null>(null);
   const [editingType, setEditingType] = useState<SubscriptionType | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -120,17 +133,24 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Θέλετε να διαγράψετε αυτόν τον τύπο;')) return;
+  const openDeleteDialog = (type: SubscriptionType) => {
+    setTypeToDelete(type);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!typeToDelete) return;
 
     try {
       const { error } = await supabase
         .from('subscription_types')
         .delete()
-        .eq('id', id);
+        .eq('id', typeToDelete.id);
 
       if (error) throw error;
       toast.success('Ο τύπος διαγράφηκε');
+      setDeleteDialogOpen(false);
+      setTypeToDelete(null);
       fetchTypes();
     } catch (error) {
       console.error('Error deleting subscription type:', error);
@@ -182,7 +202,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => handleDelete(type.id)}
+                      onClick={() => openDeleteDialog(type)}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -194,6 +214,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
         </div>
       )}
 
+      {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="rounded-none">
           <DialogHeader>
@@ -242,6 +263,28 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogDescription>
+              Θέλετε να διαγράψετε τον τύπο "{typeToDelete?.name}";
+              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              className="bg-destructive hover:bg-destructive/90 rounded-none"
+            >
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
