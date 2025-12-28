@@ -143,27 +143,27 @@ export const NewCoachUserDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="rounded-none max-w-md">
-        <DialogHeader>
-          <DialogTitle>Νέος Αθλητής</DialogTitle>
+      <DialogContent className="rounded-none max-w-lg">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base">Νέος Αθλητής</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Avatar Upload */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="relative">
-              <Avatar className="h-20 w-20 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Avatar + Name Row */}
+          <div className="flex items-center gap-3">
+            <div className="relative shrink-0">
+              <Avatar className="h-12 w-12 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                 <AvatarImage src={avatarPreview || ''} />
-                <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] text-2xl">
-                  {formData.name ? formData.name.charAt(0).toUpperCase() : <Camera className="h-8 w-8" />}
+                <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] text-lg">
+                  {formData.name ? formData.name.charAt(0).toUpperCase() : <Camera className="h-5 w-5" />}
                 </AvatarFallback>
               </Avatar>
               {avatarPreview && (
                 <button
                   type="button"
                   onClick={clearAvatar}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-2.5 w-2.5" />
                 </button>
               )}
             </div>
@@ -174,106 +174,103 @@ export const NewCoachUserDialog = ({
               onChange={handleFileChange}
               className="hidden"
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              className="rounded-none text-xs"
-            >
-              <Camera className="h-3 w-3 mr-1" />
-              {avatarPreview ? 'Αλλαγή Φωτογραφίας' : 'Προσθήκη Φωτογραφίας'}
-            </Button>
+            <div className="flex-1">
+              <Label htmlFor="name" className="text-xs">Όνομα *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Ονοματεπώνυμο"
+                className="rounded-none h-8 text-sm"
+                required
+              />
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="name">Όνομα *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Ονοματεπώνυμο"
-              className="rounded-none"
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="email">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="email@example.com"
-              className="rounded-none"
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="phone">Τηλέφωνο</Label>
-            <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="69XXXXXXXX"
-              className="rounded-none"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="birth_date">Ημερομηνία Γέννησης</Label>
-            <Input
-              id="birth_date"
-              type="date"
-              value={formData.birth_date}
-              onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
-              className="rounded-none"
-            />
+          {/* Email + Phone Row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="email" className="text-xs">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="email@example.com"
+                className="rounded-none h-8 text-sm"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="phone" className="text-xs">Τηλέφωνο</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="69XXXXXXXX"
+                className="rounded-none h-8 text-sm"
+              />
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="gender">Φύλο</Label>
-            <Select
-              value={formData.gender}
-              onValueChange={(value) => setFormData({ ...formData, gender: value })}
-            >
-              <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Επιλέξτε φύλο" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">Άνδρας</SelectItem>
-                <SelectItem value="female">Γυναίκα</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Birth Date + Gender Row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="birth_date" className="text-xs">Ημ. Γέννησης</Label>
+              <Input
+                id="birth_date"
+                type="date"
+                value={formData.birth_date}
+                onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
+                className="rounded-none h-8 text-sm"
+              />
+            </div>
+            <div>
+              <Label htmlFor="gender" className="text-xs">Φύλο</Label>
+              <Select
+                value={formData.gender}
+                onValueChange={(value) => setFormData({ ...formData, gender: value })}
+              >
+                <SelectTrigger className="rounded-none h-8 text-sm">
+                  <SelectValue placeholder="Επιλέξτε" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Άνδρας</SelectItem>
+                  <SelectItem value="female">Γυναίκα</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          
+
+          {/* Notes */}
           <div>
-            <Label htmlFor="notes">Σημειώσεις</Label>
+            <Label htmlFor="notes" className="text-xs">Σημειώσεις</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Σημειώσεις για τον αθλητή..."
-              className="rounded-none"
-              rows={3}
+              className="rounded-none text-sm resize-none"
+              rows={2}
             />
           </div>
           
-          <div className="flex justify-end space-x-2 pt-4">
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => handleClose(false)}
-              className="rounded-none"
+              className="rounded-none h-8"
             >
               Ακύρωση
             </Button>
             <Button
               type="submit"
+              size="sm"
               disabled={loading}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-8"
             >
               {loading ? "Αποθήκευση..." : "Αποθήκευση"}
             </Button>
