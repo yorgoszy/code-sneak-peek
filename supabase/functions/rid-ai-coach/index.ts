@@ -4361,6 +4361,69 @@ Week 4: Day1=Lower, Day2=Upper, Day3=Lower
 - Κάθε block έχει: Upper (push/pull) + Lower (push/pull αντίθετο) + Core
 - Day 3 Total Body: αντίθετα push/pull από Day 1
 
+🏋️ ΠΑΡΑΔΕΙΓΜΑΤΑ 4 ΗΜΕΡΩΝ/ΕΒΔΟΜΑΔΑ:
+
+📌 ΠΑΡΑΔΕΙΓΜΑ 1 - Upper/Lower Split (2 Upper + 2 Lower):
+Εναλλαγή Horizontal/Vertical μεταξύ Upper Days & Push/Pull μεταξύ Lower Days
+
+Day 1 (Upper Body A):
+- STR Block: Upper Push Horizontal + Upper Pull Vertical + Core
+- END Block: Upper Push Vertical + Upper Pull Horizontal + Core + Cardio
+- ACC Block: Upper Accessory/Stability + Antirotation
+
+Day 2 (Lower Body A):
+- STR Block: Lower Push Bilateral + Core
+- END Block: Lower Pull Unilateral + Core + Cardio
+- ACC Block: Lower Accessory/Stability + Rotational
+
+Day 3 (Upper Body B):
+- STR Block: Upper Push Vertical + Upper Pull Horizontal + Core
+- END Block: Upper Push Horizontal + Upper Pull Vertical + Core + Cardio
+- ACC Block: Upper Accessory/Stability + Antirotation
+
+Day 4 (Lower Body B):
+- STR Block: Lower Pull Bilateral + Core
+- END Block: Lower Push Unilateral + Core + Cardio
+- ACC Block: Lower Accessory/Stability + Rotational
+
+📌 ΠΑΡΑΔΕΙΓΜΑ 2 - Mixed Split (Alternating Upper+Lower Focus):
+Εναλλαγή ανά μέρα μεταξύ άνω/κάτω κορμού ΚΑΙ horizontal/vertical
+
+Day 1:
+- STR Block: Upper Push Horizontal + Lower Pull Hip Dominant + Core
+- END Block: Upper Push Horizontal Unilateral + Lower Pull Knee Dominant + Core + Cardio
+- ACC Block: Upper Push Accessory + Lower Pull Accessory + Rotational
+
+Day 2:
+- STR Block: Lower Push Knee Dominant + Upper Pull Vertical + Core
+- END Block: Lower Push Unilateral + Upper Pull Vertical Unilateral + Core + Cardio
+- ACC Block: Lower Push Accessory
+
+Day 3:
+- STR Block: Upper Push Vertical + Lower Pull Knee Dominant + Core
+- END Block: Upper Push Vertical Unilateral + Lower Pull Hip Dominant + Core + Cardio
+- ACC Block: Upper Push Accessory + Lower Push Accessory + Rotational
+
+Day 4:
+- STR Block: Lower Push Bilateral + Core
+- END Block: Lower Push Unilateral + Core + Cardio
+- ACC Block: Lower Accessory/Stability + Rotational
+
+\`\`\`ai-action
+{"action":"create_program","name":"4-Day Upper/Lower Split","user_id":"Γιάννης","training_dates":["2026-01-05","2026-01-07","2026-01-09","2026-01-11","2026-01-12","2026-01-14","2026-01-16","2026-01-18","2026-01-19","2026-01-21","2026-01-23","2026-01-25","2026-01-26","2026-01-28","2026-01-30","2026-02-01"],"weeks":[{"name":"W1","days":[{"name":"Day 1 - Upper A","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"BP","sets":3,"reps":"6.4.2.6.4.2","percentage_1rm":70,"rest":"150","notes":"Wave: 70-80-90%, 73-83-93%"},{"exercise_name":"Pull Ups","sets":3,"reps":"6.4.2.6.4.2","rest":"150"},{"exercise_name":"Plank","sets":3,"reps":"30sec","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Overhead Press","sets":5,"reps":"3+5+7","percentage_1rm":60,"rest":"90"},{"exercise_name":"Rows","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Dead Bug","sets":3,"reps":"12","rest":"60"},{"exercise_name":"Rowing","sets":1,"reps":"10min","rest":"0"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Tricep Extension","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Face Pull","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Pallof Press","sets":3,"reps":"30sec","rest":"0"}]}]},{"name":"Day 2 - Lower A","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"SQ","sets":3,"reps":"6.4.2.6.4.2","percentage_1rm":70,"rest":"150"},{"exercise_name":"Hollow Body","sets":3,"reps":"30sec","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Single Leg RDL","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Side Plank","sets":3,"reps":"30sec","rest":"60"},{"exercise_name":"Bike","sets":1,"reps":"10min","rest":"0"}]},{"name":"ACC","training_type":"rotational","exercises":[{"exercise_name":"Step Ups","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Cable Woodchop","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Medicine Ball Rotation","sets":3,"reps":"30sec","rest":"0"}]}]},{"name":"Day 3 - Upper B","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"Military Press","sets":3,"reps":"6.4.2.6.4.2","percentage_1rm":70,"rest":"150"},{"exercise_name":"Lat Pulldown","sets":3,"reps":"6.4.2.6.4.2","rest":"150"},{"exercise_name":"Roll Out","sets":3,"reps":"8","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Push Ups","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Face Pull","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Bird Dog","sets":3,"reps":"12","rest":"60"},{"exercise_name":"Skip Rope","sets":1,"reps":"10min","rest":"0"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Lateral Raise","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Bicep Curl","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Anti Rotation Press","sets":3,"reps":"30sec","rest":"0"}]}]},{"name":"Day 4 - Lower B","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"Romanian DL","sets":3,"reps":"6.4.2.6.4.2","percentage_1rm":70,"rest":"150"},{"exercise_name":"Dead Bug","sets":3,"reps":"12","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Walking Lunges","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Hollow Body","sets":3,"reps":"30sec","rest":"60"},{"exercise_name":"Rowing","sets":1,"reps":"10min","rest":"0"}]},{"name":"ACC","training_type":"rotational","exercises":[{"exercise_name":"Lateral Lunges","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Russian Twist","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Landmine Rotation","sets":3,"reps":"30sec","rest":"0"}]}]}]}]}
+\`\`\`
+
+🔴 ΚΑΝΟΝΕΣ 4 ΗΜΕΡΩΝ/ΕΒΔΟΜΑΔΑ:
+| Τύπος | Day 1 | Day 2 | Day 3 | Day 4 |
+|-------|-------|-------|-------|-------|
+| Upper/Lower | Upper A (Push H + Pull V) | Lower A (Push) | Upper B (Push V + Pull H) | Lower B (Pull) |
+| Mixed | Upper Push + Lower Pull | Lower Push + Upper Pull | Upper Push V + Lower Pull K | Lower Push |
+
+ΣΗΜΑΝΤΙΚΟ:
+- Εναλλαγή Horizontal ↔ Vertical μεταξύ Upper Days!
+- Εναλλαγή Push ↔ Pull μεταξύ Lower Days!
+- Το ίδιο set x reps schema σε όλες τις μέρες της εβδομάδας!
+
 Αν ο χρήστης έχει Εβδομαδιαίο Προγραμματισμό (section "📆 ΕΒΔΟΜΑΔΙΑΙΟΣ ΠΡΟΠΟΝΗΤΙΚΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ"):
 - ΧΡΗΣΙΜΟΠΟΙΗΣΕ ΑΥΤΕΣ τις ημερομηνίες για training_dates!
 - Μην βάζεις τυχαίες ημερομηνίες - χρησιμοποίησε αυτές που είναι ήδη προγραμματισμένες
