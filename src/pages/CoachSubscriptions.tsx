@@ -238,9 +238,8 @@ const CoachSubscriptions = () => {
           start_date: newStartDate.toISOString().split("T")[0],
           end_date: newEndDate.toISOString().split("T")[0],
           status: "active",
-          is_paused: false,
-          is_paid: false
-        });
+          is_paused: false
+        } as any);
 
       if (error) throw error;
       toast.success("Η συνδρομή ανανεώθηκε επιτυχώς");
@@ -492,6 +491,8 @@ const CoachSubscriptions = () => {
                                 <TableHead>Έναρξη</TableHead>
                                 <TableHead>Λήξη</TableHead>
                                 <TableHead>Κατάσταση</TableHead>
+                                <TableHead>Πληρωμή</TableHead>
+                                <TableHead>Ενέργειες</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -528,6 +529,27 @@ const CoachSubscriptions = () => {
                                       {getStatusLabel(sub.status, sub.is_paused)}
                                     </span>
                                   </TableCell>
+                                  <TableCell>
+                                    <Badge 
+                                      variant={sub.is_paid !== false ? "default" : "destructive"}
+                                      className="rounded-none text-xs"
+                                    >
+                                      {sub.is_paid !== false ? 'Πληρωμένη' : 'Απλήρωτη'}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <CoachSubscriptionActions
+                                      subscriptionId={sub.id}
+                                      isPaused={sub.is_paused}
+                                      isPaid={sub.is_paid !== false}
+                                      onTogglePayment={togglePaymentStatus}
+                                      onPause={pauseSubscription}
+                                      onResume={resumeSubscription}
+                                      onRenew={renewSubscription}
+                                      onEdit={openEditDialog}
+                                      onDelete={openDeleteDialog}
+                                    />
+                                  </TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
@@ -556,17 +578,38 @@ const CoachSubscriptions = () => {
                                       </p>
                                     </div>
                                   </div>
-                                  <span
-                                    className={`px-2 py-1 text-xs rounded ${getStatusColor(
-                                      sub.status,
-                                      sub.is_paused
-                                    )}`}
-                                  >
-                                    {getStatusLabel(sub.status, sub.is_paused)}
-                                  </span>
+                                  <div className="flex flex-col items-end gap-1">
+                                    <span
+                                      className={`px-2 py-1 text-xs rounded ${getStatusColor(
+                                        sub.status,
+                                        sub.is_paused
+                                      )}`}
+                                    >
+                                      {getStatusLabel(sub.status, sub.is_paused)}
+                                    </span>
+                                    <Badge 
+                                      variant={sub.is_paid !== false ? "default" : "destructive"}
+                                      className="rounded-none text-xs"
+                                    >
+                                      {sub.is_paid !== false ? 'Πληρωμένη' : 'Απλήρωτη'}
+                                    </Badge>
+                                  </div>
                                 </div>
                                 <div className="mt-3 text-sm text-gray-600">
                                   {formatDate(sub.start_date)} - {formatDate(sub.end_date)}
+                                </div>
+                                <div className="mt-3 pt-3 border-t">
+                                  <CoachSubscriptionActions
+                                    subscriptionId={sub.id}
+                                    isPaused={sub.is_paused}
+                                    isPaid={sub.is_paid !== false}
+                                    onTogglePayment={togglePaymentStatus}
+                                    onPause={pauseSubscription}
+                                    onResume={resumeSubscription}
+                                    onRenew={renewSubscription}
+                                    onEdit={openEditDialog}
+                                    onDelete={openDeleteDialog}
+                                  />
                                 </div>
                               </CardContent>
                             </Card>
@@ -594,6 +637,28 @@ const CoachSubscriptions = () => {
                 onSuccess={fetchSubscriptions}
               />
             )}
+
+            {/* Edit Subscription Dialog */}
+            <CoachSubscriptionEditDialog
+              isOpen={editDialogOpen}
+              onClose={() => {
+                setEditDialogOpen(false);
+                setSubscriptionToEdit(null);
+              }}
+              subscription={subscriptionToEdit}
+              subscriptionTypes={subscriptionTypes}
+              onSuccess={fetchSubscriptions}
+            />
+
+            {/* Delete Subscription Dialog */}
+            <CoachSubscriptionDeleteDialog
+              isOpen={deleteDialogOpen}
+              onClose={() => {
+                setDeleteDialogOpen(false);
+                setSubscriptionToDelete(null);
+              }}
+              onDelete={deleteSubscription}
+            />
           </div>
         </div>
       </div>
