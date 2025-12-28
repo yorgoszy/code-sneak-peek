@@ -186,7 +186,11 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
                   />
                 </div>
                 <div className="max-h-48 overflow-y-auto border border-border">
-                  {filteredAthletes.length === 0 ? (
+                  {searchTerm.trim().length === 0 ? (
+                    <div className="p-3 text-center text-muted-foreground text-sm">
+                      Πληκτρολογήστε για αναζήτηση...
+                    </div>
+                  ) : filteredAthletes.length === 0 ? (
                     <div className="p-3 text-center text-muted-foreground text-sm">
                       Δεν βρέθηκαν αθλητές
                     </div>
