@@ -343,6 +343,30 @@ const CoachSubscriptions = () => {
     return format(new Date(dateString), "dd MMM yyyy", { locale: el });
   };
 
+  const getDaysUntilExpiry = (endDate: string) => {
+    const today = new Date();
+    const end = new Date(endDate);
+    return Math.ceil((end.getTime() - today.getTime()) / (1000 * 3600 * 24));
+  };
+
+  const getDaysExpiryText = (endDate: string, isPaused: boolean) => {
+    const days = getDaysUntilExpiry(endDate);
+    if (isPaused) return "Σε παύση";
+    if (days < 0) return `${Math.abs(days)} ημ. πριν`;
+    if (days === 0) return "Σήμερα";
+    if (days === 1) return "1 ημέρα";
+    return `${days} ημέρες`;
+  };
+
+  const getDaysExpiryColor = (endDate: string, isPaused: boolean) => {
+    if (isPaused) return "text-yellow-600";
+    const days = getDaysUntilExpiry(endDate);
+    if (days < 0) return "text-red-600 font-medium";
+    if (days <= 7) return "text-orange-600 font-medium";
+    if (days <= 14) return "text-yellow-600";
+    return "text-green-600";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="flex flex-1 overflow-hidden">
@@ -518,7 +542,14 @@ const CoachSubscriptions = () => {
                                   </TableCell>
                                   <TableCell>{sub.subscription_types?.name || "-"}</TableCell>
                                   <TableCell>{formatDate(sub.start_date)}</TableCell>
-                                  <TableCell>{formatDate(sub.end_date)}</TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <span>{formatDate(sub.end_date)}</span>
+                                      <span className={`ml-2 text-xs ${getDaysExpiryColor(sub.end_date, sub.is_paused)}`}>
+                                        ({getDaysExpiryText(sub.end_date, sub.is_paused)})
+                                      </span>
+                                    </div>
+                                  </TableCell>
                                   <TableCell>
                                     <span
                                       className={`px-2 py-1 text-xs rounded ${getStatusColor(
@@ -596,7 +627,10 @@ const CoachSubscriptions = () => {
                                   </div>
                                 </div>
                                 <div className="mt-3 text-sm text-gray-600">
-                                  {formatDate(sub.start_date)} - {formatDate(sub.end_date)}
+                                  <span>{formatDate(sub.start_date)} - {formatDate(sub.end_date)}</span>
+                                  <span className={`ml-2 text-xs ${getDaysExpiryColor(sub.end_date, sub.is_paused)}`}>
+                                    ({getDaysExpiryText(sub.end_date, sub.is_paused)})
+                                  </span>
                                 </div>
                                 <div className="mt-3 pt-3 border-t">
                                   <CoachSubscriptionActions
