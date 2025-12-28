@@ -67,6 +67,7 @@ import { SprintTimingDistance } from "@/pages/SprintTimingDistance";
 import { SprintTimingIntermediate } from "@/pages/SprintTimingIntermediate";
 import { SprintTimingStop } from "@/pages/SprintTimingStop";
 import { SprintTimingTimer } from "@/pages/SprintTimingTimer";
+import MyAthletes from "@/pages/MyAthletes";
 
 const queryClient = new QueryClient();
 
@@ -107,6 +108,9 @@ function App() {
           <Route path="/sprint-timing/:distance/:sessionCode" element={<SprintTimingIntermediate />} />
           <Route path="/sprint-timing/stop/:sessionCode" element={<SprintTimingStop />} />
           <Route path="/sprint-timing/timer/:sessionCode" element={<SprintTimingTimer />} />
+                
+                {/* Coach routes */}
+                <Route path="/dashboard/my-athletes" element={<ProtectedRoute><MyAthletes /></ProtectedRoute>} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
