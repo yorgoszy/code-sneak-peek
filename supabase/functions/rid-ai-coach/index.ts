@@ -4307,6 +4307,60 @@ Block 3 (ACCESSORY - training_type: "accessory"):
 | END: Upper PULL, Lower PUSH | END: Upper PUSH, Lower PULL |
 | Ίδιο set/reps schema | Ίδιο set/reps schema |
 
+🔄 ΠΑΡΑΔΕΙΓΜΑ - 3 ΗΜΕΡΕΣ/ΕΒΔΟΜΑΔΑ:
+
+📌 ΠΑΡΑΔΕΙΓΜΑ 1 - Upper/Lower Split + Total Body:
+Day 1 (Upper Push + Lower Pull Focus):
+- STR Block: Upper Push Horizontal + Lower Pull Knee Dominant + Core
+- END Block: Upper Push Vertical + Lower Pull Knee Dominant + Core + Cardio
+- ACC Block: Upper Push Unilateral + Lower Pull Unilateral + Core
+
+Day 2 (Upper Pull + Lower Push Focus):
+- STR Block: Upper Pull Horizontal + Lower Push Knee Dominant + Core
+- END Block: Upper Pull Vertical + Lower Push Knee Dominant + Core + Cardio
+- ACC Block: Upper Pull Unilateral + Lower Push Unilateral + Core
+
+Day 3: Total Body (alternating push/pull όπως περιγράφεται παραπάνω)
+
+📌 ΠΑΡΑΔΕΙΓΜΑ 2 - Upper/Lower/Total Split:
+Day 1 (Upper Body):
+- STR Block: Upper Push Horizontal + Upper Pull Vertical + Core
+- END Block: Upper Push Vertical + Upper Pull Horizontal + Core + Cardio
+- ACC Block: Upper Accessory Unilateral (4-5 ασκήσεις)
+
+Day 2 (Lower Body):
+- STR Block: Lower Push Hip Dominant Bilateral + Lower Push Accessory Unilateral + Core
+- END Block: Lower Pull Knee Dominant Bilateral + Core + Cardio
+- ACC Block: Lower Pull Accessory Unilateral + Core + Cardio
+
+Day 3: Total Body
+
+📌 ΠΑΡΑΔΕΙΓΜΑ 3 - Alternating Upper/Lower (εναλλαγή μεταξύ εβδομάδων):
+Week 1: Day1=Upper, Day2=Lower, Day3=Upper
+Week 2: Day1=Lower, Day2=Upper, Day3=Lower
+Week 3: Day1=Upper, Day2=Lower, Day3=Upper
+Week 4: Day1=Lower, Day2=Upper, Day3=Lower
+
+\`\`\`ai-action
+{"action":"create_program","name":"3-Day Split Example 1","user_id":"Γιάννης","training_dates":["2026-01-05","2026-01-07","2026-01-09","2026-01-12","2026-01-14","2026-01-16","2026-01-19","2026-01-21","2026-01-23","2026-01-26","2026-01-28","2026-01-30"],"weeks":[{"name":"W1","days":[{"name":"Day 1 - Upper Push/Lower Pull","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"BP","sets":3,"reps":"6.4.2.6.4.2","percentage_1rm":70,"rest":"150","notes":"Wave: 70-80-90%, 73-83-93%"},{"exercise_name":"Romanian DL","sets":3,"reps":"6.4.2.6.4.2","percentage_1rm":70,"rest":"150"},{"exercise_name":"Plank","sets":3,"reps":"30sec","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Overhead Press","sets":5,"reps":"3+5+7","percentage_1rm":60,"rest":"90"},{"exercise_name":"Leg Curl","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Dead Bug","sets":3,"reps":"12","rest":"60"},{"exercise_name":"Rowing","sets":1,"reps":"10min","rest":"0"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Tricep Pushdown","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Single Leg RDL","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Pallof Press","sets":3,"reps":"30sec","rest":"0"}]}]},{"name":"Day 2 - Upper Pull/Lower Push","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"Pull Ups","sets":3,"reps":"6.4.2.6.4.2","percentage_1rm":70,"rest":"150"},{"exercise_name":"SQ","sets":3,"reps":"6.4.2.6.4.2","percentage_1rm":70,"rest":"150"},{"exercise_name":"Roll Out TRX","sets":3,"reps":"8","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Lat Pulldown","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Leg Press","sets":5,"reps":"3+5+7","percentage_1rm":60,"rest":"90"},{"exercise_name":"Bird Dog","sets":3,"reps":"12","rest":"60"},{"exercise_name":"Bike","sets":1,"reps":"10min","rest":"0"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Bicep Curl DB","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Walking Lunges","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Side Plank","sets":3,"reps":"30sec","rest":"0"}]}]},{"name":"Day 3 - Total Body","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"Push Press","sets":3,"reps":"6.4.2.6.4.2","percentage_1rm":70,"rest":"150"},{"exercise_name":"DL","sets":3,"reps":"6.4.2.6.4.2","percentage_1rm":70,"rest":"150"},{"exercise_name":"Hollow Body","sets":3,"reps":"30sec","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Rows","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Front SQ","sets":5,"reps":"3+5+7","percentage_1rm":60,"rest":"90"},{"exercise_name":"Anti Rotation Press","sets":3,"reps":"12","rest":"60"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Face Pull","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Box Jump","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Farmer Walk","sets":3,"reps":"30sec","rest":"0"}]}]}]}]}
+\`\`\`
+
+\`\`\`ai-action
+{"action":"create_program","name":"3-Day Alternating Upper/Lower","user_id":"Γιάννης","training_dates":["2026-01-05","2026-01-07","2026-01-09","2026-01-12","2026-01-14","2026-01-16","2026-01-19","2026-01-21","2026-01-23","2026-01-26","2026-01-28","2026-01-30"],"weeks":[{"name":"W1","days":[{"name":"Day 1 - Upper Body","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"BP","sets":3,"reps":"3.2.1","percentage_1rm":85,"rest":"180","notes":"Wave loading"},{"exercise_name":"Pull Ups","sets":3,"reps":"3.2.1","rest":"180"},{"exercise_name":"Plank","sets":3,"reps":"30sec","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Overhead Press","sets":5,"reps":"3+5+7","percentage_1rm":60,"rest":"90"},{"exercise_name":"Rows","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Dead Bug","sets":3,"reps":"12","rest":"60"},{"exercise_name":"Bike","sets":1,"reps":"8min","rest":"0"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Tricep Extension","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Bicep Curl","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Lateral Raise","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Face Pull","sets":3,"reps":"30sec","rest":"0"}]}]},{"name":"Day 2 - Lower Body","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"SQ","sets":3,"reps":"3.2.1","percentage_1rm":85,"rest":"180"},{"exercise_name":"Hip Thrust","sets":3,"reps":"3.2.1","percentage_1rm":85,"rest":"180"},{"exercise_name":"Roll Out","sets":3,"reps":"8","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Leg Press","sets":5,"reps":"3+5+7","percentage_1rm":60,"rest":"90"},{"exercise_name":"Romanian DL","sets":5,"reps":"3+5+7","percentage_1rm":60,"rest":"90"},{"exercise_name":"Side Plank","sets":3,"reps":"30sec","rest":"60"},{"exercise_name":"Rowing","sets":1,"reps":"8min","rest":"0"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Walking Lunges","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Single Leg RDL","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Calf Raise","sets":3,"reps":"30sec","rest":"0"}]}]},{"name":"Day 3 - Upper Body","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"Incline BP","sets":3,"reps":"3.2.1","percentage_1rm":85,"rest":"180"},{"exercise_name":"Chin Ups","sets":3,"reps":"3.2.1","rest":"180"},{"exercise_name":"Hollow Body","sets":3,"reps":"30sec","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Dips","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Lat Pulldown","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Bird Dog","sets":3,"reps":"12","rest":"60"},{"exercise_name":"Skip Rope","sets":1,"reps":"8min","rest":"0"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Cable Fly","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Reverse Fly","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Hammer Curl","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Tricep Kickback","sets":3,"reps":"30sec","rest":"0"}]}]}]},{"name":"W2","days":[{"name":"Day 1 - Lower Body","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"Front SQ","sets":3,"reps":"3.2.1","percentage_1rm":85,"rest":"180"},{"exercise_name":"DL","sets":3,"reps":"3.2.1","percentage_1rm":85,"rest":"180"},{"exercise_name":"Pallof Press","sets":3,"reps":"12","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Split SQ","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Leg Curl","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Anti Rotation Press","sets":3,"reps":"12","rest":"60"},{"exercise_name":"Bike","sets":1,"reps":"8min","rest":"0"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Step Ups","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Glute Bridge","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Box Jump","sets":3,"reps":"30sec","rest":"0"}]}]},{"name":"Day 2 - Upper Body","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"Military Press","sets":3,"reps":"3.2.1","percentage_1rm":85,"rest":"180"},{"exercise_name":"Rows","sets":3,"reps":"3.2.1","rest":"180"},{"exercise_name":"Dead Bug","sets":3,"reps":"12","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Push Ups","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Face Pull","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Plank","sets":3,"reps":"30sec","rest":"60"},{"exercise_name":"Rowing","sets":1,"reps":"8min","rest":"0"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Lateral Raise","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Rear Delt Fly","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Bicep 21s","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Tricep Dips","sets":3,"reps":"30sec","rest":"0"}]}]},{"name":"Day 3 - Lower Body","blocks":[{"name":"STR","training_type":"str","exercises":[{"exercise_name":"Sumo DL","sets":3,"reps":"3.2.1","percentage_1rm":85,"rest":"180"},{"exercise_name":"Goblet SQ","sets":3,"reps":"3.2.1","percentage_1rm":85,"rest":"180"},{"exercise_name":"Side Plank","sets":3,"reps":"30sec","rest":"60"}]},{"name":"END","training_type":"end","exercises":[{"exercise_name":"Bulgarian Split SQ","sets":5,"reps":"3+5+7","rest":"90"},{"exercise_name":"Good Morning","sets":5,"reps":"3+5+7","percentage_1rm":50,"rest":"90"},{"exercise_name":"Hollow Body","sets":3,"reps":"30sec","rest":"60"},{"exercise_name":"Skip Rope","sets":1,"reps":"8min","rest":"0"}]},{"name":"ACC","training_type":"accessory","exercises":[{"exercise_name":"Lateral Lunges","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Nordic Curl","sets":3,"reps":"30sec","rest":"0"},{"exercise_name":"Jump SQ","sets":3,"reps":"30sec","rest":"0"}]}]}]}]}
+\`\`\`
+
+🔴 ΚΑΝΟΝΕΣ 3 ΗΜΕΡΩΝ/ΕΒΔΟΜΑΔΑ:
+| Τύπος | Day 1 | Day 2 | Day 3 |
+|-------|-------|-------|-------|
+| Split 1 | Upper Push + Lower Pull | Upper Pull + Lower Push | Total Body |
+| Split 2 | Upper Body | Lower Body | Total Body |
+| Alternating | W1: U/L/U, W2: L/U/L | W3: U/L/U, W4: L/U/L | Εναλλαγή |
+
+ΣΗΜΑΝΤΙΚΟ:
+- Το ίδιο set x reps schema σε όλες τις μέρες της εβδομάδας!
+- Κάθε block έχει: Upper (push/pull) + Lower (push/pull αντίθετο) + Core
+- Day 3 Total Body: αντίθετα push/pull από Day 1
+
 Αν ο χρήστης έχει Εβδομαδιαίο Προγραμματισμό (section "📆 ΕΒΔΟΜΑΔΙΑΙΟΣ ΠΡΟΠΟΝΗΤΙΚΟΣ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ"):
 - ΧΡΗΣΙΜΟΠΟΙΗΣΕ ΑΥΤΕΣ τις ημερομηνίες για training_dates!
 - Μην βάζεις τυχαίες ημερομηνίες - χρησιμοποίησε αυτές που είναι ήδη προγραμματισμένες
