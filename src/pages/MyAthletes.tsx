@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Search, Menu, Eye } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Search, Menu, Eye, Mail } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { matchesSearchTerm } from "@/lib/utils";
 import {
@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog";
 import { EditCoachUserDialog } from "@/components/coach-users/EditCoachUserDialog";
 import { DeleteCoachUserDialog } from "@/components/coach-users/DeleteCoachUserDialog";
+import { ViewCoachUserDialog } from "@/components/coach-users/ViewCoachUserDialog";
 
 interface CoachUser {
   id: string;
@@ -54,6 +55,7 @@ const MyAthletes = () => {
   const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
   const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false);
+  const [viewUserDialogOpen, setViewUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<CoachUser | null>(null);
 
   // Check for tablet size
@@ -123,6 +125,11 @@ const MyAthletes = () => {
 
   // Επιτρέπουμε πρόσβαση μόνο σε coaches (χωρίς redirect αν δεν υπάρχει coach role ακόμα)
 
+  const handleViewUser = (user: CoachUser) => {
+    setSelectedUser(user);
+    setViewUserDialogOpen(true);
+  };
+
   const handleEditUser = (user: CoachUser) => {
     setSelectedUser(user);
     setEditUserDialogOpen(true);
@@ -131,6 +138,21 @@ const MyAthletes = () => {
   const handleDeleteUser = (user: CoachUser) => {
     setSelectedUser(user);
     setDeleteUserDialogOpen(true);
+  };
+
+  const handleSendPasswordReset = async (user: CoachUser) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
+      if (error) throw error;
+      
+      toast.success(`Email επαναφοράς κωδικού στάλθηκε στο ${user.email}`);
+    } catch (error: any) {
+      console.error('Error sending password reset:', error);
+      toast.error('Σφάλμα κατά την αποστολή email επαναφοράς');
+    }
   };
 
   const handleUserCreated = () => {
@@ -346,20 +368,40 @@ const MyAthletes = () => {
                               </TableCell>
                               <TableCell>{formatDate(athlete.created_at)}</TableCell>
                               <TableCell className="text-right">
-                                <div className="flex justify-end space-x-2">
+                                <div className="flex justify-end space-x-1">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="rounded-none"
+                                    onClick={() => handleViewUser(athlete)}
+                                    title="Προβολή"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     className="rounded-none"
                                     onClick={() => handleEditUser(athlete)}
+                                    title="Επεξεργασία"
                                   >
                                     <Edit className="h-4 w-4" />
                                   </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
+                                    className="rounded-none"
+                                    onClick={() => handleSendPasswordReset(athlete)}
+                                    title="Επαναφορά κωδικού"
+                                  >
+                                    <Mail className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
                                     className="rounded-none text-red-600 hover:text-red-700"
                                     onClick={() => handleDeleteUser(athlete)}
+                                    title="Διαγραφή"
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -393,15 +435,30 @@ const MyAthletes = () => {
                                 {athlete.status === 'active' ? 'Ενεργός' : 'Ανενεργός'}
                               </span>
                             </div>
-                            <div className="mt-3 flex justify-end space-x-2">
+                            <div className="mt-3 flex justify-end space-x-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-none"
+                                onClick={() => handleViewUser(athlete)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 className="rounded-none"
                                 onClick={() => handleEditUser(athlete)}
                               >
-                                <Edit className="h-4 w-4 mr-1" />
-                                Επεξεργασία
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-none"
+                                onClick={() => handleSendPasswordReset(athlete)}
+                              >
+                                <Mail className="h-4 w-4" />
                               </Button>
                               <Button
                                 variant="outline"
@@ -434,6 +491,11 @@ const MyAthletes = () => {
 
       {selectedUser && (
         <>
+          <ViewCoachUserDialog
+            open={viewUserDialogOpen}
+            onOpenChange={setViewUserDialogOpen}
+            user={selectedUser}
+          />
           <EditCoachUserDialog
             open={editUserDialogOpen}
             onOpenChange={setEditUserDialogOpen}
