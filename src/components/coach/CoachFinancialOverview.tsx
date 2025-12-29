@@ -23,9 +23,10 @@ interface YearlyData extends FinancialData {
 
 interface CoachFinancialOverviewProps {
   coachId: string;
+  refreshKey?: number;
 }
 
-export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ coachId }) => {
+export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ coachId, refreshKey }) => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [yearlyData, setYearlyData] = useState<YearlyData[]>([]);
@@ -37,7 +38,7 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
     if (coachId) {
       fetchFinancialData();
     }
-  }, [selectedYear, coachId]);
+  }, [selectedYear, coachId, refreshKey]);
 
   const fetchFinancialData = async () => {
     setLoading(true);
@@ -58,18 +59,18 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
       });
 
       const { data: monthlyReceipts, error: receiptsError } = await supabase
-        .from('receipts')
-        .select('total, issue_date')
+        .from('coach_receipts')
+        .select('amount, created_at')
         .eq('coach_id', coachId)
-        .gte('issue_date', `${selectedYear}-01-01`)
-        .lt('issue_date', `${selectedYear + 1}-01-01`);
+        .gte('created_at', `${selectedYear}-01-01`)
+        .lt('created_at', `${selectedYear + 1}-01-01`);
 
       if (receiptsError) throw receiptsError;
 
       const monthlyRevMap = new Map<string, number>();
       monthlyReceipts?.forEach(receipt => {
-        const month = format(new Date(receipt.issue_date), 'yyyy-MM');
-        monthlyRevMap.set(month, (monthlyRevMap.get(month) || 0) + Number(receipt.total));
+        const month = format(new Date(receipt.created_at), 'yyyy-MM');
+        monthlyRevMap.set(month, (monthlyRevMap.get(month) || 0) + Number(receipt.amount));
       });
 
       const months = [];
@@ -90,11 +91,11 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
       const yearlyResults = [];
       for (const year of years) {
         const { data: yearReceipts } = await supabase
-          .from('receipts')
-          .select('total')
+          .from('coach_receipts')
+          .select('amount')
           .eq('coach_id', coachId)
-          .gte('issue_date', `${year}-01-01`)
-          .lt('issue_date', `${year + 1}-01-01`);
+          .gte('created_at', `${year}-01-01`)
+          .lt('created_at', `${year + 1}-01-01`);
 
         const { data: yearExpenses } = await supabase
           .from('expenses')
@@ -103,7 +104,7 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
           .gte('expense_date', `${year}-01-01`)
           .lt('expense_date', `${year + 1}-01-01`);
 
-        const yearRevenue = yearReceipts?.reduce((sum, r) => sum + Number(r.total), 0) || 0;
+        const yearRevenue = yearReceipts?.reduce((sum, r) => sum + Number(r.amount), 0) || 0;
         const yearExpenseTotal = yearExpenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
         yearlyResults.push({

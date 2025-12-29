@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, Trash2, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { matchesSearchTerm } from "@/lib/utils";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Receipt {
   id: string;
@@ -35,14 +37,17 @@ interface SubscriptionType {
 
 interface CoachReceiptsManagementProps {
   coachId: string;
+  onDataChange?: () => void;
 }
 
-export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = ({ coachId }) => {
+export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = ({ coachId, onDataChange }) => {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [receiptToDelete, setReceiptToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (coachId) {
@@ -88,6 +93,28 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
     }
   };
 
+  const handleDelete = async () => {
+    if (!receiptToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('coach_receipts')
+        .delete()
+        .eq('id', receiptToDelete);
+
+      if (error) throw error;
+      toast.success("Διαγράφηκε");
+      fetchReceipts();
+      onDataChange?.();
+    } catch (error: any) {
+      console.error('Error deleting receipt:', error);
+      toast.error("Σφάλμα: " + error.message);
+    } finally {
+      setReceiptToDelete(null);
+      setDeleteDialogOpen(false);
+    }
+  };
+
   const filteredReceipts = receipts.filter((receipt) => {
     const userName = receipt.coach_users?.name || '';
     const userEmail = receipt.coach_users?.email || '';
@@ -100,7 +127,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
 
   const getReceiptTypeLabel = (type: string) => {
     switch (type) {
-      case 'subscription': return 'Νέα Συνδρομή';
+      case 'subscription': return 'Νέα';
       case 'renewal': return 'Ανανέωση';
       default: return type;
     }
@@ -184,9 +211,22 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                         </span>
                       </div>
                     </div>
-                    <span className="font-medium text-[#00ffba] text-sm whitespace-nowrap">
-                      €{Number(receipt.amount).toFixed(2)}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium text-[#00ffba] text-sm whitespace-nowrap">
+                        €{Number(receipt.amount).toFixed(2)}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setReceiptToDelete(receipt.id);
+                          setDeleteDialogOpen(true);
+                        }}
+                        className="rounded-none h-6 w-6 p-0 text-red-600"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -196,21 +236,19 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                 <table className="w-full text-xs">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="text-left py-2 px-2">Αρ.</th>
-                      <th className="text-left py-2 px-2">Ημ/νία</th>
+                      <th className="text-left py-2 px-2">Αριθμός</th>
                       <th className="text-left py-2 px-2">Αθλητής</th>
+                      <th className="text-left py-2 px-2">Ημερομηνία</th>
                       <th className="text-left py-2 px-2">Τύπος</th>
-                      <th className="text-left py-2 px-2">Κατηγορία</th>
                       <th className="text-right py-2 px-2">Ποσό</th>
+                      <th className="text-left py-2 px-2">ΜΑΡΚ</th>
+                      <th className="text-center py-2 px-2">Ενέργειες</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredReceipts.map((receipt) => (
                       <tr key={receipt.id} className="border-t hover:bg-gray-50">
                         <td className="py-2 px-2 font-mono text-[10px]">{receipt.receipt_number}</td>
-                        <td className="py-2 px-2">
-                          {format(new Date(receipt.created_at), 'dd/MM/yy')}
-                        </td>
                         <td className="py-2 px-2">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
@@ -222,14 +260,32 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                             <span className="truncate max-w-24">{receipt.coach_users?.name || '-'}</span>
                           </div>
                         </td>
+                        <td className="py-2 px-2">
+                          {format(new Date(receipt.created_at), 'dd/MM/yy')}
+                        </td>
                         <td className="py-2 px-2">{receipt.subscription_types?.name || '-'}</td>
+                        <td className="py-2 px-2 text-right font-medium text-[#00ffba]">
+                          €{Number(receipt.amount).toFixed(2)}
+                        </td>
                         <td className="py-2 px-2">
                           <span className="text-[10px] px-1 bg-blue-100 text-blue-700">
                             {getReceiptTypeLabel(receipt.receipt_type)}
                           </span>
                         </td>
-                        <td className="py-2 px-2 text-right font-medium text-[#00ffba]">
-                          €{Number(receipt.amount).toFixed(2)}
+                        <td className="py-2 px-2 text-center">
+                          <div className="flex justify-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setReceiptToDelete(receipt.id);
+                                setDeleteDialogOpen(true);
+                              }}
+                              className="rounded-none h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -240,6 +296,24 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogDescription>
+              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 rounded-none">
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
