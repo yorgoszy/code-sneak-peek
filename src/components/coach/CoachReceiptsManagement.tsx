@@ -181,63 +181,69 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
   };
 
   const handlePrint = async (receipt: Receipt) => {
-    // Create a temporary container for the receipt
+    // Create a temporary container for the receipt - A5 size (148mm x 210mm), compact
     const container = document.createElement('div');
     container.id = 'receipt-print-container';
-    container.style.cssText = 'position: fixed; top: -9999px; left: -9999px; width: 400px; background: white; padding: 24px; font-family: Arial, sans-serif;';
+    container.style.cssText = 'position: fixed; top: -9999px; left: -9999px; width: 280px; background: white; padding: 16px; font-family: Arial, sans-serif;';
     
     container.innerHTML = `
-      <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 16px;">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-          ${coachProfile?.logo_url ? `<img src="${coachProfile.logo_url}" style="max-width: 60px; max-height: 60px; object-fit: contain;" crossorigin="anonymous" />` : ''}
-          <div>
-            <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">${coachProfile?.business_name || ''}</div>
-            <div style="font-size: 10px; color: #6b7280;">
-              ${coachProfile?.address ? `${coachProfile.address}, ` : ''}${coachProfile?.city || ''}<br/>
-              ${coachProfile?.vat_number ? `ΑΦΜ: ${coachProfile.vat_number}` : ''}${coachProfile?.phone ? ` | Τηλ: ${coachProfile.phone}` : ''}
-            </div>
-          </div>
-        </div>
+      <div style="font-size: 14px; font-weight: bold; margin-bottom: 12px; text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+        Απόδειξη ${receipt.receipt_number}
       </div>
       
-      <div style="font-size: 16px; font-weight: bold; margin-bottom: 16px;">Απόδειξη ${receipt.receipt_number}</div>
-      
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
         ${receipt.coach_users?.avatar_url 
-          ? `<img src="${receipt.coach_users.avatar_url}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" crossorigin="anonymous" />`
-          : `<div style="width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: bold;">${receipt.coach_users?.name?.charAt(0) || 'Α'}</div>`
+          ? `<img src="${receipt.coach_users.avatar_url}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" crossorigin="anonymous" />`
+          : `<div style="width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${receipt.coach_users?.name?.charAt(0) || 'Α'}</div>`
         }
         <div>
-          <div style="font-weight: 600; font-size: 14px;">${receipt.coach_users?.name || '-'}</div>
-          <div style="font-size: 11px; color: #6b7280;">${receipt.coach_users?.email || ''}</div>
+          <div style="font-weight: 600; font-size: 12px;">${receipt.coach_users?.name || '-'}</div>
+          <div style="font-size: 10px; color: #6b7280;">${receipt.coach_users?.email || ''}</div>
         </div>
       </div>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; font-size: 12px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; font-size: 10px;">
         <div>
-          <div style="color: #6b7280; margin-bottom: 2px;">Ημερομηνία:</div>
+          <div style="color: #6b7280;">Ημερομηνία:</div>
           <div style="font-weight: 500;">${format(new Date(receipt.created_at), 'dd/MM/yyyy', { locale: el })}</div>
         </div>
         <div>
-          <div style="color: #6b7280; margin-bottom: 2px;">Τύπος:</div>
+          <div style="color: #6b7280;">Τύπος:</div>
           <div style="font-weight: 500;">${receipt.subscription_types?.name || '-'}</div>
         </div>
         <div>
-          <div style="color: #6b7280; margin-bottom: 2px;">Είδος:</div>
+          <div style="color: #6b7280;">Είδος:</div>
           <div style="font-weight: 500;">${getReceiptTypeLabel(receipt.receipt_type)}</div>
         </div>
         ${receipt.mark ? `
         <div>
-          <div style="color: #6b7280; margin-bottom: 2px;">ΜΑΡΚ ΑΑΔΕ:</div>
+          <div style="color: #6b7280;">ΜΑΡΚ ΑΑΔΕ:</div>
           <div style="font-weight: 500;">${receipt.mark}</div>
         </div>
         ` : ''}
       </div>
       
-      <div style="border-top: 1px solid #e5e7eb; padding-top: 16px;">
-        <div style="color: #6b7280; font-size: 12px; margin-bottom: 4px;">Ποσό:</div>
-        <div style="font-size: 28px; font-weight: bold; color: #00a86b;">€${Number(receipt.amount).toFixed(2)}</div>
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 10px; margin-bottom: 12px;">
+        <div style="color: #6b7280; font-size: 10px;">Ποσό:</div>
+        <div style="font-size: 20px; font-weight: bold; color: #00a86b;">€${Number(receipt.amount).toFixed(2)}</div>
       </div>
+      
+      ${coachProfile && (coachProfile.business_name || coachProfile.logo_url) ? `
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          ${coachProfile.logo_url ? `<img src="${coachProfile.logo_url}" style="max-width: 40px; max-height: 40px; object-fit: contain;" crossorigin="anonymous" />` : ''}
+          <div>
+            ${coachProfile.business_name ? `<div style="font-size: 11px; font-weight: 600;">${coachProfile.business_name}</div>` : ''}
+            <div style="font-size: 9px; color: #6b7280;">
+              ${coachProfile.address ? coachProfile.address : ''}${coachProfile.city ? `, ${coachProfile.city}` : ''}
+            </div>
+            <div style="font-size: 9px; color: #6b7280;">
+              ${coachProfile.vat_number ? `ΑΦΜ: ${coachProfile.vat_number}` : ''}${coachProfile.phone ? ` | Τηλ: ${coachProfile.phone}` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+      ` : ''}
     `;
     
     document.body.appendChild(container);
@@ -265,7 +271,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
         backgroundColor: '#ffffff'
       });
       
-      // Open print window with the image
+      // Open print window with the image - A5 portrait
       const printWindow = window.open('', '_blank');
       if (printWindow) {
         printWindow.document.write(`
@@ -273,9 +279,26 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
             <head>
               <title>Απόδειξη ${receipt.receipt_number}</title>
               <style>
+                @page {
+                  size: A5 portrait;
+                  margin: 10mm;
+                }
                 @media print {
-                  body { margin: 0; padding: 20px; }
-                  img { max-width: 100%; height: auto; }
+                  body { 
+                    margin: 0; 
+                    padding: 0;
+                    display: flex;
+                    justify-content: center;
+                  }
+                  img { 
+                    max-width: 100%; 
+                    height: auto;
+                  }
+                }
+                body {
+                  display: flex;
+                  justify-content: center;
+                  padding: 10mm;
                 }
               </style>
             </head>
