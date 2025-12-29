@@ -18,6 +18,8 @@ export interface AINutritionData {
   carbsTarget?: number;
   fatTarget?: number;
   days?: any[];
+  targetUserId?: string;
+  targetUserName?: string;
 }
 
 interface AppUser {
@@ -63,12 +65,19 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
     }
   }, [isOpen, nutritionData]);
 
+  // Priority: nutritionData.targetUserId > defaultUserId
   useEffect(() => {
-    if (defaultUserId && users.length > 0) {
-      const user = users.find(u => u.id === defaultUserId);
-      if (user) setSelectedUser(user);
+    if (users.length > 0) {
+      const targetId = nutritionData?.targetUserId || defaultUserId;
+      if (targetId) {
+        const user = users.find(u => u.id === targetId);
+        if (user) {
+          setSelectedUser(user);
+          console.log('✅ Auto-selected user from AI:', user.name);
+        }
+      }
     }
-  }, [defaultUserId, users]);
+  }, [nutritionData?.targetUserId, defaultUserId, users]);
 
   useEffect(() => {
     if (searchTerm) {
