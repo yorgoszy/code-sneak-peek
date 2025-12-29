@@ -124,6 +124,9 @@ function App() {
                 <Route path="/dashboard/coach-athletes-progress" element={<ProtectedRoute><CoachAthletesProgressWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/coach-profile" element={<ProtectedRoute><CoachProfile /></ProtectedRoute>} />
                 <Route path="/dashboard/coach-overview" element={<ProtectedRoute><CoachOverviewPage /></ProtectedRoute>} />
+                <Route path="/dashboard/coach-programs" element={<ProtectedRoute><CoachProgramsPage /></ProtectedRoute>} />
+                <Route path="/dashboard/coach-active-programs" element={<ProtectedRoute><CoachActiveProgramsPage /></ProtectedRoute>} />
+                <Route path="/dashboard/coach-program-cards" element={<ProtectedRoute><CoachProgramCardsPage /></ProtectedRoute>} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
