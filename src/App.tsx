@@ -70,6 +70,7 @@ import { SprintTimingTimer } from "@/pages/SprintTimingTimer";
 import MyAthletes from "@/pages/MyAthletes";
 import CoachSubscriptions from "@/pages/CoachSubscriptions";
 import CoachProgressTrackingWithSidebar from "@/pages/Dashboard/CoachProgressTrackingWithSidebar";
+import CoachAthletesProgressWithSidebar from "@/pages/Dashboard/CoachAthletesProgressWithSidebar";
 
 const queryClient = new QueryClient();
 
@@ -115,6 +116,7 @@ function App() {
                 <Route path="/dashboard/my-athletes" element={<ProtectedRoute><MyAthletes /></ProtectedRoute>} />
                 <Route path="/dashboard/coach-subscriptions" element={<ProtectedRoute><CoachSubscriptions /></ProtectedRoute>} />
                 <Route path="/dashboard/coach-progress" element={<ProtectedRoute><CoachProgressTrackingWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/coach-athletes-progress" element={<ProtectedRoute><CoachAthletesProgressWithSidebar /></ProtectedRoute>} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
