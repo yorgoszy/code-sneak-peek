@@ -50,6 +50,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
@@ -97,17 +98,17 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
 
       let nextNumber = 1;
       if (data && data.length > 0) {
-        // Extract the number from the last expense_number (format: "1", "2", etc.)
-        const lastNum = parseInt(data[0].expense_number, 10);
-        if (!isNaN(lastNum)) {
-          nextNumber = lastNum + 1;
+        // Extract the number from the last expense_number (format: "ΕΞ-0001")
+        const match = data[0].expense_number.match(/ΕΞ-(\d+)/);
+        if (match) {
+          nextNumber = parseInt(match[1], 10) + 1;
         }
       }
-      return String(nextNumber);
+      // Format as ΕΞ-0001, ΕΞ-0002, etc.
+      return `ΕΞ-${String(nextNumber).padStart(4, '0')}`;
     } catch (error) {
       console.error('Error generating expense number:', error);
-      // Fallback to timestamp-based
-      return String(Date.now());
+      return `ΕΞ-0001`;
     }
   };
 
@@ -202,7 +203,12 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
     setShowAddForm(false);
   };
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+  // Filter expenses by category
+  const filteredExpenses = categoryFilter === 'all' 
+    ? expenses 
+    : expenses.filter(e => e.category === categoryFilter);
+
+  const totalExpenses = filteredExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
   if (loading) {
     return (
@@ -216,9 +222,23 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
     <div className="space-y-3">
       {/* Header - Compact */}
       <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <h3 className="text-sm sm:text-base font-semibold truncate">Έξοδα</h3>
-          <p className="text-xs text-gray-500">Σύνολο: €{totalExpenses.toFixed(2)}</p>
+        <div className="min-w-0 flex items-center gap-2">
+          <div>
+            <h3 className="text-sm sm:text-base font-semibold truncate">Έξοδα</h3>
+            <p className="text-xs text-gray-500">Σύνολο: €{totalExpenses.toFixed(2)}</p>
+          </div>
+          {/* Category Filter */}
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="rounded-none h-7 text-xs w-28 sm:w-32">
+              <SelectValue placeholder="Φίλτρο" />
+            </SelectTrigger>
+            <SelectContent className="rounded-none">
+              <SelectItem value="all" className="rounded-none text-xs">Όλες</SelectItem>
+              {EXPENSE_CATEGORIES.map(cat => (
+                <SelectItem key={cat} value={cat} className="rounded-none text-xs">{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <Button 
           onClick={() => setShowAddForm(!showAddForm)} 
@@ -355,15 +375,15 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
       {/* Expenses List - Mobile Cards / Desktop Table */}
       <Card className="rounded-none">
         <CardContent className="p-0">
-          {expenses.length === 0 ? (
+          {filteredExpenses.length === 0 ? (
             <div className="text-center py-6 text-gray-500 text-sm">
-              Δεν υπάρχουν έξοδα
+              {categoryFilter !== 'all' ? 'Δεν υπάρχουν έξοδα σε αυτή την κατηγορία' : 'Δεν υπάρχουν έξοδα'}
             </div>
           ) : (
             <>
               {/* Mobile View - Cards */}
               <div className="sm:hidden divide-y">
-                {expenses.map((expense) => (
+                {filteredExpenses.map((expense) => (
                   <div key={expense.id} className="p-2 flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -421,7 +441,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
                     </tr>
                   </thead>
                   <tbody>
-                    {expenses.map((expense) => (
+                    {filteredExpenses.map((expense) => (
                       <tr key={expense.id} className="border-t hover:bg-gray-50">
                         <td className="py-2 px-2 font-mono font-bold">{expense.expense_number}</td>
                         <td className="py-2 px-2">{format(new Date(expense.expense_date), 'dd/MM/yy')}</td>
