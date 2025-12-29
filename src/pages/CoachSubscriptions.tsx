@@ -544,18 +544,20 @@ const CoachSubscriptions = () => {
 
               <TabsContent value="subscriptions">
                 <Card className="rounded-none">
-                  <CardHeader className="pb-4">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <CreditCard className="h-5 w-5" />
+                  <CardHeader className="py-3 sm:py-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
                         Συνδρομές ({filteredSubscriptions.length})
                       </CardTitle>
                       <Button 
                         onClick={() => setNewSubscriptionOpen(true)}
-                        className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                        size={isMobile ? "sm" : "default"}
+                        className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-8 sm:h-10 text-xs sm:text-sm px-2 sm:px-4"
                       >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Νέα Συνδρομή
+                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Νέα Συνδρομή</span>
+                        <span className="sm:hidden">Νέα</span>
                       </Button>
                     </div>
                   </CardHeader>
