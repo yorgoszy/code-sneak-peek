@@ -4715,10 +4715,13 @@ ${foodsDatabaseContext}
 1. ΠΡΩΤΑ ΤΟ JSON - Βάλε το \`\`\`ai-action block στην ΑΡΧΗ της απάντησης!
 2. ΜΟΝΟ JSON μέσα στο block - ΚΑΝΕΝΑ κείμενο!
 3. ΜΙΑ ΓΡΑΜΜΗ JSON - χωρίς newlines μέσα στο JSON
+4. ΠΑΝΤΑ ΠΕΡΙΛΑΜΒΑΝΕ target_user_id - Αν ο χρήστης ζητήσει για συγκεκριμένο άτομο, ΨΑΞΕ στη λίστα χρηστών παραπάνω (👥 ΛΙΣΤΑ ΧΡΗΣΤΩΝ) και βάλε το id του!
 
-ΠΑΡΑΔΕΙΓΜΑ NUTRITION PLAN:
+⚠️ Η λίστα χρηστών είναι διαθέσιμη στο context (👥 ΛΙΣΤΑ ΧΡΗΣΤΩΝ) - χρησιμοποίησε τα IDs από εκεί!
+
+ΠΑΡΑΔΕΙΓΜΑ NUTRITION PLAN (με target_user_id):
 \`\`\`ai-action
-{"action":"create_nutrition_plan","name":"Πρόγραμμα Απώλειας Βάρους","description":"Υψηλή πρωτεΐνη, χαμηλοί υδατάνθρακες","goal":"fat_loss","totalCalories":2000,"proteinTarget":150,"carbsTarget":150,"fatTarget":70,"days":[{"dayNumber":1,"name":"Ημέρα 1","meals":[{"type":"breakfast","order":1,"name":"Πρωινό","foods":[{"name":"Αυγά","quantity":150,"unit":"g","protein":18,"carbs":1,"fat":15,"calories":210},{"name":"Βρώμη","quantity":50,"unit":"g","protein":7,"carbs":33,"fat":3,"calories":190}]},{"type":"lunch","order":2,"name":"Μεσημεριανό","foods":[{"name":"Στήθος κοτόπουλο","quantity":200,"unit":"g","protein":46,"carbs":0,"fat":6,"calories":240}]},{"type":"dinner","order":3,"name":"Βραδινό","foods":[{"name":"Σολομός","quantity":150,"unit":"g","protein":33,"carbs":0,"fat":18,"calories":290}]}]}]}
+{"action":"create_nutrition_plan","target_user_id":"USER_ID_HERE","target_user_name":"Ονοματεπώνυμο","name":"Πρόγραμμα Απώλειας Βάρους","description":"Υψηλή πρωτεΐνη, χαμηλοί υδατάνθρακες","goal":"fat_loss","totalCalories":2000,"proteinTarget":150,"carbsTarget":150,"fatTarget":70,"days":[{"dayNumber":1,"name":"Ημέρα 1","meals":[{"type":"breakfast","order":1,"name":"Πρωινό","foods":[{"name":"Αυγά","quantity":150,"unit":"g","protein":18,"carbs":1,"fat":15,"calories":210},{"name":"Βρώμη","quantity":50,"unit":"g","protein":7,"carbs":33,"fat":3,"calories":190}]},{"type":"lunch","order":2,"name":"Μεσημεριανό","foods":[{"name":"Στήθος κοτόπουλο","quantity":200,"unit":"g","protein":46,"carbs":0,"fat":6,"calories":240}]},{"type":"dinner","order":3,"name":"Βραδινό","foods":[{"name":"Σολομός","quantity":150,"unit":"g","protein":33,"carbs":0,"fat":18,"calories":290}]}]}]}
 \`\`\`
 
 ΣΗΜΑΝΤΙΚΑ ΓΙΑ NUTRITION:
@@ -4726,7 +4729,8 @@ ${foodsDatabaseContext}
 - Χρησιμοποίησε ΜΟΝΟ τρόφιμα από την ΤΡΑΠΕΖΑ ΦΑΓΗΤΩΝ
 - Υπολόγισε θερμίδες και macros με βάση τις ποσότητες
 - goal: "fat_loss", "muscle_gain", "maintenance", "performance"
-- meal types: "breakfast", "snack_morning", "lunch", "snack_afternoon", "dinner", "snack_evening"
+- meal types: "breakfast", "morning_snack", "lunch", "afternoon_snack", "dinner"
+- ⚠️ ΥΠΟΧΡΕΩΤΙΚΟ: Αν ο χρήστης ζητήσει για κάποιον (π.χ. "για τον Αθανασιάδη"), ΒΡΕΣ το id του από τη λίστα χρηστών και βάλε target_user_id!
 
 ΥΠΟΛΟΓΙΣΜΟΣ ΑΝΑΓΚΩΝ:
 - Βασικός μεταβολισμός (BMR) ανά φύλο:

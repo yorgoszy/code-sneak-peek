@@ -294,8 +294,10 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           carbsTarget: actionData.carbsTarget || actionData.carbs_target,
           fatTarget: actionData.fatTarget || actionData.fat_target,
           days: actionData.days || [],
+          targetUserId: actionData.target_user_id || actionData.targetUserId || actionData.user_id,
+          targetUserName: actionData.target_user_name || actionData.targetUserName || actionData.user_name,
         });
-        console.log('🥗 AI Nutrition Data saved for QuickAssign:', actionData.name);
+        console.log('🥗 AI Nutrition Data saved for QuickAssign:', actionData.name, 'Target user:', actionData.target_user_id || actionData.targetUserId);
       }
 
       // Handle annual plan creation/assignment
