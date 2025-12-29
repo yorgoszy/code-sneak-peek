@@ -280,30 +280,36 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
               <title>Απόδειξη ${receipt.receipt_number}</title>
               <style>
                 @page {
-                  size: A5 portrait;
+                  size: 148mm 210mm;
                   margin: 10mm;
                 }
-                @media print {
-                  body { 
-                    margin: 0; 
-                    padding: 0;
-                    display: flex;
-                    justify-content: center;
-                  }
-                  img { 
-                    max-width: 100%; 
-                    height: auto;
-                  }
+                * {
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
                 }
-                body {
+                html, body {
+                  width: 148mm;
+                  height: 210mm;
+                  margin: 0;
+                  padding: 10mm;
                   display: flex;
                   justify-content: center;
-                  padding: 10mm;
+                  align-items: flex-start;
+                }
+                img { 
+                  max-width: 128mm;
+                  height: auto;
+                }
+                @media print {
+                  html, body {
+                    width: 148mm;
+                    height: 210mm;
+                  }
                 }
               </style>
             </head>
             <body>
-              <img src="${canvas.toDataURL('image/png')}" style="max-width: 100%;" />
+              <img src="${canvas.toDataURL('image/png')}" />
             </body>
           </html>
         `);
