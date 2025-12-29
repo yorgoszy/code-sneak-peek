@@ -28,6 +28,7 @@ interface Expense {
 
 interface CoachExpenseManagementProps {
   coachId: string;
+  onDataChange?: () => void;
 }
 
 const EXPENSE_CATEGORIES = [
@@ -42,7 +43,7 @@ const EXPENSE_CATEGORIES = [
   'Άλλα'
 ];
 
-export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ coachId }) => {
+export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ coachId, onDataChange }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -82,26 +83,14 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
     }
   };
 
-  const generateExpenseNumber = async () => {
-    const { data, error } = await supabase
-      .from('expenses')
-      .select('expense_number')
-      .eq('coach_id', coachId)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (error) {
-      console.error('Error generating expense number:', error);
-      return 'ΕΞ-0001';
-    }
-
-    if (!data || data.length === 0) {
-      return 'ΕΞ-0001';
-    }
-
-    const lastNumber = data[0].expense_number;
-    const numberPart = parseInt(lastNumber.split('-')[1]) || 0;
-    return `ΕΞ-${String(numberPart + 1).padStart(4, '0')}`;
+  const generateExpenseNumber = () => {
+    // Use timestamp for unique expense number
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const time = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0') + String(now.getSeconds()).padStart(2, '0');
+    return `ΕΞ-${year}${month}${day}${time}`;
   };
 
   const handleSubmit = async () => {
@@ -111,7 +100,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
         return;
       }
 
-      const expenseNumber = editingExpense ? editingExpense.expense_number : await generateExpenseNumber();
+      const expenseNumber = editingExpense ? editingExpense.expense_number : generateExpenseNumber();
 
       const expenseData = {
         expense_number: expenseNumber,
@@ -142,6 +131,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
 
       resetForm();
       fetchExpenses();
+      onDataChange?.();
     } catch (error: any) {
       console.error('Error saving expense:', error);
       toast.error("Σφάλμα: " + error.message);
@@ -172,6 +162,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
       if (error) throw error;
       toast.success("Διαγράφηκε");
       fetchExpenses();
+      onDataChange?.();
     } catch (error: any) {
       console.error('Error deleting expense:', error);
       toast.error("Σφάλμα: " + error.message);

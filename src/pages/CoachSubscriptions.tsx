@@ -87,6 +87,9 @@ const CoachSubscriptions = () => {
   const [subscriptionToDelete, setSubscriptionToDelete] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [subscriptionToEdit, setSubscriptionToEdit] = useState<CoachSubscription | null>(null);
+  const [financialRefreshKey, setFinancialRefreshKey] = useState(0);
+
+  const triggerFinancialRefresh = () => setFinancialRefreshKey(prev => prev + 1);
 
   const effectiveCoachId = useMemo(() => {
     if (coachIdParam && isAdmin() && coachIdParam !== userProfile?.id) return coachIdParam;
@@ -738,19 +741,19 @@ const CoachSubscriptions = () => {
 
               <TabsContent value="receipts">
                 {effectiveCoachId && (
-                  <CoachReceiptsManagement coachId={effectiveCoachId} />
+                  <CoachReceiptsManagement coachId={effectiveCoachId} onDataChange={triggerFinancialRefresh} />
                 )}
               </TabsContent>
 
               <TabsContent value="expenses">
                 {effectiveCoachId && (
-                  <CoachExpenseManagement coachId={effectiveCoachId} />
+                  <CoachExpenseManagement coachId={effectiveCoachId} onDataChange={triggerFinancialRefresh} />
                 )}
               </TabsContent>
 
               <TabsContent value="financial">
                 {effectiveCoachId && (
-                  <CoachFinancialOverview coachId={effectiveCoachId} />
+                  <CoachFinancialOverview coachId={effectiveCoachId} refreshKey={financialRefreshKey} />
                 )}
               </TabsContent>
             </Tabs>
