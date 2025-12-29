@@ -42,7 +42,6 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
   const fetchFinancialData = async () => {
     setLoading(true);
     try {
-      // Fetch monthly expenses for selected year (filtered by coach_id)
       const { data: monthlyExpenses, error: expensesError } = await supabase
         .from('expenses')
         .select('amount, expense_date')
@@ -52,14 +51,12 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
 
       if (expensesError) throw expensesError;
 
-      // Group expenses by month
       const monthlyExpMap = new Map<string, number>();
       monthlyExpenses?.forEach(expense => {
         const month = format(new Date(expense.expense_date), 'yyyy-MM');
         monthlyExpMap.set(month, (monthlyExpMap.get(month) || 0) + Number(expense.amount));
       });
 
-      // Fetch receipts for selected year to calculate monthly revenue (filtered by coach_id)
       const { data: monthlyReceipts, error: receiptsError } = await supabase
         .from('receipts')
         .select('total, issue_date')
@@ -69,14 +66,12 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
 
       if (receiptsError) throw receiptsError;
 
-      // Calculate monthly revenue based on receipt issue date
       const monthlyRevMap = new Map<string, number>();
       monthlyReceipts?.forEach(receipt => {
         const month = format(new Date(receipt.issue_date), 'yyyy-MM');
         monthlyRevMap.set(month, (monthlyRevMap.get(month) || 0) + Number(receipt.total));
       });
 
-      // Create monthly data with both revenue and expenses
       const months = [];
       for (let month = 1; month <= 12; month++) {
         const monthKey = `${selectedYear}-${month.toString().padStart(2, '0')}`;
@@ -92,10 +87,8 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
       }
       setMonthlyData(months);
 
-      // Fetch yearly data
       const yearlyResults = [];
       for (const year of years) {
-        // Get receipts for the year
         const { data: yearReceipts } = await supabase
           .from('receipts')
           .select('total')
@@ -131,28 +124,27 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
 
   const currentYearData = yearlyData.find(y => y.year === selectedYear);
   const currentMonthIndex = new Date().getMonth();
-  const currentMonthData = monthlyData[currentMonthIndex];
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <span className="text-gray-500">Φόρτωση οικονομικών στοιχείων...</span>
+      <div className="flex items-center justify-center py-6">
+        <span className="text-gray-500 text-sm">Φόρτωση...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Year Selector */}
-      <div className="flex items-center gap-4">
-        <Calendar className="h-5 w-5 text-gray-500" />
+    <div className="space-y-3 sm:space-y-4">
+      {/* Year Selector - Compact */}
+      <div className="flex items-center gap-2">
+        <Calendar className="h-4 w-4 text-gray-500" />
         <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-          <SelectTrigger className="w-32 rounded-none">
+          <SelectTrigger className="w-24 h-8 text-sm rounded-none">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="rounded-none">
             {years.map(year => (
-              <SelectItem key={year} value={year.toString()} className="rounded-none">
+              <SelectItem key={year} value={year.toString()} className="rounded-none text-sm">
                 {year}
               </SelectItem>
             ))}
@@ -160,86 +152,80 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
         </Select>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Summary Cards - Compact Grid */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Έσοδα {selectedYear}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              <span className="text-2xl font-bold text-green-600">
-                €{currentYearData?.revenue.toFixed(2) || '0.00'}
-              </span>
+          <CardContent className="p-2 sm:p-3">
+            <div className="flex items-center gap-1 mb-1">
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
+              <span className="text-[10px] sm:text-xs text-gray-500">Έσοδα</span>
             </div>
+            <span className="text-sm sm:text-lg font-bold text-green-600 block truncate">
+              €{currentYearData?.revenue.toFixed(0) || '0'}
+            </span>
           </CardContent>
         </Card>
 
         <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Έξοδα {selectedYear}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <TrendingDown className="h-5 w-5 text-red-600" />
-              <span className="text-2xl font-bold text-red-600">
-                €{currentYearData?.expenses.toFixed(2) || '0.00'}
-              </span>
+          <CardContent className="p-2 sm:p-3">
+            <div className="flex items-center gap-1 mb-1">
+              <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
+              <span className="text-[10px] sm:text-xs text-gray-500">Έξοδα</span>
             </div>
+            <span className="text-sm sm:text-lg font-bold text-red-600 block truncate">
+              €{currentYearData?.expenses.toFixed(0) || '0'}
+            </span>
           </CardContent>
         </Card>
 
         <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Κέρδος {selectedYear}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-[#00ffba]" />
-              <span className={`text-2xl font-bold ${(currentYearData?.profit || 0) >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
-                €{currentYearData?.profit.toFixed(2) || '0.00'}
-              </span>
+          <CardContent className="p-2 sm:p-3">
+            <div className="flex items-center gap-1 mb-1">
+              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-[#00ffba]" />
+              <span className="text-[10px] sm:text-xs text-gray-500">Κέρδος</span>
             </div>
+            <span className={`text-sm sm:text-lg font-bold block truncate ${(currentYearData?.profit || 0) >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
+              €{currentYearData?.profit.toFixed(0) || '0'}
+            </span>
           </CardContent>
         </Card>
       </div>
 
-      {/* Monthly Breakdown */}
+      {/* Monthly Breakdown - Compact Table */}
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-lg">Μηνιαία Ανάλυση {selectedYear}</CardTitle>
+        <CardHeader className="p-2 sm:p-4 pb-2">
+          <CardTitle className="text-sm sm:text-base">Μηνιαία Ανάλυση</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-xs sm:text-sm">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-2">Μήνας</th>
-                  <th className="text-right py-2 px-2">Έσοδα</th>
-                  <th className="text-right py-2 px-2">Έξοδα</th>
-                  <th className="text-right py-2 px-2">Κέρδος</th>
+                <tr className="border-b bg-gray-50">
+                  <th className="text-left py-1.5 px-2 sm:py-2 sm:px-3">Μήνας</th>
+                  <th className="text-right py-1.5 px-2 sm:py-2 sm:px-3">Έσοδα</th>
+                  <th className="text-right py-1.5 px-2 sm:py-2 sm:px-3">Έξοδα</th>
+                  <th className="text-right py-1.5 px-2 sm:py-2 sm:px-3">Κέρδος</th>
                 </tr>
               </thead>
               <tbody>
                 {monthlyData.map((month, index) => (
                   <tr key={month.month} className={`border-b ${index === currentMonthIndex ? 'bg-gray-50' : ''}`}>
-                    <td className="py-2 px-2 font-medium capitalize">{month.month}</td>
-                    <td className="py-2 px-2 text-right text-green-600">€{month.revenue.toFixed(2)}</td>
-                    <td className="py-2 px-2 text-right text-red-600">€{month.expenses.toFixed(2)}</td>
-                    <td className={`py-2 px-2 text-right font-medium ${month.profit >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
-                      €{month.profit.toFixed(2)}
+                    <td className="py-1.5 px-2 sm:py-2 sm:px-3 font-medium capitalize text-xs sm:text-sm">{month.month.slice(0, 3)}</td>
+                    <td className="py-1.5 px-2 sm:py-2 sm:px-3 text-right text-green-600">€{month.revenue.toFixed(0)}</td>
+                    <td className="py-1.5 px-2 sm:py-2 sm:px-3 text-right text-red-600">€{month.expenses.toFixed(0)}</td>
+                    <td className={`py-1.5 px-2 sm:py-2 sm:px-3 text-right font-medium ${month.profit >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
+                      €{month.profit.toFixed(0)}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="font-bold border-t-2">
-                  <td className="py-2 px-2">Σύνολο</td>
-                  <td className="py-2 px-2 text-right text-green-600">€{currentYearData?.revenue.toFixed(2) || '0.00'}</td>
-                  <td className="py-2 px-2 text-right text-red-600">€{currentYearData?.expenses.toFixed(2) || '0.00'}</td>
-                  <td className={`py-2 px-2 text-right ${(currentYearData?.profit || 0) >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
-                    €{currentYearData?.profit.toFixed(2) || '0.00'}
+                <tr className="font-bold border-t-2 bg-gray-50">
+                  <td className="py-1.5 px-2 sm:py-2 sm:px-3 text-xs sm:text-sm">Σύνολο</td>
+                  <td className="py-1.5 px-2 sm:py-2 sm:px-3 text-right text-green-600">€{currentYearData?.revenue.toFixed(0) || '0'}</td>
+                  <td className="py-1.5 px-2 sm:py-2 sm:px-3 text-right text-red-600">€{currentYearData?.expenses.toFixed(0) || '0'}</td>
+                  <td className={`py-1.5 px-2 sm:py-2 sm:px-3 text-right ${(currentYearData?.profit || 0) >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
+                    €{currentYearData?.profit.toFixed(0) || '0'}
                   </td>
                 </tr>
               </tfoot>
