@@ -44,6 +44,7 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({
           .eq('coach_id', coachId)
           .eq('coach_user_id', userId)
           .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(10);
 
         if (error) throw error;
@@ -72,6 +73,7 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({
           .eq('user_id', userId)
           .not('endurance_test_data.farmer_kg', 'is', null)
           .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(10);
 
         if (error) throw error;

@@ -44,6 +44,7 @@ export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({
           .eq('coach_id', coachId)
           .eq('coach_user_id', userId)
           .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(10);
         
         if (result.error) throw result.error;
@@ -68,6 +69,7 @@ export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({
           .eq('user_id', userId)
           .not('endurance_test_data.vo2_max', 'is', null)
           .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(10);
 
         if (result.error) throw result.error;

@@ -45,6 +45,7 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({
           .eq('coach_id', coachId)
           .eq('coach_user_id', userId)
           .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(10);
         
         if (result.error) throw result.error;
@@ -67,6 +68,7 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({
           `)
           .eq('user_id', userId)
           .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(10);
 
         if (result.error) throw result.error;

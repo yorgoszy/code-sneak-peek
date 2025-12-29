@@ -128,7 +128,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
           `)
           .eq('coach_id', coachId)
           .eq('coach_user_id', userId)
-          .order('test_date', { ascending: false });
+          .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false });
         
         if (result.error) throw result.error;
         
@@ -211,9 +212,14 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
       }
     });
 
-    // Ταξινόμηση sessions ανά ημερομηνία (από νεότερο σε παλαιότερο)
+    // Ταξινόμηση sessions ανά ημερομηνία και sessionId (από νεότερο σε παλαιότερο)
     Object.keys(sessions).forEach(exerciseId => {
-      sessions[exerciseId].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      sessions[exerciseId].sort((a, b) => {
+        const dateCompare = new Date(b.date).getTime() - new Date(a.date).getTime();
+        if (dateCompare !== 0) return dateCompare;
+        // If same date, sort by sessionId (more recent session IDs are larger)
+        return (b.sessionId || '').localeCompare(a.sessionId || '');
+      });
     });
 
     setExerciseSessions(sessions);

@@ -48,6 +48,7 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({
           .eq('coach_id', coachId)
           .eq('coach_user_id', userId)
           .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(50);
 
         if (error) throw error;
@@ -85,6 +86,7 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({
           .eq('user_id', userId)
           .not('endurance_test_data.sprint_seconds', 'is', null)
           .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(50);
 
         if (error) throw error;
