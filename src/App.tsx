@@ -71,6 +71,7 @@ import MyAthletes from "@/pages/MyAthletes";
 import CoachSubscriptions from "@/pages/CoachSubscriptions";
 import CoachProgressTrackingWithSidebar from "@/pages/Dashboard/CoachProgressTrackingWithSidebar";
 import CoachAthletesProgressWithSidebar from "@/pages/Dashboard/CoachAthletesProgressWithSidebar";
+import CoachProfile from "@/pages/CoachProfile";
 
 const queryClient = new QueryClient();
 
@@ -117,6 +118,7 @@ function App() {
                 <Route path="/dashboard/coach-subscriptions" element={<ProtectedRoute><CoachSubscriptions /></ProtectedRoute>} />
                 <Route path="/dashboard/coach-progress" element={<ProtectedRoute><CoachProgressTrackingWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/coach-athletes-progress" element={<ProtectedRoute><CoachAthletesProgressWithSidebar /></ProtectedRoute>} />
+                <Route path="/dashboard/coach-profile" element={<ProtectedRoute><CoachProfile /></ProtectedRoute>} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />

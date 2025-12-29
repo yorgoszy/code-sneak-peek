@@ -5,7 +5,8 @@ import {
   Brain,
   CreditCard,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  Settings
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -67,6 +68,12 @@ export const CoachSidebar = ({
       icon: BarChart3,
       label: "Πρόοδος Αθλητών",
       path: effectiveCoachId ? `/dashboard/coach-athletes-progress?coachId=${effectiveCoachId}` : "/dashboard/coach-athletes-progress",
+      badge: null,
+    },
+    {
+      icon: Settings,
+      label: "Ρυθμίσεις Προφίλ",
+      path: effectiveCoachId ? `/dashboard/coach-profile?coachId=${effectiveCoachId}` : "/dashboard/coach-profile",
       badge: null,
     },
     { type: "separator" },

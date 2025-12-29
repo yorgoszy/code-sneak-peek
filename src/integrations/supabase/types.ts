@@ -1375,6 +1375,74 @@ export type Database = {
           },
         ]
       }
+      coach_profiles: {
+        Row: {
+          address: string | null
+          bank_iban: string | null
+          bank_name: string | null
+          business_name: string | null
+          city: string | null
+          coach_id: string
+          created_at: string | null
+          id: string
+          logo_url: string | null
+          notes: string | null
+          phone: string | null
+          postal_code: string | null
+          services: string | null
+          tax_office: string | null
+          updated_at: string | null
+          vat_number: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
+          business_name?: string | null
+          city?: string | null
+          coach_id: string
+          created_at?: string | null
+          id?: string
+          logo_url?: string | null
+          notes?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          services?: string | null
+          tax_office?: string | null
+          updated_at?: string | null
+          vat_number?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
+          business_name?: string | null
+          city?: string | null
+          coach_id?: string
+          created_at?: string | null
+          id?: string
+          logo_url?: string | null
+          notes?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          services?: string | null
+          tax_office?: string | null
+          updated_at?: string | null
+          vat_number?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_profiles_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: true
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_receipts: {
         Row: {
           amount: number
