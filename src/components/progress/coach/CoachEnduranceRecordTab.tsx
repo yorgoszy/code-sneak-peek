@@ -783,8 +783,9 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
   };
 
   return (
-    <div className="flex flex-wrap gap-3">
-      {/* MAS Test Forms */}
+    <div className="space-y-3">
+      <div className="flex gap-[1px] overflow-x-auto pb-2 sticky bottom-0 bg-background z-10 -ml-4 pl-4">
+        {/* MAS Test Forms */}
       <div className="space-y-3">
         {forms.map((form, formIndex) => {
           const calculatedMas = calculateMas(form.distance, form.duration);
@@ -1338,6 +1339,7 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
             </Card>
           );
         })}
+        </div>
       </div>
     </div>
   );
