@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Trash2, Eye } from "lucide-react";
+import { Search, Trash2, Eye, Printer, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -11,6 +11,7 @@ import { el } from "date-fns/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { matchesSearchTerm } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Receipt {
   id: string;
@@ -19,6 +20,7 @@ interface Receipt {
   receipt_type: string;
   notes: string | null;
   created_at: string;
+  mark?: string | null;
   coach_users?: {
     name: string;
     email: string;
@@ -48,6 +50,10 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
   const [filterType, setFilterType] = useState<string>('all');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [receiptToDelete, setReceiptToDelete] = useState<string | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
+  const [editingMarkId, setEditingMarkId] = useState<string | null>(null);
+  const [markValue, setMarkValue] = useState('');
 
   useEffect(() => {
     if (coachId) {
@@ -112,6 +118,74 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
     } finally {
       setReceiptToDelete(null);
       setDeleteDialogOpen(false);
+    }
+  };
+
+  const handleSaveMark = async (receiptId: string) => {
+    try {
+      const { error } = await supabase
+        .from('coach_receipts')
+        .update({ mark: markValue || null })
+        .eq('id', receiptId);
+
+      if (error) throw error;
+      toast.success("ΜΑΡΚ αποθηκεύτηκε");
+      setEditingMarkId(null);
+      setMarkValue('');
+      fetchReceipts();
+    } catch (error: any) {
+      console.error('Error saving mark:', error);
+      toast.error("Σφάλμα: " + error.message);
+    }
+  };
+
+  const handleCancelMark = () => {
+    setEditingMarkId(null);
+    setMarkValue('');
+  };
+
+  const handleStartEditMark = (receipt: Receipt) => {
+    setEditingMarkId(receipt.id);
+    setMarkValue(receipt.mark || '');
+  };
+
+  const handleView = (receipt: Receipt) => {
+    setSelectedReceipt(receipt);
+    setViewDialogOpen(true);
+  };
+
+  const handlePrint = (receipt: Receipt) => {
+    // Open print dialog with receipt info
+    const printContent = `
+      <html>
+        <head>
+          <title>Απόδειξη ${receipt.receipt_number}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; }
+            h1 { font-size: 24px; margin-bottom: 20px; }
+            .info { margin-bottom: 10px; }
+            .label { font-weight: bold; }
+            .amount { font-size: 20px; color: #00a86b; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>Απόδειξη Πληρωμής</h1>
+          <div class="info"><span class="label">Αριθμός:</span> ${receipt.receipt_number}</div>
+          <div class="info"><span class="label">Αθλητής:</span> ${receipt.coach_users?.name || '-'}</div>
+          <div class="info"><span class="label">Email:</span> ${receipt.coach_users?.email || '-'}</div>
+          <div class="info"><span class="label">Ημερομηνία:</span> ${format(new Date(receipt.created_at), 'dd/MM/yyyy', { locale: el })}</div>
+          <div class="info"><span class="label">Τύπος:</span> ${receipt.subscription_types?.name || '-'}</div>
+          <div class="info"><span class="label">Είδος:</span> ${getReceiptTypeLabel(receipt.receipt_type)}</div>
+          ${receipt.mark ? `<div class="info"><span class="label">ΜΑΡΚ ΑΑΔΕ:</span> ${receipt.mark}</div>` : ''}
+          <div class="amount"><span class="label">Ποσό:</span> €${Number(receipt.amount).toFixed(2)}</div>
+        </body>
+      </html>
+    `;
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
     }
   };
 
@@ -210,22 +284,35 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                           {getReceiptTypeLabel(receipt.receipt_type)}
                         </span>
                       </div>
+                      {receipt.mark && (
+                        <span className="text-[10px] text-gray-400">ΜΑΡΚ: {receipt.mark}</span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex flex-col items-end gap-1">
                       <span className="font-medium text-[#00ffba] text-sm whitespace-nowrap">
                         €{Number(receipt.amount).toFixed(2)}
                       </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setReceiptToDelete(receipt.id);
-                          setDeleteDialogOpen(true);
-                        }}
-                        className="rounded-none h-6 w-6 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleView(receipt)}
+                          className="rounded-none h-6 w-6 p-0"
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setReceiptToDelete(receipt.id);
+                            setDeleteDialogOpen(true);
+                          }}
+                          className="rounded-none h-6 w-6 p-0 text-red-600"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -263,17 +350,73 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                         <td className="py-2 px-2">
                           {format(new Date(receipt.created_at), 'dd/MM/yy')}
                         </td>
-                        <td className="py-2 px-2">{receipt.subscription_types?.name || '-'}</td>
+                        <td className="py-2 px-2">
+                          <div className="flex flex-col">
+                            <span>{receipt.subscription_types?.name || '-'}</span>
+                            <span className="text-[10px] px-1 bg-blue-100 text-blue-700 inline-block w-fit">
+                              {getReceiptTypeLabel(receipt.receipt_type)}
+                            </span>
+                          </div>
+                        </td>
                         <td className="py-2 px-2 text-right font-medium text-[#00ffba]">
                           €{Number(receipt.amount).toFixed(2)}
                         </td>
                         <td className="py-2 px-2">
-                          <span className="text-[10px] px-1 bg-blue-100 text-blue-700">
-                            {getReceiptTypeLabel(receipt.receipt_type)}
-                          </span>
+                          {editingMarkId === receipt.id ? (
+                            <div className="flex items-center gap-1">
+                              <Input
+                                value={markValue}
+                                onChange={(e) => setMarkValue(e.target.value)}
+                                className="rounded-none h-6 text-[10px] w-24"
+                                placeholder="ΜΑΡΚ ΑΑΔΕ"
+                                autoFocus
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleSaveMark(receipt.id)}
+                                className="rounded-none h-6 w-6 p-0 text-green-600"
+                              >
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleCancelMark}
+                                className="rounded-none h-6 w-6 p-0 text-gray-400"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleStartEditMark(receipt)}
+                              className="text-left hover:bg-gray-100 px-1 py-0.5 min-w-16 text-[10px]"
+                            >
+                              {receipt.mark || <span className="text-gray-400 italic">+ Προσθήκη</span>}
+                            </button>
+                          )}
                         </td>
                         <td className="py-2 px-2 text-center">
                           <div className="flex justify-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleView(receipt)}
+                              className="rounded-none h-6 w-6 p-0"
+                              title="Προβολή"
+                            >
+                              <Eye className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handlePrint(receipt)}
+                              className="rounded-none h-6 w-6 p-0"
+                              title="Εκτύπωση"
+                            >
+                              <Printer className="h-3 w-3" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -282,6 +425,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                                 setDeleteDialogOpen(true);
                               }}
                               className="rounded-none h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                              title="Διαγραφή"
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -296,6 +440,62 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
           )}
         </CardContent>
       </Card>
+
+      {/* View Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="rounded-none max-w-md">
+          <DialogHeader>
+            <DialogTitle>Απόδειξη {selectedReceipt?.receipt_number}</DialogTitle>
+          </DialogHeader>
+          {selectedReceipt && (
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={selectedReceipt.coach_users?.avatar_url || undefined} />
+                  <AvatarFallback>
+                    {selectedReceipt.coach_users?.name?.charAt(0) || 'Α'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{selectedReceipt.coach_users?.name || '-'}</p>
+                  <p className="text-xs text-gray-500">{selectedReceipt.coach_users?.email || '-'}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-gray-500">Ημερομηνία:</span>
+                  <p>{format(new Date(selectedReceipt.created_at), 'dd/MM/yyyy', { locale: el })}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Τύπος:</span>
+                  <p>{selectedReceipt.subscription_types?.name || '-'}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Είδος:</span>
+                  <p>{getReceiptTypeLabel(selectedReceipt.receipt_type)}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">ΜΑΡΚ ΑΑΔΕ:</span>
+                  <p>{selectedReceipt.mark || '-'}</p>
+                </div>
+              </div>
+              <div className="pt-2 border-t">
+                <span className="text-gray-500 text-xs">Ποσό:</span>
+                <p className="text-xl font-bold text-[#00ffba]">€{Number(selectedReceipt.amount).toFixed(2)}</p>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button
+                  onClick={() => handlePrint(selectedReceipt)}
+                  className="rounded-none flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700"
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  Εκτύπωση
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
