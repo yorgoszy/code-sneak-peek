@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Save, X, Camera, Lock } from "lucide-react";
+import { Upload, Save, Camera, Lock, Building2, MapPin, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -38,7 +38,7 @@ interface CoachProfileSettingsProps {
   onClose?: () => void;
 }
 
-export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coachId, onClose }) => {
+export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coachId }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [coachData, setCoachData] = useState<{ name: string; email: string; avatar_url: string | null; auth_user_id: string | null }>({
@@ -68,7 +68,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
 
-  // Password change state
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -85,7 +84,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
     try {
       setLoading(true);
       
-      // Fetch coach basic info
       const { data: coach, error: coachError } = await supabase
         .from('app_users')
         .select('name, email, avatar_url, auth_user_id')
@@ -95,7 +93,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
       if (coachError) throw coachError;
       setCoachData(coach);
 
-      // Fetch coach profile
       const { data: profileData, error: profileError } = await supabase
         .from('coach_profiles')
         .select('*')
@@ -145,7 +142,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
     try {
       setAvatarUploading(true);
 
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         toast.error('Παρακαλώ επιλέξτε μια εικόνα');
         return;
@@ -154,19 +150,16 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
       const fileExt = file.name.split('.').pop();
       const fileName = `${coachId}/avatar.${fileExt}`;
 
-      // Upload avatar
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Update app_users with new avatar URL
       const { error: updateError } = await supabase
         .from('app_users')
         .update({ avatar_url: publicUrl })
@@ -223,7 +216,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
     try {
       setSaving(true);
 
-      // Upload logo if changed
       let logoUrl = profile.logo_url;
       if (logoFile) {
         logoUrl = await uploadLogo() || '';
@@ -246,7 +238,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
         notes: profile.notes
       };
 
-      // Check if profile exists
       const { data: existing } = await supabase
         .from('coach_profiles')
         .select('id')
@@ -293,7 +284,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
     try {
       setChangingPassword(true);
 
-      // First verify current password by signing in
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: coachData.email,
         password: currentPassword
@@ -304,7 +294,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
         return;
       }
 
-      // Update password
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -326,43 +315,31 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <span className="text-gray-500">Φόρτωση...</span>
+      <div className="flex items-center justify-center py-8">
+        <span className="text-gray-500 text-sm">Φόρτωση...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Ρυθμίσεις Προφίλ</h2>
-        {onClose && (
-          <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none">
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-
-      {/* Basic Info Card */}
+    <div className="space-y-3">
+      {/* Basic Info - Compact */}
       <Card className="rounded-none">
-        <CardHeader className="py-3">
-          <CardTitle className="text-sm">Βασικά Στοιχεία</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-4">
+        <CardContent className="p-3">
+          <div className="flex items-center gap-3">
             <div className="relative">
               <Avatar 
-                className="h-16 w-16 cursor-pointer hover:opacity-80 transition-opacity"
+                className="h-12 w-12 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={handleAvatarClick}
               >
                 <AvatarImage src={coachData.avatar_url || undefined} />
-                <AvatarFallback>{coachData.name?.charAt(0) || 'C'}</AvatarFallback>
+                <AvatarFallback className="text-sm">{coachData.name?.charAt(0) || 'C'}</AvatarFallback>
               </Avatar>
               <div 
-                className="absolute -bottom-1 -right-1 bg-[#00ffba] rounded-full p-1 cursor-pointer"
+                className="absolute -bottom-1 -right-1 bg-[#00ffba] rounded-full p-0.5 cursor-pointer"
                 onClick={handleAvatarClick}
               >
-                <Camera className="h-3 w-3 text-black" />
+                <Camera className="h-2.5 w-2.5 text-black" />
               </div>
               <input
                 ref={avatarInputRef}
@@ -373,127 +350,110 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 disabled={avatarUploading}
               />
             </div>
-            <div className="flex-1">
-              <p className="font-medium">{coachData.name}</p>
-              <p className="text-sm text-gray-500">{coachData.email}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2 rounded-none text-xs"
-                onClick={() => setShowPasswordDialog(true)}
-              >
-                <Lock className="h-3 w-3 mr-1" />
-                Αλλαγή Κωδικού
-              </Button>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm truncate">{coachData.name}</p>
+              <p className="text-xs text-gray-500 truncate">{coachData.email}</p>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-none text-xs h-7"
+              onClick={() => setShowPasswordDialog(true)}
+            >
+              <Lock className="h-3 w-3 mr-1" />
+              Αλλαγή Κωδικού
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Business Info Card */}
+      {/* Business Info - Compact */}
       <Card className="rounded-none">
-        <CardHeader className="py-3">
-          <CardTitle className="text-sm">Επαγγελματικά Στοιχεία</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {/* Logo */}
-          <div className="flex items-center gap-4">
-            <div className="w-24 h-24 border border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden">
+        <CardContent className="p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Building2 className="h-4 w-4 text-gray-500" />
+            <span className="text-xs font-medium">Επαγγελματικά Στοιχεία</span>
+          </div>
+          <div className="flex gap-3 mb-2">
+            <div className="w-16 h-16 border border-dashed border-gray-300 flex items-center justify-center overflow-hidden flex-shrink-0">
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
               ) : (
-                <span className="text-gray-400 text-xs text-center">Λογότυπο</span>
+                <span className="text-gray-400 text-[10px] text-center">Logo</span>
               )}
             </div>
-            <div>
-              <Label htmlFor="logo-upload" className="cursor-pointer">
-                <div className="flex items-center gap-2 px-3 py-2 border text-sm hover:bg-gray-50">
-                  <Upload className="h-4 w-4" />
-                  Ανέβασμα Λογότυπου
-                </div>
-              </Label>
-              <Input
-                id="logo-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleLogoChange}
-              />
+            <div className="flex-1 grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-[10px] text-gray-500">Επωνυμία</Label>
+                <Input
+                  value={profile.business_name}
+                  onChange={(e) => setProfile({ ...profile, business_name: e.target.value })}
+                  className="rounded-none h-7 text-xs"
+                />
+              </div>
+              <div>
+                <Label className="text-[10px] text-gray-500">ΑΦΜ</Label>
+                <Input
+                  value={profile.vat_number}
+                  onChange={(e) => setProfile({ ...profile, vat_number: e.target.value })}
+                  className="rounded-none h-7 text-xs"
+                />
+              </div>
+              <div>
+                <Label className="text-[10px] text-gray-500">ΔΟΥ</Label>
+                <Input
+                  value={profile.tax_office}
+                  onChange={(e) => setProfile({ ...profile, tax_office: e.target.value })}
+                  className="rounded-none h-7 text-xs"
+                />
+              </div>
+              <div>
+                <Label className="text-[10px] text-gray-500">Τηλέφωνο</Label>
+                <Input
+                  value={profile.phone}
+                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                  className="rounded-none h-7 text-xs"
+                />
+              </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs">Επωνυμία</Label>
-              <Input
-                value={profile.business_name}
-                onChange={(e) => setProfile({ ...profile, business_name: e.target.value })}
-                className="rounded-none h-9 text-sm"
-                placeholder="Επωνυμία επιχείρησης"
-              />
-            </div>
-            <div>
-              <Label className="text-xs">ΑΦΜ</Label>
-              <Input
-                value={profile.vat_number}
-                onChange={(e) => setProfile({ ...profile, vat_number: e.target.value })}
-                className="rounded-none h-9 text-sm"
-                placeholder="ΑΦΜ"
-              />
-            </div>
-            <div>
-              <Label className="text-xs">ΔΟΥ</Label>
-              <Input
-                value={profile.tax_office}
-                onChange={(e) => setProfile({ ...profile, tax_office: e.target.value })}
-                className="rounded-none h-9 text-sm"
-                placeholder="ΔΟΥ"
-              />
-            </div>
-            <div>
-              <Label className="text-xs">Τηλέφωνο</Label>
-              <Input
-                value={profile.phone}
-                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                className="rounded-none h-9 text-sm"
-                placeholder="Τηλέφωνο"
-              />
-            </div>
-          </div>
+          <Label htmlFor="logo-upload" className="cursor-pointer inline-flex items-center gap-1 px-2 py-1 border text-[10px] hover:bg-gray-50">
+            <Upload className="h-3 w-3" />
+            Ανέβασμα Logo
+          </Label>
+          <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
         </CardContent>
       </Card>
 
-      {/* Address Card */}
+      {/* Address - Compact */}
       <Card className="rounded-none">
-        <CardHeader className="py-3">
-          <CardTitle className="text-sm">Διεύθυνση</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="sm:col-span-2">
-              <Label className="text-xs">Διεύθυνση</Label>
+        <CardContent className="p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <MapPin className="h-4 w-4 text-gray-500" />
+            <span className="text-xs font-medium">Διεύθυνση</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="col-span-3">
               <Input
                 value={profile.address}
                 onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                className="rounded-none h-9 text-sm"
+                className="rounded-none h-7 text-xs"
                 placeholder="Διεύθυνση"
               />
             </div>
-            <div>
-              <Label className="text-xs">Πόλη</Label>
+            <div className="col-span-2">
               <Input
                 value={profile.city}
                 onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                className="rounded-none h-9 text-sm"
+                className="rounded-none h-7 text-xs"
                 placeholder="Πόλη"
               />
             </div>
             <div>
-              <Label className="text-xs">Τ.Κ.</Label>
               <Input
                 value={profile.postal_code}
                 onChange={(e) => setProfile({ ...profile, postal_code: e.target.value })}
-                className="rounded-none h-9 text-sm"
+                className="rounded-none h-7 text-xs"
                 placeholder="Τ.Κ."
               />
             </div>
@@ -501,55 +461,51 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
         </CardContent>
       </Card>
 
-      {/* Services Card */}
+      {/* Services & Website - Compact */}
       <Card className="rounded-none">
-        <CardHeader className="py-3">
-          <CardTitle className="text-sm">Υπηρεσίες & Πληροφορίες</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <Label className="text-xs">Υπηρεσίες</Label>
-            <Textarea
-              value={profile.services}
-              onChange={(e) => setProfile({ ...profile, services: e.target.value })}
-              className="rounded-none text-sm min-h-20"
-              placeholder="Περιγραφή υπηρεσιών..."
-            />
-          </div>
-          <div>
-            <Label className="text-xs">Website</Label>
-            <Input
-              value={profile.website}
-              onChange={(e) => setProfile({ ...profile, website: e.target.value })}
-              className="rounded-none h-9 text-sm"
-              placeholder="https://..."
-            />
+        <CardContent className="p-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="col-span-2">
+              <Label className="text-[10px] text-gray-500">Υπηρεσίες</Label>
+              <Textarea
+                value={profile.services}
+                onChange={(e) => setProfile({ ...profile, services: e.target.value })}
+                className="rounded-none text-xs min-h-[50px]"
+              />
+            </div>
+            <div className="col-span-2">
+              <Label className="text-[10px] text-gray-500">Website</Label>
+              <Input
+                value={profile.website}
+                onChange={(e) => setProfile({ ...profile, website: e.target.value })}
+                className="rounded-none h-7 text-xs"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Bank Card */}
+      {/* Bank - Compact */}
       <Card className="rounded-none">
-        <CardHeader className="py-3">
-          <CardTitle className="text-sm">Τραπεζικά Στοιχεία</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <CardContent className="p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <CreditCard className="h-4 w-4 text-gray-500" />
+            <span className="text-xs font-medium">Τραπεζικά Στοιχεία</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">Τράπεζα</Label>
               <Input
                 value={profile.bank_name}
                 onChange={(e) => setProfile({ ...profile, bank_name: e.target.value })}
-                className="rounded-none h-9 text-sm"
-                placeholder="Όνομα τράπεζας"
+                className="rounded-none h-7 text-xs"
+                placeholder="Τράπεζα"
               />
             </div>
             <div>
-              <Label className="text-xs">IBAN</Label>
               <Input
                 value={profile.bank_iban}
                 onChange={(e) => setProfile({ ...profile, bank_iban: e.target.value })}
-                className="rounded-none h-9 text-sm"
+                className="rounded-none h-7 text-xs"
                 placeholder="IBAN"
               />
             </div>
@@ -557,33 +513,42 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
         </CardContent>
       </Card>
 
-      {/* Save Button */}
-      <div className="flex justify-end pt-2">
-        <Button
-          onClick={handleSubmit}
-          disabled={saving}
-          className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-        >
-          <Save className="h-4 w-4 mr-2" />
-          {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
-        </Button>
-      </div>
+      {/* Notes - Compact */}
+      <Card className="rounded-none">
+        <CardContent className="p-3">
+          <Label className="text-[10px] text-gray-500">Σημειώσεις</Label>
+          <Textarea
+            value={profile.notes}
+            onChange={(e) => setProfile({ ...profile, notes: e.target.value })}
+            className="rounded-none text-xs min-h-[40px]"
+          />
+        </CardContent>
+      </Card>
 
-      {/* Password Change Dialog */}
+      {/* Save Button */}
+      <Button
+        onClick={handleSubmit}
+        disabled={saving}
+        className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-8 text-sm"
+      >
+        <Save className="h-4 w-4 mr-2" />
+        {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
+      </Button>
+
+      {/* Password Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-        <DialogContent className="rounded-none">
+        <DialogContent className="rounded-none max-w-sm">
           <DialogHeader>
-            <DialogTitle>Αλλαγή Κωδικού Πρόσβασης</DialogTitle>
+            <DialogTitle className="text-sm">Αλλαγή Κωδικού</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-3">
             <div>
               <Label className="text-xs">Τρέχων Κωδικός</Label>
               <Input
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="rounded-none h-9 text-sm"
-                placeholder="Εισάγετε τον τρέχοντα κωδικό"
+                className="rounded-none h-8 text-sm"
               />
             </div>
             <div>
@@ -592,36 +557,25 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="rounded-none h-9 text-sm"
-                placeholder="Εισάγετε τον νέο κωδικό"
+                className="rounded-none h-8 text-sm"
               />
             </div>
             <div>
-              <Label className="text-xs">Επιβεβαίωση Νέου Κωδικού</Label>
+              <Label className="text-xs">Επιβεβαίωση Κωδικού</Label>
               <Input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="rounded-none h-9 text-sm"
-                placeholder="Επιβεβαιώστε τον νέο κωδικό"
+                className="rounded-none h-8 text-sm"
               />
             </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowPasswordDialog(false)}
-                className="rounded-none"
-              >
-                Ακύρωση
-              </Button>
-              <Button
-                onClick={handlePasswordChange}
-                disabled={changingPassword}
-                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-              >
-                {changingPassword ? 'Αλλαγή...' : 'Αλλαγή Κωδικού'}
-              </Button>
-            </div>
+            <Button
+              onClick={handlePasswordChange}
+              disabled={changingPassword}
+              className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-8 text-sm"
+            >
+              {changingPassword ? 'Αλλαγή...' : 'Αλλαγή Κωδικού'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

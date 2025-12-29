@@ -43,7 +43,7 @@ export const CoachSidebar = ({
     {
       icon: Home,
       label: "Επισκόπηση",
-      path: "/dashboard/coach-overview",
+      path: effectiveCoachId ? `/dashboard/coach-overview?coachId=${effectiveCoachId}` : "/dashboard/coach-overview",
       badge: null,
     },
     {
