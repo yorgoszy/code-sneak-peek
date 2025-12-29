@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Save, X } from "lucide-react";
+import { Upload, Save, X, Camera, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface CoachProfile {
   id?: string;
@@ -35,10 +41,11 @@ interface CoachProfileSettingsProps {
 export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coachId, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [coachData, setCoachData] = useState<{ name: string; email: string; avatar_url: string | null }>({
+  const [coachData, setCoachData] = useState<{ name: string; email: string; avatar_url: string | null; auth_user_id: string | null }>({
     name: '',
     email: '',
-    avatar_url: null
+    avatar_url: null,
+    auth_user_id: null
   });
   const [profile, setProfile] = useState<CoachProfile>({
     coach_id: coachId,
@@ -58,6 +65,15 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+
+  // Password change state
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     if (coachId) {
@@ -72,7 +88,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
       // Fetch coach basic info
       const { data: coach, error: coachError } = await supabase
         .from('app_users')
-        .select('name, email, avatar_url')
+        .select('name, email, avatar_url, auth_user_id')
         .eq('id', coachId)
         .single();
 
@@ -115,6 +131,56 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
       toast.error("Αποτυχία φόρτωσης προφίλ");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setAvatarUploading(true);
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Παρακαλώ επιλέξτε μια εικόνα');
+        return;
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${coachId}/avatar.${fileExt}`;
+
+      // Upload avatar
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      // Update app_users with new avatar URL
+      const { error: updateError } = await supabase
+        .from('app_users')
+        .update({ avatar_url: publicUrl })
+        .eq('id', coachId);
+
+      if (updateError) throw updateError;
+
+      setCoachData(prev => ({ ...prev, avatar_url: publicUrl }));
+      toast.success('Η φωτογραφία ενημερώθηκε');
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Σφάλμα: ' + error.message);
+    } finally {
+      setAvatarUploading(false);
     }
   };
 
@@ -213,6 +279,51 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
     }
   };
 
+  const handlePasswordChange = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.error('Οι κωδικοί δεν ταιριάζουν');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες');
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+
+      // First verify current password by signing in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: coachData.email,
+        password: currentPassword
+      });
+
+      if (signInError) {
+        toast.error('Λάθος τρέχων κωδικός');
+        return;
+      }
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) throw updateError;
+
+      toast.success('Ο κωδικός άλλαξε επιτυχώς');
+      setShowPasswordDialog(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      toast.error('Σφάλμα: ' + error.message);
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -239,13 +350,41 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={coachData.avatar_url || undefined} />
-              <AvatarFallback>{coachData.name?.charAt(0) || 'C'}</AvatarFallback>
-            </Avatar>
-            <div>
+            <div className="relative">
+              <Avatar 
+                className="h-16 w-16 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={handleAvatarClick}
+              >
+                <AvatarImage src={coachData.avatar_url || undefined} />
+                <AvatarFallback>{coachData.name?.charAt(0) || 'C'}</AvatarFallback>
+              </Avatar>
+              <div 
+                className="absolute -bottom-1 -right-1 bg-[#00ffba] rounded-full p-1 cursor-pointer"
+                onClick={handleAvatarClick}
+              >
+                <Camera className="h-3 w-3 text-black" />
+              </div>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+                disabled={avatarUploading}
+              />
+            </div>
+            <div className="flex-1">
               <p className="font-medium">{coachData.name}</p>
               <p className="text-sm text-gray-500">{coachData.email}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 rounded-none text-xs"
+                onClick={() => setShowPasswordDialog(true)}
+              >
+                <Lock className="h-3 w-3 mr-1" />
+                Αλλαγή Κωδικού
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -429,6 +568,63 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
           {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
         </Button>
       </div>
+
+      {/* Password Change Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="rounded-none">
+          <DialogHeader>
+            <DialogTitle>Αλλαγή Κωδικού Πρόσβασης</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label className="text-xs">Τρέχων Κωδικός</Label>
+              <Input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="rounded-none h-9 text-sm"
+                placeholder="Εισάγετε τον τρέχοντα κωδικό"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Νέος Κωδικός</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="rounded-none h-9 text-sm"
+                placeholder="Εισάγετε τον νέο κωδικό"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Επιβεβαίωση Νέου Κωδικού</Label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="rounded-none h-9 text-sm"
+                placeholder="Επιβεβαιώστε τον νέο κωδικό"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowPasswordDialog(false)}
+                className="rounded-none"
+              >
+                Ακύρωση
+              </Button>
+              <Button
+                onClick={handlePasswordChange}
+                disabled={changingPassword}
+                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              >
+                {changingPassword ? 'Αλλαγή...' : 'Αλλαγή Κωδικού'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

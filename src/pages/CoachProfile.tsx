@@ -3,16 +3,19 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LogOut, Menu, LayoutDashboard, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { CoachProfileSettings } from "@/components/coach/CoachProfileSettings";
+import { CoachOverview } from "@/components/coach/CoachOverview";
 
 const CoachProfile = () => {
   const [searchParams] = useSearchParams();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   const { userProfile, isAdmin, isCoach, loading: roleLoading } = useRoleCheck();
 
   useEffect(() => {
@@ -95,8 +98,8 @@ const CoachProfile = () => {
               <Menu className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-lg font-semibold">Ρυθμίσεις Προφίλ</h1>
-              <p className="text-xs text-gray-500">Διαχείριση στοιχείων επιχείρησης</p>
+              <h1 className="text-lg font-semibold">Προφίλ Coach</h1>
+              <p className="text-xs text-gray-500">Διαχείριση στοιχείων</p>
             </div>
           </div>
 
@@ -113,8 +116,27 @@ const CoachProfile = () => {
 
         {/* Content */}
         <main className="flex-1 p-4 overflow-auto">
-          <div className="max-w-2xl mx-auto">
-            <CoachProfileSettings coachId={effectiveCoachId} />
+          <div className="max-w-4xl mx-auto">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 rounded-none mb-4">
+                <TabsTrigger value="overview" className="rounded-none flex items-center gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
+                  Επισκόπηση
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="rounded-none flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Ρυθμίσεις Προφίλ
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview">
+                <CoachOverview coachId={effectiveCoachId} />
+              </TabsContent>
+
+              <TabsContent value="settings">
+                <CoachProfileSettings coachId={effectiveCoachId} />
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
       </div>
