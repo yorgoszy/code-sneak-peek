@@ -1,19 +1,20 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { NewRecordTab } from "@/components/progress/NewRecordTab";
-import { HistoryTab } from "@/components/progress/HistoryTab";
-import { EnduranceRecordTab } from "@/components/progress/EnduranceRecordTab";
-import { EnduranceHistoryTab } from "@/components/progress/EnduranceHistoryTab";
-import { JumpRecordTab } from "@/components/progress/JumpRecordTab";
-import { JumpHistoryTab } from "@/components/progress/JumpHistoryTab";
-import { AnthropometricRecordTab } from "@/components/progress/AnthropometricRecordTab";
-import { AnthropometricHistoryTab } from "@/components/progress/AnthropometricHistoryTab";
-import { FunctionalRecordTab } from "@/components/progress/FunctionalRecordTab";
-import { FunctionalHistoryTab } from "@/components/progress/FunctionalHistoryTab";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useToast } from "@/hooks/use-toast";
+
+import { CoachStrengthRecordTab } from "@/components/progress/coach/CoachStrengthRecordTab";
+import { CoachStrengthHistoryTab } from "@/components/progress/coach/CoachStrengthHistoryTab";
+import { CoachEnduranceRecordTab } from "@/components/progress/coach/CoachEnduranceRecordTab";
+import { CoachEnduranceHistoryTab } from "@/components/progress/coach/CoachEnduranceHistoryTab";
+import { CoachJumpRecordTab } from "@/components/progress/coach/CoachJumpRecordTab";
+import { CoachJumpHistoryTab } from "@/components/progress/coach/CoachJumpHistoryTab";
+import { CoachAnthropometricRecordTab } from "@/components/progress/coach/CoachAnthropometricRecordTab";
+import { CoachAnthropometricHistoryTab } from "@/components/progress/coach/CoachAnthropometricHistoryTab";
+import { CoachFunctionalRecordTab } from "@/components/progress/coach/CoachFunctionalRecordTab";
+import { CoachFunctionalHistoryTab } from "@/components/progress/coach/CoachFunctionalHistoryTab";
 
 interface CoachProgressTrackingProps {
   contextCoachId?: string;
@@ -92,8 +93,13 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
     setRefreshKey(prev => prev + 1);
   };
 
-  // Coach user IDs for history filtering
-  const coachUserIds = useMemo(() => users.map(u => u.id), [users]);
+  if (!effectiveCoachId) {
+    return (
+      <div className="p-6 text-center text-muted-foreground">
+        Δεν βρέθηκε coachId.
+      </div>
+    );
+  }
 
   return (
     <div className="p-2 sm:p-3 md:p-4 lg:p-6 space-y-3 sm:space-y-4 md:space-y-6 max-w-full overflow-x-hidden">
@@ -135,7 +141,8 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsList>
 
               <TabsContent value="new" className="mt-3 sm:mt-4 md:mt-6">
-                <NewRecordTab
+                <CoachStrengthRecordTab
+                  coachId={effectiveCoachId}
                   users={users}
                   exercises={exercises}
                   onRecordSaved={handleRecordSaved}
@@ -143,7 +150,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsContent>
 
               <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
-                <HistoryTab key={refreshKey} coachUserIds={coachUserIds} />
+                <CoachStrengthHistoryTab coachId={effectiveCoachId} key={refreshKey} />
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -160,7 +167,8 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsList>
 
               <TabsContent value="new" className="mt-3 sm:mt-4 md:mt-6">
-                <EnduranceRecordTab
+                <CoachEnduranceRecordTab
+                  coachId={effectiveCoachId}
                   users={users}
                   exercises={exercises}
                   onRecordSaved={handleRecordSaved}
@@ -168,7 +176,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsContent>
 
               <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
-                <EnduranceHistoryTab key={refreshKey} coachUserIds={coachUserIds} />
+                <CoachEnduranceHistoryTab coachId={effectiveCoachId} key={refreshKey} />
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -185,14 +193,15 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsList>
 
               <TabsContent value="new" className="mt-3 sm:mt-4 md:mt-6">
-                <JumpRecordTab
+                <CoachJumpRecordTab
+                  coachId={effectiveCoachId}
                   users={users}
                   onRecordSaved={handleRecordSaved}
                 />
               </TabsContent>
 
               <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
-                <JumpHistoryTab key={refreshKey} coachUserIds={coachUserIds} />
+                <CoachJumpHistoryTab coachId={effectiveCoachId} key={refreshKey} />
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -209,14 +218,15 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsList>
 
               <TabsContent value="new" className="mt-3 sm:mt-4 md:mt-6">
-                <AnthropometricRecordTab
+                <CoachAnthropometricRecordTab
+                  coachId={effectiveCoachId}
                   users={users}
                   onRecordSaved={handleRecordSaved}
                 />
               </TabsContent>
 
               <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
-                <AnthropometricHistoryTab key={refreshKey} coachUserIds={coachUserIds} />
+                <CoachAnthropometricHistoryTab coachId={effectiveCoachId} key={refreshKey} />
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -233,14 +243,15 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsList>
 
               <TabsContent value="new" className="mt-3 sm:mt-4 md:mt-6">
-                <FunctionalRecordTab
+                <CoachFunctionalRecordTab
+                  coachId={effectiveCoachId}
                   users={users}
                   onRecordSaved={handleRecordSaved}
                 />
               </TabsContent>
 
               <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
-                <FunctionalHistoryTab key={refreshKey} coachUserIds={coachUserIds} />
+                <CoachFunctionalHistoryTab coachId={effectiveCoachId} key={refreshKey} />
               </TabsContent>
             </Tabs>
           </TabsContent>
