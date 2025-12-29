@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
 import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
@@ -21,7 +22,7 @@ import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 const CoachActiveProgramsPage = () => {
   const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
-  const { userProfile, loading: rolesLoading } = useRoleCheck();
+  const { userProfile, loading: rolesLoading, isAdmin } = useRoleCheck();
   const [searchParams] = useSearchParams();
   const coachIdFromUrl = searchParams.get('coachId');
   
@@ -30,8 +31,7 @@ const CoachActiveProgramsPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  const isAdmin = userProfile?.role === 'admin';
-  // Δείχνουμε ΠΑΝΤΑ μόνο τα προγράμματα του συγκεκριμένου coach (logged-in coach ή coachId από URL όταν ο admin "μπαίνει" στο προφίλ coach)
+  // Για admin απαιτείται coachId στο URL (αλλιώς βλέπεις το admin /dashboard/active-programs)
   const effectiveCoachId = coachIdFromUrl || userProfile?.id;
 
   const [activePrograms, setActivePrograms] = useState<EnrichedAssignment[]>([]);
@@ -57,6 +57,13 @@ const CoachActiveProgramsPage = () => {
 
   // Fetch coach's program assignments
   useEffect(() => {
+    // Αν είμαστε admin χωρίς coachId, πάμε στο admin view
+    if (isAdmin() && !coachIdFromUrl) {
+      toast.info('Επιλέξτε coach (coachId) για να δείτε coach προγράμματα');
+      navigate('/dashboard/active-programs');
+      return;
+    }
+
     const fetchCoachPrograms = async () => {
       if (!effectiveCoachId) return;
 
