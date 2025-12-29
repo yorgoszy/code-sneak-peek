@@ -6,6 +6,12 @@ import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DeleteConfirmDialog } from "@/components/progress/DeleteConfirmDialog";
+import { CoachSearchInput } from "./CoachSearchInput";
+
+// Remove Greek accents for search
+const removeAccents = (str: string): string => {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+};
 
 interface CoachEnduranceHistoryTabProps {
   coachId: string;
@@ -15,57 +21,34 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map());
+  const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string }>>(new Map());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (coachId) {
-      fetchSessions();
-    }
+    if (coachId) fetchSessions();
   }, [coachId]);
 
   const fetchSessions = async () => {
     try {
-      // Fetch coach users for name mapping
       const { data: coachUsers } = await supabase
         .from('coach_users')
-        .select('id, name')
+        .select('id, name, email')
         .eq('coach_id', coachId);
 
-      const userMap = new Map<string, string>();
-      (coachUsers || []).forEach(u => userMap.set(u.id, u.name));
+      const userMap = new Map<string, { name: string; email: string }>();
+      (coachUsers || []).forEach(u => userMap.set(u.id, { name: u.name, email: u.email }));
       setUsersMap(userMap);
 
-      // Fetch sessions with ALL data fields
       const { data, error } = await supabase
         .from('coach_endurance_test_sessions')
         .select(`
-          id,
-          coach_user_id,
-          test_date,
-          notes,
-          created_at,
+          id, coach_user_id, test_date, notes, created_at,
           coach_endurance_test_data (
-            id,
-            mas_meters,
-            mas_minutes,
-            mas_ms,
-            mas_kmh,
-            vo2_max,
-            max_hr,
-            resting_hr_1min,
-            push_ups,
-            pull_ups,
-            crunches,
-            t2b,
-            farmer_kg,
-            farmer_meters,
-            farmer_seconds,
-            sprint_meters,
-            sprint_seconds,
-            sprint_watt,
-            sprint_resistance
+            id, mas_meters, mas_minutes, mas_ms, mas_kmh, vo2_max, max_hr, resting_hr_1min,
+            push_ups, pull_ups, crunches, t2b, farmer_kg, farmer_meters, farmer_seconds,
+            sprint_meters, sprint_seconds, sprint_watt, sprint_resistance
           )
         `)
         .eq('coach_id', coachId)
@@ -87,26 +70,12 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
 
   const handleDeleteConfirm = async () => {
     if (!sessionToDelete) return;
-
     try {
-      const { error: dataError } = await supabase
-        .from('coach_endurance_test_data')
-        .delete()
-        .eq('test_session_id', sessionToDelete);
-
-      if (dataError) throw dataError;
-
-      const { error: sessionError } = await supabase
-        .from('coach_endurance_test_sessions')
-        .delete()
-        .eq('id', sessionToDelete);
-
-      if (sessionError) throw sessionError;
-
+      await supabase.from('coach_endurance_test_data').delete().eq('test_session_id', sessionToDelete);
+      await supabase.from('coach_endurance_test_sessions').delete().eq('id', sessionToDelete);
       toast({ title: "Επιτυχία", description: "Η καταγραφή διαγράφηκε" });
       fetchSessions();
     } catch (error) {
-      console.error('Error deleting:', error);
       toast({ title: "Σφάλμα", description: "Αποτυχία διαγραφής", variant: "destructive" });
     } finally {
       setDeleteDialogOpen(false);
@@ -114,30 +83,27 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
     }
   };
 
-  // Group by type - matching the same order as record tab
-  const masSessions = useMemo(() => 
-    sessions.filter(s => s.coach_endurance_test_data?.[0]?.mas_meters), [sessions]);
-  
-  const cardiacSessions = useMemo(() => 
-    sessions.filter(s => s.coach_endurance_test_data?.[0]?.max_hr || s.coach_endurance_test_data?.[0]?.resting_hr_1min), [sessions]);
-  
-  const vo2Sessions = useMemo(() => 
-    sessions.filter(s => s.coach_endurance_test_data?.[0]?.vo2_max), [sessions]);
-  
-  // Bodyweight sessions - push_ups, pull_ups, crunches, t2b
-  const bodyweightSessions = useMemo(() => 
-    sessions.filter(s => {
-      const data = s.coach_endurance_test_data?.[0];
-      return data?.push_ups || data?.pull_ups || data?.crunches || data?.t2b;
-    }), [sessions]);
-  
-  // Farmer sessions
-  const farmerSessions = useMemo(() => 
-    sessions.filter(s => s.coach_endurance_test_data?.[0]?.farmer_kg), [sessions]);
-  
-  // Sprint sessions
-  const sprintSessions = useMemo(() => 
-    sessions.filter(s => s.coach_endurance_test_data?.[0]?.sprint_meters || s.coach_endurance_test_data?.[0]?.sprint_seconds), [sessions]);
+  // Filter sessions by search
+  const filteredSessions = useMemo(() => {
+    if (!searchTerm.trim()) return sessions;
+    const searchLower = removeAccents(searchTerm.trim());
+    return sessions.filter(session => {
+      const user = usersMap.get(session.coach_user_id);
+      if (!user) return false;
+      return removeAccents(user.name || '').includes(searchLower) || removeAccents(user.email || '').includes(searchLower);
+    });
+  }, [sessions, searchTerm, usersMap]);
+
+  // Group by type
+  const masSessions = useMemo(() => filteredSessions.filter(s => s.coach_endurance_test_data?.[0]?.mas_meters), [filteredSessions]);
+  const cardiacSessions = useMemo(() => filteredSessions.filter(s => s.coach_endurance_test_data?.[0]?.max_hr || s.coach_endurance_test_data?.[0]?.resting_hr_1min), [filteredSessions]);
+  const vo2Sessions = useMemo(() => filteredSessions.filter(s => s.coach_endurance_test_data?.[0]?.vo2_max), [filteredSessions]);
+  const bodyweightSessions = useMemo(() => filteredSessions.filter(s => {
+    const data = s.coach_endurance_test_data?.[0];
+    return data?.push_ups || data?.pull_ups || data?.crunches || data?.t2b;
+  }), [filteredSessions]);
+  const farmerSessions = useMemo(() => filteredSessions.filter(s => s.coach_endurance_test_data?.[0]?.farmer_kg), [filteredSessions]);
+  const sprintSessions = useMemo(() => filteredSessions.filter(s => s.coach_endurance_test_data?.[0]?.sprint_meters || s.coach_endurance_test_data?.[0]?.sprint_seconds), [filteredSessions]);
 
   if (loading) return <div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>;
   if (sessions.length === 0) return <div className="text-center py-8 text-muted-foreground">Δεν υπάρχουν καταγραφές</div>;
@@ -151,7 +117,7 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
         <CardContent className="p-2 space-y-1">
           <div className="flex items-center justify-between">
             <div>
-              <span className="font-semibold text-xs">{usersMap.get(session.coach_user_id) || 'Άγνωστος'}</span>
+              <span className="font-semibold text-xs">{usersMap.get(session.coach_user_id)?.name || 'Άγνωστος'}</span>
               <span className="text-[10px] text-muted-foreground ml-2">{format(new Date(session.test_date), 'dd/MM/yy')}</span>
             </div>
             <Button size="sm" variant="ghost" onClick={() => handleDeleteClick(session.id)} className="h-6 w-6 p-0">
@@ -159,7 +125,6 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
             </Button>
           </div>
           <div className="grid grid-cols-2 gap-1 text-[10px]">
-            {/* MAS Data */}
             {type === 'mas' && data.mas_meters && (
               <>
                 <div className="flex justify-between"><span className="text-muted-foreground">Απόσταση:</span><span className="font-medium">{data.mas_meters}m</span></div>
@@ -168,21 +133,15 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
                 <div className="flex justify-between"><span className="text-muted-foreground">MAS:</span><span className="font-bold text-[#cb8954]">{data.mas_kmh?.toFixed(2)} km/h</span></div>
               </>
             )}
-            
-            {/* Cardiac Data */}
             {type === 'cardiac' && (
               <>
                 {data.max_hr && <div className="flex justify-between col-span-2"><span className="text-muted-foreground">Max HR:</span><span className="font-bold text-red-500">{data.max_hr} bpm</span></div>}
                 {data.resting_hr_1min && <div className="flex justify-between col-span-2"><span className="text-muted-foreground">Resting HR:</span><span className="font-bold text-blue-500">{data.resting_hr_1min} bpm</span></div>}
               </>
             )}
-            
-            {/* VO2 Max */}
             {type === 'vo2' && data.vo2_max && (
               <div className="flex justify-between col-span-2"><span className="text-muted-foreground">VO2 Max:</span><span className="font-bold text-[#cb8954]">{data.vo2_max}</span></div>
             )}
-            
-            {/* Bodyweight Data */}
             {type === 'bodyweight' && (
               <>
                 {data.push_ups && <div className="flex justify-between"><span className="text-muted-foreground">Push Ups:</span><span className="font-bold">{data.push_ups}</span></div>}
@@ -191,8 +150,6 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
                 {data.t2b && <div className="flex justify-between"><span className="text-muted-foreground">T2B:</span><span className="font-bold">{data.t2b}</span></div>}
               </>
             )}
-            
-            {/* Farmer Data */}
             {type === 'farmer' && (
               <>
                 {data.farmer_kg && <div className="flex justify-between"><span className="text-muted-foreground">Βάρος:</span><span className="font-bold">{data.farmer_kg} kg</span></div>}
@@ -200,8 +157,6 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
                 {data.farmer_seconds && <div className="flex justify-between"><span className="text-muted-foreground">Χρόνος:</span><span className="font-bold">{data.farmer_seconds} sec</span></div>}
               </>
             )}
-            
-            {/* Sprint Data */}
             {type === 'sprint' && (
               <>
                 {data.sprint_meters && <div className="flex justify-between"><span className="text-muted-foreground">Απόσταση:</span><span className="font-bold">{data.sprint_meters} m</span></div>}
@@ -216,65 +171,52 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
     );
   };
 
+  const hasResults = masSessions.length > 0 || cardiacSessions.length > 0 || vo2Sessions.length > 0 || bodyweightSessions.length > 0 || farmerSessions.length > 0 || sprintSessions.length > 0;
+
   return (
-    <div className="flex gap-6 overflow-x-auto pb-4">
-      {/* MAS Tests */}
-      {masSessions.length > 0 && (
-        <div className="flex-shrink-0 space-y-3">
-          <h3 className="text-lg font-semibold border-b pb-2">MAS Tests</h3>
-          <div className="space-y-3">
-            {masSessions.map(s => renderCard(s, 'mas'))}
-          </div>
-        </div>
-      )}
+    <div className="space-y-4">
+      <CoachSearchInput value={searchTerm} onChange={setSearchTerm} />
       
-      {/* Cardiac Data */}
-      {cardiacSessions.length > 0 && (
-        <div className="flex-shrink-0 space-y-3">
-          <h3 className="text-lg font-semibold border-b pb-2">Cardiac Data</h3>
-          <div className="space-y-3">
-            {cardiacSessions.map(s => renderCard(s, 'cardiac'))}
-          </div>
-        </div>
-      )}
-      
-      {/* VO2 Max */}
-      {vo2Sessions.length > 0 && (
-        <div className="flex-shrink-0 space-y-3">
-          <h3 className="text-lg font-semibold border-b pb-2">VO2 Max</h3>
-          <div className="space-y-3">
-            {vo2Sessions.map(s => renderCard(s, 'vo2'))}
-          </div>
-        </div>
-      )}
-      
-      {/* Bodyweight */}
-      {bodyweightSessions.length > 0 && (
-        <div className="flex-shrink-0 space-y-3">
-          <h3 className="text-lg font-semibold border-b pb-2">Bodyweight</h3>
-          <div className="space-y-3">
-            {bodyweightSessions.map(s => renderCard(s, 'bodyweight'))}
-          </div>
-        </div>
-      )}
-      
-      {/* Farmer */}
-      {farmerSessions.length > 0 && (
-        <div className="flex-shrink-0 space-y-3">
-          <h3 className="text-lg font-semibold border-b pb-2">Farmer Test</h3>
-          <div className="space-y-3">
-            {farmerSessions.map(s => renderCard(s, 'farmer'))}
-          </div>
-        </div>
-      )}
-      
-      {/* Sprint */}
-      {sprintSessions.length > 0 && (
-        <div className="flex-shrink-0 space-y-3">
-          <h3 className="text-lg font-semibold border-b pb-2">Sprint Test</h3>
-          <div className="space-y-3">
-            {sprintSessions.map(s => renderCard(s, 'sprint'))}
-          </div>
+      {!hasResults ? (
+        <div className="text-center py-8 text-muted-foreground">Δεν βρέθηκαν αποτελέσματα</div>
+      ) : (
+        <div className="flex gap-6 overflow-x-auto pb-4">
+          {masSessions.length > 0 && (
+            <div className="flex-shrink-0 space-y-3">
+              <h3 className="text-lg font-semibold border-b pb-2">MAS Tests</h3>
+              <div className="space-y-3">{masSessions.map(s => renderCard(s, 'mas'))}</div>
+            </div>
+          )}
+          {cardiacSessions.length > 0 && (
+            <div className="flex-shrink-0 space-y-3">
+              <h3 className="text-lg font-semibold border-b pb-2">Cardiac Data</h3>
+              <div className="space-y-3">{cardiacSessions.map(s => renderCard(s, 'cardiac'))}</div>
+            </div>
+          )}
+          {vo2Sessions.length > 0 && (
+            <div className="flex-shrink-0 space-y-3">
+              <h3 className="text-lg font-semibold border-b pb-2">VO2 Max</h3>
+              <div className="space-y-3">{vo2Sessions.map(s => renderCard(s, 'vo2'))}</div>
+            </div>
+          )}
+          {bodyweightSessions.length > 0 && (
+            <div className="flex-shrink-0 space-y-3">
+              <h3 className="text-lg font-semibold border-b pb-2">Bodyweight</h3>
+              <div className="space-y-3">{bodyweightSessions.map(s => renderCard(s, 'bodyweight'))}</div>
+            </div>
+          )}
+          {farmerSessions.length > 0 && (
+            <div className="flex-shrink-0 space-y-3">
+              <h3 className="text-lg font-semibold border-b pb-2">Farmer Test</h3>
+              <div className="space-y-3">{farmerSessions.map(s => renderCard(s, 'farmer'))}</div>
+            </div>
+          )}
+          {sprintSessions.length > 0 && (
+            <div className="flex-shrink-0 space-y-3">
+              <h3 className="text-lg font-semibold border-b pb-2">Sprint Test</h3>
+              <div className="space-y-3">{sprintSessions.map(s => renderCard(s, 'sprint'))}</div>
+            </div>
+          )}
         </div>
       )}
 
