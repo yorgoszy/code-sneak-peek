@@ -180,53 +180,120 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
     setViewDialogOpen(true);
   };
 
-  const handlePrint = (receipt: Receipt) => {
-    // Open print dialog with receipt info
-    const printContent = `
-      <html>
-        <head>
-          <title>Απόδειξη ${receipt.receipt_number}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 40px; }
-            .header { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 20px; }
-            .logo { max-width: 100px; max-height: 80px; }
-            .business-info { flex: 1; }
-            .business-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
-            .business-details { font-size: 12px; color: #666; }
-            h1 { font-size: 20px; margin-bottom: 20px; }
-            .info { margin-bottom: 8px; }
-            .label { font-weight: bold; }
-            .amount { font-size: 24px; color: #00a86b; margin-top: 20px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            ${coachProfile?.logo_url ? `<img src="${coachProfile.logo_url}" class="logo" alt="Logo" />` : ''}
-            <div class="business-info">
-              <div class="business-name">${coachProfile?.business_name || ''}</div>
-              <div class="business-details">
-                ${coachProfile?.address ? `${coachProfile.address}, ` : ''}${coachProfile?.city || ''}<br/>
-                ${coachProfile?.vat_number ? `ΑΦΜ: ${coachProfile.vat_number}` : ''}
-                ${coachProfile?.phone ? ` | Τηλ: ${coachProfile.phone}` : ''}
-              </div>
+  const handlePrint = async (receipt: Receipt) => {
+    // Create a temporary container for the receipt
+    const container = document.createElement('div');
+    container.id = 'receipt-print-container';
+    container.style.cssText = 'position: fixed; top: -9999px; left: -9999px; width: 400px; background: white; padding: 24px; font-family: Arial, sans-serif;';
+    
+    container.innerHTML = `
+      <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+          ${coachProfile?.logo_url ? `<img src="${coachProfile.logo_url}" style="max-width: 60px; max-height: 60px; object-fit: contain;" crossorigin="anonymous" />` : ''}
+          <div>
+            <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">${coachProfile?.business_name || ''}</div>
+            <div style="font-size: 10px; color: #6b7280;">
+              ${coachProfile?.address ? `${coachProfile.address}, ` : ''}${coachProfile?.city || ''}<br/>
+              ${coachProfile?.vat_number ? `ΑΦΜ: ${coachProfile.vat_number}` : ''}${coachProfile?.phone ? ` | Τηλ: ${coachProfile.phone}` : ''}
             </div>
           </div>
-          <h1>Απόδειξη Πληρωμής #${receipt.receipt_number}</h1>
-          <div class="info"><span class="label">Αθλητής:</span> ${receipt.coach_users?.name || '-'}</div>
-          <div class="info"><span class="label">Email:</span> ${receipt.coach_users?.email || '-'}</div>
-          <div class="info"><span class="label">Ημερομηνία:</span> ${format(new Date(receipt.created_at), 'dd/MM/yyyy', { locale: el })}</div>
-          <div class="info"><span class="label">Τύπος:</span> ${receipt.subscription_types?.name || '-'}</div>
-          <div class="info"><span class="label">Είδος:</span> ${getReceiptTypeLabel(receipt.receipt_type)}</div>
-          ${receipt.mark ? `<div class="info"><span class="label">ΜΑΡΚ ΑΑΔΕ:</span> ${receipt.mark}</div>` : ''}
-          <div class="amount"><span class="label">Ποσό:</span> €${Number(receipt.amount).toFixed(2)}</div>
-        </body>
-      </html>
+        </div>
+      </div>
+      
+      <div style="font-size: 16px; font-weight: bold; margin-bottom: 16px;">Απόδειξη ${receipt.receipt_number}</div>
+      
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb;">
+        ${receipt.coach_users?.avatar_url 
+          ? `<img src="${receipt.coach_users.avatar_url}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" crossorigin="anonymous" />`
+          : `<div style="width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: bold;">${receipt.coach_users?.name?.charAt(0) || 'Α'}</div>`
+        }
+        <div>
+          <div style="font-weight: 600; font-size: 14px;">${receipt.coach_users?.name || '-'}</div>
+          <div style="font-size: 11px; color: #6b7280;">${receipt.coach_users?.email || ''}</div>
+        </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; font-size: 12px;">
+        <div>
+          <div style="color: #6b7280; margin-bottom: 2px;">Ημερομηνία:</div>
+          <div style="font-weight: 500;">${format(new Date(receipt.created_at), 'dd/MM/yyyy', { locale: el })}</div>
+        </div>
+        <div>
+          <div style="color: #6b7280; margin-bottom: 2px;">Τύπος:</div>
+          <div style="font-weight: 500;">${receipt.subscription_types?.name || '-'}</div>
+        </div>
+        <div>
+          <div style="color: #6b7280; margin-bottom: 2px;">Είδος:</div>
+          <div style="font-weight: 500;">${getReceiptTypeLabel(receipt.receipt_type)}</div>
+        </div>
+        ${receipt.mark ? `
+        <div>
+          <div style="color: #6b7280; margin-bottom: 2px;">ΜΑΡΚ ΑΑΔΕ:</div>
+          <div style="font-weight: 500;">${receipt.mark}</div>
+        </div>
+        ` : ''}
+      </div>
+      
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 16px;">
+        <div style="color: #6b7280; font-size: 12px; margin-bottom: 4px;">Ποσό:</div>
+        <div style="font-size: 28px; font-weight: bold; color: #00a86b;">€${Number(receipt.amount).toFixed(2)}</div>
+      </div>
     `;
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.print();
+    
+    document.body.appendChild(container);
+    
+    try {
+      // Wait for images to load
+      const images = container.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+        return new Promise((resolve) => {
+          if (img.complete) {
+            resolve(true);
+          } else {
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(true);
+          }
+        });
+      }));
+      
+      // Use html2canvas to create image
+      const { default: html2canvas } = await import('html2canvas');
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      // Open print window with the image
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Απόδειξη ${receipt.receipt_number}</title>
+              <style>
+                @media print {
+                  body { margin: 0; padding: 20px; }
+                  img { max-width: 100%; height: auto; }
+                }
+              </style>
+            </head>
+            <body>
+              <img src="${canvas.toDataURL('image/png')}" style="max-width: 100%;" />
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        setTimeout(() => {
+          printWindow.print();
+        }, 300);
+      }
+    } catch (error) {
+      console.error('Error generating receipt image:', error);
+      toast.error('Σφάλμα κατά την εκτύπωση');
+    } finally {
+      document.body.removeChild(container);
     }
   };
 
