@@ -133,7 +133,7 @@ const CoachProgramsPage = () => {
       );
       
       console.log('✅ Coach programs loaded:', coachPrograms.length);
-      setPrograms(coachPrograms);
+      setPrograms(coachPrograms as unknown as Program[]);
     } catch (error) {
       console.error('❌ Error loading programs:', error);
     }

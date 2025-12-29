@@ -16,6 +16,9 @@ export const assignmentService = {
         throw new Error('Λείπει το ID του χρήστη');
       }
 
+      // Προαιρετικά: όταν κάνουμε ανάθεση “μέσα” από προφίλ coach (admin acting as coach), περνάμε coachId
+      const coachId: string | undefined = assignmentData.coachId || undefined;
+
       if (!assignmentData.trainingDates || assignmentData.trainingDates.length === 0) {
         throw new Error('Λείπουν οι ημερομηνίες προπόνησης');
       }
@@ -62,7 +65,7 @@ export const assignmentService = {
         sortedDates 
       });
 
-      const insertData = {
+      const insertData: any = {
         program_id: assignmentData.program.id,
         user_id: assignmentData.userId,
         training_dates: formattedTrainingDates,
@@ -74,6 +77,10 @@ export const assignmentService = {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
+
+      if (coachId) {
+        insertData.coach_id = coachId;
+      }
 
       console.log('💾 [AssignmentService] Data to insert into database:', insertData);
 

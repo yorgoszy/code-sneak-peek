@@ -31,7 +31,8 @@ const CoachActiveProgramsPage = () => {
   const isMobile = useIsMobile();
   
   const isAdmin = userProfile?.role === 'admin';
-  const effectiveCoachId = coachIdFromUrl || (!isAdmin ? userProfile?.id : null);
+  // Δείχνουμε ΠΑΝΤΑ μόνο τα προγράμματα του συγκεκριμένου coach (logged-in coach ή coachId από URL όταν ο admin “μπαίνει” στο προφίλ coach)
+  const effectiveCoachId = coachIdFromUrl || userProfile?.id;
 
   const [activePrograms, setActivePrograms] = useState<EnrichedAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,25 +83,26 @@ const CoachActiveProgramsPage = () => {
                 )
               )
             ),
+            app_users:user_id (*),
             coach_users:coach_user_id (*)
           `)
-          .not('coach_user_id', 'is', null)
           .in('status', ['active', 'completed']);
 
-        if (effectiveCoachId) {
-          query = query.eq('coach_id', effectiveCoachId);
-        }
+        // ✅ Μόνο προγράμματα που “ανήκουν” στον coach:
+        // - είτε γράφτηκε coach_id πάνω στο assignment
+        // - είτε ο athlete (app_users) έχει coach_id = coach
+        query = query.or(`coach_id.eq.${effectiveCoachId},app_users.coach_id.eq.${effectiveCoachId}`);
 
         const { data: assignments, error: assignError } = await query;
 
         if (assignError) throw assignError;
-        
-        // Map coach_users data to app_users format for compatibility
-        const mappedAssignments = (assignments || []).map(assignment => ({
+
+        // Map user data for compatibility (ProgramCard / calendar expects assignment.app_users)
+        const mappedAssignments = (assignments || []).map((assignment: any) => ({
           ...assignment,
-          app_users: assignment.coach_users // Alias for compatibility
+          app_users: assignment.app_users || assignment.coach_users || null,
         }));
-        
+
         setActivePrograms(mappedAssignments as unknown as EnrichedAssignment[]);
       } catch (error) {
         console.error('Error fetching coach programs:', error);

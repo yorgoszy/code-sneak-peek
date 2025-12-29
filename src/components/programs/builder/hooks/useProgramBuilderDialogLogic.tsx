@@ -14,6 +14,8 @@ interface UseProgramBuilderDialogLogicProps {
   isOpen: boolean;
   program: ProgramStructure;
   updateProgram?: (updates: Partial<ProgramStructure>) => void;
+  /** όταν είμαστε admin “μέσα” σε προφίλ coach */
+  coachId?: string;
 }
 
 export const useProgramBuilderDialogLogic = ({
@@ -25,7 +27,8 @@ export const useProgramBuilderDialogLogic = ({
   editingAssignment,
   isOpen,
   program,
-  updateProgram
+  updateProgram,
+  coachId
 }: UseProgramBuilderDialogLogicProps) => {
   const availableUsers = useMemo(() => {
     return users.filter(user => 
@@ -137,7 +140,8 @@ export const useProgramBuilderDialogLogic = ({
         const assignmentData = {
           program: programToAssign,
           userId,
-          trainingDates
+          trainingDates,
+          coachId
         };
 
         await assignmentService.saveAssignment(assignmentData);
