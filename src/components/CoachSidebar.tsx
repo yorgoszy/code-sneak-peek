@@ -6,7 +6,10 @@ import {
   CreditCard,
   TrendingUp,
   BarChart3,
-  Settings
+  Settings,
+  FileText,
+  Calendar,
+  Layers
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -58,6 +61,26 @@ export const CoachSidebar = ({
       path: effectiveCoachId ? `/dashboard/coach-subscriptions?coachId=${effectiveCoachId}` : "/dashboard/coach-subscriptions",
       badge: null,
     },
+    { type: "separator" },
+    {
+      icon: FileText,
+      label: "Προγράμματα",
+      path: effectiveCoachId ? `/dashboard/coach-programs?coachId=${effectiveCoachId}` : "/dashboard/coach-programs",
+      badge: null,
+    },
+    {
+      icon: Calendar,
+      label: "Ενεργά Προγράμματα",
+      path: effectiveCoachId ? `/dashboard/coach-active-programs?coachId=${effectiveCoachId}` : "/dashboard/coach-active-programs",
+      badge: null,
+    },
+    {
+      icon: Layers,
+      label: "Program Cards",
+      path: effectiveCoachId ? `/dashboard/coach-program-cards?coachId=${effectiveCoachId}` : "/dashboard/coach-program-cards",
+      badge: null,
+    },
+    { type: "separator" },
     {
       icon: TrendingUp,
       label: "Τεστ",
