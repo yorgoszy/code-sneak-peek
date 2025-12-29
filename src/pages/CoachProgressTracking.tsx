@@ -20,10 +20,9 @@ interface CoachProgressTrackingProps {
 }
 
 type CoachAthlete = {
-  id: string; // app_users.id (IMPORTANT: tests tables reference app_users)
+  id: string; // coach_users.id
   name: string;
   email: string;
-  coach_user_id: string; // coach_users.id (for reference/debug)
 };
 
 export default function CoachProgressTracking({ contextCoachId }: CoachProgressTrackingProps) {
@@ -41,93 +40,35 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
 
   useEffect(() => {
     if (effectiveCoachId) {
-      fetchCoachAthletesAsAppUsers();
+      fetchCoachAthletes();
     }
     fetchExercises();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveCoachId]);
 
-  const fetchCoachAthletesAsAppUsers = async () => {
+  const fetchCoachAthletes = async () => {
     if (!effectiveCoachId) return;
 
     try {
-      // 1) Fetch coach athletes (coach_users)
-      const { data: coachUsers, error: coachUsersError } = await supabase
+      // Fetch coach athletes directly from coach_users table
+      const { data: coachUsers, error } = await supabase
         .from('coach_users')
         .select('id, name, email')
         .eq('coach_id', effectiveCoachId)
         .order('name');
 
-      if (coachUsersError) throw coachUsersError;
+      if (error) throw error;
 
-      const coachUserRows = (coachUsers || []).filter(u => u.email);
-      const emails = coachUserRows.map(u => u.email);
-
-      if (emails.length === 0) {
-        setUsers([]);
-        return;
-      }
-
-      // 2) Fetch matching app_users by email
-      const { data: appUsers, error: appUsersError } = await supabase
-        .from('app_users')
-        .select('id, name, email')
-        .in('email', emails);
-
-      if (appUsersError) throw appUsersError;
-
-      const emailToAppUser = new Map<string, { id: string; name: string; email: string }>();
-      (appUsers || []).forEach((u) => emailToAppUser.set(u.email, u));
-
-      // 3) Create missing app_users (so progress tests can reference them)
-      const missingCoachUsers = coachUserRows.filter(cu => !emailToAppUser.has(cu.email));
-
-      if (missingCoachUsers.length > 0) {
-        const rowsToInsert = missingCoachUsers.map(cu => ({
-          name: cu.name,
-          email: cu.email,
-          role: 'athlete',
-          user_status: 'active',
-          coach_id: effectiveCoachId
-        }));
-
-        const { data: inserted, error: insertError } = await supabase
-          .from('app_users')
-          .insert(rowsToInsert)
-          .select('id, name, email');
-
-        if (insertError) {
-          console.error('Error creating app_users for coach athletes:', insertError);
-          toast({
-            title: 'Σφάλμα',
-            description: 'Δεν μπορώ να δημιουργήσω προφίλ αθλητών (app_users). Ελέγξτε τα δικαιώματα/RLS.',
-            variant: 'destructive'
-          });
-        } else {
-          (inserted || []).forEach((u) => emailToAppUser.set(u.email, u));
-        }
-      }
-
-      // 4) Build users list for the UI using app_users.id (NOT coach_users.id)
-      const merged: CoachAthlete[] = coachUserRows
-        .map(cu => {
-          const appUser = emailToAppUser.get(cu.email);
-          if (!appUser) return null;
-          return {
-            id: appUser.id,
-            name: appUser.name || cu.name,
-            email: appUser.email,
-            coach_user_id: cu.id
-          };
-        })
-        .filter(Boolean) as CoachAthlete[];
-
-      setUsers(merged);
+      setUsers((coachUsers || []).map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email
+      })));
     } catch (error) {
       console.error('Error fetching coach athletes:', error);
       toast({
         title: 'Σφάλμα',
-        description: 'Αποτυχία φόρτωσης αθλητών coach.',
+        description: 'Αποτυχία φόρτωσης αθλητών.',
         variant: 'destructive'
       });
     }
@@ -151,8 +92,8 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
     setRefreshKey(prev => prev + 1);
   };
 
-  // IMPORTANT: history filters must use app_users ids
-  const coachAthleteAppUserIds = useMemo(() => users.map(u => u.id), [users]);
+  // Coach user IDs for history filtering
+  const coachUserIds = useMemo(() => users.map(u => u.id), [users]);
 
   return (
     <div className="p-2 sm:p-3 md:p-4 lg:p-6 space-y-3 sm:space-y-4 md:space-y-6 max-w-full overflow-x-hidden">
@@ -202,7 +143,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsContent>
 
               <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
-                <HistoryTab key={refreshKey} coachUserIds={coachAthleteAppUserIds} />
+                <HistoryTab key={refreshKey} coachUserIds={coachUserIds} />
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -227,7 +168,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsContent>
 
               <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
-                <EnduranceHistoryTab key={refreshKey} coachUserIds={coachAthleteAppUserIds} />
+                <EnduranceHistoryTab key={refreshKey} coachUserIds={coachUserIds} />
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -251,7 +192,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsContent>
 
               <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
-                <JumpHistoryTab key={refreshKey} coachUserIds={coachAthleteAppUserIds} />
+                <JumpHistoryTab key={refreshKey} coachUserIds={coachUserIds} />
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -275,7 +216,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsContent>
 
               <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
-                <AnthropometricHistoryTab key={refreshKey} coachUserIds={coachAthleteAppUserIds} />
+                <AnthropometricHistoryTab key={refreshKey} coachUserIds={coachUserIds} />
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -299,7 +240,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               </TabsContent>
 
               <TabsContent value="history" className="mt-3 sm:mt-4 md:mt-6">
-                <FunctionalHistoryTab key={refreshKey} coachUserIds={coachAthleteAppUserIds} />
+                <FunctionalHistoryTab key={refreshKey} coachUserIds={coachUserIds} />
               </TabsContent>
             </Tabs>
           </TabsContent>
