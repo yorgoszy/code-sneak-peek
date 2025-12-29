@@ -44,12 +44,6 @@ export const CoachSidebar = ({
 
   const menuItems = [
     {
-      icon: Home,
-      label: "Επισκόπηση",
-      path: effectiveCoachId ? `/dashboard/coach-overview?coachId=${effectiveCoachId}` : "/dashboard/coach-overview",
-      badge: null,
-    },
-    {
       icon: Users,
       label: "Οι Αθλητές μου",
       path: effectiveCoachId ? `/dashboard/my-athletes?coachId=${effectiveCoachId}` : "/dashboard/my-athletes",

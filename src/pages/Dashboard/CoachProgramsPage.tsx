@@ -106,10 +106,31 @@ const CoachProgramsPage = () => {
     
     try {
       console.log('🔄 Loading coach programs for:', effectiveCoachId);
-      const data = await fetchProgramsWithAssignments();
+      
+      // Fetch only coach's programs directly from database
+      const { data, error } = await supabase
+        .from('programs')
+        .select(`
+          *,
+          program_assignments(*),
+          program_weeks(
+            *,
+            program_days(
+              *,
+              program_blocks(
+                *,
+                program_exercises(*, exercises(*))
+              )
+            )
+          )
+        `)
+        .eq('created_by', effectiveCoachId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
       
       // Filter programs - only those without assignments (drafts)
-      const coachPrograms = data.filter(program => 
+      const coachPrograms = (data || []).filter(program => 
         !program.program_assignments || program.program_assignments.length === 0
       );
       
