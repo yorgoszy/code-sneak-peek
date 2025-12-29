@@ -6,9 +6,15 @@ import { useTranslation } from 'react-i18next';
 
 interface BodyweightProgressCardProps {
   userId: string;
+  useCoachTables?: boolean;
+  coachId?: string;
 }
 
-export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ userId }) => {
+export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
+  userId,
+  useCoachTables = false,
+  coachId 
+}) => {
   const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,39 +23,68 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({ 
     if (userId) {
       fetchBodyweightHistory();
     }
-  }, [userId]);
+  }, [userId, useCoachTables, coachId]);
 
   const fetchBodyweightHistory = async () => {
     try {
-      const { data, error } = await supabase
-        .from('endurance_test_sessions')
-        .select(`
-          id,
-          test_date,
-          endurance_test_data!endurance_test_data_test_session_id_fkey (
-            id,
-            push_ups,
-            pull_ups,
-            t2b
-          )
-        `)
-        .eq('user_id', userId)
-        .order('test_date', { ascending: false });
+      let data: any[] = [];
 
-      if (error) throw error;
+      if (useCoachTables && coachId) {
+        const { data: coachData, error } = await supabase
+          .from('coach_endurance_test_sessions')
+          .select(`
+            id,
+            test_date,
+            coach_endurance_test_data (
+              id,
+              push_ups,
+              pull_ups,
+              t2b
+            )
+          `)
+          .eq('coach_id', coachId)
+          .eq('coach_user_id', userId)
+          .order('test_date', { ascending: false });
+
+        if (error) throw error;
+        
+        // Transform to match expected format
+        data = (coachData || []).map(s => ({
+          ...s,
+          endurance_test_data: s.coach_endurance_test_data
+        }));
+      } else {
+        const { data: regularData, error } = await supabase
+          .from('endurance_test_sessions')
+          .select(`
+            id,
+            test_date,
+            endurance_test_data!endurance_test_data_test_session_id_fkey (
+              id,
+              push_ups,
+              pull_ups,
+              t2b
+            )
+          `)
+          .eq('user_id', userId)
+          .order('test_date', { ascending: false });
+
+        if (error) throw error;
+        data = regularData || [];
+      }
       
       // Filter only sessions with bodyweight data
-      const bodyweightSessions = (data || [])
+      const bodyweightSessions = data
         .map(session => ({
           ...session,
           endurance_test_data: (session.endurance_test_data || [])
-            .filter(ed => ed.push_ups !== null || ed.pull_ups !== null || ed.t2b !== null)
+            .filter((ed: any) => ed.push_ups !== null || ed.pull_ups !== null || ed.t2b !== null)
         }))
         .filter(session => session.endurance_test_data.length > 0);
 
       // Flatten data with test dates
       const allData = bodyweightSessions.flatMap(session => 
-        session.endurance_test_data.map(ed => ({
+        session.endurance_test_data.map((ed: any) => ({
           ...ed,
           test_date: session.test_date
         }))

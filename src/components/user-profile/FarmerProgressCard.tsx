@@ -6,9 +6,15 @@ import { useTranslation } from 'react-i18next';
 
 interface FarmerProgressCardProps {
   userId: string;
+  useCoachTables?: boolean;
+  coachId?: string;
 }
 
-export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }) => {
+export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ 
+  userId,
+  useCoachTables = false,
+  coachId 
+}) => {
   const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,33 +23,65 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({ userId }
     if (userId) {
       fetchFarmerHistory();
     }
-  }, [userId]);
+  }, [userId, useCoachTables, coachId]);
 
   const fetchFarmerHistory = async () => {
     try {
-      const { data, error } = await supabase
-        .from('endurance_test_sessions')
-        .select(`
-          id,
-          test_date,
-          endurance_test_data!endurance_test_data_test_session_id_fkey (
-            farmer_kg,
-            farmer_meters,
-            farmer_seconds
-          )
-        `)
-        .eq('user_id', userId)
-        .not('endurance_test_data.farmer_kg', 'is', null)
-        .order('test_date', { ascending: false })
-        .limit(10);
+      let data: any[] = [];
 
-      if (error) throw error;
+      if (useCoachTables && coachId) {
+        const { data: coachData, error } = await supabase
+          .from('coach_endurance_test_sessions')
+          .select(`
+            id,
+            test_date,
+            coach_endurance_test_data (
+              farmer_kg,
+              farmer_meters,
+              farmer_seconds
+            )
+          `)
+          .eq('coach_id', coachId)
+          .eq('coach_user_id', userId)
+          .order('test_date', { ascending: false })
+          .limit(10);
 
-      const filteredData = (data || []).filter(session => 
-        session.endurance_test_data && session.endurance_test_data.length > 0
-      );
+        if (error) throw error;
+        
+        // Transform and filter
+        data = (coachData || [])
+          .map(s => ({
+            ...s,
+            endurance_test_data: s.coach_endurance_test_data
+          }))
+          .filter(session => 
+            session.endurance_test_data?.some((d: any) => d.farmer_kg !== null)
+          );
+      } else {
+        const { data: regularData, error } = await supabase
+          .from('endurance_test_sessions')
+          .select(`
+            id,
+            test_date,
+            endurance_test_data!endurance_test_data_test_session_id_fkey (
+              farmer_kg,
+              farmer_meters,
+              farmer_seconds
+            )
+          `)
+          .eq('user_id', userId)
+          .not('endurance_test_data.farmer_kg', 'is', null)
+          .order('test_date', { ascending: false })
+          .limit(10);
 
-      setSessions(filteredData);
+        if (error) throw error;
+
+        data = (regularData || []).filter(session => 
+          session.endurance_test_data && session.endurance_test_data.length > 0
+        );
+      }
+
+      setSessions(data);
     } catch (error) {
       console.error('Error fetching farmer history:', error);
     } finally {

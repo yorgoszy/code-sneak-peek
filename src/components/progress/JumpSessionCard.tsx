@@ -20,6 +20,7 @@ export type JumpSessionCardSession = {
   test_date: string;
   notes: string | null;
   jump_test_data?: JumpData[];
+  coach_jump_test_data?: JumpData[];
 };
 
 interface JumpSessionCardProps {
@@ -30,10 +31,13 @@ interface JumpSessionCardProps {
   percentageChange?: number | null;
   previousSession?: JumpSessionCardSession | null;
   historySessions?: JumpSessionCardSession[];
+  useCoachTables?: boolean;
 }
 
-export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userName, showDelete = false, onDelete, percentageChange, previousSession, historySessions }) => {
-  const jumpData = session.jump_test_data?.[0];
+export const JumpSessionCard: React.FC<JumpSessionCardProps> = ({ session, userName, showDelete = false, onDelete, percentageChange, previousSession, historySessions, useCoachTables = false }) => {
+  const jumpData = useCoachTables 
+    ? session.coach_jump_test_data?.[0] 
+    : session.jump_test_data?.[0];
 
   return (
     <Card key={session.id} className="rounded-none w-full flex flex-col">

@@ -7,9 +7,15 @@ import { useTranslation } from 'react-i18next';
 
 interface VO2MaxProgressCardProps {
   userId: string;
+  useCoachTables?: boolean;
+  coachId?: string;
 }
 
-export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({ userId }) => {
+export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({ 
+  userId,
+  useCoachTables = false,
+  coachId 
+}) => {
   const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,31 +24,60 @@ export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({ userId }
     if (userId) {
       fetchVO2MaxHistory();
     }
-  }, [userId]);
+  }, [userId, useCoachTables, coachId]);
 
   const fetchVO2MaxHistory = async () => {
     try {
-      const { data, error } = await supabase
-        .from('endurance_test_sessions')
-        .select(`
-          id,
-          test_date,
-          endurance_test_data!endurance_test_data_test_session_id_fkey (
-            vo2_max
-          )
-        `)
-        .eq('user_id', userId)
-        .not('endurance_test_data.vo2_max', 'is', null)
-        .order('test_date', { ascending: false })
-        .limit(10);
+      let data, error;
 
-      if (error) throw error;
+      if (useCoachTables && coachId) {
+        // Fetch from coach tables
+        const result = await supabase
+          .from('coach_endurance_test_sessions')
+          .select(`
+            id,
+            test_date,
+            coach_endurance_test_data (
+              vo2_max
+            )
+          `)
+          .eq('coach_id', coachId)
+          .eq('coach_user_id', userId)
+          .order('test_date', { ascending: false })
+          .limit(10);
+        
+        if (result.error) throw result.error;
+        
+        // Transform to match expected format
+        data = (result.data || []).map(session => ({
+          ...session,
+          endurance_test_data: session.coach_endurance_test_data
+        })).filter(session => 
+          session.endurance_test_data && session.endurance_test_data.some((d: any) => d.vo2_max !== null)
+        );
+      } else {
+        const result = await supabase
+          .from('endurance_test_sessions')
+          .select(`
+            id,
+            test_date,
+            endurance_test_data!endurance_test_data_test_session_id_fkey (
+              vo2_max
+            )
+          `)
+          .eq('user_id', userId)
+          .not('endurance_test_data.vo2_max', 'is', null)
+          .order('test_date', { ascending: false })
+          .limit(10);
 
-      const filteredData = (data || []).filter(session => 
-        session.endurance_test_data && session.endurance_test_data.length > 0
-      );
+        if (result.error) throw result.error;
 
-      setSessions(filteredData);
+        data = (result.data || []).filter(session => 
+          session.endurance_test_data && session.endurance_test_data.length > 0
+        );
+      }
+
+      setSessions(data || []);
     } catch (error) {
       console.error('Error fetching VO2 Max history:', error);
     } finally {
