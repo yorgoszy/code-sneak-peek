@@ -83,14 +83,32 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
     }
   };
 
-  const generateExpenseNumber = () => {
-    // Use timestamp for unique expense number
-    const now = new Date();
-    const year = now.getFullYear().toString().slice(-2);
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const time = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0') + String(now.getSeconds()).padStart(2, '0');
-    return `ΕΞ-${year}${month}${day}${time}`;
+  const generateExpenseNumber = async () => {
+    // Get the next sequential expense number for this coach
+    try {
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('expense_number')
+        .eq('coach_id', coachId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      let nextNumber = 1;
+      if (data && data.length > 0) {
+        // Extract the number from the last expense_number (format: "1", "2", etc.)
+        const lastNum = parseInt(data[0].expense_number, 10);
+        if (!isNaN(lastNum)) {
+          nextNumber = lastNum + 1;
+        }
+      }
+      return String(nextNumber);
+    } catch (error) {
+      console.error('Error generating expense number:', error);
+      // Fallback to timestamp-based
+      return String(Date.now());
+    }
   };
 
   const handleSubmit = async () => {
@@ -100,7 +118,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
         return;
       }
 
-      const expenseNumber = editingExpense ? editingExpense.expense_number : generateExpenseNumber();
+      const expenseNumber = editingExpense ? editingExpense.expense_number : await generateExpenseNumber();
 
       const expenseData = {
         expense_number: expenseNumber,
@@ -349,8 +367,11 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
                   <div key={expense.id} className="p-2 flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] text-gray-400">{expense.expense_number}</span>
+                        <span className="font-mono font-bold text-xs">#{expense.expense_number}</span>
                         <span className="text-[10px] text-gray-400">{format(new Date(expense.expense_date), 'dd/MM')}</span>
+                        {expense.receipt_number && (
+                          <span className="text-[10px] text-gray-400">Απόδ: {expense.receipt_number}</span>
+                        )}
                       </div>
                       <p className="text-sm truncate">{expense.description}</p>
                       {expense.category && (
@@ -394,6 +415,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
                       <th className="text-left py-2 px-2">Ημ/νία</th>
                       <th className="text-left py-2 px-2">Περιγραφή</th>
                       <th className="text-left py-2 px-2">Κατηγορία</th>
+                      <th className="text-left py-2 px-2">Αρ.Απόδ.</th>
                       <th className="text-right py-2 px-2">Ποσό</th>
                       <th className="text-center py-2 px-2">Ενέργειες</th>
                     </tr>
@@ -401,10 +423,11 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
                   <tbody>
                     {expenses.map((expense) => (
                       <tr key={expense.id} className="border-t hover:bg-gray-50">
-                        <td className="py-2 px-2 font-mono text-[10px]">{expense.expense_number}</td>
+                        <td className="py-2 px-2 font-mono font-bold">{expense.expense_number}</td>
                         <td className="py-2 px-2">{format(new Date(expense.expense_date), 'dd/MM/yy')}</td>
                         <td className="py-2 px-2 max-w-32 truncate">{expense.description}</td>
                         <td className="py-2 px-2">{expense.category || '-'}</td>
+                        <td className="py-2 px-2 font-mono text-[10px] text-gray-500">{expense.receipt_number || '-'}</td>
                         <td className="py-2 px-2 text-right font-medium text-red-600">
                           €{Number(expense.amount).toFixed(2)}
                         </td>
