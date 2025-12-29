@@ -1382,6 +1382,7 @@ export type Database = {
           coach_user_id: string
           created_at: string
           id: string
+          mark: string | null
           notes: string | null
           receipt_number: string
           receipt_type: string
@@ -1395,6 +1396,7 @@ export type Database = {
           coach_user_id: string
           created_at?: string
           id?: string
+          mark?: string | null
           notes?: string | null
           receipt_number: string
           receipt_type?: string
@@ -1408,6 +1410,7 @@ export type Database = {
           coach_user_id?: string
           created_at?: string
           id?: string
+          mark?: string | null
           notes?: string | null
           receipt_number?: string
           receipt_type?: string
