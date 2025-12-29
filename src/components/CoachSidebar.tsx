@@ -59,7 +59,7 @@ export const CoachSidebar = ({
     },
     {
       icon: TrendingUp,
-      label: "Πρόοδος",
+      label: "Τεστ",
       path: effectiveCoachId ? `/dashboard/coach-progress?coachId=${effectiveCoachId}` : "/dashboard/coach-progress",
       badge: null,
     },
