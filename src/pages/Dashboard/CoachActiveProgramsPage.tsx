@@ -66,7 +66,7 @@ const CoachActiveProgramsPage = () => {
           .from('program_assignments')
           .select(`
             *,
-            programs!program_assignments_program_id_fkey (
+            programs (
               *,
               program_weeks (
                 *,
@@ -82,7 +82,7 @@ const CoachActiveProgramsPage = () => {
                 )
               )
             ),
-            coach_users:coach_user_id (*)
+            coach_users (*)
           `)
           .eq('coach_id', effectiveCoachId)
           .in('status', ['active', 'completed']);
