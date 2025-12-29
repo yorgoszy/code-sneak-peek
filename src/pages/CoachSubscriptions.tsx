@@ -31,6 +31,7 @@ import { CoachSubscriptionDeleteDialog } from "@/components/coach/subscriptions/
 import { CoachSubscriptionEditDialog } from "@/components/coach/subscriptions/CoachSubscriptionEditDialog";
 import { CoachFinancialOverview } from "@/components/coach/CoachFinancialOverview";
 import { CoachExpenseManagement } from "@/components/coach/CoachExpenseManagement";
+import { CoachReceiptsManagement } from "@/components/coach/CoachReceiptsManagement";
 
 interface SubscriptionType {
   id: string;
@@ -216,6 +217,28 @@ const CoachSubscriptions = () => {
     }
   };
 
+  const generateReceiptNumber = async () => {
+    const { data, error } = await supabase
+      .from('coach_receipts')
+      .select('receipt_number')
+      .eq('coach_id', effectiveCoachId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error('Error generating receipt number:', error);
+      return 'ΑΠ-0001';
+    }
+
+    if (!data || data.length === 0) {
+      return 'ΑΠ-0001';
+    }
+
+    const lastNumber = data[0].receipt_number;
+    const numberPart = parseInt(lastNumber.split('-')[1]) || 0;
+    return `ΑΠ-${String(numberPart + 1).padStart(4, '0')}`;
+  };
+
   const renewSubscription = async (id: string) => {
     try {
       const subscription = subscriptions.find(s => s.id === id);
@@ -231,7 +254,8 @@ const CoachSubscriptions = () => {
       newEndDate.setMonth(newEndDate.getMonth() + durationMonths);
       newEndDate.setDate(newEndDate.getDate() - 1);
 
-      const { error } = await supabase
+      // Create subscription
+      const { data: subscriptionData, error: subscriptionError } = await supabase
         .from("coach_subscriptions")
         .insert({
           coach_id: effectiveCoachId,
@@ -241,9 +265,31 @@ const CoachSubscriptions = () => {
           end_date: newEndDate.toISOString().split("T")[0],
           status: "active",
           is_paused: false
-        } as any);
+        } as any)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (subscriptionError) throw subscriptionError;
+
+      // Create receipt automatically
+      const receiptNumber = await generateReceiptNumber();
+      const { error: receiptError } = await supabase
+        .from('coach_receipts')
+        .insert({
+          coach_id: effectiveCoachId,
+          coach_user_id: subscription.coach_user_id,
+          subscription_id: subscriptionData.id,
+          receipt_number: receiptNumber,
+          amount: subscription.subscription_types.price,
+          receipt_type: 'renewal',
+          subscription_type_id: subscription.subscription_types.id,
+          notes: `Ανανέωση συνδρομής: ${subscription.subscription_types.name}`
+        });
+
+      if (receiptError) {
+        console.error('Error creating receipt:', receiptError);
+      }
+
       toast.success("Η συνδρομή ανανεώθηκε επιτυχώς");
       fetchSubscriptions();
     } catch (error: any) {
@@ -479,11 +525,14 @@ const CoachSubscriptions = () => {
                 <TabsTrigger value="subscriptions" className="rounded-none">
                   Συνδρομές
                 </TabsTrigger>
-                <TabsTrigger value="financial" className="rounded-none">
-                  Έσοδα-Έξοδα
+                <TabsTrigger value="receipts" className="rounded-none">
+                  Έσοδα
                 </TabsTrigger>
                 <TabsTrigger value="expenses" className="rounded-none">
                   Έξοδα
+                </TabsTrigger>
+                <TabsTrigger value="financial" className="rounded-none">
+                  Έσοδα-Έξοδα
                 </TabsTrigger>
                 <TabsTrigger value="types" className="rounded-none">
                   Τύποι
@@ -684,6 +733,12 @@ const CoachSubscriptions = () => {
               <TabsContent value="types">
                 {effectiveCoachId && (
                   <SubscriptionTypesTab coachId={effectiveCoachId} />
+                )}
+              </TabsContent>
+
+              <TabsContent value="receipts">
+                {effectiveCoachId && (
+                  <CoachReceiptsManagement coachId={effectiveCoachId} />
                 )}
               </TabsContent>
 

@@ -229,7 +229,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
             <Input
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="rounded-none h-7 text-xs w-28"
+              className="rounded-none h-8 text-xs w-32"
               placeholder="Περιγραφή *"
             />
             <Input
@@ -237,13 +237,13 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
               step="0.01"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              className="rounded-none h-7 text-xs w-16"
+              className="rounded-none h-8 text-xs w-20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               placeholder="€ *"
             />
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="rounded-none h-7 text-xs px-1.5">
-                  <CalendarIcon className="h-3 w-3 mr-1" />
+                <Button variant="outline" className="rounded-none h-8 text-xs px-2">
+                  <CalendarIcon className="h-3.5 w-3.5 mr-1" />
                   {format(formData.expense_date, 'dd/MM', { locale: el })}
                 </Button>
               </PopoverTrigger>
@@ -258,7 +258,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
               </PopoverContent>
             </Popover>
             <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
-              <SelectTrigger className="rounded-none h-7 text-xs w-20">
+              <SelectTrigger className="rounded-none h-8 text-xs w-24">
                 <SelectValue placeholder="Κατηγ." />
               </SelectTrigger>
               <SelectContent className="rounded-none">
@@ -270,13 +270,13 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
             <Input
               value={formData.receipt_number}
               onChange={(e) => setFormData({ ...formData, receipt_number: e.target.value })}
-              className="rounded-none h-7 text-xs w-20"
+              className="rounded-none h-8 text-xs w-24"
               placeholder="Αρ.Απόδ."
             />
-            <Button variant="outline" onClick={resetForm} size="sm" className="rounded-none h-7 w-7 p-0">
+            <Button variant="outline" onClick={resetForm} size="sm" className="rounded-none h-8 w-8 p-0">
               ✕
             </Button>
-            <Button onClick={handleSubmit} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-7 text-xs px-2">
+            <Button onClick={handleSubmit} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-8 text-xs px-3">
               {editingExpense ? 'OK' : 'OK'}
             </Button>
           </div>
@@ -287,7 +287,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
               <Input
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="rounded-none h-7 text-xs flex-1"
+                className="rounded-none h-8 text-xs flex-1"
                 placeholder="Περιγραφή *"
               />
               <Input
@@ -295,13 +295,13 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
                 step="0.01"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                className="rounded-none h-7 text-xs w-16"
+                className="rounded-none h-8 text-xs w-20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 placeholder="€ *"
               />
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="rounded-none h-7 text-xs px-1.5">
-                    <CalendarIcon className="h-3 w-3" />
+                  <Button variant="outline" className="rounded-none h-8 text-xs px-2">
+                    <CalendarIcon className="h-3.5 w-3.5" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 rounded-none">
@@ -317,7 +317,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
             </div>
             <div className="flex items-center gap-1.5">
               <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
-                <SelectTrigger className="rounded-none h-7 text-xs flex-1">
+                <SelectTrigger className="rounded-none h-8 text-xs flex-1">
                   <SelectValue placeholder="Κατηγορία" />
                 </SelectTrigger>
                 <SelectContent className="rounded-none">
@@ -329,13 +329,13 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
               <Input
                 value={formData.receipt_number}
                 onChange={(e) => setFormData({ ...formData, receipt_number: e.target.value })}
-                className="rounded-none h-7 text-xs w-20"
+                className="rounded-none h-8 text-xs w-24"
                 placeholder="Αρ.Απόδ."
               />
-              <Button variant="outline" onClick={resetForm} size="sm" className="rounded-none h-7 w-7 p-0">
+              <Button variant="outline" onClick={resetForm} size="sm" className="rounded-none h-8 w-8 p-0">
                 ✕
               </Button>
-              <Button onClick={handleSubmit} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-7 text-xs px-2">
+              <Button onClick={handleSubmit} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-8 text-xs px-3">
                 OK
               </Button>
             </div>
