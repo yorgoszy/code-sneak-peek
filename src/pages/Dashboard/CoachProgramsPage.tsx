@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, useSearchParams } from "react-router-dom";
 import { CoachSidebar } from "@/components/CoachSidebar";
-import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
 import { Program } from "@/components/programs/types";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useProgramsData } from "@/hooks/useProgramsData";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { supabase } from "@/integrations/supabase/client";
-
+import { ProgramsList } from "@/components/programs/ProgramsList";
+import { CoachProgramBuilderDialog } from "@/components/programs/builder/CoachProgramBuilderDialog";
+import { ProgramBuilderTrigger } from "@/components/programs/builder/ProgramBuilderTrigger";
 const CoachProgramsPage = () => {
   const { user, signOut, isAuthenticated, loading: authLoading } = useAuth();
   const { userProfile, isAdmin, isCoach, loading: rolesLoading } = useRoleCheck();
@@ -28,10 +29,6 @@ const CoachProgramsPage = () => {
   // Builder dialog state
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editingProgram, setEditingProgram] = useState<Program | null>(null);
-  
-  // Preview dialog state
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
 
   // Get the effective coach ID
   const effectiveCoachId = coachIdFromUrl || userProfile?.id;
@@ -204,19 +201,9 @@ const CoachProgramsPage = () => {
     }
   };
 
-  const handlePreviewProgram = (program: Program) => {
-    setPreviewProgram(program);
-    setPreviewOpen(true);
-  };
-
   const handleBuilderClose = () => {
     setBuilderOpen(false);
     setEditingProgram(null);
-  };
-
-  const handlePreviewClose = () => {
-    setPreviewOpen(false);
-    setPreviewProgram(null);
   };
 
   const handleOpenBuilder = () => {
@@ -308,30 +295,38 @@ const CoachProgramsPage = () => {
 
         {/* Programs Layout Content */}
         <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
-          <ProgramsLayout
-            programs={programs}
-            selectedProgram={selectedProgram}
-            users={coachAthletes}
-            exercises={allExercises.length > 0 ? allExercises : exercises}
-            editingProgram={editingProgram}
-            builderDialogOpen={builderOpen}
-            previewProgram={previewProgram}
-            previewDialogOpen={previewOpen}
-            onSelectProgram={setSelectedProgram}
-            onDeleteProgram={handleDeleteProgram}
-            onEditProgram={handleEditProgram}
-            onCreateProgram={handleCreateProgram}
-            onBuilderDialogClose={handleBuilderClose}
-            onDuplicateProgram={handleDuplicateProgram}
-            onPreviewProgram={handlePreviewProgram}
-            onPreviewDialogClose={handlePreviewClose}
-            onDeleteWeek={() => {}}
-            onDeleteDay={() => {}}
-            onDeleteBlock={() => {}}
-            onDeleteExercise={() => {}}
-            onOpenBuilder={handleOpenBuilder}
-            onConvertToTemplate={handleConvertToTemplate}
-          />
+          <div className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
+            <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'justify-between items-center'}`}>
+              <h1 className={`${isMobile ? 'text-xl' : 'text-2xl lg:text-3xl'} font-bold`}>
+                {isMobile ? 'Προγράμματα' : 'Προγράμματα Προπόνησης'}
+              </h1>
+              <ProgramBuilderTrigger onClick={handleOpenBuilder} />
+            </div>
+
+            <div className="w-full">
+              <ProgramsList
+                programs={programs}
+                selectedProgram={selectedProgram}
+                onSelectProgram={setSelectedProgram}
+                onDeleteProgram={handleDeleteProgram}
+                onEditProgram={handleEditProgram}
+                onDuplicateProgram={handleDuplicateProgram}
+                onConvertToTemplate={handleConvertToTemplate}
+              />
+            </div>
+
+            {builderOpen && effectiveCoachId && (
+              <CoachProgramBuilderDialog
+                users={coachAthletes}
+                exercises={allExercises.length > 0 ? allExercises : exercises}
+                onCreateProgram={handleCreateProgram}
+                editingProgram={editingProgram}
+                isOpen={builderOpen}
+                onOpenChange={handleBuilderClose}
+                coachId={effectiveCoachId}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

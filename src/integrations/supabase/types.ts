@@ -3893,6 +3893,7 @@ export type Database = {
           assigned_by: string | null
           assignment_type: string | null
           coach_id: string | null
+          coach_user_id: string | null
           created_at: string | null
           end_date: string | null
           group_id: string | null
@@ -3911,6 +3912,7 @@ export type Database = {
           assigned_by?: string | null
           assignment_type?: string | null
           coach_id?: string | null
+          coach_user_id?: string | null
           created_at?: string | null
           end_date?: string | null
           group_id?: string | null
@@ -3929,6 +3931,7 @@ export type Database = {
           assigned_by?: string | null
           assignment_type?: string | null
           coach_id?: string | null
+          coach_user_id?: string | null
           created_at?: string | null
           end_date?: string | null
           group_id?: string | null
@@ -3977,6 +3980,13 @@ export type Database = {
             columns: ["coach_id"]
             isOneToOne: false
             referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_assignments_coach_user_id_fkey"
+            columns: ["coach_user_id"]
+            isOneToOne: false
+            referencedRelation: "coach_users"
             referencedColumns: ["id"]
           },
           {
