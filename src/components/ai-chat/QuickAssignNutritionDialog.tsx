@@ -170,11 +170,37 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
           // 3. Create meals for this day
           if (day.meals && day.meals.length > 0) {
             for (const meal of day.meals) {
+              // Map meal type to valid values
+              const validMealTypes = ['breakfast', 'morning_snack', 'lunch', 'afternoon_snack', 'dinner'];
+              let mealType = (meal.type || meal.mealType || 'lunch').toLowerCase();
+              
+              // Map common variations to valid types
+              const mealTypeMap: Record<string, string> = {
+                'πρωινό': 'breakfast',
+                'πρωινο': 'breakfast',
+                'breakfast': 'breakfast',
+                'morning_snack': 'morning_snack',
+                'δεκατιανό': 'morning_snack',
+                'δεκατιανο': 'morning_snack',
+                'snack': 'morning_snack',
+                'μεσημεριανό': 'lunch',
+                'μεσημεριανο': 'lunch',
+                'lunch': 'lunch',
+                'απογευματινό': 'afternoon_snack',
+                'απογευματινο': 'afternoon_snack',
+                'afternoon_snack': 'afternoon_snack',
+                'βραδινό': 'dinner',
+                'βραδινο': 'dinner',
+                'dinner': 'dinner',
+              };
+              
+              mealType = mealTypeMap[mealType] || (validMealTypes.includes(mealType) ? mealType : 'lunch');
+              
               const { data: mealData, error: mealError } = await supabase
                 .from('nutrition_meals')
                 .insert([{
                   day_id: dayData.id,
-                  meal_type: meal.type || 'lunch',
+                  meal_type: mealType,
                   meal_order: meal.order || 1,
                   name: meal.name || 'Γεύμα',
                   description: meal.description || null,
