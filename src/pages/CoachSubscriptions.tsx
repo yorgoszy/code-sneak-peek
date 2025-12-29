@@ -479,14 +479,14 @@ const CoachSubscriptions = () => {
                 <TabsTrigger value="subscriptions" className="rounded-none">
                   Συνδρομές
                 </TabsTrigger>
-                <TabsTrigger value="types" className="rounded-none">
-                  Τύποι
+                <TabsTrigger value="financial" className="rounded-none">
+                  Έσοδα-Έξοδα
                 </TabsTrigger>
                 <TabsTrigger value="expenses" className="rounded-none">
                   Έξοδα
                 </TabsTrigger>
-                <TabsTrigger value="financial" className="rounded-none">
-                  Έσοδα-Έξοδα
+                <TabsTrigger value="types" className="rounded-none">
+                  Τύποι
                 </TabsTrigger>
               </TabsList>
 
