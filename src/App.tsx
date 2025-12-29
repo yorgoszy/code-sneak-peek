@@ -73,6 +73,9 @@ import CoachProgressTrackingWithSidebar from "@/pages/Dashboard/CoachProgressTra
 import CoachAthletesProgressWithSidebar from "@/pages/Dashboard/CoachAthletesProgressWithSidebar";
 import CoachProfile from "@/pages/CoachProfile";
 import CoachOverviewPage from "@/pages/CoachOverviewPage";
+import CoachProgramsPage from "@/pages/Dashboard/CoachProgramsPage";
+import CoachActiveProgramsPage from "@/pages/Dashboard/CoachActiveProgramsPage";
+import CoachProgramCardsPage from "@/pages/Dashboard/CoachProgramCardsPage";
 
 const queryClient = new QueryClient();
 
