@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CreditCard, CheckCircle, Clock, Menu, LogOut } from "lucide-react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
@@ -12,12 +13,12 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { format } from "date-fns";
-import { 
-  AlertDialog, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogCancel,
   AlertDialogAction
@@ -26,14 +27,13 @@ import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 const CoachProgramCardsPage = () => {
   const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
-  const { userProfile, loading: rolesLoading } = useRoleCheck();
+  const { userProfile, loading: rolesLoading, isAdmin } = useRoleCheck();
   const [searchParams] = useSearchParams();
   const coachIdFromUrl = searchParams.get('coachId');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  const isAdmin = userProfile?.role === 'admin';
-  // Δείχνουμε ΠΑΝΤΑ μόνο τα προγράμματα του συγκεκριμένου coach (logged-in coach ή coachId από URL όταν ο admin "μπαίνει" στο προφίλ coach)
+  // Για admin απαιτείται coachId στο URL (αλλιώς βλέπεις το admin /dashboard/program-cards)
   const effectiveCoachId = coachIdFromUrl || userProfile?.id;
 
   const [activePrograms, setActivePrograms] = React.useState<EnrichedAssignment[]>([]);
@@ -50,6 +50,13 @@ const CoachProgramCardsPage = () => {
 
   // Fetch coach's program assignments
   const fetchCoachPrograms = React.useCallback(async () => {
+    // Αν είμαστε admin χωρίς coachId, πάμε στο admin view
+    if (isAdmin() && !coachIdFromUrl) {
+      toast.info('Επιλέξτε coach (coachId) για να δείτε coach program cards');
+      navigate('/dashboard/program-cards');
+      return;
+    }
+
     setIsLoading(true);
     try {
       if (!effectiveCoachId) {
