@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,7 @@ interface CoachEnduranceRecordTabProps {
 interface MasForm {
   id: string;
   selectedUserId: string;
+  selectedExerciseId: string;
   distance: string;
   duration: string;
   maxHr: string;
@@ -37,7 +38,6 @@ interface BodyweightForm {
   selectedUserId: string;
   pushUps: string;
   pullUps: string;
-  crunches: string;
   t2b: string;
   loading: boolean;
 }
@@ -85,12 +85,12 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
 }) => {
   const { toast } = useToast();
   
-  const [masForms, setMasForms] = useState<MasForm[]>([
-    { id: '1', selectedUserId: '', distance: '', duration: '', maxHr: '', restingHr1min: '', loading: false }
+  const [forms, setForms] = useState<MasForm[]>([
+    { id: '1', selectedUserId: '', selectedExerciseId: '', distance: '', duration: '', maxHr: '', restingHr1min: '', loading: false }
   ]);
 
   const [bodyweightForms, setBodyweightForms] = useState<BodyweightForm[]>([
-    { id: '1', selectedUserId: '', pushUps: '', pullUps: '', crunches: '', t2b: '', loading: false }
+    { id: '1', selectedUserId: '', pushUps: '', pullUps: '', t2b: '', loading: false }
   ]);
 
   const [farmerForms, setFarmerForms] = useState<FarmerForm[]>([
@@ -109,6 +109,29 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
     { id: '1', selectedUserId: '', vo2Max: '', loading: false }
   ]);
 
+  // Calculate km/h or meters for sprint
+  const calculateSprintMetrics = (form: SprintForm) => {
+    const seconds = parseFloat(form.sprintSeconds);
+    
+    if (!seconds || seconds <= 0) return { kmh: '', meters: '' };
+    
+    if (form.sprintExercise === 'track') {
+      const meters = parseFloat(form.sprintMeters);
+      if (!meters || meters <= 0) return { kmh: '', meters: form.sprintMeters };
+      
+      const ms = meters / seconds;
+      const kmh = ms * 3.6;
+      return { kmh: kmh.toFixed(2), meters: form.sprintMeters };
+    } else {
+      const kmh = parseFloat(form.sprintKmh);
+      if (!kmh || kmh <= 0) return { kmh: form.sprintKmh, meters: '' };
+      
+      const ms = kmh / 3.6;
+      const meters = ms * seconds;
+      return { kmh: form.sprintKmh, meters: meters.toFixed(2) };
+    }
+  };
+
   const userOptions = useMemo(() => 
     (users || []).map(user => ({ 
       value: user.id, 
@@ -118,39 +141,118 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
     [users]
   );
 
-  // ======= MAS =======
-  const updateMasForm = (formId: string, updates: Partial<MasForm>) => {
-    setMasForms(prev => prev.map(f => f.id === formId ? { ...f, ...updates } : f));
+  const exerciseOptions = useMemo(() => 
+    (exercises || []).map(exercise => ({ value: exercise.id, label: exercise.name })),
+    [exercises]
+  );
+
+  // Calculate MAS for a specific form
+  const calculateMas = (distance: string, duration: string) => {
+    const dist = parseFloat(distance);
+    const dur = parseFloat(duration);
+    
+    if (!dist || !dur || dist <= 0 || dur <= 0) {
+      return '';
+    }
+    
+    const mas = dist / (dur * 60);
+    return mas.toFixed(2);
   };
-  const addMasForm = () => {
-    const newId = (Math.max(...masForms.map(f => parseInt(f.id)), 0) + 1).toString();
-    setMasForms([...masForms, { id: newId, selectedUserId: '', distance: '', duration: '', maxHr: '', restingHr1min: '', loading: false }]);
+
+  // ============ MAS Forms ============
+  const addNewForm = () => {
+    const newId = (Math.max(...forms.map(f => parseInt(f.id))) + 1).toString();
+    setForms([...forms, {
+      id: newId,
+      selectedUserId: '',
+      selectedExerciseId: '',
+      distance: '',
+      duration: '',
+      maxHr: '',
+      restingHr1min: '',
+      loading: false
+    }]);
   };
-  const removeMasForm = (formId: string) => {
-    if (masForms.length > 1) setMasForms(masForms.filter(f => f.id !== formId));
+
+  const removeForm = (formId: string) => {
+    if (forms.length > 1) {
+      setForms(forms.filter(f => f.id !== formId));
+    }
   };
-  const handleMasSave = async (formId: string) => {
-    const form = masForms.find(f => f.id === formId);
-    if (!form || !form.selectedUserId) {
-      toast({ title: "Σφάλμα", description: "Επιλέξτε αθλητή", variant: "destructive" });
+
+  const updateForm = (formId: string, updates: Partial<MasForm>) => {
+    setForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
+  };
+
+  const handleDistanceChange = (formId: string, value: string) => {
+    if (value === '') {
+      updateForm(formId, { distance: '' });
       return;
     }
+    const normalizedValue = value.replace('.', ',');
+    const numericValue = parseFloat(normalizedValue.replace(',', '.'));
+    if (!isNaN(numericValue)) {
+      updateForm(formId, { distance: numericValue.toString() });
+    }
+  };
+
+  const handleDurationChange = (formId: string, value: string) => {
+    if (value === '') {
+      updateForm(formId, { duration: '' });
+      return;
+    }
+    const normalizedValue = value.replace('.', ',');
+    const numericValue = parseFloat(normalizedValue.replace(',', '.'));
+    if (!isNaN(numericValue)) {
+      updateForm(formId, { duration: numericValue.toString() });
+    }
+  };
+
+  const handleSave = async (formId: string) => {
+    const form = forms.find(f => f.id === formId);
+    if (!form) return;
+
+    if (!form.selectedUserId || !form.selectedExerciseId) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε χρήστη και άσκηση",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const dist = parseFloat(form.distance);
     const dur = parseFloat(form.duration);
-    if (!dist || !dur) {
-      toast({ title: "Σφάλμα", description: "Συμπληρώστε απόσταση και διάρκεια", variant: "destructive" });
+    const maxHr = form.maxHr ? parseInt(form.maxHr) : null;
+    const restingHr1min = form.restingHr1min ? parseInt(form.restingHr1min) : null;
+
+    if (!dist || !dur || dist <= 0 || dur <= 0) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ συμπληρώστε απόσταση και διάρκεια",
+        variant: "destructive"
+      });
       return;
     }
-    updateMasForm(formId, { loading: true });
+
+    updateForm(formId, { loading: true });
     try {
       const { data: session, error: sessionError } = await supabase
         .from('coach_endurance_test_sessions')
-        .insert({ coach_id: coachId, coach_user_id: form.selectedUserId, test_date: new Date().toISOString().split('T')[0], notes: 'MAS Test' })
-        .select().single();
+        .insert({
+          coach_id: coachId,
+          coach_user_id: form.selectedUserId,
+          test_date: new Date().toISOString().split('T')[0],
+          notes: 'MAS Test - Καταγραφή Προόδου'
+        })
+        .select()
+        .single();
+
       if (sessionError) throw sessionError;
 
       const mas = dist / (dur * 60);
       const masKmh = mas * 3.6;
+
       const { error: dataError } = await supabase
         .from('coach_endurance_test_data')
         .insert({
@@ -159,48 +261,287 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
           mas_minutes: dur,
           mas_ms: mas,
           mas_kmh: masKmh,
-          max_hr: form.maxHr ? parseInt(form.maxHr) : null,
-          resting_hr_1min: form.restingHr1min ? parseInt(form.restingHr1min) : null
+          max_hr: maxHr,
+          resting_hr_1min: restingHr1min
         });
+
       if (dataError) throw dataError;
 
-      toast({ title: "Επιτυχία", description: "MAS Test αποθηκεύτηκε" });
-      updateMasForm(formId, { distance: '', duration: '', maxHr: '', restingHr1min: '', loading: false });
-      onRecordSaved?.();
+      toast({
+        title: "Επιτυχία",
+        description: "Το MAS Test αποθηκεύτηκε"
+      });
+
+      updateForm(formId, {
+        distance: '',
+        duration: '',
+        maxHr: '',
+        restingHr1min: '',
+        loading: false
+      });
+      
+      if (onRecordSaved) {
+        onRecordSaved();
+      }
     } catch (error) {
-      console.error('Error saving MAS:', error);
-      toast({ title: "Σφάλμα", description: "Αποτυχία αποθήκευσης", variant: "destructive" });
-      updateMasForm(formId, { loading: false });
+      console.error('Error saving MAS test:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία αποθήκευσης",
+        variant: "destructive"
+      });
+      updateForm(formId, { loading: false });
     }
   };
 
-  // ======= Bodyweight =======
-  const updateBodyweightForm = (formId: string, updates: Partial<BodyweightForm>) => {
-    setBodyweightForms(prev => prev.map(f => f.id === formId ? { ...f, ...updates } : f));
+  // ============ Cardiac Forms ============
+  const addNewCardiacForm = () => {
+    const newId = (Math.max(...cardiacForms.map(f => parseInt(f.id))) + 1).toString();
+    setCardiacForms([...cardiacForms, {
+      id: newId,
+      selectedUserId: '',
+      maxHr: '',
+      restingHr1min: '',
+      loading: false
+    }]);
   };
-  const addBodyweightForm = () => {
-    const newId = (Math.max(...bodyweightForms.map(f => parseInt(f.id)), 0) + 1).toString();
-    setBodyweightForms([...bodyweightForms, { id: newId, selectedUserId: '', pushUps: '', pullUps: '', crunches: '', t2b: '', loading: false }]);
+
+  const removeCardiacForm = (formId: string) => {
+    if (cardiacForms.length > 1) {
+      setCardiacForms(cardiacForms.filter(f => f.id !== formId));
+    }
   };
+
+  const updateCardiacForm = (formId: string, updates: Partial<CardiacForm>) => {
+    setCardiacForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
+  };
+
+  const handleCardiacSave = async (formId: string) => {
+    const form = cardiacForms.find(f => f.id === formId);
+    if (!form) return;
+
+    if (!form.selectedUserId) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε χρήστη",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const maxHr = form.maxHr ? parseInt(form.maxHr) : null;
+    const restingHr1min = form.restingHr1min ? parseInt(form.restingHr1min) : null;
+
+    if (!maxHr && !restingHr1min) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ συμπληρώστε τουλάχιστον ένα πεδίο",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    updateCardiacForm(formId, { loading: true });
+    try {
+      const { data: session, error: sessionError } = await supabase
+        .from('coach_endurance_test_sessions')
+        .insert({
+          coach_id: coachId,
+          coach_user_id: form.selectedUserId,
+          test_date: new Date().toISOString().split('T')[0],
+          notes: 'Cardiac Data - Καταγραφή Προόδου'
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      const { error: dataError } = await supabase
+        .from('coach_endurance_test_data')
+        .insert({
+          test_session_id: session.id,
+          max_hr: maxHr,
+          resting_hr_1min: restingHr1min
+        });
+
+      if (dataError) throw dataError;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Τα Cardiac Data αποθηκεύτηκαν"
+      });
+
+      updateCardiacForm(formId, {
+        maxHr: '',
+        restingHr1min: '',
+        loading: false
+      });
+      
+      if (onRecordSaved) {
+        onRecordSaved();
+      }
+    } catch (error) {
+      console.error('Error saving cardiac data:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία αποθήκευσης",
+        variant: "destructive"
+      });
+      updateCardiacForm(formId, { loading: false });
+    }
+  };
+
+  // ============ VO2 Max Forms ============
+  const addNewVo2MaxForm = () => {
+    const newId = (Math.max(...vo2MaxForms.map(f => parseInt(f.id))) + 1).toString();
+    setVo2MaxForms([...vo2MaxForms, {
+      id: newId,
+      selectedUserId: '',
+      vo2Max: '',
+      loading: false
+    }]);
+  };
+
+  const removeVo2MaxForm = (formId: string) => {
+    if (vo2MaxForms.length > 1) {
+      setVo2MaxForms(vo2MaxForms.filter(f => f.id !== formId));
+    }
+  };
+
+  const updateVo2MaxForm = (formId: string, updates: Partial<Vo2MaxForm>) => {
+    setVo2MaxForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
+  };
+
+  const handleVo2MaxSave = async (formId: string) => {
+    const form = vo2MaxForms.find(f => f.id === formId);
+    if (!form) return;
+
+    if (!form.selectedUserId) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε χρήστη",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const vo2Max = form.vo2Max ? parseFloat(form.vo2Max) : null;
+
+    if (!vo2Max) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ συμπληρώστε την τιμή VO2 Max",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    updateVo2MaxForm(formId, { loading: true });
+    try {
+      const { data: session, error: sessionError } = await supabase
+        .from('coach_endurance_test_sessions')
+        .insert({
+          coach_id: coachId,
+          coach_user_id: form.selectedUserId,
+          test_date: new Date().toISOString().split('T')[0],
+          notes: 'VO2 Max - Καταγραφή Προόδου'
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      const { error: dataError } = await supabase
+        .from('coach_endurance_test_data')
+        .insert({
+          test_session_id: session.id,
+          vo2_max: vo2Max
+        });
+
+      if (dataError) throw dataError;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Το VO2 Max αποθηκεύτηκε"
+      });
+
+      updateVo2MaxForm(formId, {
+        vo2Max: '',
+        loading: false
+      });
+      
+      if (onRecordSaved) {
+        onRecordSaved();
+      }
+    } catch (error) {
+      console.error('Error saving VO2 Max:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία αποθήκευσης",
+        variant: "destructive"
+      });
+      updateVo2MaxForm(formId, { loading: false });
+    }
+  };
+
+  // ============ Bodyweight Forms ============
+  const addNewBodyweightForm = () => {
+    const newId = (Math.max(...bodyweightForms.map(f => parseInt(f.id))) + 1).toString();
+    setBodyweightForms([...bodyweightForms, {
+      id: newId,
+      selectedUserId: '',
+      pushUps: '',
+      pullUps: '',
+      t2b: '',
+      loading: false
+    }]);
+  };
+
   const removeBodyweightForm = (formId: string) => {
-    if (bodyweightForms.length > 1) setBodyweightForms(bodyweightForms.filter(f => f.id !== formId));
+    if (bodyweightForms.length > 1) {
+      setBodyweightForms(bodyweightForms.filter(f => f.id !== formId));
+    }
   };
+
+  const updateBodyweightForm = (formId: string, updates: Partial<BodyweightForm>) => {
+    setBodyweightForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
+  };
+
   const handleBodyweightSave = async (formId: string) => {
     const form = bodyweightForms.find(f => f.id === formId);
-    if (!form || !form.selectedUserId) {
-      toast({ title: "Σφάλμα", description: "Επιλέξτε αθλητή", variant: "destructive" });
+    if (!form) return;
+
+    if (!form.selectedUserId) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε χρήστη",
+        variant: "destructive"
+      });
       return;
     }
-    if (!form.pushUps && !form.pullUps && !form.crunches && !form.t2b) {
-      toast({ title: "Σφάλμα", description: "Συμπληρώστε τουλάχιστον ένα πεδίο", variant: "destructive" });
+
+    if (!form.pushUps && !form.pullUps && !form.t2b) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ συμπληρώστε τουλάχιστον ένα πεδίο",
+        variant: "destructive"
+      });
       return;
     }
+
     updateBodyweightForm(formId, { loading: true });
     try {
       const { data: session, error: sessionError } = await supabase
         .from('coach_endurance_test_sessions')
-        .insert({ coach_id: coachId, coach_user_id: form.selectedUserId, test_date: new Date().toISOString().split('T')[0], notes: 'Bodyweight Test' })
-        .select().single();
+        .insert({
+          coach_id: coachId,
+          coach_user_id: form.selectedUserId,
+          test_date: new Date().toISOString().split('T')[0],
+          notes: 'Bodyweight Test - Καταγραφή Προόδου'
+        })
+        .select()
+        .single();
+
       if (sessionError) throw sessionError;
 
       const { error: dataError } = await supabase
@@ -209,48 +550,95 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
           test_session_id: session.id,
           push_ups: form.pushUps ? parseInt(form.pushUps) : null,
           pull_ups: form.pullUps ? parseInt(form.pullUps) : null,
-          crunches: form.crunches ? parseInt(form.crunches) : null,
           t2b: form.t2b ? parseInt(form.t2b) : null
         });
+
       if (dataError) throw dataError;
 
-      toast({ title: "Επιτυχία", description: "Bodyweight αποθηκεύτηκε" });
-      updateBodyweightForm(formId, { pushUps: '', pullUps: '', crunches: '', t2b: '', loading: false });
-      onRecordSaved?.();
+      toast({
+        title: "Επιτυχία",
+        description: "Το Bodyweight Test αποθηκεύτηκε"
+      });
+
+      updateBodyweightForm(formId, {
+        pushUps: '',
+        pullUps: '',
+        t2b: '',
+        loading: false
+      });
+      
+      if (onRecordSaved) {
+        onRecordSaved();
+      }
     } catch (error) {
-      console.error('Error saving Bodyweight:', error);
-      toast({ title: "Σφάλμα", description: "Αποτυχία αποθήκευσης", variant: "destructive" });
+      console.error('Error saving bodyweight test:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία αποθήκευσης",
+        variant: "destructive"
+      });
       updateBodyweightForm(formId, { loading: false });
     }
   };
 
-  // ======= Farmer =======
-  const updateFarmerForm = (formId: string, updates: Partial<FarmerForm>) => {
-    setFarmerForms(prev => prev.map(f => f.id === formId ? { ...f, ...updates } : f));
+  // ============ Farmer Forms ============
+  const addNewFarmerForm = () => {
+    const newId = (Math.max(...farmerForms.map(f => parseInt(f.id))) + 1).toString();
+    setFarmerForms([...farmerForms, {
+      id: newId,
+      selectedUserId: '',
+      farmerKg: '',
+      farmerMeters: '',
+      farmerSeconds: '',
+      loading: false
+    }]);
   };
-  const addFarmerForm = () => {
-    const newId = (Math.max(...farmerForms.map(f => parseInt(f.id)), 0) + 1).toString();
-    setFarmerForms([...farmerForms, { id: newId, selectedUserId: '', farmerKg: '', farmerMeters: '', farmerSeconds: '', loading: false }]);
-  };
+
   const removeFarmerForm = (formId: string) => {
-    if (farmerForms.length > 1) setFarmerForms(farmerForms.filter(f => f.id !== formId));
+    if (farmerForms.length > 1) {
+      setFarmerForms(farmerForms.filter(f => f.id !== formId));
+    }
   };
+
+  const updateFarmerForm = (formId: string, updates: Partial<FarmerForm>) => {
+    setFarmerForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
+  };
+
   const handleFarmerSave = async (formId: string) => {
     const form = farmerForms.find(f => f.id === formId);
-    if (!form || !form.selectedUserId) {
-      toast({ title: "Σφάλμα", description: "Επιλέξτε αθλητή", variant: "destructive" });
+    if (!form) return;
+
+    if (!form.selectedUserId) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε χρήστη",
+        variant: "destructive"
+      });
       return;
     }
+
     if (!form.farmerKg && !form.farmerMeters && !form.farmerSeconds) {
-      toast({ title: "Σφάλμα", description: "Συμπληρώστε τουλάχιστον ένα πεδίο", variant: "destructive" });
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ συμπληρώστε τουλάχιστον ένα πεδίο",
+        variant: "destructive"
+      });
       return;
     }
+
     updateFarmerForm(formId, { loading: true });
     try {
       const { data: session, error: sessionError } = await supabase
         .from('coach_endurance_test_sessions')
-        .insert({ coach_id: coachId, coach_user_id: form.selectedUserId, test_date: new Date().toISOString().split('T')[0], notes: 'Farmer Test' })
-        .select().single();
+        .insert({
+          coach_id: coachId,
+          coach_user_id: form.selectedUserId,
+          test_date: new Date().toISOString().split('T')[0],
+          notes: 'Farmer Test - Καταγραφή Προόδου'
+        })
+        .select()
+        .single();
+
       if (sessionError) throw sessionError;
 
       const { error: dataError } = await supabase
@@ -261,377 +649,695 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
           farmer_meters: form.farmerMeters ? parseFloat(form.farmerMeters) : null,
           farmer_seconds: form.farmerSeconds ? parseFloat(form.farmerSeconds) : null
         });
+
       if (dataError) throw dataError;
 
-      toast({ title: "Επιτυχία", description: "Farmer Test αποθηκεύτηκε" });
-      updateFarmerForm(formId, { farmerKg: '', farmerMeters: '', farmerSeconds: '', loading: false });
-      onRecordSaved?.();
+      toast({
+        title: "Επιτυχία",
+        description: "Το Farmer Test αποθηκεύτηκε"
+      });
+
+      updateFarmerForm(formId, {
+        farmerKg: '',
+        farmerMeters: '',
+        farmerSeconds: '',
+        loading: false
+      });
+      
+      if (onRecordSaved) {
+        onRecordSaved();
+      }
     } catch (error) {
-      console.error('Error saving Farmer:', error);
-      toast({ title: "Σφάλμα", description: "Αποτυχία αποθήκευσης", variant: "destructive" });
+      console.error('Error saving farmer test:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία αποθήκευσης",
+        variant: "destructive"
+      });
       updateFarmerForm(formId, { loading: false });
     }
   };
 
-  // ======= Sprint =======
-  const updateSprintForm = (formId: string, updates: Partial<SprintForm>) => {
-    setSprintForms(prev => prev.map(f => f.id === formId ? { ...f, ...updates } : f));
+  // ============ Sprint Forms ============
+  const addNewSprintForm = () => {
+    const newId = (Math.max(...sprintForms.map(f => parseInt(f.id))) + 1).toString();
+    setSprintForms([...sprintForms, {
+      id: newId,
+      selectedUserId: '',
+      sprintSeconds: '',
+      sprintMeters: '',
+      sprintResistance: '',
+      sprintKmh: '',
+      sprintExercise: 'track',
+      loading: false
+    }]);
   };
-  const addSprintForm = () => {
-    const newId = (Math.max(...sprintForms.map(f => parseInt(f.id)), 0) + 1).toString();
-    setSprintForms([...sprintForms, { id: newId, selectedUserId: '', sprintSeconds: '', sprintMeters: '', sprintResistance: '', sprintKmh: '', sprintExercise: 'track', loading: false }]);
-  };
+
   const removeSprintForm = (formId: string) => {
-    if (sprintForms.length > 1) setSprintForms(sprintForms.filter(f => f.id !== formId));
-  };
-  const calculateSprintMetrics = (form: SprintForm) => {
-    const seconds = parseFloat(form.sprintSeconds);
-    if (!seconds || seconds <= 0) return { kmh: '', meters: '' };
-    if (form.sprintExercise === 'track') {
-      const meters = parseFloat(form.sprintMeters);
-      if (!meters || meters <= 0) return { kmh: '', meters: form.sprintMeters };
-      const ms = meters / seconds;
-      const kmh = ms * 3.6;
-      return { kmh: kmh.toFixed(2), meters: form.sprintMeters };
-    } else {
-      const kmh = parseFloat(form.sprintKmh);
-      if (!kmh || kmh <= 0) return { kmh: form.sprintKmh, meters: '' };
-      const ms = kmh / 3.6;
-      const meters = ms * seconds;
-      return { kmh: form.sprintKmh, meters: meters.toFixed(2) };
+    if (sprintForms.length > 1) {
+      setSprintForms(sprintForms.filter(f => f.id !== formId));
     }
   };
+
+  const updateSprintForm = (formId: string, updates: Partial<SprintForm>) => {
+    setSprintForms(prevForms => prevForms.map(f => f.id === formId ? { ...f, ...updates } : f));
+  };
+
   const handleSprintSave = async (formId: string) => {
     const form = sprintForms.find(f => f.id === formId);
-    if (!form || !form.selectedUserId) {
-      toast({ title: "Σφάλμα", description: "Επιλέξτε αθλητή", variant: "destructive" });
+    if (!form) return;
+
+    if (!form.selectedUserId) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ επιλέξτε χρήστη",
+        variant: "destructive"
+      });
       return;
     }
-    if (!form.sprintSeconds) {
-      toast({ title: "Σφάλμα", description: "Συμπληρώστε τον χρόνο", variant: "destructive" });
+
+    const seconds = parseFloat(form.sprintSeconds);
+    if (!seconds || seconds <= 0) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ συμπληρώστε τον χρόνο",
+        variant: "destructive"
+      });
       return;
     }
+
     updateSprintForm(formId, { loading: true });
     try {
       const { data: session, error: sessionError } = await supabase
         .from('coach_endurance_test_sessions')
-        .insert({ coach_id: coachId, coach_user_id: form.selectedUserId, test_date: new Date().toISOString().split('T')[0], notes: 'Sprint Test' })
-        .select().single();
+        .insert({
+          coach_id: coachId,
+          coach_user_id: form.selectedUserId,
+          test_date: new Date().toISOString().split('T')[0],
+          notes: 'Sprint Test - Καταγραφή Προόδου'
+        })
+        .select()
+        .single();
+
       if (sessionError) throw sessionError;
 
       const metrics = calculateSprintMetrics(form);
+      
       const { error: dataError } = await supabase
         .from('coach_endurance_test_data')
         .insert({
           test_session_id: session.id,
-          sprint_seconds: parseFloat(form.sprintSeconds),
+          sprint_seconds: seconds,
           sprint_meters: metrics.meters ? parseFloat(metrics.meters) : null,
-          sprint_resistance: form.sprintResistance || null
+          sprint_resistance: form.sprintResistance || null,
+          sprint_watt: form.sprintKmh ? parseFloat(form.sprintKmh) : null
         });
+
       if (dataError) throw dataError;
 
-      toast({ title: "Επιτυχία", description: "Sprint Test αποθηκεύτηκε" });
-      updateSprintForm(formId, { sprintSeconds: '', sprintMeters: '', sprintResistance: '', sprintKmh: '', loading: false });
-      onRecordSaved?.();
+      toast({
+        title: "Επιτυχία",
+        description: "Το Sprint Test αποθηκεύτηκε"
+      });
+
+      updateSprintForm(formId, {
+        sprintSeconds: '',
+        sprintMeters: '',
+        sprintResistance: '',
+        sprintKmh: '',
+        loading: false
+      });
+      
+      if (onRecordSaved) {
+        onRecordSaved();
+      }
     } catch (error) {
-      console.error('Error saving Sprint:', error);
-      toast({ title: "Σφάλμα", description: "Αποτυχία αποθήκευσης", variant: "destructive" });
+      console.error('Error saving sprint test:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία αποθήκευσης",
+        variant: "destructive"
+      });
       updateSprintForm(formId, { loading: false });
     }
   };
 
-  // ======= Cardiac =======
-  const updateCardiacForm = (formId: string, updates: Partial<CardiacForm>) => {
-    setCardiacForms(prev => prev.map(f => f.id === formId ? { ...f, ...updates } : f));
-  };
-  const addCardiacForm = () => {
-    const newId = (Math.max(...cardiacForms.map(f => parseInt(f.id)), 0) + 1).toString();
-    setCardiacForms([...cardiacForms, { id: newId, selectedUserId: '', maxHr: '', restingHr1min: '', loading: false }]);
-  };
-  const removeCardiacForm = (formId: string) => {
-    if (cardiacForms.length > 1) setCardiacForms(cardiacForms.filter(f => f.id !== formId));
-  };
-  const handleCardiacSave = async (formId: string) => {
-    const form = cardiacForms.find(f => f.id === formId);
-    if (!form || !form.selectedUserId) {
-      toast({ title: "Σφάλμα", description: "Επιλέξτε αθλητή", variant: "destructive" });
-      return;
-    }
-    const maxHr = form.maxHr ? parseInt(form.maxHr) : null;
-    const restingHr = form.restingHr1min ? parseInt(form.restingHr1min) : null;
-    if (!maxHr && !restingHr) {
-      toast({ title: "Σφάλμα", description: "Συμπληρώστε τουλάχιστον ένα πεδίο", variant: "destructive" });
-      return;
-    }
-    updateCardiacForm(formId, { loading: true });
-    try {
-      const { data: session, error: sessionError } = await supabase
-        .from('coach_endurance_test_sessions')
-        .insert({ coach_id: coachId, coach_user_id: form.selectedUserId, test_date: new Date().toISOString().split('T')[0], notes: 'Cardiac Data' })
-        .select().single();
-      if (sessionError) throw sessionError;
-
-      const { error: dataError } = await supabase
-        .from('coach_endurance_test_data')
-        .insert({ test_session_id: session.id, max_hr: maxHr, resting_hr_1min: restingHr });
-      if (dataError) throw dataError;
-
-      toast({ title: "Επιτυχία", description: "Cardiac Data αποθηκεύτηκε" });
-      updateCardiacForm(formId, { maxHr: '', restingHr1min: '', loading: false });
-      onRecordSaved?.();
-    } catch (error) {
-      console.error('Error saving Cardiac:', error);
-      toast({ title: "Σφάλμα", description: "Αποτυχία αποθήκευσης", variant: "destructive" });
-      updateCardiacForm(formId, { loading: false });
-    }
-  };
-
-  // ======= VO2 Max =======
-  const updateVo2Form = (formId: string, updates: Partial<Vo2MaxForm>) => {
-    setVo2MaxForms(prev => prev.map(f => f.id === formId ? { ...f, ...updates } : f));
-  };
-  const addVo2Form = () => {
-    const newId = (Math.max(...vo2MaxForms.map(f => parseInt(f.id)), 0) + 1).toString();
-    setVo2MaxForms([...vo2MaxForms, { id: newId, selectedUserId: '', vo2Max: '', loading: false }]);
-  };
-  const removeVo2Form = (formId: string) => {
-    if (vo2MaxForms.length > 1) setVo2MaxForms(vo2MaxForms.filter(f => f.id !== formId));
-  };
-  const handleVo2Save = async (formId: string) => {
-    const form = vo2MaxForms.find(f => f.id === formId);
-    if (!form || !form.selectedUserId || !form.vo2Max) {
-      toast({ title: "Σφάλμα", description: "Συμπληρώστε όλα τα πεδία", variant: "destructive" });
-      return;
-    }
-    updateVo2Form(formId, { loading: true });
-    try {
-      const { data: session, error: sessionError } = await supabase
-        .from('coach_endurance_test_sessions')
-        .insert({ coach_id: coachId, coach_user_id: form.selectedUserId, test_date: new Date().toISOString().split('T')[0], notes: 'VO2 Max' })
-        .select().single();
-      if (sessionError) throw sessionError;
-
-      const { error: dataError } = await supabase
-        .from('coach_endurance_test_data')
-        .insert({ test_session_id: session.id, vo2_max: parseFloat(form.vo2Max) });
-      if (dataError) throw dataError;
-
-      toast({ title: "Επιτυχία", description: "VO2 Max αποθηκεύτηκε" });
-      updateVo2Form(formId, { vo2Max: '', loading: false });
-      onRecordSaved?.();
-    } catch (error) {
-      console.error('Error saving VO2:', error);
-      toast({ title: "Σφάλμα", description: "Αποτυχία αποθήκευσης", variant: "destructive" });
-      updateVo2Form(formId, { loading: false });
-    }
-  };
-
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2">
-      {/* MAS Forms */}
-      <div className="space-y-1 shrink-0">
-        <div className="text-xs font-semibold px-1">MAS Test</div>
-        {masForms.map((form, idx) => (
-          <Card key={form.id} className="rounded-none w-56">
-            <CardContent className="p-2 space-y-1.5">
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-medium">#{idx + 1}</span>
-                <Button onClick={addMasForm} size="sm" className="rounded-none h-4 w-4 p-0 ml-auto"><Plus className="w-2.5 h-2.5" /></Button>
-                {masForms.length > 1 && <Button size="sm" variant="ghost" onClick={() => removeMasForm(form.id)} className="h-4 w-4 p-0"><Trash2 className="w-2.5 h-2.5" /></Button>}
-              </div>
-              <Combobox options={userOptions} value={form.selectedUserId} onValueChange={(v) => updateMasForm(form.id, { selectedUserId: v })} placeholder="Αθλητής" className="h-6 text-[10px]" />
-              <div className="grid grid-cols-2 gap-1">
-                <div>
-                  <Label className="text-[9px]">Απόσταση (m)</Label>
-                  <Input type="number" value={form.distance} onChange={(e) => updateMasForm(form.id, { distance: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+    <div className="flex flex-wrap gap-3">
+      {/* MAS Test Forms */}
+      <div className="space-y-3">
+        {forms.map((form, formIndex) => {
+          const calculatedMas = calculateMas(form.distance, form.duration);
+
+          return (
+            <Card key={form.id} className="rounded-none w-[calc(66.666%+120px)]">
+              <CardHeader className="pb-1 pt-2 px-3">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-xs">MAS Test {forms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                  <Button onClick={addNewForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                    <Plus className="w-3 h-3" />
+                  </Button>
+                  {forms.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeForm(form.id)}
+                      className="rounded-none h-5 w-5 p-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  )}
                 </div>
-                <div>
-                  <Label className="text-[9px]">Διάρκεια (min)</Label>
-                  <Input type="number" value={form.duration} onChange={(e) => updateMasForm(form.id, { duration: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+              </CardHeader>
+              <CardContent className="p-3 pt-2 space-y-2">
+                <div className="flex gap-2">
+                  <div className="w-40">
+                    <Label className="text-xs">Ασκούμενος</Label>
+                    <Combobox
+                      options={userOptions}
+                      value={form.selectedUserId}
+                      onValueChange={(val) => updateForm(form.id, { selectedUserId: val })}
+                      placeholder="Χρήστης"
+                      emptyMessage="Δεν βρέθηκε."
+                      className="h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="w-40">
+                    <Label className="text-xs">Άσκηση</Label>
+                    <Combobox
+                      options={exerciseOptions}
+                      value={form.selectedExerciseId}
+                      onValueChange={(val) => updateForm(form.id, { selectedExerciseId: val })}
+                      placeholder="Άσκηση"
+                      emptyMessage="Δεν βρέθηκε."
+                      className="h-7 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="w-24">
+                    <Label className="text-xs">Μέτρα</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="m"
+                      value={form.distance}
+                      onChange={(e) => handleDistanceChange(form.id, e.target.value)}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="w-24">
+                    <Label className="text-xs">Λεπτά</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="min"
+                      value={form.duration}
+                      onChange={(e) => handleDurationChange(form.id, e.target.value)}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="w-20">
+                    <Label className="text-xs">MAS</Label>
+                    <Input
+                      type="text"
+                      value={calculatedMas}
+                      readOnly
+                      placeholder="m/s"
+                      className="rounded-none bg-gray-100 h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button 
+                      onClick={() => handleSave(form.id)} 
+                      className="rounded-none h-7 w-7 p-0"
+                      disabled={form.loading}
+                    >
+                      <Save className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Cardiac Data Card */}
+      <div className="space-y-3">
+        {cardiacForms.map((form, formIndex) => (
+          <Card key={form.id} className="rounded-none w-fit">
+            <CardHeader className="pb-1 pt-2 px-3">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-xs">Cardiac Data {cardiacForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                <Button onClick={addNewCardiacForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                  <Plus className="w-3 h-3" />
+                </Button>
+                {cardiacForms.length > 1 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeCardiacForm(form.id)}
+                    className="rounded-none h-5 w-5 p-0"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="p-3 pt-2 space-y-2">
+              <div className="w-40">
+                <Label className="text-xs">Ασκούμενος</Label>
+                <Combobox
+                  options={userOptions}
+                  value={form.selectedUserId}
+                  onValueChange={(val) => updateCardiacForm(form.id, { selectedUserId: val })}
+                  placeholder="Χρήστης"
+                  emptyMessage="Δεν βρέθηκε."
+                  className="h-7 text-xs"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <div className="w-20">
+                  <Label className="text-xs">Max HR</Label>
+                  <Input
+                    type="number"
+                    placeholder="bpm"
+                    value={form.maxHr}
+                    onChange={(e) => updateCardiacForm(form.id, { maxHr: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
+                </div>
+
+                <div className="w-20">
+                  <Label className="text-xs whitespace-nowrap">1min Rest</Label>
+                  <Input
+                    type="number"
+                    placeholder="bpm"
+                    value={form.restingHr1min}
+                    onChange={(e) => updateCardiacForm(form.id, { restingHr1min: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
+                </div>
+
+                <div className="flex items-end">
+                  <Button 
+                    onClick={() => handleCardiacSave(form.id)} 
+                    className="rounded-none h-7 w-7 p-0"
+                    disabled={form.loading}
+                  >
+                    <Save className="w-3 h-3" />
+                  </Button>
                 </div>
               </div>
-              <Button onClick={() => handleMasSave(form.id)} disabled={form.loading} className="rounded-none h-5 w-full text-[10px]">
-                <Save className="w-3 h-3 mr-1" /> Αποθήκευση
-              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* VO2 Max Card */}
+      <div className="space-y-3">
+        {vo2MaxForms.map((form, formIndex) => (
+          <Card key={form.id} className="rounded-none w-fit">
+            <CardHeader className="pb-1 pt-2 px-3">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-xs">VO2 Max {vo2MaxForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                <Button onClick={addNewVo2MaxForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                  <Plus className="w-3 h-3" />
+                </Button>
+                {vo2MaxForms.length > 1 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeVo2MaxForm(form.id)}
+                    className="rounded-none h-5 w-5 p-0"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="p-3 pt-2 space-y-2">
+              <div className="w-40">
+                <Label className="text-xs">Ασκούμενος</Label>
+                <Combobox
+                  options={userOptions}
+                  value={form.selectedUserId}
+                  onValueChange={(val) => updateVo2MaxForm(form.id, { selectedUserId: val })}
+                  placeholder="Χρήστης"
+                  emptyMessage="Δεν βρέθηκε."
+                  className="h-7 text-xs"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <div className="w-24">
+                  <Label className="text-xs">VO2 Max</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="ml/kg/min"
+                    value={form.vo2Max}
+                    onChange={(e) => updateVo2MaxForm(form.id, { vo2Max: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
+                </div>
+
+                <div className="flex items-end">
+                  <Button 
+                    onClick={() => handleVo2MaxSave(form.id)} 
+                    className="rounded-none h-7 w-7 p-0"
+                    disabled={form.loading}
+                  >
+                    <Save className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Bodyweight Forms */}
-      <div className="space-y-1 shrink-0">
-        <div className="text-xs font-semibold px-1">Bodyweight</div>
-        {bodyweightForms.map((form, idx) => (
-          <Card key={form.id} className="rounded-none w-56">
-            <CardContent className="p-2 space-y-1.5">
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-medium">#{idx + 1}</span>
-                <Button onClick={addBodyweightForm} size="sm" className="rounded-none h-4 w-4 p-0 ml-auto"><Plus className="w-2.5 h-2.5" /></Button>
-                {bodyweightForms.length > 1 && <Button size="sm" variant="ghost" onClick={() => removeBodyweightForm(form.id)} className="h-4 w-4 p-0"><Trash2 className="w-2.5 h-2.5" /></Button>}
+      <div className="space-y-3">
+        {bodyweightForms.map((form, formIndex) => (
+          <Card key={form.id} className="rounded-none w-fit">
+            <CardHeader className="pb-1 pt-2 px-3">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-xs">Push Ups, Pull Ups & T2B {bodyweightForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                <Button onClick={addNewBodyweightForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                  <Plus className="w-3 h-3" />
+                </Button>
+                {bodyweightForms.length > 1 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeBodyweightForm(form.id)}
+                    className="rounded-none h-5 w-5 p-0"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
               </div>
-              <Combobox options={userOptions} value={form.selectedUserId} onValueChange={(v) => updateBodyweightForm(form.id, { selectedUserId: v })} placeholder="Αθλητής" className="h-6 text-[10px]" />
-              <div className="grid grid-cols-2 gap-1">
-                <div>
-                  <Label className="text-[9px]">Push-ups</Label>
-                  <Input type="number" value={form.pushUps} onChange={(e) => updateBodyweightForm(form.id, { pushUps: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+            </CardHeader>
+            <CardContent className="p-3 pt-2 space-y-2">
+              <div className="w-32">
+                <Label className="text-xs">Ασκούμενος</Label>
+                <Combobox
+                  options={userOptions}
+                  value={form.selectedUserId}
+                  onValueChange={(val) => updateBodyweightForm(form.id, { selectedUserId: val })}
+                  placeholder="Χρήστης"
+                  emptyMessage="Δεν βρέθηκε."
+                  className="h-7 text-xs"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <div className="w-16">
+                  <Label className="text-xs">Push Ups</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={form.pushUps}
+                    onChange={(e) => updateBodyweightForm(form.id, { pushUps: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
                 </div>
-                <div>
-                  <Label className="text-[9px]">Pull-ups</Label>
-                  <Input type="number" value={form.pullUps} onChange={(e) => updateBodyweightForm(form.id, { pullUps: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+
+                <div className="w-16">
+                  <Label className="text-xs">Pull Ups</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={form.pullUps}
+                    onChange={(e) => updateBodyweightForm(form.id, { pullUps: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
                 </div>
-                <div>
-                  <Label className="text-[9px]">Crunches</Label>
-                  <Input type="number" value={form.crunches} onChange={(e) => updateBodyweightForm(form.id, { crunches: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+
+                <div className="w-16">
+                  <Label className="text-xs">T2B</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={form.t2b}
+                    onChange={(e) => updateBodyweightForm(form.id, { t2b: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
                 </div>
-                <div>
-                  <Label className="text-[9px]">T2B</Label>
-                  <Input type="number" value={form.t2b} onChange={(e) => updateBodyweightForm(form.id, { t2b: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+
+                <div className="flex items-end">
+                  <Button 
+                    onClick={() => handleBodyweightSave(form.id)} 
+                    className="rounded-none h-7 w-7 p-0"
+                    disabled={form.loading}
+                  >
+                    <Save className="w-3 h-3" />
+                  </Button>
                 </div>
               </div>
-              <Button onClick={() => handleBodyweightSave(form.id)} disabled={form.loading} className="rounded-none h-5 w-full text-[10px]">
-                <Save className="w-3 h-3 mr-1" /> Αποθήκευση
-              </Button>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Farmer Forms */}
-      <div className="space-y-1 shrink-0">
-        <div className="text-xs font-semibold px-1">Farmer Test</div>
-        {farmerForms.map((form, idx) => (
-          <Card key={form.id} className="rounded-none w-52">
-            <CardContent className="p-2 space-y-1.5">
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-medium">#{idx + 1}</span>
-                <Button onClick={addFarmerForm} size="sm" className="rounded-none h-4 w-4 p-0 ml-auto"><Plus className="w-2.5 h-2.5" /></Button>
-                {farmerForms.length > 1 && <Button size="sm" variant="ghost" onClick={() => removeFarmerForm(form.id)} className="h-4 w-4 p-0"><Trash2 className="w-2.5 h-2.5" /></Button>}
+      <div className="space-y-3">
+        {farmerForms.map((form, formIndex) => (
+          <Card key={form.id} className="rounded-none w-fit">
+            <CardHeader className="pb-1 pt-2 px-3">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-xs">Farmer {farmerForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                <Button onClick={addNewFarmerForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                  <Plus className="w-3 h-3" />
+                </Button>
+                {farmerForms.length > 1 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeFarmerForm(form.id)}
+                    className="rounded-none h-5 w-5 p-0"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
               </div>
-              <Combobox options={userOptions} value={form.selectedUserId} onValueChange={(v) => updateFarmerForm(form.id, { selectedUserId: v })} placeholder="Αθλητής" className="h-6 text-[10px]" />
-              <div className="grid grid-cols-3 gap-1">
-                <div>
-                  <Label className="text-[9px]">kg</Label>
-                  <Input type="number" value={form.farmerKg} onChange={(e) => updateFarmerForm(form.id, { farmerKg: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+            </CardHeader>
+            <CardContent className="p-3 pt-2 space-y-2">
+              <div className="w-32">
+                <Label className="text-xs">Ασκούμενος</Label>
+                <Combobox
+                  options={userOptions}
+                  value={form.selectedUserId}
+                  onValueChange={(val) => updateFarmerForm(form.id, { selectedUserId: val })}
+                  placeholder="Χρήστης"
+                  emptyMessage="Δεν βρέθηκε."
+                  className="h-7 text-xs"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <div className="w-16">
+                  <Label className="text-xs">Kg</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="kg"
+                    value={form.farmerKg}
+                    onChange={(e) => updateFarmerForm(form.id, { farmerKg: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
                 </div>
-                <div>
-                  <Label className="text-[9px]">m</Label>
-                  <Input type="number" value={form.farmerMeters} onChange={(e) => updateFarmerForm(form.id, { farmerMeters: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+
+                <div className="w-16">
+                  <Label className="text-xs">Μέτρα</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="m"
+                    value={form.farmerMeters}
+                    onChange={(e) => updateFarmerForm(form.id, { farmerMeters: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
                 </div>
-                <div>
-                  <Label className="text-[9px]">sec</Label>
-                  <Input type="number" value={form.farmerSeconds} onChange={(e) => updateFarmerForm(form.id, { farmerSeconds: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+
+                <div className="w-16">
+                  <Label className="text-xs">Δευτ.</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="s"
+                    value={form.farmerSeconds}
+                    onChange={(e) => updateFarmerForm(form.id, { farmerSeconds: e.target.value })}
+                    className="rounded-none no-spinners h-7 text-xs"
+                  />
+                </div>
+
+                <div className="flex items-end">
+                  <Button 
+                    onClick={() => handleFarmerSave(form.id)} 
+                    className="rounded-none h-7 w-7 p-0"
+                    disabled={form.loading}
+                  >
+                    <Save className="w-3 h-3" />
+                  </Button>
                 </div>
               </div>
-              <Button onClick={() => handleFarmerSave(form.id)} disabled={form.loading} className="rounded-none h-5 w-full text-[10px]">
-                <Save className="w-3 h-3 mr-1" /> Αποθήκευση
-              </Button>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Sprint Forms */}
-      <div className="space-y-1 shrink-0">
-        <div className="text-xs font-semibold px-1">Sprint Test</div>
-        {sprintForms.map((form, idx) => (
-          <Card key={form.id} className="rounded-none w-56">
-            <CardContent className="p-2 space-y-1.5">
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-medium">#{idx + 1}</span>
-                <Button onClick={addSprintForm} size="sm" className="rounded-none h-4 w-4 p-0 ml-auto"><Plus className="w-2.5 h-2.5" /></Button>
-                {sprintForms.length > 1 && <Button size="sm" variant="ghost" onClick={() => removeSprintForm(form.id)} className="h-4 w-4 p-0"><Trash2 className="w-2.5 h-2.5" /></Button>}
-              </div>
-              <Combobox options={userOptions} value={form.selectedUserId} onValueChange={(v) => updateSprintForm(form.id, { selectedUserId: v })} placeholder="Αθλητής" className="h-6 text-[10px]" />
-              <Select value={form.sprintExercise} onValueChange={(v) => updateSprintForm(form.id, { sprintExercise: v })}>
-                <SelectTrigger className="h-5 text-[10px] rounded-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="track">Track</SelectItem>
-                  <SelectItem value="woodway">Woodway</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="grid grid-cols-2 gap-1">
-                <div>
-                  <Label className="text-[9px]">Χρόνος (sec)</Label>
-                  <Input type="number" value={form.sprintSeconds} onChange={(e) => updateSprintForm(form.id, { sprintSeconds: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+      <div className="space-y-3">
+        {sprintForms.map((form, formIndex) => {
+          const sprintMetrics = calculateSprintMetrics(form);
+          
+          return (
+            <Card key={form.id} className="rounded-none w-fit">
+              <CardHeader className="pb-1 pt-2 px-3">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-xs">Sprint {sprintForms.length > 1 ? `#${formIndex + 1}` : ''}</CardTitle>
+                  <Button onClick={addNewSprintForm} size="sm" className="rounded-none h-5 w-5 p-0 ml-auto">
+                    <Plus className="w-3 h-3" />
+                  </Button>
+                  {sprintForms.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeSprintForm(form.id)}
+                      className="rounded-none h-5 w-5 p-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  )}
                 </div>
-                {form.sprintExercise === 'track' ? (
-                  <div>
-                    <Label className="text-[9px]">Απόσταση (m)</Label>
-                    <Input type="number" value={form.sprintMeters} onChange={(e) => updateSprintForm(form.id, { sprintMeters: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
-                  </div>
-                ) : (
-                  <div>
-                    <Label className="text-[9px]">Ταχύτητα (km/h)</Label>
-                    <Input type="number" value={form.sprintKmh} onChange={(e) => updateSprintForm(form.id, { sprintKmh: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
-                  </div>
-                )}
-              </div>
-              <div>
-                <Label className="text-[9px]">Αντίσταση</Label>
-                <Input value={form.sprintResistance} onChange={(e) => updateSprintForm(form.id, { sprintResistance: e.target.value })} className="rounded-none h-5 text-[10px]" placeholder="π.χ. 10%" />
-              </div>
-              <Button onClick={() => handleSprintSave(form.id)} disabled={form.loading} className="rounded-none h-5 w-full text-[10px]">
-                <Save className="w-3 h-3 mr-1" /> Αποθήκευση
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardHeader>
+              <CardContent className="p-3 pt-2 space-y-2">
+                <div className="w-32">
+                  <Label className="text-xs">Ασκούμενος</Label>
+                  <Combobox
+                    options={userOptions}
+                    value={form.selectedUserId}
+                    onValueChange={(val) => updateSprintForm(form.id, { selectedUserId: val })}
+                    placeholder="Χρήστης"
+                    emptyMessage="Δεν βρέθηκε."
+                    className="h-7 text-xs"
+                  />
+                </div>
 
-      {/* Cardiac Forms */}
-      <div className="space-y-1 shrink-0">
-        <div className="text-xs font-semibold px-1">Cardiac Data</div>
-        {cardiacForms.map((form, idx) => (
-          <Card key={form.id} className="rounded-none w-44">
-            <CardContent className="p-2 space-y-1.5">
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-medium">#{idx + 1}</span>
-                <Button onClick={addCardiacForm} size="sm" className="rounded-none h-4 w-4 p-0 ml-auto"><Plus className="w-2.5 h-2.5" /></Button>
-                {cardiacForms.length > 1 && <Button size="sm" variant="ghost" onClick={() => removeCardiacForm(form.id)} className="h-4 w-4 p-0"><Trash2 className="w-2.5 h-2.5" /></Button>}
-              </div>
-              <Combobox options={userOptions} value={form.selectedUserId} onValueChange={(v) => updateCardiacForm(form.id, { selectedUserId: v })} placeholder="Αθλητής" className="h-6 text-[10px]" />
-              <div className="grid grid-cols-2 gap-1">
-                <div>
-                  <Label className="text-[9px]">Max HR</Label>
-                  <Input type="number" value={form.maxHr} onChange={(e) => updateCardiacForm(form.id, { maxHr: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
+                <div className="w-32">
+                  <Select 
+                    value={form.sprintExercise} 
+                    onValueChange={(val) => updateSprintForm(form.id, { sprintExercise: val })}
+                  >
+                    <SelectTrigger className="rounded-none h-7 text-xs">
+                      <SelectValue placeholder="Τύπος" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="track">Track</SelectItem>
+                      <SelectItem value="woodway">Woodway</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <Label className="text-[9px]">Resting HR</Label>
-                  <Input type="number" value={form.restingHr1min} onChange={(e) => updateCardiacForm(form.id, { restingHr1min: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
-                </div>
-              </div>
-              <Button onClick={() => handleCardiacSave(form.id)} disabled={form.loading} className="rounded-none h-5 w-full text-[10px]">
-                <Save className="w-3 h-3 mr-1" /> Αποθήκευση
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
-      {/* VO2 Max Forms */}
-      <div className="space-y-1 shrink-0">
-        <div className="text-xs font-semibold px-1">VO2 Max</div>
-        {vo2MaxForms.map((form, idx) => (
-          <Card key={form.id} className="rounded-none w-40">
-            <CardContent className="p-2 space-y-1.5">
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-medium">#{idx + 1}</span>
-                <Button onClick={addVo2Form} size="sm" className="rounded-none h-4 w-4 p-0 ml-auto"><Plus className="w-2.5 h-2.5" /></Button>
-                {vo2MaxForms.length > 1 && <Button size="sm" variant="ghost" onClick={() => removeVo2Form(form.id)} className="h-4 w-4 p-0"><Trash2 className="w-2.5 h-2.5" /></Button>}
-              </div>
-              <Combobox options={userOptions} value={form.selectedUserId} onValueChange={(v) => updateVo2Form(form.id, { selectedUserId: v })} placeholder="Αθλητής" className="h-6 text-[10px]" />
-              <div>
-                <Label className="text-[9px]">VO2 Max</Label>
-                <Input type="number" value={form.vo2Max} onChange={(e) => updateVo2Form(form.id, { vo2Max: e.target.value })} className="rounded-none h-5 text-[10px] no-spinners" />
-              </div>
-              <Button onClick={() => handleVo2Save(form.id)} disabled={form.loading} className="rounded-none h-5 w-full text-[10px]">
-                <Save className="w-3 h-3 mr-1" /> Αποθήκευση
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="flex gap-2">
+                  <div className="w-16">
+                    <Label className="text-xs">Δευτ.</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="s"
+                      value={form.sprintSeconds}
+                      onChange={(e) => updateSprintForm(form.id, { sprintSeconds: e.target.value })}
+                      className="rounded-none no-spinners h-7 text-xs"
+                    />
+                  </div>
+
+                  {form.sprintExercise === 'track' ? (
+                    <>
+                      <div className="w-16">
+                        <Label className="text-xs">Μέτρα</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="m"
+                          value={form.sprintMeters}
+                          onChange={(e) => updateSprintForm(form.id, { sprintMeters: e.target.value })}
+                          className="rounded-none no-spinners h-7 text-xs"
+                        />
+                      </div>
+                      <div className="w-16">
+                        <Label className="text-xs">Km/h</Label>
+                        <Input
+                          type="text"
+                          value={sprintMetrics.kmh}
+                          readOnly
+                          placeholder="--"
+                          className="rounded-none bg-gray-100 h-7 text-xs"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-16">
+                        <Label className="text-xs">Km/h</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          placeholder="km/h"
+                          value={form.sprintKmh}
+                          onChange={(e) => updateSprintForm(form.id, { sprintKmh: e.target.value })}
+                          className="rounded-none no-spinners h-7 text-xs"
+                        />
+                      </div>
+                      <div className="w-16">
+                        <Label className="text-xs">Μέτρα</Label>
+                        <Input
+                          type="text"
+                          value={sprintMetrics.meters}
+                          readOnly
+                          placeholder="--"
+                          className="rounded-none bg-gray-100 h-7 text-xs"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Label className="text-xs">Αντίσταση</Label>
+                    <Input
+                      type="text"
+                      placeholder="%"
+                      value={form.sprintResistance}
+                      onChange={(e) => updateSprintForm(form.id, { sprintResistance: e.target.value })}
+                      className="rounded-none h-7 text-xs"
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button 
+                      onClick={() => handleSprintSave(form.id)} 
+                      className="rounded-none h-7 w-7 p-0"
+                      disabled={form.loading}
+                    >
+                      <Save className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
