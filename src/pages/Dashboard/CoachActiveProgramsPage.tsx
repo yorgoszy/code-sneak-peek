@@ -31,7 +31,7 @@ const CoachActiveProgramsPage = () => {
   const isMobile = useIsMobile();
   
   const isAdmin = userProfile?.role === 'admin';
-  // Δείχνουμε ΠΑΝΤΑ μόνο τα προγράμματα του συγκεκριμένου coach (logged-in coach ή coachId από URL όταν ο admin “μπαίνει” στο προφίλ coach)
+  // Δείχνουμε ΠΑΝΤΑ μόνο τα προγράμματα του συγκεκριμένου coach (logged-in coach ή coachId από URL όταν ο admin "μπαίνει" στο προφίλ coach)
   const effectiveCoachId = coachIdFromUrl || userProfile?.id;
 
   const [activePrograms, setActivePrograms] = useState<EnrichedAssignment[]>([]);
@@ -59,11 +59,10 @@ const CoachActiveProgramsPage = () => {
   useEffect(() => {
     const fetchCoachPrograms = async () => {
       if (!effectiveCoachId) return;
-      // Αν είμαστε admin και δεν έχει δοθεί coachId, δείχνουμε όλα τα coach assignments
-      // Αλλιώς φιλτράρουμε για τον συγκεκριμένο coach
 
       try {
-        let query = supabase
+        // Οι αθλητές των coach είναι στο coach_users, όχι στο app_users
+        const { data: assignments, error: assignError } = await supabase
           .from('program_assignments')
           .select(`
             *,
@@ -83,24 +82,17 @@ const CoachActiveProgramsPage = () => {
                 )
               )
             ),
-            app_users:user_id (*),
             coach_users:coach_user_id (*)
           `)
+          .eq('coach_id', effectiveCoachId)
           .in('status', ['active', 'completed']);
-
-        // ✅ Μόνο προγράμματα που “ανήκουν” στον coach:
-        // - είτε γράφτηκε coach_id πάνω στο assignment
-        // - είτε ο athlete (app_users) έχει coach_id = coach
-        query = query.or(`coach_id.eq.${effectiveCoachId},app_users.coach_id.eq.${effectiveCoachId}`);
-
-        const { data: assignments, error: assignError } = await query;
 
         if (assignError) throw assignError;
 
-        // Map user data for compatibility (ProgramCard / calendar expects assignment.app_users)
+        // Map coach_users to app_users for compatibility with existing components
         const mappedAssignments = (assignments || []).map((assignment: any) => ({
           ...assignment,
-          app_users: assignment.app_users || assignment.coach_users || null,
+          app_users: assignment.coach_users || null,
         }));
 
         setActivePrograms(mappedAssignments as unknown as EnrichedAssignment[]);
