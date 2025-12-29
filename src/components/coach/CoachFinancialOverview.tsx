@@ -125,6 +125,7 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
 
   const currentYearData = yearlyData.find(y => y.year === selectedYear);
   const currentMonthIndex = new Date().getMonth();
+  const currentMonthData = monthlyData[currentMonthIndex];
 
   if (loading) {
     return (
@@ -153,16 +154,16 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
         </Select>
       </div>
 
-      {/* Summary Cards - Compact Grid */}
+      {/* Summary Cards - Current Month */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <Card className="rounded-none">
           <CardContent className="p-2 sm:p-3">
             <div className="flex items-center gap-1 mb-1">
               <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-              <span className="text-[10px] sm:text-xs text-gray-500">Έσοδα</span>
+              <span className="text-[10px] sm:text-xs text-gray-500">Έσοδα (τρέχων μήνας)</span>
             </div>
             <span className="text-sm sm:text-lg font-bold text-green-600 block truncate">
-              €{currentYearData?.revenue.toFixed(0) || '0'}
+              €{currentMonthData?.revenue.toFixed(0) || '0'}
             </span>
           </CardContent>
         </Card>
@@ -171,10 +172,10 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
           <CardContent className="p-2 sm:p-3">
             <div className="flex items-center gap-1 mb-1">
               <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
-              <span className="text-[10px] sm:text-xs text-gray-500">Έξοδα</span>
+              <span className="text-[10px] sm:text-xs text-gray-500">Έξοδα (τρέχων μήνας)</span>
             </div>
             <span className="text-sm sm:text-lg font-bold text-red-600 block truncate">
-              €{currentYearData?.expenses.toFixed(0) || '0'}
+              €{currentMonthData?.expenses.toFixed(0) || '0'}
             </span>
           </CardContent>
         </Card>
@@ -183,10 +184,10 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
           <CardContent className="p-2 sm:p-3">
             <div className="flex items-center gap-1 mb-1">
               <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-[#00ffba]" />
-              <span className="text-[10px] sm:text-xs text-gray-500">Κέρδος</span>
+              <span className="text-[10px] sm:text-xs text-gray-500">Κέρδος (τρέχων μήνας)</span>
             </div>
-            <span className={`text-sm sm:text-lg font-bold block truncate ${(currentYearData?.profit || 0) >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
-              €{currentYearData?.profit.toFixed(0) || '0'}
+            <span className={`text-sm sm:text-lg font-bold block truncate ${(currentMonthData?.profit || 0) >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
+              €{currentMonthData?.profit.toFixed(0) || '0'}
             </span>
           </CardContent>
         </Card>
