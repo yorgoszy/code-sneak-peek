@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Menu, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { CoachUserProgressSection } from "@/components/progress/coach/CoachUserProgressSection";
+import { UserProgressSection } from "@/components/user-profile/UserProgressSection";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { Combobox } from "@/components/ui/combobox";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -229,14 +229,11 @@ export const CoachAthletesProgressWithSidebar = () => {
             </Card>
 
             {selectedUserId && effectiveCoachId && (
-              <Card className="rounded-none">
-                <CardContent className="pt-4">
-                  <CoachUserProgressSection 
-                    coachUserId={selectedUserId} 
-                    coachId={effectiveCoachId}
-                  />
-                </CardContent>
-              </Card>
+              <UserProgressSection 
+                userId={selectedUserId} 
+                useCoachTables={true}
+                coachId={effectiveCoachId}
+              />
             )}
 
             {!selectedUserId && (

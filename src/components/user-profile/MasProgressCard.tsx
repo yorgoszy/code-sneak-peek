@@ -6,9 +6,15 @@ import { useTranslation } from 'react-i18next';
 
 interface MasProgressCardProps {
   userId: string;
+  useCoachTables?: boolean;
+  coachId?: string;
 }
 
-export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
+export const MasProgressCard: React.FC<MasProgressCardProps> = ({ 
+  userId, 
+  useCoachTables = false,
+  coachId 
+}) => {
   const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,40 +23,70 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({ userId }) => {
     if (userId) {
       fetchMasHistory();
     }
-  }, [userId]);
+  }, [userId, useCoachTables, coachId]);
 
   const fetchMasHistory = async () => {
     try {
-      const { data, error } = await supabase
-        .from('endurance_test_sessions')
-        .select(`
-          id,
-          test_date,
-          endurance_test_data!endurance_test_data_test_session_id_fkey (
-            id,
-            mas_meters,
-            mas_minutes,
-            mas_ms,
-            mas_kmh,
-            exercise_id,
-            exercises (
-              id,
-              name
-            )
-          )
-        `)
-        .eq('user_id', userId)
-        .order('test_date', { ascending: false });
+      let allData: any[] = [];
 
-      if (error) throw error;
-      
-      // Flatten all endurance data with their test dates
-      const allData = (data || []).flatMap(session => 
-        (session.endurance_test_data || []).map(ed => ({
-          ...ed,
-          test_date: session.test_date
-        }))
-      );
+      if (useCoachTables && coachId) {
+        // Fetch from coach tables
+        const { data, error } = await supabase
+          .from('coach_endurance_test_sessions')
+          .select(`
+            id,
+            test_date,
+            coach_endurance_test_data (
+              id,
+              mas_meters,
+              mas_minutes,
+              mas_ms,
+              mas_kmh
+            )
+          `)
+          .eq('coach_id', coachId)
+          .eq('coach_user_id', userId)
+          .order('test_date', { ascending: false });
+
+        if (error) throw error;
+        
+        allData = (data || []).flatMap(session => 
+          (session.coach_endurance_test_data || []).map((ed: any) => ({
+            ...ed,
+            test_date: session.test_date
+          }))
+        );
+      } else {
+        const { data, error } = await supabase
+          .from('endurance_test_sessions')
+          .select(`
+            id,
+            test_date,
+            endurance_test_data!endurance_test_data_test_session_id_fkey (
+              id,
+              mas_meters,
+              mas_minutes,
+              mas_ms,
+              mas_kmh,
+              exercise_id,
+              exercises (
+                id,
+                name
+              )
+            )
+          `)
+          .eq('user_id', userId)
+          .order('test_date', { ascending: false });
+
+        if (error) throw error;
+        
+        allData = (data || []).flatMap(session => 
+          (session.endurance_test_data || []).map(ed => ({
+            ...ed,
+            test_date: session.test_date
+          }))
+        );
+      }
       
       // Group by exercise_id and get latest + previous for each
       const exerciseMap = new Map();

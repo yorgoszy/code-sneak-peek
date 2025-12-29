@@ -18,9 +18,15 @@ import { useTranslation } from 'react-i18next';
 
 interface UserProgressSectionProps {
   userId: string;
+  useCoachTables?: boolean;
+  coachId?: string;
 }
 
-export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId }) => {
+export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ 
+  userId, 
+  useCoachTables = false,
+  coachId 
+}) => {
   const { t } = useTranslation();
   const [exercises, setExercises] = useState<any[]>([]);
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
@@ -43,7 +49,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
     if (userId) {
       fetchHistoricalData();
     }
-  }, [userId]);
+  }, [userId, useCoachTables, coachId]);
 
   const fetchExercises = async () => {
     try {
@@ -63,13 +69,26 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
     if (!userId) return;
     
     try {
-      const { data, error } = await supabase
-        .from('functional_test_sessions')
-        .select('id')
-        .eq('user_id', userId)
-        .limit(1);
-
+      let data, error;
       
+      if (useCoachTables && coachId) {
+        const result = await supabase
+          .from('coach_functional_test_sessions')
+          .select('id')
+          .eq('coach_id', coachId)
+          .eq('coach_user_id', userId)
+          .limit(1);
+        data = result.data;
+        error = result.error;
+      } else {
+        const result = await supabase
+          .from('functional_test_sessions')
+          .select('id')
+          .eq('user_id', userId)
+          .limit(1);
+        data = result.data;
+        error = result.error;
+      }
 
       if (!error && data && data.length > 0) {
         setHasFunctionalTest(true);
@@ -80,7 +99,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
       console.error('Error checking functional test:', error);
       setHasFunctionalTest(false);
     }
-  }, [userId]);
+  }, [userId, useCoachTables, coachId]);
 
   useEffect(() => {
     if (userId) {
@@ -91,24 +110,69 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
   const fetchHistoricalData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('strength_test_attempts')
-        .select(`
-          id,
-          weight_kg,
-          velocity_ms,
-          exercise_id,
-          test_session_id,
-          strength_test_sessions!inner (
-            user_id,
-            test_date
-          )
-        `)
-        .eq('strength_test_sessions.user_id', userId)
-        .not('velocity_ms', 'is', null)
-        .order('weight_kg', { ascending: false });
-
-      if (error) throw error;
+      let data, error;
+      
+      if (useCoachTables && coachId) {
+        // Fetch from coach tables
+        const result = await supabase
+          .from('coach_strength_test_sessions')
+          .select(`
+            id,
+            test_date,
+            coach_strength_test_data (
+              id,
+              weight_kg,
+              velocity_ms,
+              exercise_id
+            )
+          `)
+          .eq('coach_id', coachId)
+          .eq('coach_user_id', userId)
+          .order('test_date', { ascending: false });
+        
+        if (result.error) throw result.error;
+        
+        // Transform coach data to match regular format
+        const transformedData: any[] = [];
+        (result.data || []).forEach((session: any) => {
+          (session.coach_strength_test_data || []).forEach((attempt: any) => {
+            if (attempt.velocity_ms) {
+              transformedData.push({
+                id: attempt.id,
+                weight_kg: attempt.weight_kg,
+                velocity_ms: attempt.velocity_ms,
+                exercise_id: attempt.exercise_id,
+                test_session_id: session.id,
+                strength_test_sessions: {
+                  user_id: userId,
+                  test_date: session.test_date
+                }
+              });
+            }
+          });
+        });
+        data = transformedData;
+      } else {
+        const result = await supabase
+          .from('strength_test_attempts')
+          .select(`
+            id,
+            weight_kg,
+            velocity_ms,
+            exercise_id,
+            test_session_id,
+            strength_test_sessions!inner (
+              user_id,
+              test_date
+            )
+          `)
+          .eq('strength_test_sessions.user_id', userId)
+          .not('velocity_ms', 'is', null)
+          .order('weight_kg', { ascending: false });
+        
+        if (result.error) throw result.error;
+        data = result.data;
+      }
 
       setRawHistoricalData(data || []);
 
@@ -166,23 +230,30 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
   const fetchLatestExerciseForUser = async () => {
     try {
-      const { data, error } = await supabase
-        .from('strength_test_attempts')
-        .select(`
-          exercise_id,
-          created_at,
-          strength_test_sessions!inner (
-            user_id
-          )
-        `)
-        .eq('strength_test_sessions.user_id', userId)
-        .not('velocity_ms', 'is', null)
-        .order('created_at', { ascending: false });
+      let uniqueExerciseIds: string[] = [];
+      
+      if (useCoachTables && coachId) {
+        // For coach tables, use the already fetched rawHistoricalData
+        uniqueExerciseIds = [...new Set(rawHistoricalData.map((d: any) => d.exercise_id))];
+      } else {
+        const { data, error } = await supabase
+          .from('strength_test_attempts')
+          .select(`
+            exercise_id,
+            created_at,
+            strength_test_sessions!inner (
+              user_id
+            )
+          `)
+          .eq('strength_test_sessions.user_id', userId)
+          .not('velocity_ms', 'is', null)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // Παίρνουμε όλες τις μοναδικές ασκήσεις που έχει κάνει ο χρήστης
-      const uniqueExerciseIds = [...new Set((data || []).map((d: any) => d.exercise_id))];
+        // Παίρνουμε όλες τις μοναδικές ασκήσεις που έχει κάνει ο χρήστης
+        uniqueExerciseIds = [...new Set((data || []).map((d: any) => d.exercise_id))];
+      }
       
       if (uniqueExerciseIds.length > 0) {
         setSelectedExercises(uniqueExerciseIds);
@@ -324,7 +395,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
     <div className="space-y-2 sm:space-y-0 px-2 sm:px-0">
       {/* Anthropometric Card - always visible at the top */}
       <div className="mb-2 sm:mb-0">
-        <AnthropometricProgressCard userId={userId} />
+        <AnthropometricProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
       </div>
 
       {/* Body Map - only show if user has functional test */}
@@ -469,7 +540,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
           {/* MAS Card - Responsive */}
           <div className="w-full">
-            <MasProgressCard userId={userId} />
+            <MasProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
           </div>
           
           {/* Bodyweight, Farmer - Responsive Grid */}
@@ -498,7 +569,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({ userId
 
       {/* Jump Progress - Compact Grid to match Anthropometric width */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 w-full max-w-2xl mt-2">
-        <JumpProfileLatestCard userId={userId} />
+        <JumpProfileLatestCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
       </div>
     </div>
   );
