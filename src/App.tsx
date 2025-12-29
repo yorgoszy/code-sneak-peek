@@ -72,6 +72,7 @@ import CoachSubscriptions from "@/pages/CoachSubscriptions";
 import CoachProgressTrackingWithSidebar from "@/pages/Dashboard/CoachProgressTrackingWithSidebar";
 import CoachAthletesProgressWithSidebar from "@/pages/Dashboard/CoachAthletesProgressWithSidebar";
 import CoachProfile from "@/pages/CoachProfile";
+import CoachOverviewPage from "@/pages/CoachOverviewPage";
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,7 @@ function App() {
                 <Route path="/dashboard/coach-progress" element={<ProtectedRoute><CoachProgressTrackingWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/coach-athletes-progress" element={<ProtectedRoute><CoachAthletesProgressWithSidebar /></ProtectedRoute>} />
                 <Route path="/dashboard/coach-profile" element={<ProtectedRoute><CoachProfile /></ProtectedRoute>} />
+                <Route path="/dashboard/coach-overview" element={<ProtectedRoute><CoachOverviewPage /></ProtectedRoute>} />
                 
                 {/* Admin-only routes */}
                 <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />

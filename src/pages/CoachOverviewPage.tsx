@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CoachSidebar } from "@/components/CoachSidebar";
@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Menu } from "lucide-react";
 import { toast } from "sonner";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { CoachProfileSettings } from "@/components/coach/CoachProfileSettings";
+import { CoachOverview } from "@/components/coach/CoachOverview";
 
-const CoachProfile = () => {
+const CoachOverviewPage = () => {
   const [searchParams] = useSearchParams();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
@@ -79,8 +79,8 @@ const CoachProfile = () => {
               <Menu className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-lg font-semibold">Ρυθμίσεις Προφίλ</h1>
-              <p className="text-xs text-gray-500">Διαχείριση στοιχείων</p>
+              <h1 className="text-lg font-semibold">Επισκόπηση</h1>
+              <p className="text-xs text-gray-500">Coach Dashboard</p>
             </div>
           </div>
 
@@ -96,8 +96,8 @@ const CoachProfile = () => {
         </header>
 
         <main className="flex-1 p-4 overflow-auto">
-          <div className="max-w-3xl mx-auto">
-            <CoachProfileSettings coachId={effectiveCoachId} />
+          <div className="max-w-6xl mx-auto">
+            <CoachOverview coachId={effectiveCoachId} />
           </div>
         </main>
       </div>
@@ -105,4 +105,4 @@ const CoachProfile = () => {
   );
 };
 
-export default CoachProfile;
+export default CoachOverviewPage;
