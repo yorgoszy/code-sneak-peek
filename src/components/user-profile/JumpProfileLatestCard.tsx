@@ -12,10 +12,14 @@ interface JumpProfileLatestCardProps {
 // Extract a numeric metric from a jump session for a specific type
 const extractMetric = (
   session: any,
-  type: 'nonCmj' | 'cmj' | 'depth' | 'broad' | 'triple'
+  type: 'nonCmj' | 'cmj' | 'depth' | 'broad' | 'triple',
+  useCoachTables: boolean = false
 ): number | null => {
-  // Try coach tables first, then regular tables
-  const d = session?.jump_test_data?.[0] || session?.coach_jump_test_data?.[0];
+  // Get data based on table type
+  const d = useCoachTables 
+    ? session?.coach_jump_test_data?.[0] 
+    : session?.jump_test_data?.[0];
+  
   if (d) {
     switch (type) {
       case 'nonCmj':
@@ -194,19 +198,19 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({
 
       // Υπολογισμός ποσοστών από τις 2 τελευταίες έγκυρες μετρήσεις (data ή notes)
       const nonValues = nonCmjSessions
-        .map((s: any) => extractMetric(s, 'nonCmj'))
+        .map((s: any) => extractMetric(s, 'nonCmj', useCoachTables))
         .filter((v: number | null): v is number => typeof v === 'number');
       const cmjValues = cmjSessions
-        .map((s: any) => extractMetric(s, 'cmj'))
+        .map((s: any) => extractMetric(s, 'cmj', useCoachTables))
         .filter((v: number | null): v is number => typeof v === 'number');
       const depthValues = depthJumpSessions
-        .map((s: any) => extractMetric(s, 'depth'))
+        .map((s: any) => extractMetric(s, 'depth', useCoachTables))
         .filter((v: number | null): v is number => typeof v === 'number');
       const broadValues = broadJumpSessions
-        .map((s: any) => extractMetric(s, 'broad'))
+        .map((s: any) => extractMetric(s, 'broad', useCoachTables))
         .filter((v: number | null): v is number => typeof v === 'number');
       const tripleValues = tripleJumpSessions
-        .map((s: any) => extractMetric(s, 'triple'))
+        .map((s: any) => extractMetric(s, 'triple', useCoachTables))
         .filter((v: number | null): v is number => typeof v === 'number');
 
       const nonCmjChange = computeChange(nonValues);
@@ -225,14 +229,14 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({
     };
 
     load();
-  }, [userId]);
+  }, [userId, useCoachTables, coachId]);
 
   if (!latestSessions.nonCmj && !latestSessions.cmj && !latestSessions.depthJump && !latestSessions.broadJump && !latestSessions.tripleJump) return null;
 
   const jumpCards = [];
 
   if (latestSessions.nonCmj) {
-    const history = previousSessions.nonCmj && extractMetric(previousSessions.nonCmj, 'nonCmj') !== null 
+    const history = previousSessions.nonCmj && extractMetric(previousSessions.nonCmj, 'nonCmj', useCoachTables) !== null 
       ? [previousSessions.nonCmj] as JumpSessionCardSession[] 
       : [];
     jumpCards.push(
@@ -241,12 +245,13 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({
         session={latestSessions.nonCmj} 
         percentageChange={percentageChanges.nonCmj}
         historySessions={history}
+        useCoachTables={useCoachTables}
       />
     );
   }
 
   if (latestSessions.cmj) {
-    const history = previousSessions.cmj && extractMetric(previousSessions.cmj, 'cmj') !== null 
+    const history = previousSessions.cmj && extractMetric(previousSessions.cmj, 'cmj', useCoachTables) !== null 
       ? [previousSessions.cmj] as JumpSessionCardSession[] 
       : [];
     jumpCards.push(
@@ -255,12 +260,13 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({
         session={latestSessions.cmj} 
         percentageChange={percentageChanges.cmj}
         historySessions={history}
+        useCoachTables={useCoachTables}
       />
     );
   }
 
   if (latestSessions.depthJump) {
-    const history = previousSessions.depthJump && extractMetric(previousSessions.depthJump, 'depth') !== null 
+    const history = previousSessions.depthJump && extractMetric(previousSessions.depthJump, 'depth', useCoachTables) !== null 
       ? [previousSessions.depthJump] as JumpSessionCardSession[] 
       : [];
     jumpCards.push(
@@ -269,12 +275,13 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({
         session={latestSessions.depthJump} 
         percentageChange={percentageChanges.depthJump}
         historySessions={history}
+        useCoachTables={useCoachTables}
       />
     );
   }
 
   if (latestSessions.broadJump) {
-    const history = previousSessions.broadJump && extractMetric(previousSessions.broadJump, 'broad') !== null 
+    const history = previousSessions.broadJump && extractMetric(previousSessions.broadJump, 'broad', useCoachTables) !== null 
       ? [previousSessions.broadJump] as JumpSessionCardSession[] 
       : [];
     jumpCards.push(
@@ -283,12 +290,13 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({
         session={latestSessions.broadJump} 
         percentageChange={percentageChanges.broadJump}
         historySessions={history}
+        useCoachTables={useCoachTables}
       />
     );
   }
 
   if (latestSessions.tripleJump) {
-    const history = previousSessions.tripleJump && extractMetric(previousSessions.tripleJump, 'triple') !== null 
+    const history = previousSessions.tripleJump && extractMetric(previousSessions.tripleJump, 'triple', useCoachTables) !== null 
       ? [previousSessions.tripleJump] as JumpSessionCardSession[] 
       : [];
     jumpCards.push(
@@ -297,6 +305,7 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({
         session={latestSessions.tripleJump} 
         percentageChange={percentageChanges.tripleJump}
         historySessions={history}
+        useCoachTables={useCoachTables}
       />
     );
   }

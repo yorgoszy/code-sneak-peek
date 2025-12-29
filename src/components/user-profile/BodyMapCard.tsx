@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 interface BodyMapCardProps {
   userId: string;
+  useCoachTables?: boolean;
+  coachId?: string;
 }
 
 const MODEL_URL = 'https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/models/Ecorche_by_AlexLashko_ShrunkenView.obj';
@@ -539,7 +541,7 @@ function HumanModelWithMuscles({ musclesToHighlight, designSettings }: { muscles
 }
 
 
-export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
+export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId, useCoachTables = false, coachId }) => {
   
   const [musclesToHighlight, setMusclesToHighlight] = useState<MuscleData[]>([]);
   const [hasData, setHasData] = useState(false);
@@ -582,26 +584,55 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId }) => {
 
   useEffect(() => {
     fetchMuscleData();
-  }, [userId]);
+  }, [userId, useCoachTables, coachId]);
 
   const fetchMuscleData = async () => {
     try {
       setLoading(true);
 
-      // 1. Get latest functional test session with data
-      const { data: sessionData, error: sessionError } = await supabase
-        .from('functional_test_sessions')
-        .select(`
-          id,
-          test_date,
-          functional_test_data (
-            muscles_need_strengthening,
-            muscles_need_stretching
-          )
-        `)
-        .eq('user_id', userId)
-        .order('test_date', { ascending: false })
-        .limit(1);
+      let sessionData, sessionError;
+
+      if (useCoachTables && coachId) {
+        // Fetch from coach tables
+        const result = await supabase
+          .from('coach_functional_test_sessions')
+          .select(`
+            id,
+            test_date,
+            coach_functional_test_data (
+              muscles_need_strengthening,
+              muscles_need_stretching
+            )
+          `)
+          .eq('coach_id', coachId)
+          .eq('coach_user_id', userId)
+          .order('test_date', { ascending: false })
+          .limit(1);
+        
+        sessionData = result.data?.map(s => ({
+          ...s,
+          functional_test_data: s.coach_functional_test_data
+        }));
+        sessionError = result.error;
+      } else {
+        // 1. Get latest functional test session with data
+        const result = await supabase
+          .from('functional_test_sessions')
+          .select(`
+            id,
+            test_date,
+            functional_test_data (
+              muscles_need_strengthening,
+              muscles_need_stretching
+            )
+          `)
+          .eq('user_id', userId)
+          .order('test_date', { ascending: false })
+          .limit(1);
+        
+        sessionData = result.data;
+        sessionError = result.error;
+      }
 
       if (sessionError) throw sessionError;
 

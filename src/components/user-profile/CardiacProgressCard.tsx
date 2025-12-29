@@ -7,9 +7,15 @@ import { useTranslation } from 'react-i18next';
 
 interface CardiacProgressCardProps {
   userId: string;
+  useCoachTables?: boolean;
+  coachId?: string;
 }
 
-export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId }) => {
+export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ 
+  userId,
+  useCoachTables = false,
+  coachId 
+}) => {
   const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,25 +24,54 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({ userId
     if (userId) {
       fetchCardiacHistory();
     }
-  }, [userId]);
+  }, [userId, useCoachTables, coachId]);
 
   const fetchCardiacHistory = async () => {
     try {
-      const { data, error } = await supabase
-        .from('endurance_test_sessions')
-        .select(`
-          id,
-          test_date,
-          endurance_test_data!endurance_test_data_test_session_id_fkey (
-            max_hr,
-            resting_hr_1min
-          )
-        `)
-        .eq('user_id', userId)
-        .order('test_date', { ascending: false })
-        .limit(10);
+      let data, error;
 
-      if (error) throw error;
+      if (useCoachTables && coachId) {
+        // Fetch from coach tables
+        const result = await supabase
+          .from('coach_endurance_test_sessions')
+          .select(`
+            id,
+            test_date,
+            coach_endurance_test_data (
+              max_hr,
+              resting_hr_1min
+            )
+          `)
+          .eq('coach_id', coachId)
+          .eq('coach_user_id', userId)
+          .order('test_date', { ascending: false })
+          .limit(10);
+        
+        if (result.error) throw result.error;
+        
+        // Transform to match expected format
+        data = (result.data || []).map(session => ({
+          ...session,
+          endurance_test_data: session.coach_endurance_test_data
+        }));
+      } else {
+        const result = await supabase
+          .from('endurance_test_sessions')
+          .select(`
+            id,
+            test_date,
+            endurance_test_data!endurance_test_data_test_session_id_fkey (
+              max_hr,
+              resting_hr_1min
+            )
+          `)
+          .eq('user_id', userId)
+          .order('test_date', { ascending: false })
+          .limit(10);
+
+        if (result.error) throw result.error;
+        data = result.data;
+      }
 
       const filteredData = (data || []).filter(session => {
         const rows = session.endurance_test_data || [];

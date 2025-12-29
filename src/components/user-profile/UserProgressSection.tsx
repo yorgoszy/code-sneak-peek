@@ -401,7 +401,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
       {/* Body Map - only show if user has functional test */}
       {hasFunctionalTest && (
         <div className="mb-2 sm:mb-0">
-          <BodyMapCard userId={userId} />
+          <BodyMapCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
         </div>
       )}
 
@@ -545,20 +545,20 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
           
           {/* Bodyweight, Farmer - Responsive Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
-            <BodyweightProgressCard userId={userId} />
-            <FarmerProgressCard userId={userId} />
+            <BodyweightProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
+            <FarmerProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
           </div>
 
           {/* Sprint Track & Woodway - Side by Side */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
-            <SprintProgressCard userId={userId} exerciseName="Track" />
-            <SprintProgressCard userId={userId} exerciseName="Woodway" />
+            <SprintProgressCard userId={userId} exerciseName="Track" useCoachTables={useCoachTables} coachId={coachId} />
+            <SprintProgressCard userId={userId} exerciseName="Woodway" useCoachTables={useCoachTables} coachId={coachId} />
           </div>
 
           {/* VO2 Max and Cardiac Cards - Side by Side */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
-            <VO2MaxProgressCard userId={userId} />
-            <CardiacProgressCard userId={userId} />
+            <VO2MaxProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
+            <CardiacProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
           </div>
         </>
       ) : (
