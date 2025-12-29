@@ -19,6 +19,8 @@ interface ProgramBuilderDialogProps {
     training_dates: string[];
   } | null;
   isOpen: boolean;
+  /** όταν είμαστε admin “μέσα” σε προφίλ coach */
+  coachId?: string;
 }
 
 export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
@@ -28,7 +30,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   onOpenChange,
   editingProgram,
   editingAssignment,
-  isOpen
+  isOpen,
+  coachId
 }) => {
   const { program, updateProgram, resetProgram, generateId, loadProgramFromData, getTotalTrainingDays } = useProgramBuilderState(exercises);
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises, onCreateProgram);
@@ -46,7 +49,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     editingProgram,
     editingAssignment,
     isOpen,
-    program
+    program,
+    coachId
   });
 
   useEffect(() => {
