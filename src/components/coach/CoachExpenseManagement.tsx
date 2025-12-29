@@ -221,94 +221,67 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
         </Button>
       </div>
 
-      {/* Add/Edit Form - Compact */}
+      {/* Add/Edit Form - Ultra Compact Inline */}
       {showAddForm && (
-        <Card className="rounded-none">
-          <CardHeader className="p-2 sm:p-3">
-            <CardTitle className="text-sm">
-              {editingExpense ? 'Επεξεργασία' : 'Νέο Έξοδο'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-2 sm:p-3 pt-0 space-y-2 sm:space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="col-span-2 sm:col-span-1 space-y-1">
-                <Label className="text-xs">Περιγραφή *</Label>
-                <Input
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="rounded-none h-8 text-sm"
-                  placeholder="Περιγραφή"
+        <div className="bg-gray-50 border p-2 space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Input
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="rounded-none h-7 text-xs flex-1 min-w-[120px]"
+              placeholder="Περιγραφή *"
+            />
+            <Input
+              type="number"
+              step="0.01"
+              value={formData.amount}
+              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              className="rounded-none h-7 text-xs w-20"
+              placeholder="€ *"
+            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="rounded-none h-7 text-xs px-2">
+                  <CalendarIcon className="h-3 w-3 mr-1" />
+                  {format(formData.expense_date, 'dd/MM', { locale: el })}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 rounded-none">
+                <Calendar
+                  mode="single"
+                  selected={formData.expense_date}
+                  onSelect={(date) => date && setFormData({ ...formData, expense_date: date })}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
                 />
-              </div>
-
-              <div className="col-span-1 space-y-1">
-                <Label className="text-xs">Ποσό *</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  className="rounded-none h-8 text-sm"
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div className="col-span-1 space-y-1">
-                <Label className="text-xs">Ημ/νία</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start rounded-none h-8 text-xs">
-                      <CalendarIcon className="mr-1 h-3 w-3" />
-                      {format(formData.expense_date, 'dd/MM/yy', { locale: el })}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-none">
-                    <Calendar
-                      mode="single"
-                      selected={formData.expense_date}
-                      onSelect={(date) => date && setFormData({ ...formData, expense_date: date })}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="col-span-1 space-y-1">
-                <Label className="text-xs">Κατηγορία</Label>
-                <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
-                  <SelectTrigger className="rounded-none h-8 text-xs">
-                    <SelectValue placeholder="Επιλογή" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-none">
-                    {EXPENSE_CATEGORIES.map(cat => (
-                      <SelectItem key={cat} value={cat} className="rounded-none text-xs">{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">Αρ. Απόδειξης</Label>
-                <Input
-                  value={formData.receipt_number}
-                  onChange={(e) => setFormData({ ...formData, receipt_number: e.target.value })}
-                  className="rounded-none h-8 text-sm"
-                  placeholder="Αριθμός"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2 justify-end pt-1">
-              <Button variant="outline" onClick={resetForm} size="sm" className="rounded-none h-7 text-xs">
-                Ακύρωση
-              </Button>
-              <Button onClick={handleSubmit} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-7 text-xs">
-                {editingExpense ? 'Ενημέρωση' : 'Αποθήκευση'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              </PopoverContent>
+            </Popover>
+            <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
+              <SelectTrigger className="rounded-none h-7 text-xs w-24">
+                <SelectValue placeholder="Κατηγ." />
+              </SelectTrigger>
+              <SelectContent className="rounded-none">
+                {EXPENSE_CATEGORIES.map(cat => (
+                  <SelectItem key={cat} value={cat} className="rounded-none text-xs">{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              value={formData.receipt_number}
+              onChange={(e) => setFormData({ ...formData, receipt_number: e.target.value })}
+              className="rounded-none h-7 text-xs flex-1"
+              placeholder="Αρ. Απόδειξης (προαιρετικό)"
+            />
+            <Button variant="outline" onClick={resetForm} size="sm" className="rounded-none h-7 text-xs px-2">
+              ✕
+            </Button>
+            <Button onClick={handleSubmit} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-7 text-xs px-3">
+              {editingExpense ? 'Ενημέρωση' : 'Αποθήκευση'}
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Expenses List - Mobile Cards / Desktop Table */}
