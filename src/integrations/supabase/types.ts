@@ -2247,6 +2247,7 @@ export type Database = {
         Row: {
           amount: number
           category: string | null
+          coach_id: string | null
           created_at: string
           created_by: string | null
           description: string
@@ -2259,6 +2260,7 @@ export type Database = {
         Insert: {
           amount: number
           category?: string | null
+          coach_id?: string | null
           created_at?: string
           created_by?: string | null
           description: string
@@ -2271,6 +2273,7 @@ export type Database = {
         Update: {
           amount?: number
           category?: string | null
+          coach_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string
@@ -2280,7 +2283,15 @@ export type Database = {
           receipt_number?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "expenses_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       foods: {
         Row: {

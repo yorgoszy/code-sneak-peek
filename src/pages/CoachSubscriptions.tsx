@@ -29,6 +29,8 @@ import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubsc
 import { CoachSubscriptionActions } from "@/components/coach/subscriptions/CoachSubscriptionActions";
 import { CoachSubscriptionDeleteDialog } from "@/components/coach/subscriptions/CoachSubscriptionDeleteDialog";
 import { CoachSubscriptionEditDialog } from "@/components/coach/subscriptions/CoachSubscriptionEditDialog";
+import { CoachFinancialOverview } from "@/components/coach/CoachFinancialOverview";
+import { CoachExpenseManagement } from "@/components/coach/CoachExpenseManagement";
 
 interface SubscriptionType {
   id: string;
@@ -473,12 +475,18 @@ const CoachSubscriptions = () => {
           {/* Subscriptions Content */}
           <div className="flex-1 p-2 lg:p-6 space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="rounded-none mb-4">
+              <TabsList className="rounded-none mb-4 flex-wrap">
                 <TabsTrigger value="subscriptions" className="rounded-none">
                   Συνδρομές
                 </TabsTrigger>
                 <TabsTrigger value="types" className="rounded-none">
                   Τύποι
+                </TabsTrigger>
+                <TabsTrigger value="expenses" className="rounded-none">
+                  Έξοδα
+                </TabsTrigger>
+                <TabsTrigger value="financial" className="rounded-none">
+                  Έσοδα-Έξοδα
                 </TabsTrigger>
               </TabsList>
 
@@ -676,6 +684,18 @@ const CoachSubscriptions = () => {
               <TabsContent value="types">
                 {effectiveCoachId && (
                   <SubscriptionTypesTab coachId={effectiveCoachId} />
+                )}
+              </TabsContent>
+
+              <TabsContent value="expenses">
+                {effectiveCoachId && (
+                  <CoachExpenseManagement coachId={effectiveCoachId} />
+                )}
+              </TabsContent>
+
+              <TabsContent value="financial">
+                {effectiveCoachId && (
+                  <CoachFinancialOverview coachId={effectiveCoachId} />
                 )}
               </TabsContent>
             </Tabs>
