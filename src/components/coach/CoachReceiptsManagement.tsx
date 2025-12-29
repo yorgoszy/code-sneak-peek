@@ -42,6 +42,15 @@ interface CoachReceiptsManagementProps {
   onDataChange?: () => void;
 }
 
+interface CoachProfileData {
+  business_name: string | null;
+  logo_url: string | null;
+  vat_number: string | null;
+  address: string | null;
+  city: string | null;
+  phone: string | null;
+}
+
 export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = ({ coachId, onDataChange }) => {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
@@ -54,11 +63,13 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [editingMarkId, setEditingMarkId] = useState<string | null>(null);
   const [markValue, setMarkValue] = useState('');
+  const [coachProfile, setCoachProfile] = useState<CoachProfileData | null>(null);
 
   useEffect(() => {
     if (coachId) {
       fetchReceipts();
       fetchSubscriptionTypes();
+      fetchCoachProfile();
     }
   }, [coachId]);
 
@@ -96,6 +107,21 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
       setSubscriptionTypes(data || []);
     } catch (error) {
       console.error('Error fetching subscription types:', error);
+    }
+  };
+
+  const fetchCoachProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('coach_profiles')
+        .select('business_name, logo_url, vat_number, address, city, phone')
+        .eq('coach_id', coachId)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setCoachProfile(data);
+    } catch (error) {
+      console.error('Error fetching coach profile:', error);
     }
   };
 
@@ -162,15 +188,30 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
           <title>Απόδειξη ${receipt.receipt_number}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 40px; }
-            h1 { font-size: 24px; margin-bottom: 20px; }
-            .info { margin-bottom: 10px; }
+            .header { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 20px; }
+            .logo { max-width: 100px; max-height: 80px; }
+            .business-info { flex: 1; }
+            .business-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+            .business-details { font-size: 12px; color: #666; }
+            h1 { font-size: 20px; margin-bottom: 20px; }
+            .info { margin-bottom: 8px; }
             .label { font-weight: bold; }
-            .amount { font-size: 20px; color: #00a86b; margin-top: 20px; }
+            .amount { font-size: 24px; color: #00a86b; margin-top: 20px; }
           </style>
         </head>
         <body>
-          <h1>Απόδειξη Πληρωμής</h1>
-          <div class="info"><span class="label">Αριθμός:</span> ${receipt.receipt_number}</div>
+          <div class="header">
+            ${coachProfile?.logo_url ? `<img src="${coachProfile.logo_url}" class="logo" alt="Logo" />` : ''}
+            <div class="business-info">
+              <div class="business-name">${coachProfile?.business_name || ''}</div>
+              <div class="business-details">
+                ${coachProfile?.address ? `${coachProfile.address}, ` : ''}${coachProfile?.city || ''}<br/>
+                ${coachProfile?.vat_number ? `ΑΦΜ: ${coachProfile.vat_number}` : ''}
+                ${coachProfile?.phone ? ` | Τηλ: ${coachProfile.phone}` : ''}
+              </div>
+            </div>
+          </div>
+          <h1>Απόδειξη Πληρωμής #${receipt.receipt_number}</h1>
           <div class="info"><span class="label">Αθλητής:</span> ${receipt.coach_users?.name || '-'}</div>
           <div class="info"><span class="label">Email:</span> ${receipt.coach_users?.email || '-'}</div>
           <div class="info"><span class="label">Ημερομηνία:</span> ${format(new Date(receipt.created_at), 'dd/MM/yyyy', { locale: el })}</div>
@@ -448,7 +489,8 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
             <DialogTitle>Απόδειξη {selectedReceipt?.receipt_number}</DialogTitle>
           </DialogHeader>
           {selectedReceipt && (
-            <div className="space-y-3 text-sm">
+            <div className="space-y-4 text-sm">
+              {/* Athlete Info */}
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={selectedReceipt.coach_users?.avatar_url || undefined} />
@@ -461,6 +503,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                   <p className="text-xs text-gray-500">{selectedReceipt.coach_users?.email || '-'}</p>
                 </div>
               </div>
+              
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <span className="text-gray-500">Ημερομηνία:</span>
@@ -479,10 +522,40 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                   <p>{selectedReceipt.mark || '-'}</p>
                 </div>
               </div>
+              
               <div className="pt-2 border-t">
                 <span className="text-gray-500 text-xs">Ποσό:</span>
                 <p className="text-xl font-bold text-[#00ffba]">€{Number(selectedReceipt.amount).toFixed(2)}</p>
               </div>
+
+              {/* Coach Business Info */}
+              {coachProfile && (coachProfile.business_name || coachProfile.logo_url) && (
+                <div className="pt-3 border-t space-y-2">
+                  <div className="flex items-center gap-3">
+                    {coachProfile.logo_url && (
+                      <img 
+                        src={coachProfile.logo_url} 
+                        alt="Logo" 
+                        className="w-12 h-12 object-contain"
+                      />
+                    )}
+                    <div className="flex-1">
+                      {coachProfile.business_name && (
+                        <p className="font-medium text-xs">{coachProfile.business_name}</p>
+                      )}
+                      <div className="text-[10px] text-gray-500">
+                        {coachProfile.address && <span>{coachProfile.address}</span>}
+                        {coachProfile.city && <span>, {coachProfile.city}</span>}
+                      </div>
+                      <div className="text-[10px] text-gray-500">
+                        {coachProfile.vat_number && <span>ΑΦΜ: {coachProfile.vat_number}</span>}
+                        {coachProfile.phone && <span> | Τηλ: {coachProfile.phone}</span>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div className="flex gap-2 pt-2">
                 <Button
                   onClick={() => handlePrint(selectedReceipt)}
