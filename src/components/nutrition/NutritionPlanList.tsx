@@ -8,6 +8,16 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { NutritionPlanViewDialog } from "./NutritionPlanViewDialog";
 import { NutritionAssignDialog } from "./NutritionAssignDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface NutritionPlan {
   id: string;
@@ -27,6 +37,8 @@ export const NutritionPlanList: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<NutritionPlan | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPlans();
@@ -49,22 +61,30 @@ export const NutritionPlanList: React.FC = () => {
     }
   };
 
-  const handleDelete = async (planId: string) => {
-    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;')) return;
+  const handleDeleteClick = (planId: string) => {
+    setPlanToDelete(planId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!planToDelete) return;
 
     try {
       const { error } = await supabase
         .from('nutrition_plans')
         .delete()
-        .eq('id', planId);
+        .eq('id', planToDelete);
 
       if (error) throw error;
       
-      setPlans(prev => prev.filter(p => p.id !== planId));
+      setPlans(prev => prev.filter(p => p.id !== planToDelete));
       toast.success('Το πρόγραμμα διαγράφηκε');
     } catch (error) {
       console.error('Error deleting plan:', error);
       toast.error('Σφάλμα κατά τη διαγραφή');
+    } finally {
+      setDeleteDialogOpen(false);
+      setPlanToDelete(null);
     }
   };
 
@@ -165,7 +185,7 @@ export const NutritionPlanList: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleDelete(plan.id)}
+                  onClick={() => handleDeleteClick(plan.id)}
                   className="rounded-none text-red-500 hover:text-red-700 h-7 w-7 p-0"
                 >
                   <Trash2 className="w-3 h-3" />
@@ -191,6 +211,23 @@ export const NutritionPlanList: React.FC = () => {
           />
         </>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogDescription>
+              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90 rounded-none">
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
