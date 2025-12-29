@@ -35,6 +35,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
           .eq('coach_id', coachId)
           .eq('coach_user_id', userId)
           .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(10);
 
         if (sessionError) throw sessionError;
@@ -65,6 +66,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
           .select('*')
           .eq('user_id', userId)
           .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(10);
 
         if (sessionError) throw sessionError;

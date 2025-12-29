@@ -46,7 +46,8 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({
           `)
           .eq('coach_id', coachId)
           .eq('coach_user_id', userId)
-          .order('test_date', { ascending: false });
+          .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false });
 
         if (error) throw error;
         
@@ -76,7 +77,8 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({
             )
           `)
           .eq('user_id', userId)
-          .order('test_date', { ascending: false });
+          .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false });
 
         if (error) throw error;
         
@@ -99,11 +101,14 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({
         exerciseMap.get(item.exercise_id).push(item);
       });
       
-      // For each exercise, sort by date and keep the 2 most recent
+      // For each exercise, sort by date and created_at, keep the 2 most recent
       const processedSessions = Array.from(exerciseMap.values()).map(items => {
-        const sorted = items.sort((a, b) => 
-          new Date(b.test_date).getTime() - new Date(a.test_date).getTime()
-        );
+        const sorted = items.sort((a: any, b: any) => {
+          const dateCompare = new Date(b.test_date).getTime() - new Date(a.test_date).getTime();
+          if (dateCompare !== 0) return dateCompare;
+          // If same date, sort by created_at (id is sequential)
+          return (b.id || '').localeCompare(a.id || '');
+        });
         
         const latest = sorted[0];
         const previous = sorted[1];
