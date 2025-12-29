@@ -60,23 +60,7 @@ const CoachActiveProgramsPage = () => {
       
       setIsLoading(true);
       try {
-        // Get coach's athletes first
-        const { data: coachUsers, error: usersError } = await supabase
-          .from('coach_users')
-          .select('id')
-          .eq('coach_id', effectiveCoachId);
-        
-        if (usersError) throw usersError;
-        
-        const coachUserIds = coachUsers?.map(u => u.id) || [];
-        
-        if (coachUserIds.length === 0) {
-          setActivePrograms([]);
-          setIsLoading(false);
-          return;
-        }
-
-        // Get program assignments created by this coach
+        // Get program assignments created by this coach (using coach_user_id)
         const { data: assignments, error: assignError } = await supabase
           .from('program_assignments')
           .select(`
@@ -97,14 +81,21 @@ const CoachActiveProgramsPage = () => {
                 )
               )
             ),
-            app_users:user_id (*)
+            coach_users:coach_user_id (*)
           `)
           .eq('coach_id', effectiveCoachId)
+          .not('coach_user_id', 'is', null)
           .in('status', ['active', 'completed']);
         
         if (assignError) throw assignError;
         
-        setActivePrograms((assignments || []) as unknown as EnrichedAssignment[]);
+        // Map coach_users data to app_users format for compatibility
+        const mappedAssignments = (assignments || []).map(assignment => ({
+          ...assignment,
+          app_users: assignment.coach_users // Alias for compatibility
+        }));
+        
+        setActivePrograms(mappedAssignments as unknown as EnrichedAssignment[]);
       } catch (error) {
         console.error('Error fetching coach programs:', error);
       } finally {
