@@ -72,14 +72,21 @@ const CoachProgramCardsPage = () => {
               )
             )
           ),
-          app_users:user_id (*)
+          coach_users:coach_user_id (*)
         `)
         .eq('coach_id', effectiveCoachId)
+        .not('coach_user_id', 'is', null)
         .in('status', ['active', 'completed']);
       
       if (assignError) throw assignError;
       
-      setActivePrograms((assignments || []) as unknown as EnrichedAssignment[]);
+      // Map coach_users data to app_users format for compatibility
+      const mappedAssignments = (assignments || []).map(assignment => ({
+        ...assignment,
+        app_users: assignment.coach_users // Alias for compatibility
+      }));
+      
+      setActivePrograms(mappedAssignments as unknown as EnrichedAssignment[]);
     } catch (error) {
       console.error('Error fetching coach programs:', error);
     } finally {
