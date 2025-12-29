@@ -33,7 +33,7 @@ const CoachProgramCardsPage = () => {
   const isMobile = useIsMobile();
   
   const isAdmin = userProfile?.role === 'admin';
-  // Δείχνουμε ΠΑΝΤΑ μόνο τα προγράμματα του συγκεκριμένου coach (logged-in coach ή coachId από URL όταν ο admin “μπαίνει” στο προφίλ coach)
+  // Δείχνουμε ΠΑΝΤΑ μόνο τα προγράμματα του συγκεκριμένου coach (logged-in coach ή coachId από URL όταν ο admin "μπαίνει" στο προφίλ coach)
   const effectiveCoachId = coachIdFromUrl || userProfile?.id;
 
   const [activePrograms, setActivePrograms] = React.useState<EnrichedAssignment[]>([]);
@@ -57,7 +57,8 @@ const CoachProgramCardsPage = () => {
         return;
       }
 
-      let query = supabase
+      // Οι αθλητές των coach είναι στο coach_users, όχι στο app_users
+      const { data: assignments, error: assignError } = await supabase
         .from('program_assignments')
         .select(`
           *,
@@ -77,20 +78,17 @@ const CoachProgramCardsPage = () => {
               )
             )
           ),
-          app_users:user_id (*),
           coach_users:coach_user_id (*)
         `)
+        .eq('coach_id', effectiveCoachId)
         .in('status', ['active', 'completed']);
 
-      // ✅ Μόνο προγράμματα που “ανήκουν” στον coach:
-      query = query.or(`coach_id.eq.${effectiveCoachId},app_users.coach_id.eq.${effectiveCoachId}`);
-
-      const { data: assignments, error: assignError } = await query;
       if (assignError) throw assignError;
 
+      // Map coach_users to app_users for compatibility with existing components
       const mappedAssignments = (assignments || []).map((assignment: any) => ({
         ...assignment,
-        app_users: assignment.app_users || assignment.coach_users || null,
+        app_users: assignment.coach_users || null,
       }));
 
       setActivePrograms(mappedAssignments as unknown as EnrichedAssignment[]);
