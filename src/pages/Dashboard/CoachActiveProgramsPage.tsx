@@ -30,8 +30,9 @@ const CoachActiveProgramsPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  const effectiveCoachId = coachIdFromUrl || userProfile?.id;
-  
+  const isAdmin = userProfile?.role === 'admin';
+  const effectiveCoachId = coachIdFromUrl || (!isAdmin ? userProfile?.id : null);
+
   const [activePrograms, setActivePrograms] = useState<EnrichedAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
@@ -57,11 +58,11 @@ const CoachActiveProgramsPage = () => {
   useEffect(() => {
     const fetchCoachPrograms = async () => {
       if (!effectiveCoachId) return;
-      
-      setIsLoading(true);
+      // Αν είμαστε admin και δεν έχει δοθεί coachId, δείχνουμε όλα τα coach assignments
+      // Αλλιώς φιλτράρουμε για τον συγκεκριμένο coach
+
       try {
-        // Get program assignments created by this coach (using coach_user_id)
-        const { data: assignments, error: assignError } = await supabase
+        let query = supabase
           .from('program_assignments')
           .select(`
             *,
@@ -83,10 +84,15 @@ const CoachActiveProgramsPage = () => {
             ),
             coach_users:coach_user_id (*)
           `)
-          .eq('coach_id', effectiveCoachId)
           .not('coach_user_id', 'is', null)
           .in('status', ['active', 'completed']);
-        
+
+        if (effectiveCoachId) {
+          query = query.eq('coach_id', effectiveCoachId);
+        }
+
+        const { data: assignments, error: assignError } = await query;
+
         if (assignError) throw assignError;
         
         // Map coach_users data to app_users format for compatibility
@@ -221,7 +227,7 @@ const CoachActiveProgramsPage = () => {
         <CoachSidebar 
           isCollapsed={isCollapsed} 
           setIsCollapsed={setIsCollapsed}
-          contextCoachId={effectiveCoachId}
+          contextCoachId={effectiveCoachId || undefined}
         />
       </div>
 
@@ -233,7 +239,7 @@ const CoachActiveProgramsPage = () => {
             <CoachSidebar 
               isCollapsed={false} 
               setIsCollapsed={() => {}}
-              contextCoachId={effectiveCoachId}
+              contextCoachId={effectiveCoachId || undefined}
             />
           </div>
         </div>

@@ -32,8 +32,9 @@ const CoachProgramCardsPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  const effectiveCoachId = coachIdFromUrl || userProfile?.id;
-  
+  const isAdmin = userProfile?.role === 'admin';
+  const effectiveCoachId = coachIdFromUrl || (!isAdmin ? userProfile?.id : null);
+
   const [activePrograms, setActivePrograms] = React.useState<EnrichedAssignment[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const completionsCache = useWorkoutCompletionsCache();
@@ -48,11 +49,12 @@ const CoachProgramCardsPage = () => {
 
   // Fetch coach's program assignments
   const fetchCoachPrograms = React.useCallback(async () => {
-    if (!effectiveCoachId) return;
-    
+    // Αν είμαστε admin και δεν έχει δοθεί coachId, δείχνουμε όλα τα coach assignments
+    // Αλλιώς φιλτράρουμε για τον συγκεκριμένο coach
+
     setIsLoading(true);
     try {
-      const { data: assignments, error: assignError } = await supabase
+      let query = supabase
         .from('program_assignments')
         .select(`
           *,
@@ -74,10 +76,15 @@ const CoachProgramCardsPage = () => {
           ),
           coach_users:coach_user_id (*)
         `)
-        .eq('coach_id', effectiveCoachId)
         .not('coach_user_id', 'is', null)
         .in('status', ['active', 'completed']);
-      
+
+      if (effectiveCoachId) {
+        query = query.eq('coach_id', effectiveCoachId);
+      }
+
+      const { data: assignments, error: assignError } = await query;
+
       if (assignError) throw assignError;
       
       // Map coach_users data to app_users format for compatibility
@@ -274,7 +281,7 @@ const CoachProgramCardsPage = () => {
     return (
       <div className="min-h-screen flex w-full">
         <div className="hidden lg:block">
-          <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={effectiveCoachId} />
+          <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={effectiveCoachId || undefined} />
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div>Φόρτωση προγραμμάτων...</div>
@@ -287,7 +294,7 @@ const CoachProgramCardsPage = () => {
     <div className="min-h-screen bg-gray-50 flex w-full">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={effectiveCoachId} />
+        <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={effectiveCoachId || undefined} />
       </div>
 
       {/* Mobile/Tablet Sidebar Overlay */}
@@ -295,7 +302,7 @@ const CoachProgramCardsPage = () => {
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowMobileSidebar(false)} />
           <div className="fixed left-0 top-0 h-full w-80 bg-white shadow-lg">
-            <CoachSidebar isCollapsed={false} setIsCollapsed={() => {}} contextCoachId={effectiveCoachId} />
+            <CoachSidebar isCollapsed={false} setIsCollapsed={() => {}} contextCoachId={effectiveCoachId || undefined} />
           </div>
         </div>
       )}
