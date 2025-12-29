@@ -1375,6 +1375,77 @@ export type Database = {
           },
         ]
       }
+      coach_receipts: {
+        Row: {
+          amount: number
+          coach_id: string
+          coach_user_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          receipt_number: string
+          receipt_type: string
+          subscription_id: string | null
+          subscription_type_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          coach_id: string
+          coach_user_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          receipt_number: string
+          receipt_type?: string
+          subscription_id?: string | null
+          subscription_type_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          coach_id?: string
+          coach_user_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          receipt_number?: string
+          receipt_type?: string
+          subscription_id?: string | null
+          subscription_type_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_receipts_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_receipts_coach_user_id_fkey"
+            columns: ["coach_user_id"]
+            isOneToOne: false
+            referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_receipts_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "coach_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_receipts_subscription_type_id_fkey"
+            columns: ["subscription_type_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_strength_test_data: {
         Row: {
           created_at: string | null

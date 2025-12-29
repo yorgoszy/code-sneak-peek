@@ -92,6 +92,28 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
     }
   };
 
+  const generateReceiptNumber = async () => {
+    const { data, error } = await supabase
+      .from('coach_receipts')
+      .select('receipt_number')
+      .eq('coach_id', coachId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error('Error generating receipt number:', error);
+      return 'ΑΠ-0001';
+    }
+
+    if (!data || data.length === 0) {
+      return 'ΑΠ-0001';
+    }
+
+    const lastNumber = data[0].receipt_number;
+    const numberPart = parseInt(lastNumber.split('-')[1]) || 0;
+    return `ΑΠ-${String(numberPart + 1).padStart(4, '0')}`;
+  };
+
   const handleSave = async () => {
     if (!selectedAthlete || !selectedTypeId || !startDate) {
       toast.error('Συμπληρώστε όλα τα πεδία');
@@ -108,7 +130,8 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
         'yyyy-MM-dd'
       );
 
-      const { error } = await supabase
+      // Create subscription
+      const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('coach_subscriptions')
         .insert({
           coach_user_id: selectedAthlete.id,
@@ -117,9 +140,31 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
           start_date: startDate,
           end_date: endDate,
           status: 'active'
+        })
+        .select()
+        .single();
+
+      if (subscriptionError) throw subscriptionError;
+
+      // Create receipt automatically
+      const receiptNumber = await generateReceiptNumber();
+      const { error: receiptError } = await supabase
+        .from('coach_receipts')
+        .insert({
+          coach_id: coachId,
+          coach_user_id: selectedAthlete.id,
+          subscription_id: subscriptionData.id,
+          receipt_number: receiptNumber,
+          amount: selectedType.price,
+          receipt_type: 'subscription',
+          subscription_type_id: selectedTypeId,
+          notes: `Νέα συνδρομή: ${selectedType.name}`
         });
 
-      if (error) throw error;
+      if (receiptError) {
+        console.error('Error creating receipt:', receiptError);
+        // Don't throw - subscription was created successfully
+      }
 
       toast.success('Η συνδρομή δημιουργήθηκε');
       onOpenChange(false);
