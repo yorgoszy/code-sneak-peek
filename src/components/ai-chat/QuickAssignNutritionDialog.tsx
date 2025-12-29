@@ -56,6 +56,16 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
+  // Helper για αναζήτηση χρήστη με όνομα (χωρίς τόνους) - ίδια λογική με το assign
+  const normalizeGreek = (str: string): string => {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ά/g, 'α').replace(/έ/g, 'ε').replace(/ή/g, 'η')
+      .replace(/ί/g, 'ι').replace(/ό/g, 'ο').replace(/ύ/g, 'υ').replace(/ώ/g, 'ω');
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchUsers();
@@ -66,18 +76,38 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
   }, [isOpen, nutritionData]);
 
   // Priority: nutritionData.targetUserId > defaultUserId
+  // Υποστηρίζει UUID αλλά και αναζήτηση με όνομα (ίδια λογική με QuickAssignProgramDialog)
   useEffect(() => {
     if (users.length > 0) {
-      const targetId = nutritionData?.targetUserId || defaultUserId;
-      if (targetId) {
-        const user = users.find(u => u.id === targetId);
+      const targetIdentifier = nutritionData?.targetUserId || nutritionData?.targetUserName || defaultUserId;
+      if (targetIdentifier) {
+        // Πρώτα δοκιμάζουμε ακριβές match με UUID
+        let user = users.find(u => u.id === targetIdentifier);
+        
+        // Αν δεν βρεθεί με UUID, δοκιμάζουμε αναζήτηση με όνομα (flexible search - χωρίς τόνους)
+        if (!user && typeof targetIdentifier === 'string') {
+          const normalizedSearch = normalizeGreek(targetIdentifier);
+          user = users.find(u => {
+            const normalizedName = normalizeGreek(u.name);
+            const email = String(u.email ?? '').toLowerCase();
+            return (
+              normalizedName.includes(normalizedSearch) ||
+              normalizedSearch.includes(normalizedName) ||
+              normalizedName === normalizedSearch ||
+              email.includes(targetIdentifier.toLowerCase())
+            );
+          });
+        }
+        
         if (user) {
           setSelectedUser(user);
-          console.log('✅ Auto-selected user from AI:', user.name);
+          console.log('✅ Auto-selected user from AI:', user.name, 'using identifier:', targetIdentifier);
+        } else {
+          console.log('⚠️ User not found for identifier:', targetIdentifier);
         }
       }
     }
-  }, [nutritionData?.targetUserId, defaultUserId, users]);
+  }, [nutritionData?.targetUserId, nutritionData?.targetUserName, defaultUserId, users]);
 
   useEffect(() => {
     if (searchTerm) {
