@@ -5,6 +5,8 @@ import { format } from "date-fns";
 
 interface JumpProfileLatestCardProps {
   userId: string;
+  useCoachTables?: boolean;
+  coachId?: string;
 }
 
 // Extract a numeric metric from a jump session for a specific type
@@ -12,7 +14,8 @@ const extractMetric = (
   session: any,
   type: 'nonCmj' | 'cmj' | 'depth' | 'broad' | 'triple'
 ): number | null => {
-  const d = session?.jump_test_data?.[0];
+  // Try coach tables first, then regular tables
+  const d = session?.jump_test_data?.[0] || session?.coach_jump_test_data?.[0];
   if (d) {
     switch (type) {
       case 'nonCmj':
@@ -44,7 +47,11 @@ const extractMetric = (
   }
 };
 
-export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ userId }) => {
+export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ 
+  userId,
+  useCoachTables = false,
+  coachId 
+}) => {
   const [latestSessions, setLatestSessions] = useState<{
     nonCmj: JumpSessionCardSession | null;
     cmj: JumpSessionCardSession | null;
@@ -73,35 +80,70 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({ us
     const load = async () => {
       if (!userId) return;
       
-      // Φέρνω όλες τις καταγραφές για τον χρήστη
-      const { data, error } = await supabase
-        .from('jump_test_sessions')
-        .select(`
-          id,
-          user_id,
-          test_date,
-          notes,
-          created_at,
-          jump_test_data (
-            id,
-            non_counter_movement_jump,
-            counter_movement_jump,
-            depth_jump,
-            broad_jump,
-            triple_jump_left,
-            triple_jump_right
-          )
-        `)
-        .eq('user_id', userId)
-        .order('test_date', { ascending: false })
-        .order('created_at', { ascending: false });
+      let allSessions: any[] = [];
 
-      if (error) {
-        console.error('Error loading jump sessions:', error);
-        return;
+      if (useCoachTables && coachId) {
+        // Fetch from coach tables
+        const { data, error } = await supabase
+          .from('coach_jump_test_sessions')
+          .select(`
+            id,
+            coach_user_id,
+            test_date,
+            notes,
+            created_at,
+            coach_jump_test_data (
+              id,
+              non_counter_movement_jump,
+              counter_movement_jump,
+              depth_jump,
+              broad_jump,
+              triple_jump_left,
+              triple_jump_right
+            )
+          `)
+          .eq('coach_id', coachId)
+          .eq('coach_user_id', userId)
+          .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading coach jump sessions:', error);
+          return;
+        }
+        allSessions = data || [];
+      } else {
+        // Φέρνω όλες τις καταγραφές για τον χρήστη
+        const { data, error } = await supabase
+          .from('jump_test_sessions')
+          .select(`
+            id,
+            user_id,
+            test_date,
+            notes,
+            created_at,
+            jump_test_data (
+              id,
+              non_counter_movement_jump,
+              counter_movement_jump,
+              depth_jump,
+              broad_jump,
+              triple_jump_left,
+              triple_jump_right
+            )
+          `)
+          .eq('user_id', userId)
+          .order('test_date', { ascending: false })
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading jump sessions:', error);
+          return;
+        }
+        allSessions = data || [];
       }
 
-      const allSessions = data || [];
+      
       
       // Υπολογισμός ποσοστού αλλαγής (χρησιμοποιούμε extractMetric για τις τιμές)
       const computeChange = (values: number[]): number | null => {

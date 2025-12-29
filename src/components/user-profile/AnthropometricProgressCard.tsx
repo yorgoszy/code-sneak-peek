@@ -6,48 +6,87 @@ import { useTranslation } from 'react-i18next';
 
 interface AnthropometricProgressCardProps {
   userId: string;
+  useCoachTables?: boolean;
+  coachId?: string;
 }
 
-export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProps> = ({ userId }) => {
+export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProps> = ({ 
+  userId,
+  useCoachTables = false,
+  coachId 
+}) => {
   const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchAnthropometricData();
-  }, [userId]);
+  }, [userId, useCoachTables, coachId]);
 
   const fetchAnthropometricData = async () => {
     try {
-      // Get all sessions
-      const { data: sessionsData, error: sessionError } = await supabase
-        .from('anthropometric_test_sessions')
-        .select('*')
-        .eq('user_id', userId)
-        .order('test_date', { ascending: false })
-        .limit(10);
+      let sessionsWithData: any[] = [];
 
-      if (sessionError) throw sessionError;
-      if (!sessionsData || sessionsData.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      // Get data for each session
-      const sessionsWithData = [];
-      for (const session of sessionsData) {
-        const { data: anthroData } = await supabase
-          .from('anthropometric_test_data')
+      if (useCoachTables && coachId) {
+        // Fetch from coach tables
+        const { data: sessionsData, error: sessionError } = await supabase
+          .from('coach_anthropometric_test_sessions')
           .select('*')
-          .eq('test_session_id', session.id)
-          .maybeSingle();
+          .eq('coach_id', coachId)
+          .eq('coach_user_id', userId)
+          .order('test_date', { ascending: false })
+          .limit(10);
 
-        if (anthroData) {
-          sessionsWithData.push({
-            ...anthroData,
-            test_date: session.test_date,
-            session_id: session.id
-          });
+        if (sessionError) throw sessionError;
+        if (!sessionsData || sessionsData.length === 0) {
+          setLoading(false);
+          return;
+        }
+
+        for (const session of sessionsData) {
+          const { data: anthroData } = await supabase
+            .from('coach_anthropometric_test_data')
+            .select('*')
+            .eq('test_session_id', session.id)
+            .maybeSingle();
+
+          if (anthroData) {
+            sessionsWithData.push({
+              ...anthroData,
+              test_date: session.test_date,
+              session_id: session.id
+            });
+          }
+        }
+      } else {
+        // Get all sessions from regular tables
+        const { data: sessionsData, error: sessionError } = await supabase
+          .from('anthropometric_test_sessions')
+          .select('*')
+          .eq('user_id', userId)
+          .order('test_date', { ascending: false })
+          .limit(10);
+
+        if (sessionError) throw sessionError;
+        if (!sessionsData || sessionsData.length === 0) {
+          setLoading(false);
+          return;
+        }
+
+        for (const session of sessionsData) {
+          const { data: anthroData } = await supabase
+            .from('anthropometric_test_data')
+            .select('*')
+            .eq('test_session_id', session.id)
+            .maybeSingle();
+
+          if (anthroData) {
+            sessionsWithData.push({
+              ...anthroData,
+              test_date: session.test_date,
+              session_id: session.id
+            });
+          }
         }
       }
 
