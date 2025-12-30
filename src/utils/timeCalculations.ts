@@ -4,7 +4,21 @@
 export const parseRepsToTime = (reps: string): { isTime: boolean; seconds: number; count: number } => {
   if (!reps) return { isTime: false, seconds: 0, count: 0 };
   
-  const repsStr = reps.toString().toLowerCase().trim();
+  const repsStr = reps.toString().trim();
+  
+  // Check for MM:SS or M:SS format first (e.g., "15:00", "1:30")
+  const mmssMatch = repsStr.match(/^(\d+):(\d{2})$/);
+  if (mmssMatch) {
+    const minutes = parseInt(mmssMatch[1]) || 0;
+    const seconds = parseInt(mmssMatch[2]) || 0;
+    return { 
+      isTime: true, 
+      seconds: minutes * 60 + seconds,
+      count: 0 
+    };
+  }
+  
+  const repsStrLower = repsStr.toLowerCase();
   
   // Check for time formats: 30sec, 30'', 2min, 2'
   const timeFormats = [
@@ -15,7 +29,7 @@ export const parseRepsToTime = (reps: string): { isTime: boolean; seconds: numbe
   ];
   
   for (const format of timeFormats) {
-    const match = repsStr.match(format.regex);
+    const match = repsStrLower.match(format.regex);
     if (match) {
       const value = parseFloat(match[1].replace(',', '.'));
       return { 
