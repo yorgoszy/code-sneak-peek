@@ -233,83 +233,83 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader className="pb-2">
-          <DialogTitle className="text-base">Προσθήκη Νέας Άσκησης</DialogTitle>
+      <DialogContent className="max-w-3xl p-3">
+        <DialogHeader className="pb-1">
+          <DialogTitle className="text-sm">Προσθήκη Νέας Άσκησης</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleSubmit} className="space-y-1.5">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="name" className="text-xs">Όνομα *</Label>
+              <Label htmlFor="name" className="text-[10px]">Όνομα *</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="π.χ. Bench Press"
-                className="rounded-none h-8 text-sm"
+                className="rounded-none h-7 text-xs"
                 required
               />
             </div>
             <div>
-              <Label htmlFor="videoUrl" className="text-xs">URL Βίντεο</Label>
+              <Label htmlFor="videoUrl" className="text-[10px]">URL Βίντεο</Label>
               <Input
                 id="videoUrl"
                 type="url"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
                 placeholder="https://youtube.com/..."
-                className="rounded-none h-8 text-sm"
+                className="rounded-none h-7 text-xs"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="description" className="text-xs">Περιγραφή</Label>
+            <Label htmlFor="description" className="text-[10px]">Περιγραφή</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Περιγραφή..."
-              className="rounded-none resize-none text-sm"
-              rows={2}
+              className="rounded-none resize-none text-xs py-1 min-h-0"
+              rows={1}
             />
           </div>
 
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <Label className="text-sm font-medium">Κατηγορίες *</Label>
+            <div className="flex justify-between items-center">
+              <Label className="text-xs font-medium">Κατηγορίες *</Label>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAddCategory(!showAddCategory)}
-                className="rounded-none h-6 text-xs px-2"
+                className="rounded-none h-5 text-[10px] px-1.5"
               >
-                <Plus className="h-3 w-3 mr-1" />
+                <Plus className="h-2.5 w-2.5 mr-0.5" />
                 Νέα
               </Button>
             </div>
 
             {showAddCategory && (
-              <div className="mb-3 p-2 border bg-gray-50">
-                <div className="flex gap-2 items-end">
+              <div className="mt-1 p-1.5 border bg-gray-50">
+                <div className="flex gap-1.5 items-end">
                   <Input
                     placeholder="Όνομα"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="rounded-none h-7 text-xs flex-1"
+                    className="rounded-none h-6 text-[10px] flex-1"
                   />
                   <Input
                     placeholder="Τύπος"
                     value={newCategoryType}
                     onChange={(e) => setNewCategoryType(e.target.value)}
-                    className="rounded-none h-7 text-xs flex-1"
+                    className="rounded-none h-6 text-[10px] flex-1"
                   />
-                  <Button type="button" size="sm" onClick={handleAddCategory} className="rounded-none h-7 text-xs px-2">
+                  <Button type="button" size="sm" onClick={handleAddCategory} className="rounded-none h-6 text-[10px] px-1.5">
                     OK
                   </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={() => setShowAddCategory(false)} className="rounded-none h-7 text-xs px-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setShowAddCategory(false)} className="rounded-none h-6 text-[10px] px-1.5">
                     ✕
                   </Button>
                 </div>
@@ -317,25 +317,25 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
             )}
 
             {loadingCategories ? (
-              <p className="text-xs text-gray-500">Φόρτωση...</p>
+              <p className="text-[10px] text-gray-500">Φόρτωση...</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1 mt-1">
                 {rows.map((rowCategories, rowIndex) => (
                   rowCategories.length > 0 && (
-                    <div key={rowIndex} className="border-b pb-2">
-                      <h4 className="text-[10px] font-medium text-gray-500 mb-1">{rowLabels[rowIndex]}</h4>
-                      <div className="flex flex-wrap gap-1">
+                    <div key={rowIndex} className="border-b pb-1">
+                      <h4 className="text-[9px] font-medium text-gray-500 mb-0.5">{rowLabels[rowIndex]}</h4>
+                      <div className="flex flex-wrap gap-0.5">
                         {rowCategories.map(category => (
                           <div 
                             key={category.id} 
-                            className={`px-2 py-0.5 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                            className={`px-1.5 py-0 border cursor-pointer transition-colors hover:bg-gray-100 ${
                               selectedCategories.includes(category.id) 
                                 ? 'bg-blue-50 border-blue-400 text-blue-700' 
                                 : 'bg-white border-gray-200'
                             }`}
                             onClick={() => handleCategoryClick(category.id)}
                           >
-                            <span className="text-xs select-none">{formatCategoryName(category.name)}</span>
+                            <span className="text-[10px] select-none leading-tight">{formatCategoryName(category.name)}</span>
                           </div>
                         ))}
                       </div>
@@ -345,20 +345,20 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                 
                 {/* Equipment Row */}
                 {equipmentCategories.length > 0 && (
-                  <div className="border-b pb-2">
-                    <h4 className="text-[10px] font-medium text-gray-500 mb-1">{rowLabels[6]}</h4>
-                    <div className="flex flex-wrap gap-1">
+                  <div className="border-b pb-1">
+                    <h4 className="text-[9px] font-medium text-gray-500 mb-0.5">{rowLabels[6]}</h4>
+                    <div className="flex flex-wrap gap-0.5">
                       {equipmentCategories.map(category => (
                         <div 
                           key={category.id} 
-                          className={`px-2 py-0.5 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                          className={`px-1.5 py-0 border cursor-pointer transition-colors hover:bg-gray-100 ${
                             selectedCategories.includes(category.id) 
                               ? 'bg-blue-50 border-blue-400 text-blue-700' 
                               : 'bg-white border-gray-200'
                           }`}
                           onClick={() => handleCategoryClick(category.id)}
                         >
-                          <span className="text-xs select-none">{formatCategoryName(category.name)}</span>
+                          <span className="text-[10px] select-none leading-tight">{formatCategoryName(category.name)}</span>
                         </div>
                       ))}
                     </div>
@@ -369,7 +369,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
 
             {/* Selected categories summary */}
             {selectedCategories.length > 0 && (
-              <div className="mt-2 p-2 bg-blue-50 border text-xs">
+              <div className="mt-1 p-1 bg-blue-50 border text-[10px]">
                 <span className="font-medium text-blue-900">Επιλεγμένες ({selectedCategories.length}): </span>
                 {selectedCategories.map(categoryId => {
                   const category = categories.find(c => c.id === categoryId);
@@ -379,11 +379,11 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
             )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" size="sm" onClick={handleClose} className="rounded-none h-8">
+          <div className="flex justify-end gap-1.5 pt-1">
+            <Button type="button" variant="outline" size="sm" onClick={handleClose} className="rounded-none h-7 text-xs">
               Ακύρωση
             </Button>
-            <Button type="submit" size="sm" disabled={loading || loadingCategories} className="rounded-none h-8">
+            <Button type="submit" size="sm" disabled={loading || loadingCategories} className="rounded-none h-7 text-xs">
               {loading ? 'Προσθήκη...' : 'Προσθήκη'}
             </Button>
           </div>
