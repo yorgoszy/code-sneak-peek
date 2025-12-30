@@ -146,6 +146,9 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
             name,
             day_number,
             estimated_duration_minutes,
+            is_test_day,
+            test_types,
+            is_competition_day,
             program_blocks(
               id,
               name,
@@ -220,6 +223,9 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
             name: day.name,
             day_number: day.day_number,
             estimated_duration_minutes: day.estimated_duration_minutes || undefined,
+            is_test_day: day.is_test_day || false,
+            test_types: day.test_types || [],
+            is_competition_day: day.is_competition_day || false,
             program_blocks: (day.program_blocks || []).map((block: any) => ({
               id: block.id,
               name: block.name,
