@@ -51,10 +51,11 @@ export const useExercise1RM = ({ userId, exerciseId }: UseExercise1RMProps) => {
         // Αν δεν βρέθηκε, ψάχνουμε στις συνδεδεμένες ασκήσεις
         console.log('🔗 Searching in linked exercises...');
         
-        // Βρίσκουμε τις συνδεδεμένες ασκήσεις (και προς τις δύο κατευθύνσεις)
+        // Βρίσκουμε τις συνδεδεμένες ασκήσεις ΜΟΝΟ τύπου strength_variant (από το ExerciseLinkDialog)
         const { data: relationships, error: relError } = await supabase
           .from('exercise_relationships')
           .select('exercise_id, related_exercise_id')
+          .eq('relationship_type', 'strength_variant')
           .or(`exercise_id.eq.${exerciseId},related_exercise_id.eq.${exerciseId}`);
 
         if (relError) {
