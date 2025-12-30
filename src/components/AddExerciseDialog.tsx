@@ -21,15 +21,21 @@ interface AddExerciseDialogProps {
   onSuccess: () => void;
 }
 
-// Correct order of categories as requested
-const orderedCategories = [
-  "upper body", "lower body", "total body",
-  "push", "pull",
-  "horizontal", "vertical", "rotational", "linear", "perpendicular",
-  "bilateral", "unilateral", "ipsilateral",
-  "barbell", "dumbbell", "kettlebell", "medball", "band", "chain", "bodyweight",
-  "non counter movement", "counter movement", "reactive", "non reactive",
-  "mobility", "stability", "strength", "power", "endurance", "oly lifting"
+// Κατηγορίες οργανωμένες σε σειρές
+const categoryRows = [
+  // Row 1: Body Part
+  ["upper body", "lower body", "total body", "core", "cardio"],
+  // Row 2: Movement Type
+  ["push", "pull", "rotational"],
+  // Row 3: Direction
+  ["vertical", "horizontal", "linear", "lateral"],
+  // Row 4: Stance
+  ["bilateral", "unilateral", "ipsilateral"],
+  // Row 5: Dominance/Anti
+  ["hip dominate", "knee dominate", "antirotation", "antiextention", "antiflexion"],
+  // Row 6: Training Type
+  ["mobility", "stability", "activation", "intergration", "movement", "neural activation", "plyometric", "power", "strength", "endurance", "accesory", "oly lifting", "strongman"],
+  // Row 7: Equipment - θα είναι όλα τα υπόλοιπα
 ];
 
 export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExerciseDialogProps) => {
@@ -187,27 +193,37 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     );
   };
 
-  // Sort categories by the ordered list
-  const getSortedCategories = () => {
-    return categories
-      .filter(cat => cat.name !== "ζορ")  // Remove the "ζορ (W)" category
-      .sort((a, b) => {
-        const indexA = orderedCategories.indexOf(a.name);
-        const indexB = orderedCategories.indexOf(b.name);
-        
-        // If both are in the ordered list, sort by order
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB;
-        }
-        
-        // If only one is in the ordered list, prioritize it
-        if (indexA !== -1) return -1;
-        if (indexB !== -1) return 1;
-        
-        // If neither is in the ordered list, sort alphabetically
-        return a.name.localeCompare(b.name);
-      });
+  // Οργάνωση κατηγοριών σε σειρές
+  const getCategorizedRows = () => {
+    const allCategoryNames = categoryRows.flat();
+    const filteredCategories = categories.filter(cat => cat.name !== "ζορ");
+    
+    // Βρες τις κατηγορίες για κάθε σειρά
+    const rows = categoryRows.map(rowNames => 
+      rowNames
+        .map(name => filteredCategories.find(cat => cat.name.toLowerCase() === name.toLowerCase()))
+        .filter(Boolean) as Category[]
+    );
+    
+    // Equipment row: όλες οι κατηγορίες που δεν είναι στις προηγούμενες σειρές
+    const equipmentCategories = filteredCategories.filter(cat => 
+      !allCategoryNames.some(name => name.toLowerCase() === cat.name.toLowerCase())
+    );
+    
+    return { rows, equipmentCategories };
   };
+
+  const { rows, equipmentCategories } = getCategorizedRows();
+
+  const rowLabels = [
+    "Περιοχή Σώματος",
+    "Τύπος Κίνησης",
+    "Κατεύθυνση",
+    "Στάση",
+    "Dominance / Anti",
+    "Τύπος Προπόνησης",
+    "Equipment"
+  ];
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -311,27 +327,51 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
             {loadingCategories ? (
               <p className="text-sm text-gray-500 mt-2">Φόρτωση κατηγοριών...</p>
             ) : (
-              <div className="space-y-6">
-                <div className="p-4 border bg-gray-50">
-                  <h3 className="font-medium text-lg text-gray-900 mb-3">Κατηγορίες</h3>
-                  <div className="grid grid-cols-3 gap-2">
-                    {getSortedCategories().map(category => (
-                      <div 
-                        key={category.id} 
-                        className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
-                          selectedCategories.includes(category.id) 
-                            ? 'bg-blue-50 border-blue-200' 
-                            : 'bg-white border-gray-200'
-                        }`}
-                        onClick={() => handleCategoryClick(category.id)}
-                      >
-                        <span className="text-sm select-none font-medium">
-                          {category.name}
-                        </span>
+              <div className="space-y-4">
+                {rows.map((rowCategories, rowIndex) => (
+                  rowCategories.length > 0 && (
+                    <div key={rowIndex} className="border-b pb-3">
+                      <h4 className="text-xs font-medium text-gray-500 mb-2">{rowLabels[rowIndex]}</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {rowCategories.map(category => (
+                          <div 
+                            key={category.id} 
+                            className={`px-3 py-1.5 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                              selectedCategories.includes(category.id) 
+                                ? 'bg-blue-50 border-blue-400 text-blue-700' 
+                                : 'bg-white border-gray-200'
+                            }`}
+                            onClick={() => handleCategoryClick(category.id)}
+                          >
+                            <span className="text-sm select-none">{category.name}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                  )
+                ))}
+                
+                {/* Equipment Row */}
+                {equipmentCategories.length > 0 && (
+                  <div className="border-b pb-3">
+                    <h4 className="text-xs font-medium text-gray-500 mb-2">{rowLabels[6]}</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {equipmentCategories.map(category => (
+                        <div 
+                          key={category.id} 
+                          className={`px-3 py-1.5 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                            selectedCategories.includes(category.id) 
+                              ? 'bg-blue-50 border-blue-400 text-blue-700' 
+                              : 'bg-white border-gray-200'
+                          }`}
+                          onClick={() => handleCategoryClick(category.id)}
+                        >
+                          <span className="text-sm select-none">{category.name}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
