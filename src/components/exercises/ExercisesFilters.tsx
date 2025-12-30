@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, X } from "lucide-react";
+import { categoryRows, categoryRowLabels } from "@/utils/categoryRows";
 
 interface Category {
   id: string;
@@ -36,6 +37,37 @@ export const ExercisesFilters: React.FC<ExercisesFiltersProps> = ({
   onResetFilters,
   activeFiltersCount
 }) => {
+  // Organize categories into rows
+  const getCategorizedRows = () => {
+    const allCategoryNames = categoryRows.flat();
+    const filteredCategories = categories.filter(cat => cat.name !== "ζορ");
+    
+    const rows = categoryRows.map(rowNames => 
+      rowNames
+        .map(name => filteredCategories.find(cat => cat.name.toLowerCase() === name.toLowerCase()))
+        .filter(Boolean) as Category[]
+    );
+    
+    // Equipment row: all categories not in previous rows
+    const equipmentCategories = filteredCategories.filter(cat => 
+      !allCategoryNames.some(name => name.toLowerCase() === cat.name.toLowerCase())
+    );
+    
+    return { rows, equipmentCategories };
+  };
+
+  const { rows, equipmentCategories } = getCategorizedRows();
+
+  const rowLabels = [
+    "Περιοχή Σώματος",
+    "Τύπος Κίνησης",
+    "Κατεύθυνση",
+    "Στάση",
+    "Dominance / Anti",
+    "Τύπος Προπόνησης",
+    "Equipment"
+  ];
+
   return (
     <div className="mb-6 space-y-4">
       <div className="flex gap-4 items-center">
@@ -87,23 +119,52 @@ export const ExercisesFilters: React.FC<ExercisesFiltersProps> = ({
       )}
 
       {showFilters && (
-        <div className="bg-white p-4 border rounded space-y-4">
+        <div className="bg-white p-4 border rounded-none space-y-4">
           <h3 className="font-medium text-gray-900">Φίλτρα Κατηγοριών</h3>
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Επιλογή Κατηγοριών (πολλαπλή επιλογή)
-              </label>
-              {loadingCategories ? (
-                <p className="text-xs text-gray-500">Φόρτωση κατηγοριών...</p>
-              ) : (
-                <div className="grid grid-cols-3 gap-2">
-                  {categories
-                    .filter(cat => cat.name !== "ζορ")
-                    .map(category => (
+          <p className="text-sm text-gray-600">Επιλογή Κατηγοριών (πολλαπλή επιλογή)</p>
+          
+          {loadingCategories ? (
+            <p className="text-xs text-gray-500">Φόρτωση κατηγοριών...</p>
+          ) : (
+            <div className="space-y-4">
+              {rows.map((rowCategories, rowIndex) => (
+                rowCategories.length > 0 && (
+                  <div key={rowIndex} className="space-y-2">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      {rowLabels[rowIndex]}
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {rowCategories.map(category => (
+                        <div 
+                          key={category.id} 
+                          className={`px-3 py-2 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                            selectedCategories.includes(category.name) 
+                              ? 'bg-blue-50 border-blue-200' 
+                              : 'bg-white border-gray-200'
+                          }`}
+                          onClick={() => onCategoryToggle(category.name)}
+                        >
+                          <span className="text-sm select-none font-medium">
+                            {category.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              ))}
+              
+              {/* Equipment Row */}
+              {equipmentCategories.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Equipment
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {equipmentCategories.map(category => (
                       <div 
                         key={category.id} 
-                        className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                        className={`px-3 py-2 border cursor-pointer transition-colors hover:bg-gray-100 ${
                           selectedCategories.includes(category.name) 
                             ? 'bg-blue-50 border-blue-200' 
                             : 'bg-white border-gray-200'
@@ -115,10 +176,11 @@ export const ExercisesFilters: React.FC<ExercisesFiltersProps> = ({
                         </span>
                       </div>
                     ))}
+                  </div>
                 </div>
               )}
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
