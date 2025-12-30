@@ -118,44 +118,39 @@ const Exercises = () => {
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        <nav className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
-          <div className="flex justify-between items-center gap-4">
-            <div className="flex items-center gap-3">
+        <nav className="bg-white border-b border-gray-200 px-3 lg:px-4 py-2">
+          <div className="flex justify-between items-center gap-2">
+            <div className="flex items-center gap-2">
               {/* Mobile Menu Button */}
               {isMobileOrTablet && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-                  className="rounded-none"
+                  className="rounded-none h-8 w-8"
                 >
                   {isMobileSidebarOpen ? (
-                    <X className="h-5 w-5" />
+                    <X className="h-4 w-4" />
                   ) : (
-                    <Menu className="h-5 w-5" />
+                    <Menu className="h-4 w-4" />
                   )}
                 </Button>
               )}
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Ασκήσεις</h1>
-                <p className="text-xs lg:text-sm text-gray-600 hidden sm:block">
-                  Διαχείριση τραπέζας ασκήσεων
-                </p>
-              </div>
+              <h1 className="text-lg font-bold text-gray-900">Ασκήσεις</h1>
             </div>
             <Button 
               onClick={() => setIsAddDialogOpen(true)}
-              className="rounded-none text-sm"
-              size={isMobileOrTablet ? "sm" : "default"}
+              className="rounded-none h-8 text-xs"
+              size="sm"
             >
-              <Plus className="h-4 w-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Προσθήκη Άσκησης</span>
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              <span className="hidden sm:inline">Προσθήκη</span>
               <span className="sm:hidden">Νέα</span>
             </Button>
           </div>
         </nav>
 
-        <div className="flex-1 p-4 lg:p-6 overflow-auto">
+        <div className="flex-1 p-3 lg:p-4 overflow-auto">
           <ExercisesFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}

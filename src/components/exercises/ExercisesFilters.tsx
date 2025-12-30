@@ -75,32 +75,34 @@ export const ExercisesFilters: React.FC<ExercisesFiltersProps> = ({
   ];
 
   return (
-    <div className="mb-6 space-y-4">
-      <div className="flex gap-4 items-center">
-        <div className="relative flex-1 max-w-md">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+    <div className="mb-4 space-y-2">
+      <div className="flex gap-2 items-center">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Αναζήτηση ασκήσεων..."
+            placeholder="Αναζήτηση..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 rounded-none"
+            className="pl-8 h-8 text-sm rounded-none"
           />
         </div>
         
         <Button
           variant="outline"
+          size="sm"
           onClick={onToggleFilters}
-          className="rounded-none"
+          className="rounded-none h-8 text-xs"
         >
-          <Filter className="h-4 w-4 mr-2" />
+          <Filter className="h-3.5 w-3.5 mr-1" />
           Φίλτρα {activeFiltersCount > 0 && `(${activeFiltersCount})`}
         </Button>
 
         {activeFiltersCount > 0 && (
           <Button
             variant="ghost"
+            size="sm"
             onClick={onResetFilters}
-            className="rounded-none text-sm"
+            className="rounded-none h-8 text-xs"
           >
             Καθαρισμός
           </Button>
@@ -109,48 +111,45 @@ export const ExercisesFilters: React.FC<ExercisesFiltersProps> = ({
 
       {/* Selected categories display */}
       {selectedCategories.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
           {selectedCategories.map(category => (
             <Badge 
               key={category} 
               variant="secondary" 
-              className="cursor-pointer"
+              className="cursor-pointer text-xs py-0 px-1.5 h-5"
               onClick={() => onCategoryToggle(category)}
             >
               {formatCategoryName(category)}
-              <X className="h-3 w-3 ml-1" />
+              <X className="h-2.5 w-2.5 ml-0.5" />
             </Badge>
           ))}
         </div>
       )}
 
       {showFilters && (
-        <div className="bg-white p-4 border rounded-none space-y-4">
-          <h3 className="font-medium text-gray-900">Φίλτρα Κατηγοριών</h3>
-          <p className="text-sm text-gray-600">Επιλογή Κατηγοριών (πολλαπλή επιλογή)</p>
-          
+        <div className="bg-white p-3 border rounded-none space-y-2">
           {loadingCategories ? (
-            <p className="text-xs text-gray-500">Φόρτωση κατηγοριών...</p>
+            <p className="text-xs text-gray-500">Φόρτωση...</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {rows.map((rowCategories, rowIndex) => (
                 rowCategories.length > 0 && (
-                  <div key={rowIndex} className="space-y-2">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <div key={rowIndex} className="space-y-1">
+                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
                       {rowLabels[rowIndex]}
                     </h4>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1">
                       {rowCategories.map(category => (
                         <div 
                           key={category.id} 
-                          className={`px-3 py-2 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                          className={`px-2 py-1 border cursor-pointer transition-colors hover:bg-gray-100 ${
                             selectedCategories.includes(category.name) 
                               ? 'bg-blue-50 border-blue-200' 
                               : 'bg-white border-gray-200'
                           }`}
                           onClick={() => onCategoryToggle(category.name)}
                         >
-                          <span className="text-sm select-none font-medium">
+                          <span className="text-xs select-none">
                             {formatCategoryName(category.name)}
                           </span>
                         </div>
@@ -162,22 +161,22 @@ export const ExercisesFilters: React.FC<ExercisesFiltersProps> = ({
               
               {/* Equipment Row */}
               {equipmentCategories.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <div className="space-y-1">
+                  <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
                     Equipment
                   </h4>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1">
                     {equipmentCategories.map(category => (
                       <div 
                         key={category.id} 
-                        className={`px-3 py-2 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                        className={`px-2 py-1 border cursor-pointer transition-colors hover:bg-gray-100 ${
                           selectedCategories.includes(category.name) 
                             ? 'bg-blue-50 border-blue-200' 
                             : 'bg-white border-gray-200'
                         }`}
                         onClick={() => onCategoryToggle(category.name)}
                       >
-                        <span className="text-sm select-none font-medium">
+                        <span className="text-xs select-none">
                           {formatCategoryName(category.name)}
                         </span>
                       </div>
