@@ -4,7 +4,7 @@ import type { EnrichedAssignment } from './useActivePrograms/types';
 
 export const useAllPrograms = () => {
   return useQuery({
-    queryKey: ['all-programs'],
+    queryKey: ['all-programs', 'v2'],
     queryFn: async (): Promise<EnrichedAssignment[]> => {
       console.log('🔄 Fetching ALL programs from database...');
       
@@ -44,11 +44,17 @@ export const useAllPrograms = () => {
                 name,
                 day_number,
                 estimated_duration_minutes,
+                is_test_day,
+                test_types,
+                is_competition_day,
                 program_blocks!fk_program_blocks_day_id(
                   id,
                   name,
                   block_order,
                   training_type,
+                  workout_format,
+                  workout_duration,
+                  block_sets,
                   program_exercises!fk_program_exercises_block_id(
                     id,
                     exercise_id,

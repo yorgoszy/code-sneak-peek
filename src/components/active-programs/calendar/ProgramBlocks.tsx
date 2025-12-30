@@ -68,18 +68,6 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
     const orderB = Number(b.block_order) || 0;
     return orderA - orderB;
   });
-
-  console.log('🔧 ProgramBlocks: Rendering blocks with correct order:',
-    sortedBlocks.map(b => ({ 
-      name: b.name, 
-      type: b.training_type, 
-      order: b.block_order,
-      workout_format: b.workout_format,
-      workout_duration: b.workout_duration,
-      block_sets: b.block_sets
-    }))
-  );
-
   // Αν έχουμε μόνο ένα block, εμφανίζουμε χωρίς tabs
   if (sortedBlocks.length === 1) {
     const block = sortedBlocks[0];
@@ -150,11 +138,6 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
           const orderB = Number(b.exercise_order) || 0;
           return orderA - orderB;
         });
-
-        console.log(`🔧 ProgramBlocks: Block "${block.name}" final exercise order:`,
-          sortedExercises.map((ex, idx) => `${idx + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`)
-        );
-
         return (
           <TabsContent key={block.id} value={block.id} className="mt-2">
             <div className="space-y-3">
