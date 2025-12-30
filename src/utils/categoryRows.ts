@@ -8,10 +8,10 @@ export const categoryRows = [
   ['vertical', 'horizontal', 'linear', 'lateral'],
   // Row 4: Stance
   ['bilateral', 'unilateral', 'ipsilateral'],
-  // Row 5: Dominance/Anti
-  ['hip dominate', 'knee dominate', 'antirotation', 'antirotational', 'antiextention', 'antiflexion'],
+  // Row 5: Dominance
+  ['hip dominate', 'knee dominate'],
   // Row 6: Training Type
-  ['mobility', 'stability', 'activation', 'intergration', 'movement', 'neural activation', 'plyometric', 'power', 'strength', 'endurance', 'accesory', 'oly lifting', 'strongman'],
+  ['mobility', 'stability', 'activation', 'intergration', 'movement', 'neural activation', 'plyometric', 'power', 'strength', 'endurance', 'accesory', 'oly lifting', 'strongman', 'antirotation', 'antirotational', 'antiextention', 'antiflexion'],
   // Row 7: Equipment - all others
 ];
 
