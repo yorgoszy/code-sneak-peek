@@ -70,7 +70,14 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   });
 
   console.log('🔧 ProgramBlocks: Rendering blocks with correct order:',
-    sortedBlocks.map(b => ({ name: b.name, type: b.training_type, order: b.block_order }))
+    sortedBlocks.map(b => ({ 
+      name: b.name, 
+      type: b.training_type, 
+      order: b.block_order,
+      workout_format: b.workout_format,
+      workout_duration: b.workout_duration,
+      block_sets: b.block_sets
+    }))
   );
 
   // Αν έχουμε μόνο ένα block, εμφανίζουμε χωρίς tabs

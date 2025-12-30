@@ -114,6 +114,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
 
     let totalSeconds = 0;
     day.program_blocks?.forEach((block: any) => {
+      const blockMultiplier = block.block_sets || 1;
       block.program_exercises?.forEach((exercise: any) => {
         const sets = exercise.sets || 0;
         const reps = parseRepsToTotal(exercise.reps || '0');
@@ -121,7 +122,7 @@ export const UserProfileDailyProgram: React.FC<UserProfileDailyProgramProps> = (
         const restSeconds = parseRestTime(exercise.rest || '');
         const workTime = sets * reps * tempoSeconds;
         const totalRestTime = sets * restSeconds;
-        totalSeconds += workTime + totalRestTime;
+        totalSeconds += (workTime + totalRestTime) * blockMultiplier;
       });
     });
 
