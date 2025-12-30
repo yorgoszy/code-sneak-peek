@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { categoryRows } from "@/utils/categoryRows";
 
 interface Category {
   id: string;
@@ -29,15 +30,14 @@ interface EditExerciseDialogProps {
   onSuccess: () => void;
 }
 
-// Correct order of categories as requested
-const orderedCategories = [
-  "upper body", "lower body", "total body",
-  "push", "pull",
-  "horizontal", "vertical", "rotational", "linear", "perpendicular",
-  "bilateral", "unilateral", "ipsilateral",
-  "barbell", "dumbbell", "kettlebell", "medball", "band", "chain", "bodyweight",
-  "non counter movement", "counter movement", "reactive", "non reactive",
-  "mobility", "stability", "strength", "power", "endurance", "oly lifting"
+const rowLabels = [
+  "Περιοχή Σώματος",
+  "Τύπος Κίνησης",
+  "Κατεύθυνση",
+  "Στάση",
+  "Dominance / Anti",
+  "Τύπος Προπόνησης",
+  "Equipment"
 ];
 
 export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: EditExerciseDialogProps) => {
@@ -166,27 +166,26 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
     );
   };
 
-  // Sort categories by the ordered list
-  const getSortedCategories = () => {
-    return categories
-      .filter(cat => cat.name !== "ζορ")  // Remove the "ζορ (W)" category
-      .sort((a, b) => {
-        const indexA = orderedCategories.indexOf(a.name);
-        const indexB = orderedCategories.indexOf(b.name);
-        
-        // If both are in the ordered list, sort by order
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB;
-        }
-        
-        // If only one is in the ordered list, prioritize it
-        if (indexA !== -1) return -1;
-        if (indexB !== -1) return 1;
-        
-        // If neither is in the ordered list, sort alphabetically
-        return a.name.localeCompare(b.name);
-      });
+  // Organize categories into rows
+  const getCategorizedRows = () => {
+    const allCategoryNames = categoryRows.flat();
+    const filteredCategories = categories.filter(cat => cat.name !== "ζορ");
+    
+    const rows = categoryRows.map(rowNames => 
+      rowNames
+        .map(name => filteredCategories.find(cat => cat.name.toLowerCase() === name.toLowerCase()))
+        .filter(Boolean) as Category[]
+    );
+    
+    // Equipment row: all categories not in previous rows
+    const equipmentCategories = filteredCategories.filter(cat => 
+      !allCategoryNames.some(name => name.toLowerCase() === cat.name.toLowerCase())
+    );
+    
+    return { rows, equipmentCategories };
   };
+
+  const { rows, equipmentCategories } = getCategorizedRows();
 
   if (!exercise) return null;
 
@@ -242,27 +241,59 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
             {loadingCategories ? (
               <p className="text-sm text-gray-500 mt-2">Φόρτωση κατηγοριών...</p>
             ) : (
-              <div className="space-y-6 mt-4">
-                <div className="p-4 border bg-gray-50">
-                  <h3 className="font-medium text-lg text-gray-900 mb-3">Κατηγορίες</h3>
-                  <div className="grid grid-cols-3 gap-2">
-                    {getSortedCategories().map(category => (
-                      <div 
-                        key={category.id} 
-                        className={`p-3 border cursor-pointer transition-colors hover:bg-gray-100 ${
-                          selectedCategories.includes(category.id) 
-                            ? 'bg-blue-50 border-blue-200' 
-                            : 'bg-white border-gray-200'
-                        }`}
-                        onClick={() => handleCategoryClick(category.id)}
-                      >
-                        <span className="text-sm select-none font-medium">
-                          {category.name}
-                        </span>
+              <div className="space-y-4 mt-4">
+                {rows.map((rowCategories, rowIndex) => (
+                  rowCategories.length > 0 && (
+                    <div key={rowIndex} className="space-y-2">
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        {rowLabels[rowIndex]}
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {rowCategories.map(category => (
+                          <div 
+                            key={category.id} 
+                            className={`px-3 py-2 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                              selectedCategories.includes(category.id) 
+                                ? 'bg-blue-50 border-blue-200' 
+                                : 'bg-white border-gray-200'
+                            }`}
+                            onClick={() => handleCategoryClick(category.id)}
+                          >
+                            <span className="text-sm select-none font-medium">
+                              {category.name}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                  )
+                ))}
+                
+                {/* Equipment Row */}
+                {equipmentCategories.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      Equipment
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {equipmentCategories.map(category => (
+                        <div 
+                          key={category.id} 
+                          className={`px-3 py-2 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                            selectedCategories.includes(category.id) 
+                              ? 'bg-blue-50 border-blue-200' 
+                              : 'bg-white border-gray-200'
+                          }`}
+                          onClick={() => handleCategoryClick(category.id)}
+                        >
+                          <span className="text-sm select-none font-medium">
+                            {category.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
