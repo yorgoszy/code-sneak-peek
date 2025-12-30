@@ -33,10 +33,17 @@ export const useTodaysPrograms = (userId: string) => {
                 name,
                 day_number,
                 estimated_duration_minutes,
+                is_test_day,
+                test_types,
+                is_competition_day,
                 program_blocks (
                   id,
                   name,
                   block_order,
+                  training_type,
+                  workout_format,
+                  workout_duration,
+                  block_sets,
                   program_exercises (
                     id,
                     exercise_id,

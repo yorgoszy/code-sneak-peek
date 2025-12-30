@@ -179,7 +179,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden rounded-none p-4">
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden rounded-none p-2 sm:p-4">
           <EditableProgramDialogHeader
             programData={programData}
             assignment={assignment}
@@ -192,13 +192,21 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
           />
 
           {/* Scrollable Content */}
-          <div className="overflow-y-auto max-h-[calc(90vh-5rem)]">
-            {/* Εβδομάδες - Οριζόντια Layout */}
-            <div className="grid gap-4" style={{ 
-              gridTemplateColumns: editMode && isEditing 
-                ? `repeat(${weeks.length}, 35%)` 
-                : `repeat(${weeks.length}, 1fr)` 
-            }}>
+          <div className="overflow-y-auto overflow-x-auto max-h-[calc(90vh-5rem)]">
+            {/* Εβδομάδες - Responsive Layout: Stack on mobile, horizontal on desktop */}
+            <div className={`
+              grid gap-2 sm:gap-4
+              ${weeks.length === 1 
+                ? 'grid-cols-1' 
+                : weeks.length <= 2 
+                  ? 'grid-cols-1 md:grid-cols-2' 
+                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              }
+              ${editMode && isEditing ? 'min-w-max' : ''}
+            `}
+            style={editMode && isEditing && weeks.length > 2 ? { 
+              gridTemplateColumns: `repeat(${weeks.length}, minmax(280px, 1fr))` 
+            } : undefined}>
                 {weeks.map((week: any, weekIndex: number) => (
                   <EditableProgramWeekCard
                     key={week.id}
