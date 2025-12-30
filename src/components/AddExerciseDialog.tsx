@@ -32,7 +32,7 @@ const categoryRows = [
   // Row 4: Stance
   ["bilateral", "unilateral", "ipsilateral"],
   // Row 5: Dominance/Anti
-  ["hip dominate", "knee dominate", "antirotation", "antiextention", "antiflexion"],
+  ["hip dominate", "knee dominate", "antirotation", "antirotational", "antiextention", "antiflexion"],
   // Row 6: Training Type
   ["mobility", "stability", "activation", "intergration", "movement", "neural activation", "plyometric", "power", "strength", "endurance", "accesory", "oly lifting", "strongman"],
   // Row 7: Equipment - θα είναι όλα τα υπόλοιπα
