@@ -37,6 +37,12 @@ export const ExercisesFilters: React.FC<ExercisesFiltersProps> = ({
   onResetFilters,
   activeFiltersCount
 }) => {
+  // Capitalize first letter, lowercase the rest
+  const formatCategoryName = (name: string) => {
+    if (!name) return '';
+    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  };
+
   // Organize categories into rows
   const getCategorizedRows = () => {
     const allCategoryNames = categoryRows.flat();
@@ -111,7 +117,7 @@ export const ExercisesFilters: React.FC<ExercisesFiltersProps> = ({
               className="cursor-pointer"
               onClick={() => onCategoryToggle(category)}
             >
-              {category}
+              {formatCategoryName(category)}
               <X className="h-3 w-3 ml-1" />
             </Badge>
           ))}
@@ -145,7 +151,7 @@ export const ExercisesFilters: React.FC<ExercisesFiltersProps> = ({
                           onClick={() => onCategoryToggle(category.name)}
                         >
                           <span className="text-sm select-none font-medium">
-                            {category.name}
+                            {formatCategoryName(category.name)}
                           </span>
                         </div>
                       ))}
@@ -172,7 +178,7 @@ export const ExercisesFilters: React.FC<ExercisesFiltersProps> = ({
                         onClick={() => onCategoryToggle(category.name)}
                       >
                         <span className="text-sm select-none font-medium">
-                          {category.name}
+                          {formatCategoryName(category.name)}
                         </span>
                       </div>
                     ))}
