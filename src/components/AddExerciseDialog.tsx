@@ -24,17 +24,17 @@ interface AddExerciseDialogProps {
 // Κατηγορίες οργανωμένες σε σειρές
 const categoryRows = [
   // Row 1: Body Part
-  ["upper body", "lower body", "total body", "core", "cardio"],
+  ["upper body", "lower body", "total body"],
   // Row 2: Movement Type
-  ["push", "pull", "rotational"],
+  ["push", "pull", "rotational", "antirotation", "antirotational", "antiextention", "antiflexion"],
   // Row 3: Direction
   ["vertical", "horizontal", "linear", "lateral"],
   // Row 4: Stance
   ["bilateral", "unilateral", "ipsilateral"],
-  // Row 5: Dominance/Anti
-  ["hip dominate", "knee dominate", "antirotation", "antirotational", "antiextention", "antiflexion"],
+  // Row 5: Dominance
+  ["hip dominate", "knee dominate"],
   // Row 6: Training Type
-  ["mobility", "stability", "activation", "intergration", "movement", "neural activation", "plyometric", "power", "strength", "endurance", "accesory", "oly lifting", "strongman"],
+  ["mobility", "stability", "activation", "intergration", "movement", "neural activation", "plyometric", "power", "strength", "endurance", "accesory", "oly lifting", "strongman", "core", "cardio"],
   // Row 7: Equipment - θα είναι όλα τα υπόλοιπα
 ];
 
@@ -220,7 +220,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     "Τύπος Κίνησης",
     "Κατεύθυνση",
     "Στάση",
-    "Dominance / Anti",
+    "Dominance",
     "Τύπος Προπόνησης",
     "Equipment"
   ];
