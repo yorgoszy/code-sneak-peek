@@ -225,125 +225,117 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
     "Equipment"
   ];
 
+  // Capitalize first letter
+  const formatCategoryName = (name: string) => {
+    if (!name) return '';
+    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Προσθήκη Νέας Άσκησης</DialogTitle>
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base">Προσθήκη Νέας Άσκησης</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="name">Όνομα Άσκησης *</Label>
+              <Label htmlFor="name" className="text-xs">Όνομα *</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="π.χ. Bench Press"
-                className="rounded-none"
+                className="rounded-none h-8 text-sm"
                 required
               />
             </div>
-
             <div>
-              <Label htmlFor="videoUrl">URL Βίντεο</Label>
+              <Label htmlFor="videoUrl" className="text-xs">URL Βίντεο</Label>
               <Input
                 id="videoUrl"
                 type="url"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="https://youtube.com/watch?v=..."
-                className="rounded-none"
+                placeholder="https://youtube.com/..."
+                className="rounded-none h-8 text-sm"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="description">Περιγραφή</Label>
+            <Label htmlFor="description" className="text-xs">Περιγραφή</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Περιγραφή της άσκησης..."
-              className="rounded-none resize-none"
-              rows={3}
+              placeholder="Περιγραφή..."
+              className="rounded-none resize-none text-sm"
+              rows={2}
             />
           </div>
 
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <Label className="text-lg font-semibold">Κατηγορίες *</Label>
+            <div className="flex justify-between items-center mb-2">
+              <Label className="text-sm font-medium">Κατηγορίες *</Label>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAddCategory(!showAddCategory)}
-                className="rounded-none"
+                className="rounded-none h-6 text-xs px-2"
               >
-                <Plus className="h-4 w-4 mr-1" />
-                Νέα Κατηγορία
+                <Plus className="h-3 w-3 mr-1" />
+                Νέα
               </Button>
             </div>
 
             {showAddCategory && (
-              <div className="mb-6 p-4 border bg-gray-50">
-                <div className="space-y-3">
+              <div className="mb-3 p-2 border bg-gray-50">
+                <div className="flex gap-2 items-end">
                   <Input
-                    placeholder="Όνομα κατηγορίας"
+                    placeholder="Όνομα"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="rounded-none"
+                    className="rounded-none h-7 text-xs flex-1"
                   />
                   <Input
-                    placeholder="Τύπος κατηγορίας (π.χ. upper body)"
+                    placeholder="Τύπος"
                     value={newCategoryType}
                     onChange={(e) => setNewCategoryType(e.target.value)}
-                    className="rounded-none"
+                    className="rounded-none h-7 text-xs flex-1"
                   />
-                  <div className="flex space-x-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleAddCategory}
-                      className="rounded-none"
-                    >
-                      Προσθήκη
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowAddCategory(false)}
-                      className="rounded-none"
-                    >
-                      Ακύρωση
-                    </Button>
-                  </div>
+                  <Button type="button" size="sm" onClick={handleAddCategory} className="rounded-none h-7 text-xs px-2">
+                    OK
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setShowAddCategory(false)} className="rounded-none h-7 text-xs px-2">
+                    ✕
+                  </Button>
                 </div>
               </div>
             )}
 
             {loadingCategories ? (
-              <p className="text-sm text-gray-500 mt-2">Φόρτωση κατηγοριών...</p>
+              <p className="text-xs text-gray-500">Φόρτωση...</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {rows.map((rowCategories, rowIndex) => (
                   rowCategories.length > 0 && (
-                    <div key={rowIndex} className="border-b pb-3">
-                      <h4 className="text-xs font-medium text-gray-500 mb-2">{rowLabels[rowIndex]}</h4>
-                      <div className="flex flex-wrap gap-2">
+                    <div key={rowIndex} className="border-b pb-2">
+                      <h4 className="text-[10px] font-medium text-gray-500 mb-1">{rowLabels[rowIndex]}</h4>
+                      <div className="flex flex-wrap gap-1">
                         {rowCategories.map(category => (
                           <div 
                             key={category.id} 
-                            className={`px-3 py-1.5 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                            className={`px-2 py-0.5 border cursor-pointer transition-colors hover:bg-gray-100 ${
                               selectedCategories.includes(category.id) 
                                 ? 'bg-blue-50 border-blue-400 text-blue-700' 
                                 : 'bg-white border-gray-200'
                             }`}
                             onClick={() => handleCategoryClick(category.id)}
                           >
-                            <span className="text-sm select-none">{category.name}</span>
+                            <span className="text-xs select-none">{formatCategoryName(category.name)}</span>
                           </div>
                         ))}
                       </div>
@@ -353,20 +345,20 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                 
                 {/* Equipment Row */}
                 {equipmentCategories.length > 0 && (
-                  <div className="border-b pb-3">
-                    <h4 className="text-xs font-medium text-gray-500 mb-2">{rowLabels[6]}</h4>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="border-b pb-2">
+                    <h4 className="text-[10px] font-medium text-gray-500 mb-1">{rowLabels[6]}</h4>
+                    <div className="flex flex-wrap gap-1">
                       {equipmentCategories.map(category => (
                         <div 
                           key={category.id} 
-                          className={`px-3 py-1.5 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                          className={`px-2 py-0.5 border cursor-pointer transition-colors hover:bg-gray-100 ${
                             selectedCategories.includes(category.id) 
                               ? 'bg-blue-50 border-blue-400 text-blue-700' 
                               : 'bg-white border-gray-200'
                           }`}
                           onClick={() => handleCategoryClick(category.id)}
                         >
-                          <span className="text-sm select-none">{category.name}</span>
+                          <span className="text-xs select-none">{formatCategoryName(category.name)}</span>
                         </div>
                       ))}
                     </div>
@@ -375,43 +367,23 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
               </div>
             )}
 
-            {/* Show selected categories summary */}
+            {/* Selected categories summary */}
             {selectedCategories.length > 0 && (
-              <div className="mt-4 p-3 bg-blue-50 border">
-                <h4 className="font-medium text-sm text-blue-900 mb-2">
-                  Επιλεγμένες Κατηγορίες ({selectedCategories.length})
-                </h4>
-                <div className="flex flex-wrap gap-1">
-                  {selectedCategories.map(categoryId => {
-                    const category = categories.find(c => c.id === categoryId);
-                    return category ? (
-                      <span 
-                        key={categoryId}
-                        className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1"
-                      >
-                        {category.name}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
+              <div className="mt-2 p-2 bg-blue-50 border text-xs">
+                <span className="font-medium text-blue-900">Επιλεγμένες ({selectedCategories.length}): </span>
+                {selectedCategories.map(categoryId => {
+                  const category = categories.find(c => c.id === categoryId);
+                  return category ? formatCategoryName(category.name) : null;
+                }).filter(Boolean).join(', ')}
               </div>
             )}
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleClose}
-              className="rounded-none"
-            >
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" size="sm" onClick={handleClose} className="rounded-none h-8">
               Ακύρωση
             </Button>
-            <Button 
-              type="submit" 
-              disabled={loading || loadingCategories}
-              className="rounded-none"
-            >
+            <Button type="submit" size="sm" disabled={loading || loadingCategories} className="rounded-none h-8">
               {loading ? 'Προσθήκη...' : 'Προσθήκη'}
             </Button>
           </div>
