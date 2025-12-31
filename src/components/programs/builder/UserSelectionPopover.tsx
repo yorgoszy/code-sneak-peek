@@ -107,7 +107,7 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <Avatar className="w-6 h-6 flex-shrink-0">
-                      <AvatarImage src={user.photo_url} alt={user.name} />
+                      <AvatarImage src={user.photo_url || user.avatar_url || ""} alt={user.name} />
                       <AvatarFallback className="text-xs">
                         {getUserInitials(user.name)}
                       </AvatarFallback>

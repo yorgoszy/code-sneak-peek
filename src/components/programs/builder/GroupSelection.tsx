@@ -106,7 +106,8 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
               name,
               email,
               role,
-              photo_url
+              photo_url,
+              avatar_url
             )
           `)
           .eq('group_id', group.id)
@@ -118,7 +119,7 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
             name: member.app_users.name,
             email: member.app_users.email,
             role: member.app_users.role,
-            photo_url: member.app_users.photo_url
+            photo_url: member.app_users.photo_url || member.app_users.avatar_url
           }));
           membersMap[group.id] = members;
         }
@@ -141,7 +142,8 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
             name,
             email,
             role,
-            photo_url
+            photo_url,
+            avatar_url
           )
         `)
         .eq('group_id', groupId);
@@ -156,7 +158,7 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
         name: member.app_users.name,
         email: member.app_users.email,
         role: member.app_users.role,
-        photo_url: member.app_users.photo_url
+        photo_url: member.app_users.photo_url || member.app_users.avatar_url
       })) || [];
 
       const userIds = members.map(member => member.id);

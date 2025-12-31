@@ -92,7 +92,7 @@ const CoachActiveProgramsPage = () => {
                 )
               )
             ),
-            app_users!program_assignments_user_id_fkey (*)
+            app_users!fk_program_assignments_user_id (*)
           `)
           .eq('coach_id', effectiveCoachId)
           .in('status', ['active', 'completed']);

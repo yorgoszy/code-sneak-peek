@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   photo_url?: string;
+  avatar_url?: string;
   role?: string;
   is_athlete?: boolean;
 }
