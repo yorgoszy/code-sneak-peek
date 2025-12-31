@@ -114,7 +114,7 @@ const CoachProgramsPage = () => {
         .from('programs')
         .select(`
           *,
-          program_assignments(*),
+          program_assignments!fk_program_assignments_program_id(*),
           program_weeks!fk_program_weeks_program_id(
             *,
             program_days!fk_program_days_week_id(
