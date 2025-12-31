@@ -76,7 +76,7 @@ const CoachActiveProgramsPage = () => {
           .from('program_assignments')
           .select(`
             *,
-            programs (
+            programs!fk_program_assignments_program_id (
               *,
               program_weeks (
                 *,
@@ -103,6 +103,7 @@ const CoachActiveProgramsPage = () => {
         setActivePrograms((assignments || []) as unknown as EnrichedAssignment[]);
       } catch (error) {
         console.error('Error fetching coach programs:', error);
+        toast.error('Σφάλμα φόρτωσης προγραμμάτων coach');
       } finally {
         setIsLoading(false);
       }
