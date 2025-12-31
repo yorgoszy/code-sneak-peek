@@ -108,35 +108,34 @@ const CoachProgramsPage = () => {
     try {
       console.log('🔄 Loading coach programs for:', effectiveCoachId);
       
-      // Fetch only coach's programs directly from database
+      // Fetch coach's programs directly from database
+      // (σε παλιότερα saves μπορεί να είναι στο coach_id αντί για created_by)
       const { data, error } = await supabase
         .from('programs')
         .select(`
           *,
           program_assignments(*),
-          program_weeks(
+          program_weeks!fk_program_weeks_program_id(
             *,
-            program_days(
+            program_days!fk_program_days_week_id(
               *,
-              program_blocks(
+              program_blocks!fk_program_blocks_day_id(
                 *,
-                program_exercises(*, exercises(*))
+                program_exercises!fk_program_exercises_block_id(
+                  *,
+                  exercises!fk_program_exercises_exercise_id(*)
+                )
               )
             )
           )
         `)
-        .eq('created_by', effectiveCoachId)
+        .or(`created_by.eq.${effectiveCoachId},coach_id.eq.${effectiveCoachId}`)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
-      
-      // Filter programs - only those without assignments (drafts)
-      const coachPrograms = (data || []).filter(program => 
-        !program.program_assignments || program.program_assignments.length === 0
-      );
-      
-      console.log('✅ Coach programs loaded:', coachPrograms.length);
-      setPrograms(coachPrograms as unknown as Program[]);
+
+      console.log('✅ Coach programs loaded:', (data || []).length);
+      setPrograms((data || []) as unknown as Program[]);
     } catch (error) {
       console.error('❌ Error loading programs:', error);
     }
