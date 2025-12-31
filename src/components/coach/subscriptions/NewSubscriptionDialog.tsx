@@ -145,7 +145,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
           start_date: startDate,
           end_date: endDate,
           status: 'active'
-        })
+        } as any)
         .select()
         .single();
 
@@ -164,7 +164,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
           receipt_type: 'subscription',
           subscription_type_id: selectedTypeId,
           notes: `Νέα συνδρομή: ${selectedType.name}`
-        });
+        } as any);
 
       if (receiptError) {
         console.error('Error creating receipt:', receiptError);
