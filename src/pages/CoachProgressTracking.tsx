@@ -21,9 +21,10 @@ interface CoachProgressTrackingProps {
 }
 
 type CoachAthlete = {
-  id: string; // coach_users.id
+  id: string;
   name: string;
   email: string;
+  avatar_url?: string | null;
 };
 
 export default function CoachProgressTracking({ contextCoachId }: CoachProgressTrackingProps) {
@@ -54,7 +55,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
       // Fetch coach athletes from app_users table (not coach_users)
       const { data: athletes, error } = await supabase
         .from('app_users')
-        .select('id, name, email')
+        .select('id, name, email, avatar_url')
         .eq('coach_id', effectiveCoachId)
         .order('name');
 
@@ -63,7 +64,8 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
       setUsers((athletes || []).map(u => ({
         id: u.id,
         name: u.name,
-        email: u.email
+        email: u.email,
+        avatar_url: u.avatar_url
       })));
     } catch (error) {
       console.error('Error fetching coach athletes:', error);

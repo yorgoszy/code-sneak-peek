@@ -22,7 +22,7 @@ export const CoachStrengthHistoryTab: React.FC<CoachStrengthHistoryTabProps> = (
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string }>>(new Map());
+  const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string; avatar_url?: string | null }>>(new Map());
   const [exercisesMap, setExercisesMap] = useState<Map<string, string>>(new Map());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export const CoachStrengthHistoryTab: React.FC<CoachStrengthHistoryTabProps> = (
   const fetchData = async () => {
     try {
       const [usersRes, exercisesRes, sessionsRes] = await Promise.all([
-        supabase.from('app_users').select('id, name, email').eq('coach_id', coachId),
+        supabase.from('app_users').select('id, name, email, avatar_url').eq('coach_id', coachId),
         supabase.from('exercises').select('id, name'),
         supabase.from('coach_strength_test_sessions').select(`
           id, user_id, test_date, notes, created_at,
@@ -43,8 +43,8 @@ export const CoachStrengthHistoryTab: React.FC<CoachStrengthHistoryTabProps> = (
         `).eq('coach_id', coachId).order('created_at', { ascending: false })
       ]);
 
-      const userMap = new Map<string, { name: string; email: string }>();
-      (usersRes.data || []).forEach(u => userMap.set(u.id, { name: u.name, email: u.email }));
+      const userMap = new Map<string, { name: string; email: string; avatar_url?: string | null }>();
+      (usersRes.data || []).forEach(u => userMap.set(u.id, { name: u.name, email: u.email, avatar_url: u.avatar_url }));
       setUsersMap(userMap);
 
       const exMap = new Map<string, string>();
@@ -79,19 +79,11 @@ export const CoachStrengthHistoryTab: React.FC<CoachStrengthHistoryTabProps> = (
     }
   };
 
-  // Filter sessions by search
+  // Filter sessions by selected user
   const filteredSessions = useMemo(() => {
-    if (!searchTerm.trim()) return sessions;
-    
-    const searchLower = removeAccents(searchTerm.trim());
-    return sessions.filter(session => {
-      const user = usersMap.get(session.user_id);
-      if (!user) return false;
-      const nameMatch = removeAccents(user.name || '').includes(searchLower);
-      const emailMatch = removeAccents(user.email || '').includes(searchLower);
-      return nameMatch || emailMatch;
-    });
-  }, [sessions, searchTerm, usersMap]);
+    if (!searchTerm) return sessions;
+    return sessions.filter(session => session.user_id === searchTerm);
+  }, [sessions, searchTerm]);
 
   // Group by exercise
   const sessionsByExercise = useMemo(() => {
@@ -134,7 +126,7 @@ export const CoachStrengthHistoryTab: React.FC<CoachStrengthHistoryTabProps> = (
 
   return (
     <div className="space-y-4">
-      <CoachSearchInput value={searchTerm} onChange={setSearchTerm} />
+      <CoachSearchInput value={searchTerm} onChange={setSearchTerm} usersMap={usersMap} />
       
       {filteredSessions.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">Δεν βρέθηκαν αποτελέσματα</div>

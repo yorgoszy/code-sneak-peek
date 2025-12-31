@@ -44,7 +44,7 @@ export const CoachStrengthRecordTab: React.FC<CoachStrengthRecordTabProps> = ({ 
     }
   ]);
 
-  const userOptions = useMemo(() => users.map(u => ({ value: u.id, label: u.name, searchTerms: `${u.name} ${u.email}` })), [users]);
+  const userOptions = useMemo(() => users.map(u => ({ value: u.id, label: u.name, searchTerms: `${u.name} ${u.email}`, avatarUrl: (u as any).avatar_url })), [users]);
   const exerciseOptions = useMemo(() => exercises.map(e => ({ value: e.id, label: e.name })), [exercises]);
 
   const updateForm = (formId: string, updates: Partial<RecordForm>) => {

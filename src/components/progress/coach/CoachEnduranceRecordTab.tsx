@@ -13,6 +13,7 @@ interface CoachUser {
   id: string;
   name: string;
   email: string;
+  avatar_url?: string | null;
 }
 
 interface CoachEnduranceRecordTabProps {
@@ -138,7 +139,8 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
     (users || []).map(user => ({ 
       value: user.id, 
       label: user.name,
-      searchTerms: `${user.name} ${user.email || ''}`
+      searchTerms: `${user.name} ${user.email || ''}`,
+      avatarUrl: user.avatar_url
     })),
     [users]
   );
