@@ -51,16 +51,16 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
     if (!effectiveCoachId) return;
 
     try {
-      // Fetch coach athletes directly from coach_users table
-      const { data: coachUsers, error } = await supabase
-        .from('coach_users')
+      // Fetch coach athletes from app_users table (not coach_users)
+      const { data: athletes, error } = await supabase
+        .from('app_users')
         .select('id, name, email')
         .eq('coach_id', effectiveCoachId)
         .order('name');
 
       if (error) throw error;
 
-      setUsers((coachUsers || []).map(u => ({
+      setUsers((athletes || []).map(u => ({
         id: u.id,
         name: u.name,
         email: u.email
