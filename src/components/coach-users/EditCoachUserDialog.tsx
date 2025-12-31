@@ -20,7 +20,7 @@ interface CoachUser {
   gender?: string;
   avatar_url?: string;
   notes?: string;
-  status: string;
+  user_status: string;
   created_at: string;
   updated_at: string;
 }
@@ -126,8 +126,9 @@ export const EditCoachUserDialog = ({
       // Upload avatar αν υπάρχει νέο αρχείο
       const avatarUrl = await uploadAvatar();
 
+      // Update στο app_users αντί coach_users
       const { error } = await supabase
-        .from('coach_users')
+        .from('app_users')
         .update({
           name: formData.name.trim(),
           email: formData.email.trim(),

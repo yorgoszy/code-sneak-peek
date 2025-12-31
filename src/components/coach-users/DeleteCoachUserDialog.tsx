@@ -29,8 +29,9 @@ export const DeleteCoachUserDialog = ({
   const handleDelete = async () => {
     setLoading(true);
     try {
+      // Διαγραφή από app_users αντί coach_users
       const { error } = await supabase
-        .from('coach_users')
+        .from('app_users')
         .delete()
         .eq('id', user.id);
 
