@@ -32,19 +32,19 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
 
   const fetchSessions = async () => {
     try {
-      const { data: coachUsers } = await supabase
-        .from('coach_users')
+      const { data: appUsers } = await supabase
+        .from('app_users')
         .select('id, name, email')
         .eq('coach_id', coachId);
 
       const userMap = new Map<string, { name: string; email: string }>();
-      (coachUsers || []).forEach(u => userMap.set(u.id, { name: u.name, email: u.email }));
+      (appUsers || []).forEach(u => userMap.set(u.id, { name: u.name, email: u.email }));
       setUsersMap(userMap);
 
       const { data, error } = await supabase
         .from('coach_endurance_test_sessions')
         .select(`
-          id, coach_user_id, test_date, notes, created_at,
+          id, user_id, test_date, notes, created_at,
           coach_endurance_test_data (
             id, mas_meters, mas_minutes, mas_ms, mas_kmh, vo2_max, max_hr, resting_hr_1min,
             push_ups, pull_ups, crunches, t2b, farmer_kg, farmer_meters, farmer_seconds,
@@ -88,7 +88,7 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
     if (!searchTerm.trim()) return sessions;
     const searchLower = removeAccents(searchTerm.trim());
     return sessions.filter(session => {
-      const user = usersMap.get(session.coach_user_id);
+      const user = usersMap.get(session.user_id);
       if (!user) return false;
       return removeAccents(user.name || '').includes(searchLower) || removeAccents(user.email || '').includes(searchLower);
     });
@@ -117,7 +117,7 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
         <CardContent className="p-2 space-y-1">
           <div className="flex items-center justify-between">
             <div>
-              <span className="font-semibold text-xs">{usersMap.get(session.coach_user_id)?.name || 'Άγνωστος'}</span>
+              <span className="font-semibold text-xs">{usersMap.get(session.user_id)?.name || 'Άγνωστος'}</span>
               <span className="text-[10px] text-muted-foreground ml-2">{format(new Date(session.test_date), 'dd/MM/yy')}</span>
             </div>
             <Button size="sm" variant="ghost" onClick={() => handleDeleteClick(session.id)} className="h-6 w-6 p-0">

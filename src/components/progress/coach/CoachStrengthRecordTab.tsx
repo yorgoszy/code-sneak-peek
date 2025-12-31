@@ -63,12 +63,12 @@ export const CoachStrengthRecordTab: React.FC<CoachStrengthRecordTabProps> = ({ 
           velocity_ms,
           test_session_id,
           coach_strength_test_sessions!inner (
-            coach_user_id,
+            user_id,
             test_date
           )
         `)
         .eq('exercise_id', exerciseId)
-        .eq('coach_strength_test_sessions.coach_user_id', userId)
+        .eq('coach_strength_test_sessions.user_id', userId)
         .not('velocity_ms', 'is', null)
         .order('weight_kg', { ascending: false });
 
@@ -168,10 +168,10 @@ export const CoachStrengthRecordTab: React.FC<CoachStrengthRecordTabProps> = ({ 
         .from('coach_strength_test_sessions')
         .insert({
           coach_id: coachId,
-          coach_user_id: form.selectedUserId,
+          user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
           notes: 'Force/Velocity Test'
-        })
+        } as any)
         .select()
         .single();
 

@@ -64,10 +64,10 @@ export const CoachAnthropometricRecordTab: React.FC<CoachAnthropometricRecordTab
         .from('coach_anthropometric_test_sessions')
         .insert({
           coach_id: coachId,
-          coach_user_id: form.selectedUserId,
+          user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
           notes: 'Σωματομετρική Καταγραφή'
-        })
+        } as any)
         .select()
         .single();
 

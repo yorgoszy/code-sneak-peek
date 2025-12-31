@@ -1006,7 +1006,7 @@ export type Database = {
       coach_anthropometric_test_sessions: {
         Row: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id: string | null
           created_at: string | null
           id: string
           notes: string | null
@@ -1016,7 +1016,7 @@ export type Database = {
         }
         Insert: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -1026,7 +1026,7 @@ export type Database = {
         }
         Update: {
           coach_id?: string
-          coach_user_id?: string
+          coach_user_id?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -1144,7 +1144,7 @@ export type Database = {
       coach_endurance_test_sessions: {
         Row: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id: string | null
           created_at: string | null
           id: string
           notes: string | null
@@ -1154,7 +1154,7 @@ export type Database = {
         }
         Insert: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -1164,7 +1164,7 @@ export type Database = {
         }
         Update: {
           coach_id?: string
-          coach_user_id?: string
+          coach_user_id?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -1264,7 +1264,7 @@ export type Database = {
       coach_functional_test_sessions: {
         Row: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id: string | null
           created_at: string | null
           id: string
           notes: string | null
@@ -1274,7 +1274,7 @@ export type Database = {
         }
         Insert: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -1284,7 +1284,7 @@ export type Database = {
         }
         Update: {
           coach_id?: string
-          coach_user_id?: string
+          coach_user_id?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -1366,7 +1366,7 @@ export type Database = {
       coach_jump_test_sessions: {
         Row: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id: string | null
           created_at: string | null
           id: string
           notes: string | null
@@ -1376,7 +1376,7 @@ export type Database = {
         }
         Insert: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -1386,7 +1386,7 @@ export type Database = {
         }
         Update: {
           coach_id?: string
-          coach_user_id?: string
+          coach_user_id?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -1621,7 +1621,7 @@ export type Database = {
       coach_strength_test_sessions: {
         Row: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id: string | null
           created_at: string | null
           id: string
           notes: string | null
@@ -1631,7 +1631,7 @@ export type Database = {
         }
         Insert: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -1641,7 +1641,7 @@ export type Database = {
         }
         Update: {
           coach_id?: string
-          coach_user_id?: string
+          coach_user_id?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null

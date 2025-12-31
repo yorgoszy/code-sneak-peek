@@ -33,9 +33,9 @@ export const CoachAnthropometricHistoryTab: React.FC<CoachAnthropometricHistoryT
   const fetchSessions = async () => {
     try {
       const [usersRes, sessionsRes] = await Promise.all([
-        supabase.from('coach_users').select('id, name, email').eq('coach_id', coachId),
+        supabase.from('app_users').select('id, name, email').eq('coach_id', coachId),
         supabase.from('coach_anthropometric_test_sessions').select(`
-          id, coach_user_id, test_date, notes, created_at,
+          id, user_id, test_date, notes, created_at,
           coach_anthropometric_test_data (id, height, weight, body_fat_percentage, muscle_mass_percentage, visceral_fat_percentage, bone_density)
         `).eq('coach_id', coachId).order('created_at', { ascending: false })
       ]);
@@ -76,7 +76,7 @@ export const CoachAnthropometricHistoryTab: React.FC<CoachAnthropometricHistoryT
     if (!searchTerm.trim()) return sessions;
     const searchLower = removeAccents(searchTerm.trim());
     return sessions.filter(session => {
-      const user = usersMap.get(session.coach_user_id);
+      const user = usersMap.get(session.user_id);
       if (!user) return false;
       return removeAccents(user.name || '').includes(searchLower) || removeAccents(user.email || '').includes(searchLower);
     });
@@ -102,7 +102,7 @@ export const CoachAnthropometricHistoryTab: React.FC<CoachAnthropometricHistoryT
                 <CardContent className="p-2 space-y-1">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-semibold text-xs">{usersMap.get(session.coach_user_id)?.name || 'Άγνωστος'}</span>
+                      <span className="font-semibold text-xs">{usersMap.get(session.user_id)?.name || 'Άγνωστος'}</span>
                       <span className="text-[10px] text-muted-foreground ml-2">{format(new Date(session.test_date), 'dd/MM/yy')}</span>
                     </div>
                     <Button size="sm" variant="ghost" onClick={() => handleDeleteClick(session.id)} className="h-6 w-6 p-0">

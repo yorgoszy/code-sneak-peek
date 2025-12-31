@@ -241,10 +241,10 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
         .from('coach_endurance_test_sessions')
         .insert({
           coach_id: coachId,
-          coach_user_id: form.selectedUserId,
+          user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
           notes: 'MAS Test - Καταγραφή Προόδου'
-        })
+        } as any)
         .select()
         .single();
 
@@ -347,10 +347,10 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
         .from('coach_endurance_test_sessions')
         .insert({
           coach_id: coachId,
-          coach_user_id: form.selectedUserId,
+          user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
           notes: 'Cardiac Data - Καταγραφή Προόδου'
-        })
+        } as any)
         .select()
         .single();
 
@@ -442,10 +442,10 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
         .from('coach_endurance_test_sessions')
         .insert({
           coach_id: coachId,
-          coach_user_id: form.selectedUserId,
+          user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
           notes: 'VO2 Max - Καταγραφή Προόδου'
-        })
+        } as any)
         .select()
         .single();
 
@@ -535,10 +535,10 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
         .from('coach_endurance_test_sessions')
         .insert({
           coach_id: coachId,
-          coach_user_id: form.selectedUserId,
+          user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
           notes: 'Bodyweight Test - Καταγραφή Προόδου'
-        })
+        } as any)
         .select()
         .single();
 
@@ -632,10 +632,10 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
         .from('coach_endurance_test_sessions')
         .insert({
           coach_id: coachId,
-          coach_user_id: form.selectedUserId,
+          user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
           notes: 'Farmer Test - Καταγραφή Προόδου'
-        })
+        } as any)
         .select()
         .single();
 
@@ -732,10 +732,10 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
         .from('coach_endurance_test_sessions')
         .insert({
           coach_id: coachId,
-          coach_user_id: form.selectedUserId,
+          user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
           notes: 'Sprint Test - Καταγραφή Προόδου'
-        })
+        } as any)
         .select()
         .single();
 
