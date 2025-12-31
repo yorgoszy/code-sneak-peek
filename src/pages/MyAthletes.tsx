@@ -34,7 +34,7 @@ interface CoachUser {
   birth_date?: string;
   avatar_url?: string;
   notes?: string;
-  status: string;
+  user_status: string;
   created_at: string;
   updated_at: string;
   // Computed from subscriptions
@@ -92,9 +92,9 @@ const MyAthletes = () => {
 
     setLoadingAthletes(true);
     try {
-      // Fetch athletes
+      // Fetch athletes από app_users με coach_id filter
       const { data: athletesData, error: athletesError } = await supabase
-        .from("coach_users")
+        .from("app_users")
         .select("*")
         .eq("coach_id", effectiveCoachId)
         .order("created_at", { ascending: false });
@@ -105,24 +105,28 @@ const MyAthletes = () => {
         return;
       }
 
-      // Fetch subscriptions for these athletes
+      // Fetch subscriptions for these athletes (using user_id now)
       const athleteIds = (athletesData || []).map(a => a.id);
       
       let subscriptionsMap: Record<string, { status: string; is_paused: boolean; end_date: string; is_paid: boolean | null }[]> = {};
       
       if (athleteIds.length > 0) {
+        // Try with user_id first (new system), fallback to coach_user_id (legacy)
         const { data: subscriptionsData, error: subscriptionsError } = await supabase
           .from("coach_subscriptions")
-          .select("coach_user_id, status, is_paused, end_date, is_paid")
-          .in("coach_user_id", athleteIds);
+          .select("user_id, coach_user_id, status, is_paused, end_date, is_paid")
+          .or(`user_id.in.(${athleteIds.join(',')}),coach_user_id.in.(${athleteIds.join(',')})`);
 
         if (!subscriptionsError && subscriptionsData) {
-          // Group subscriptions by coach_user_id
+          // Group subscriptions by user_id (or coach_user_id for legacy)
           subscriptionsData.forEach(sub => {
-            if (!subscriptionsMap[sub.coach_user_id]) {
-              subscriptionsMap[sub.coach_user_id] = [];
+            const subUserId = sub.user_id || sub.coach_user_id;
+            if (subUserId && !subscriptionsMap[subUserId]) {
+              subscriptionsMap[subUserId] = [];
             }
-            subscriptionsMap[sub.coach_user_id].push(sub);
+            if (subUserId) {
+              subscriptionsMap[subUserId].push(sub);
+            }
           });
         }
       }
@@ -175,8 +179,9 @@ const MyAthletes = () => {
 
     setLoadingAdminAthletes(true);
     try {
+      // Fetch από app_users αντί coach_users
       const { data, error } = await supabase
-        .from("coach_users")
+        .from("app_users")
         .select("*")
         .eq("coach_id", userProfile.id)
         .order("created_at", { ascending: false });
@@ -196,8 +201,9 @@ const MyAthletes = () => {
     if (!effectiveCoachId) return;
 
     try {
+      // Update στο app_users αντί coach_users
       const { error } = await supabase
-        .from("coach_users")
+        .from("app_users")
         .update({ coach_id: effectiveCoachId })
         .eq("id", athleteId);
 

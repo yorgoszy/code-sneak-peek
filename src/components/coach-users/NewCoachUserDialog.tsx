@@ -99,16 +99,19 @@ export const NewCoachUserDialog = ({
 
     setLoading(true);
     try {
+      // Δημιουργία νέου αθλητή στο app_users με coach_id
       const { data: newUser, error } = await supabase
-        .from('coach_users')
+        .from('app_users')
         .insert({
           coach_id: coachId,
           name: formData.name.trim(),
           email: formData.email.trim(),
           phone: formData.phone.trim() || null,
           birth_date: formData.birth_date || null,
+          gender: formData.gender || null,
           notes: formData.notes.trim() || null,
-          status: 'active',
+          role: 'athlete', // Coach athletes have role 'athlete'
+          user_status: 'active',
         })
         .select()
         .single();
@@ -121,7 +124,7 @@ export const NewCoachUserDialog = ({
         const avatarUrl = await uploadAvatar(newUser.id);
         if (avatarUrl) {
           await supabase
-            .from('coach_users')
+            .from('app_users')
             .update({ avatar_url: avatarUrl })
             .eq('id', newUser.id);
         }

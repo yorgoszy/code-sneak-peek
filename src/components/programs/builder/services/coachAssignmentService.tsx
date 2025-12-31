@@ -56,13 +56,13 @@ export const coachAssignmentService = {
       const startDate = sortedDates[0] || formatDateToLocalString(new Date());
       const endDate = sortedDates[sortedDates.length - 1] || startDate;
 
-      // ΣΗΜΑΝΤΙΚΟ: Χρησιμοποιούμε coach_user_id αντί για user_id
-      // user_id παραμένει null γιατί οι coach athletes δεν είναι στο app_users
+      // ΣΗΜΑΝΤΙΚΟ: Χρησιμοποιούμε user_id τώρα (αντί coach_user_id)
+      // Οι αθλητές είναι πλέον στο app_users με coach_id filter
       const insertData = {
         program_id: assignmentData.program.id,
-        coach_user_id: assignmentData.coachUserId, // ID από coach_users table
+        user_id: assignmentData.coachUserId, // ID από app_users table
         coach_id: assignmentData.coachId, // ID του coach
-        user_id: null, // Null γιατί οι coach athletes δεν είναι στο app_users
+        coach_user_id: null, // Deprecated - πλέον χρησιμοποιούμε user_id
         training_dates: formattedTrainingDates,
         status: 'active',
         assignment_type: 'individual',

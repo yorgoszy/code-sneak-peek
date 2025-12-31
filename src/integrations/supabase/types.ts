@@ -462,6 +462,7 @@ export type Database = {
           id: string
           is_athlete: boolean | null
           name: string
+          notes: string | null
           phone: string | null
           photo_url: string | null
           qr_code: string | null
@@ -483,6 +484,7 @@ export type Database = {
           id?: string
           is_athlete?: boolean | null
           name: string
+          notes?: string | null
           phone?: string | null
           photo_url?: string | null
           qr_code?: string | null
@@ -504,6 +506,7 @@ export type Database = {
           id?: string
           is_athlete?: boolean | null
           name?: string
+          notes?: string | null
           phone?: string | null
           photo_url?: string | null
           qr_code?: string | null
@@ -1009,6 +1012,7 @@ export type Database = {
           notes: string | null
           test_date: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           coach_id: string
@@ -1018,6 +1022,7 @@ export type Database = {
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           coach_id?: string
@@ -1027,6 +1032,7 @@ export type Database = {
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1041,6 +1047,13 @@ export type Database = {
             columns: ["coach_user_id"]
             isOneToOne: false
             referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_anthropometric_test_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
         ]
@@ -1137,6 +1150,7 @@ export type Database = {
           notes: string | null
           test_date: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           coach_id: string
@@ -1146,6 +1160,7 @@ export type Database = {
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           coach_id?: string
@@ -1155,6 +1170,7 @@ export type Database = {
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1169,6 +1185,13 @@ export type Database = {
             columns: ["coach_user_id"]
             isOneToOne: false
             referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_endurance_test_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
         ]
@@ -1247,6 +1270,7 @@ export type Database = {
           notes: string | null
           test_date: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           coach_id: string
@@ -1256,6 +1280,7 @@ export type Database = {
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           coach_id?: string
@@ -1265,6 +1290,7 @@ export type Database = {
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1279,6 +1305,13 @@ export type Database = {
             columns: ["coach_user_id"]
             isOneToOne: false
             referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_functional_test_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
         ]
@@ -1339,6 +1372,7 @@ export type Database = {
           notes: string | null
           test_date: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           coach_id: string
@@ -1348,6 +1382,7 @@ export type Database = {
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           coach_id?: string
@@ -1357,6 +1392,7 @@ export type Database = {
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1371,6 +1407,13 @@ export type Database = {
             columns: ["coach_user_id"]
             isOneToOne: false
             referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_jump_test_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
         ]
@@ -1457,6 +1500,7 @@ export type Database = {
           subscription_id: string | null
           subscription_type_id: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           amount: number
@@ -1471,6 +1515,7 @@ export type Database = {
           subscription_id?: string | null
           subscription_type_id?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           amount?: number
@@ -1485,6 +1530,7 @@ export type Database = {
           subscription_id?: string | null
           subscription_type_id?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1513,6 +1559,13 @@ export type Database = {
             columns: ["subscription_type_id"]
             isOneToOne: false
             referencedRelation: "subscription_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_receipts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
         ]
@@ -1574,6 +1627,7 @@ export type Database = {
           notes: string | null
           test_date: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           coach_id: string
@@ -1583,6 +1637,7 @@ export type Database = {
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           coach_id?: string
@@ -1592,6 +1647,7 @@ export type Database = {
           notes?: string | null
           test_date?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1606,6 +1662,13 @@ export type Database = {
             columns: ["coach_user_id"]
             isOneToOne: false
             referencedRelation: "coach_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_strength_test_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
         ]
@@ -1626,6 +1689,7 @@ export type Database = {
           status: string
           subscription_type_id: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           coach_id: string
@@ -1642,6 +1706,7 @@ export type Database = {
           status?: string
           subscription_type_id: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           coach_id?: string
@@ -1658,6 +1723,7 @@ export type Database = {
           status?: string
           subscription_type_id?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1679,6 +1745,13 @@ export type Database = {
             columns: ["subscription_type_id"]
             isOneToOne: false
             referencedRelation: "subscription_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
         ]

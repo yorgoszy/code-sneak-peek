@@ -13,7 +13,7 @@ interface CoachUser {
   gender?: string;
   avatar_url?: string;
   notes?: string;
-  status: string;
+  user_status: string;
   subscription_status?: string;
   created_at: string;
   updated_at: string;
