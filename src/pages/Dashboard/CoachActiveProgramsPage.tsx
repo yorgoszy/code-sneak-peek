@@ -78,15 +78,15 @@ const CoachActiveProgramsPage = () => {
             *,
             programs!fk_program_assignments_program_id (
               *,
-              program_weeks (
+              program_weeks!fk_program_weeks_program_id (
                 *,
-                program_days (
+                program_days!fk_program_days_week_id (
                   *,
-                  program_blocks (
+                  program_blocks!fk_program_blocks_day_id (
                     *,
-                    program_exercises (
+                    program_exercises!fk_program_exercises_block_id (
                       *,
-                      exercises (*)
+                      exercises!fk_program_exercises_exercise_id (*)
                     )
                   )
                 )
