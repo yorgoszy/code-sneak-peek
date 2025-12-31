@@ -31,7 +31,10 @@ const CoachProgramsPage = () => {
   const [editingProgram, setEditingProgram] = useState<Program | null>(null);
 
   // Get the effective coach ID
-  const effectiveCoachId = coachIdFromUrl || userProfile?.id;
+  // Αν ο admin δεν έχει coachId στο URL, δεν μπορεί να χρησιμοποιήσει το coach view
+  const effectiveCoachId = isAdmin() && coachIdFromUrl 
+    ? coachIdFromUrl 
+    : (isCoach() ? userProfile?.id : null);
 
   const { users, exercises } = useProgramsData();
   const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
@@ -218,6 +221,16 @@ const CoachProgramsPage = () => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Admin χωρίς coachId πρέπει να πάει στο admin programs page
+  if (isAdmin() && !coachIdFromUrl) {
+    return <Navigate to="/dashboard/programs" replace />;
+  }
+
+  // Αν δεν είναι coach ούτε admin με coachId
+  if (!effectiveCoachId) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (loading) {
