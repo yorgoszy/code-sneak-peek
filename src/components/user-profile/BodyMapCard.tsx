@@ -605,7 +605,7 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId, useCoachTables
             )
           `)
           .eq('coach_id', coachId)
-          .eq('coach_user_id', userId)
+          .eq('user_id', userId)
           .order('test_date', { ascending: false })
           .order('created_at', { ascending: false })
           .limit(1);
