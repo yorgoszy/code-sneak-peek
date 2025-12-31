@@ -104,9 +104,12 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
                   </div>
 
                   <div className="flex items-center gap-3 pr-16">
-                    <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarImage src={assignment.app_users?.photo_url || undefined} />
-                      <AvatarFallback className="bg-gray-200">
+                    <Avatar className="w-8 h-8 flex-shrink-0 rounded-full">
+                      <AvatarImage 
+                        src={assignment.app_users?.photo_url || undefined} 
+                        className="object-cover rounded-full"
+                      />
+                      <AvatarFallback className="bg-gray-200 rounded-full">
                         <User className="w-4 h-4 text-gray-500" />
                       </AvatarFallback>
                     </Avatar>
