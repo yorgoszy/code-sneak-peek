@@ -101,9 +101,10 @@ const CoachActiveProgramsPage = () => {
 
         console.log('✅ Coach active programs loaded:', (assignments || []).length);
         setActivePrograms((assignments || []) as unknown as EnrichedAssignment[]);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching coach programs:', error);
-        toast.error('Σφάλμα φόρτωσης προγραμμάτων coach');
+        const message = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+        toast.error(`Σφάλμα φόρτωσης προγραμμάτων coach: ${message}`);
       } finally {
         setIsLoading(false);
       }
