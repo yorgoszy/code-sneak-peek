@@ -59,9 +59,11 @@ const Programs = () => {
     try {
       console.log('🔄 Loading draft/template programs...');
       const data = await fetchProgramsWithAssignments();
-      // Filter to show only programs without assignments (draft/template programs)
-      const draftPrograms = data.filter(program => 
-        !program.program_assignments || program.program_assignments.length === 0
+      // Δείχνουμε ΜΟΝΟ admin/global draft/template προγράμματα (όχι coach-owned)
+      const draftPrograms = data.filter(program =>
+        (!program.program_assignments || program.program_assignments.length === 0) &&
+        !program.created_by &&
+        !program.coach_id
       );
       console.log('✅ Draft programs loaded:', draftPrograms.length);
       setPrograms(draftPrograms);

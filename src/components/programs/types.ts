@@ -89,6 +89,9 @@ export interface Program {
   description?: string;
   athlete_id?: string;
   user_id?: string;
+  // Coach ownership
+  created_by?: string | null;
+  coach_id?: string | null;
   is_template?: boolean;
   app_users?: { name: string } | null;
   program_weeks: Week[];
