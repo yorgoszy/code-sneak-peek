@@ -15,6 +15,7 @@ interface CoachUser {
   notes?: string;
   user_status: string;
   subscription_status?: string;
+  subscriptionStatus?: 'active' | 'paused' | 'inactive' | 'unpaid';
   created_at: string;
   updated_at: string;
 }
@@ -60,12 +61,19 @@ export const ViewCoachUserDialog = ({
               <Badge 
                 variant="outline" 
                 className={`rounded-none text-xs ${
-                  user.subscription_status === 'active' 
+                  (user.subscriptionStatus || user.subscription_status) === 'active' 
                     ? 'bg-green-100 text-green-800 border-green-200' 
+                    : (user.subscriptionStatus || user.subscription_status) === 'paused'
+                    ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                    : (user.subscriptionStatus || user.subscription_status) === 'unpaid'
+                    ? 'bg-orange-100 text-orange-800 border-orange-200'
                     : 'bg-red-100 text-red-800 border-red-200'
                 }`}
               >
-                {user.subscription_status === 'active' ? 'Ενεργός' : 'Ανενεργός'}
+                {(user.subscriptionStatus || user.subscription_status) === 'active' ? 'Ενεργός' 
+                  : (user.subscriptionStatus || user.subscription_status) === 'paused' ? 'Σε Παύση'
+                  : (user.subscriptionStatus || user.subscription_status) === 'unpaid' ? 'Απλήρωτη'
+                  : 'Ανενεργός'}
               </Badge>
             </div>
           </div>
