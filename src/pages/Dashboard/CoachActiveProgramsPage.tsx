@@ -71,7 +71,7 @@ const CoachActiveProgramsPage = () => {
       if (!effectiveCoachId) return;
 
       try {
-        // Οι αθλητές των coach είναι στο coach_users, όχι στο app_users
+        // Τραβάμε program_assignments με app_users (όχι coach_users)
         const { data: assignments, error: assignError } = await supabase
           .from('program_assignments')
           .select(`
@@ -92,20 +92,15 @@ const CoachActiveProgramsPage = () => {
                 )
               )
             ),
-            coach_users (*)
+            app_users!program_assignments_user_id_fkey (*)
           `)
           .eq('coach_id', effectiveCoachId)
           .in('status', ['active', 'completed']);
 
         if (assignError) throw assignError;
 
-        // Map coach_users to app_users for compatibility with existing components
-        const mappedAssignments = (assignments || []).map((assignment: any) => ({
-          ...assignment,
-          app_users: assignment.coach_users || null,
-        }));
-
-        setActivePrograms(mappedAssignments as unknown as EnrichedAssignment[]);
+        console.log('✅ Coach active programs loaded:', (assignments || []).length);
+        setActivePrograms((assignments || []) as unknown as EnrichedAssignment[]);
       } catch (error) {
         console.error('Error fetching coach programs:', error);
       } finally {

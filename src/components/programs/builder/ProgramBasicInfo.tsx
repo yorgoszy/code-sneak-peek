@@ -21,6 +21,7 @@ interface ProgramBasicInfoProps {
   onGroupChange?: (groupId: string) => void;
   isMultipleMode?: boolean;
   onToggleMode?: (isMultiple: boolean) => void;
+  coachId?: string; // Optional: filter groups by coach
 }
 
 export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
@@ -36,7 +37,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   onMultipleAthleteChange,
   onGroupChange,
   isMultipleMode = false,
-  onToggleMode
+  onToggleMode,
+  coachId
 }) => {
   const [assignmentMode, setAssignmentMode] = useState<'individual' | 'group'>('individual');
 
@@ -94,6 +96,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                 selectedGroupId={selectedGroupId}
                 onGroupChange={onGroupChange}
                 onGroupMembersLoad={handleGroupMembersLoad}
+                coachId={coachId}
               />
             </div>
           )}

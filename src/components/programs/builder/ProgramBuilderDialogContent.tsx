@@ -49,6 +49,7 @@ interface ProgramBuilderDialogContentProps {
   onAssignments: () => void;
   onTrainingDatesChange: (dates: Date[]) => void;
   getTotalTrainingDays: () => number;
+  coachId?: string;
 }
 
 export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentProps> = ({
@@ -90,7 +91,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onSave,
   onAssignments,
   onTrainingDatesChange,
-  getTotalTrainingDays
+  getTotalTrainingDays,
+  coachId
 }) => {
   const canAssign = program.user_ids && program.user_ids.length > 0 && 
                    program.training_dates && program.training_dates.length > 0 &&
@@ -165,6 +167,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onReorderDays={onReorderDays}
             onReorderBlocks={onReorderBlocks}
             onReorderExercises={onReorderExercises}
+            coachId={coachId}
           />
 
           {getTotalTrainingDays() > 0 && (

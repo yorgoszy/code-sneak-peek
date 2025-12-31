@@ -42,6 +42,7 @@ interface ProgramBuilderProps {
   onReorderDays: (weekId: string, oldIndex: number, newIndex: number) => void;
   onReorderBlocks: (weekId: string, dayId: string, oldIndex: number, newIndex: number) => void;
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
+  coachId?: string;
 }
 
 export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
@@ -80,7 +81,8 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onReorderWeeks,
   onReorderDays,
   onReorderBlocks,
-  onReorderExercises
+  onReorderExercises,
+  coachId
 }) => {
   console.log('🔄 ProgramBuilder render - user_ids:', program.user_ids);
   
@@ -104,6 +106,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onGroupChange={onGroupChange}
         isMultipleMode={true}
         onToggleMode={onToggleAssignmentMode}
+        coachId={coachId}
       />
       
       <TrainingWeeks

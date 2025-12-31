@@ -26,12 +26,14 @@ interface GroupSelectionProps {
   selectedGroupId: string;
   onGroupChange: (groupId: string) => void;
   onGroupMembersLoad: (userIds: string[]) => void;
+  coachId?: string; // Optional: filter groups by coach
 }
 
 export const GroupSelection: React.FC<GroupSelectionProps> = ({
   selectedGroupId,
   onGroupChange,
-  onGroupMembersLoad
+  onGroupMembersLoad,
+  coachId
 }) => {
   const [groups, setGroups] = useState<GroupType[]>([]);
   const [allGroupsMembers, setAllGroupsMembers] = useState<{[key: string]: GroupMember[]}>({});
@@ -50,7 +52,7 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
   const fetchGroups = async () => {
     setLoading(true);
     try {
-      const { data: groupsData, error } = await supabase
+      let query = supabase
         .from('groups')
         .select(`
           id,
@@ -59,6 +61,13 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
           group_members!inner(id)
         `)
         .order('name');
+
+      // Filter by coach if provided
+      if (coachId) {
+        query = query.eq('coach_id', coachId);
+      }
+
+      const { data: groupsData, error } = await query;
 
       if (error) {
         console.error('Error fetching groups:', error);
