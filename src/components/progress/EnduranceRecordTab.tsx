@@ -43,11 +43,11 @@ interface FarmerForm {
 interface SprintForm {
   id: string;
   selectedUserId: string;
+  selectedExerciseId: string;
   sprintSeconds: string;
   sprintMeters: string;
   sprintResistance: string;
   sprintKmh: string;
-  sprintExercise: string;
   loading: boolean;
 }
 
@@ -117,11 +117,11 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
     {
       id: '1',
       selectedUserId: '',
+      selectedExerciseId: '',
       sprintSeconds: '',
       sprintMeters: '',
       sprintResistance: '',
       sprintKmh: '',
-      sprintExercise: 'track',
       loading: false
     }
   ]);
@@ -145,29 +145,32 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
     }
   ]);
 
-  // Calculate km/h or meters for sprint
+  // Calculate km/h or meters for sprint (Track/Woodway inferred from selected exercise name)
   const calculateSprintMetrics = (form: SprintForm) => {
     const seconds = parseFloat(form.sprintSeconds);
-    
+
     if (!seconds || seconds <= 0) return { kmh: '', meters: '' };
-    
-    if (form.sprintExercise === 'track') {
+
+    const exName = (exercises || []).find(e => e.id === form.selectedExerciseId)?.name || '';
+    const isWoodway = /woodway/i.test(exName);
+
+    if (!isWoodway) {
       // Track: calculate km/h from meters and seconds
       const meters = parseFloat(form.sprintMeters);
       if (!meters || meters <= 0) return { kmh: '', meters: form.sprintMeters };
-      
+
       const ms = meters / seconds;
       const kmh = ms * 3.6;
       return { kmh: kmh.toFixed(2), meters: form.sprintMeters };
-    } else {
-      // Woodway: calculate meters from km/h and seconds
-      const kmh = parseFloat(form.sprintKmh);
-      if (!kmh || kmh <= 0) return { kmh: form.sprintKmh, meters: '' };
-      
-      const ms = kmh / 3.6;
-      const meters = ms * seconds;
-      return { kmh: form.sprintKmh, meters: meters.toFixed(2) };
     }
+
+    // Woodway: calculate meters from km/h and seconds
+    const kmh = parseFloat(form.sprintKmh);
+    if (!kmh || kmh <= 0) return { kmh: form.sprintKmh, meters: '' };
+
+    const ms = kmh / 3.6;
+    const meters = ms * seconds;
+    return { kmh: form.sprintKmh, meters: meters.toFixed(2) };
   };
 
   const userOptions = useMemo(() => 
@@ -763,11 +766,11 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
     setSprintForms([...sprintForms, {
       id: newId,
       selectedUserId: '',
+      selectedExerciseId: '',
       sprintSeconds: '',
       sprintMeters: '',
       sprintResistance: '',
       sprintKmh: '',
-      sprintExercise: 'track',
       loading: false
     }]);
   };
@@ -786,43 +789,22 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
     const form = sprintForms.find(f => f.id === formId);
     if (!form) return;
 
-    if (!form.selectedUserId) {
+    if (!form.selectedUserId || !form.selectedExerciseId) {
       toast({
         title: "Σφάλμα",
-        description: "Παρακαλώ επιλέξτε χρήστη",
+        description: "Παρακαλώ επιλέξτε χρήστη και άσκηση",
         variant: "destructive"
       });
       return;
     }
 
     const sprintSeconds = parseFloat(form.sprintSeconds);
-    
-    // Calculate meters based on exercise type
+
     const metrics = calculateSprintMetrics(form);
-    const sprintMeters = parseFloat(metrics.meters);
-    const sprintKmh = parseFloat(metrics.kmh);
+    const sprintMeters = metrics.meters ? parseFloat(metrics.meters) : NaN;
+    const sprintKmh = metrics.kmh ? parseFloat(metrics.kmh) : NaN;
 
-    // Βρίσκουμε το exercise_id με βάση την επιλογή
-    let exerciseId = null;
-    if (form.sprintExercise === 'track') {
-      const { data: trackExercise } = await supabase
-        .from('exercises')
-        .select('id')
-        .ilike('name', '%track%')
-        .limit(1)
-        .maybeSingle();
-      exerciseId = trackExercise?.id || null;
-    } else if (form.sprintExercise === 'woodway') {
-      const { data: woodwayExercise } = await supabase
-        .from('exercises')
-        .select('id')
-        .ilike('name', '%woodway%')
-        .limit(1)
-        .maybeSingle();
-      exerciseId = woodwayExercise?.id || null;
-    }
-
-    if (!sprintSeconds || !sprintMeters) {
+    if (!sprintSeconds || sprintSeconds <= 0 || !sprintMeters || Number.isNaN(sprintMeters)) {
       toast({
         title: "Σφάλμα",
         description: "Παρακαλώ συμπληρώστε τα απαραίτητα πεδία",
@@ -838,28 +820,30 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
         throw new Error('Δεν βρέθηκε συνδεδεμένος χρήστης');
       }
 
-      const { data: session, error: sessionError } = await supabase
-        .from('endurance_test_sessions')
-        .insert({
-          user_id: form.selectedUserId,
-          test_date: new Date().toISOString().split('T')[0],
-          notes: `Sprint Test - ${form.sprintExercise === 'track' ? 'Track' : 'Woodway'}`
-        })
-        .select()
-        .single();
+        const selectedExerciseName = (exercises || []).find(e => e.id === form.selectedExerciseId)?.name || 'Sprint';
+
+        const { data: session, error: sessionError } = await supabase
+          .from('endurance_test_sessions')
+          .insert({
+            user_id: form.selectedUserId,
+            test_date: new Date().toISOString().split('T')[0],
+            notes: `Sprint Test - ${selectedExerciseName}`
+          })
+          .select()
+          .single();
 
       if (sessionError) throw sessionError;
 
-      const { error: dataError } = await supabase
-        .from('endurance_test_data')
-        .insert({
-          test_session_id: session.id,
-          sprint_seconds: sprintSeconds,
-          sprint_meters: sprintMeters,
-          sprint_resistance: form.sprintResistance || null,
-          sprint_watt: sprintKmh,
-          exercise_id: exerciseId
-        });
+        const { error: dataError } = await supabase
+          .from('endurance_test_data')
+          .insert({
+            test_session_id: session.id,
+            sprint_seconds: sprintSeconds,
+            sprint_meters: sprintMeters,
+            sprint_resistance: form.sprintResistance || null,
+            sprint_watt: Number.isNaN(sprintKmh) ? null : sprintKmh,
+            exercise_id: form.selectedExerciseId
+          });
 
       if (dataError) throw dataError;
 
@@ -869,11 +853,11 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
       });
 
       updateSprintForm(formId, {
+        selectedExerciseId: '',
         sprintSeconds: '',
         sprintMeters: '',
         sprintResistance: '',
         sprintKmh: '',
-        sprintExercise: 'track',
         loading: false
       });
       
@@ -1349,20 +1333,16 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                     />
                   </div>
 
-                  <div className="w-24">
+                  <div className="w-40">
                     <Label className="text-xs">Άσκηση</Label>
-                    <Select 
-                      value={form.sprintExercise} 
-                      onValueChange={(value) => updateSprintForm(form.id, { sprintExercise: value })}
-                    >
-                      <SelectTrigger className="rounded-none h-7 text-xs">
-                        <SelectValue placeholder="Επιλέξτε" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="track">Track</SelectItem>
-                        <SelectItem value="woodway">Woodway</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Combobox
+                      options={exerciseOptions}
+                      value={form.selectedExerciseId}
+                      onValueChange={(value) => updateSprintForm(form.id, { selectedExerciseId: value })}
+                      placeholder="Άσκηση"
+                      emptyMessage="Δεν βρέθηκε."
+                      className="h-7 text-xs"
+                    />
                   </div>
                 </div>
 
@@ -1379,55 +1359,60 @@ export const EnduranceRecordTab: React.FC<EnduranceRecordTabProps> = ({
                     />
                   </div>
 
-                  {form.sprintExercise === 'track' ? (
-                    <>
-                      <div className="w-16">
-                        <Label className="text-xs">Μέτρα</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          placeholder="m"
-                          value={form.sprintMeters}
-                          onChange={(e) => updateSprintForm(form.id, { sprintMeters: e.target.value })}
-                          className="rounded-none no-spinners h-7 text-xs"
-                        />
-                      </div>
-                      <div className="w-16">
-                        <Label className="text-xs">Km/h</Label>
-                        <Input
-                          type="text"
-                          value={calculateSprintMetrics(form).kmh}
-                          readOnly
-                          placeholder="km/h"
-                          className="rounded-none bg-gray-100 h-7 text-xs"
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-16">
-                        <Label className="text-xs">Km/h</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          placeholder="km/h"
-                          value={form.sprintKmh}
-                          onChange={(e) => updateSprintForm(form.id, { sprintKmh: e.target.value })}
-                          className="rounded-none no-spinners h-7 text-xs"
-                        />
-                      </div>
-                      <div className="w-16">
-                        <Label className="text-xs">Μέτρα</Label>
-                        <Input
-                          type="text"
-                          value={calculateSprintMetrics(form).meters}
-                          readOnly
-                          placeholder="m"
-                          className="rounded-none bg-gray-100 h-7 text-xs"
-                        />
-                      </div>
-                    </>
-                  )}
+                  {(() => {
+                    const exName = (exercises || []).find(e => e.id === form.selectedExerciseId)?.name || '';
+                    const isWoodway = /woodway/i.test(exName);
+
+                    return !isWoodway ? (
+                      <>
+                        <div className="w-16">
+                          <Label className="text-xs">Μέτρα</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="m"
+                            value={form.sprintMeters}
+                            onChange={(e) => updateSprintForm(form.id, { sprintMeters: e.target.value })}
+                            className="rounded-none no-spinners h-7 text-xs"
+                          />
+                        </div>
+                        <div className="w-16">
+                          <Label className="text-xs">Km/h</Label>
+                          <Input
+                            type="text"
+                            value={calculateSprintMetrics(form).kmh}
+                            readOnly
+                            placeholder="km/h"
+                            className="rounded-none bg-gray-100 h-7 text-xs"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-16">
+                          <Label className="text-xs">Km/h</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            placeholder="km/h"
+                            value={form.sprintKmh}
+                            onChange={(e) => updateSprintForm(form.id, { sprintKmh: e.target.value })}
+                            className="rounded-none no-spinners h-7 text-xs"
+                          />
+                        </div>
+                        <div className="w-16">
+                          <Label className="text-xs">Μέτρα</Label>
+                          <Input
+                            type="text"
+                            value={calculateSprintMetrics(form).meters}
+                            readOnly
+                            placeholder="m"
+                            className="rounded-none bg-gray-100 h-7 text-xs"
+                          />
+                        </div>
+                      </>
+                    );
+                  })()}
 
                   <div className="flex items-end">
                     <Button 
