@@ -61,13 +61,34 @@ serve(async (req) => {
     // Check if user exists in app_users table first (case-insensitive)
     console.log("👤 Checking if user exists in app_users (case-insensitive)...");
     const normalizedEmail = email.trim().toLowerCase();
-    const { data: appUser, error: appUserError } = await supabase
+
+    // 1) Fast path: exact match (case-insensitive)
+    let { data: appUser, error: appUserError } = await supabase
       .from('app_users')
       .select('id, email, auth_user_id')
       .ilike('email', normalizedEmail)
-      .single();
-    
-    if (appUserError) {
+      .maybeSingle();
+
+    // 2) Fallback: tolerate accidental spaces in DB (" user@email.com ")
+    // We search with a broad pattern and then pick the exact trimmed match in code.
+    if (!appUser) {
+      console.log("🔎 Fallback lookup (trim-tolerant) for:", normalizedEmail);
+      const { data: candidates, error: candidatesError } = await supabase
+        .from('app_users')
+        .select('id, email, auth_user_id')
+        .ilike('email', `%${normalizedEmail}%`)
+        .limit(10);
+
+      if (!candidatesError && candidates?.length) {
+        appUser = candidates.find(u => (u.email ?? '').trim().toLowerCase() === normalizedEmail) ?? null;
+      }
+
+      if (!appUser) {
+        appUserError = candidatesError ?? ({ message: 'User not found after fallback' } as any);
+      }
+    }
+
+    if (!appUser) {
       console.log("⚠️ User not found in app_users:", email);
       // Return success for security reasons even if user doesn't exist
       return new Response(JSON.stringify({ success: true }), {
