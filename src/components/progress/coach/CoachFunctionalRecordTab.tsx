@@ -67,10 +67,10 @@ export const CoachFunctionalRecordTab: React.FC<CoachFunctionalRecordTabProps> =
         .from('coach_functional_test_sessions')
         .insert({
           coach_id: coachId,
-          coach_user_id: form.selectedUserId,
+          user_id: form.selectedUserId,
           test_date: new Date().toISOString().split('T')[0],
           notes: 'Λειτουργική Αξιολόγηση'
-        })
+        } as any)
         .select()
         .single();
 

@@ -89,10 +89,10 @@ export const CoachJumpRecordTab: React.FC<CoachJumpRecordTabProps> = ({ coachId,
         .from('coach_jump_test_sessions')
         .insert({
           coach_id: coachId,
-          coach_user_id: form.selectedUserId,
+          user_id: form.selectedUserId,
           test_date: format(new Date(), 'yyyy-MM-dd'),
           notes: testNames[form.testType]
-        })
+        } as any)
         .select()
         .single();
 
