@@ -1,12 +1,20 @@
 import React from 'react';
 import { Sidebar } from '@/components/Sidebar';
+import { CoachSidebar } from '@/components/CoachSidebar';
 import { NutritionPage } from '@/components/nutrition/NutritionPage';
+import { CoachNutritionPage } from '@/components/nutrition/CoachNutritionPage';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
+import { useRoleCheck } from '@/hooks/useRoleCheck';
 
 export const NutritionWithSidebar = () => {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isMobileOpen, setIsMobileOpen] = React.useState(false);
+  const { isCoach, isAdmin } = useRoleCheck();
+
+  const isCoachOnly = isCoach() && !isAdmin();
+  const SidebarComponent = isCoachOnly ? CoachSidebar : Sidebar;
+  const PageComponent = isCoachOnly ? CoachNutritionPage : NutritionPage;
 
   return (
     <div className="flex min-h-screen w-full">
@@ -22,7 +30,7 @@ export const NutritionWithSidebar = () => {
         transform transition-transform duration-200 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        <SidebarComponent isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       </div>
       
       <div className="flex-1 overflow-auto">
@@ -37,7 +45,7 @@ export const NutritionWithSidebar = () => {
           </Button>
         </div>
         
-        <NutritionPage />
+        <PageComponent />
       </div>
     </div>
   );
