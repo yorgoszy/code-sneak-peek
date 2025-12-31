@@ -19,7 +19,7 @@ export const ProgramCardUserInfo: React.FC<ProgramCardUserInfoProps> = ({ assign
       .slice(0, 2);
   };
 
-  const photoUrl = assignment.app_users?.photo_url;
+  const photoUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
 
   return (
     <div className="flex items-center gap-1 flex-1 min-w-0">
