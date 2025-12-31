@@ -85,15 +85,22 @@ export const MultipleRecipientSelection: React.FC<MultipleRecipientSelectionProp
   };
 
   const fetchGroups = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('groups')
       .select(`
         id,
         name,
         description,
+        coach_id,
         group_members (count)
-      `)
-      .order('name');
+      `);
+    
+    // Filter by coach_id if provided
+    if (coachId) {
+      query = query.eq('coach_id', coachId);
+    }
+    
+    const { data, error } = await query.order('name');
 
     if (!error && data) {
       const groupsWithCount = data.map(g => ({
