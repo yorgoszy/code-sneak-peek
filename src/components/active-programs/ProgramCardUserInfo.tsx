@@ -19,14 +19,17 @@ export const ProgramCardUserInfo: React.FC<ProgramCardUserInfoProps> = ({ assign
       .slice(0, 2);
   };
 
+  const photoUrl = assignment.app_users?.photo_url;
+
   return (
     <div className="flex items-center gap-1 flex-1 min-w-0">
-      <Avatar className="w-6 h-6 flex-shrink-0">
+      <Avatar className="w-6 h-6 flex-shrink-0 rounded-full">
         <AvatarImage 
-          src={assignment.app_users?.photo_url} 
+          src={photoUrl || undefined} 
           alt={userName}
+          className="object-cover rounded-full"
         />
-        <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
+        <AvatarFallback className="bg-blue-100 text-blue-700 text-xs rounded-full">
           {getUserInitials(userName)}
         </AvatarFallback>
       </Avatar>
