@@ -66,7 +66,7 @@ export const CoachAthletesProgressWithSidebar = () => {
       // Παίρνουμε τους αθλητές του coach από app_users
       const { data: athletes, error: athletesError } = await supabase
         .from('app_users')
-        .select('id, name, email, avatar_url')
+        .select('id, name, email, photo_url, avatar_url')
         .eq('coach_id', effectiveCoachId);
 
       if (athletesError) throw athletesError;
@@ -111,7 +111,7 @@ export const CoachAthletesProgressWithSidebar = () => {
       value: user.id, 
       label: user.name,
       searchTerms: `${user.name} ${user.email || ''}`,
-      avatarUrl: user.avatar_url
+      avatarUrl: user.photo_url || user.avatar_url
     })),
     [users]
   );
