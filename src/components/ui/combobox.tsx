@@ -77,12 +77,22 @@ export function Combobox({
           aria-expanded={open}
           className={cn("w-full justify-between rounded-none", className)}
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          <div className="flex items-center gap-2 overflow-hidden">
+            {selectedOption?.avatarUrl !== undefined && (
+              <Avatar className="h-6 w-6 shrink-0">
+                <AvatarImage src={selectedOption?.avatarUrl || undefined} />
+                <AvatarFallback className="text-[10px]">
+                  {(selectedOption?.label || " ").charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
+          </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="p-0 rounded-none z-50 bg-white" 
+      <PopoverContent
+        className="p-0 rounded-none z-50 bg-popover text-popover-foreground"
         style={{ width: buttonWidth || 'auto' }}
         align="start"
       >
