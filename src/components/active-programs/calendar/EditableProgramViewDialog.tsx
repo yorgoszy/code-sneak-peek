@@ -179,7 +179,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden rounded-none p-2 sm:p-4">
+        <DialogContent className="w-[95vw] max-w-7xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden rounded-none p-2 sm:p-4 md:p-6">
           <EditableProgramDialogHeader
             programData={programData}
             assignment={assignment}
@@ -192,20 +192,22 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
           />
 
           {/* Scrollable Content */}
-          <div className="overflow-y-auto overflow-x-auto max-h-[calc(90vh-5rem)]">
-            {/* Εβδομάδες - Responsive Layout: Stack on mobile, horizontal on desktop */}
+          <div className="overflow-y-auto overflow-x-auto max-h-[calc(95vh-6rem)] sm:max-h-[calc(90vh-5rem)] -mx-2 sm:mx-0 px-2 sm:px-0">
+            {/* Εβδομάδες - Responsive Layout */}
             <div className={`
-              grid gap-2 sm:gap-4
+              grid gap-2 sm:gap-3 md:gap-4
               ${weeks.length === 1 
                 ? 'grid-cols-1' 
-                : weeks.length <= 2 
-                  ? 'grid-cols-1 md:grid-cols-2' 
-                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                : weeks.length === 2 
+                  ? 'grid-cols-1 sm:grid-cols-2' 
+                  : weeks.length === 3
+                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
               }
-              ${editMode && isEditing ? 'min-w-max' : ''}
+              ${editMode && isEditing ? 'lg:min-w-max' : ''}
             `}
-            style={editMode && isEditing && weeks.length > 2 ? { 
-              gridTemplateColumns: `repeat(${weeks.length}, minmax(280px, 1fr))` 
+            style={editMode && isEditing && weeks.length > 3 ? { 
+              gridTemplateColumns: `repeat(${Math.min(weeks.length, 4)}, minmax(240px, 1fr))` 
             } : undefined}>
                 {weeks.map((week: any, weekIndex: number) => (
                   <EditableProgramWeekCard

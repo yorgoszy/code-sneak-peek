@@ -58,36 +58,37 @@ export const EditableBlock: React.FC<EditableBlockProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-gray-50 border border-gray-300 p-3 mb-2 ${isDragging ? 'opacity-50' : ''}`}
+      className={`bg-gray-50 border border-gray-300 p-2 sm:p-3 mb-1.5 sm:mb-2 ${isDragging ? 'opacity-50' : ''}`}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+        <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
           <div
             {...attributes}
             {...listeners}
-            className="cursor-move p-1"
+            className="cursor-move p-0.5 sm:p-1 flex-shrink-0"
           >
-            <GripVertical className="w-4 h-4 text-gray-400" />
+            <GripVertical className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
           </div>
-          <h5 className="font-medium text-sm">{block.name}</h5>
+          <h5 className="font-medium text-xs sm:text-sm truncate">{block.name}</h5>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowExerciseSelector(true)}
-            className="h-6 text-xs rounded-none"
+            className="h-5 sm:h-6 text-[10px] sm:text-xs rounded-none px-1.5 sm:px-2"
           >
-            <Plus className="w-3 h-3 mr-1" />
-            Άσκηση
+            <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />
+            <span className="hidden xs:inline">Άσκηση</span>
+            <span className="xs:hidden">+</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onRemoveBlock(block.id)}
-            className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+            className="h-5 w-5 sm:h-6 sm:w-6 p-0 text-red-500 hover:text-red-700"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
           </Button>
         </div>
       </div>

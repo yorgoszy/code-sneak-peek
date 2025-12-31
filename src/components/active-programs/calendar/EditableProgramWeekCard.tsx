@@ -61,12 +61,12 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
   return (
     <div 
       key={week.id} 
-      className="border border-gray-200 rounded-none flex flex-col h-full"
+      className="border border-gray-200 rounded-none flex flex-col h-full min-w-0"
     >
-      <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 sticky top-0 z-20">
-        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-          {isCompleted && <CheckCircle className="w-5 h-5 text-[#00ffba]" />}
-          {week.name || `Εβδομάδα ${week.week_number}`}
+      <div className="bg-gray-50 px-2 sm:px-3 py-1.5 sm:py-2 border-b border-gray-200 sticky top-0 z-20">
+        <h3 className="font-semibold text-gray-900 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
+          {isCompleted && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ffba] flex-shrink-0" />}
+          <span className="truncate">{week.name || `Εβδομάδα ${week.week_number}`}</span>
         </h3>
       </div>
       
