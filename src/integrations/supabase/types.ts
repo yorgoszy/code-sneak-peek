@@ -1062,6 +1062,7 @@ export type Database = {
         Row: {
           created_at: string | null
           crunches: number | null
+          exercise_id: string | null
           farmer_kg: number | null
           farmer_meters: number | null
           farmer_seconds: number | null
@@ -1086,6 +1087,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           crunches?: number | null
+          exercise_id?: string | null
           farmer_kg?: number | null
           farmer_meters?: number | null
           farmer_seconds?: number | null
@@ -1110,6 +1112,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           crunches?: number | null
+          exercise_id?: string | null
           farmer_kg?: number | null
           farmer_meters?: number | null
           farmer_seconds?: number | null
@@ -1132,6 +1135,13 @@ export type Database = {
           vo2_max?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "coach_endurance_test_data_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "coach_endurance_test_data_test_session_id_fkey"
             columns: ["test_session_id"]

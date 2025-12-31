@@ -257,6 +257,7 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
         .from('coach_endurance_test_data')
         .insert({
           test_session_id: session.id,
+          exercise_id: form.selectedExerciseId,
           mas_meters: dist,
           mas_minutes: dur,
           mas_ms: mas,
@@ -743,10 +744,16 @@ export const CoachEnduranceRecordTab: React.FC<CoachEnduranceRecordTabProps> = (
 
       const metrics = calculateSprintMetrics(form);
       
+      // Αποθήκευση με exercise_id βάσει επιλογής Track/Woodway
+      const TRACK_EXERCISE_ID = 'ad3656e1-f9f5-4c46-9e5a-116db0a73a87';
+      const WOODWAY_EXERCISE_ID = 'e1f30a44-817f-4518-a7e4-a659a587f7a4';
+      const sprintExerciseId = form.sprintExercise === 'woodway' ? WOODWAY_EXERCISE_ID : TRACK_EXERCISE_ID;
+      
       const { error: dataError } = await supabase
         .from('coach_endurance_test_data')
         .insert({
           test_session_id: session.id,
+          exercise_id: sprintExerciseId,
           sprint_seconds: seconds,
           sprint_meters: metrics.meters ? parseFloat(metrics.meters) : null,
           sprint_resistance: form.sprintResistance || null,
