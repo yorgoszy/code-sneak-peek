@@ -151,14 +151,13 @@ serve(async (req) => {
 
     console.log("✅ User found, generating reset link...");
 
-    // Generate password reset link using Supabase with fallbacks
-    // Use the redirectTo from request, fallback to production URL
-    // IMPORTANT: This must match a URL configured in Supabase Auth > URL Configuration > Redirect URLs
-    // The redirect URL MUST include the full path where the user will enter their new password
-    const redirect = redirectTo || 'https://www.hyperkids.gr/auth/reset-password';
-    
+    // Generate password reset link using Supabase
+    // IMPORTANT: We always force the production reset page to avoid mismatched environments.
+    // This URL must be present in Supabase Auth [Authentication > URL Configuration > Redirect URLs].
+    const redirect = 'https://www.hyperkids.gr/auth/reset-password';
+
     console.log("📧 Original redirectTo from request:", redirectTo);
-    console.log("🔗 Using redirect URL:", redirect);
+    console.log("🔗 Forced redirect URL:", redirect);
     
     let linkData: any = null;
     let genError: any = null;
@@ -213,8 +212,13 @@ serve(async (req) => {
       });
     }
 
+    // Force redirect_to to always be the reset-password page (some environments may cause Supabase to fall back to Site URL)
+    const actionLinkUrl = new URL(linkData.properties.action_link);
+    actionLinkUrl.searchParams.set('redirect_to', redirect);
+    const finalActionLink = actionLinkUrl.toString();
+
     console.log("🔗 Reset link generated successfully");
-    console.log("🔗 Action link:", linkData.properties.action_link);
+    console.log("🔗 Action link (final):", finalActionLink);
     console.log("🔗 Redirect URL:", redirect);
 
     // Initialize Resend
@@ -258,7 +262,7 @@ serve(async (req) => {
             
             <p>Κάντε κλικ στο παρακάτω κουμπί για να επαναφέρετε τον κωδικό σας:</p>
             
-            <a href="${linkData.properties.action_link}" class="button">Επαναφορά Κωδικού</a>
+            <a href="${finalActionLink}" class="button">Επαναφορά Κωδικού</a>
             
             <div class="warning">
               <strong>⚠️ Σημαντικό:</strong>
@@ -271,7 +275,7 @@ serve(async (req) => {
             
             <p style="margin-top: 30px; color: #666; font-size: 14px;">
               Αν το κουμπί δεν λειτουργεί, αντιγράψτε και επικολλήστε αυτό το link στον browser σας:<br>
-              <a href="${linkData.properties.action_link}" style="word-break: break-all; color: #007cba;">${linkData.properties.action_link}</a>
+              <a href="${finalActionLink}" style="word-break: break-all; color: #007cba;">${finalActionLink}</a>
             </p>
           </div>
 
