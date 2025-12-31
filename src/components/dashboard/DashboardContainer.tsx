@@ -72,12 +72,15 @@ export const DashboardContainer = () => {
         const adminStatus = isAdmin();
         console.log('🎭 DashboardContainer: Role check result - Admin:', adminStatus, 'Coach:', isCoach);
         
-        // Allow both admin and coach to access dashboard
+        // Allow admin to access dashboard, redirect coach to coach-overview, redirect others to profile
         if (!adminStatus && !isCoach) {
           console.log('🔄 DashboardContainer: Redirecting non-admin/non-coach user to profile:', userProfile.id);
           navigate(`/dashboard/user-profile/${userProfile.id}`);
+        } else if (isCoach && !adminStatus) {
+          console.log('🔄 DashboardContainer: Redirecting coach user to coach-overview');
+          navigate('/dashboard/coach-overview', { replace: true });
         } else {
-          console.log('👑 DashboardContainer: Admin/Coach user confirmed, staying on dashboard');
+          console.log('👑 DashboardContainer: Admin user confirmed, staying on dashboard');
         }
         setHasCheckedRedirect(true);
       } else if (userProfile === null) {
