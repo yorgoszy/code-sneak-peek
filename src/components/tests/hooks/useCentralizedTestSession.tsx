@@ -164,10 +164,20 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
   };
 
   const saveEnduranceData = async (sessionId: string, data: any) => {
+    // Determine sprint exercise_id based on sprintExercise selection
+    const TRACK_EXERCISE_ID = 'ad3656e1-f9f5-4c46-9e5a-116db0a73a87';
+    const WOODWAY_EXERCISE_ID = 'e1f30a44-817f-4518-a7e4-a659a587f7a4';
+    
+    const hasSprintData = parseFloat(data.sprintSeconds) || parseFloat(data.sprintMeters);
+    const sprintExerciseId = hasSprintData 
+      ? (data.sprintExercise === 'woodway' ? WOODWAY_EXERCISE_ID : TRACK_EXERCISE_ID)
+      : null;
+
     const { error } = await supabase
       .from('endurance_test_data')
       .insert({
         test_session_id: sessionId,
+        exercise_id: sprintExerciseId,
         push_ups: parseInt(data.pushUps) || null,
         pull_ups: parseInt(data.pullUps) || null,
         crunches: parseInt(data.crunches) || null,
@@ -188,7 +198,7 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
       });
 
     if (error) throw error;
-    console.log('✅ Δεδομένα αντοχής αποθηκεύτηκαν');
+    console.log('✅ Δεδομένα αντοχής αποθηκεύτηκαν με exercise_id:', sprintExerciseId);
   };
 
   const saveJumpData = async (sessionId: string, data: any) => {

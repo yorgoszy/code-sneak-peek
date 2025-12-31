@@ -544,27 +544,27 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
             </div>
           )}
 
-          {/* MAS Card - Responsive */}
+          {/* MAS Card - First */}
           <div className="w-full">
             <MasProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
           </div>
+
+          {/* Cardiac Data - Second */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
+            <CardiacProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
+            <VO2MaxProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
+          </div>
           
-          {/* Bodyweight, Farmer - Responsive Grid */}
+          {/* Bodyweight (Push Ups, Pull Ups & T2B) - Third */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
             <BodyweightProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
             <FarmerProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
           </div>
 
-          {/* Sprint Track & Woodway - Side by Side */}
+          {/* Sprint Track & Woodway - Last */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
             <SprintProgressCard userId={userId} exerciseName="Track" useCoachTables={useCoachTables} coachId={coachId} />
             <SprintProgressCard userId={userId} exerciseName="Woodway" useCoachTables={useCoachTables} coachId={coachId} />
-          </div>
-
-          {/* VO2 Max and Cardiac Cards - Side by Side */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
-            <VO2MaxProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
-            <CardiacProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
           </div>
         </>
       ) : (
