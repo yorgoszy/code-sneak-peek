@@ -20,23 +20,41 @@ const Auth = () => {
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
 
-  // Redirect to dashboard if already authenticated (but not during password recovery)
+  // Check for password recovery tokens and redirect to reset password page
   useEffect(() => {
-    const checkAndRedirect = async () => {
-      if (!loading && isAuthenticated) {
-        // Check if this is a password recovery session
-        const { data: { session } } = await supabase.auth.getSession();
-        const isRecovery = session?.user?.aud === 'authenticated' && 
-                          window.location.hash.includes('type=recovery');
-        
-        // Don't redirect if it's a recovery session
-        if (!isRecovery) {
-          navigate("/dashboard");
-        }
+    const checkForRecoveryToken = () => {
+      const hash = window.location.hash;
+      const searchParams = new URLSearchParams(window.location.search);
+      
+      // Check for recovery tokens in URL
+      const isRecoveryFromHash = hash.includes('type=recovery') || hash.includes('type=magiclink');
+      const hasAccessToken = hash.includes('access_token');
+      const hasErrorDescription = hash.includes('error_description');
+      
+      console.log('🔐 Auth page - Checking for recovery:', { 
+        hash: hash.substring(0, 100), 
+        isRecoveryFromHash, 
+        hasAccessToken 
+      });
+      
+      // If there's a recovery token, redirect to the reset password page
+      if ((isRecoveryFromHash || hasAccessToken) && !hasErrorDescription) {
+        console.log('🔐 Recovery token detected, redirecting to /auth/reset-password');
+        // Keep the hash when redirecting so the reset page can process the token
+        navigate('/auth/reset-password' + hash, { replace: true });
+        return true;
       }
+      
+      return false;
     };
     
-    checkAndRedirect();
+    // Check immediately
+    const isRecovery = checkForRecoveryToken();
+    
+    // Only redirect to dashboard if not a recovery and user is authenticated
+    if (!isRecovery && !loading && isAuthenticated) {
+      navigate("/dashboard");
+    }
   }, [isAuthenticated, loading, navigate]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
