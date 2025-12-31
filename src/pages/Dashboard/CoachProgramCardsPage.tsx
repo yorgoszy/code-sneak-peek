@@ -68,30 +68,30 @@ const CoachProgramCardsPage = () => {
       }
 
       // Τραβάμε program_assignments με app_users (όχι coach_users)
-      const { data: assignments, error: assignError } = await supabase
-        .from('program_assignments')
-        .select(`
-          *,
-          programs (
+        const { data: assignments, error: assignError } = await supabase
+          .from('program_assignments')
+          .select(`
             *,
-            program_weeks (
+            programs!fk_program_assignments_program_id (
               *,
-              program_days (
+              program_weeks (
                 *,
-                program_blocks (
+                program_days (
                   *,
-                  program_exercises (
+                  program_blocks (
                     *,
-                    exercises (*)
+                    program_exercises (
+                      *,
+                      exercises (*)
+                    )
                   )
                 )
               )
-            )
-          ),
-          app_users!fk_program_assignments_user_id (*)
-        `)
-        .eq('coach_id', effectiveCoachId)
-        .in('status', ['active', 'completed']);
+            ),
+            app_users!fk_program_assignments_user_id (*)
+          `)
+          .eq('coach_id', effectiveCoachId)
+          .in('status', ['active', 'completed']);
 
       if (assignError) throw assignError;
 
@@ -99,6 +99,7 @@ const CoachProgramCardsPage = () => {
       setActivePrograms((assignments || []) as unknown as EnrichedAssignment[]);
     } catch (error) {
       console.error('Error fetching coach programs:', error);
+      toast.error('Σφάλμα φόρτωσης προγραμμάτων coach');
     } finally {
       setIsLoading(false);
     }
