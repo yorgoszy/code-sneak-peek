@@ -76,7 +76,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
           .from('coach_functional_test_sessions')
           .select('id')
           .eq('coach_id', coachId)
-          .eq('coach_user_id', userId)
+          .eq('user_id', userId)
           .limit(1);
         data = result.data;
         error = result.error;
@@ -127,7 +127,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
             )
           `)
           .eq('coach_id', coachId)
-          .eq('coach_user_id', userId)
+          .eq('user_id', userId)
           .order('test_date', { ascending: false })
           .order('created_at', { ascending: false });
         
