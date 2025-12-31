@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, X, User, Utensils, Loader2 } from "lucide-react";
 import { addDays, format } from "date-fns";
-
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 export interface AINutritionData {
   name: string;
   description?: string;
@@ -55,7 +55,7 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-
+  const { userProfile, isCoach, isAdmin } = useRoleCheck();
   // Helper για αναζήτηση χρήστη με όνομα (χωρίς τόνους) - ίδια λογική με το assign
   const normalizeGreek = (str: string): string => {
     return str
@@ -125,10 +125,17 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('app_users')
         .select('id, name, email, avatar_url')
         .order('name');
+
+      // If user is a coach (but not admin), only show their athletes
+      if (isCoach && !isAdmin && userProfile?.id) {
+        query = query.eq('coach_id', userProfile.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setUsers(data || []);
