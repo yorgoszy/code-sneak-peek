@@ -63,42 +63,40 @@ export const CoachAthletesProgressWithSidebar = () => {
     try {
       setLoading(true);
       
-      // Πρώτα παίρνουμε τους αθλητές του coach από coach_users
-      const { data: coachUsers, error: coachUsersError } = await supabase
-        .from('coach_users')
+      // Παίρνουμε τους αθλητές του coach από app_users
+      const { data: athletes, error: athletesError } = await supabase
+        .from('app_users')
         .select('id, name, email, avatar_url')
         .eq('coach_id', effectiveCoachId);
 
-      if (coachUsersError) throw coachUsersError;
+      if (athletesError) throw athletesError;
 
-      if (!coachUsers || coachUsers.length === 0) {
+      if (!athletes || athletes.length === 0) {
         setUsers([]);
         setLoading(false);
         return;
       }
 
-      const coachUserIds = coachUsers.map(u => u.id);
-
-      // Βρίσκουμε ποιοι έχουν κάνει τεστ (coach tables)
+      // Βρίσκουμε ποιοι έχουν κάνει τεστ (coach tables) - τώρα με user_id
       const [strengthRes, anthropometricRes, enduranceRes, jumpRes, functionalRes] = await Promise.all([
-        supabase.from('coach_strength_test_sessions').select('coach_user_id').eq('coach_id', effectiveCoachId),
-        supabase.from('coach_anthropometric_test_sessions').select('coach_user_id').eq('coach_id', effectiveCoachId),
-        supabase.from('coach_endurance_test_sessions').select('coach_user_id').eq('coach_id', effectiveCoachId),
-        supabase.from('coach_jump_test_sessions').select('coach_user_id').eq('coach_id', effectiveCoachId),
-        supabase.from('coach_functional_test_sessions').select('coach_user_id').eq('coach_id', effectiveCoachId),
+        supabase.from('coach_strength_test_sessions').select('user_id').eq('coach_id', effectiveCoachId),
+        supabase.from('coach_anthropometric_test_sessions').select('user_id').eq('coach_id', effectiveCoachId),
+        supabase.from('coach_endurance_test_sessions').select('user_id').eq('coach_id', effectiveCoachId),
+        supabase.from('coach_jump_test_sessions').select('user_id').eq('coach_id', effectiveCoachId),
+        supabase.from('coach_functional_test_sessions').select('user_id').eq('coach_id', effectiveCoachId),
       ]);
 
-      // Συλλέγουμε τα unique coach_user IDs που έχουν τεστ
+      // Συλλέγουμε τα unique user IDs που έχουν τεστ
       const userIdsWithTests = new Set([
-        ...(strengthRes.data?.map(u => u.coach_user_id) || []),
-        ...(anthropometricRes.data?.map(u => u.coach_user_id) || []),
-        ...(enduranceRes.data?.map(u => u.coach_user_id) || []),
-        ...(jumpRes.data?.map(u => u.coach_user_id) || []),
-        ...(functionalRes.data?.map(u => u.coach_user_id) || []),
+        ...(strengthRes.data?.map(u => u.user_id).filter(Boolean) || []),
+        ...(anthropometricRes.data?.map(u => u.user_id).filter(Boolean) || []),
+        ...(enduranceRes.data?.map(u => u.user_id).filter(Boolean) || []),
+        ...(jumpRes.data?.map(u => u.user_id).filter(Boolean) || []),
+        ...(functionalRes.data?.map(u => u.user_id).filter(Boolean) || []),
       ]);
 
       // Φιλτράρουμε μόνο τους αθλητές που έχουν τεστ
-      const athletesWithTests = coachUsers.filter(u => userIdsWithTests.has(u.id));
+      const athletesWithTests = athletes.filter(u => userIdsWithTests.has(u.id));
 
       setUsers(athletesWithTests);
     } catch (error) {
