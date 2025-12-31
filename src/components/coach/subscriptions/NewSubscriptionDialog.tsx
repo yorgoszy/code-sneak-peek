@@ -66,9 +66,9 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
 
   const fetchData = async () => {
     try {
-      // Fetch coach's athletes from coach_users table
+      // Fetch coach's athletes from app_users table
       const { data: athletesData, error: athletesError } = await supabase
-        .from('coach_users')
+        .from('app_users')
         .select('id, name, email, avatar_url')
         .eq('coach_id', coachId)
         .order('name');
@@ -134,7 +134,8 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('coach_subscriptions')
         .insert({
-          coach_user_id: selectedAthlete.id,
+          user_id: selectedAthlete.id,
+          coach_user_id: selectedAthlete.id, // legacy field - keeping for backwards compatibility
           subscription_type_id: selectedTypeId,
           coach_id: coachId,
           start_date: startDate,
@@ -152,7 +153,8 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
         .from('coach_receipts')
         .insert({
           coach_id: coachId,
-          coach_user_id: selectedAthlete.id,
+          user_id: selectedAthlete.id,
+          coach_user_id: selectedAthlete.id, // legacy field
           subscription_id: subscriptionData.id,
           receipt_number: receiptNumber,
           amount: selectedType.price,

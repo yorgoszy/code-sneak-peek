@@ -42,7 +42,7 @@ interface SubscriptionType {
 
 interface CoachSubscription {
   id: string;
-  coach_user_id: string;
+  user_id: string;
   start_date: string;
   end_date: string;
   status: string;
@@ -56,7 +56,7 @@ interface CoachSubscription {
     price: number;
     duration_months: number;
   } | null;
-  coach_users?: {
+  app_users?: {
     name: string;
     email: string;
     avatar_url: string | null;
@@ -115,7 +115,7 @@ const CoachSubscriptions = () => {
         .select(`
           *,
           subscription_types (id, name, price, duration_months),
-          coach_users (name, email, avatar_url)
+          app_users!coach_subscriptions_user_id_fkey (name, email, avatar_url)
         `)
         .eq("coach_id", effectiveCoachId)
         .order("created_at", { ascending: false });
@@ -262,13 +262,14 @@ const CoachSubscriptions = () => {
         .from("coach_subscriptions")
         .insert({
           coach_id: effectiveCoachId,
-          coach_user_id: subscription.coach_user_id,
+          user_id: subscription.user_id,
+          coach_user_id: subscription.user_id, // legacy field
           subscription_type_id: subscription.subscription_types.id,
           start_date: newStartDate.toISOString().split("T")[0],
           end_date: newEndDate.toISOString().split("T")[0],
           status: "active",
           is_paused: false
-        } as any)
+        })
         .select()
         .single();
 
@@ -280,7 +281,8 @@ const CoachSubscriptions = () => {
         .from('coach_receipts')
         .insert({
           coach_id: effectiveCoachId,
-          coach_user_id: subscription.coach_user_id,
+          user_id: subscription.user_id,
+          coach_user_id: subscription.user_id, // legacy field
           subscription_id: subscriptionData.id,
           receipt_number: receiptNumber,
           amount: subscription.subscription_types.price,
@@ -386,8 +388,8 @@ const CoachSubscriptions = () => {
 
   const filteredSubscriptions = subscriptions
     .filter((sub) => {
-      const userName = sub.coach_users?.name || "";
-      const userEmail = sub.coach_users?.email || "";
+      const userName = sub.app_users?.name || "";
+      const userEmail = sub.app_users?.email || "";
       return matchesSearchTerm(userName, searchTerm) || matchesSearchTerm(userEmail, searchTerm);
     })
     .sort((a, b) => {
@@ -606,16 +608,16 @@ const CoachSubscriptions = () => {
                                     <div className="flex items-center space-x-3">
                                       <Avatar className="h-8 w-8">
                                         <AvatarImage
-                                          src={sub.coach_users?.avatar_url || ""}
+                                          src={sub.app_users?.avatar_url || ""}
                                         />
                                         <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
-                                          {sub.coach_users?.name?.charAt(0)?.toUpperCase() || "?"}
+                                          {sub.app_users?.name?.charAt(0)?.toUpperCase() || "?"}
                                         </AvatarFallback>
                                       </Avatar>
                                       <div>
-                                        <p className="font-medium">{sub.coach_users?.name || "Άγνωστος"}</p>
+                                        <p className="font-medium">{sub.app_users?.name || "Άγνωστος"}</p>
                                         <p className="text-xs text-muted-foreground">
-                                          {sub.coach_users?.email || "-"}
+                                          {sub.app_users?.email || "-"}
                                         </p>
                                       </div>
                                     </div>
@@ -676,14 +678,14 @@ const CoachSubscriptions = () => {
                                   <div className="flex items-center space-x-3">
                                     <Avatar className="h-10 w-10">
                                       <AvatarImage
-                                        src={sub.coach_users?.avatar_url || ""}
+                                        src={sub.app_users?.avatar_url || ""}
                                       />
                                       <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
-                                        {sub.coach_users?.name?.charAt(0)?.toUpperCase() || "?"}
+                                        {sub.app_users?.name?.charAt(0)?.toUpperCase() || "?"}
                                       </AvatarFallback>
                                     </Avatar>
                                     <div>
-                                      <p className="font-medium">{sub.coach_users?.name || "Άγνωστος"}</p>
+                                      <p className="font-medium">{sub.app_users?.name || "Άγνωστος"}</p>
                                       <p className="text-sm text-gray-500">
                                         {sub.subscription_types?.name || "-"}
                                       </p>

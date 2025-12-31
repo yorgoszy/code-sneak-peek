@@ -21,7 +21,7 @@ interface Receipt {
   notes: string | null;
   created_at: string;
   mark?: string | null;
-  coach_users?: {
+  app_users?: {
     name: string;
     email: string;
     avatar_url: string | null;
@@ -80,7 +80,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
         .from('coach_receipts')
         .select(`
           *,
-          coach_users (name, email, avatar_url),
+          app_users!coach_receipts_user_id_fkey (name, email, avatar_url),
           subscription_types (id, name)
         `)
         .eq('coach_id', coachId)
@@ -192,13 +192,13 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
       </div>
       
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-        ${receipt.coach_users?.avatar_url 
-          ? `<img src="${receipt.coach_users.avatar_url}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" crossorigin="anonymous" />`
-          : `<div style="width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${receipt.coach_users?.name?.charAt(0) || 'Α'}</div>`
+        ${receipt.app_users?.avatar_url 
+          ? `<img src="${receipt.app_users.avatar_url}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" crossorigin="anonymous" />`
+          : `<div style="width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${receipt.app_users?.name?.charAt(0) || 'Α'}</div>`
         }
         <div>
-          <div style="font-weight: 600; font-size: 12px;">${receipt.coach_users?.name || '-'}</div>
-          <div style="font-size: 10px; color: #6b7280;">${receipt.coach_users?.email || ''}</div>
+          <div style="font-weight: 600; font-size: 12px;">${receipt.app_users?.name || '-'}</div>
+          <div style="font-size: 10px; color: #6b7280;">${receipt.app_users?.email || ''}</div>
         </div>
       </div>
       
@@ -327,8 +327,8 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
   };
 
   const filteredReceipts = receipts.filter((receipt) => {
-    const userName = receipt.coach_users?.name || '';
-    const userEmail = receipt.coach_users?.email || '';
+    const userName = receipt.app_users?.name || '';
+    const userEmail = receipt.app_users?.email || '';
     const matchesSearch = matchesSearchTerm(userName, searchTerm) || matchesSearchTerm(userEmail, searchTerm);
     const matchesType = filterType === 'all' || receipt.subscription_types?.id === filterType;
     return matchesSearch && matchesType;
@@ -400,9 +400,9 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                 {filteredReceipts.map((receipt) => (
                   <div key={receipt.id} className="p-2 flex items-center gap-2">
                     <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarImage src={receipt.coach_users?.avatar_url || undefined} />
+                      <AvatarImage src={receipt.app_users?.avatar_url || undefined} />
                       <AvatarFallback className="text-xs">
-                        {receipt.coach_users?.name?.charAt(0) || 'Α'}
+                        {receipt.app_users?.name?.charAt(0) || 'Α'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
@@ -412,7 +412,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                           {format(new Date(receipt.created_at), 'dd/MM/yy')}
                         </span>
                       </div>
-                      <p className="text-sm truncate">{receipt.coach_users?.name || '-'}</p>
+                      <p className="text-sm truncate">{receipt.app_users?.name || '-'}</p>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] text-gray-500">
                           {receipt.subscription_types?.name || '-'}
@@ -476,12 +476,12 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                         <td className="py-2 px-2">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
-                              <AvatarImage src={receipt.coach_users?.avatar_url || undefined} />
+                              <AvatarImage src={receipt.app_users?.avatar_url || undefined} />
                               <AvatarFallback className="text-[10px]">
-                                {receipt.coach_users?.name?.charAt(0) || 'Α'}
+                                {receipt.app_users?.name?.charAt(0) || 'Α'}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="truncate max-w-24">{receipt.coach_users?.name || '-'}</span>
+                            <span className="truncate max-w-24">{receipt.app_users?.name || '-'}</span>
                           </div>
                         </td>
                         <td className="py-2 px-2">
@@ -589,14 +589,14 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
               {/* Athlete Info */}
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={selectedReceipt.coach_users?.avatar_url || undefined} />
+                  <AvatarImage src={selectedReceipt.app_users?.avatar_url || undefined} />
                   <AvatarFallback>
-                    {selectedReceipt.coach_users?.name?.charAt(0) || 'Α'}
+                    {selectedReceipt.app_users?.name?.charAt(0) || 'Α'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{selectedReceipt.coach_users?.name || '-'}</p>
-                  <p className="text-xs text-gray-500">{selectedReceipt.coach_users?.email || '-'}</p>
+                  <p className="font-medium">{selectedReceipt.app_users?.name || '-'}</p>
+                  <p className="text-xs text-gray-500">{selectedReceipt.app_users?.email || '-'}</p>
                 </div>
               </div>
               
