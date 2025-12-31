@@ -6,27 +6,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2, X, RotateCcw, Dumbbell, Plus, Users } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Search, Check, Save, UserPlus, Eye, Pencil, Trash2, X, RotateCcw, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ensureCompetitionProgramCard } from "@/pages/annual-planning/competitionProgram";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { MultipleRecipientSelection } from "@/components/annual-planning/MultipleRecipientSelection";
-import { TrainingWeeks } from "@/components/programs/builder/TrainingWeeks";
-import { useProgramBuilderState } from "@/components/programs/builder/hooks/useProgramBuilderState";
-import { useWeekActions } from "@/components/programs/builder/hooks/useWeekActions";
-import { useDayActions } from "@/components/programs/builder/hooks/useDayActions";
-import { useBlockActions } from "@/components/programs/builder/hooks/useBlockActions";
-import { useExerciseActions } from "@/components/programs/builder/hooks/useExerciseActions";
-import { useReorderActions } from "@/components/programs/builder/hooks/useReorderActions";
-import { useExercises } from "@/hooks/useExercises";
-import { usePrograms } from "@/hooks/usePrograms";
-import { useProgramsData } from "@/hooks/useProgramsData";
-import { Program } from "@/components/programs/types";
-import { ProgramBasicInfo } from "@/components/programs/builder/ProgramBasicInfo";
-import { CalendarSection } from "@/components/programs/builder/CalendarSection";
-import { assignmentService } from "@/components/programs/builder/services/assignmentService";
 
 
 interface AppUser {
@@ -326,151 +312,6 @@ const AnnualPlanning: React.FC = () => {
   const [monthlyHoverCol, setMonthlyHoverCol] = useState<number | null>(null);
   const [weeklyHoverRow, setWeeklyHoverRow] = useState<number | null>(null);
   const [weeklyHoverCol, setWeeklyHoverCol] = useState<number | null>(null);
-
-  // Program Builder state for TrainingWeeks
-  const { exercises: exercisesList } = useExercises();
-  const exercisesForBuilder = useMemo(() => exercisesList.map(ex => ({
-    id: ex.id,
-    name: ex.name,
-    description: ex.description || undefined,
-    video_url: ex.video_url || undefined
-  })), [exercisesList]);
-  
-  const { program, updateProgram, generateId } = useProgramBuilderState(exercisesForBuilder);
-  const { addWeek, removeWeek, duplicateWeek, updateWeekName } = useWeekActions(program, updateProgram, generateId);
-  const { addDay, removeDay, duplicateDay, updateDayName, updateDayTestDay, updateDayCompetitionDay } = useDayActions(program, updateProgram, generateId);
-  const { addBlock, removeBlock, duplicateBlock, updateBlockName, updateBlockTrainingType, updateBlockWorkoutFormat, updateBlockWorkoutDuration, updateBlockSets } = useBlockActions(program, updateProgram, generateId);
-  const { addExercise, removeExercise, updateExercise, duplicateExercise } = useExerciseActions(program, updateProgram, generateId, exercisesForBuilder);
-
-  // Program assignment state 
-  const { users: programUsers, exercises: programExercises } = useProgramsData();
-  const { saveProgram, fetchProgramsWithAssignments } = usePrograms();
-
-  // Handler για αλλαγή ονόματος προγράμματος
-  const handleProgramNameChange = (name: string) => {
-    updateProgram({ name });
-  };
-
-  // Handler για αλλαγή περιγραφής προγράμματος
-  const handleProgramDescriptionChange = (description: string) => {
-    updateProgram({ description });
-  };
-
-  // Handler για αλλαγή επιλεγμένων χρηστών
-  const handleMultipleAthleteChange = (userIds: string[]) => {
-    updateProgram({ user_ids: userIds });
-  };
-
-  // Handler για αλλαγή ημερομηνιών προπόνησης
-  const handleTrainingDatesChange = (dates: Date[]) => {
-    updateProgram({ training_dates: dates });
-  };
-
-  // Υπολογισμός συνολικών ημερών προπόνησης
-  const getTotalTrainingDays = () => {
-    let total = 0;
-    program.weeks?.forEach(week => {
-      week.program_days?.forEach(() => {
-        total++;
-      });
-    });
-    return total;
-  };
-
-  // Handler για αποθήκευση προγράμματος
-  const handleSaveProgram = async () => {
-    try {
-      if (!program.name?.trim()) {
-        toast.error('Το όνομα του προγράμματος είναι υποχρεωτικό');
-        return;
-      }
-
-      if (program.weeks?.length === 0) {
-        toast.error('Προσθέστε τουλάχιστον μία εβδομάδα στο πρόγραμμα');
-        return;
-      }
-
-      const savedProgram = await saveProgram(program);
-      console.log('✅ Program saved:', savedProgram);
-      
-      if (savedProgram?.id) {
-        updateProgram({ id: savedProgram.id });
-      }
-      
-      toast.success('Το πρόγραμμα αποθηκεύτηκε επιτυχώς!');
-    } catch (error) {
-      console.error('❌ Error saving program:', error);
-      toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
-    }
-  };
-
-  // Handler για ανάθεση προγράμματος
-  const handleAssignProgram = async () => {
-    try {
-      if (!program.name?.trim()) {
-        toast.error('Πρώτα αποθηκεύστε το πρόγραμμα');
-        return;
-      }
-
-      if (!program.user_ids || program.user_ids.length === 0) {
-        toast.error('Παρακαλώ επιλέξτε τουλάχιστον έναν χρήστη');
-        return;
-      }
-
-      if (!program.training_dates || program.training_dates.length === 0) {
-        toast.error('Παρακαλώ επιλέξτε ημερομηνίες προπόνησης');
-        return;
-      }
-
-      // Ensure program is saved first
-      let programToAssign = program;
-      if (!program.id) {
-        const savedProgram = await saveProgram(program);
-        if (!savedProgram || !savedProgram.id) {
-          throw new Error('Αποτυχία αποθήκευσης προγράμματος');
-        }
-        programToAssign = { ...program, id: savedProgram.id };
-      }
-
-      // Convert Date objects to strings
-      const trainingDates = program.training_dates.map(date => {
-        if (date instanceof Date) {
-          return date.toISOString().split('T')[0];
-        }
-        return typeof date === 'string' ? date : String(date);
-      });
-
-      // Create assignments for each selected user
-      for (const userId of program.user_ids) {
-        const assignmentData = {
-          program: programToAssign,
-          userId,
-          trainingDates
-        };
-
-        await assignmentService.saveAssignment(assignmentData);
-      }
-
-      toast.success(`Το πρόγραμμα ανατέθηκε επιτυχώς σε ${program.user_ids.length} χρήστες!`);
-
-      // Redirect to active programs
-      setTimeout(() => {
-        window.location.href = '/dashboard/active-programs';
-      }, 1500);
-
-    } catch (error) {
-      console.error('❌ Assignment error:', error);
-      toast.error(`Σφάλμα ανάθεσης: ${error instanceof Error ? error.message : 'Άγνωστο σφάλμα'}`);
-    }
-  };
-
-  // Ελέγχουμε αν μπορούμε να κάνουμε ανάθεση
-  const canAssignProgram = useMemo(() => {
-    return program.user_ids && program.user_ids.length > 0 && 
-           program.training_dates && program.training_dates.length > 0 &&
-           program.name?.trim();
-  }, [program.user_ids, program.training_dates, program.name]);
-  const { reorderWeeks, reorderDays, reorderBlocks, reorderExercises } = useReorderActions(program, updateProgram);
 
   // Get annual phase for a specific month
   const getAnnualPhaseForMonth = (month: number) => {
@@ -2530,98 +2371,6 @@ const AnnualPlanning: React.FC = () => {
         </CardContent>
         </Card>
 
-        {/* Program Builder Section with Button */}
-        <Card className="rounded-none border-l-0">
-          <CardHeader className="p-2 sm:p-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Dumbbell className="w-4 h-4" />
-              Εβδομάδες Προπόνησης
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-2 sm:p-3 pt-0 space-y-4">
-            <TrainingWeeks
-          weeks={program.weeks}
-          exercises={exercisesForBuilder}
-          onAddWeek={addWeek}
-          onRemoveWeek={removeWeek}
-          onDuplicateWeek={duplicateWeek}
-          onUpdateWeekName={updateWeekName}
-          onAddDay={addDay}
-          onRemoveDay={removeDay}
-          onDuplicateDay={duplicateDay}
-          onUpdateDayName={updateDayName}
-          onUpdateDayTestDay={updateDayTestDay}
-          onUpdateDayCompetitionDay={updateDayCompetitionDay}
-          onAddBlock={addBlock}
-          onRemoveBlock={removeBlock}
-          onDuplicateBlock={duplicateBlock}
-          onUpdateBlockName={updateBlockName}
-          onUpdateBlockTrainingType={updateBlockTrainingType}
-          onUpdateBlockWorkoutFormat={updateBlockWorkoutFormat}
-          onUpdateBlockWorkoutDuration={updateBlockWorkoutDuration}
-          onUpdateBlockSets={updateBlockSets}
-          onAddExercise={addExercise}
-          onRemoveExercise={removeExercise}
-          onUpdateExercise={updateExercise}
-          onDuplicateExercise={duplicateExercise}
-          onReorderWeeks={reorderWeeks}
-          onReorderDays={reorderDays}
-          onReorderBlocks={reorderBlocks}
-          onReorderExercises={reorderExercises}
-        />
-
-            {/* Program Basic Info - Επιλογή χρήστη, όνομα, σημειώσεις */}
-            <ProgramBasicInfo
-              name={program.name || ''}
-              description={program.description || ''}
-              selectedUserIds={program.user_ids || []}
-              users={programUsers.map(u => ({
-                id: u.id,
-                name: u.name,
-                email: u.email,
-                photo_url: u.photo_url
-              }))}
-              onNameChange={handleProgramNameChange}
-              onDescriptionChange={handleProgramDescriptionChange}
-              onMultipleAthleteChange={handleMultipleAthleteChange}
-            />
-
-            {/* Ημερολόγιο επιλογής ημερομηνιών */}
-            {getTotalTrainingDays() > 0 && (
-              <CalendarSection
-                program={program}
-                totalDays={getTotalTrainingDays()}
-                onTrainingDatesChange={handleTrainingDatesChange}
-              />
-            )}
-
-            {/* Κουμπιά Αποθήκευσης και Ανάθεσης */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button
-                onClick={handleSaveProgram}
-                variant="outline"
-                className="rounded-none"
-                disabled={!program.name}
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Αποθήκευση
-              </Button>
-              
-              <Button
-                onClick={handleAssignProgram}
-                disabled={!canAssignProgram}
-                className="rounded-none"
-                style={{ 
-                  backgroundColor: canAssignProgram ? '#00ffba' : undefined,
-                  color: canAssignProgram ? 'black' : undefined
-                }}
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Ανάθεση
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
         </TabsContent>
 
         {/* Assigned Macrocycles Tab */}
