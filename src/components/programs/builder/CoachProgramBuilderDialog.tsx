@@ -137,6 +137,7 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
         onAssignments={handleAssign}
         onTrainingDatesChange={handleTrainingDatesChange}
         getTotalTrainingDays={getTotalTrainingDays}
+        coachId={coachId}
       />
     </Dialog>
   );
