@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -258,8 +259,13 @@ const MacrocycleCard: React.FC<MacrocycleCardProps> = ({
 };
 
 const AnnualPlanning: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const coachIdFromUrl = searchParams.get('coachId');
   const { isAdmin, userProfile, loading: roleLoading } = useRoleCheck();
   const isAdminUser = isAdmin();
+  
+  // Effective coach ID - from URL or from logged in user
+  const effectiveCoachId = coachIdFromUrl || userProfile?.id;
   
   const [users, setUsers] = useState<AppUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
@@ -771,7 +777,7 @@ const AnnualPlanning: React.FC = () => {
     fetchUsers();
     fetchAssignedMacrocycles();
     fetchSavedMacrocycles();
-  }, []);
+  }, [effectiveCoachId]);
 
   // Auto-select current user if not admin
   useEffect(() => {
@@ -842,9 +848,16 @@ const AnnualPlanning: React.FC = () => {
   }, [dialogYear, dialogOpen, dialogMacrocycle]);
 
   const fetchUsers = async () => {
+    if (!effectiveCoachId) {
+      console.log('No coach ID available, skipping user fetch');
+      return;
+    }
+
+    // Fetch athletes that belong to this coach
     const { data, error } = await supabase
       .from('app_users')
       .select('id, name, email, avatar_url, photo_url')
+      .eq('coach_id', effectiveCoachId)
       .order('name');
 
     if (error) {
