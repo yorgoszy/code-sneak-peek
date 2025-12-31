@@ -16,7 +16,7 @@ interface SubscriptionType {
 
 interface CoachSubscription {
   id: string;
-  coach_user_id: string;
+  user_id?: string;
   start_date: string;
   end_date: string;
   status: string;
@@ -27,7 +27,7 @@ interface CoachSubscription {
     name: string;
     price: number;
   } | null;
-  coach_users?: {
+  app_users?: {
     name: string;
     email: string;
   } | null;
@@ -100,7 +100,7 @@ export const CoachSubscriptionEditDialog: React.FC<CoachSubscriptionEditDialogPr
           <div>
             <label className="block text-sm font-medium mb-2">Αθλητής</label>
             <Input
-              value={subscription.coach_users?.name || ''}
+              value={subscription.app_users?.name || ''}
               disabled
               className="rounded-none bg-gray-50"
             />
