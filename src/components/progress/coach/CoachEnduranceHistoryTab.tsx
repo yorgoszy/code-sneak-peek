@@ -21,7 +21,7 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string }>>(new Map());
+  const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string; avatar_url?: string | null }>>(new Map());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,11 +34,11 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
     try {
       const { data: appUsers } = await supabase
         .from('app_users')
-        .select('id, name, email')
+        .select('id, name, email, avatar_url')
         .eq('coach_id', coachId);
 
-      const userMap = new Map<string, { name: string; email: string }>();
-      (appUsers || []).forEach(u => userMap.set(u.id, { name: u.name, email: u.email }));
+      const userMap = new Map<string, { name: string; email: string; avatar_url?: string | null }>();
+      (appUsers || []).forEach(u => userMap.set(u.id, { name: u.name, email: u.email, avatar_url: u.avatar_url }));
       setUsersMap(userMap);
 
       const { data, error } = await supabase
@@ -86,16 +86,11 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
     }
   };
 
-  // Filter sessions by search
+  // Filter sessions by selected user
   const filteredSessions = useMemo(() => {
-    if (!searchTerm.trim()) return sessions;
-    const searchLower = removeAccents(searchTerm.trim());
-    return sessions.filter(session => {
-      const user = usersMap.get(session.user_id);
-      if (!user) return false;
-      return removeAccents(user.name || '').includes(searchLower) || removeAccents(user.email || '').includes(searchLower);
-    });
-  }, [sessions, searchTerm, usersMap]);
+    if (!searchTerm) return sessions;
+    return sessions.filter(session => session.user_id === searchTerm);
+  }, [sessions, searchTerm]);
 
   // Group by type
   const masSessions = useMemo(() => filteredSessions.filter(s => s.coach_endurance_test_data?.[0]?.mas_meters), [filteredSessions]);
@@ -183,7 +178,7 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
 
   return (
     <div className="space-y-4">
-      <CoachSearchInput value={searchTerm} onChange={setSearchTerm} />
+      <CoachSearchInput value={searchTerm} onChange={setSearchTerm} usersMap={usersMap} />
       
       {!hasResults ? (
         <div className="text-center py-8 text-muted-foreground">Δεν βρέθηκαν αποτελέσματα</div>

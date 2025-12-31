@@ -10,7 +10,7 @@ import { FunctionalTests } from "@/components/tests/FunctionalTests";
 
 interface CoachFunctionalRecordTabProps {
   coachId: string;
-  users: { id: string; name: string; email: string }[];
+  users: { id: string; name: string; email: string; avatar_url?: string | null }[];
   onRecordSaved: () => void;
 }
 
@@ -31,7 +31,7 @@ export const CoachFunctionalRecordTab: React.FC<CoachFunctionalRecordTabProps> =
     { id: '1', selectedUserId: '', fmsScores: {}, selectedPosture: [], selectedSquatIssues: [], selectedSingleLegIssues: [], musclesNeedStrengthening: [], musclesNeedStretching: [], loading: false }
   ]);
 
-  const userOptions = useMemo(() => users.map(u => ({ value: u.id, label: u.name, searchTerms: `${u.name} ${u.email}` })), [users]);
+  const userOptions = useMemo(() => users.map(u => ({ value: u.id, label: u.name, searchTerms: `${u.name} ${u.email}`, avatarUrl: u.avatar_url })), [users]);
 
   const updateForm = (formId: string, updates: Partial<Form>) => {
     setForms(prev => prev.map(f => f.id === formId ? { ...f, ...updates } : f));

@@ -21,7 +21,7 @@ export const CoachAnthropometricHistoryTab: React.FC<CoachAnthropometricHistoryT
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string }>>(new Map());
+  const [usersMap, setUsersMap] = useState<Map<string, { name: string; email: string; avatar_url?: string | null }>>(new Map());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,15 +33,15 @@ export const CoachAnthropometricHistoryTab: React.FC<CoachAnthropometricHistoryT
   const fetchSessions = async () => {
     try {
       const [usersRes, sessionsRes] = await Promise.all([
-        supabase.from('app_users').select('id, name, email').eq('coach_id', coachId),
+        supabase.from('app_users').select('id, name, email, avatar_url').eq('coach_id', coachId),
         supabase.from('coach_anthropometric_test_sessions').select(`
           id, user_id, test_date, notes, created_at,
           coach_anthropometric_test_data (id, height, weight, body_fat_percentage, muscle_mass_percentage, visceral_fat_percentage, bone_density)
         `).eq('coach_id', coachId).order('created_at', { ascending: false })
       ]);
 
-      const userMap = new Map<string, { name: string; email: string }>();
-      (usersRes.data || []).forEach(u => userMap.set(u.id, { name: u.name, email: u.email }));
+      const userMap = new Map<string, { name: string; email: string; avatar_url?: string | null }>();
+      (usersRes.data || []).forEach(u => userMap.set(u.id, { name: u.name, email: u.email, avatar_url: u.avatar_url }));
       setUsersMap(userMap);
       setSessions(sessionsRes.data || []);
     } catch (error) {
@@ -71,23 +71,18 @@ export const CoachAnthropometricHistoryTab: React.FC<CoachAnthropometricHistoryT
     }
   };
 
-  // Filter sessions by search
+  // Filter sessions by selected user
   const filteredSessions = useMemo(() => {
-    if (!searchTerm.trim()) return sessions;
-    const searchLower = removeAccents(searchTerm.trim());
-    return sessions.filter(session => {
-      const user = usersMap.get(session.user_id);
-      if (!user) return false;
-      return removeAccents(user.name || '').includes(searchLower) || removeAccents(user.email || '').includes(searchLower);
-    });
-  }, [sessions, searchTerm, usersMap]);
+    if (!searchTerm) return sessions;
+    return sessions.filter(session => session.user_id === searchTerm);
+  }, [sessions, searchTerm]);
 
   if (loading) return <div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>;
   if (sessions.length === 0) return <div className="text-center py-8 text-muted-foreground">Δεν υπάρχουν καταγραφές</div>;
 
   return (
     <div className="space-y-4">
-      <CoachSearchInput value={searchTerm} onChange={setSearchTerm} />
+      <CoachSearchInput value={searchTerm} onChange={setSearchTerm} usersMap={usersMap} />
       
       {filteredSessions.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">Δεν βρέθηκαν αποτελέσματα</div>
