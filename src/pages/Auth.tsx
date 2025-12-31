@@ -255,7 +255,7 @@ const Auth = () => {
         return;
       }
 
-      console.log('🔐 User profile found:', userProfile.user_status);
+      console.log('🔐 User profile found:', userProfile.user_status, 'role:', userProfile.role);
 
       if (userProfile.user_status !== 'active') {
         const statusMessage = userProfile.user_status === 'pending' 
@@ -271,14 +271,18 @@ const Auth = () => {
         return;
       }
 
-      console.log('🔐 Login successful, redirecting to dashboard');
+      // Determine redirect based on role
+      const isCoach = userProfile.role === 'coach';
+      const redirectPath = isCoach ? "/dashboard/coach-overview" : "/dashboard";
+      
+      console.log('🔐 Login successful, redirecting to:', redirectPath);
       
       toast({
         title: "Επιτυχία!",
         description: "Συνδεθήκατε επιτυχώς.",
       });
 
-      navigate("/dashboard");
+      navigate(redirectPath);
     } catch (error: any) {
       console.error('🔐 Login process error:', error);
       toast({
