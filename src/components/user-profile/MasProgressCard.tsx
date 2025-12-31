@@ -91,14 +91,18 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({
       }
       
       // Group by exercise_id and get latest + previous for each
+      // For MAS data, also include data without exercise_id (legacy data)
       const exerciseMap = new Map();
       allData.forEach(item => {
-        if (!item.exercise_id || !item.mas_ms) return;
+        if (!item.mas_ms) return;
         
-        if (!exerciseMap.has(item.exercise_id)) {
-          exerciseMap.set(item.exercise_id, []);
+        // Use 'default' key for items without exercise_id
+        const key = item.exercise_id || 'default';
+        
+        if (!exerciseMap.has(key)) {
+          exerciseMap.set(key, []);
         }
-        exerciseMap.get(item.exercise_id).push(item);
+        exerciseMap.get(key).push(item);
       });
       
       // For each exercise, sort by date and created_at, keep the 2 most recent
