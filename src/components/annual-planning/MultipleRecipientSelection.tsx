@@ -30,6 +30,7 @@ interface MultipleRecipientSelectionProps {
   onUserIdsChange: (userIds: string[]) => void;
   onGroupIdsChange: (groupIds: string[]) => void;
   disabled?: boolean;
+  coachId?: string;
 }
 
 const normalizeString = (str: string): string => {
@@ -51,7 +52,8 @@ export const MultipleRecipientSelection: React.FC<MultipleRecipientSelectionProp
   selectedGroupIds,
   onUserIdsChange,
   onGroupIdsChange,
-  disabled = false
+  disabled = false,
+  coachId
 }) => {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -63,13 +65,19 @@ export const MultipleRecipientSelection: React.FC<MultipleRecipientSelectionProp
   useEffect(() => {
     fetchUsers();
     fetchGroups();
-  }, []);
+  }, [coachId]);
 
   const fetchUsers = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('app_users')
-      .select('id, name, email, avatar_url, photo_url')
-      .order('name');
+      .select('id, name, email, avatar_url, photo_url');
+    
+    // Filter by coach_id if provided
+    if (coachId) {
+      query = query.eq('coach_id', coachId);
+    }
+    
+    const { data, error } = await query.order('name');
 
     if (!error && data) {
       setUsers(data);

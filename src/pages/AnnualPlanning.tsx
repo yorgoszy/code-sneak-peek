@@ -1815,11 +1815,21 @@ const AnnualPlanning: React.FC = () => {
                       onUserIdsChange={setSelectedUserIds}
                       onGroupIdsChange={setSelectedGroupIds}
                       disabled={isAssigning}
+                      coachId={effectiveCoachId}
                     />
-                  ) : (
+                  ) : roleLoading ? (
                     <div className="p-1.5 bg-muted rounded-none text-xs text-muted-foreground">
                       Φόρτωση...
                     </div>
+                  ) : (
+                    <MultipleRecipientSelection
+                      selectedUserIds={selectedUserIds}
+                      selectedGroupIds={selectedGroupIds}
+                      onUserIdsChange={setSelectedUserIds}
+                      onGroupIdsChange={setSelectedGroupIds}
+                      disabled={isAssigning}
+                      coachId={effectiveCoachId}
+                    />
                   )}
                 </div>
 
