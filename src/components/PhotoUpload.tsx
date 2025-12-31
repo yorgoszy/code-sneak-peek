@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { processAvatarImage } from "@/utils/imageProcessing";
 
 interface PhotoUploadProps {
   currentPhotoUrl?: string;
@@ -32,12 +33,12 @@ export const PhotoUpload = ({ currentPhotoUrl, onPhotoChange, disabled }: PhotoU
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (max 10MB for original - will be compressed)
+    if (file.size > 10 * 1024 * 1024) {
       toast({
         variant: "destructive",
         title: "Σφάλμα",
-        description: "Η εικόνα δεν μπορεί να είναι μεγαλύτερη από 5MB",
+        description: "Η εικόνα δεν μπορεί να είναι μεγαλύτερη από 10MB",
       });
       return;
     }
@@ -45,15 +46,17 @@ export const PhotoUpload = ({ currentPhotoUrl, onPhotoChange, disabled }: PhotoU
     setUploading(true);
 
     try {
+      // Process the image (crop to square, resize, compress)
+      const processed = await processAvatarImage(file);
+      
       // Create a unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.jpg`;
       const filePath = `users/${fileName}`;
 
-      // Upload file to Supabase Storage
+      // Upload processed file to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('user-photos')
-        .upload(filePath, file);
+        .upload(filePath, processed.blob, { contentType: 'image/jpeg' });
 
       if (uploadError) {
         throw uploadError;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { processAvatarImage } from '@/utils/imageProcessing';
 
 interface UserProfile {
   id: string;
@@ -80,9 +81,11 @@ export const useUserProfile = (userId?: string) => {
         throw new Error('Παρακαλώ επιλέξτε μια εικόνα');
       }
 
-      // Create unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${profile.id}/avatar.${fileExt}`;
+      // Process the image (crop to square, resize, compress)
+      const processed = await processAvatarImage(file);
+      
+      // Create unique filename (always .jpg after processing)
+      const fileName = `${profile.id}/avatar.jpg`;
 
       // Delete existing avatar if any
       if (profile.avatar_url) {
@@ -94,10 +97,10 @@ export const useUserProfile = (userId?: string) => {
         }
       }
 
-      // Upload new avatar
+      // Upload processed avatar
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, processed.blob, { upsert: true, contentType: 'image/jpeg' });
 
       if (uploadError) throw uploadError;
 
