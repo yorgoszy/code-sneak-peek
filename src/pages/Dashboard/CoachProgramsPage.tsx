@@ -148,6 +148,7 @@ const CoachProgramsPage = () => {
       const dataWithCoach = {
         ...programData,
         created_by: effectiveCoachId,
+        coach_id: effectiveCoachId,
       };
       const savedProgram = await saveProgram(dataWithCoach);
       console.log('✅ Program saved, result:', savedProgram);
