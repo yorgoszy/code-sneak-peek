@@ -43,34 +43,50 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
       const monthStart = format(startOfMonth(new Date()), 'yyyy-MM-dd');
       const monthEnd = format(endOfMonth(new Date()), 'yyyy-MM-dd');
 
-      // Total coach_users for this coach
+      // Total athletes for this coach (from app_users with coach_id)
       const { count: totalAthletes } = await supabase
-        .from('coach_users')
+        .from('app_users')
         .select('*', { count: 'exact', head: true })
         .eq('coach_id', coachId);
 
-      // Active coach_users (status = 'active')
+      // Active athletes (user_status = 'active')
       const { count: activeAthletes } = await supabase
-        .from('coach_users')
+        .from('app_users')
         .select('*', { count: 'exact', head: true })
         .eq('coach_id', coachId)
-        .eq('status', 'active');
+        .eq('user_status', 'active');
 
-      // New coach_users this month
+      // New athletes this month
       const { count: newAthletesThisMonth } = await supabase
-        .from('coach_users')
+        .from('app_users')
         .select('*', { count: 'exact', head: true })
         .eq('coach_id', coachId)
         .gte('created_at', monthStart)
         .lte('created_at', monthEnd);
 
-      // Today's programs - count workout_completions for today
-      const { count: todaysPrograms } = await supabase
-        .from('workout_completions')
-        .select('*', { count: 'exact', head: true })
-        .eq('scheduled_date', today);
+      // Get athlete IDs for this coach
+      const { data: athleteIds } = await supabase
+        .from('app_users')
+        .select('id')
+        .eq('coach_id', coachId);
 
-      // Upcoming tests (anthropometric, strength, etc.) - use test dates >= today
+      const userIds = athleteIds?.map(a => a.id) || [];
+
+      // Today's programs - count program_assignments with training_dates containing today
+      let todaysPrograms = 0;
+      if (userIds.length > 0) {
+        const { data: assignments } = await supabase
+          .from('program_assignments')
+          .select('id, training_dates')
+          .in('user_id', userIds)
+          .eq('status', 'active');
+
+        todaysPrograms = assignments?.filter(a => 
+          a.training_dates?.includes(today)
+        ).length || 0;
+      }
+
+      // Upcoming tests (anthropometric, strength, functional, jump, endurance)
       const { count: upcomingAnthro } = await supabase
         .from('coach_anthropometric_test_sessions')
         .select('*', { count: 'exact', head: true })
@@ -83,21 +99,41 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         .eq('coach_id', coachId)
         .gte('test_date', today);
 
-      // Count competitions from coach_users
-      const { data: coachUserIds } = await supabase
-        .from('coach_users')
-        .select('id')
-        .eq('coach_id', coachId);
+      const { count: upcomingFunctional } = await supabase
+        .from('coach_functional_test_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('coach_id', coachId)
+        .gte('test_date', today);
 
-      // For now, set competitions to 0 since we'd need to check a different table
-      const upcomingCompetitions = 0;
+      const { count: upcomingJump } = await supabase
+        .from('coach_jump_test_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('coach_id', coachId)
+        .gte('test_date', today);
+
+      const { count: upcomingEndurance } = await supabase
+        .from('coach_endurance_test_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('coach_id', coachId)
+        .gte('test_date', today);
+
+      // Count upcoming competitions for athletes of this coach
+      let upcomingCompetitions = 0;
+      if (userIds.length > 0) {
+        const { count } = await supabase
+          .from('competitions')
+          .select('*', { count: 'exact', head: true })
+          .in('user_id', userIds)
+          .gte('competition_date', today);
+        upcomingCompetitions = count || 0;
+      }
 
       setStats({
         totalAthletes: totalAthletes || 0,
         activeAthletes: activeAthletes || 0,
         newAthletesThisMonth: newAthletesThisMonth || 0,
-        todaysPrograms: todaysPrograms || 0,
-        upcomingTests: (upcomingAnthro || 0) + (upcomingStrength || 0),
+        todaysPrograms: todaysPrograms,
+        upcomingTests: (upcomingAnthro || 0) + (upcomingStrength || 0) + (upcomingFunctional || 0) + (upcomingJump || 0) + (upcomingEndurance || 0),
         upcomingCompetitions: upcomingCompetitions
       });
     } catch (error) {
