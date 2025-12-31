@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, X } from "lucide-react";
+import { processAvatarImage } from "@/utils/imageProcessing";
 
 interface CoachUser {
   id: string;
@@ -66,23 +67,33 @@ export const EditCoachUserDialog = ({
     }
   }, [user]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Το αρχείο είναι πολύ μεγάλο (max 5MB)");
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("Το αρχείο είναι πολύ μεγάλο (max 10MB)");
         return;
       }
-      setAvatarFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setAvatarPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      
+      try {
+        // Process the image for preview
+        const processed = await processAvatarImage(file);
+        setAvatarFile(new File([processed.blob], 'avatar.jpg', { type: 'image/jpeg' }));
+        
+        // Create preview URL from processed blob
+        const previewUrl = URL.createObjectURL(processed.blob);
+        setAvatarPreview(previewUrl);
+      } catch (error) {
+        console.error('Error processing image:', error);
+        toast.error("Σφάλμα κατά την επεξεργασία της εικόνας");
+      }
     }
   };
 
   const clearAvatar = () => {
+    if (avatarPreview && avatarPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(avatarPreview);
+    }
     setAvatarFile(null);
     setAvatarPreview(null);
     if (fileInputRef.current) {
@@ -93,13 +104,12 @@ export const EditCoachUserDialog = ({
   const uploadAvatar = async (): Promise<string | null> => {
     if (!avatarFile) return user.avatar_url || null;
 
-    const fileExt = avatarFile.name.split('.').pop();
-    const fileName = `${user.id}.${fileExt}`;
+    const fileName = `${user.id}.jpg`;
     const filePath = `${user.coach_id}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('coach-user-avatars')
-      .upload(filePath, avatarFile, { upsert: true });
+      .upload(filePath, avatarFile, { upsert: true, contentType: 'image/jpeg' });
 
     if (uploadError) {
       console.error("Error uploading avatar:", uploadError);
