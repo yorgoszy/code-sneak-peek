@@ -38,10 +38,12 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({
             test_date,
             coach_endurance_test_data (
               id,
+              exercise_id,
               mas_meters,
               mas_minutes,
               mas_ms,
-              mas_kmh
+              mas_kmh,
+              exercises ( id, name )
             )
           `)
           .eq('coach_id', coachId)

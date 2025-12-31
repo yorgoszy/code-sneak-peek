@@ -46,9 +46,12 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
         .select(`
           id, user_id, test_date, notes, created_at,
           coach_endurance_test_data (
-            id, mas_meters, mas_minutes, mas_ms, mas_kmh, vo2_max, max_hr, resting_hr_1min,
+            id,
+            exercise_id,
+            mas_meters, mas_minutes, mas_ms, mas_kmh, vo2_max, max_hr, resting_hr_1min,
             push_ups, pull_ups, crunches, t2b, farmer_kg, farmer_meters, farmer_seconds,
-            sprint_meters, sprint_seconds, sprint_watt, sprint_resistance
+            sprint_meters, sprint_seconds, sprint_watt, sprint_resistance,
+            exercises ( id, name )
           )
         `)
         .eq('coach_id', coachId)
@@ -116,9 +119,14 @@ export const CoachEnduranceHistoryTab: React.FC<CoachEnduranceHistoryTabProps> =
       <Card key={session.id} className="rounded-none min-w-[200px] shrink-0">
         <CardContent className="p-2 space-y-1">
           <div className="flex items-center justify-between">
-            <div>
-              <span className="font-semibold text-xs">{usersMap.get(session.user_id)?.name || 'Άγνωστος'}</span>
-              <span className="text-[10px] text-muted-foreground ml-2">{format(new Date(session.test_date), 'dd/MM/yy')}</span>
+            <div className="min-w-0">
+              <div>
+                <span className="font-semibold text-xs">{usersMap.get(session.user_id)?.name || 'Άγνωστος'}</span>
+                <span className="text-[10px] text-muted-foreground ml-2">{format(new Date(session.test_date), 'dd/MM/yy')}</span>
+              </div>
+              {data.exercises?.name && (
+                <div className="text-[10px] text-muted-foreground truncate">{data.exercises.name}</div>
+              )}
             </div>
             <Button size="sm" variant="ghost" onClick={() => handleDeleteClick(session.id)} className="h-6 w-6 p-0">
               <Trash2 className="w-3 h-3 text-destructive" />

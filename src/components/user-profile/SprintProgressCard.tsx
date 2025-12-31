@@ -32,7 +32,7 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({
       let data: any[] = [];
 
       if (useCoachTables && coachId) {
-        // Coach tables don't have exercise relation for sprint, so we just get all sprint data
+        // Fetch from coach tables (now includes exercise_id)
         const { data: coachData, error } = await supabase
           .from('coach_endurance_test_sessions')
           .select(`
@@ -42,7 +42,9 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({
               sprint_seconds,
               sprint_meters,
               sprint_resistance,
-              sprint_watt
+              sprint_watt,
+              exercise_id,
+              exercises ( name )
             )
           `)
           .eq('coach_id', coachId)
@@ -52,19 +54,22 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({
           .limit(50);
 
         if (error) throw error;
-        
-        // Transform and filter sessions with sprint data
+
+        // Transform and keep only sessions that match the requested exercise name
         data = (coachData || [])
           .map(s => ({
             ...s,
-            endurance_test_data: s.coach_endurance_test_data?.map((d: any) => ({
+            endurance_test_data: (s.coach_endurance_test_data || []).map((d: any) => ({
               ...d,
-              exercises: { name: exerciseName } // Assume the exercise name for coach data
+              exercises: d.exercises || { name: null }
             }))
           }))
-          .filter(session => 
-            session.endurance_test_data?.some((d: any) => d.sprint_seconds !== null)
-          );
+          .filter(session => {
+            const d0 = session.endurance_test_data?.[0];
+            if (!d0?.sprint_seconds) return false;
+            const sessionExerciseName = d0.exercises?.name || '';
+            return sessionExerciseName === exerciseName;
+          });
       } else {
         // Φέρνω περισσότερα sessions για να έχω αρκετά και για τα δύο exercises
         const { data: regularData, error } = await supabase
