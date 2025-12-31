@@ -380,6 +380,9 @@ const CoachProgramCardsPage = () => {
                         <ProgramCard
                           assignment={item.assignment}
                           onRefresh={fetchCoachPrograms}
+                          onDelete={handleDeleteProgram}
+                          onForceComplete={handleForceComplete}
+                          workoutStats={item.stats}
                         />
                       </div>
                     ))}
@@ -410,6 +413,9 @@ const CoachProgramCardsPage = () => {
                         <ProgramCard
                           assignment={item.assignment}
                           onRefresh={fetchCoachPrograms}
+                          onDelete={handleDeleteProgram}
+                          onForceComplete={handleForceComplete}
+                          workoutStats={item.stats}
                         />
                       </div>
                     ))}
