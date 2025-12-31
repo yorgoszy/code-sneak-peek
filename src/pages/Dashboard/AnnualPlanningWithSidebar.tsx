@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
+import { CoachSidebar } from '@/components/CoachSidebar';
 import AnnualPlanning from '@/pages/AnnualPlanning';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
+import { useRoleCheck } from '@/hooks/useRoleCheck';
 
 export const AnnualPlanningWithSidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const { isCoach, isAdmin } = useRoleCheck();
+
+  const SidebarComponent = isCoach() && !isAdmin() ? CoachSidebar : Sidebar;
 
   return (
     <div className="flex min-h-screen w-full bg-background">
@@ -36,7 +41,7 @@ export const AnnualPlanningWithSidebar: React.FC = () => {
         transform transition-transform duration-300 ease-in-out
         ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        <SidebarComponent isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       </div>
 
       <main className="flex-1 overflow-x-auto overflow-y-auto scrollbar-gold transition-all duration-300 pt-14 lg:pt-0">
