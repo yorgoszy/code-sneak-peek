@@ -9,7 +9,9 @@ import {
   Settings,
   FileText,
   Calendar,
-  Layers
+  Layers,
+  CalendarDays,
+  Apple
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -78,6 +80,18 @@ export const CoachSidebar = ({
       icon: Layers,
       label: "Program Cards",
       path: effectiveCoachId ? `/dashboard/coach-program-cards?coachId=${effectiveCoachId}` : "/dashboard/coach-program-cards",
+      badge: null,
+    },
+    {
+      icon: CalendarDays,
+      label: "Ετήσιος Προγραμματισμός",
+      path: effectiveCoachId ? `/dashboard/annual-planning?coachId=${effectiveCoachId}` : "/dashboard/annual-planning",
+      badge: null,
+    },
+    {
+      icon: Apple,
+      label: "Διατροφή",
+      path: effectiveCoachId ? `/dashboard/nutrition?coachId=${effectiveCoachId}` : "/dashboard/nutrition",
       badge: null,
     },
     { type: "separator" },
