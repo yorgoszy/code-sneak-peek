@@ -70,5 +70,6 @@ export interface EnrichedAssignment {
     name: string;
     email: string;
     photo_url?: string;
+    avatar_url?: string;
   } | null;
 }
