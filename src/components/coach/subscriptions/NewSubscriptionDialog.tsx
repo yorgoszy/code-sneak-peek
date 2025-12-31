@@ -60,6 +60,11 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
 
   useEffect(() => {
     if (open && coachId) {
+      // Reset form when dialog opens
+      setSelectedAthlete(null);
+      setSelectedTypeId('');
+      setStartDate(format(new Date(), 'yyyy-MM-dd'));
+      setSearchTerm('');
       fetchData();
     }
   }, [open, coachId]);
