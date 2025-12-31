@@ -164,41 +164,108 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
   };
 
   const saveEnduranceData = async (sessionId: string, data: any) => {
-    // Determine sprint exercise_id based on sprintExercise selection
     const TRACK_EXERCISE_ID = 'ad3656e1-f9f5-4c46-9e5a-116db0a73a87';
     const WOODWAY_EXERCISE_ID = 'e1f30a44-817f-4518-a7e4-a659a587f7a4';
     
     const hasSprintData = parseFloat(data.sprintSeconds) || parseFloat(data.sprintMeters);
-    const sprintExerciseId = hasSprintData 
-      ? (data.sprintExercise === 'woodway' ? WOODWAY_EXERCISE_ID : TRACK_EXERCISE_ID)
-      : null;
+    const hasMasData = parseFloat(data.masMeters) || parseFloat(data.masMinutes) || parseFloat(data.masMs);
+    const hasGeneralData = parseInt(data.pushUps) || parseInt(data.pullUps) || parseInt(data.crunches) ||
+                           parseFloat(data.farmerKg) || parseFloat(data.farmerMeters) ||
+                           parseInt(data.maxHr) || parseInt(data.restingHr1min) || parseFloat(data.vo2Max);
 
-    const { error } = await supabase
-      .from('endurance_test_data')
-      .insert({
+    const recordsToInsert = [];
+
+    // 1. Record για γενικά δεδομένα (push ups, pull ups, cardiac, farmer) - χωρίς exercise_id
+    if (hasGeneralData) {
+      recordsToInsert.push({
         test_session_id: sessionId,
-        exercise_id: sprintExerciseId,
+        exercise_id: null,
         push_ups: parseInt(data.pushUps) || null,
         pull_ups: parseInt(data.pullUps) || null,
         crunches: parseInt(data.crunches) || null,
+        t2b: parseInt(data.t2b) || null,
         farmer_kg: parseFloat(data.farmerKg) || null,
         farmer_meters: parseFloat(data.farmerMeters) || null,
         farmer_seconds: parseFloat(data.farmerSeconds) || null,
+        max_hr: parseInt(data.maxHr) || null,
+        resting_hr_1min: parseInt(data.restingHr1min) || null,
+        vo2_max: parseFloat(data.vo2Max) || null,
+        sprint_seconds: null,
+        sprint_meters: null,
+        sprint_watt: null,
+        sprint_resistance: null,
+        mas_meters: null,
+        mas_minutes: null,
+        mas_ms: null,
+        mas_kmh: null
+      });
+    }
+
+    // 2. Record για Sprint - ΜΟΝΟ για το επιλεγμένο είδος (track ή woodway)
+    if (hasSprintData) {
+      const sprintExerciseId = data.sprintExercise === 'woodway' ? WOODWAY_EXERCISE_ID : TRACK_EXERCISE_ID;
+      recordsToInsert.push({
+        test_session_id: sessionId,
+        exercise_id: sprintExerciseId,
         sprint_seconds: parseFloat(data.sprintSeconds) || null,
         sprint_meters: parseFloat(data.sprintMeters) || null,
         sprint_watt: parseFloat(data.sprintWatt) || null,
         sprint_resistance: data.sprintResistance || null,
+        push_ups: null,
+        pull_ups: null,
+        crunches: null,
+        t2b: null,
+        farmer_kg: null,
+        farmer_meters: null,
+        farmer_seconds: null,
+        max_hr: null,
+        resting_hr_1min: null,
+        vo2_max: null,
+        mas_meters: null,
+        mas_minutes: null,
+        mas_ms: null,
+        mas_kmh: null
+      });
+    }
+
+    // 3. Record για MAS test - με το exercise_id της επιλεγμένης άσκησης
+    if (hasMasData) {
+      recordsToInsert.push({
+        test_session_id: sessionId,
+        exercise_id: data.masExerciseId || null,
         mas_meters: parseFloat(data.masMeters) || null,
         mas_minutes: parseFloat(data.masMinutes) || null,
         mas_ms: parseFloat(data.masMs) || null,
         mas_kmh: parseFloat(data.masKmh) || null,
-        max_hr: parseInt(data.maxHr) || null,
-        resting_hr_1min: parseInt(data.restingHr1min) || null,
-        vo2_max: parseFloat(data.vo2Max) || null
+        push_ups: null,
+        pull_ups: null,
+        crunches: null,
+        t2b: null,
+        farmer_kg: null,
+        farmer_meters: null,
+        farmer_seconds: null,
+        max_hr: null,
+        resting_hr_1min: null,
+        vo2_max: null,
+        sprint_seconds: null,
+        sprint_meters: null,
+        sprint_watt: null,
+        sprint_resistance: null
       });
+    }
+
+    // Αν δεν υπάρχουν δεδομένα, δεν αποθηκεύουμε τίποτα
+    if (recordsToInsert.length === 0) {
+      console.log('⚠️ Δεν υπάρχουν δεδομένα αντοχής για αποθήκευση');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('endurance_test_data')
+      .insert(recordsToInsert);
 
     if (error) throw error;
-    console.log('✅ Δεδομένα αντοχής αποθηκεύτηκαν με exercise_id:', sprintExerciseId);
+    console.log('✅ Δεδομένα αντοχής αποθηκεύτηκαν:', recordsToInsert.length, 'records');
   };
 
   const saveJumpData = async (sessionId: string, data: any) => {

@@ -25,6 +25,7 @@ interface EnduranceData {
   masMinutes: string;
   masMs: string;
   masKmh: string;
+  masExerciseId: string;
 }
 
 interface EnduranceTestsProps {
@@ -98,7 +99,8 @@ export const EnduranceTests = ({
             masMeters: formData?.masMeters || '',
             masMinutes: formData?.masMinutes || '',
             masMs: formData?.masMs || '',
-            masKmh: formData?.masKmh || ''
+            masKmh: formData?.masKmh || '',
+            masExerciseId: formData?.masExerciseId || ''
           }}
           onInputChange={handleInputChange}
         />
