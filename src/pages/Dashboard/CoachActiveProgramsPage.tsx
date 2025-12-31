@@ -31,8 +31,11 @@ const CoachActiveProgramsPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  // Για admin απαιτείται coachId στο URL (αλλιώς βλέπεις το admin /dashboard/active-programs)
-  const effectiveCoachId = coachIdFromUrl || userProfile?.id;
+  // Για admin απαιτείται coachId στο URL
+  // Για coach χρησιμοποιεί το δικό του ID
+  const effectiveCoachId = (isAdmin() && coachIdFromUrl) 
+    ? coachIdFromUrl 
+    : (!isAdmin() ? userProfile?.id : null);
 
   const [activePrograms, setActivePrograms] = useState<EnrichedAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
