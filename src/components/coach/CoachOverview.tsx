@@ -128,12 +128,25 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         upcomingCompetitions = count || 0;
       }
 
+      const totalUpcomingTests = (upcomingAnthro || 0) + (upcomingStrength || 0) + (upcomingFunctional || 0) + (upcomingJump || 0) + (upcomingEndurance || 0);
+      
+      console.log('📊 CoachOverview Stats:', {
+        coachId,
+        today,
+        upcomingAnthro,
+        upcomingStrength,
+        upcomingFunctional,
+        upcomingJump,
+        upcomingEndurance,
+        totalUpcomingTests
+      });
+
       setStats({
         totalAthletes: totalAthletes || 0,
         activeAthletes: activeAthletes || 0,
         newAthletesThisMonth: newAthletesThisMonth || 0,
         todaysPrograms: todaysPrograms,
-        upcomingTests: (upcomingAnthro || 0) + (upcomingStrength || 0) + (upcomingFunctional || 0) + (upcomingJump || 0) + (upcomingEndurance || 0),
+        upcomingTests: totalUpcomingTests,
         upcomingCompetitions: upcomingCompetitions
       });
     } catch (error) {
