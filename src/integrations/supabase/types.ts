@@ -1490,7 +1490,7 @@ export type Database = {
         Row: {
           amount: number
           coach_id: string
-          coach_user_id: string
+          coach_user_id: string | null
           created_at: string
           id: string
           mark: string | null
@@ -1505,7 +1505,7 @@ export type Database = {
         Insert: {
           amount: number
           coach_id: string
-          coach_user_id: string
+          coach_user_id?: string | null
           created_at?: string
           id?: string
           mark?: string | null
@@ -1520,7 +1520,7 @@ export type Database = {
         Update: {
           amount?: number
           coach_id?: string
-          coach_user_id?: string
+          coach_user_id?: string | null
           created_at?: string
           id?: string
           mark?: string | null
@@ -1676,7 +1676,7 @@ export type Database = {
       coach_subscriptions: {
         Row: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id: string | null
           created_at: string
           end_date: string
           id: string
@@ -1693,7 +1693,7 @@ export type Database = {
         }
         Insert: {
           coach_id: string
-          coach_user_id: string
+          coach_user_id?: string | null
           created_at?: string
           end_date: string
           id?: string
@@ -1710,7 +1710,7 @@ export type Database = {
         }
         Update: {
           coach_id?: string
-          coach_user_id?: string
+          coach_user_id?: string | null
           created_at?: string
           end_date?: string
           id?: string
