@@ -75,7 +75,7 @@ export const useProgramSave = () => {
       }
 
       // Βασικά δεδομένα προγράμματος
-      const programPayload = {
+      const programPayload: any = {
         name: programData.name,
         description: programData.description || '',
         user_id: programData.user_id || null,
@@ -85,6 +85,11 @@ export const useProgramSave = () => {
         duration: weeks?.length || null,
         training_days: weeks?.[0]?.program_days?.length || null
       };
+      
+      // Προσθήκη created_by αν υπάρχει (για coach programs)
+      if (programData.created_by) {
+        programPayload.created_by = programData.created_by;
+      }
 
       console.log('💾 [useProgramSave] Program payload:', programPayload);
 
