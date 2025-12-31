@@ -42,15 +42,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // If admin access is required but user is not admin, redirect to user profile
+  // If admin access is required but user is not admin, redirect appropriately
   if (requireAdmin && !isAdmin()) {
-    console.log('🔒 ProtectedRoute: Not admin, redirecting to user profile');
-    
-    // Redirect to user's own profile if they have one
+    console.log('🔒 ProtectedRoute: Not admin, redirecting based on role');
+
+    // Coaches should land on coach overview
+    if (userProfile?.role === 'coach') {
+      return <Navigate to="/dashboard/coach-overview" replace />;
+    }
+
+    // Redirect other roles to user's own profile if they have one
     if (userProfile?.id) {
       return <Navigate to={`/dashboard/user-profile/${userProfile.id}`} replace />;
     }
-    
+
     // Otherwise redirect to main page
     return <Navigate to="/" replace />;
   }
