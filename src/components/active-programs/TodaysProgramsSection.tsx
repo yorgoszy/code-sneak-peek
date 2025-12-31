@@ -104,26 +104,30 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
                   </div>
 
                   <div className="flex items-center gap-3 pr-16">
-                    <Avatar className="w-8 h-8 flex-shrink-0 rounded-full">
+                    <Avatar className="w-10 h-10 flex-shrink-0 rounded-full border border-gray-200">
                       <AvatarImage 
                         src={assignment.app_users?.photo_url || assignment.app_users?.avatar_url || undefined} 
                         className="object-cover rounded-full"
                       />
-                      <AvatarFallback className="bg-gray-200 rounded-full">
-                        <User className="w-4 h-4 text-gray-500" />
+                      <AvatarFallback className="bg-gray-100 rounded-full text-gray-600 font-medium text-sm">
+                        {assignment.app_users?.name?.charAt(0)?.toUpperCase() || <User className="w-4 h-4" />}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div className="min-w-0 flex-1">
-                      <h4 className="font-medium text-sm truncate flex items-center gap-1">
-                        {assignment.app_users?.name}
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-sm truncate">
+                          {assignment.app_users?.name || 'Άγνωστος'}
+                        </h4>
                         {status === 'completed' && getRpeScore(assignment) && (
-                          <span className={`text-[9px] text-white px-1 py-0.5 rounded-none font-bold ${getRpeColor(getRpeScore(assignment)!)} flex-shrink-0`}>
+                          <span className={`text-[9px] text-white px-1.5 py-0.5 rounded-none font-bold ${getRpeColor(getRpeScore(assignment)!)} flex-shrink-0`}>
                             RPE {getRpeScore(assignment)}
                           </span>
                         )}
-                      </h4>
-                      <p className="text-xs text-gray-600 truncate">{assignment.programs?.name}</p>
+                      </div>
+                      <p className="text-xs text-gray-500 truncate font-medium">
+                        {assignment.programs?.name || 'Χωρίς όνομα προγράμματος'}
+                      </p>
                       {status !== 'completed' && (
                         <div className={`inline-block px-2 py-0.5 rounded-none text-xs mt-1 ${
                           status === 'missed' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
