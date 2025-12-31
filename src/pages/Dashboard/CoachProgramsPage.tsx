@@ -46,9 +46,9 @@ const CoachProgramsPage = () => {
     const fetchCoachAthletes = async () => {
       if (!effectiveCoachId) return;
       
-      // Get coach_users that belong to this coach
+      // Get athletes from app_users that belong to this coach
       const { data, error } = await supabase
-        .from('coach_users')
+        .from('app_users')
         .select('*')
         .eq('coach_id', effectiveCoachId);
       
