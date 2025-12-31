@@ -133,7 +133,10 @@ serve(async (req) => {
     // Generate password reset link using Supabase with fallbacks
     // Use the redirectTo from request, fallback to production URL
     // IMPORTANT: This must match a URL configured in Supabase Auth > URL Configuration > Redirect URLs
+    // The redirect URL MUST include the full path where the user will enter their new password
     const redirect = redirectTo || 'https://www.hyperkids.gr/auth/reset-password';
+    
+    console.log("📧 Original redirectTo from request:", redirectTo);
     console.log("🔗 Using redirect URL:", redirect);
     
     let linkData: any = null;
