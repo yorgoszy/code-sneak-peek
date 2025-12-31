@@ -140,7 +140,6 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
         .from('coach_subscriptions')
         .insert({
           user_id: selectedAthlete.id,
-          coach_user_id: selectedAthlete.id, // legacy field - keeping for backwards compatibility
           subscription_type_id: selectedTypeId,
           coach_id: coachId,
           start_date: startDate,
@@ -159,7 +158,6 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
         .insert({
           coach_id: coachId,
           user_id: selectedAthlete.id,
-          coach_user_id: selectedAthlete.id, // legacy field
           subscription_id: subscriptionData.id,
           receipt_number: receiptNumber,
           amount: selectedType.price,
