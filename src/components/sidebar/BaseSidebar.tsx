@@ -22,7 +22,7 @@ export const BaseSidebar: React.FC<BaseSidebarProps> = ({
 }) => {
   return (
     <div
-      className={`bg-background border-r border-border transition-all duration-300 ${
+      className={`bg-background border-r border-border transition-all duration-300 h-screen sticky top-0 flex flex-col ${
         isCollapsed ? "w-16" : "w-80"
       } ${className}`}
     >
