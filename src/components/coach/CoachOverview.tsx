@@ -139,7 +139,9 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
             const dateStr = trainingDates[totalDayIndex];
             if (!dateStr || dateStr < todayStr) return;
 
-            if (day.is_test_day) {
+            // Check both is_test_day flag AND if test_types array has values
+            const hasTestTypes = day?.test_types && Array.isArray(day.test_types) && day.test_types.length > 0;
+            if (day.is_test_day || hasTestTypes) {
               tests.push({
                 date: dateStr,
                 userName,
