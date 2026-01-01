@@ -130,7 +130,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
       </DialogHeader>
 
       <ScrollArea className="flex-1 w-full h-full">
-        <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+        <div className="space-y-3 p-3 md:p-4">
           <ProgramBuilder
             program={program}
             users={users}

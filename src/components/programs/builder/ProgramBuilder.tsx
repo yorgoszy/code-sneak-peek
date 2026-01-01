@@ -91,7 +91,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   console.log('🎯 ProgramBuilder - selectedUserId:', selectedUserId);
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <ProgramBasicInfo
         name={program.name}
         description={program.description}
