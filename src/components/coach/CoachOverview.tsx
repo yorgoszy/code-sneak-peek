@@ -135,31 +135,35 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
       const tests: UpcomingEvent[] = [];
       const competitions: UpcomingEvent[] = [];
 
+      const buildWeekDayIndex = (programWeeks: any[]) => {
+        const sortedWeeks = [...(programWeeks || [])].sort((a: any, b: any) => a.week_number - b.week_number);
+        const flatDays: any[] = [];
+        sortedWeeks.forEach((w: any) => {
+          const sortedDays = [...(w.program_days || [])].sort((a: any, b: any) => a.day_number - b.day_number);
+          sortedDays.forEach((d: any) => flatDays.push({ week: w, day: d }));
+        });
+        return { sortedWeeks, flatDays };
+      };
+
       (assignments || []).forEach((assignment: any) => {
         const trainingDates: string[] = assignment.training_dates || [];
         const program = programById.get(assignment.program_id);
         if (!program) return;
 
-        const weeks = program.program_weeks || [];
-        if (!weeks.length) return;
-
-        // Sort weeks by week_number
-        const sortedWeeks = [...weeks].sort((a: any, b: any) => a.week_number - b.week_number);
+        const { sortedWeeks, flatDays } = buildWeekDayIndex(program.program_weeks || []);
+        if (!sortedWeeks.length || !flatDays.length) return;
 
         const userName = userNameById.get(assignment.user_id) || "";
 
-        let dateIndex = 0;
-        sortedWeeks.forEach((week: any) => {
-          const sortedDays = [...(week.program_days || [])].sort((a: any, b: any) => a.day_number - b.day_number);
-          
-          sortedDays.forEach((day: any) => {
-            if (dateIndex >= trainingDates.length) return;
-            const dateStr = trainingDates[dateIndex];
-            dateIndex++;
+        // Normal case: training_dates is aligned with flattened program days (day1..dayN)
+        const isAligned = trainingDates.length >= flatDays.length;
 
+        if (isAligned) {
+          flatDays.forEach((wd: any, idx: number) => {
+            const dateStr = trainingDates[idx];
             if (!dateStr || dateStr < todayStr) return;
 
-            // Check both is_test_day flag AND if test_types array has values
+            const day = wd.day;
             const hasTestTypes = day?.test_types && Array.isArray(day.test_types) && day.test_types.length > 0;
             if (day.is_test_day || hasTestTypes) {
               tests.push({
@@ -182,7 +186,52 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
               });
             }
           });
+          return;
+        }
+
+        // Fallback: some assignments in DB contain only a subset of dates (often 1 date).
+        // In that case, we can't reliably map by index. We assume the single assigned date corresponds
+        // to the unique special day (test/competition) in the program (if it's unique).
+        const futureDates = trainingDates.filter((d) => d && d >= todayStr);
+        if (!futureDates.length) return;
+
+        const testDays = flatDays.filter((wd: any) => {
+          const day = wd.day;
+          const hasTestTypes = day?.test_types && Array.isArray(day.test_types) && day.test_types.length > 0;
+          return day?.is_test_day || hasTestTypes;
         });
+        const competitionDays = flatDays.filter((wd: any) => wd?.day?.is_competition_day);
+
+        if (futureDates.length === 1) {
+          const dateStr = futureDates[0];
+
+          if (testDays.length === 1) {
+            const day = testDays[0].day;
+            tests.push({
+              date: dateStr,
+              userName,
+              userId: assignment.user_id,
+              programName: program?.name,
+              dayName: day?.name,
+              testTypes: day?.test_types || [],
+            });
+          }
+
+          if (competitionDays.length === 1) {
+            const day = competitionDays[0].day;
+            competitions.push({
+              date: dateStr,
+              userName,
+              userId: assignment.user_id,
+              programName: program?.name,
+              dayName: day?.name,
+            });
+          }
+
+          return;
+        }
+
+        // If we have multiple dates but still not aligned, we skip mapping to avoid wrong results.
       });
 
       console.log("✅ Tests found:", tests.length, "Competitions found:", competitions.length);
