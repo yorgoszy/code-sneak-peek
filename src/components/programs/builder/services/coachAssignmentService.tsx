@@ -63,6 +63,7 @@ export const coachAssignmentService = {
         user_id: assignmentData.coachUserId, // ID από app_users table
         coach_id: assignmentData.coachId, // ID του coach
         coach_user_id: null, // Deprecated - πλέον χρησιμοποιούμε user_id
+        assigned_by: assignmentData.assignedBy || assignmentData.coachId, // ποιος έκανε την ανάθεση
         training_dates: formattedTrainingDates,
         status: 'active',
         assignment_type: 'individual',

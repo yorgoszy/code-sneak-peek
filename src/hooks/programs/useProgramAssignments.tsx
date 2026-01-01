@@ -15,12 +15,26 @@ export const useProgramAssignments = () => {
   ) => {
     setLoading(true);
     try {
+      const { data: auth } = await supabase.auth.getUser();
+      const authUserId = auth.user?.id;
+
+      let assignedBy: string | null = null;
+      if (authUserId) {
+        const { data: me } = await supabase
+          .from('app_users')
+          .select('id')
+          .eq('auth_user_id', authUserId)
+          .maybeSingle();
+        assignedBy = me?.id ?? null;
+      }
+
       console.log('Creating/updating assignment with params:', {
         programId,
         userId,
         startDate,
         endDate,
-        trainingDates
+        trainingDates,
+        assignedBy
       });
 
       // Check if assignment already exists
@@ -43,7 +57,8 @@ export const useProgramAssignments = () => {
         end_date: endDate || null,
         status: 'active',
         assignment_type: 'individual',
-        training_dates: trainingDates || []
+        training_dates: trainingDates || [],
+        assigned_by: assignedBy
       };
 
       console.log('Assignment data to save:', assignmentData);

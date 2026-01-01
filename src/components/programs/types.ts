@@ -81,6 +81,8 @@ export interface ProgramAssignment {
   start_date?: string;
   end_date?: string;
   created_at: string;
+  assigned_by?: string | null;
+  coach_id?: string | null;
   app_users?: ProgramAssignmentUser | null;
 }
 
