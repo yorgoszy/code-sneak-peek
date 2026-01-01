@@ -55,7 +55,7 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const { userProfile, isCoach, isAdmin } = useRoleCheck();
+  const { userProfile, isCoach, isAdmin, loading } = useRoleCheck();
   // Helper για αναζήτηση χρήστη με όνομα (χωρίς τόνους) - ίδια λογική με το assign
   const normalizeGreek = (str: string): string => {
     return str
@@ -67,13 +67,16 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
   };
 
   useEffect(() => {
-    if (isOpen) {
-      fetchUsers();
-      if (nutritionData) {
-        setName(nutritionData.name || "Πρόγραμμα Διατροφής");
-      }
+    if (!isOpen) return;
+
+    // Wait until roles are loaded so coach filtering is correct
+    if (loading) return;
+
+    fetchUsers();
+    if (nutritionData) {
+      setName(nutritionData.name || "Πρόγραμμα Διατροφής");
     }
-  }, [isOpen, nutritionData]);
+  }, [isOpen, nutritionData, loading, userProfile?.id]);
 
   // Priority: nutritionData.targetUserId > defaultUserId
   // Υποστηρίζει UUID αλλά και αναζήτηση με όνομα (ίδια λογική με QuickAssignProgramDialog)
@@ -131,7 +134,7 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
         .order('name');
 
       // If user is a coach (but not admin), only show their athletes
-      if (isCoach && !isAdmin && userProfile?.id) {
+      if (isCoach() && !isAdmin() && userProfile?.id) {
         query = query.eq('coach_id', userProfile.id);
       }
 
