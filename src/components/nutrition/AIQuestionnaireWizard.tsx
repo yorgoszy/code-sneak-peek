@@ -405,7 +405,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
             </div>
 
             {formData.userId && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div className="grid grid-cols-3 gap-2 pt-2">
                 <div className="space-y-2">
                   <Label>Βάρος (kg)</Label>
                   <Input
