@@ -17,6 +17,15 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
   assignment, 
   workoutStats 
 }) => {
+  // Check if program has test or competition days
+  const hasTestDays = assignment.programs?.program_weeks?.some(week =>
+    week.program_days?.some(day => day.is_test_day)
+  ) || false;
+  
+  const hasCompetitionDays = assignment.programs?.program_weeks?.some(week =>
+    week.program_days?.some(day => day.is_competition_day)
+  ) || false;
+
   const getTrainingDaysWithDuration = () => {
     if (!assignment.training_dates || assignment.training_dates.length === 0) {
       return '';
@@ -48,8 +57,21 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
     if (rpe <= 8) return 'bg-yellow-500';
     return 'bg-red-500';
   };
+
   return (
     <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
+      {/* Test/Competition Day Labels */}
+      {hasTestDays && (
+        <span className="text-[10px] bg-purple-600 text-white px-1.5 py-0.5 font-bold uppercase">
+          ΤΕΣΤ
+        </span>
+      )}
+      {hasCompetitionDays && (
+        <span className="text-[10px] bg-orange-600 text-white px-1.5 py-0.5 font-bold uppercase">
+          ΑΓΩΝΑΣ
+        </span>
+      )}
+      
       {/* Training Days with Duration */}
       <div className="text-xs text-blue-600 font-medium">
         {getTrainingDaysWithDuration()}
