@@ -36,7 +36,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   isCoach = false
 }) => {
   const [startDate, setStartDate] = useState<string>('');
-  const [weekdays, setWeekdays] = useState<number[]>(isCoach ? [] : [1, 3, 5]);
+  const [weekdays, setWeekdays] = useState<number[]>([]);
 
   // Auto-calculate weeks based on program structure
   const programWeeksCount = program.weeks?.length || 1;
