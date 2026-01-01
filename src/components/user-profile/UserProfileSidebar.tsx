@@ -265,7 +265,7 @@ export const UserProfileSidebar = forwardRef<
       label: t('sidebar.offers'),
       key: "offers",
       badge: availableOffers > 0 ? availableOffers : null,
-      visible: true
+      visible: !isCoachCreatedUser
     },
     {
       icon: Video,
