@@ -53,7 +53,10 @@ const ActivePrograms = () => {
     }
   }, [authLoading, rolesLoading, isAuthenticated, userProfile, isAdmin, navigate]);
 
-  const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
+  const { data: allPrograms = [], isLoading, error, refetch } = useActivePrograms();
+  
+  // Filter out coach assignments - admin sees only assignments without coach_id
+  const activePrograms = allPrograms.filter(p => !p.coach_id);
   const { getWorkoutCompletions } = useWorkoutCompletions();
   const completionsCache = useWorkoutCompletionsCache();
   

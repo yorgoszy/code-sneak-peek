@@ -98,7 +98,7 @@ const Navigation: React.FC<NavigationProps> = ({
           <div className="flex items-center space-x-2">
             {!loading && (
               isAuthenticated ? (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-0">
                   <Button 
                     variant="ghost" 
                     className="language-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
