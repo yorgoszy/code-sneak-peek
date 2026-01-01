@@ -2,7 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { format, differenceInCalendarDays } from "date-fns";
 import { el } from "date-fns/locale";
 
@@ -14,13 +13,16 @@ interface UpcomingTest {
   userId?: string;
 }
 
-export const AllUpcomingTestsCard = () => {
+interface AllUpcomingTestsCardProps {
+  coachId?: string; // Αν δοθεί, φιλτράρει μόνο τα assignments του coach
+}
+
+export const AllUpcomingTestsCard = ({ coachId }: AllUpcomingTestsCardProps) => {
   const [upcomingTests, setUpcomingTests] = useState<UpcomingTest[]>([]);
-  const { data: activePrograms } = useActivePrograms();
 
   useEffect(() => {
     fetchAllUpcomingTests();
-  }, [activePrograms]);
+  }, [coachId]);
 
   const fetchAllUpcomingTests = async () => {
     try {
@@ -52,16 +54,53 @@ export const AllUpcomingTestsCard = () => {
         });
       }
 
-      // Φόρτωση όλων των test days από active programs
-      if (activePrograms && activePrograms.length > 0) {
-        for (const assignment of activePrograms) {
+      // Φόρτωση όλων των test days από program assignments
+      let assignmentsQuery = supabase
+        .from('program_assignments')
+        .select(`
+          id,
+          training_dates,
+          coach_id,
+          assigned_by,
+          programs!fk_program_assignments_program_id (
+            id,
+            name,
+            program_weeks!fk_program_weeks_program_id (
+              id,
+              week_number,
+              program_days!fk_program_days_week_id (
+                id,
+                day_number,
+                is_test_day,
+                test_types
+              )
+            )
+          ),
+          app_users!fk_program_assignments_user_id (id, name)
+        `)
+        .in('status', ['active', 'completed'])
+        .gte('end_date', todayStr);
+
+      // Φιλτράρισμα με βάση coachId
+      if (coachId) {
+        // Coach βλέπει μόνο τα δικά του assignments
+        assignmentsQuery = assignmentsQuery.or(`coach_id.eq.${coachId},assigned_by.eq.${coachId}`);
+      } else {
+        // Admin βλέπει μόνο τα assignments χωρίς coach (δικά του)
+        assignmentsQuery = assignmentsQuery.is('coach_id', null);
+      }
+
+      const { data: assignments, error: assignError } = await assignmentsQuery;
+
+      if (!assignError && assignments) {
+        for (const assignment of assignments as any[]) {
           if (assignment.training_dates && assignment.programs?.program_weeks) {
             const trainingDates = assignment.training_dates;
             const weeks = assignment.programs.program_weeks;
             const daysPerWeek = weeks[0]?.program_days?.length || 0;
 
-            weeks.forEach((week, weekIndex) => {
-              week.program_days?.forEach((day, dayIndex) => {
+            weeks.forEach((week: any, weekIndex: number) => {
+              week.program_days?.forEach((day: any, dayIndex: number) => {
                 if (day.is_test_day) {
                   const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
                   if (totalDayIndex < trainingDates.length) {

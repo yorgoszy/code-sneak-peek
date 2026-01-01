@@ -184,10 +184,10 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         })}
       </div>
 
-      {/* Χρησιμοποιούμε τα ίδια components με τον admin */}
+      {/* Χρησιμοποιούμε τα ίδια components με τον admin - με φιλτράρισμα για τον coach */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <AllUpcomingTestsCard />
-        <AllUpcomingCompetitionsCard />
+        <AllUpcomingTestsCard coachId={coachId} />
+        <AllUpcomingCompetitionsCard coachId={coachId} />
       </div>
     </div>
   );

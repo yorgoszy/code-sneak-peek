@@ -5,6 +5,7 @@ export interface EnrichedAssignment {
   athlete_id?: string;
   user_id?: string;
   assigned_by?: string;
+  coach_id?: string | null;
   start_date?: string;
   end_date?: string;
   status: string;
