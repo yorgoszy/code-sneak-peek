@@ -21,6 +21,12 @@ interface Food {
   fiber_per_100g: number | null;
   portion_size: number | null;
   portion_unit: string | null;
+  coach_id?: string | null;
+}
+
+interface FoodsManagementProps {
+  coachId?: string;
+  isAdmin?: boolean;
 }
 
 const FOOD_CATEGORIES = [
@@ -35,7 +41,7 @@ const FOOD_CATEGORIES = [
   { value: 'general', label: 'Γενικά' },
 ];
 
-export const FoodsManagement: React.FC = () => {
+export const FoodsManagement: React.FC<FoodsManagementProps> = ({ coachId, isAdmin = false }) => {
   const [foods, setFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -83,7 +89,7 @@ export const FoodsManagement: React.FC = () => {
     }
 
     try {
-      const foodData = {
+      const foodData: any = {
         name: formData.name.trim(),
         category: formData.category,
         calories_per_100g: parseFloat(formData.calories_per_100g) || 0,
@@ -94,6 +100,11 @@ export const FoodsManagement: React.FC = () => {
         portion_size: parseFloat(formData.portion_size) || 100,
         portion_unit: formData.portion_unit || 'g'
       };
+      
+      // If coach is creating, add coach_id
+      if (coachId && !editingFood) {
+        foodData.coach_id = coachId;
+      }
 
       if (editingFood) {
         const { error } = await supabase
@@ -248,24 +259,27 @@ export const FoodsManagement: React.FC = () => {
                         {getCategoryLabel(food.category)}
                       </Badge>
                     </div>
-                    <div className="flex gap-0.5 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(food)}
-                        className="rounded-none h-6 w-6 p-0"
-                      >
-                        <Edit className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(food.id)}
-                        className="rounded-none h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
+                    {/* Only show edit/delete if admin OR if food belongs to this coach */}
+                    {(isAdmin || food.coach_id === coachId) && (
+                      <div className="flex gap-0.5 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(food)}
+                          className="rounded-none h-6 w-6 p-0"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(food.id)}
+                          className="rounded-none h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="grid grid-cols-4 gap-0.5 text-center text-[8px] sm:text-[10px]">

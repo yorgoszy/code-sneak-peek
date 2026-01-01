@@ -10,18 +10,23 @@ interface Exercise {
   description: string | null;
   video_url: string | null;
   categories: { name: string; type: string }[];
+  coach_id?: string | null;
 }
 
 interface ExercisesActionsProps {
   exercise: Exercise;
   onEdit: (exercise: Exercise) => void;
   onDelete: (exerciseId: string) => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
 export const ExercisesActions: React.FC<ExercisesActionsProps> = ({
   exercise,
   onEdit,
-  onDelete
+  onDelete,
+  canEdit = true,
+  canDelete = true
 }) => {
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
 
@@ -44,22 +49,26 @@ export const ExercisesActions: React.FC<ExercisesActionsProps> = ({
         >
           <Link className="h-3 w-3" />
         </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="rounded-none"
-          onClick={() => onEdit(exercise)}
-        >
-          <Edit2 className="h-3 w-3" />
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="rounded-none text-red-600 hover:text-red-700"
-          onClick={handleDelete}
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
+        {canEdit && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="rounded-none"
+            onClick={() => onEdit(exercise)}
+          >
+            <Edit2 className="h-3 w-3" />
+          </Button>
+        )}
+        {canDelete && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="rounded-none text-red-600 hover:text-red-700"
+            onClick={handleDelete}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        )}
       </div>
 
       <ExerciseLinkDialog

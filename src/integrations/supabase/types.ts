@@ -2523,6 +2523,7 @@ export type Database = {
           calories_per_100g: number
           carbs_per_100g: number
           category: string | null
+          coach_id: string | null
           created_at: string
           fat_per_100g: number
           fiber_per_100g: number | null
@@ -2537,6 +2538,7 @@ export type Database = {
           calories_per_100g?: number
           carbs_per_100g?: number
           category?: string | null
+          coach_id?: string | null
           created_at?: string
           fat_per_100g?: number
           fiber_per_100g?: number | null
@@ -2551,6 +2553,7 @@ export type Database = {
           calories_per_100g?: number
           carbs_per_100g?: number
           category?: string | null
+          coach_id?: string | null
           created_at?: string
           fat_per_100g?: number
           fiber_per_100g?: number | null
@@ -2561,7 +2564,15 @@ export type Database = {
           protein_per_100g?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "foods_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       functional_assessments: {
         Row: {

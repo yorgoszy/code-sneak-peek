@@ -172,6 +172,7 @@ const Exercises = () => {
             onEditExercise={handleEditExercise}
             onDeleteExercise={deleteExercise}
             onVideoClick={handleVideoClick}
+            isAdmin={true}
           />
         </div>
       </div>
