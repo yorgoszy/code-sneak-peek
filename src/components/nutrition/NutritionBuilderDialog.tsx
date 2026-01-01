@@ -135,10 +135,10 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className={`rounded-none w-[calc(100vw-1rem)] sm:w-[92vw] lg:w-auto ${
+        className={`rounded-none left-0 top-0 translate-x-0 translate-y-0 w-[100vw] h-[100vh] max-w-none overflow-y-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:h-auto sm:w-[92vw] lg:sm:w-auto ${
           mode === 'select'
-            ? 'max-w-sm'
-            : 'max-w-5xl max-h-[calc(100vh-2rem)] sm:max-h-[85vh] overflow-y-auto'
+            ? 'sm:max-w-sm'
+            : 'sm:max-w-5xl sm:max-h-[85vh]'
         }`}
       >
         <DialogHeader className="pb-2">

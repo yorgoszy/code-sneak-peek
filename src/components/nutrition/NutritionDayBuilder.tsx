@@ -471,7 +471,7 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
       </Tabs>
 
       {/* Actions - Responsive */}
-      <div className="flex flex-col sm:flex-row justify-between gap-2 pt-4 border-t">
+      <div className="sticky bottom-0 bg-background pt-3 pb-2 border-t flex flex-col sm:flex-row justify-between gap-2">
         <Button variant="outline" onClick={onCancel} className="rounded-none order-2 sm:order-1">
           Ακύρωση
         </Button>
