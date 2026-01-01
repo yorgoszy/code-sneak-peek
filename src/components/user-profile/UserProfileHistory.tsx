@@ -10,9 +10,10 @@ import { FunctionalHistory } from "./FunctionalHistory";
 
 interface UserProfileHistoryProps {
   userId: string;
+  useCoachTables?: boolean;
 }
 
-export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId }) => {
+export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId, useCoachTables = false }) => {
   const { t } = useTranslation();
   const [activeHistoryTab, setActiveHistoryTab] = useState("force-velocity");
 
@@ -38,23 +39,23 @@ export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId }
         </TabsList>
 
         <TabsContent value="force-velocity" className="mt-4">
-          <ForceVelocityHistory userId={userId} />
+          <ForceVelocityHistory userId={userId} useCoachTables={useCoachTables} />
         </TabsContent>
 
         <TabsContent value="endurance" className="mt-4">
-          <EnduranceHistory userId={userId} />
+          <EnduranceHistory userId={userId} useCoachTables={useCoachTables} />
         </TabsContent>
 
         <TabsContent value="jump-profile" className="mt-4">
-          <JumpHistory userId={userId} />
+          <JumpHistory userId={userId} useCoachTables={useCoachTables} />
         </TabsContent>
 
         <TabsContent value="anthropometric" className="mt-4">
-          <AnthropometricHistory userId={userId} />
+          <AnthropometricHistory userId={userId} useCoachTables={useCoachTables} />
         </TabsContent>
 
         <TabsContent value="functional" className="mt-4">
-          <FunctionalHistory userId={userId} />
+          <FunctionalHistory userId={userId} useCoachTables={useCoachTables} />
         </TabsContent>
       </Tabs>
     </div>

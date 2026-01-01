@@ -15,9 +15,10 @@ interface EnduranceHistoryTabProps {
   selectedUserId?: string;
   readOnly?: boolean;
   coachUserIds?: string[];
+  useCoachTables?: boolean;
 }
 
-export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds }) => {
+export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds, useCoachTables = false }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
@@ -33,69 +34,121 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
 
   useEffect(() => {
     fetchSessions();
-  }, [selectedUserId, coachUserIds]);
+  }, [selectedUserId, coachUserIds, useCoachTables]);
 
   const fetchSessions = async () => {
     try {
-      let sessionsQuery = supabase
-        .from('endurance_test_sessions')
-        .select(`
-          id,
-          user_id,
-          test_date,
-          notes,
-          created_at,
-          endurance_test_data!endurance_test_data_test_session_id_fkey (
-            id,
-            exercise_id,
-            mas_meters,
-            mas_minutes,
-            mas_ms,
-            mas_kmh,
-            push_ups,
-            pull_ups,
-            t2b,
-            farmer_kg,
-            farmer_meters,
-            farmer_seconds,
-            sprint_seconds,
-            sprint_meters,
-            sprint_resistance,
-            sprint_watt,
-            vo2_max,
-            max_hr,
-            resting_hr_1min,
-            exercises (
-              id,
-              name
-            )
-          )
-        `)
-        .order('created_at', { ascending: false });
+      let sessionsData: any[] = [];
 
-      // Filter by specific user if selectedUserId is provided
-      if (selectedUserId) {
-        sessionsQuery = sessionsQuery.eq('user_id', selectedUserId);
-      } else if (coachUserIds && coachUserIds.length > 0) {
-        sessionsQuery = sessionsQuery.in('user_id', coachUserIds);
+      if (useCoachTables && selectedUserId) {
+        // Fetch from coach tables
+        const { data, error } = await supabase
+          .from('coach_endurance_test_sessions')
+          .select(`
+            id,
+            user_id,
+            test_date,
+            notes,
+            created_at,
+            coach_endurance_test_data (
+              id,
+              exercise_id,
+              mas_meters,
+              mas_minutes,
+              mas_ms,
+              mas_kmh,
+              push_ups,
+              pull_ups,
+              t2b,
+              farmer_kg,
+              farmer_meters,
+              farmer_seconds,
+              sprint_seconds,
+              sprint_meters,
+              sprint_resistance,
+              sprint_watt,
+              vo2_max,
+              max_hr,
+              resting_hr_1min,
+              exercises (
+                id,
+                name
+              )
+            )
+          `)
+          .eq('user_id', selectedUserId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        // Transform coach data to match expected format
+        sessionsData = (data || []).map(session => ({
+          ...session,
+          endurance_test_data: session.coach_endurance_test_data || []
+        })).filter(session => session.endurance_test_data && session.endurance_test_data.length > 0);
+      } else {
+        // Fetch from regular tables
+        let sessionsQuery = supabase
+          .from('endurance_test_sessions')
+          .select(`
+            id,
+            user_id,
+            test_date,
+            notes,
+            created_at,
+            endurance_test_data!endurance_test_data_test_session_id_fkey (
+              id,
+              exercise_id,
+              mas_meters,
+              mas_minutes,
+              mas_ms,
+              mas_kmh,
+              push_ups,
+              pull_ups,
+              t2b,
+              farmer_kg,
+              farmer_meters,
+              farmer_seconds,
+              sprint_seconds,
+              sprint_meters,
+              sprint_resistance,
+              sprint_watt,
+              vo2_max,
+              max_hr,
+              resting_hr_1min,
+              exercises (
+                id,
+                name
+              )
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        if (selectedUserId) {
+          sessionsQuery = sessionsQuery.eq('user_id', selectedUserId);
+        } else if (coachUserIds && coachUserIds.length > 0) {
+          sessionsQuery = sessionsQuery.in('user_id', coachUserIds);
+        }
+
+        const { data, error } = await sessionsQuery;
+        if (error) throw error;
+        
+        sessionsData = (data || []).filter(session => 
+          session.endurance_test_data && session.endurance_test_data.length > 0
+        );
       }
 
-      const [sessionsRes, usersRes] = await Promise.all([
-        sessionsQuery,
-        supabase.from('app_users').select('id, name, email')
-      ]);
+      const { data: usersData, error: usersError } = await supabase
+        .from('app_users')
+        .select('id, name, email');
 
-      if (sessionsRes.error) throw sessionsRes.error;
-      if (usersRes.error) throw usersRes.error;
+      if (usersError) throw usersError;
 
       const map = new Map<string, any>();
-      (usersRes.data || []).forEach(u => map.set(u.id, { name: u.name, email: u.email }));
+      (usersData || []).forEach(u => map.set(u.id, { name: u.name, email: u.email }));
       setUsersMap(map);
 
-      const filteredData = (sessionsRes.data || []).filter(session => 
-        session.endurance_test_data && session.endurance_test_data.length > 0
-      );
-      setSessions(filteredData);
+      setSessions(sessionsData);
     } catch (error) {
       console.error('Error fetching sessions:', error);
     } finally {

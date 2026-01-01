@@ -15,6 +15,7 @@ interface FunctionalHistoryTabProps {
   selectedUserId?: string;
   readOnly?: boolean;
   coachUserIds?: string[];
+  useCoachTables?: boolean;
 }
 
 interface FunctionalResult {
@@ -24,7 +25,7 @@ interface FunctionalResult {
   user_id: string;
 }
 
-export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds }) => {
+export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds, useCoachTables = false }) => {
   const usersMap = useUserNamesMap();
   const [results, setResults] = useState<FunctionalResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,23 +39,36 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
   const fetchResults = useCallback(async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('functional_test_sessions')
-        .select('id, user_id, test_date, notes')
-        .order('test_date', { ascending: false });
-      
-      // Αν έχουμε selectedUserId, φιλτράρουμε απευθείας
-      if (selectedUserId) {
-        query = query.eq('user_id', selectedUserId);
-      } else if (coachUserIds && coachUserIds.length > 0) {
-        query = query.in('user_id', coachUserIds);
+      let sessionsData: any[] = [];
+
+      if (useCoachTables && selectedUserId) {
+        // Fetch from coach tables
+        const { data: sessions, error } = await supabase
+          .from('coach_functional_test_sessions')
+          .select('id, user_id, test_date, notes')
+          .eq('user_id', selectedUserId)
+          .order('test_date', { ascending: false });
+
+        if (error) throw error;
+        sessionsData = sessions || [];
+      } else {
+        let query = supabase
+          .from('functional_test_sessions')
+          .select('id, user_id, test_date, notes')
+          .order('test_date', { ascending: false });
+        
+        if (selectedUserId) {
+          query = query.eq('user_id', selectedUserId);
+        } else if (coachUserIds && coachUserIds.length > 0) {
+          query = query.in('user_id', coachUserIds);
+        }
+
+        const { data: sessions, error } = await query;
+        if (error) throw error;
+        sessionsData = sessions || [];
       }
 
-      const { data: sessions, error } = await query;
-
-      if (error) throw error;
-
-      const newResults: FunctionalResult[] = (sessions || []).map(session => ({
+      const newResults: FunctionalResult[] = sessionsData.map(session => ({
         id: session.id,
         test_date: session.test_date,
         user_name: usersMap.get(session.user_id) || "Άγνωστος Χρήστης",
@@ -67,10 +81,9 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
     } finally {
       setLoading(false);
     }
-  }, [usersMap, selectedUserId]);
+  }, [usersMap, selectedUserId, useCoachTables, coachUserIds]);
 
   useEffect(() => {
-    // Αν έχουμε selectedUserId και readOnly, δεν χρειαζόμαστε το usersMap
     if (selectedUserId && readOnly) {
       fetchResults();
     } else if (usersMap.size > 0) {
@@ -82,14 +95,15 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
     if (results.length > 0) {
       fetchFunctionalData();
     }
-  }, [results]);
+  }, [results, useCoachTables]);
 
   const fetchFunctionalData = async () => {
     const data: Record<string, any> = {};
+    const tableName = useCoachTables ? 'coach_functional_test_data' : 'functional_test_data';
     
     for (const result of results) {
       const { data: funcData, error } = await supabase
-        .from('functional_test_data')
+        .from(tableName)
         .select('*')
         .eq('test_session_id', result.id)
         .maybeSingle();
