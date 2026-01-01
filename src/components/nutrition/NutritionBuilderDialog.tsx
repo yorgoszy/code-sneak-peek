@@ -46,7 +46,8 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
           total_daily_calories: planData.totalCalories,
           protein_target: planData.proteinTarget,
           carbs_target: planData.carbsTarget,
-          fat_target: planData.fatTarget
+          fat_target: planData.fatTarget,
+          coach_id: planData.coachId
         }])
         .select()
         .single();

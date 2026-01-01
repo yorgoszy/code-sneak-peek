@@ -275,6 +275,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
           proteinTarget,
           carbsTarget,
           fatTarget,
+          coachId: effectiveCoachId,
           days: generateWeekTemplate(totalCalories, proteinTarget, carbsTarget, fatTarget)
         };
         onComplete(planData);
@@ -298,6 +299,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
         proteinTarget,
         carbsTarget,
         fatTarget,
+        coachId: effectiveCoachId,
         days: generateWeekTemplate(totalCalories, proteinTarget, carbsTarget, fatTarget)
       };
       onComplete(planData);
