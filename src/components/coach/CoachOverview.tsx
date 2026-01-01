@@ -169,24 +169,23 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         const weeks = program.program_weeks || [];
         if (!weeks.length) return;
 
-        // Sort weeks by week_number
-        const sortedWeeks = [...weeks].sort((a: any, b: any) => a.week_number - b.week_number);
+        const daysPerWeek = weeks[0]?.program_days?.length || 0;
+        if (!daysPerWeek) return;
 
         const userName = userNameById.get(assignment.user_id) || "";
 
-        let dateIndex = 0;
-        sortedWeeks.forEach((week: any) => {
-          const sortedDays = [...(week.program_days || [])].sort((a: any, b: any) => a.day_number - b.day_number);
-          
-          sortedDays.forEach((day: any) => {
-            if (dateIndex >= trainingDates.length) return;
-            const dateStr = trainingDates[dateIndex];
-            dateIndex++;
+        // IMPORTANT: Χρησιμοποιούμε ΑΚΡΙΒΩΣ το ίδιο indexing με το useActivePrograms/admin cards
+        // (weekIndex * daysPerWeek + dayIndex) χωρίς sorting, για να ταιριάζει με το training_dates.
+        weeks.forEach((week: any, weekIndex: number) => {
+          (week.program_days || []).forEach((day: any, dayIndex: number) => {
+            const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
+            if (totalDayIndex >= trainingDates.length) return;
 
+            const dateStr = trainingDates[totalDayIndex];
             if (!dateStr || dateStr < todayStr) return;
 
-            // Check both is_test_day flag AND if test_types array has values
             const hasTestTypes = day?.test_types && Array.isArray(day.test_types) && day.test_types.length > 0;
+
             if (day.is_test_day || hasTestTypes) {
               tests.push({
                 date: dateStr,
