@@ -55,7 +55,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           const { data: coachSubscriptions, error } = await supabase
             .from('coach_subscriptions')
             .select('*, subscription_types(name, price)')
-            .eq('coach_user_id', user.id)
+            .eq('user_id', user.id)
             .order('created_at', { ascending: false });
 
           if (error) {

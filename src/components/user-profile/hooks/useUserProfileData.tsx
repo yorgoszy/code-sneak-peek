@@ -26,6 +26,9 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
 
   const fetchUserStats = async () => {
     try {
+      // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach
+      const isCoachCreatedUser = !user?.auth_user_id && user?.coach_id;
+
       // Count athletes if user is trainer
       let athletesCount = 0;
       if (user.role === 'trainer') {
@@ -74,11 +77,21 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
-      // Count receipts for any user role
-      const { count: paymentsCount } = await supabase
-        .from('receipts')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
+      // Count receipts - διαφορετικός πίνακας για coach-created users
+      let paymentsCount = 0;
+      if (isCoachCreatedUser) {
+        const { count } = await supabase
+          .from('coach_receipts')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        paymentsCount = count || 0;
+      } else {
+        const { count } = await supabase
+          .from('receipts')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        paymentsCount = count || 0;
+      }
 
       setStats({
         athletesCount,
@@ -166,13 +179,26 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
 
   const fetchUserPayments = async () => {
     try {
-      const { data } = await supabase
-        .from('receipts')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      setPayments(data || []);
+      // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach
+      const isCoachCreatedUser = !user?.auth_user_id && user?.coach_id;
+
+      if (isCoachCreatedUser) {
+        const { data } = await supabase
+          .from('coach_receipts')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        setPayments(data || []);
+      } else {
+        const { data } = await supabase
+          .from('receipts')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        setPayments(data || []);
+      }
     } catch (error) {
       console.error('Error fetching receipts:', error);
     }
