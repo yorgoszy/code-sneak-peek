@@ -34,11 +34,11 @@ export const TestDaySelector: React.FC<TestDaySelectorProps> = ({
   };
 
   return (
-    <div className="space-y-3 p-3 bg-purple-50 border border-purple-200 rounded-none">
+    <div className="space-y-3 p-3 bg-yellow-50 border border-yellow-200 rounded-none">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FlaskConical className="w-4 h-4 text-purple-600" />
-          <Label htmlFor="test-day-switch" className="text-sm font-semibold text-purple-900">
+          <FlaskConical className="w-4 h-4 text-yellow-600" />
+          <Label htmlFor="test-day-switch" className="text-sm font-semibold text-yellow-900">
             Ημέρα Τεστ
           </Label>
         </div>
@@ -50,8 +50,8 @@ export const TestDaySelector: React.FC<TestDaySelectorProps> = ({
       </div>
 
       {isTestDay && (
-        <div className="space-y-2 pt-2 border-t border-purple-200">
-          <Label className="text-xs text-purple-800">Επιλέξτε τύπους τεστ:</Label>
+        <div className="space-y-2 pt-2 border-t border-yellow-200">
+          <Label className="text-xs text-yellow-800">Επιλέξτε τύπους τεστ:</Label>
           <div className="space-y-2">
             {TEST_TYPES.map((testType) => (
               <div key={testType.value} className="flex items-center gap-2">

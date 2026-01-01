@@ -59,8 +59,8 @@ export const SortableDay: React.FC<SortableDayProps> = ({
         className={`
           rounded-none flex items-center gap-1 relative w-full
           ${isEditing ? 'h-6 text-xs px-1' : 'text-xs'}
-          ${isTestDay ? 'bg-purple-50 border-b-2 border-purple-500' : ''}
-          ${isCompetitionDay ? 'bg-orange-50 border-b-2 border-orange-500' : ''}
+          ${isTestDay ? 'bg-yellow-50 border-b-2 border-yellow-500' : ''}
+          ${isCompetitionDay ? 'bg-purple-50 border-b-2 border-purple-500' : ''}
         `}
         onDoubleClick={onDoubleClick}
       >
@@ -81,13 +81,13 @@ export const SortableDay: React.FC<SortableDayProps> = ({
             </span>
           )}
           {isTestDay && (
-            <span className="text-[9px] bg-purple-600 text-white px-1 py-0.5 font-bold flex-shrink-0 flex items-center gap-0.5">
+            <span className="text-[9px] bg-yellow-500 text-black px-1 py-0.5 font-bold flex-shrink-0 flex items-center gap-0.5">
               <FlaskConical className="w-2 h-2" />
               ΤΕΣΤ
             </span>
           )}
           {isCompetitionDay && (
-            <span className="text-[9px] bg-orange-600 text-white px-1 py-0.5 font-bold flex-shrink-0 flex items-center gap-0.5">
+            <span className="text-[9px] bg-purple-600 text-white px-1 py-0.5 font-bold flex-shrink-0 flex items-center gap-0.5">
               <Trophy className="w-2 h-2" />
               ΑΓΩΝΑΣ
             </span>

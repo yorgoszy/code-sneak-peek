@@ -80,11 +80,11 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
                 color: '#000000'
               },
               testDay: {
-                backgroundColor: '#9333ea',
-                color: '#ffffff'
+                backgroundColor: '#eab308',
+                color: '#000000'
               },
               competitionDay: {
-                backgroundColor: '#cb8954',
+                backgroundColor: '#9333ea',
                 color: '#ffffff'
               }
             }}

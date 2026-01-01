@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Trophy } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +12,7 @@ interface UpcomingCompetition {
   userId?: string;
   programName?: string;
   dayName?: string;
+  avatarUrl?: string;
 }
 
 interface AllUpcomingCompetitionsCardProps {
@@ -53,7 +55,7 @@ export const AllUpcomingCompetitionsCard = ({ coachId }: AllUpcomingCompetitions
               )
             )
           ),
-          app_users!fk_program_assignments_user_id (id, name)
+          app_users!fk_program_assignments_user_id (id, name, avatar_url)
         `)
         .in('status', ['active', 'completed'])
         .gte('end_date', todayStr);
@@ -92,7 +94,8 @@ export const AllUpcomingCompetitionsCard = ({ coachId }: AllUpcomingCompetitions
                       userName: user?.name,
                       userId: user?.id,
                       programName: program?.name,
-                      dayName: day?.name
+                      dayName: day?.name,
+                      avatarUrl: user?.avatar_url
                     });
                   }
                 }
@@ -116,7 +119,7 @@ export const AllUpcomingCompetitionsCard = ({ coachId }: AllUpcomingCompetitions
     <Card className="rounded-none">
       <CardHeader>
         <CardTitle className="flex items-center">
-          <Trophy className="h-5 w-5 mr-2 text-[#cb8954]" />
+          <Trophy className="h-5 w-5 mr-2 text-purple-600" />
           Επερχόμενοι Αγώνες
         </CardTitle>
       </CardHeader>
@@ -135,10 +138,15 @@ export const AllUpcomingCompetitionsCard = ({ coachId }: AllUpcomingCompetitions
             {upcomingCompetitions.map((comp, idx) => (
             <div 
               key={idx}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-none border border-gray-200"
+              className="flex items-center justify-between p-3 bg-purple-50 rounded-none border border-purple-200"
             >
               <div className="flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-[#cb8954]" />
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={comp.avatarUrl || ''} />
+                  <AvatarFallback className="bg-purple-100 text-purple-700 text-xs">
+                    {comp.userName?.split(' ').map(n => n[0]).join('').slice(0, 2) || '?'}
+                  </AvatarFallback>
+                </Avatar>
                 <div>
                   <p className="font-medium text-sm">
                     {format(new Date(comp.date), 'EEEE, d MMMM', { locale: el })}
@@ -147,13 +155,13 @@ export const AllUpcomingCompetitionsCard = ({ coachId }: AllUpcomingCompetitions
                     <p className="text-xs text-gray-600">{comp.userName}</p>
                   )}
                   {comp.dayName && (
-                    <p className="text-xs text-gray-500 italic">{comp.dayName}</p>
+                    <p className="text-xs text-purple-600 italic">{comp.dayName}</p>
                   )}
                 </div>
               </div>
               <div className="text-right">
                 {comp.programName && (
-                  <p className="text-xs font-medium text-gray-900">{comp.programName}</p>
+                  <p className="text-xs font-medium text-purple-700">{comp.programName}</p>
                 )}
                 <p className="text-xs text-gray-600">
                   {(() => {
