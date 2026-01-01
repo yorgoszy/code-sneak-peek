@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Trophy } from "lucide-react";
-import { useMemo } from "react";
-import { useActivePrograms } from "@/hooks/useActivePrograms";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInCalendarDays } from "date-fns";
 import { el } from "date-fns/locale";
 
@@ -13,50 +13,104 @@ interface UpcomingCompetition {
   dayName?: string;
 }
 
-export const AllUpcomingCompetitionsCard = () => {
-  const { data: activePrograms, isLoading } = useActivePrograms();
+interface AllUpcomingCompetitionsCardProps {
+  coachId?: string; // Αν δοθεί, φιλτράρει μόνο τα assignments του coach
+}
+
+export const AllUpcomingCompetitionsCard = ({ coachId }: AllUpcomingCompetitionsCardProps) => {
+  const [upcomingCompetitions, setUpcomingCompetitions] = useState<UpcomingCompetition[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-  const upcomingCompetitions = useMemo<UpcomingCompetition[]>(() => {
-    const comps: UpcomingCompetition[] = [];
-    if (!activePrograms) return comps;
+  useEffect(() => {
+    fetchAllUpcomingCompetitions();
+  }, [coachId]);
 
-    for (const assignment of activePrograms) {
-      const trainingDates = assignment.training_dates || [];
-      const program = assignment.programs as any;
-      const user = (assignment as any).app_users as any;
-      const weeks = program?.program_weeks || [];
-      if (!weeks?.length) continue;
+  const fetchAllUpcomingCompetitions = async () => {
+    try {
+      setIsLoading(true);
+      const comps: UpcomingCompetition[] = [];
 
-      const daysPerWeek = weeks[0]?.program_days?.length || 0;
-      if (!daysPerWeek) continue;
+      // Φόρτωση assignments με φιλτράρισμα
+      let assignmentsQuery = supabase
+        .from('program_assignments')
+        .select(`
+          id,
+          training_dates,
+          coach_id,
+          assigned_by,
+          programs!fk_program_assignments_program_id (
+            id,
+            name,
+            program_weeks!fk_program_weeks_program_id (
+              id,
+              week_number,
+              program_days!fk_program_days_week_id (
+                id,
+                day_number,
+                name,
+                is_competition_day
+              )
+            )
+          ),
+          app_users!fk_program_assignments_user_id (id, name)
+        `)
+        .in('status', ['active', 'completed'])
+        .gte('end_date', todayStr);
 
-      weeks.forEach((week: any, weekIndex: number) => {
-        (week.program_days || []).forEach((day: any, dayIndex: number) => {
-          if (day?.is_competition_day) {
-            const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
-            if (totalDayIndex < trainingDates.length) {
-              const dateStr = trainingDates[totalDayIndex];
-              if (dateStr >= todayStr) {
-                comps.push({
-                  date: dateStr,
-                  userName: user?.name,
-                  userId: user?.id,
-                  programName: program?.name,
-                  dayName: day?.name
-                });
+      // Φιλτράρισμα με βάση coachId
+      if (coachId) {
+        // Coach βλέπει μόνο τα δικά του assignments
+        assignmentsQuery = assignmentsQuery.or(`coach_id.eq.${coachId},assigned_by.eq.${coachId}`);
+      } else {
+        // Admin βλέπει μόνο τα assignments χωρίς coach (δικά του)
+        assignmentsQuery = assignmentsQuery.is('coach_id', null);
+      }
+
+      const { data: assignments, error } = await assignmentsQuery;
+
+      if (!error && assignments) {
+        for (const assignment of assignments as any[]) {
+          const trainingDates = assignment.training_dates || [];
+          const program = assignment.programs;
+          const user = assignment.app_users;
+          const weeks = program?.program_weeks || [];
+          if (!weeks?.length) continue;
+
+          const daysPerWeek = weeks[0]?.program_days?.length || 0;
+          if (!daysPerWeek) continue;
+
+          weeks.forEach((week: any, weekIndex: number) => {
+            (week.program_days || []).forEach((day: any, dayIndex: number) => {
+              if (day?.is_competition_day) {
+                const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
+                if (totalDayIndex < trainingDates.length) {
+                  const dateStr = trainingDates[totalDayIndex];
+                  if (dateStr >= todayStr) {
+                    comps.push({
+                      date: dateStr,
+                      userName: user?.name,
+                      userId: user?.id,
+                      programName: program?.name,
+                      dayName: day?.name
+                    });
+                  }
+                }
               }
-            }
-          }
-        });
-      });
+            });
+          });
+        }
+      }
+
+      comps.sort((a, b) => a.date.localeCompare(b.date));
+      setUpcomingCompetitions(comps);
+    } catch (error) {
+      console.error('Error fetching upcoming competitions:', error);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    comps.sort((a, b) => a.date.localeCompare(b.date));
-    return comps;
-  }, [activePrograms, todayStr]);
-
-  const loading = isLoading;
 
   return (
     <Card className="rounded-none">
@@ -67,7 +121,7 @@ export const AllUpcomingCompetitionsCard = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {isLoading ? (
           <div className="text-center py-8 text-gray-500">
             <p>Φόρτωση...</p>
           </div>

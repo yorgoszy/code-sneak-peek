@@ -155,6 +155,7 @@ export const useActivePrograms = () => {
             program_id: assignment.program_id,
             user_id: assignment.user_id,
             assigned_by: assignment.assigned_by,
+            coach_id: assignment.coach_id,
             start_date: assignment.start_date,
             end_date: assignment.end_date,
             status: assignment.status,
