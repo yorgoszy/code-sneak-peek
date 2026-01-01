@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Utensils, Calendar, Eye, History, Loader2 } from "lucide-react";
+import { Utensils, Calendar, Eye, History, Loader2, ChefHat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
@@ -28,20 +28,39 @@ interface NutritionAssignment {
   } | null;
 }
 
+interface NutritionPlan {
+  id: string;
+  name: string;
+  description: string | null;
+  total_daily_calories: number | null;
+  protein_target: number | null;
+  carbs_target: number | null;
+  fat_target: number | null;
+  goal: string | null;
+}
+
 interface UserProfileNutritionProps {
   userId: string;
   userProfile: any;
 }
 
+// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach
+const isCoachCreatedUser = (userProfile: any) => !userProfile?.auth_user_id && userProfile?.coach_id;
+
 export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ userId, userProfile }) => {
   const [activeTab, setActiveTab] = useState('active');
   const [assignments, setAssignments] = useState<NutritionAssignment[]>([]);
+  const [coachPlans, setCoachPlans] = useState<NutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAssignments();
-  }, [userId]);
+    // Αν είναι coach-created user, φέρνουμε και τα πλάνα του coach
+    if (isCoachCreatedUser(userProfile)) {
+      fetchCoachPlans();
+    }
+  }, [userId, userProfile?.coach_id]);
 
   const fetchAssignments = async () => {
     try {
@@ -76,6 +95,23 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
     }
   };
 
+  const fetchCoachPlans = async () => {
+    if (!userProfile?.coach_id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('nutrition_plans')
+        .select('id, name, description, total_daily_calories, protein_target, carbs_target, fat_target, goal')
+        .eq('coach_id', userProfile.coach_id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCoachPlans(data || []);
+    } catch (error) {
+      console.error('Error fetching coach plans:', error);
+    }
+  };
+
   const today = new Date().toISOString().split('T')[0];
   
   const activeAssignments = assignments.filter(a => 
@@ -97,6 +133,16 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
       return <Badge className="rounded-none bg-[#00ffba] text-black">Ενεργό</Badge>;
     }
     return <Badge variant="outline" className="rounded-none">{assignment.status}</Badge>;
+  };
+
+  const getGoalLabel = (goal: string | null) => {
+    switch (goal) {
+      case 'weight_loss': return 'Απώλεια Βάρους';
+      case 'muscle_gain': return 'Αύξηση Μυϊκής Μάζας';
+      case 'maintenance': return 'Διατήρηση';
+      case 'performance': return 'Απόδοση';
+      default: return goal || 'Γενικό';
+    }
   };
 
   if (loading) {
@@ -168,6 +214,60 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
     </Card>
   );
 
+  const renderCoachPlanCard = (plan: NutritionPlan) => (
+    <Card key={plan.id} className="rounded-none">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <ChefHat className="w-5 h-5 text-[#cb8954]" />
+              <h3 className="font-medium">{plan.name}</h3>
+              <Badge variant="outline" className="rounded-none text-[10px]">
+                {getGoalLabel(plan.goal)}
+              </Badge>
+            </div>
+            
+            {plan.description && (
+              <p className="text-sm text-gray-500 mb-3">{plan.description}</p>
+            )}
+            
+            <div className="grid grid-cols-4 gap-2 text-center text-xs">
+              <div className="bg-gray-50 p-2 rounded-none">
+                <div className="font-semibold text-[#00ffba]">{plan.total_daily_calories || '-'}</div>
+                <div className="text-gray-500">kcal</div>
+              </div>
+              <div className="bg-gray-50 p-2 rounded-none">
+                <div className="font-semibold text-blue-600">{plan.protein_target || '-'}g</div>
+                <div className="text-gray-500">Π</div>
+              </div>
+              <div className="bg-gray-50 p-2 rounded-none">
+                <div className="font-semibold text-orange-600">{plan.carbs_target || '-'}g</div>
+                <div className="text-gray-500">Υ</div>
+              </div>
+              <div className="bg-gray-50 p-2 rounded-none">
+                <div className="font-semibold text-yellow-600">{plan.fat_target || '-'}g</div>
+                <div className="text-gray-500">Λ</div>
+              </div>
+            </div>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedPlanId(plan.id)}
+            className="rounded-none"
+          >
+            <Eye className="w-4 h-4 mr-1" />
+            Προβολή
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // Για coach-created users, αν δεν υπάρχουν αναθέσεις αλλά υπάρχουν πλάνα του coach
+  const showCoachPlans = isCoachCreatedUser(userProfile) && coachPlans.length > 0;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -187,6 +287,12 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
             <History className="w-4 h-4 mr-2" />
             Ιστορικό ({historyAssignments.length})
           </TabsTrigger>
+          {showCoachPlans && (
+            <TabsTrigger value="coach-plans" className="rounded-none">
+              <ChefHat className="w-4 h-4 mr-2" />
+              Πλάνα Coach ({coachPlans.length})
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="active" className="mt-4 space-y-3">
@@ -198,7 +304,10 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
                   Δεν υπάρχει ενεργό πρόγραμμα
                 </h3>
                 <p className="text-gray-500">
-                  Επικοινωνήστε με τον προπονητή σας για να σας αναθέσει ένα πρόγραμμα διατροφής.
+                  {showCoachPlans 
+                    ? 'Δείτε τα διαθέσιμα πλάνα του coach σας στην καρτέλα "Πλάνα Coach".'
+                    : 'Επικοινωνήστε με τον προπονητή σας για να σας αναθέσει ένα πρόγραμμα διατροφής.'
+                  }
                 </p>
               </CardContent>
             </Card>
@@ -224,6 +333,15 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
             historyAssignments.map(renderAssignmentCard)
           )}
         </TabsContent>
+
+        {showCoachPlans && (
+          <TabsContent value="coach-plans" className="mt-4 space-y-3">
+            <p className="text-sm text-gray-500 mb-2">
+              Τα διαθέσιμα πλάνα διατροφής που έχει δημιουργήσει ο coach σας:
+            </p>
+            {coachPlans.map(renderCoachPlanCard)}
+          </TabsContent>
+        )}
       </Tabs>
 
       {selectedPlanId && (
