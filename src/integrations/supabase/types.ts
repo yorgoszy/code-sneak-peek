@@ -6591,6 +6591,10 @@ export type Database = {
         Args: { athlete_id: string; exercise_id: string }
         Returns: number
       }
+      get_nutrition_plan_coach_id_safe: {
+        Args: { p_plan_id: string }
+        Returns: string
+      }
       get_suggested_velocity: {
         Args: { athlete_id: string; exercise_id: string; percentage: number }
         Returns: number
