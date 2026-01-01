@@ -263,7 +263,11 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
       if (error) throw error;
 
       if (data?.plan) {
-        onComplete(data.plan);
+        // Ensure coachId is always present for DB insert + RLS
+        onComplete({
+          ...data.plan,
+          coachId: effectiveCoachId,
+        });
       } else {
         // Fallback: create a basic template
         const goalLabel = GOALS.find(g => g.value === formData.goal)?.label || 'Γενικό';
