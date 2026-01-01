@@ -130,11 +130,29 @@ serve(async (req) => {
       });
     }
 
-    // Create a compact food list for the prompt
-    const foodSummary = Object.entries(foodsByCategory).map(([cat, items]) => {
-      const itemNames = items.map(f => `${f.name} (${f.calories_per_100g}kcal, P:${f.protein_per_100g}g, C:${f.carbs_per_100g}g, F:${f.fat_per_100g}g per 100${f.portion_unit})`).join(", ");
-      return `${cat}: ${itemNames}`;
-    }).join("\n");
+    // Create a compact food list for the prompt (keep it small to stay fast)
+    const MAX_PER_CATEGORY = 12;
+    const MAX_TOTAL = 80;
+    let totalIncluded = 0;
+
+    const foodSummary = Object.entries(foodsByCategory)
+      .map(([cat, items]) => {
+        if (totalIncluded >= MAX_TOTAL) return null;
+        const slice = items.slice(0, Math.max(0, Math.min(MAX_PER_CATEGORY, MAX_TOTAL - totalIncluded)));
+        totalIncluded += slice.length;
+
+        // ultra-compact: name|kcal|P|C|F (per 100g)
+        const itemStr = slice
+          .map((f) => `${f.name}|${f.calories_per_100g}kcal|P${f.protein_per_100g}|C${f.carbs_per_100g}|F${f.fat_per_100g}`)
+          .join(", ");
+
+        return `${cat}: ${itemStr}`;
+      })
+      .filter(Boolean)
+      .join("\n");
+
+    console.log(`Food summary items included: ${totalIncluded}`);
+
 
     const system =
       `Είσαι έμπειρος κλινικός διατροφολόγος. Θα δημιουργήσεις εβδομαδιαίο πλάνο διατροφής ΧΡΗΣΙΜΟΠΟΙΩΝΤΑΣ ΜΟΝΟ τα παρακάτω τρόφιμα από τη βάση δεδομένων. ΕΠΙΣΤΡΕΦΕΙΣ ΜΟΝΟ ΕΓΚΥΡΟ JSON, χωρίς markdown.`;
@@ -165,14 +183,13 @@ serve(async (req) => {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.4,
-      }),
+       body: JSON.stringify({
+         model: "google/gemini-2.5-flash",
+         messages: [
+           { role: "system", content: system },
+           { role: "user", content: prompt },
+         ],
+       }),
     });
 
     if (!aiResp.ok) {

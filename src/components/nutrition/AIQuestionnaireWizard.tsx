@@ -574,11 +574,8 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
             </div>
             <div>
               <h3 className="font-medium text-lg">Έτοιμο για Δημιουργία!</h3>
-              <p className="text-sm text-gray-500 mt-2">
-                Το AI θα δημιουργήσει ένα εξατομικευμένο εβδομαδιαίο πρόγραμμα διατροφής
-                βασισμένο στις απαντήσεις σας.
-              </p>
             </div>
+
 
             <Card className="rounded-none text-left">
               <CardContent className="p-4 space-y-2 text-sm">
