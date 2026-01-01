@@ -41,13 +41,15 @@ export const CoachNutritionPlanList: React.FC = () => {
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
-  const { userProfile } = useRoleCheck();
+  const { userProfile, loading: roleLoading } = useRoleCheck();
 
   useEffect(() => {
-    if (userProfile?.id) {
+    if (!roleLoading && userProfile?.id) {
       fetchPlans();
+    } else if (!roleLoading && !userProfile?.id) {
+      setLoading(false);
     }
-  }, [userProfile?.id]);
+  }, [userProfile?.id, roleLoading]);
 
   const fetchPlans = async () => {
     try {
@@ -105,7 +107,7 @@ export const CoachNutritionPlanList: React.FC = () => {
     setIsAssignDialogOpen(true);
   };
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="text-center py-8 text-gray-500">
         Φόρτωση προγραμμάτων...
