@@ -1,6 +1,7 @@
 import { 
   Home, 
   Users, 
+  UsersRound,
   ArrowLeft,
   Brain,
   CreditCard,
@@ -55,6 +56,12 @@ export const CoachSidebar = ({
       icon: Users,
       label: "Οι Αθλητές μου",
       path: effectiveCoachId ? `/dashboard/my-athletes?coachId=${effectiveCoachId}` : "/dashboard/my-athletes",
+      badge: null,
+    },
+    {
+      icon: UsersRound,
+      label: "Ομάδες",
+      path: effectiveCoachId ? `/dashboard/coach-groups?coachId=${effectiveCoachId}` : "/dashboard/coach-groups",
       badge: null,
     },
     {
