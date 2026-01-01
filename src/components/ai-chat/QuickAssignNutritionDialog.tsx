@@ -8,8 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, X, User, Utensils, Loader2 } from "lucide-react";
 import { addDays, format } from "date-fns";
-import { useLocation } from "react-router-dom";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useEffectiveCoachId } from "@/hooks/useEffectiveCoachId";
 export interface AINutritionData {
   name: string;
   description?: string;
@@ -44,11 +43,6 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
   defaultUserId,
 }) => {
   const today = new Date().toISOString().split('T')[0];
-  const location = useLocation();
-  const urlCoachId = useMemo(() => {
-    const v = new URLSearchParams(location.search).get('coachId');
-    return v ? String(v) : undefined;
-  }, [location.search]);
 
   const [name, setName] = useState(nutritionData?.name || "Πρόγραμμα Διατροφής");
   const [startDate, setStartDate] = useState(today);
@@ -61,7 +55,8 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const { userProfile, isCoach, isAdmin, loading } = useRoleCheck();
+
+  const { effectiveCoachId, loading } = useEffectiveCoachId();
 
   // Helper για αναζήτηση χρήστη με όνομα (χωρίς τόνους)
   const normalizeGreek = (str: string): string => {
@@ -79,11 +74,15 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
     // Wait until roles are loaded so coach filtering is correct
     if (loading) return;
 
+    // Ensure we never keep a previous (admin) list around
+    setUsers([]);
+    setFilteredUsers([]);
+
     fetchUsers();
     if (nutritionData) {
       setName(nutritionData.name || "Πρόγραμμα Διατροφής");
     }
-  }, [isOpen, nutritionData, loading, userProfile?.id]);
+  }, [isOpen, nutritionData, loading, effectiveCoachId]);
 
   // Priority: nutritionData.targetUserId > defaultUserId
   // Υποστηρίζει UUID αλλά και αναζήτηση με όνομα (ίδια λογική με QuickAssignProgramDialog)
@@ -138,20 +137,18 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
 
   const fetchUsers = async () => {
     try {
-      const effectiveCoachId =
-        urlCoachId || (isCoach() && !isAdmin() ? userProfile?.id : undefined);
-
-      let query = supabase
-        .from('app_users')
-        .select('id, name, email, avatar_url')
-        .order('name');
-
-      // ΠΑΝΤΑ: αν είμαστε σε coach context, δείχνουμε μόνο τους app_users με coach_id
-      if (effectiveCoachId) {
-        query = query.eq('coach_id', effectiveCoachId);
+      // Σε αυτά τα dialogs θέλουμε ΠΑΝΤΑ coach context.
+      if (!effectiveCoachId) {
+        setUsers([]);
+        return;
       }
 
-      const { data, error } = await query;
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, email, avatar_url')
+        .eq('coach_id', effectiveCoachId)
+        .order('name');
+
       if (error) throw error;
 
       setUsers(data || []);
@@ -343,7 +340,7 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-none">
+      <DialogContent className="rounded-none w-[95vw] sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Utensils className="w-5 h-5 text-[#00ffba]" />
@@ -425,7 +422,7 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Ημ. έναρξης</Label>
               <Input

@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus, Trash2, Loader2, Search, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffectiveCoachId } from "@/hooks/useEffectiveCoachId";
 
 interface NutritionDayBuilderProps {
   onComplete: (planData: any) => void;
@@ -68,6 +69,8 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
   const [planDescription, setPlanDescription] = useState('');
   const [goal, setGoal] = useState('');
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+
+  const { effectiveCoachId, loading: rolesLoading } = useEffectiveCoachId();
   
   // User selection
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -91,8 +94,9 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
   );
 
   useEffect(() => {
+    if (rolesLoading) return;
     fetchUsers();
-  }, []);
+  }, [rolesLoading, effectiveCoachId]);
 
   useEffect(() => {
     if (searchTerm) {
@@ -110,9 +114,15 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
 
   const fetchUsers = async () => {
     try {
+      if (!effectiveCoachId) {
+        setUsers([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('app_users')
         .select('id, name, email, avatar_url, photo_url')
+        .eq('coach_id', effectiveCoachId)
         .order('name');
 
       if (error) throw error;
@@ -243,14 +253,14 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
           <User className="w-4 h-4" />
           Χρήστης *
         </Label>
-        {selectedUser ? (
-          <div className="flex items-center gap-2 p-2 border border-[#00ffba] bg-[#00ffba]/5 rounded-none">
-            <Avatar className="w-8 h-8 rounded-none">
-              <AvatarImage src={selectedUser.photo_url || selectedUser.avatar_url} />
-              <AvatarFallback className="rounded-none bg-[#cb8954] text-white text-xs">
-                {selectedUser.name.substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+          {selectedUser ? (
+            <div className="flex items-center gap-2 p-2 border border-[#00ffba] bg-[#00ffba]/5 rounded-none">
+              <Avatar className="w-8 h-8 rounded-full">
+                <AvatarImage src={selectedUser.photo_url || selectedUser.avatar_url} className="rounded-full" />
+                <AvatarFallback className="rounded-full bg-[#cb8954] text-white text-xs">
+                  {selectedUser.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{selectedUser.name}</p>
               <p className="text-xs text-gray-500 truncate">{selectedUser.email}</p>

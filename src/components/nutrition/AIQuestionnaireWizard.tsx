@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Brain, Loader2, ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useEffectiveCoachId } from "@/hooks/useEffectiveCoachId";
 
 interface AIQuestionnaireWizardProps {
   onComplete: (planData: any) => void;
@@ -59,7 +60,9 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [users, setUsers] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
-  
+
+  const { effectiveCoachId, loading: rolesLoading } = useEffectiveCoachId();
+
   const [formData, setFormData] = useState({
     userId: '',
     userName: '',
@@ -81,14 +84,21 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
   });
 
   useEffect(() => {
+    if (rolesLoading) return;
     fetchUsers();
-  }, []);
+  }, [rolesLoading, effectiveCoachId]);
 
   const fetchUsers = async () => {
     try {
+      if (!effectiveCoachId) {
+        setUsers([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('app_users')
         .select('id, name, birth_date, avatar_url, photo_url')
+        .eq('coach_id', effectiveCoachId)
         .order('name');
 
       if (error) throw error;
@@ -347,9 +357,9 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
                 onClick={() => handleUserSelect(user.id)}
               >
                 <CardContent className="p-3 flex items-center gap-3">
-                  <Avatar className="w-8 h-8 rounded-none">
+                  <Avatar className="w-8 h-8 rounded-full">
                     <AvatarImage src={user.photo_url || user.avatar_url} />
-                    <AvatarFallback className="rounded-none bg-[#cb8954] text-white text-sm">
+                    <AvatarFallback className="rounded-full bg-[#cb8954] text-white text-sm">
                       {user.name?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
