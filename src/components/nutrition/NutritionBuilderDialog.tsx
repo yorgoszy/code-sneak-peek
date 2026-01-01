@@ -35,38 +35,83 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
   const handleAIComplete = async (planData: any) => {
     try {
       setLoading(true);
-      
+
+      if (!planData?.days || !Array.isArray(planData.days) || planData.days.length === 0) {
+        throw new Error('Το AI επέστρεψε κενό πλάνο');
+      }
+
+      const normalizeNumber = (v: any, fallback?: number) => {
+        const n = typeof v === 'number' ? v : Number(String(v ?? '').replace(',', '.'));
+        return Number.isFinite(n) ? n : fallback;
+      };
+
+      const normalized = {
+        ...planData,
+        totalCalories: normalizeNumber(planData.totalCalories, 0),
+        proteinTarget: normalizeNumber(planData.proteinTarget, 0),
+        carbsTarget: normalizeNumber(planData.carbsTarget, 0),
+        fatTarget: normalizeNumber(planData.fatTarget, 0),
+        days: planData.days.map((day: any) => ({
+          ...day,
+          dayNumber: normalizeNumber(day.dayNumber ?? day.day_number, 1) ?? 1,
+          totalCalories: normalizeNumber(day.totalCalories ?? day.total_calories, null),
+          totalProtein: normalizeNumber(day.totalProtein ?? day.total_protein, null),
+          totalCarbs: normalizeNumber(day.totalCarbs ?? day.total_carbs, null),
+          totalFat: normalizeNumber(day.totalFat ?? day.total_fat, null),
+          meals: (day.meals ?? []).map((meal: any, idx: number) => ({
+            ...meal,
+            order: normalizeNumber(meal.order ?? meal.meal_order, idx + 1) ?? (idx + 1),
+            totalCalories: normalizeNumber(meal.totalCalories ?? meal.total_calories, null),
+            totalProtein: normalizeNumber(meal.totalProtein ?? meal.total_protein, null),
+            totalCarbs: normalizeNumber(meal.totalCarbs ?? meal.total_carbs, null),
+            totalFat: normalizeNumber(meal.totalFat ?? meal.total_fat, null),
+            foods: (meal.foods ?? []).map((food: any) => ({
+              ...food,
+              quantity: normalizeNumber(food.quantity, 0) ?? 0,
+              calories: normalizeNumber(food.calories, null),
+              protein: normalizeNumber(food.protein, null),
+              carbs: normalizeNumber(food.carbs, null),
+              fat: normalizeNumber(food.fat, null),
+            })),
+          })),
+        })),
+      };
+
       // Create nutrition plan
       const { data: plan, error: planError } = await supabase
         .from('nutrition_plans')
-        .insert([{
-          name: planData.name,
-          description: planData.description,
-          goal: planData.goal,
-          total_daily_calories: planData.totalCalories,
-          protein_target: planData.proteinTarget,
-          carbs_target: planData.carbsTarget,
-          fat_target: planData.fatTarget,
-          coach_id: planData.coachId
-        }])
+        .insert([
+          {
+            name: normalized.name,
+            description: normalized.description,
+            goal: normalized.goal,
+            total_daily_calories: normalized.totalCalories,
+            protein_target: normalized.proteinTarget,
+            carbs_target: normalized.carbsTarget,
+            fat_target: normalized.fatTarget,
+            coach_id: normalized.coachId,
+          },
+        ])
         .select()
         .single();
 
       if (planError) throw planError;
 
       // Create days and meals
-      for (const day of planData.days) {
+      for (const day of normalized.days) {
         const { data: dayData, error: dayError } = await supabase
           .from('nutrition_plan_days')
-          .insert([{
-            plan_id: plan.id,
-            day_number: day.dayNumber,
-            name: day.name,
-            total_calories: day.totalCalories,
-            total_protein: day.totalProtein,
-            total_carbs: day.totalCarbs,
-            total_fat: day.totalFat
-          }])
+          .insert([
+            {
+              plan_id: plan.id,
+              day_number: day.dayNumber,
+              name: day.name,
+              total_calories: day.totalCalories,
+              total_protein: day.totalProtein,
+              total_carbs: day.totalCarbs,
+              total_fat: day.totalFat,
+            },
+          ])
           .select()
           .single();
 
@@ -76,17 +121,19 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
         for (const meal of day.meals) {
           const { data: mealData, error: mealError } = await supabase
             .from('nutrition_meals')
-            .insert([{
-              day_id: dayData.id,
-              meal_type: meal.type,
-              meal_order: meal.order,
-              name: meal.name,
-              description: meal.description,
-              total_calories: meal.totalCalories,
-              total_protein: meal.totalProtein,
-              total_carbs: meal.totalCarbs,
-              total_fat: meal.totalFat
-            }])
+            .insert([
+              {
+                day_id: dayData.id,
+                meal_type: String(meal.type ?? ''),
+                meal_order: meal.order,
+                name: String(meal.name ?? ''),
+                description: meal.description ?? null,
+                total_calories: meal.totalCalories,
+                total_protein: meal.totalProtein,
+                total_carbs: meal.totalCarbs,
+                total_fat: meal.totalFat,
+              },
+            ])
             .select()
             .single();
 
@@ -105,7 +152,7 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
               carbs: food.carbs,
               fat: food.fat,
               notes: food.notes || null,
-              food_order: index
+              food_order: index,
             }));
 
             const { error: foodsError } = await supabase
@@ -118,9 +165,9 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
       }
 
       onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating nutrition plan:', error);
-      toast.error('Σφάλμα κατά τη δημιουργία του προγράμματος');
+      toast.error(error?.message || 'Σφάλμα κατά τη δημιουργία του προγράμματος');
     } finally {
       setLoading(false);
     }
