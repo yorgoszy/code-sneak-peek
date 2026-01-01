@@ -170,9 +170,6 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
               {getStatusBadge(assignment)}
             </div>
             
-            {assignment.nutrition_plans?.description && (
-              <p className="text-sm text-gray-500 mb-3">{assignment.nutrition_plans.description}</p>
-            )}
             
             <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
               <span className="flex items-center gap-1">
@@ -208,12 +205,13 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
           
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
             onClick={() => setSelectedPlanId(assignment.plan_id)}
             className="rounded-none"
+            aria-label="Προβολή πλάνου διατροφής"
+            title="Προβολή"
           >
-            <Eye className="w-4 h-4 mr-1" />
-            Προβολή
+            <Eye className="w-4 h-4" />
           </Button>
         </div>
       </CardContent>
@@ -259,12 +257,13 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
           
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
             onClick={() => setSelectedPlanId(plan.id)}
             className="rounded-none"
+            aria-label="Προβολή πλάνου διατροφής"
+            title="Προβολή"
           >
-            <Eye className="w-4 h-4 mr-1" />
-            Προβολή
+            <Eye className="w-4 h-4" />
           </Button>
         </div>
       </CardContent>
