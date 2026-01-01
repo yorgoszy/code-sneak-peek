@@ -19,6 +19,38 @@ export const assignmentService = {
       // Προαιρετικά: όταν κάνουμε ανάθεση “μέσα” από προφίλ coach (admin acting as coach), περνάμε coachId
       const coachId: string | undefined = assignmentData.coachId || undefined;
 
+      // Αν ΔΕΝ μας δώσουν assignedBy/coachId, το infer-άρουμε από τον τρέχοντα χρήστη
+      // (program_assignments.assigned_by είναι FK προς app_users.id, όχι auth.uid)
+      let inferredAssignedBy: string | null = assignmentData.assignedBy || coachId || null;
+      let inferredCoachId: string | undefined = coachId;
+
+      if (!inferredAssignedBy || !inferredCoachId) {
+        const { data: auth } = await supabase.auth.getUser();
+        const authUserId = auth.user?.id;
+
+        if (authUserId) {
+          const { data: me, error: meErr } = await supabase
+            .from('app_users')
+            .select('id, role')
+            .eq('auth_user_id', authUserId)
+            .maybeSingle();
+
+          if (meErr) {
+            console.warn('⚠️ [AssignmentService] Could not resolve current app_user:', meErr);
+          }
+
+          if (me?.id) {
+            // Το assigned_by πρέπει να δείχνει ποιος έκανε την ανάθεση (coach/admin)
+            inferredAssignedBy = inferredAssignedBy || me.id;
+
+            // Αν είναι coach και δεν πέρασε coachId, γεμίζουμε και coach_id
+            if (!inferredCoachId && me.role === 'coach') {
+              inferredCoachId = me.id;
+            }
+          }
+        }
+      }
+
       if (!assignmentData.trainingDates || assignmentData.trainingDates.length === 0) {
         throw new Error('Λείπουν οι ημερομηνίες προπόνησης');
       }
@@ -77,11 +109,12 @@ export const assignmentService = {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         // Ποιος έκανε την ανάθεση (coach/admin)
-        assigned_by: assignmentData.assignedBy || coachId || null,
+        assigned_by: inferredAssignedBy,
       };
 
-      if (coachId) {
-        insertData.coach_id = coachId;
+      // Αν έχει “υπεύθυνο” coach για το assignment, το γράφουμε ώστε να μπορεί να φιλτραριστεί εύκολα στα coach dashboards
+      if (inferredCoachId) {
+        insertData.coach_id = inferredCoachId;
       }
 
       console.log('💾 [AssignmentService] Data to insert into database:', insertData);

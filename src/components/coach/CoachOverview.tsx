@@ -69,46 +69,58 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         .gte("created_at", monthStart)
         .lte("created_at", monthEnd);
 
-      // 2) Active assignments for this coach
-      // Primary rule: δείχνουμε αυτά που ανατέθηκαν από τον coach (assigned_by/coach_id).
-      // Fallback (legacy δεδομένα): αν ΔΕΝ υπάρχει κανένα αποτέλεσμα, τραβάμε assignments για προγράμματα που ανήκουν στον coach.
+      // 2) Active assignments relevant to this coach
+      // Στόχος: να εμφανίζονται σωστά τα upcoming tests/competitions στο coach dashboard.
+      // Για να καλύψουμε και legacy δεδομένα (NULL assigned_by/coach_id), κάνουμε “ένωση” από 4 πηγές:
+      // A) assigned_by = coachId
+      // B) coach_id = coachId
+      // C) assignments των αθλητών που έχουν app_users.coach_id = coachId
+      // D) assignments για προγράμματα που ανήκουν στον coach (programs.coach_id = coachId)
+
       const baseAssignmentsQuery = supabase
         .from("program_assignments")
-        .select("id, user_id, program_id, training_dates")
+        .select("id, user_id, program_id, training_dates, assigned_by, coach_id")
         .eq("status", "active")
         .not("training_dates", "is", null);
 
-      let { data: assignments, error: assignmentsError } = await baseAssignmentsQuery.or(
-        `assigned_by.eq.${coachId},coach_id.eq.${coachId}`
-      );
+      const [byAssignerRes, coachAthletesRes, coachProgramsRes] = await Promise.all([
+        baseAssignmentsQuery.or(`assigned_by.eq.${coachId},coach_id.eq.${coachId}`),
+        supabase.from("app_users").select("id").eq("coach_id", coachId),
+        supabase.from("programs").select("id").eq("coach_id", coachId),
+      ]);
 
-      if (assignmentsError) {
-        console.error("❌ Error fetching assignments:", assignmentsError);
-        throw assignmentsError;
+      if (byAssignerRes.error) {
+        console.error("❌ Error fetching assignments (by assigner/coach_id):", byAssignerRes.error);
+        throw byAssignerRes.error;
       }
 
-      // Legacy fallback: παλιά assignments μπορεί να έχουν NULL assigned_by/coach_id.
-      if (!assignments || assignments.length === 0) {
-        const { data: coachPrograms } = await supabase
-          .from("programs")
-          .select("id")
-          .eq("coach_id", coachId);
+      const athleteIds = (coachAthletesRes.data || []).map((u: any) => u.id).filter(Boolean);
+      const coachProgramIds = (coachProgramsRes.data || []).map((p: any) => p.id).filter(Boolean);
 
-        const coachProgramIds = (coachPrograms || []).map((p: any) => p.id).filter(Boolean);
+      const [byAthletesRes, byProgramsRes] = await Promise.all([
+        athleteIds.length > 0 ? baseAssignmentsQuery.in("user_id", athleteIds) : Promise.resolve({ data: [], error: null } as any),
+        coachProgramIds.length > 0 ? baseAssignmentsQuery.in("program_id", coachProgramIds) : Promise.resolve({ data: [], error: null } as any),
+      ]);
 
-        if (coachProgramIds.length > 0) {
-          const fallbackRes = await baseAssignmentsQuery.in("program_id", coachProgramIds);
-          assignments = fallbackRes.data as any;
-          assignmentsError = fallbackRes.error as any;
-
-          if (assignmentsError) {
-            console.error("❌ Error fetching assignments (legacy fallback):", assignmentsError);
-            throw assignmentsError;
-          }
-        }
+      if (byAthletesRes.error) {
+        console.error("❌ Error fetching assignments (by athletes):", byAthletesRes.error);
+        throw byAthletesRes.error;
       }
 
-      console.log("✅ Assignments fetched for coach (with legacy fallback):", assignments?.length);
+      if (byProgramsRes.error) {
+        console.error("❌ Error fetching assignments (by programs):", byProgramsRes.error);
+        throw byProgramsRes.error;
+      }
+
+      // Merge + de-dupe
+      const merged = [...(byAssignerRes.data || []), ...(byAthletesRes.data || []), ...(byProgramsRes.data || [])];
+      const dedupedMap = new Map<string, any>();
+      merged.forEach((a: any) => {
+        if (a?.id) dedupedMap.set(a.id, a);
+      });
+      const assignments = Array.from(dedupedMap.values());
+
+      console.log("✅ Assignments fetched for coach (merged):", assignments.length);
 
       const userIds = Array.from(new Set((assignments || []).map((a: any) => a.user_id).filter(Boolean)));
       const programIds = Array.from(new Set((assignments || []).map((a: any) => a.program_id).filter(Boolean)));
