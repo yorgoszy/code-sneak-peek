@@ -12,6 +12,7 @@ interface Exercise {
   description: string | null;
   video_url: string | null;
   categories: { name: string; type: string }[];
+  coach_id?: string | null;
 }
 
 interface ExercisesTableProps {
@@ -22,6 +23,8 @@ interface ExercisesTableProps {
   onEditExercise: (exercise: Exercise) => void;
   onDeleteExercise: (exerciseId: string) => void;
   onVideoClick: (exercise: Exercise) => void;
+  coachId?: string;
+  isAdmin?: boolean;
 }
 
 export const ExercisesTable: React.FC<ExercisesTableProps> = ({
@@ -31,8 +34,18 @@ export const ExercisesTable: React.FC<ExercisesTableProps> = ({
   activeFiltersCount,
   onEditExercise,
   onDeleteExercise,
-  onVideoClick
+  onVideoClick,
+  coachId,
+  isAdmin = false
 }) => {
+  // Helper function to check if user can edit/delete
+  const canModify = (exercise: Exercise) => {
+    // Admin can modify everything
+    if (isAdmin) return true;
+    // Coach can only modify their own exercises
+    if (coachId && exercise.coach_id === coachId) return true;
+    return false;
+  };
   if (loadingExercises) {
     return (
       <div className="bg-white rounded-none shadow">
@@ -109,14 +122,18 @@ export const ExercisesTable: React.FC<ExercisesTableProps> = ({
               </div>
             )}
             
-            {/* Actions */}
-            <div className="flex justify-end pt-1 border-t">
-              <ExercisesActions
-                exercise={exercise}
-                onEdit={onEditExercise}
-                onDelete={onDeleteExercise}
-              />
-            </div>
+            {/* Actions - only show if user can modify */}
+            {canModify(exercise) && (
+              <div className="flex justify-end pt-1 border-t">
+                <ExercisesActions
+                  exercise={exercise}
+                  onEdit={onEditExercise}
+                  onDelete={onDeleteExercise}
+                  canEdit={canModify(exercise)}
+                  canDelete={canModify(exercise)}
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -179,11 +196,15 @@ export const ExercisesTable: React.FC<ExercisesTableProps> = ({
                   )}
                 </TableCell>
                 <TableCell className="text-right py-2">
-                  <ExercisesActions
-                    exercise={exercise}
-                    onEdit={onEditExercise}
-                    onDelete={onDeleteExercise}
-                  />
+                  {canModify(exercise) && (
+                    <ExercisesActions
+                      exercise={exercise}
+                      onEdit={onEditExercise}
+                      onDelete={onDeleteExercise}
+                      canEdit={canModify(exercise)}
+                      canDelete={canModify(exercise)}
+                    />
+                  )}
                 </TableCell>
               </TableRow>
             ))}

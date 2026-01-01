@@ -62,7 +62,7 @@ export const NutritionPage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="foods" className="mt-4">
-          <FoodsManagement key={`foods-${refreshKey}`} />
+          <FoodsManagement key={`foods-${refreshKey}`} isAdmin={true} />
         </TabsContent>
       </Tabs>
 
