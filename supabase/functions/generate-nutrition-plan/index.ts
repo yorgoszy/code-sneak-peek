@@ -156,14 +156,30 @@ serve(async (req) => {
       });
     }
 
+    const extractJson = (text: string) => {
+      // 1) Strip markdown code fences if present
+      const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+      if (fenced?.[1]) return fenced[1].trim();
+
+      // 2) Otherwise, try to slice from first "{" to last "}" (common when model adds prose)
+      const start = text.indexOf("{");
+      const end = text.lastIndexOf("}");
+      if (start !== -1 && end !== -1 && end > start) {
+        return text.slice(start, end + 1).trim();
+      }
+
+      return text.trim();
+    };
+
     try {
-      const plan = JSON.parse(content);
+      const cleaned = extractJson(content);
+      const plan = JSON.parse(cleaned);
       return new Response(JSON.stringify({ plan }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     } catch (e) {
-      console.error("Failed to parse AI JSON:", e, "content:", content);
+      console.error("Failed to parse AI JSON:", e, "raw:", content);
       return new Response(JSON.stringify({ plan: fallbackPlan(payload) }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
