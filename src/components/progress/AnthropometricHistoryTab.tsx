@@ -38,7 +38,7 @@ interface EditFormData {
 export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds, useCoachTables = false }) => {
   const { t } = useTranslation();
   const usersMap = useUserNamesMap();
-  const { results, loading, refetch } = useAnthropometricTestResults(usersMap, selectedUserId, coachUserIds);
+  const { results, loading, refetch } = useAnthropometricTestResults(usersMap, selectedUserId, coachUserIds, useCoachTables);
   const [anthropometricData, setAnthropometricData] = useState<Record<string, any>>({});
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [userSearch, setUserSearch] = useState<string>("");
@@ -101,10 +101,13 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
   const handleDeleteConfirm = async () => {
     if (!sessionToDelete) return;
 
+    const sessionsTable = useCoachTables ? 'coach_anthropometric_test_sessions' : 'anthropometric_test_sessions';
+    const dataTable = useCoachTables ? 'coach_anthropometric_test_data' : 'anthropometric_test_data';
+
     try {
       // Delete anthropometric data first (foreign key)
       const { error: dataError } = await supabase
-        .from('anthropometric_test_data')
+        .from(dataTable)
         .delete()
         .eq('test_session_id', sessionToDelete);
 
@@ -112,7 +115,7 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
 
       // Delete session
       const { error: sessionError } = await supabase
-        .from('anthropometric_test_sessions')
+        .from(sessionsTable)
         .delete()
         .eq('id', sessionToDelete);
 
@@ -155,15 +158,17 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
   const handleEditSave = async () => {
     if (!editingSessionId) return;
 
+    const dataTable = useCoachTables ? 'coach_anthropometric_test_data' : 'anthropometric_test_data';
+
     try {
       const updateData: Record<string, number | null> = {};
-      
+
       Object.entries(editFormData).forEach(([key, value]) => {
         updateData[key] = value ? parseFloat(value) : null;
       });
 
       const { error } = await supabase
-        .from('anthropometric_test_data')
+        .from(dataTable)
         .update(updateData)
         .eq('test_session_id', editingSessionId);
 
