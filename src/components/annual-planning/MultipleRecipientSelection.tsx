@@ -182,7 +182,52 @@ export const MultipleRecipientSelection: React.FC<MultipleRecipientSelectionProp
 
   return (
     <div className="space-y-2">
-      <label className="text-xs font-medium">Επιλογή Αποδεκτών</label>
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <label className="text-xs font-medium">Επιλογή Αποδεκτών</label>
+        </div>
+        
+        {/* Quick Group Dropdown */}
+        {groups.length > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-none h-7 text-xs gap-1 border-[#cb8954] text-[#cb8954] hover:bg-[#cb8954]/10"
+                disabled={disabled}
+              >
+                <Users className="h-3 w-3" />
+                Ομάδα
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-2 rounded-none bg-background border z-50" align="end">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Γρήγορη επιλογή ομάδας</p>
+                {groups.map(group => {
+                  const isSelected = selectedGroupIds.includes(group.id);
+                  return (
+                    <div
+                      key={group.id}
+                      onClick={() => toggleGroup(group.id)}
+                      className={`flex items-center gap-2 p-2 cursor-pointer rounded-none transition-colors ${
+                        isSelected ? 'bg-[#cb8954]/20 border border-[#cb8954]' : 'hover:bg-muted'
+                      }`}
+                    >
+                      <Users className="h-4 w-4 text-[#cb8954]" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{group.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{group.member_count} μέλη</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
       
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
@@ -200,7 +245,7 @@ export const MultipleRecipientSelection: React.FC<MultipleRecipientSelectionProp
             <ChevronDown className="h-3 w-3 ml-2" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-0 rounded-none" align="start">
+        <PopoverContent className="w-80 p-0 rounded-none bg-background border z-50" align="start">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'users' | 'groups')}>
             <TabsList className="w-full grid grid-cols-2 rounded-none h-8">
               <TabsTrigger value="users" className="rounded-none text-xs flex items-center gap-1">

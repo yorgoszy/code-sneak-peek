@@ -58,7 +58,8 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
           id,
           name,
           description,
-          group_members!inner(id)
+          coach_id,
+          group_members(id)
         `)
         .order('name');
 
