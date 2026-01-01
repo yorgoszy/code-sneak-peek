@@ -75,7 +75,9 @@ export const assignmentService = {
         start_date: startDate,
         end_date: endDate,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        // Ποιος έκανε την ανάθεση (coach/admin)
+        assigned_by: assignmentData.assignedBy || coachId || null,
       };
 
       if (coachId) {
