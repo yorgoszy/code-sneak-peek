@@ -114,6 +114,12 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
 
   const today = new Date().toISOString().split('T')[0];
   
+  // Για coach-created users, τα πλάνα του coach που δεν είναι assigned εμφανίζονται ως "ενεργά"
+  const assignedPlanIds = new Set(assignments.map(a => a.plan_id));
+  const unassignedCoachPlans = isCoachCreatedUser(userProfile) 
+    ? coachPlans.filter(plan => !assignedPlanIds.has(plan.id))
+    : [];
+  
   const activeAssignments = assignments.filter(a => 
     a.status === 'active' && 
     (!a.end_date || a.end_date >= today) &&
@@ -265,8 +271,8 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
     </Card>
   );
 
-  // Για coach-created users, αν δεν υπάρχουν αναθέσεις αλλά υπάρχουν πλάνα του coach
-  const showCoachPlans = isCoachCreatedUser(userProfile) && coachPlans.length > 0;
+  // Συνολικός αριθμός ενεργών (assignments + unassigned coach plans)
+  const totalActive = activeAssignments.length + unassignedCoachPlans.length;
 
   return (
     <div className="space-y-4">
@@ -281,22 +287,16 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
         <TabsList className="rounded-none">
           <TabsTrigger value="active" className="rounded-none">
             <Utensils className="w-4 h-4 mr-2" />
-            Ενεργό ({activeAssignments.length})
+            Ενεργά ({totalActive})
           </TabsTrigger>
           <TabsTrigger value="history" className="rounded-none">
             <History className="w-4 h-4 mr-2" />
             Ιστορικό ({historyAssignments.length})
           </TabsTrigger>
-          {showCoachPlans && (
-            <TabsTrigger value="coach-plans" className="rounded-none">
-              <ChefHat className="w-4 h-4 mr-2" />
-              Πλάνα Coach ({coachPlans.length})
-            </TabsTrigger>
-          )}
         </TabsList>
 
         <TabsContent value="active" className="mt-4 space-y-3">
-          {activeAssignments.length === 0 ? (
+          {totalActive === 0 ? (
             <Card className="rounded-none">
               <CardContent className="p-8 text-center">
                 <Utensils className="w-12 h-12 mx-auto text-gray-400 mb-4" />
@@ -304,15 +304,15 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
                   Δεν υπάρχει ενεργό πρόγραμμα
                 </h3>
                 <p className="text-gray-500">
-                  {showCoachPlans 
-                    ? 'Δείτε τα διαθέσιμα πλάνα του coach σας στην καρτέλα "Πλάνα Coach".'
-                    : 'Επικοινωνήστε με τον προπονητή σας για να σας αναθέσει ένα πρόγραμμα διατροφής.'
-                  }
+                  Επικοινωνήστε με τον προπονητή σας για να σας αναθέσει ένα πρόγραμμα διατροφής.
                 </p>
               </CardContent>
             </Card>
           ) : (
-            activeAssignments.map(renderAssignmentCard)
+            <>
+              {activeAssignments.map(renderAssignmentCard)}
+              {unassignedCoachPlans.map(renderCoachPlanCard)}
+            </>
           )}
         </TabsContent>
 
@@ -333,15 +333,6 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
             historyAssignments.map(renderAssignmentCard)
           )}
         </TabsContent>
-
-        {showCoachPlans && (
-          <TabsContent value="coach-plans" className="mt-4 space-y-3">
-            <p className="text-sm text-gray-500 mb-2">
-              Τα διαθέσιμα πλάνα διατροφής που έχει δημιουργήσει ο coach σας:
-            </p>
-            {coachPlans.map(renderCoachPlanCard)}
-          </TabsContent>
-        )}
       </Tabs>
 
       {selectedPlanId && (

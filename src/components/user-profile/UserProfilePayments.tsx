@@ -54,6 +54,9 @@ interface Purchase {
   };
 }
 
+// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach
+const isCoachCreatedUser = (profile: any) => !profile?.auth_user_id && profile?.coach_id;
+
 export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymentsProps) => {
   const { t } = useTranslation();
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
@@ -62,46 +65,86 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
+  const isCoachUser = isCoachCreatedUser(userProfile);
+
   useEffect(() => {
     if (userProfile?.id) {
       loadUserReceipts();
-      loadUserPurchases();
+      if (!isCoachUser) {
+        loadUserPurchases();
+      }
     }
-  }, [userProfile?.id]);
+  }, [userProfile?.id, isCoachUser]);
 
   const loadUserReceipts = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('receipts')
-        .select('*')
-        .eq('user_id', userProfile.id)
-        .order('created_at', { ascending: false });
+      
+      // Για coach-created users, φέρνουμε από coach_receipts
+      if (isCoachUser && userProfile?.coach_id) {
+        const { data, error } = await supabase
+          .from('coach_receipts')
+          .select('*')
+          .eq('user_id', userProfile.id)
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error loading receipts:', error);
-        toast.error(t('payments.errorLoadingReceipts'));
-        return;
+        if (error) {
+          console.error('Error loading coach receipts:', error);
+          toast.error(t('payments.errorLoadingReceipts'));
+          return;
+        }
+
+        // Transform coach_receipts data
+        const transformedReceipts: ReceiptData[] = (data || []).map((receipt) => ({
+          id: receipt.id,
+          receipt_number: receipt.receipt_number,
+          customer_name: userProfile.name || 'Πελάτης',
+          customer_vat: undefined,
+          customer_email: userProfile.email,
+          items: [],
+          subtotal: Number(receipt.amount),
+          vat: 0,
+          total: Number(receipt.amount),
+          issue_date: receipt.created_at,
+          mydata_status: receipt.mark ? 'sent' : 'pending' as 'pending' | 'sent' | 'error',
+          mydata_id: undefined,
+          invoice_mark: receipt.mark || undefined
+        }));
+
+        setReceipts(transformedReceipts);
+      } else {
+        // Για κανονικούς χρήστες, φέρνουμε από receipts
+        const { data, error } = await supabase
+          .from('receipts')
+          .select('*')
+          .eq('user_id', userProfile.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading receipts:', error);
+          toast.error(t('payments.errorLoadingReceipts'));
+          return;
+        }
+
+        // Transform data to match ReceiptData interface
+        const transformedReceipts: ReceiptData[] = (data || []).map((receipt) => ({
+          id: receipt.id,
+          receipt_number: receipt.receipt_number,
+          customer_name: receipt.customer_name,
+          customer_vat: receipt.customer_vat,
+          customer_email: receipt.customer_email,
+          items: Array.isArray(receipt.items) ? receipt.items : [],
+          subtotal: Number(receipt.subtotal),
+          vat: Number(receipt.vat),
+          total: Number(receipt.total),
+          issue_date: receipt.issue_date,
+          mydata_status: receipt.mydata_status as 'pending' | 'sent' | 'error',
+          mydata_id: receipt.mydata_id,
+          invoice_mark: receipt.invoice_mark
+        }));
+
+        setReceipts(transformedReceipts);
       }
-
-      // Transform data to match ReceiptData interface
-      const transformedReceipts: ReceiptData[] = (data || []).map((receipt) => ({
-        id: receipt.id,
-        receipt_number: receipt.receipt_number,
-        customer_name: receipt.customer_name,
-        customer_vat: receipt.customer_vat,
-        customer_email: receipt.customer_email,
-        items: Array.isArray(receipt.items) ? receipt.items : [],
-        subtotal: Number(receipt.subtotal),
-        vat: Number(receipt.vat),
-        total: Number(receipt.total),
-        issue_date: receipt.issue_date,
-        mydata_status: receipt.mydata_status as 'pending' | 'sent' | 'error',
-        mydata_id: receipt.mydata_id,
-        invoice_mark: receipt.invoice_mark
-      }));
-
-      setReceipts(transformedReceipts);
     } catch (error) {
       console.error('Error loading receipts:', error);
       toast.error(t('payments.errorLoadingReceipts'));
@@ -364,38 +407,96 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
 
   return (
     <>
-      <Tabs defaultValue="purchases" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 rounded-none">
-          <TabsTrigger value="purchases" className="rounded-none">
-            <Package className="w-4 h-4 mr-2" />
-            {t('payments.purchases')} ({purchases.length})
-          </TabsTrigger>
-          <TabsTrigger value="receipts" className="rounded-none">
-            <Receipt className="w-4 h-4 mr-2" />
-            {t('payments.receipts')} ({receipts.length})
-          </TabsTrigger>
-        </TabsList>
+      {isCoachUser ? (
+        // Για coach-created users, δείχνουμε μόνο αποδείξεις (χωρίς tabs)
+        <Card className="rounded-none">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Receipt className="w-5 h-5 text-[#00ffba]" />
+              <h3 className="font-medium">{t('payments.receipts')} ({receipts.length})</h3>
+            </div>
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">{t('payments.loadingReceipts')}</p>
+              </div>
+            ) : receipts.length === 0 ? (
+              <div className="text-center py-8">
+                <Receipt className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                <p className="text-gray-500">{t('payments.noReceipts')}</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {receipts.map((receipt) => (
+                  <div key={receipt.id} className="border border-gray-200 p-2 rounded-none hover:bg-gray-50">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium text-sm">{receipt.receipt_number}</h4>
+                          {receipt.invoice_mark && (
+                            <Badge className="text-xs bg-green-100 text-green-800 px-1 py-0.5">
+                              {t('payments.mark')}: {receipt.invoice_mark}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-600">{receipt.customer_name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {t('payments.date')}: {formatDate(receipt.issue_date)}
+                        </p>
+                        <p className="text-base font-bold text-[#00ffba] mt-1">
+                          €{receipt.total.toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewReceipt(receipt)}
+                          className="rounded-none text-xs px-2 py-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        // Για κανονικούς χρήστες, tabs με Αγορές και Αποδείξεις
+        <Tabs defaultValue="purchases" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 rounded-none">
+            <TabsTrigger value="purchases" className="rounded-none">
+              <Package className="w-4 h-4 mr-2" />
+              {t('payments.purchases')} ({purchases.length})
+            </TabsTrigger>
+            <TabsTrigger value="receipts" className="rounded-none">
+              <Receipt className="w-4 h-4 mr-2" />
+              {t('payments.receipts')} ({receipts.length})
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="purchases" className="mt-4">
-          <Card className="rounded-none">
-            <CardContent className="p-6">
-              {loading ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">{t('payments.loadingPurchases')}</p>
-                </div>
-              ) : purchases.length === 0 ? (
-                <div className="text-center py-8">
-                  <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500">{t('payments.noPurchases')}</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {purchases.map(renderPurchaseCard)}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="purchases" className="mt-4">
+            <Card className="rounded-none">
+              <CardContent className="p-6">
+                {loading ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">{t('payments.loadingPurchases')}</p>
+                  </div>
+                ) : purchases.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                    <p className="text-gray-500">{t('payments.noPurchases')}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {purchases.map(renderPurchaseCard)}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
         <TabsContent value="receipts" className="mt-4">
           <Card className="rounded-none">
@@ -449,7 +550,8 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      )}
 
       {/* Receipt Preview Dialog */}
       <ReceiptPreviewDialog
