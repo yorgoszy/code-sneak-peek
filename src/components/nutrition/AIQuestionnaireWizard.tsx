@@ -624,16 +624,14 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
             <span className="hidden sm:inline">{currentStep === 0 ? 'Ακύρωση' : 'Πίσω'}</span>
             <span className="sm:hidden">{currentStep === 0 ? 'Ακύρ.' : 'Πίσω'}</span>
           </Button>
-          {currentStep < 4 && (
-            <Button
-              onClick={() => setCurrentStep(prev => prev + 1)}
-              disabled={!canProceed()}
-              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex-1 sm:flex-none"
-            >
-              Επόμενο
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          )}
+          <Button
+            onClick={() => setCurrentStep(prev => prev + 1)}
+            disabled={!canProceed()}
+            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex-1 sm:flex-none"
+          >
+            Επόμενο
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
       )}
     </div>
