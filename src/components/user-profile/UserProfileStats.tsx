@@ -868,16 +868,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </button>
 
-          {/* Επερχόμενα Τεστ - ΚΙΤΡΙΝΟ */}
-          <button 
-            onClick={() => {
-              if (setActiveTab) {
-                setActiveTab('tests');
-              } else {
-                navigate(`/dashboard/user-profile/${user.id}?tab=tests`);
-              }
-            }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+          {/* Επερχόμενα Τεστ - ΚΙΤΡΙΝΟ - Μη clickable */}
+          <div 
+            className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <Calendar className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -900,19 +893,12 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {t('overview.upcomingTests')}
             </div>
-          </button>
+          </div>
 
-          {/* Επερχόμενοι Αγώνες - Μόνο για αθλητές - ΜΟΒ */}
+          {/* Επερχόμενοι Αγώνες - Μόνο για αθλητές - ΜΟΒ - Μη clickable */}
           {(user.is_athlete || user.role === 'athlete') && (
-            <button 
-              onClick={() => {
-                if (setActiveTab) {
-                  setActiveTab('calendar');
-                } else {
-                  navigate(`/dashboard/user-profile/${user.id}?tab=calendar`);
-                }
-              }}
-              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            <div 
+              className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <Trophy className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -935,7 +921,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
                 Επερχόμενοι Αγώνες
               </div>
-            </button>
+            </div>
           )}
 
           {/* Πρόοδος - Έβδομο */}

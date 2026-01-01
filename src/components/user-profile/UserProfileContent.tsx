@@ -23,6 +23,7 @@ import { UserProgressSection } from "./UserProgressSection";
 import { UserProfileHistory } from "./UserProfileHistory";
 import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -52,6 +53,7 @@ export const UserProfileContent = ({
 }: UserProfileContentProps) => {
   const { t } = useTranslation();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const { isAdmin } = useRoleCheck();
 
   // Άνοιγμα του AI chat dialog όταν το tab είναι "ai-trainer" - χρησιμοποιείται μόνο για άλλα components
   useEffect(() => {
@@ -60,8 +62,9 @@ export const UserProfileContent = ({
     }
   }, [activeTab]);
 
+  // Το βελάκι εμφανίζεται μόνο σε admin mode
   const BackButton = () => (
-    setActiveTab && activeTab !== 'overview' && (
+    setActiveTab && activeTab !== 'overview' && isAdmin() && (
       <button
         onClick={() => setActiveTab('overview')}
         className="flex items-center space-x-2 text-gray-700 hover:text-black transition-colors mb-4 font-medium"
