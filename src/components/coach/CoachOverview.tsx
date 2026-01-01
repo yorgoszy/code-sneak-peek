@@ -69,20 +69,42 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         .gte("created_at", monthStart)
         .lte("created_at", monthEnd);
 
-      // 2) Active assignments - get all active assignments since coach_id may not be set
-      // We'll filter by users who belong to this coach if needed
+      // 2) First get the athlete IDs that belong to this coach
+      const { data: coachAthletes } = await supabase
+        .from("app_users")
+        .select("id")
+        .eq("coach_id", coachId);
+      
+      const coachAthleteIds = (coachAthletes || []).map((a: any) => a.id);
+      
+      if (coachAthleteIds.length === 0) {
+        console.log("⚠️ No athletes found for this coach");
+        setUpcomingTests([]);
+        setUpcomingCompetitions([]);
+        setStats({
+          totalAthletes: totalAthletes || 0,
+          activeAthletes: activeAthletes || 0,
+          newAthletesThisMonth: newAthletesThisMonth || 0,
+          todaysPrograms: 0,
+        });
+        setLoading(false);
+        return;
+      }
+
+      // 3) Get active assignments ONLY for this coach's athletes
       const { data: assignments, error: assignmentsError } = await supabase
         .from("program_assignments")
         .select("id, user_id, program_id, training_dates")
         .eq("status", "active")
-        .not("training_dates", "is", null);
+        .not("training_dates", "is", null)
+        .in("user_id", coachAthleteIds);
 
       if (assignmentsError) {
         console.error("❌ Error fetching assignments:", assignmentsError);
         throw assignmentsError;
       }
 
-      console.log("✅ Assignments fetched:", assignments?.length);
+      console.log("✅ Assignments fetched for coach's athletes:", assignments?.length);
 
       const userIds = Array.from(new Set((assignments || []).map((a: any) => a.user_id).filter(Boolean)));
       const programIds = Array.from(new Set((assignments || []).map((a: any) => a.program_id).filter(Boolean)));
