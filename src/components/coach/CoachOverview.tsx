@@ -69,53 +69,42 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         .gte("created_at", monthStart)
         .lte("created_at", monthEnd);
 
-      // 2) Active assignments for this coach (source of truth)
+      // 2) Active assignments for this coach (source of truth) + nested program + user
       const { data: assignments, error: assignmentsError } = await supabase
         .from("program_assignments")
-        .select("id, user_id, program_id, training_dates")
+        .select(
+          `
+          id,
+          user_id,
+          program_id,
+          training_dates,
+          app_users:app_users!program_assignments_user_id_fkey ( id, name ),
+          programs:programs!program_assignments_program_id_fkey (
+            id,
+            name,
+            program_weeks (
+              id,
+              week_number,
+              program_days (
+                id,
+                name,
+                day_number,
+                is_test_day,
+                test_types,
+                is_competition_day
+              )
+            )
+          )
+        `
+        )
         .eq("coach_id", coachId)
         .eq("status", "active")
         .not("training_dates", "is", null);
 
       if (assignmentsError) throw assignmentsError;
 
-      const userIds = Array.from(new Set((assignments || []).map((a: any) => a.user_id).filter(Boolean)));
-      const programIds = Array.from(new Set((assignments || []).map((a: any) => a.program_id).filter(Boolean)));
-
       // 3) Today programs count
       const todaysPrograms = (assignments || []).filter((a: any) => (a.training_dates || []).includes(todayStr)).length;
-
-      // 4) Build lookup maps
-      const { data: usersData } = await supabase
-        .from("app_users")
-        .select("id, name")
-        .in("id", userIds.length ? userIds : ["00000000-0000-0000-0000-000000000000"]);
-
-      const userNameById = new Map<string, string>((usersData || []).map((u: any) => [u.id, u.name]));
-
-      const { data: programsData } = await supabase
-        .from("programs")
-        .select(
-          `
-          id,
-          name,
-          program_weeks (
-            id,
-            week_number,
-            program_days (
-              id,
-              name,
-              day_number,
-              is_test_day,
-              test_types,
-              is_competition_day
-            )
-          )
-        `
-        )
-        .in("id", programIds.length ? programIds : ["00000000-0000-0000-0000-000000000000"]);
-
-      const programById = new Map<string, any>((programsData || []).map((p: any) => [p.id, p]));
 
       // 5) Compute upcoming events
       const tests: UpcomingEvent[] = [];
@@ -123,14 +112,14 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
 
       (assignments || []).forEach((assignment: any) => {
         const trainingDates: string[] = assignment.training_dates || [];
-        const program = programById.get(assignment.program_id);
+        const program = assignment.programs;
         const weeks = program?.program_weeks || [];
         if (!weeks.length) return;
 
         const daysPerWeek = weeks[0]?.program_days?.length || 0;
         if (!daysPerWeek) return;
 
-        const userName = userNameById.get(assignment.user_id) || "";
+        const userName = assignment.app_users?.name || "";
 
         weeks.forEach((week: any, weekIndex: number) => {
           (week.program_days || []).forEach((day: any, dayIndex: number) => {
