@@ -56,6 +56,7 @@ interface AppUser {
   id: string;
   name: string;
   email: string;
+  birth_date?: string;
   avatar_url?: string;
   photo_url?: string;
 }
@@ -78,6 +79,7 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [userAnthroData, setUserAnthroData] = useState<{ weight: string; height: string; age: string }>({ weight: '', height: '', age: '' });
   
   const [days, setDays] = useState<Day[]>(
     DAY_NAMES.map((name, index) => ({
@@ -121,7 +123,7 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
 
       const { data, error } = await supabase
         .from('app_users')
-        .select('id, name, email, avatar_url, photo_url')
+        .select('id, name, email, birth_date, avatar_url, photo_url')
         .eq('coach_id', effectiveCoachId)
         .order('name');
 
@@ -132,10 +134,79 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
     }
   };
 
-  const handleSelectUser = (user: AppUser) => {
+  const fetchUserData = async (userId: string) => {
+    try {
+      let weight = '';
+      let height = '';
+
+      // First try regular anthropometric tables
+      const { data: anthroData } = await supabase
+        .from('anthropometric_test_sessions')
+        .select(`
+          *,
+          anthropometric_test_data (weight, height)
+        `)
+        .eq('user_id', userId)
+        .order('test_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (anthroData?.anthropometric_test_data?.[0]) {
+        const data = anthroData.anthropometric_test_data[0];
+        weight = data.weight?.toString() || '';
+        height = data.height?.toString() || '';
+      }
+
+      // If no data found, try coach anthropometric tables
+      if (!weight && !height && effectiveCoachId) {
+        const { data: coachAnthroData } = await supabase
+          .from('coach_anthropometric_test_sessions')
+          .select(`
+            *,
+            coach_anthropometric_test_data (weight, height)
+          `)
+          .eq('user_id', userId)
+          .eq('coach_id', effectiveCoachId)
+          .order('test_date', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (coachAnthroData?.coach_anthropometric_test_data?.[0]) {
+          const data = coachAnthroData.coach_anthropometric_test_data[0];
+          weight = data.weight?.toString() || '';
+          height = data.height?.toString() || '';
+        }
+      }
+
+      // Calculate age from birth_date
+      const user = users.find(u => u.id === userId);
+      let age = '';
+      if (user?.birth_date) {
+        const birthDate = new Date(user.birth_date);
+        const today = new Date();
+        let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          calculatedAge--;
+        }
+        age = calculatedAge.toString();
+      }
+
+      return { weight, height, age };
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      return { weight: '', height: '', age: '' };
+    }
+  };
+
+  const handleSelectUser = async (user: AppUser) => {
     setSelectedUser(user);
     setSearchTerm('');
     setShowUserDropdown(false);
+    
+    // Fetch anthropometric data for the selected user
+    const userData = await fetchUserData(user.id);
+    setUserAnthroData(userData);
   };
 
   const addFood = (dayIndex: number, mealIndex: number) => {
@@ -254,26 +325,65 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
           Χρήστης *
         </Label>
           {selectedUser ? (
-            <div className="flex items-center gap-2 p-2 border border-[#00ffba] bg-[#00ffba]/5 rounded-none">
-              <Avatar className="w-8 h-8 rounded-full">
-                <AvatarImage src={selectedUser.photo_url || selectedUser.avatar_url} className="rounded-full" />
-                <AvatarFallback className="rounded-full bg-[#cb8954] text-white text-xs">
-                  {selectedUser.name.substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{selectedUser.name}</p>
-              <p className="text-xs text-gray-500 truncate">{selectedUser.email}</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 p-2 border border-[#00ffba] bg-[#00ffba]/5 rounded-none">
+                <Avatar className="w-8 h-8 rounded-full">
+                  <AvatarImage src={selectedUser.photo_url || selectedUser.avatar_url} className="rounded-full" />
+                  <AvatarFallback className="rounded-full bg-[#cb8954] text-white text-xs">
+                    {selectedUser.name.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{selectedUser.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{selectedUser.email}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedUser(null);
+                    setUserAnthroData({ weight: '', height: '', age: '' });
+                  }}
+                  className="rounded-none h-8 w-8 p-0"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              {/* User anthropometric data */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-500">Βάρος (kg)</Label>
+                  <Input
+                    type="number"
+                    value={userAnthroData.weight}
+                    onChange={(e) => setUserAnthroData(prev => ({ ...prev, weight: e.target.value }))}
+                    placeholder="—"
+                    className="rounded-none h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-500">Ύψος (cm)</Label>
+                  <Input
+                    type="number"
+                    value={userAnthroData.height}
+                    onChange={(e) => setUserAnthroData(prev => ({ ...prev, height: e.target.value }))}
+                    placeholder="—"
+                    className="rounded-none h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-500">Ηλικία</Label>
+                  <Input
+                    type="number"
+                    value={userAnthroData.age}
+                    onChange={(e) => setUserAnthroData(prev => ({ ...prev, age: e.target.value }))}
+                    placeholder="—"
+                    className="rounded-none h-8 text-sm"
+                    readOnly={!!selectedUser?.birth_date}
+                  />
+                </div>
+              </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedUser(null)}
-              className="rounded-none h-8 w-8 p-0"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
         ) : (
           <div className="relative">
             <div className="relative">
