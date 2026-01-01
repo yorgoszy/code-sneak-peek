@@ -294,6 +294,14 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
       if (prev.includes(exerciseId)) {
         return prev.filter(id => id !== exerciseId);
       } else {
+        // Όταν προσθέτουμε άσκηση, επιλέγουμε αυτόματα την πιο πρόσφατη session
+        const sessions = exerciseSessions[exerciseId] || [];
+        if (sessions.length > 0) {
+          setSelectedSessions(prevSessions => ({
+            ...prevSessions,
+            [exerciseId]: [sessions[0].sessionId]
+          }));
+        }
         return [...prev, exerciseId];
       }
     });
