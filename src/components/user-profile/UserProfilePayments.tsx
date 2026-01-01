@@ -82,10 +82,15 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
       
       // Για coach-created users, φέρνουμε από coach_receipts
       if (isCoachUser && userProfile?.coach_id) {
+        // Φέρνουμε αποδείξεις από coach_receipts με βάση το user_id του αθλητή
         const { data, error } = await supabase
           .from('coach_receipts')
-          .select('*')
+          .select(`
+            *,
+            subscription_types:subscription_type_id (name)
+          `)
           .eq('user_id', userProfile.id)
+          .eq('coach_id', userProfile.coach_id)
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -95,13 +100,18 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
         }
 
         // Transform coach_receipts data
-        const transformedReceipts: ReceiptData[] = (data || []).map((receipt) => ({
+        const transformedReceipts: ReceiptData[] = (data || []).map((receipt: any) => ({
           id: receipt.id,
           receipt_number: receipt.receipt_number,
           customer_name: userProfile.name || 'Πελάτης',
           customer_vat: undefined,
           customer_email: userProfile.email,
-          items: [],
+          items: [{
+            description: receipt.subscription_types?.name || receipt.notes || 'Συνδρομή',
+            quantity: 1,
+            unit_price: Number(receipt.amount),
+            total: Number(receipt.amount)
+          }],
           subtotal: Number(receipt.amount),
           vat: 0,
           total: Number(receipt.amount),
