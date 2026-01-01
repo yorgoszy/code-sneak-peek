@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.send-rpe-notification]
 verify_jwt = false
+
+[functions.generate-nutrition-plan]
+verify_jwt = true
