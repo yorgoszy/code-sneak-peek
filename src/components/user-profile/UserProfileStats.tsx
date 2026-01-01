@@ -43,6 +43,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const activePrograms = useMemo(() => {
     return allActivePrograms?.filter(p => p.user_id === user.id) || [];
   }, [allActivePrograms, user.id]);
+
+  // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (δεν έχει auth_user_id αλλά έχει coach_id)
+  const isCoachCreatedUser = !user?.auth_user_id && user?.coach_id;
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
@@ -616,27 +619,29 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
         <div className={`grid ${isMobile ? 'gap-2' : 'gap-4'} ${
           isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-6 lg:grid-cols-12'
         }`}>
-          {/* Αγορές - Πρώτο */}
-          <button 
-            onClick={() => {
-              if (setActiveTab) {
-                setActiveTab('shop');
-              } else {
-                navigate(`/dashboard/user-profile/${user.id}?tab=shop`);
-              }
-            }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
-          >
-            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
-            </div>
-            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} animate-click-me`}>
-              <MousePointer className={`text-[#00ffba] ${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
-            </div>
-            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {t('overview.shop')}
-            </div>
-          </button>
+          {/* Αγορές - Πρώτο - Κρύβεται για coach-created users */}
+          {!isCoachCreatedUser && (
+            <button 
+              onClick={() => {
+                if (setActiveTab) {
+                  setActiveTab('shop');
+                } else {
+                  navigate(`/dashboard/user-profile/${user.id}?tab=shop`);
+                }
+              }}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            >
+              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+                <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              </div>
+              <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} animate-click-me`}>
+                <MousePointer className={`text-[#00ffba] ${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
+              </div>
+              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+                {t('overview.shop')}
+              </div>
+            </button>
+          )}
 
           {/* Ενεργές Προσφορές - Δεύτερο */}
           <button 
@@ -931,137 +936,145 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </button>
 
-          {/* Επισκέψεις - Ένατο */}
-          <button
-            onClick={() => {
-              if (setActiveTab) {
-                setActiveTab('online-booking');
-              } else {
-                navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`);
-              }
-            }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
-          >
-            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <MapPin className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                visitsData && visitsData.total > 0 ? 'text-blue-500' : 'text-gray-400'
-              }`} />
-            </div>
-            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-              {visitsData && visitsData.total > 0 ? (
-                <span className="text-gray-900">
-                  {Math.max(0, visitsData.used)}/{visitsData.total}
-                </span>
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
-            </div>
-            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {t('overview.visits')}
-            </div>
-          </button>
+          {/* Επισκέψεις - Κρύβεται για coach-created users */}
+          {!isCoachCreatedUser && (
+            <button
+              onClick={() => {
+                if (setActiveTab) {
+                  setActiveTab('online-booking');
+                } else {
+                  navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`);
+                }
+              }}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            >
+              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+                <MapPin className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
+                  visitsData && visitsData.total > 0 ? 'text-blue-500' : 'text-gray-400'
+                }`} />
+              </div>
+              <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
+                {visitsData && visitsData.total > 0 ? (
+                  <span className="text-gray-900">
+                    {Math.max(0, visitsData.used)}/{visitsData.total}
+                  </span>
+                ) : (
+                  <span className="text-gray-400">-</span>
+                )}
+              </div>
+              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+                {t('overview.visits')}
+              </div>
+            </button>
+          )}
 
-          {/* Επερχόμενη Επίσκεψη - Έκτο */}
-          <button 
-            onClick={() => {
-              if (setActiveTab) {
-                setActiveTab('online-booking');
-              } else {
-                navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`);
-              }
-            }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
-          >
-            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <MapPin className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                upcomingVisit ? 'text-purple-500' : 'text-gray-400'
-              }`} />
-            </div>
-             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-               {upcomingVisit ? (
-                 upcomingVisit.daysLeft >= 1 ? (
-                   <span className={getTimeBasedColor(upcomingVisit.daysLeft)}>{upcomingVisit.daysLeft}μ</span>
-                 ) : upcomingVisit.hoursLeft >= 0 ? (
-                   <span className={getTimeBasedColor(0)}>{upcomingVisit.hoursLeft}ώ</span>
+          {/* Επερχόμενη Επίσκεψη - Κρύβεται για coach-created users */}
+          {!isCoachCreatedUser && (
+            <button 
+              onClick={() => {
+                if (setActiveTab) {
+                  setActiveTab('online-booking');
+                } else {
+                  navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`);
+                }
+              }}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            >
+              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+                <MapPin className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
+                  upcomingVisit ? 'text-purple-500' : 'text-gray-400'
+                }`} />
+              </div>
+               <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
+                 {upcomingVisit ? (
+                   upcomingVisit.daysLeft >= 1 ? (
+                     <span className={getTimeBasedColor(upcomingVisit.daysLeft)}>{upcomingVisit.daysLeft}μ</span>
+                   ) : upcomingVisit.hoursLeft >= 0 ? (
+                     <span className={getTimeBasedColor(0)}>{upcomingVisit.hoursLeft}ώ</span>
+                   ) : (
+                     <span className="text-gray-400">-</span>
+                   )
                  ) : (
                    <span className="text-gray-400">-</span>
-                 )
-               ) : (
-                 <span className="text-gray-400">-</span>
-               )}
-             </div>
-            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {t('overview.upcomingVisit')}
-            </div>
-          </button>
+                 )}
+               </div>
+              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+                {t('overview.upcomingVisit')}
+              </div>
+            </button>
+          )}
 
 
-          {/* Βιντεοκλήσεις - Ένατο */}
-          <button 
-            onClick={() => {
-              if (setActiveTab) {
-                setActiveTab('online-coaching');
-              } else {
-                navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`);
-              }
-            }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
-          >
-            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <Video className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                videocallData && videocallData.total > 0 ? 'text-blue-500' : 'text-gray-400'
-              }`} />
-            </div>
-            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-              {videocallData && videocallData.total > 0 ? (
-                <span className="text-gray-900">
-                  {Math.max(0, videocallData.used)}/{videocallData.total}
-                </span>
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
-            </div>
-            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {t('overview.videocalls')}
-            </div>
-          </button>
-          
-          {/* Επερχόμενη Βιντεοκλήση - Δέκατο */}
-          <button 
-            onClick={() => {
-              if (upcomingVideocall) {
+          {/* Βιντεοκλήσεις - Κρύβεται για coach-created users */}
+          {!isCoachCreatedUser && (
+            <button 
+              onClick={() => {
                 if (setActiveTab) {
                   setActiveTab('online-coaching');
                 } else {
                   navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`);
                 }
-              }
-            }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col min-w-0`}
-            disabled={!upcomingVideocall}
-          >
-            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <Video className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                upcomingVideocall ? 'text-purple-500' : 'text-gray-400'
-              }`} />
-            </div>
-             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-               {upcomingVideocall ? (
-                 upcomingVideocall.daysLeft >= 1 ? (
-                   <span className={getTimeBasedColor(upcomingVideocall.daysLeft)}>{upcomingVideocall.daysLeft}μ</span>
-                 ) : upcomingVideocall.hoursLeft >= 0 ? (
-                   <span className={getTimeBasedColor(0)}>{upcomingVideocall.hoursLeft}ώ</span>
+              }}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            >
+              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+                <Video className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
+                  videocallData && videocallData.total > 0 ? 'text-blue-500' : 'text-gray-400'
+                }`} />
+              </div>
+              <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
+                {videocallData && videocallData.total > 0 ? (
+                  <span className="text-gray-900">
+                    {Math.max(0, videocallData.used)}/{videocallData.total}
+                  </span>
+                ) : (
+                  <span className="text-gray-400">-</span>
+                )}
+              </div>
+              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+                {t('overview.videocalls')}
+              </div>
+            </button>
+          )}
+          
+          {/* Επερχόμενη Βιντεοκλήση - Κρύβεται για coach-created users */}
+          {!isCoachCreatedUser && (
+            <button 
+              onClick={() => {
+                if (upcomingVideocall) {
+                  if (setActiveTab) {
+                    setActiveTab('online-coaching');
+                  } else {
+                    navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`);
+                  }
+                }
+              }}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col min-w-0`}
+              disabled={!upcomingVideocall}
+            >
+              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+                <Video className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
+                  upcomingVideocall ? 'text-purple-500' : 'text-gray-400'
+                }`} />
+              </div>
+               <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
+                 {upcomingVideocall ? (
+                   upcomingVideocall.daysLeft >= 1 ? (
+                     <span className={getTimeBasedColor(upcomingVideocall.daysLeft)}>{upcomingVideocall.daysLeft}μ</span>
+                   ) : upcomingVideocall.hoursLeft >= 0 ? (
+                     <span className={getTimeBasedColor(0)}>{upcomingVideocall.hoursLeft}ώ</span>
+                   ) : (
+                     <span className="text-gray-400">-</span>
+                   )
                  ) : (
                    <span className="text-gray-400">-</span>
-                 )
-               ) : (
-                 <span className="text-gray-400">-</span>
-               )}
-             </div>
-            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {t('overview.upcomingVideocall')}
-            </div>
-          </button>
+                 )}
+               </div>
+              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+                {t('overview.upcomingVideocall')}
+              </div>
+            </button>
+          )}
 
           {/* Προφίλ - Ενδέκατο (χωρίς emoji) */}
           <button 

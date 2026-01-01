@@ -198,6 +198,10 @@ export const UserProfileSidebar = forwardRef<
   
   // Έλεγχος αν ο χρήστης είναι parent
   const isParentUser = userProfile?.role === 'parent';
+  
+  // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (δεν έχει auth_user_id αλλά έχει coach_id)
+  // Αυτοί οι χρήστες δεν έχουν πρόσβαση σε shop, online coaching, online booking
+  const isCoachCreatedUser = !userProfile?.auth_user_id && userProfile?.coach_id;
 
   const menuItems = [
     { 
@@ -254,7 +258,7 @@ export const UserProfileSidebar = forwardRef<
       label: t('sidebar.shop'),
       key: "shop",
       badge: null,
-      visible: true
+      visible: !isCoachCreatedUser
     },
     {
       icon: Tag,
@@ -268,14 +272,14 @@ export const UserProfileSidebar = forwardRef<
       label: t('sidebar.onlineCoaching'),
       key: "online-coaching",
       badge: null,
-      visible: true
+      visible: !isCoachCreatedUser
     },
     {
       icon: CalendarDays,
       label: t('sidebar.onlineBooking'),
       key: "online-booking",
       badge: null,
-      visible: true
+      visible: !isCoachCreatedUser
     },
     {
       icon: User,
