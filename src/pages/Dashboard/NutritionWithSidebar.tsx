@@ -10,7 +10,15 @@ import { useRoleCheck } from '@/hooks/useRoleCheck';
 export const NutritionWithSidebar = () => {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isMobileOpen, setIsMobileOpen] = React.useState(false);
-  const { isCoach, isAdmin } = useRoleCheck();
+  const { isCoach, isAdmin, loading } = useRoleCheck();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center">
+        <div className="text-sm text-muted-foreground">Φόρτωση...</div>
+      </div>
+    );
+  }
 
   const isCoachOnly = isCoach() && !isAdmin();
   const SidebarComponent = isCoachOnly ? CoachSidebar : Sidebar;
