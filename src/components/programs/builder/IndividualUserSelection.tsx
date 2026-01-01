@@ -49,25 +49,23 @@ export const IndividualUserSelection: React.FC<IndividualUserSelectionProps> = (
   };
 
   return (
-    <div className="flex gap-4">
-      {/* User Selection Box - 30% width */}
-      <div className="w-[30%]">
-        <UserSelectionSection
-          availableUsers={availableUsers}
-          selectedUserIds={selectedUserIds}
-          selectedUsersCount={selectedUsers.length}
-          onUserToggle={handleUserToggle}
-        />
-      </div>
+    <div className="flex flex-col gap-2">
+      {/* User Selection Box - Full width */}
+      <UserSelectionSection
+        availableUsers={availableUsers}
+        selectedUserIds={selectedUserIds}
+        selectedUsersCount={selectedUsers.length}
+        onUserToggle={handleUserToggle}
+      />
 
-      {/* Selected Users Display - 70% width */}
-      <div className="w-[70%]">
+      {/* Selected Users Display - Full width below */}
+      {selectedUsers.length > 0 && (
         <SelectedUsersDisplay
           selectedUsers={selectedUsers}
           onClearAll={handleClearAll}
           onRemoveUser={handleRemoveUser}
         />
-      </div>
+      )}
     </div>
   );
 };
