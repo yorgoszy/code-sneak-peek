@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, X, User, Utensils, Loader2 } from "lucide-react";
 import { addDays, format } from "date-fns";
+import { useLocation } from "react-router-dom";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 export interface AINutritionData {
   name: string;
@@ -43,12 +44,17 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
   defaultUserId,
 }) => {
   const today = new Date().toISOString().split('T')[0];
-  
+  const location = useLocation();
+  const urlCoachId = useMemo(() => {
+    const v = new URLSearchParams(location.search).get('coachId');
+    return v ? String(v) : undefined;
+  }, [location.search]);
+
   const [name, setName] = useState(nutritionData?.name || "Πρόγραμμα Διατροφής");
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(format(addDays(new Date(), 30), 'yyyy-MM-dd'));
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // User selection
   const [users, setUsers] = useState<AppUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<AppUser[]>([]);
@@ -56,7 +62,8 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const { userProfile, isCoach, isAdmin, loading } = useRoleCheck();
-  // Helper για αναζήτηση χρήστη με όνομα (χωρίς τόνους) - ίδια λογική με το assign
+
+  // Helper για αναζήτηση χρήστη με όνομα (χωρίς τόνους)
   const normalizeGreek = (str: string): string => {
     return str
       .toLowerCase()
@@ -113,11 +120,14 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
   }, [nutritionData?.targetUserId, nutritionData?.targetUserName, defaultUserId, users]);
 
   useEffect(() => {
-    if (searchTerm) {
-      const filtered = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    const term = searchTerm.trim();
+    if (term) {
+      const normalizedSearch = normalizeGreek(term);
+      const filtered = users.filter((u) => {
+        const normalizedName = normalizeGreek(u.name);
+        const email = String(u.email ?? '').toLowerCase();
+        return normalizedName.includes(normalizedSearch) || email.includes(term.toLowerCase());
+      });
       setFilteredUsers(filtered);
       setShowUserDropdown(true);
     } else {
@@ -128,19 +138,22 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
 
   const fetchUsers = async () => {
     try {
+      const effectiveCoachId =
+        urlCoachId || (isCoach() && !isAdmin() ? userProfile?.id : undefined);
+
       let query = supabase
         .from('app_users')
         .select('id, name, email, avatar_url')
         .order('name');
 
-      // If user is a coach (but not admin), only show their athletes
-      if (isCoach() && !isAdmin() && userProfile?.id) {
-        query = query.eq('coach_id', userProfile.id);
+      // ΠΑΝΤΑ: αν είμαστε σε coach context, δείχνουμε μόνο τους app_users με coach_id
+      if (effectiveCoachId) {
+        query = query.eq('coach_id', effectiveCoachId);
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
+
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -347,9 +360,9 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
             </Label>
             {selectedUser ? (
               <div className="flex items-center gap-2 p-2 border border-[#00ffba] bg-[#00ffba]/5 rounded-none">
-                <Avatar className="w-8 h-8 rounded-none">
+                <Avatar className="w-8 h-8 rounded-full">
                   <AvatarImage src={selectedUser.avatar_url} />
-                  <AvatarFallback className="rounded-none bg-gray-200 text-xs">
+                  <AvatarFallback className="rounded-full bg-gray-200 text-xs">
                     {selectedUser.name.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -385,9 +398,9 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
                         onClick={() => handleSelectUser(user)}
                         className="w-full flex items-center gap-2 p-2 hover:bg-gray-50 text-left"
                       >
-                        <Avatar className="w-6 h-6 rounded-none">
+                        <Avatar className="w-6 h-6 rounded-full">
                           <AvatarImage src={user.avatar_url} />
-                          <AvatarFallback className="rounded-none bg-gray-200 text-xs">
+                          <AvatarFallback className="rounded-full bg-gray-200 text-xs">
                             {user.name.substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
