@@ -36,12 +36,6 @@ export const UserSelectionSection: React.FC<UserSelectionSectionProps> = ({
           />
         </div>
 
-        {selectedUsersCount > 0 && (
-          <div className="text-sm text-gray-600 bg-blue-50 p-3 border border-blue-200 rounded">
-            <Users className="w-4 h-4 inline mr-2" />
-            Θα δημιουργηθούν {selectedUsersCount} ατομικές αναθέσεις με τις ίδιες ημερομηνίες προπόνησης.
-          </div>
-        )}
       </CardContent>
     </Card>
   );
