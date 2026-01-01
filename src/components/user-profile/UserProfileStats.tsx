@@ -50,7 +50,64 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   useEffect(() => {
     const fetchSubscriptionData = async () => {
       try {
-        // Φόρτωση όλων των συνδρομών (ενεργές, σε παύση, ληγμένες)
+        // Αν ο χρήστης δημιουργήθηκε από coach, φόρτωση από coach_subscriptions
+        if (isCoachCreatedUser) {
+          const { data: coachSubscriptions, error } = await supabase
+            .from('coach_subscriptions')
+            .select('*, subscription_types(name, price)')
+            .eq('coach_user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error('Error fetching coach subscriptions:', error);
+            setSubscriptionDays(null);
+            setPaymentStatus(null);
+            return;
+          }
+
+          // Φιλτράρισμα για ενεργές συνδρομές
+          const activeSubscriptions = coachSubscriptions?.filter(sub => sub.status === 'active') || [];
+
+          // Payment status από την πιο πρόσφατη συνδρομή
+          if (coachSubscriptions && coachSubscriptions.length > 0) {
+            setPaymentStatus(coachSubscriptions[0].is_paid);
+          } else {
+            setPaymentStatus(null);
+          }
+
+          if (activeSubscriptions.length === 0) {
+            setSubscriptionDays(null);
+            return;
+          }
+
+          // Υπολογισμός συνολικών ημερών
+          let totalDays = 0;
+          let isPausedStatus = false;
+          let hasActiveSubscription = false;
+
+          activeSubscriptions.forEach(subscription => {
+            if (subscription.is_paused && subscription.paused_days_remaining) {
+              totalDays += subscription.paused_days_remaining;
+              isPausedStatus = true;
+              hasActiveSubscription = true;
+            } else if (!subscription.is_paused) {
+              const today = new Date();
+              const endDate = new Date(subscription.end_date);
+              const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+              
+              if (remainingDays > 0) {
+                totalDays += remainingDays;
+                hasActiveSubscription = true;
+              }
+            }
+          });
+
+          setSubscriptionDays(hasActiveSubscription ? totalDays : null);
+          setIsPaused(isPausedStatus);
+          return;
+        }
+
+        // Για κανονικούς χρήστες: user_subscriptions
         const { data: allSubscriptions, error } = await supabase
           .from('user_subscriptions')
           .select('*, subscription_types(name, price)')
@@ -64,15 +121,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           return;
         }
 
-        // TODO: Θα προστεθεί αποθήκευση subscription_history μετά την εκτέλεση του migration
-
-        // Φιλτράρισμα για ενεργές συνδρομές μόνο για εμφάνιση ημερών
         const activeSubscriptions = allSubscriptions?.filter(sub => sub.status === 'active') || [];
 
-        // Φόρτωση payment status από την πιο πρόσφατη συνδρομή
         if (allSubscriptions && allSubscriptions.length > 0) {
-          const latestSubscription = allSubscriptions[0];
-          setPaymentStatus(latestSubscription.is_paid);
+          setPaymentStatus(allSubscriptions[0].is_paid);
         } else {
           setPaymentStatus(null);
         }
@@ -82,7 +134,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           return;
         }
 
-        // Υπολογισμός συνολικών ημερών από όλες τις ενεργές συνδρομές
         let totalDays = 0;
         let isPausedStatus = false;
         let hasActiveSubscription = false;
@@ -102,13 +153,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               hasActiveSubscription = true;
             }
           }
-        });
-
-        console.log('💳 Subscription calculation:', { 
-          activeSubscriptions: activeSubscriptions.length, 
-          totalDays, 
-          isPausedStatus,
-          hasActiveSubscription
         });
 
         setSubscriptionDays(hasActiveSubscription ? totalDays : null);
@@ -643,41 +687,43 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </button>
           )}
 
-          {/* Ενεργές Προσφορές - Δεύτερο */}
-          <button 
-            onClick={() => {
-              if (setActiveTab) {
-                setActiveTab('offers');
-              } else {
-                navigate(`/dashboard/user-profile/${user.id}?tab=offers`);
-              }
-            }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
-          >
-            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <Tag className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                offersData?.hasMagicBox 
-                  ? 'animate-offer-blink' 
-                  : offersData?.available > 0 
-                  ? 'text-[#00ffba]' 
-                  : 'text-gray-400'
-              } transition-all duration-300`} />
-            </div>
-            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-              {offersData?.available > 0 ? (
-                <span className={`${offersData?.hasMagicBox ? 'animate-offer-blink' : 'text-[#00ffba]'}`}>
-                  {offersData.available}
-                </span>
-              ) : offersData?.hasMagicBox ? (
-                <Gift className={`animate-offer-blink ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
-              ) : (
-                <span className="text-gray-400">-</span>
-              )}
-            </div>
-            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {t('overview.activeOffers')}
-            </div>
-          </button>
+          {/* Ενεργές Προσφορές - Δεύτερο - Κρύβεται για coach-created users */}
+          {!isCoachCreatedUser && (
+            <button 
+              onClick={() => {
+                if (setActiveTab) {
+                  setActiveTab('offers');
+                } else {
+                  navigate(`/dashboard/user-profile/${user.id}?tab=offers`);
+                }
+              }}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            >
+              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+                <Tag className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
+                  offersData?.hasMagicBox 
+                    ? 'animate-offer-blink' 
+                    : offersData?.available > 0 
+                    ? 'text-[#00ffba]' 
+                    : 'text-gray-400'
+                } transition-all duration-300`} />
+              </div>
+              <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
+                {offersData?.available > 0 ? (
+                  <span className={`${offersData?.hasMagicBox ? 'animate-offer-blink' : 'text-[#00ffba]'}`}>
+                    {offersData.available}
+                  </span>
+                ) : offersData?.hasMagicBox ? (
+                  <Gift className={`animate-offer-blink ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                ) : (
+                  <span className="text-gray-400">-</span>
+                )}
+              </div>
+              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+                {t('overview.activeOffers')}
+              </div>
+            </button>
+          )}
 
           {/* Πληρωμές - Τρίτο */}
           <button 
@@ -822,7 +868,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </button>
 
-          {/* Επερχόμενα Τεστ */}
+          {/* Επερχόμενα Τεστ - ΚΙΤΡΙΝΟ */}
           <button 
             onClick={() => {
               if (setActiveTab) {
@@ -835,7 +881,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <Calendar className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                upcomingTests ? 'text-purple-500' : 'text-gray-400'
+                upcomingTests ? 'text-yellow-500' : 'text-gray-400'
               }`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} min-w-12`}>
@@ -845,7 +891,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 ) : upcomingTests.daysLeft <= 3 ? (
                   <span className="text-orange-600">{upcomingTests.daysLeft}</span>
                 ) : (
-                  <span className="text-purple-600">{upcomingTests.daysLeft}</span>
+                  <span className="text-yellow-600">{upcomingTests.daysLeft}</span>
                 )
               ) : (
                 <span className="text-gray-400">-</span>
@@ -856,7 +902,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </button>
 
-          {/* Επερχόμενοι Αγώνες - Μόνο για αθλητές */}
+          {/* Επερχόμενοι Αγώνες - Μόνο για αθλητές - ΜΟΒ */}
           {(user.is_athlete || user.role === 'athlete') && (
             <button 
               onClick={() => {
@@ -870,7 +916,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <Trophy className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                  upcomingCompetitions ? 'text-amber-500' : 'text-gray-400'
+                  upcomingCompetitions ? 'text-purple-500' : 'text-gray-400'
                 }`} />
               </div>
               <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} min-w-12`}>
@@ -880,7 +926,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   ) : upcomingCompetitions.daysLeft <= 3 ? (
                     <span className="text-orange-600">{upcomingCompetitions.daysLeft}</span>
                   ) : (
-                    <span className="text-amber-600">{upcomingCompetitions.daysLeft}</span>
+                    <span className="text-purple-600">{upcomingCompetitions.daysLeft}</span>
                   )
                 ) : (
                   <span className="text-gray-400">-</span>
