@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Receipt, FileText, Eye, Package, User, Calendar, CreditCard } from "lucide-react";
+import { Receipt, FileText, Eye, Package, User, Calendar, CreditCard, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
 import { format } from "date-fns";
+import { generateReceiptPDF, downloadPDFFromBase64 } from "@/utils/pdfGenerator";
 
 interface UserProfilePaymentsProps {
   payments: any[];
@@ -107,9 +108,11 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
           customer_vat: undefined,
           customer_email: userProfile.email,
           items: [{
+            id: receipt.id,
             description: receipt.subscription_types?.name || receipt.notes || 'Συνδρομή',
             quantity: 1,
-            unit_price: Number(receipt.amount),
+            unitPrice: Number(receipt.amount),
+            vatRate: 0,
             total: Number(receipt.amount)
           }],
           subtotal: Number(receipt.amount),
@@ -217,6 +220,21 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   const handleViewReceipt = (receipt: ReceiptData) => {
     setSelectedReceipt(receipt);
     setIsPreviewOpen(true);
+  };
+
+  const handlePrintReceipt = async (receipt: ReceiptData) => {
+    setSelectedReceipt(receipt);
+    setIsPreviewOpen(true);
+    
+    // Wait for dialog to render before generating PDF
+    setTimeout(async () => {
+      const pdfBase64 = await generateReceiptPDF('receipt-content');
+      if (pdfBase64) {
+        downloadPDFFromBase64(pdfBase64, `${receipt.receipt_number}.pdf`);
+      }
+      setIsPreviewOpen(false);
+      setSelectedReceipt(null);
+    }, 500);
   };
 
   const formatDate = (dateString: string) => {
@@ -462,8 +480,18 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
                           size="sm"
                           onClick={() => handleViewReceipt(receipt)}
                           className="rounded-none text-xs px-2 py-1"
+                          title="Προβολή"
                         >
                           <Eye className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePrintReceipt(receipt)}
+                          className="rounded-none text-xs px-2 py-1"
+                          title="Εκτύπωση"
+                        >
+                          <Printer className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
@@ -548,8 +576,18 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
                             size="sm"
                             onClick={() => handleViewReceipt(receipt)}
                             className="rounded-none text-xs px-2 py-1"
+                            title="Προβολή"
                           >
                             <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePrintReceipt(receipt)}
+                            className="rounded-none text-xs px-2 py-1"
+                            title="Εκτύπωση"
+                          >
+                            <Printer className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>

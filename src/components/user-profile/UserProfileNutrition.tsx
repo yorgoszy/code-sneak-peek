@@ -162,57 +162,56 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
   const renderAssignmentCard = (assignment: NutritionAssignment) => (
     <Card key={assignment.id} className="rounded-none">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Utensils className="w-5 h-5 text-[#00ffba]" />
-              <h3 className="font-medium">{assignment.nutrition_plans?.name || 'Πρόγραμμα Διατροφής'}</h3>
-              {getStatusBadge(assignment)}
-            </div>
-            
-            
-            <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {format(new Date(assignment.start_date), 'dd MMM yyyy', { locale: el })}
-                {assignment.end_date && (
-                  <> - {format(new Date(assignment.end_date), 'dd MMM yyyy', { locale: el })}</>
-                )}
-              </span>
-            </div>
-            
-            {assignment.nutrition_plans && (
-              <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                <div className="bg-gray-50 p-2 rounded-none">
-                  <div className="font-semibold text-[#00ffba]">{assignment.nutrition_plans.total_daily_calories || '-'}</div>
-                  <div className="text-gray-500">kcal</div>
-                </div>
-                <div className="bg-gray-50 p-2 rounded-none">
-                  <div className="font-semibold text-blue-600">{assignment.nutrition_plans.protein_target || '-'}g</div>
-                  <div className="text-gray-500">Π</div>
-                </div>
-                <div className="bg-gray-50 p-2 rounded-none">
-                  <div className="font-semibold text-orange-600">{assignment.nutrition_plans.carbs_target || '-'}g</div>
-                  <div className="text-gray-500">Υ</div>
-                </div>
-                <div className="bg-gray-50 p-2 rounded-none">
-                  <div className="font-semibold text-yellow-600">{assignment.nutrition_plans.fat_target || '-'}g</div>
-                  <div className="text-gray-500">Λ</div>
-                </div>
-              </div>
-            )}
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <Utensils className="w-5 h-5 text-[#00ffba]" />
+            <h3 className="font-medium">{assignment.nutrition_plans?.name || 'Πρόγραμμα Διατροφής'}</h3>
+            {getStatusBadge(assignment)}
           </div>
           
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setSelectedPlanId(assignment.plan_id)}
-            className="rounded-none"
-            aria-label="Προβολή πλάνου διατροφής"
-            title="Προβολή"
-          >
-            <Eye className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              {format(new Date(assignment.start_date), 'dd MMM yyyy', { locale: el })}
+              {assignment.end_date && (
+                <> - {format(new Date(assignment.end_date), 'dd MMM yyyy', { locale: el })}</>
+              )}
+            </span>
+          </div>
+          
+          {assignment.nutrition_plans && (
+            <div className="grid grid-cols-4 gap-2 text-center text-xs mb-3">
+              <div className="bg-gray-50 p-2 rounded-none">
+                <div className="font-semibold text-[#00ffba]">{assignment.nutrition_plans.total_daily_calories || '-'}</div>
+                <div className="text-gray-500">kcal</div>
+              </div>
+              <div className="bg-gray-50 p-2 rounded-none">
+                <div className="font-semibold text-blue-600">{assignment.nutrition_plans.protein_target || '-'}g</div>
+                <div className="text-gray-500">Π</div>
+              </div>
+              <div className="bg-gray-50 p-2 rounded-none">
+                <div className="font-semibold text-orange-600">{assignment.nutrition_plans.carbs_target || '-'}g</div>
+                <div className="text-gray-500">Υ</div>
+              </div>
+              <div className="bg-gray-50 p-2 rounded-none">
+                <div className="font-semibold text-yellow-600">{assignment.nutrition_plans.fat_target || '-'}g</div>
+                <div className="text-gray-500">Λ</div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setSelectedPlanId(assignment.plan_id)}
+              className="rounded-none"
+              aria-label="Προβολή πλάνου διατροφής"
+              title="Προβολή"
+            >
+              <Eye className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -221,50 +220,46 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
   const renderCoachPlanCard = (plan: NutritionPlan) => (
     <Card key={plan.id} className="rounded-none">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <ChefHat className="w-5 h-5 text-[#cb8954]" />
-              <h3 className="font-medium">{plan.name}</h3>
-              <Badge variant="outline" className="rounded-none text-[10px]">
-                {getGoalLabel(plan.goal)}
-              </Badge>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <ChefHat className="w-5 h-5 text-[#cb8954]" />
+            <h3 className="font-medium">{plan.name}</h3>
+            <Badge variant="outline" className="rounded-none text-[10px]">
+              {getGoalLabel(plan.goal)}
+            </Badge>
+          </div>
+          
+          <div className="grid grid-cols-4 gap-2 text-center text-xs mb-3">
+            <div className="bg-gray-50 p-2 rounded-none">
+              <div className="font-semibold text-[#00ffba]">{plan.total_daily_calories || '-'}</div>
+              <div className="text-gray-500">kcal</div>
             </div>
-            
-            {plan.description && (
-              <p className="text-sm text-gray-500 mb-3">{plan.description}</p>
-            )}
-            
-            <div className="grid grid-cols-4 gap-2 text-center text-xs">
-              <div className="bg-gray-50 p-2 rounded-none">
-                <div className="font-semibold text-[#00ffba]">{plan.total_daily_calories || '-'}</div>
-                <div className="text-gray-500">kcal</div>
-              </div>
-              <div className="bg-gray-50 p-2 rounded-none">
-                <div className="font-semibold text-blue-600">{plan.protein_target || '-'}g</div>
-                <div className="text-gray-500">Π</div>
-              </div>
-              <div className="bg-gray-50 p-2 rounded-none">
-                <div className="font-semibold text-orange-600">{plan.carbs_target || '-'}g</div>
-                <div className="text-gray-500">Υ</div>
-              </div>
-              <div className="bg-gray-50 p-2 rounded-none">
-                <div className="font-semibold text-yellow-600">{plan.fat_target || '-'}g</div>
-                <div className="text-gray-500">Λ</div>
-              </div>
+            <div className="bg-gray-50 p-2 rounded-none">
+              <div className="font-semibold text-blue-600">{plan.protein_target || '-'}g</div>
+              <div className="text-gray-500">Π</div>
+            </div>
+            <div className="bg-gray-50 p-2 rounded-none">
+              <div className="font-semibold text-orange-600">{plan.carbs_target || '-'}g</div>
+              <div className="text-gray-500">Υ</div>
+            </div>
+            <div className="bg-gray-50 p-2 rounded-none">
+              <div className="font-semibold text-yellow-600">{plan.fat_target || '-'}g</div>
+              <div className="text-gray-500">Λ</div>
             </div>
           </div>
           
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setSelectedPlanId(plan.id)}
-            className="rounded-none"
-            aria-label="Προβολή πλάνου διατροφής"
-            title="Προβολή"
-          >
-            <Eye className="w-4 h-4" />
-          </Button>
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setSelectedPlanId(plan.id)}
+              className="rounded-none"
+              aria-label="Προβολή πλάνου διατροφής"
+              title="Προβολή"
+            >
+              <Eye className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
