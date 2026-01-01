@@ -47,13 +47,15 @@ export const CoachNutritionAssignments: React.FC = () => {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null);
-  const { userProfile } = useRoleCheck();
+  const { userProfile, loading: roleLoading } = useRoleCheck();
 
   useEffect(() => {
-    if (userProfile?.id) {
+    if (!roleLoading && userProfile?.id) {
       fetchAssignments();
+    } else if (!roleLoading && !userProfile?.id) {
+      setLoading(false);
     }
-  }, [userProfile?.id]);
+  }, [userProfile?.id, roleLoading]);
 
   const fetchAssignments = async () => {
     if (!userProfile?.id) return;
