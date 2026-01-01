@@ -69,21 +69,46 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         .gte("created_at", monthStart)
         .lte("created_at", monthEnd);
 
-      // 2) Active assignments for this coach (by assigner/coach_id)
-      // NOTE: Δεν βασιζόμαστε στο app_users.coach_id του αθλητή, αλλά στο ποιος έκανε την ανάθεση.
-      const { data: assignments, error: assignmentsError } = await supabase
+      // 2) Active assignments for this coach
+      // Primary rule: δείχνουμε αυτά που ανατέθηκαν από τον coach (assigned_by/coach_id).
+      // Fallback (legacy δεδομένα): αν ΔΕΝ υπάρχει κανένα αποτέλεσμα, τραβάμε assignments για προγράμματα που ανήκουν στον coach.
+      const baseAssignmentsQuery = supabase
         .from("program_assignments")
         .select("id, user_id, program_id, training_dates")
         .eq("status", "active")
-        .not("training_dates", "is", null)
-        .or(`assigned_by.eq.${coachId},coach_id.eq.${coachId}`);
+        .not("training_dates", "is", null);
+
+      let { data: assignments, error: assignmentsError } = await baseAssignmentsQuery.or(
+        `assigned_by.eq.${coachId},coach_id.eq.${coachId}`
+      );
 
       if (assignmentsError) {
         console.error("❌ Error fetching assignments:", assignmentsError);
         throw assignmentsError;
       }
 
-      console.log("✅ Assignments fetched for coach (assigned_by/coach_id):", assignments?.length);
+      // Legacy fallback: παλιά assignments μπορεί να έχουν NULL assigned_by/coach_id.
+      if (!assignments || assignments.length === 0) {
+        const { data: coachPrograms } = await supabase
+          .from("programs")
+          .select("id")
+          .eq("coach_id", coachId);
+
+        const coachProgramIds = (coachPrograms || []).map((p: any) => p.id).filter(Boolean);
+
+        if (coachProgramIds.length > 0) {
+          const fallbackRes = await baseAssignmentsQuery.in("program_id", coachProgramIds);
+          assignments = fallbackRes.data as any;
+          assignmentsError = fallbackRes.error as any;
+
+          if (assignmentsError) {
+            console.error("❌ Error fetching assignments (legacy fallback):", assignmentsError);
+            throw assignmentsError;
+          }
+        }
+      }
+
+      console.log("✅ Assignments fetched for coach (with legacy fallback):", assignments?.length);
 
       const userIds = Array.from(new Set((assignments || []).map((a: any) => a.user_id).filter(Boolean)));
       const programIds = Array.from(new Set((assignments || []).map((a: any) => a.program_id).filter(Boolean)));
