@@ -28,7 +28,7 @@ interface NutritionAssignment {
   };
 }
 
-export const NutritionAssignments: React.FC = () => {
+export const NutritionAssignments: React.FC<{ coachId?: string }> = ({ coachId }) => {
   const [assignments, setAssignments] = useState<NutritionAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -36,10 +36,42 @@ export const NutritionAssignments: React.FC = () => {
 
   useEffect(() => {
     fetchAssignments();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coachId]);
 
   const fetchAssignments = async () => {
     try {
+      // If coachId exists, fetch only assignments for that coach's athletes
+      if (coachId) {
+        const { data: coachAthletes, error: athletesError } = await supabase
+          .from('app_users')
+          .select('id')
+          .eq('coach_id', coachId);
+
+        if (athletesError) throw athletesError;
+
+        const athleteIds = coachAthletes?.map((a: any) => a.id) || [];
+        if (athleteIds.length === 0) {
+          setAssignments([]);
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('nutrition_assignments')
+          .select(`
+            *,
+            nutrition_plans (name, goal, total_daily_calories),
+            app_users!nutrition_assignments_user_id_fkey (name, photo_url)
+          `)
+          .in('user_id', athleteIds)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setAssignments(data || []);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('nutrition_assignments')
         .select(`

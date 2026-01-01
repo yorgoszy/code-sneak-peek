@@ -20,13 +20,15 @@ interface NutritionAssignDialogProps {
     name: string;
   };
   onSuccess: () => void;
+  coachId?: string;
 }
 
 export const NutritionAssignDialog: React.FC<NutritionAssignDialogProps> = ({
   isOpen,
   onClose,
   plan,
-  onSuccess
+  onSuccess,
+  coachId,
 }) => {
   const [users, setUsers] = useState<any[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
@@ -56,10 +58,10 @@ export const NutritionAssignDialog: React.FC<NutritionAssignDialogProps> = ({
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('app_users')
-        .select('id, name, photo_url')
-        .order('name');
+      let q = supabase.from('app_users').select('id, name, photo_url').order('name');
+      if (coachId) q = q.eq('coach_id', coachId);
+
+      const { data, error } = await q;
 
       if (error) throw error;
       setUsers(data || []);
