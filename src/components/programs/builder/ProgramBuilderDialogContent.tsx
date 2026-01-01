@@ -175,6 +175,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
               program={program}
               totalDays={getTotalTrainingDays()}
               onTrainingDatesChange={onTrainingDatesChange}
+              isCoach={!!coachId}
             />
           )}
         </div>
