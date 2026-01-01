@@ -11,7 +11,7 @@ import {
   Calendar,
   Layers,
   CalendarDays,
-  Apple
+  Utensils
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -89,7 +89,7 @@ export const CoachSidebar = ({
       badge: null,
     },
     {
-      icon: Apple,
+      icon: Utensils,
       label: "Διατροφή",
       path: effectiveCoachId ? `/dashboard/nutrition?coachId=${effectiveCoachId}` : "/dashboard/nutrition",
       badge: null,

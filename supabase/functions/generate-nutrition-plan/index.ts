@@ -171,11 +171,11 @@ serve(async (req) => {
       additionalNotes: payload.additionalNotes ?? "",
     };
 
-    const prompt = `Δώσε εβδομαδιαίο πλάνο διατροφής για τα δεδομένα χρήστη: ${JSON.stringify(user)}\n\n` +
-      `ΔΙΑΘΕΣΙΜΑ ΤΡΟΦΙΜΑ (ΧΡΗΣΙΜΟΠΟΙΗΣΕ ΜΟΝΟ ΑΥΤΑ):\n${foodSummary}\n\n` +
-      `Απάντηση σε αυστηρό JSON με αυτό το σχήμα:\n` +
-      `{"name":string,"description":string,"goal":string,"totalCalories":number,"proteinTarget":number,"carbsTarget":number,"fatTarget":number,"days":[{"dayNumber":1-7,"name":string,"totalCalories":number,"totalProtein":number,"totalCarbs":number,"totalFat":number,"meals":[{"type":string,"order":number,"name":string,"description":string,"totalCalories":number,"totalProtein":number,"totalCarbs":number,"totalFat":number,"foods":[{"name":string,"quantity":number,"unit":string,"calories":number,"protein":number,"carbs":number,"fat":number,"notes"?:string}]}]}]}\n\n` +
-      `Κανόνες:\n- 7 ημέρες, dayNumber 1..7\n- meal order ξεκινά από 1\n- mealsPerDay=${user.mealsPerDay}\n- Χρησιμοποίησε ΑΚΡΙΒΩΣ τα ονόματα των τροφίμων από τη λίστα\n- Υπολόγισε τις θρεπτικές αξίες με βάση την ποσότητα\n- Τα αθροίσματα ημέρας/γεύματος να είναι περίπου στα totals.`;
+    // Simplified prompt to avoid truncation - only 3 days, then we duplicate
+    const prompt = `Πλάνο διατροφής για: kcal=${user.totalCalories}, Π=${user.proteinTarget}g, Υ=${user.carbsTarget}g, Λ=${user.fatTarget}g, ${user.mealsPerDay} γεύματα/ημέρα, στόχος: ${user.goal || 'maintenance'}\n\n` +
+      `ΤΡΟΦΙΜΑ:\n${foodSummary}\n\n` +
+      `ΔΩΣΕ JSON (χωρίς markdown): {"name":"string","description":"string","goal":"string","totalCalories":num,"proteinTarget":num,"carbsTarget":num,"fatTarget":num,"days":[{dayNumber:1-3,name:string,totalCalories,totalProtein,totalCarbs,totalFat,meals:[{type,order,name,description,totalCalories,totalProtein,totalCarbs,totalFat,foods:[{name,quantity,unit,calories,protein,carbs,fat}]}]}]}\n` +
+      `ΚΑΝΟΝΕΣ: ΜΟΝΟ 3 ημέρες (Δευτέρα,Τρίτη,Τετάρτη), ${user.mealsPerDay} γεύματα/ημέρα, χρησιμοποίησε ΜΟΝΟ τρόφιμα από τη λίστα.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -235,6 +235,25 @@ serve(async (req) => {
       const cleaned = extractJson(content);
       const plan = JSON.parse(cleaned);
       console.log("Successfully parsed AI plan with", plan.days?.length, "days");
+      
+      // Expand 3 days to 7 days by copying patterns
+      if (plan.days && plan.days.length < 7) {
+        const dayNames = ["Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο", "Κυριακή"];
+        const existingDays = plan.days.slice(0, 3);
+        const expandedDays = [];
+        
+        for (let i = 0; i < 7; i++) {
+          const sourceDay = existingDays[i % existingDays.length];
+          expandedDays.push({
+            ...sourceDay,
+            dayNumber: i + 1,
+            name: dayNames[i],
+          });
+        }
+        plan.days = expandedDays;
+        console.log("Expanded to 7 days");
+      }
+      
       return new Response(JSON.stringify({ plan }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
