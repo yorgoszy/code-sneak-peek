@@ -307,6 +307,7 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
       carbsTarget: avgCarbs,
       fatTarget: avgFat,
       userId: selectedUser.id,
+      coachId: effectiveCoachId,
       days: days.map(day => {
         const totals = calculateDayTotals(day);
         return {
