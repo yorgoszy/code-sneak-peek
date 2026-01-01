@@ -41,7 +41,7 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
 
   useEffect(() => {
     fetchGroups();
-  }, []);
+  }, [coachId]);
 
   useEffect(() => {
     if (selectedGroupId) {
