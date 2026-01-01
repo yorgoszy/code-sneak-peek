@@ -55,15 +55,15 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
       <TabsContent key={day.id} value={dayIndex.toString()} className="mt-0 flex-1 overflow-y-auto">
         <div className="bg-white rounded-none p-4 flex items-center justify-center min-h-[100px]">
           {isTestDay && (
-            <div className="flex items-center gap-2 bg-purple-100 border-2 border-purple-500 px-6 py-4">
-              <FlaskConical className="w-6 h-6 text-purple-600" />
-              <span className="text-lg font-bold text-purple-700">ΗΜΕΡΑ ΤΕΣΤ</span>
+            <div className="flex items-center gap-2 bg-yellow-100 border-2 border-yellow-500 px-6 py-4">
+              <FlaskConical className="w-6 h-6 text-yellow-600" />
+              <span className="text-lg font-bold text-yellow-700">ΗΜΕΡΑ ΤΕΣΤ</span>
             </div>
           )}
           {isCompetitionDay && (
-            <div className="flex items-center gap-2 bg-orange-100 border-2 border-orange-500 px-6 py-4">
-              <Trophy className="w-6 h-6 text-orange-600" />
-              <span className="text-lg font-bold text-orange-700">ΗΜΕΡΑ ΑΓΩΝΑ</span>
+            <div className="flex items-center gap-2 bg-purple-100 border-2 border-purple-500 px-6 py-4">
+              <Trophy className="w-6 h-6 text-purple-600" />
+              <span className="text-lg font-bold text-purple-700">ΗΜΕΡΑ ΑΓΩΝΑ</span>
             </div>
           )}
         </div>

@@ -60,14 +60,14 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
 
   return (
     <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
-      {/* Test/Competition Day Labels */}
+      {/* Test/Competition Day Labels - ΚΙΤΡΙΝΟ για ΤΕΣΤ, ΜΩΒ για ΑΓΩΝΕΣ */}
       {hasTestDays && (
-        <span className="text-[10px] bg-purple-600 text-white px-1.5 py-0.5 font-bold uppercase">
+        <span className="text-[10px] bg-yellow-500 text-black px-1.5 py-0.5 font-bold uppercase">
           ΤΕΣΤ
         </span>
       )}
       {hasCompetitionDays && (
-        <span className="text-[10px] bg-orange-600 text-white px-1.5 py-0.5 font-bold uppercase">
+        <span className="text-[10px] bg-purple-600 text-white px-1.5 py-0.5 font-bold uppercase">
           ΑΓΩΝΑΣ
         </span>
       )}

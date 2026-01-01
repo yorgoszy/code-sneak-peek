@@ -13,11 +13,11 @@ export const CompetitionDaySelector: React.FC<CompetitionDaySelectorProps> = ({
   onCompetitionDayChange
 }) => {
   return (
-    <div className="space-y-3 p-3 bg-amber-50 border border-amber-200 rounded-none">
+    <div className="space-y-3 p-3 bg-purple-50 border border-purple-200 rounded-none">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-amber-600" />
-          <Label htmlFor="competition-day-switch" className="text-sm font-semibold text-amber-900">
+          <Trophy className="w-4 h-4 text-purple-600" />
+          <Label htmlFor="competition-day-switch" className="text-sm font-semibold text-purple-900">
             Ημέρα Αγώνα
           </Label>
         </div>
