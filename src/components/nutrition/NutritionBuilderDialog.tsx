@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { Brain, Loader2, Plus, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, Loader2, Plus, Utensils, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AIQuestionnaireWizard } from "./AIQuestionnaireWizard";
 import { NutritionDayBuilder } from "./NutritionDayBuilder";
+
+// ... keep existing code (types, component)
 
 interface NutritionBuilderDialogProps {
   isOpen: boolean;
@@ -135,11 +133,12 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className={`rounded-none p-0 gap-0 ${
+        className={cn(
+          "rounded-none flex flex-col p-0 gap-0",
           mode === 'select'
-            ? 'w-[95vw] max-w-sm h-auto'
-            : 'fixed inset-0 w-full h-full max-w-none sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:w-[95vw] sm:max-w-5xl sm:h-auto sm:max-h-[90vh]'
-        }`}
+            ? "w-[95vw] max-w-sm"
+            : "fixed inset-0 left-0 top-0 translate-x-0 translate-y-0 w-[100vw] h-[100vh] max-w-none sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:w-[95vw] sm:max-w-5xl sm:h-auto sm:max-h-[90vh]"
+        )}
       >
         <DialogHeader className="p-4 pb-2 border-b shrink-0">
           <DialogTitle className="flex items-center gap-2 text-sm">
@@ -150,7 +149,7 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className={`${mode === 'select' ? 'p-4' : 'flex-1 overflow-y-auto p-4'}`}>
+        <div className={mode === 'select' ? 'p-4' : 'flex-1 overflow-y-auto p-4'}>
 
           {mode === 'select' && (
             <div className="space-y-3">
