@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, Calendar, ClipboardList, Dumbbell, Trophy, UserPlus, Users } from "lucide-react";
+import { Activity, Dumbbell, UserPlus, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { differenceInCalendarDays, endOfMonth, format, startOfMonth } from "date-fns";
-import { el } from "date-fns/locale";
+import { endOfMonth, format, startOfMonth } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AllUpcomingTestsCard } from "@/components/dashboard/AllUpcomingTestsCard";
+import { AllUpcomingCompetitionsCard } from "@/components/dashboard/AllUpcomingCompetitionsCard";
 
 interface CoachOverviewProps {
   coachId: string;
@@ -17,15 +18,6 @@ interface Stats {
   todaysPrograms: number;
 }
 
-interface UpcomingEvent {
-  date: string;
-  userName: string;
-  userId: string;
-  programName?: string;
-  dayName?: string;
-  testTypes?: string[];
-}
-
 export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
   const [stats, setStats] = useState<Stats>({
     totalAthletes: 0,
@@ -33,8 +25,6 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
     newAthletesThisMonth: 0,
     todaysPrograms: 0,
   });
-  const [upcomingTests, setUpcomingTests] = useState<UpcomingEvent[]>([]);
-  const [upcomingCompetitions, setUpcomingCompetitions] = useState<UpcomingEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
 
@@ -138,97 +128,7 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         userNameById = new Map<string, string>((usersData || []).map((u: any) => [u.id, u.name]));
       }
 
-      // 5) Fetch programs with nested weeks and days
-      let programById = new Map<string, any>();
-      if (programIds.length > 0) {
-        const { data: programsData, error: programsError } = await supabase
-          .from("programs")
-          .select(`
-            id,
-            name,
-            program_weeks (
-              id,
-              week_number,
-              program_days (
-                id,
-                name,
-                day_number,
-                is_test_day,
-                test_types,
-                is_competition_day
-              )
-            )
-          `)
-          .in("id", programIds);
-
-        if (programsError) {
-          console.error("❌ Error fetching programs:", programsError);
-        } else {
-          console.log("✅ Programs fetched:", programsData?.length);
-          programById = new Map<string, any>((programsData || []).map((p: any) => [p.id, p]));
-        }
-      }
-
-      // 6) Compute upcoming events
-      const tests: UpcomingEvent[] = [];
-      const competitions: UpcomingEvent[] = [];
-
-      (assignments || []).forEach((assignment: any) => {
-        const trainingDates: string[] = assignment.training_dates || [];
-        const program = programById.get(assignment.program_id);
-        if (!program) return;
-
-        const weeks = program.program_weeks || [];
-        if (!weeks.length) return;
-
-        const daysPerWeek = weeks[0]?.program_days?.length || 0;
-        if (!daysPerWeek) return;
-
-        const userName = userNameById.get(assignment.user_id) || "";
-
-        // IMPORTANT: Χρησιμοποιούμε ΑΚΡΙΒΩΣ το ίδιο indexing με το useActivePrograms/admin cards
-        // (weekIndex * daysPerWeek + dayIndex) χωρίς sorting, για να ταιριάζει με το training_dates.
-        weeks.forEach((week: any, weekIndex: number) => {
-          (week.program_days || []).forEach((day: any, dayIndex: number) => {
-            const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
-            if (totalDayIndex >= trainingDates.length) return;
-
-            const dateStr = trainingDates[totalDayIndex];
-            if (!dateStr || dateStr < todayStr) return;
-
-            const hasTestTypes = day?.test_types && Array.isArray(day.test_types) && day.test_types.length > 0;
-
-            if (day.is_test_day || hasTestTypes) {
-              tests.push({
-                date: dateStr,
-                userName,
-                userId: assignment.user_id,
-                programName: program?.name,
-                dayName: day?.name,
-                testTypes: day?.test_types || [],
-              });
-            }
-
-            if (day.is_competition_day) {
-              competitions.push({
-                date: dateStr,
-                userName,
-                userId: assignment.user_id,
-                programName: program?.name,
-                dayName: day?.name,
-              });
-            }
-          });
-        });
-      });
-
-      console.log("✅ Tests found:", tests.length, "Competitions found:", competitions.length);
-
-      tests.sort((a, b) => a.date.localeCompare(b.date));
-      competitions.sort((a, b) => a.date.localeCompare(b.date));
-
-      setUpcomingTests(tests);
-      setUpcomingCompetitions(competitions);
+      // Απλώς κρατάμε τα stats - τα upcoming tests/competitions τα δείχνουμε μέσω των admin components
       setStats({
         totalAthletes: totalAthletes || 0,
         activeAthletes: activeAthletes || 0,
@@ -237,16 +137,9 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
       });
     } catch (error) {
       console.error("Error fetching coach overview:", error);
-      setUpcomingTests([]);
-      setUpcomingCompetitions([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const getDaysLeftText = (dateStr: string) => {
-    const daysLeft = differenceInCalendarDays(new Date(dateStr), new Date());
-    return daysLeft === 0 ? "σήμερα" : daysLeft === 1 ? "αύριο" : `σε ${daysLeft} μέρες`;
   };
 
   const statCards = useMemo(
@@ -291,72 +184,10 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         })}
       </div>
 
+      {/* Χρησιμοποιούμε τα ίδια components με τον admin */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center text-sm">
-              <ClipboardList className="h-4 w-4 mr-2 text-orange-600" />
-              Επερχόμενα Τεστ ({upcomingTests.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {upcomingTests.length === 0 ? (
-              <div className="text-center py-4 text-gray-500 text-sm">Δεν υπάρχουν επερχόμενα τεστ</div>
-            ) : (
-              <div className="space-y-2 max-h-[250px] overflow-y-auto">
-                {upcomingTests.slice(0, 8).map((test, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 border border-gray-200">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Calendar className="h-3 w-3 text-orange-600 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <p className="font-medium text-xs truncate">{test.userName}</p>
-                        <p className="text-[10px] text-gray-500">{format(new Date(test.date), "d MMM", { locale: el })}</p>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      {test.testTypes && test.testTypes.length > 0 && (
-                        <p className="text-[10px] font-medium text-gray-700 truncate max-w-[110px]">{test.testTypes.slice(0, 2).join(", ")}</p>
-                      )}
-                      <p className="text-[10px] text-orange-600 font-medium">{getDaysLeftText(test.date)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center text-sm">
-              <Trophy className="h-4 w-4 mr-2 text-[#cb8954]" />
-              Επερχόμενοι Αγώνες ({upcomingCompetitions.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {upcomingCompetitions.length === 0 ? (
-              <div className="text-center py-4 text-gray-500 text-sm">Δεν υπάρχουν επερχόμενοι αγώνες</div>
-            ) : (
-              <div className="space-y-2 max-h-[250px] overflow-y-auto">
-                {upcomingCompetitions.slice(0, 8).map((comp, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 border border-gray-200">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Calendar className="h-3 w-3 text-[#cb8954] flex-shrink-0" />
-                      <div className="min-w-0">
-                        <p className="font-medium text-xs truncate">{comp.userName}</p>
-                        <p className="text-[10px] text-gray-500">{format(new Date(comp.date), "d MMM", { locale: el })}</p>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      {comp.dayName && <p className="text-[10px] text-gray-600 italic truncate max-w-[110px]">{comp.dayName}</p>}
-                      <p className="text-[10px] text-[#cb8954] font-medium">{getDaysLeftText(comp.date)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <AllUpcomingTestsCard />
+        <AllUpcomingCompetitionsCard />
       </div>
     </div>
   );
