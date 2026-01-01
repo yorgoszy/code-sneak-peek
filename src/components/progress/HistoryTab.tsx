@@ -19,9 +19,10 @@ interface HistoryTabProps {
   selectedUserId?: string;
   readOnly?: boolean;
   coachUserIds?: string[];
+  useCoachTables?: boolean;
 }
 
-export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds }) => {
+export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds, useCoachTables = false }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
@@ -41,56 +42,99 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
 
   useEffect(() => {
     fetchSessions();
-  }, [selectedUserId, coachUserIds]);
+  }, [selectedUserId, coachUserIds, useCoachTables]);
 
   const fetchSessions = async () => {
     try {
-      let query = supabase
-        .from('strength_test_sessions')
-        .select(`
-          id,
-          test_date,
-          notes,
-          created_at,
-          user_id,
-          app_users!strength_test_sessions_user_id_fkey (
+      let sessionsData: any[] = [];
+      
+      if (useCoachTables && selectedUserId) {
+        // Fetch from coach tables
+        const { data, error } = await supabase
+          .from('coach_strength_test_sessions')
+          .select(`
             id,
-            name,
-            email
-          ),
-          strength_test_attempts (
-            id,
-            weight_kg,
-            velocity_ms,
-            attempt_number,
-            exercises (
+            test_date,
+            notes,
+            created_at,
+            user_id,
+            coach_strength_test_data (
               id,
-              name
+              weight_kg,
+              velocity_ms,
+              exercise_id,
+              exercises (
+                id,
+                name
+              )
             )
-          )
-        `)
-        .order('created_at', { ascending: false });
+          `)
+          .eq('user_id', selectedUserId)
+          .order('created_at', { ascending: false });
 
-      // Filter by specific user if selectedUserId is provided
-      if (selectedUserId) {
-        query = query.eq('user_id', selectedUserId);
-      } else if (coachUserIds && coachUserIds.length > 0) {
-        query = query.in('user_id', coachUserIds);
+        if (error) throw error;
+        
+        // Transform coach data to match expected format
+        sessionsData = (data || []).map(session => ({
+          ...session,
+          strength_test_attempts: session.coach_strength_test_data?.map((d: any, index: number) => ({
+            id: d.id,
+            weight_kg: d.weight_kg,
+            velocity_ms: d.velocity_ms,
+            attempt_number: index + 1,
+            exercises: d.exercises
+          })) || []
+        }));
+      } else {
+        // Fetch from regular tables
+        let query = supabase
+          .from('strength_test_sessions')
+          .select(`
+            id,
+            test_date,
+            notes,
+            created_at,
+            user_id,
+            app_users!strength_test_sessions_user_id_fkey (
+              id,
+              name,
+              email
+            ),
+            strength_test_attempts (
+              id,
+              weight_kg,
+              velocity_ms,
+              attempt_number,
+              exercises (
+                id,
+                name
+              )
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        if (selectedUserId) {
+          query = query.eq('user_id', selectedUserId);
+        } else if (coachUserIds && coachUserIds.length > 0) {
+          query = query.in('user_id', coachUserIds);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        sessionsData = data || [];
       }
 
-      const [sessionsRes, usersRes] = await Promise.all([
-        query,
-        supabase.from('app_users').select('id, name, email')
-      ]);
-
-      if (sessionsRes.error) throw sessionsRes.error;
-      if (usersRes.error) throw usersRes.error;
+      const { data: usersData, error: usersError } = await supabase
+        .from('app_users')
+        .select('id, name, email');
+        
+      if (usersError) throw usersError;
 
       const map = new Map<string, any>();
-      (usersRes.data || []).forEach(u => map.set(u.id, { name: u.name, email: u.email }));
+      (usersData || []).forEach(u => map.set(u.id, { name: u.name, email: u.email }));
       setUsersMap(map);
 
-      setSessions(sessionsRes.data || []);
+      setSessions(sessionsData);
     } catch (error) {
       console.error('Error fetching sessions:', error);
     } finally {

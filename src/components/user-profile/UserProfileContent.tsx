@@ -36,6 +36,9 @@ interface UserProfileContentProps {
   setActiveTab?: (tab: string) => void;
 }
 
+// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach
+const isCoachCreatedUser = (userProfile: any) => !userProfile?.auth_user_id && userProfile?.coach_id;
+
 export const UserProfileContent = ({
   activeTab,
   userProfile,
@@ -111,7 +114,7 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <h2 className="text-xl font-semibold">{t('overview.progress')}</h2>
-            <UserProgressSection userId={userProfile?.id} />
+            <UserProgressSection userId={userProfile?.id} useCoachTables={isCoachCreatedUser(userProfile)} />
           </div>
         );
       case "history":
@@ -119,7 +122,7 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <h2 className="text-xl font-semibold">{t('overview.history')}</h2>
-            <UserProfileHistory userId={userProfile?.id} />
+            <UserProfileHistory userId={userProfile?.id} useCoachTables={isCoachCreatedUser(userProfile)} />
           </div>
         );
       case "payments":

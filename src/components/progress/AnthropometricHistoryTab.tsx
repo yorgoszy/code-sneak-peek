@@ -18,6 +18,7 @@ interface AnthropometricHistoryTabProps {
   selectedUserId?: string;
   readOnly?: boolean;
   coachUserIds?: string[];
+  useCoachTables?: boolean;
 }
 
 interface EditFormData {
@@ -34,7 +35,7 @@ interface EditFormData {
   arm_circumference: string;
 }
 
-export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds }) => {
+export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds, useCoachTables = false }) => {
   const { t } = useTranslation();
   const usersMap = useUserNamesMap();
   const { results, loading, refetch } = useAnthropometricTestResults(usersMap, selectedUserId, coachUserIds);
@@ -75,10 +76,11 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
 
   const fetchAnthropometricData = async () => {
     const data: Record<string, any> = {};
+    const tableName = useCoachTables ? 'coach_anthropometric_test_data' : 'anthropometric_test_data';
     
     for (const result of results) {
       const { data: anthroData, error } = await supabase
-        .from('anthropometric_test_data')
+        .from(tableName)
         .select('*')
         .eq('test_session_id', result.id)
         .single();
