@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, GripVertical } from "lucide-react";
+import { CheckCircle, GripVertical, FlaskConical, Trophy } from "lucide-react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -49,6 +49,9 @@ export const SortableDay: React.FC<SortableDayProps> = ({
     transition,
   };
 
+  const isTestDay = day.is_test_day === true;
+  const isCompetitionDay = day.is_competition_day === true;
+
   return (
     <div ref={setNodeRef} style={style} className={`${isDragging ? 'opacity-50' : ''} flex-1`}>
       <TabsTrigger 
@@ -56,6 +59,8 @@ export const SortableDay: React.FC<SortableDayProps> = ({
         className={`
           rounded-none flex items-center gap-1 relative w-full
           ${isEditing ? 'h-6 text-xs px-1' : 'text-xs'}
+          ${isTestDay ? 'bg-purple-50 border-b-2 border-purple-500' : ''}
+          ${isCompetitionDay ? 'bg-orange-50 border-b-2 border-orange-500' : ''}
         `}
         onDoubleClick={onDoubleClick}
       >
@@ -73,6 +78,18 @@ export const SortableDay: React.FC<SortableDayProps> = ({
           {isDayCompleted && rpe && (
             <span className={`text-[9px] text-white px-1 py-0.5 rounded-none font-bold ${getRpeColor(rpe)} flex-shrink-0`}>
               RPE {rpe}
+            </span>
+          )}
+          {isTestDay && (
+            <span className="text-[9px] bg-purple-600 text-white px-1 py-0.5 font-bold flex-shrink-0 flex items-center gap-0.5">
+              <FlaskConical className="w-2 h-2" />
+              ΤΕΣΤ
+            </span>
+          )}
+          {isCompetitionDay && (
+            <span className="text-[9px] bg-orange-600 text-white px-1 py-0.5 font-bold flex-shrink-0 flex items-center gap-0.5">
+              <Trophy className="w-2 h-2" />
+              ΑΓΩΝΑΣ
             </span>
           )}
           <span className="truncate text-xs">
