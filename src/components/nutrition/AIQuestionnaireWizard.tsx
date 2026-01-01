@@ -321,10 +321,10 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
   const progress = ((currentStep + 1) / STEPS.length) * 100;
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-4">
       <Progress value={progress} className="h-2" />
-      
-      <div className="flex justify-center gap-2 text-xs">
+
+      <div className="flex flex-wrap justify-center gap-2 text-xs">
         {STEPS.map((step, index) => (
           <div
             key={step.id}
@@ -341,244 +341,246 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
         ))}
       </div>
 
-      {/* Step 0: User Selection */}
-      {currentStep === 0 && (
-        <div className="space-y-4">
-          <h3 className="font-medium">Επιλέξτε Χρήστη</h3>
-          <div className="grid gap-2 max-h-[300px] overflow-y-auto">
-            {users.map(user => (
-              <Card
-                key={user.id}
-                className={`rounded-none cursor-pointer transition-colors ${
-                  formData.userId === user.id 
-                    ? 'border-[#00ffba] bg-[#00ffba]/5' 
-                    : 'hover:border-gray-300'
-                }`}
-                onClick={() => handleUserSelect(user.id)}
-              >
-                <CardContent className="p-3 flex items-center gap-3">
-                  <Avatar className="w-8 h-8 rounded-full">
-                    <AvatarImage src={user.photo_url || user.avatar_url} />
-                    <AvatarFallback className="rounded-full bg-[#cb8954] text-white text-sm">
-                      {user.name?.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm">{user.name}</span>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {formData.userId && (
-            <div className="grid grid-cols-3 gap-3 pt-4">
-              <div className="space-y-2">
-                <Label>Βάρος (kg)</Label>
-                <Input
-                  type="number"
-                  value={formData.weight}
-                  onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
-                  className="rounded-none"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Ύψος (cm)</Label>
-                <Input
-                  type="number"
-                  value={formData.height}
-                  onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
-                  className="rounded-none"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Ηλικία</Label>
-                <Input
-                  type="number"
-                  value={formData.age}
-                  onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                  className="rounded-none"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Step 1: Goal */}
-      {currentStep === 1 && (
-        <div className="space-y-4">
-          <h3 className="font-medium">Επιλέξτε Στόχο</h3>
-          <RadioGroup value={formData.goal} onValueChange={(value) => setFormData(prev => ({ ...prev, goal: value }))}>
-            {GOALS.map(goal => (
-              <div key={goal.value} className="flex items-center space-x-3 p-3 border rounded-none hover:bg-gray-50 cursor-pointer">
-                <RadioGroupItem value={goal.value} id={goal.value} />
-                <Label htmlFor={goal.value} className="flex-1 cursor-pointer">
-                  <div className="font-medium">{goal.label}</div>
-                  <div className="text-xs text-gray-500">{goal.description}</div>
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </div>
-      )}
-
-      {/* Step 2: Preferences */}
-      {currentStep === 2 && (
-        <div className="space-y-4">
-          <h3 className="font-medium">Διατροφικές Προτιμήσεις (προαιρετικά)</h3>
-          <div className="grid gap-2">
-            {PREFERENCES.map(pref => (
-              <div
-                key={pref.value}
-                className={`flex items-center space-x-3 p-3 border rounded-none cursor-pointer transition-colors ${
-                  formData.preferences.includes(pref.value) ? 'border-[#00ffba] bg-[#00ffba]/5' : 'hover:bg-gray-50'
-                }`}
-                onClick={() => togglePreference(pref.value)}
-              >
-                <Checkbox checked={formData.preferences.includes(pref.value)} />
-                <span className="text-sm">{pref.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Allergies */}
-      {currentStep === 3 && (
-        <div className="space-y-4">
-          <h3 className="font-medium">Αλλεργίες / Δυσανεξίες (προαιρετικά)</h3>
-          <div className="grid gap-2">
-            {ALLERGIES.map(allergy => (
-              <div
-                key={allergy.value}
-                className={`flex items-center space-x-3 p-3 border rounded-none cursor-pointer transition-colors ${
-                  formData.allergies.includes(allergy.value) ? 'border-red-500 bg-red-50' : 'hover:bg-gray-50'
-                }`}
-                onClick={() => toggleAllergy(allergy.value)}
-              >
-                <Checkbox checked={formData.allergies.includes(allergy.value)} />
-                <span className="text-sm">{allergy.label}</span>
-              </div>
-            ))}
-          </div>
-          
-          <div className="space-y-2 pt-4">
-            <Label>Επιπλέον Σημειώσεις</Label>
-            <Textarea
-              value={formData.additionalNotes}
-              onChange={(e) => setFormData(prev => ({ ...prev, additionalNotes: e.target.value }))}
-              placeholder="π.χ. Δεν τρώω κρέας τις Τετάρτες..."
-              className="rounded-none"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Step 4: Health */}
-      {currentStep === 4 && (
-        <div className="space-y-4">
-          <h3 className="font-medium">Πληροφορίες Υγείας (προαιρετικά)</h3>
-          
+      <div className="space-y-6">
+        {/* Step 0: User Selection */}
+        {currentStep === 0 && (
           <div className="space-y-4">
-            <div
-              className={`flex items-center space-x-3 p-3 border rounded-none cursor-pointer transition-colors ${
-                formData.hasDiabetes ? 'border-red-500 bg-red-50' : 'hover:bg-gray-50'
-              }`}
-              onClick={() => setFormData(prev => ({ ...prev, hasDiabetes: !prev.hasDiabetes, diabetesType: '' }))}
-            >
-              <Checkbox checked={formData.hasDiabetes} />
-              <span className="text-sm">Έχω διαβήτη</span>
-            </div>
-            
-            {formData.hasDiabetes && (
-              <div className="ml-6 space-y-2">
-                <Label>Τύπος Διαβήτη</Label>
-                <RadioGroup 
-                  value={formData.diabetesType} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, diabetesType: value }))}
+            <h3 className="font-medium">Επιλέξτε Χρήστη</h3>
+            <div className="grid gap-2 max-h-[40vh] sm:max-h-[300px] overflow-y-auto">
+              {users.map(user => (
+                <Card
+                  key={user.id}
+                  className={`rounded-none cursor-pointer transition-colors ${
+                    formData.userId === user.id 
+                      ? 'border-[#00ffba] bg-[#00ffba]/5' 
+                      : 'hover:border-gray-300'
+                  }`}
+                  onClick={() => handleUserSelect(user.id)}
                 >
-                  <div className="flex items-center space-x-3 p-2 border rounded-none hover:bg-gray-50">
-                    <RadioGroupItem value="type1" id="type1" />
-                    <Label htmlFor="type1" className="cursor-pointer">Τύπου 1</Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-2 border rounded-none hover:bg-gray-50">
-                    <RadioGroupItem value="type2" id="type2" />
-                    <Label htmlFor="type2" className="cursor-pointer">Τύπου 2</Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-2 border rounded-none hover:bg-gray-50">
-                    <RadioGroupItem value="gestational" id="gestational" />
-                    <Label htmlFor="gestational" className="cursor-pointer">Κύησης</Label>
-                  </div>
-                </RadioGroup>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <Avatar className="w-8 h-8 rounded-full">
+                      <AvatarImage src={user.photo_url || user.avatar_url} />
+                      <AvatarFallback className="rounded-full bg-[#cb8954] text-white text-sm">
+                        {user.name?.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{user.name}</span>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {formData.userId && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <div className="space-y-2">
+                  <Label>Βάρος (kg)</Label>
+                  <Input
+                    type="number"
+                    value={formData.weight}
+                    onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
+                    className="rounded-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Ύψος (cm)</Label>
+                  <Input
+                    type="number"
+                    value={formData.height}
+                    onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
+                    className="rounded-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Ηλικία</Label>
+                  <Input
+                    type="number"
+                    value={formData.age}
+                    onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
+                    className="rounded-none"
+                  />
+                </div>
               </div>
             )}
-            
-            <div className="space-y-2 pt-4">
-              <Label>Φάρμακα που λαμβάνετε (αν υπάρχουν)</Label>
+          </div>
+        )}
+
+        {/* Step 1: Goal */}
+        {currentStep === 1 && (
+          <div className="space-y-4">
+            <h3 className="font-medium">Επιλέξτε Στόχο</h3>
+            <RadioGroup value={formData.goal} onValueChange={(value) => setFormData(prev => ({ ...prev, goal: value }))}>
+              {GOALS.map(goal => (
+                <div key={goal.value} className="flex items-center space-x-3 p-3 border rounded-none hover:bg-gray-50 cursor-pointer">
+                  <RadioGroupItem value={goal.value} id={goal.value} />
+                  <Label htmlFor={goal.value} className="flex-1 cursor-pointer">
+                    <div className="font-medium">{goal.label}</div>
+                    <div className="text-xs text-gray-500">{goal.description}</div>
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        )}
+
+        {/* Step 2: Preferences */}
+        {currentStep === 2 && (
+          <div className="space-y-4">
+            <h3 className="font-medium">Διατροφικές Προτιμήσεις (προαιρετικά)</h3>
+            <div className="grid gap-2">
+              {PREFERENCES.map(pref => (
+                <div
+                  key={pref.value}
+                  className={`flex items-center space-x-3 p-3 border rounded-none cursor-pointer transition-colors ${
+                    formData.preferences.includes(pref.value) ? 'border-[#00ffba] bg-[#00ffba]/5' : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => togglePreference(pref.value)}
+                >
+                  <Checkbox checked={formData.preferences.includes(pref.value)} />
+                  <span className="text-sm">{pref.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Allergies */}
+        {currentStep === 3 && (
+          <div className="space-y-4">
+            <h3 className="font-medium">Αλλεργίες / Δυσανεξίες (προαιρετικά)</h3>
+            <div className="grid gap-2">
+              {ALLERGIES.map(allergy => (
+                <div
+                  key={allergy.value}
+                  className={`flex items-center space-x-3 p-3 border rounded-none cursor-pointer transition-colors ${
+                    formData.allergies.includes(allergy.value) ? 'border-red-500 bg-red-50' : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => toggleAllergy(allergy.value)}
+                >
+                  <Checkbox checked={formData.allergies.includes(allergy.value)} />
+                  <span className="text-sm">{allergy.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <Label>Επιπλέον Σημειώσεις</Label>
               <Textarea
-                value={formData.medications}
-                onChange={(e) => setFormData(prev => ({ ...prev, medications: e.target.value }))}
-                placeholder="π.χ. Μετφορμίνη 500mg, Ινσουλίνη..."
+                value={formData.additionalNotes}
+                onChange={(e) => setFormData(prev => ({ ...prev, additionalNotes: e.target.value }))}
+                placeholder="π.χ. Δεν τρώω κρέας τις Τετάρτες..."
                 className="rounded-none"
               />
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Step 5: Generate */}
-      {currentStep === 5 && (
-        <div className="space-y-6 text-center py-8">
-          <div className="inline-flex p-4 bg-[#00ffba]/10 rounded-full">
-            <Brain className="w-12 h-12 text-[#00ffba]" />
+        {/* Step 4: Health */}
+        {currentStep === 4 && (
+          <div className="space-y-4">
+            <h3 className="font-medium">Πληροφορίες Υγείας (προαιρετικά)</h3>
+
+            <div className="space-y-4">
+              <div
+                className={`flex items-center space-x-3 p-3 border rounded-none cursor-pointer transition-colors ${
+                  formData.hasDiabetes ? 'border-red-500 bg-red-50' : 'hover:bg-gray-50'
+                }`}
+                onClick={() => setFormData(prev => ({ ...prev, hasDiabetes: !prev.hasDiabetes, diabetesType: '' }))}
+              >
+                <Checkbox checked={formData.hasDiabetes} />
+                <span className="text-sm">Έχω διαβήτη</span>
+              </div>
+
+              {formData.hasDiabetes && (
+                <div className="ml-0 sm:ml-6 space-y-2">
+                  <Label>Τύπος Διαβήτη</Label>
+                  <RadioGroup
+                    value={formData.diabetesType}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, diabetesType: value }))}
+                  >
+                    <div className="flex items-center space-x-3 p-2 border rounded-none hover:bg-gray-50">
+                      <RadioGroupItem value="type1" id="type1" />
+                      <Label htmlFor="type1" className="cursor-pointer">Τύπου 1</Label>
+                    </div>
+                    <div className="flex items-center space-x-3 p-2 border rounded-none hover:bg-gray-50">
+                      <RadioGroupItem value="type2" id="type2" />
+                      <Label htmlFor="type2" className="cursor-pointer">Τύπου 2</Label>
+                    </div>
+                    <div className="flex items-center space-x-3 p-2 border rounded-none hover:bg-gray-50">
+                      <RadioGroupItem value="gestational" id="gestational" />
+                      <Label htmlFor="gestational" className="cursor-pointer">Κύησης</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              )}
+
+              <div className="space-y-2 pt-2">
+                <Label>Φάρμακα που λαμβάνετε (αν υπάρχουν)</Label>
+                <Textarea
+                  value={formData.medications}
+                  onChange={(e) => setFormData(prev => ({ ...prev, medications: e.target.value }))}
+                  placeholder="π.χ. Μετφορμίνη 500mg, Ινσουλίνη..."
+                  className="rounded-none"
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="font-medium text-lg">Έτοιμο για Δημιουργία!</h3>
-            <p className="text-sm text-gray-500 mt-2">
-              Το AI θα δημιουργήσει ένα εξατομικευμένο εβδομαδιαίο πρόγραμμα διατροφής
-              βασισμένο στις απαντήσεις σας.
-            </p>
+        )}
+
+        {/* Step 5: Generate */}
+        {currentStep === 5 && (
+          <div className="space-y-6 text-center py-6">
+            <div className="inline-flex p-4 bg-[#00ffba]/10 rounded-full">
+              <Brain className="w-12 h-12 text-[#00ffba]" />
+            </div>
+            <div>
+              <h3 className="font-medium text-lg">Έτοιμο για Δημιουργία!</h3>
+              <p className="text-sm text-gray-500 mt-2">
+                Το AI θα δημιουργήσει ένα εξατομικευμένο εβδομαδιαίο πρόγραμμα διατροφής
+                βασισμένο στις απαντήσεις σας.
+              </p>
+            </div>
+
+            <Card className="rounded-none text-left">
+              <CardContent className="p-4 space-y-2 text-sm">
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500">Χρήστης:</span>
+                  <span className="font-medium text-right">{formData.userName}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500">Στόχος:</span>
+                  <span className="font-medium text-right">{GOALS.find(g => g.value === formData.goal)?.label}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500">Εκτιμώμενες Θερμίδες:</span>
+                  <span className="font-medium text-[#00ffba] text-right">{calculateCalories()} kcal/ημέρα</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button
+              onClick={generatePlan}
+              disabled={generating || loading}
+              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black w-full"
+            >
+              {generating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Δημιουργία Προγράμματος...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Δημιουργία με AI
+                </>
+              )}
+            </Button>
           </div>
-          
-          <Card className="rounded-none text-left">
-            <CardContent className="p-4 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Χρήστης:</span>
-                <span className="font-medium">{formData.userName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Στόχος:</span>
-                <span className="font-medium">{GOALS.find(g => g.value === formData.goal)?.label}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Εκτιμώμενες Θερμίδες:</span>
-                <span className="font-medium text-[#00ffba]">{calculateCalories()} kcal/ημέρα</span>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Button
-            onClick={generatePlan}
-            disabled={generating || loading}
-            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black w-full"
-          >
-            {generating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Δημιουργία Προγράμματος...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Δημιουργία με AI
-              </>
-            )}
-          </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Navigation */}
       {currentStep < 4 && (
-        <div className="flex justify-between pt-4">
+        <div className="sticky bottom-0 bg-background pt-3 pb-2 border-t flex justify-between gap-3">
           <Button
             variant="outline"
             onClick={() => currentStep === 0 ? onCancel() : setCurrentStep(prev => prev - 1)}

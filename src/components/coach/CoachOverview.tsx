@@ -86,68 +86,71 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         ).length || 0;
       }
 
-      // Upcoming tests (anthropometric, strength, functional, jump, endurance)
-      const { count: upcomingAnthro } = await supabase
-        .from('coach_anthropometric_test_sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('coach_id', coachId)
-        .gte('test_date', today);
-
-      const { count: upcomingStrength } = await supabase
-        .from('coach_strength_test_sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('coach_id', coachId)
-        .gte('test_date', today);
-
-      const { count: upcomingFunctional } = await supabase
-        .from('coach_functional_test_sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('coach_id', coachId)
-        .gte('test_date', today);
-
-      const { count: upcomingJump } = await supabase
-        .from('coach_jump_test_sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('coach_id', coachId)
-        .gte('test_date', today);
-
-      const { count: upcomingEndurance } = await supabase
-        .from('coach_endurance_test_sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('coach_id', coachId)
-        .gte('test_date', today);
-
-      // Count upcoming competitions for athletes of this coach
+      // Upcoming tests & competitions from assigned program days (it’s test day / it’s competition day)
+      let upcomingTests = 0;
       let upcomingCompetitions = 0;
-      if (userIds.length > 0) {
-        const { count } = await supabase
-          .from('competitions')
-          .select('*', { count: 'exact', head: true })
-          .in('user_id', userIds)
-          .gte('competition_date', today);
-        upcomingCompetitions = count || 0;
-      }
 
-      const totalUpcomingTests = (upcomingAnthro || 0) + (upcomingStrength || 0) + (upcomingFunctional || 0) + (upcomingJump || 0) + (upcomingEndurance || 0);
-      
-      console.log('📊 CoachOverview Stats:', {
-        coachId,
-        today,
-        upcomingAnthro,
-        upcomingStrength,
-        upcomingFunctional,
-        upcomingJump,
-        upcomingEndurance,
-        totalUpcomingTests
-      });
+      if (userIds.length > 0) {
+        const { data: assignments, error: assignmentsError } = await supabase
+          .from('program_assignments')
+          .select(`
+            id,
+            user_id,
+            training_dates,
+            programs:program_id (
+              id,
+              name,
+              program_weeks (
+                id,
+                week_number,
+                program_days (
+                  id,
+                  name,
+                  day_number,
+                  is_competition_day,
+                  is_test_day,
+                  test_types
+                )
+              )
+            )
+          `)
+          .in('user_id', userIds)
+          .eq('status', 'active')
+          .not('training_dates', 'is', null);
+
+        if (assignmentsError) throw assignmentsError;
+
+        (assignments || []).forEach((assignment: any) => {
+          const trainingDates: string[] = assignment.training_dates || [];
+          const program = assignment.programs as any;
+          const weeks = program?.program_weeks || [];
+          if (!weeks.length) return;
+
+          const daysPerWeek = weeks[0]?.program_days?.length || 0;
+          if (!daysPerWeek) return;
+
+          weeks.forEach((week: any, weekIndex: number) => {
+            (week.program_days || []).forEach((day: any, dayIndex: number) => {
+              const totalDayIndex = (weekIndex * daysPerWeek) + dayIndex;
+              if (totalDayIndex >= trainingDates.length) return;
+
+              const dateStr = trainingDates[totalDayIndex];
+              if (!dateStr || dateStr < today) return;
+
+              if (day.is_test_day) upcomingTests += 1;
+              if (day.is_competition_day) upcomingCompetitions += 1;
+            });
+          });
+        });
+      }
 
       setStats({
         totalAthletes: totalAthletes || 0,
         activeAthletes: activeAthletes || 0,
         newAthletesThisMonth: newAthletesThisMonth || 0,
         todaysPrograms: todaysPrograms,
-        upcomingTests: totalUpcomingTests,
-        upcomingCompetitions: upcomingCompetitions
+        upcomingTests,
+        upcomingCompetitions,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
