@@ -78,7 +78,7 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
           user_id,
           program_id,
           training_dates,
-          app_users:app_users!program_assignments_user_id_fkey ( id, name ),
+          app_users:app_users!fk_program_assignments_user_id ( id, name ),
           programs:programs!program_assignments_program_id_fkey (
             id,
             name,
