@@ -118,7 +118,7 @@ const CoachGroupsPage = () => {
       const { data, error } = await supabase
         .from('groups')
         .select('*')
-        .eq('created_by', effectiveCoachId)
+        .or(`created_by.eq.${effectiveCoachId},coach_id.eq.${effectiveCoachId}`)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -177,7 +177,8 @@ const CoachGroupsPage = () => {
         .insert([{
           name: groupName,
           description: groupDescription,
-          created_by: effectiveCoachId
+          created_by: effectiveCoachId,
+          coach_id: effectiveCoachId
         }])
         .select()
         .single();
