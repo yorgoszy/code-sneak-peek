@@ -119,12 +119,41 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
 
         // Create meals for this day
         for (const meal of day.meals) {
+          // Map meal type to valid DB values (same logic as admin QuickAssignNutritionDialog)
+          const validMealTypes = ['breakfast', 'morning_snack', 'lunch', 'afternoon_snack', 'dinner'];
+          let mealType = String(meal.type || meal.mealType || 'lunch').toLowerCase();
+
+          const mealTypeMap: Record<string, string> = {
+            'πρωινό': 'breakfast',
+            'πρωινο': 'breakfast',
+            breakfast: 'breakfast',
+
+            morning_snack: 'morning_snack',
+            'δεκατιανό': 'morning_snack',
+            'δεκατιανο': 'morning_snack',
+            snack: 'morning_snack',
+
+            'μεσημεριανό': 'lunch',
+            'μεσημεριανο': 'lunch',
+            lunch: 'lunch',
+
+            'απογευματινό': 'afternoon_snack',
+            'απογευματινο': 'afternoon_snack',
+            afternoon_snack: 'afternoon_snack',
+
+            'βραδινό': 'dinner',
+            'βραδινο': 'dinner',
+            dinner: 'dinner',
+          };
+
+          mealType = mealTypeMap[mealType] || (validMealTypes.includes(mealType) ? mealType : 'lunch');
+
           const { data: mealData, error: mealError } = await supabase
             .from('nutrition_meals')
             .insert([
               {
                 day_id: dayData.id,
-                meal_type: String(meal.type ?? ''),
+                meal_type: mealType,
                 meal_order: meal.order,
                 name: String(meal.name ?? ''),
                 description: meal.description ?? null,
