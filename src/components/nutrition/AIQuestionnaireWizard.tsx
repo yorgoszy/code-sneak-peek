@@ -97,7 +97,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
 
       const { data, error } = await supabase
         .from('app_users')
-        .select('id, name, birth_date, avatar_url, photo_url')
+        .select('id, name, email, birth_date, avatar_url, photo_url')
         .eq('coach_id', effectiveCoachId)
         .order('name');
 
@@ -110,8 +110,11 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
 
   const fetchUserData = async (userId: string) => {
     try {
-      // Fetch latest anthropometric data
-      const { data: anthroData, error: anthroError } = await supabase
+      let weight = '';
+      let height = '';
+
+      // First try regular anthropometric tables
+      const { data: anthroData } = await supabase
         .from('anthropometric_test_sessions')
         .select(`
           *,
@@ -124,24 +127,51 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
 
       if (anthroData?.anthropometric_test_data?.[0]) {
         const data = anthroData.anthropometric_test_data[0];
-        setFormData(prev => ({
-          ...prev,
-          weight: data.weight?.toString() || '',
-          height: data.height?.toString() || ''
-        }));
+        weight = data.weight?.toString() || '';
+        height = data.height?.toString() || '';
       }
 
-      // Fetch user's birth date for age calculation
+      // If no data found, try coach anthropometric tables
+      if (!weight && !height && effectiveCoachId) {
+        const { data: coachAnthroData } = await supabase
+          .from('coach_anthropometric_test_sessions')
+          .select(`
+            *,
+            coach_anthropometric_test_data (weight, height)
+          `)
+          .eq('user_id', userId)
+          .eq('coach_id', effectiveCoachId)
+          .order('test_date', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (coachAnthroData?.coach_anthropometric_test_data?.[0]) {
+          const data = coachAnthroData.coach_anthropometric_test_data[0];
+          weight = data.weight?.toString() || '';
+          height = data.height?.toString() || '';
+        }
+      }
+
+      // Calculate age from birth_date
       const user = users.find(u => u.id === userId);
+      let age = '';
       if (user?.birth_date) {
         const birthDate = new Date(user.birth_date);
         const today = new Date();
-        const age = today.getFullYear() - birthDate.getFullYear();
-        setFormData(prev => ({
-          ...prev,
-          age: age.toString()
-        }));
+        let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          calculatedAge--;
+        }
+        age = calculatedAge.toString();
       }
+
+      setFormData(prev => ({
+        ...prev,
+        weight,
+        height,
+        age
+      }));
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
@@ -321,27 +351,31 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
   const progress = ((currentStep + 1) / STEPS.length) * 100;
 
   return (
-    <div className="flex flex-col gap-4">
-      <Progress value={progress} className="h-2" />
+    <div className="flex flex-col h-full min-h-0">
+      {/* Progress header - sticky on mobile */}
+      <div className="shrink-0 space-y-3 pb-4">
+        <Progress value={progress} className="h-2" />
 
-      <div className="flex flex-wrap justify-center gap-2 text-xs">
-        {STEPS.map((step, index) => (
-          <div
-            key={step.id}
-            className={`px-3 py-1 rounded-none ${
-              index === currentStep
-                ? 'bg-[#00ffba] text-black font-medium'
-                : index < currentStep
-                ? 'bg-gray-200 text-gray-600'
-                : 'bg-gray-100 text-gray-400'
-            }`}
-          >
-            {step.title}
-          </div>
-        ))}
+        <div className="flex flex-wrap justify-center gap-1 sm:gap-2 text-xs">
+          {STEPS.map((step, index) => (
+            <div
+              key={step.id}
+              className={`px-2 sm:px-3 py-1 rounded-none text-[10px] sm:text-xs ${
+                index === currentStep
+                  ? 'bg-[#00ffba] text-black font-medium'
+                  : index < currentStep
+                  ? 'bg-gray-200 text-gray-600'
+                  : 'bg-gray-100 text-gray-400'
+              }`}
+            >
+              {step.title}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="space-y-6">
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto min-h-0 space-y-6 pb-4">
         {/* Step 0: User Selection */}
         {currentStep === 0 && (
           <div className="space-y-4">
@@ -578,25 +612,28 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
         )}
       </div>
 
-      {/* Navigation */}
-      {currentStep < 4 && (
-        <div className="sticky bottom-0 bg-background pt-3 pb-2 border-t flex justify-between gap-3">
+      {/* Navigation - sticky footer */}
+      {currentStep < 5 && (
+        <div className="shrink-0 pt-3 border-t flex justify-between gap-3 mt-auto">
           <Button
             variant="outline"
             onClick={() => currentStep === 0 ? onCancel() : setCurrentStep(prev => prev - 1)}
-            className="rounded-none"
+            className="rounded-none flex-1 sm:flex-none"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
-            {currentStep === 0 ? 'Ακύρωση' : 'Πίσω'}
+            <span className="hidden sm:inline">{currentStep === 0 ? 'Ακύρωση' : 'Πίσω'}</span>
+            <span className="sm:hidden">{currentStep === 0 ? 'Ακύρ.' : 'Πίσω'}</span>
           </Button>
-          <Button
-            onClick={() => setCurrentStep(prev => prev + 1)}
-            disabled={!canProceed()}
-            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-          >
-            Επόμενο
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
+          {currentStep < 4 && (
+            <Button
+              onClick={() => setCurrentStep(prev => prev + 1)}
+              disabled={!canProceed()}
+              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex-1 sm:flex-none"
+            >
+              Επόμενο
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          )}
         </div>
       )}
     </div>

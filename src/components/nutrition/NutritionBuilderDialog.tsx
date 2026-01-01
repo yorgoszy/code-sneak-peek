@@ -135,13 +135,13 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className={`rounded-none left-0 top-0 translate-x-0 translate-y-0 w-[100vw] h-[100vh] max-w-none overflow-y-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:h-auto sm:w-[92vw] lg:sm:w-auto ${
+        className={`rounded-none p-0 gap-0 ${
           mode === 'select'
-            ? 'sm:max-w-sm'
-            : 'sm:max-w-5xl sm:max-h-[85vh]'
+            ? 'w-[95vw] max-w-sm h-auto'
+            : 'fixed inset-0 w-full h-full max-w-none sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:w-[95vw] sm:max-w-5xl sm:h-auto sm:max-h-[90vh]'
         }`}
       >
-        <DialogHeader className="pb-2">
+        <DialogHeader className="p-4 pb-2 border-b shrink-0">
           <DialogTitle className="flex items-center gap-2 text-sm">
             <Utensils className="w-4 h-4 text-[#00ffba]" />
             {mode === 'select' && 'Νέο Πρόγραμμα'}
@@ -150,63 +150,66 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        {mode === 'select' && (
-          <div className="space-y-3">
-            <div className="grid gap-2">
-              <Button
-                variant="outline"
-                className="h-auto p-3 flex items-start text-left rounded-none hover:border-[#00ffba] hover:bg-[#00ffba]/5"
-                onClick={() => setMode('ai')}
-              >
-                <div className="flex items-center gap-3 w-full">
-                  <div className="p-1.5 bg-[#00ffba]/10 rounded-none">
-                    <Brain className="w-5 h-5 text-[#00ffba]" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">AI Διατροφολόγος</div>
-                    <div className="text-[10px] text-gray-500">
-                      Ερωτηματολόγιο + AI δημιουργία
+        <div className={`${mode === 'select' ? 'p-4' : 'flex-1 overflow-y-auto p-4'}`}>
+
+          {mode === 'select' && (
+            <div className="space-y-3">
+              <div className="grid gap-2">
+                <Button
+                  variant="outline"
+                  className="h-auto p-3 flex items-start text-left rounded-none hover:border-[#00ffba] hover:bg-[#00ffba]/5"
+                  onClick={() => setMode('ai')}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="p-1.5 bg-[#00ffba]/10 rounded-none">
+                      <Brain className="w-5 h-5 text-[#00ffba]" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">AI Διατροφολόγος</div>
+                      <div className="text-[10px] text-gray-500">
+                        Ερωτηματολόγιο + AI δημιουργία
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="h-auto p-3 flex items-start text-left rounded-none hover:border-[#cb8954] hover:bg-[#cb8954]/5"
-                onClick={() => setMode('manual')}
-              >
-                <div className="flex items-center gap-3 w-full">
-                  <div className="p-1.5 bg-[#cb8954]/10 rounded-none">
-                    <Plus className="w-5 h-5 text-[#cb8954]" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">Χειροκίνητη</div>
-                    <div className="text-[10px] text-gray-500">
-                      Δημιουργία βήμα-βήμα
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="h-auto p-3 flex items-start text-left rounded-none hover:border-[#cb8954] hover:bg-[#cb8954]/5"
+                  onClick={() => setMode('manual')}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="p-1.5 bg-[#cb8954]/10 rounded-none">
+                      <Plus className="w-5 h-5 text-[#cb8954]" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">Χειροκίνητη</div>
+                      <div className="text-[10px] text-gray-500">
+                        Δημιουργία βήμα-βήμα
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Button>
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {mode === 'ai' && (
-          <AIQuestionnaireWizard
-            onComplete={handleAIComplete}
-            onCancel={() => setMode('select')}
-            loading={loading}
-          />
-        )}
+          {mode === 'ai' && (
+            <AIQuestionnaireWizard
+              onComplete={handleAIComplete}
+              onCancel={() => setMode('select')}
+              loading={loading}
+            />
+          )}
 
-        {mode === 'manual' && (
-          <NutritionDayBuilder
-            onComplete={handleAIComplete}
-            onCancel={() => setMode('select')}
-            loading={loading}
-          />
-        )}
+          {mode === 'manual' && (
+            <NutritionDayBuilder
+              onComplete={handleAIComplete}
+              onCancel={() => setMode('select')}
+              loading={loading}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
