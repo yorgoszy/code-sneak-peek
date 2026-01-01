@@ -3,15 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Calendar, List, Utensils } from "lucide-react";
 import { toast } from "sonner";
-import { CoachNutritionPlanList } from "./CoachNutritionPlanList";
-import { CoachNutritionAssignments } from "./CoachNutritionAssignments";
+import { NutritionPlanList } from "./NutritionPlanList";
+import { NutritionAssignments } from "./NutritionAssignments";
 import { NutritionBuilderDialog } from "./NutritionBuilderDialog";
 import { FoodsManagement } from "./FoodsManagement";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 export const CoachNutritionPage: React.FC = () => {
+  const { profile } = useUserProfile();
   const [activeTab, setActiveTab] = useState("plans");
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const coachId = profile?.id;
 
   const handlePlanCreated = () => {
     setIsBuilderOpen(false);
@@ -52,11 +56,11 @@ export const CoachNutritionPage: React.FC = () => {
         </TabsList>
 
         <TabsContent value="plans" className="mt-4">
-          <CoachNutritionPlanList key={`plans-${refreshKey}`} />
+          <NutritionPlanList key={`plans-${refreshKey}`} coachId={coachId} />
         </TabsContent>
 
         <TabsContent value="assignments" className="mt-4">
-          <CoachNutritionAssignments key={`assignments-${refreshKey}`} />
+          <NutritionAssignments key={`assignments-${refreshKey}`} coachId={coachId} />
         </TabsContent>
 
         <TabsContent value="foods" className="mt-4">
