@@ -2,7 +2,7 @@
 import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Clock, Dumbbell, CheckCircle, Plus } from "lucide-react";
+import { Clock, Dumbbell, CheckCircle, Plus, FlaskConical, Trophy } from "lucide-react";
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ExerciseBlock } from "@/components/user-profile/daily-program/ExerciseBlock";
@@ -45,6 +45,31 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
     // Handle block reordering logic here if needed
     console.log('Block reorder:', active.id, 'to', over.id);
   };
+
+  const isTestDay = day.is_test_day === true;
+  const isCompetitionDay = day.is_competition_day === true;
+
+  // Αν είναι ημέρα τεστ ή αγώνα, εμφάνιση μόνο του label
+  if (isTestDay || isCompetitionDay) {
+    return (
+      <TabsContent key={day.id} value={dayIndex.toString()} className="mt-0 flex-1 overflow-y-auto">
+        <div className="bg-white rounded-none p-4 flex items-center justify-center min-h-[100px]">
+          {isTestDay && (
+            <div className="flex items-center gap-2 bg-purple-100 border-2 border-purple-500 px-6 py-4">
+              <FlaskConical className="w-6 h-6 text-purple-600" />
+              <span className="text-lg font-bold text-purple-700">ΗΜΕΡΑ ΤΕΣΤ</span>
+            </div>
+          )}
+          {isCompetitionDay && (
+            <div className="flex items-center gap-2 bg-orange-100 border-2 border-orange-500 px-6 py-4">
+              <Trophy className="w-6 h-6 text-orange-600" />
+              <span className="text-lg font-bold text-orange-700">ΗΜΕΡΑ ΑΓΩΝΑ</span>
+            </div>
+          )}
+        </div>
+      </TabsContent>
+    );
+  }
 
   return (
     <TabsContent key={day.id} value={dayIndex.toString()} className="mt-0 flex-1 overflow-y-auto">
