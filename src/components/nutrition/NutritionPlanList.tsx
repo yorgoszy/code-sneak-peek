@@ -31,7 +31,7 @@ interface NutritionPlan {
   created_at: string;
 }
 
-export const NutritionPlanList: React.FC = () => {
+export const NutritionPlanList: React.FC<{ coachId?: string }> = ({ coachId }) => {
   const [plans, setPlans] = useState<NutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<NutritionPlan | null>(null);
@@ -42,14 +42,15 @@ export const NutritionPlanList: React.FC = () => {
 
   useEffect(() => {
     fetchPlans();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coachId]);
 
   const fetchPlans = async () => {
     try {
-      const { data, error } = await supabase
-        .from('nutrition_plans')
-        .select('*')
-        .order('created_at', { ascending: false });
+      let q = supabase.from('nutrition_plans').select('*');
+      if (coachId) q = q.eq('coach_id', coachId);
+
+      const { data, error } = await q.order('created_at', { ascending: false });
 
       if (error) throw error;
       setPlans(data || []);
@@ -208,6 +209,7 @@ export const NutritionPlanList: React.FC = () => {
             onClose={() => setIsAssignDialogOpen(false)}
             plan={selectedPlan}
             onSuccess={fetchPlans}
+            coachId={coachId}
           />
         </>
       )}
