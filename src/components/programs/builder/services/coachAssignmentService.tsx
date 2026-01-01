@@ -58,12 +58,28 @@ export const coachAssignmentService = {
 
       // ΣΗΜΑΝΤΙΚΟ: Χρησιμοποιούμε user_id τώρα (αντί coach_user_id)
       // Οι αθλητές είναι πλέον στο app_users με coach_id filter
+
+      // Αν δεν μας δώσουν assignedBy, το infer-άρουμε από τον logged-in χρήστη (app_users.id)
+      let inferredAssignedBy: string | null = assignmentData.assignedBy || assignmentData.coachId || null;
+      if (!inferredAssignedBy) {
+        const { data: auth } = await supabase.auth.getUser();
+        const authUserId = auth.user?.id;
+        if (authUserId) {
+          const { data: me } = await supabase
+            .from('app_users')
+            .select('id')
+            .eq('auth_user_id', authUserId)
+            .maybeSingle();
+          inferredAssignedBy = me?.id ?? null;
+        }
+      }
+
       const insertData = {
         program_id: assignmentData.program.id,
         user_id: assignmentData.coachUserId, // ID από app_users table
         coach_id: assignmentData.coachId, // ID του coach
         coach_user_id: null, // Deprecated - πλέον χρησιμοποιούμε user_id
-        assigned_by: assignmentData.assignedBy || assignmentData.coachId, // ποιος έκανε την ανάθεση
+        assigned_by: inferredAssignedBy, // ποιος έκανε την ανάθεση
         training_dates: formattedTrainingDates,
         status: 'active',
         assignment_type: 'individual',
