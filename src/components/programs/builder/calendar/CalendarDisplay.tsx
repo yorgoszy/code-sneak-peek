@@ -1,10 +1,10 @@
 
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Trash2 } from "lucide-react";
-import { parseISO, addMonths, subMonths } from "date-fns";
+import { parseISO } from "date-fns";
 import { el } from "date-fns/locale";
 
 interface CalendarDisplayProps {
@@ -28,117 +28,67 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   isDateDisabled,
   getDayInfoForDate
 }) => {
-  const calendarRef = useRef<HTMLDivElement>(null);
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
-
-  useEffect(() => {
-    const el = calendarRef.current;
-    if (!el) return;
-
-    let rowHeight = 48; // fallback row height (px)
-
-    // Measure one calendar row height when rendered
-    const measure = () => {
-      const row = el.querySelector('.rdp-row') as HTMLElement | null;
-      if (row) {
-        const rect = row.getBoundingClientRect();
-        if (rect.height) rowHeight = rect.height;
-      }
-    };
-
-    let accumulator = 0;
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      accumulator += e.deltaY;
-
-      // Change month each time we pass one "row" worth of scroll
-      while (Math.abs(accumulator) >= rowHeight) {
-        if (accumulator > 0) {
-          setCurrentMonth(prev => addMonths(prev, 1));
-          accumulator -= rowHeight;
-        } else {
-          setCurrentMonth(prev => subMonths(prev, 1));
-          accumulator += rowHeight;
-        }
-      }
-    };
-
-    // Initial measure (after mount and next frame)
-    measure();
-    const raf = requestAnimationFrame(measure);
-
-    el.addEventListener('wheel', handleWheel, { passive: false });
-
-    return () => {
-      cancelAnimationFrame(raf);
-      el.removeEventListener('wheel', handleWheel);
-    };
-  }, []);
 
   return (
     <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+      <CardHeader className="py-2">
+        <CardTitle className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5" />
-            Επιλογή Ημερομηνιών Προπόνησης
+            <CalendarIcon className="w-4 h-4" />
+            Επιλογή Ημερομηνιών
           </div>
           {selectedDatesAsStrings.length > 0 && (
             <Button
               variant="outline"
               size="sm"
               onClick={onClearAllDates}
-              className="rounded-none"
+              className="rounded-none h-6 text-xs"
             >
-              <Trash2 className="w-4 h-4 mr-1" />
+              <Trash2 className="w-3 h-3 mr-1" />
               Καθαρισμός
             </Button>
           )}
         </CardTitle>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="flex justify-center">
-          <div ref={calendarRef} className="cursor-pointer">
-            <Calendar
-              mode="multiple"
-              selected={selectedDatesAsStrings.map(date => parseISO(date))}
-              onDayClick={onDateSelect}
-              disabled={isDateDisabled}
-              className="rounded-none border"
-              locale={el}
-              month={currentMonth}
-              onMonthChange={setCurrentMonth}
-              modifiers={{
-                selected: (date) => isDateSelected(date),
-                testDay: (date) => {
-                  const dayInfo = getDayInfoForDate(date);
-                  return dayInfo?.is_test_day || false;
-                },
-                competitionDay: (date) => {
-                  const dayInfo = getDayInfoForDate(date);
-                  return dayInfo?.is_competition_day || false;
-                }
-              }}
-              modifiersStyles={{
-                selected: {
-                  backgroundColor: '#00ffba',
-                  color: '#000000'
-                },
-                testDay: {
-                  backgroundColor: '#9333ea',
-                  color: '#ffffff'
-                },
-                competitionDay: {
-                  backgroundColor: '#cb8954',
-                  color: '#ffffff'
-                }
-              }}
-            />
-          </div>
+          <Calendar
+            mode="multiple"
+            selected={selectedDatesAsStrings.map(date => parseISO(date))}
+            onDayClick={onDateSelect}
+            disabled={isDateDisabled}
+            className="rounded-none border"
+            locale={el}
+            month={currentMonth}
+            onMonthChange={setCurrentMonth}
+            modifiers={{
+              selected: (date) => isDateSelected(date),
+              testDay: (date) => {
+                const dayInfo = getDayInfoForDate(date);
+                return dayInfo?.is_test_day || false;
+              },
+              competitionDay: (date) => {
+                const dayInfo = getDayInfoForDate(date);
+                return dayInfo?.is_competition_day || false;
+              }
+            }}
+            modifiersStyles={{
+              selected: {
+                backgroundColor: '#00ffba',
+                color: '#000000'
+              },
+              testDay: {
+                backgroundColor: '#9333ea',
+                color: '#ffffff'
+              },
+              competitionDay: {
+                backgroundColor: '#cb8954',
+                color: '#ffffff'
+              }
+            }}
+          />
         </div>
       </CardContent>
     </Card>

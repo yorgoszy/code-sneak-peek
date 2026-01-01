@@ -59,10 +59,10 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   };
 
   return (
-    <div className="border rounded-none p-3 space-y-3">
-      {/* Row 1: Program Name & Description in one row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="space-y-1">
+    <div className="border rounded-none p-2 md:p-3 space-y-2 md:space-y-3">
+      {/* Row 1: Program Name, Description & Assignment Type */}
+      <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-3">
+        <div className="flex-1 space-y-1">
           <Label htmlFor="program-name" className="text-xs">Όνομα</Label>
           <Input
             id="program-name"
@@ -72,7 +72,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             className="rounded-none h-8 text-sm"
           />
         </div>
-        <div className="space-y-1">
+        <div className="flex-1 space-y-1">
           <Label htmlFor="program-description" className="text-xs">Περιγραφή</Label>
           <Input
             id="program-description"
@@ -82,12 +82,9 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             className="rounded-none h-8 text-sm"
           />
         </div>
-      </div>
-
-      {/* Row 2: Assignment type + Selection */}
-      <div className="flex flex-wrap items-end gap-3">
+        
         {/* Assignment Type Buttons */}
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-shrink-0">
           <button
             type="button"
             onClick={() => handleAssignmentModeChange('individual')}
@@ -98,7 +95,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             }`}
           >
             <User className="w-3 h-3" />
-            Ατομική
+            <span className="hidden sm:inline">Ατομική</span>
           </button>
           <button
             type="button"
@@ -110,33 +107,28 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             }`}
           >
             <Users className="w-3 h-3" />
-            Ομαδική
+            <span className="hidden sm:inline">Ομαδική</span>
           </button>
         </div>
-
-        {/* Individual User Selection */}
-        {assignmentMode === 'individual' && (
-          <div className="flex-1 min-w-[200px]">
-            <IndividualUserSelection
-              selectedUserIds={selectedUserIds}
-              users={users}
-              onMultipleAthleteChange={onMultipleAthleteChange}
-            />
-          </div>
-        )}
-
-        {/* Group Selection */}
-        {assignmentMode === 'group' && onGroupChange && (
-          <div className="flex-1 min-w-[200px]">
-            <GroupSelection
-              selectedGroupId={selectedGroupId}
-              onGroupChange={onGroupChange}
-              onGroupMembersLoad={handleGroupMembersLoad}
-              coachId={coachId}
-            />
-          </div>
-        )}
       </div>
+
+      {/* Row 2: User/Group Selection */}
+      {assignmentMode === 'individual' && (
+        <IndividualUserSelection
+          selectedUserIds={selectedUserIds}
+          users={users}
+          onMultipleAthleteChange={onMultipleAthleteChange}
+        />
+      )}
+
+      {assignmentMode === 'group' && onGroupChange && (
+        <GroupSelection
+          selectedGroupId={selectedGroupId}
+          onGroupChange={onGroupChange}
+          onGroupMembersLoad={handleGroupMembersLoad}
+          coachId={coachId}
+        />
+      )}
     </div>
   );
 };

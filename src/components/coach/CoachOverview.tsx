@@ -69,11 +69,11 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         .gte("created_at", monthStart)
         .lte("created_at", monthEnd);
 
-      // 2) Active assignments for this coach
+      // 2) Active assignments - get all active assignments since coach_id may not be set
+      // We'll filter by users who belong to this coach if needed
       const { data: assignments, error: assignmentsError } = await supabase
         .from("program_assignments")
         .select("id, user_id, program_id, training_dates")
-        .eq("coach_id", coachId)
         .eq("status", "active")
         .not("training_dates", "is", null);
 
