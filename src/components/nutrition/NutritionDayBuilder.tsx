@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus, Trash2, Loader2, Search, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { FoodSelectionDialog } from "./FoodSelectionDialog";
 import { useEffectiveCoachId } from "@/hooks/useEffectiveCoachId";
 
 interface NutritionDayBuilderProps {
@@ -80,7 +81,8 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [userAnthroData, setUserAnthroData] = useState<{ weight: string; height: string; age: string }>({ weight: '', height: '', age: '' });
-  
+  const [foodDialogOpen, setFoodDialogOpen] = useState(false);
+  const [selectedMealIndex, setSelectedMealIndex] = useState<number | null>(null);
   const [days, setDays] = useState<Day[]>(
     DAY_NAMES.map((name, index) => ({
       dayNumber: index + 1,
@@ -207,6 +209,23 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
     // Fetch anthropometric data for the selected user
     const userData = await fetchUserData(user.id);
     setUserAnthroData(userData);
+  };
+
+  const openFoodDialog = (mealIndex: number) => {
+    setSelectedMealIndex(mealIndex);
+    setFoodDialogOpen(true);
+  };
+
+  const handleFoodSelected = (food: { name: string; quantity: number; unit: string; calories: number; protein: number; carbs: number; fat: number }) => {
+    if (selectedMealIndex === null) return;
+    
+    setDays(prev => {
+      const newDays = [...prev];
+      newDays[selectedDayIndex].meals[selectedMealIndex].foods.push(food);
+      return newDays;
+    });
+    setFoodDialogOpen(false);
+    setSelectedMealIndex(null);
   };
 
   const addFood = (dayIndex: number, mealIndex: number) => {
@@ -566,7 +585,7 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => addFood(selectedDayIndex, mealIndex)}
+                      onClick={() => openFoodDialog(mealIndex)}
                       className="rounded-none w-full mt-2 text-xs"
                     >
                       <Plus className="w-3 h-3 mr-1" />
@@ -579,6 +598,16 @@ export const NutritionDayBuilder: React.FC<NutritionDayBuilderProps> = ({
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Food Selection Dialog */}
+      <FoodSelectionDialog
+        isOpen={foodDialogOpen}
+        onClose={() => {
+          setFoodDialogOpen(false);
+          setSelectedMealIndex(null);
+        }}
+        onSelectFood={handleFoodSelected}
+      />
 
       {/* Actions - Responsive */}
       <div className="sticky bottom-0 bg-background pt-3 pb-2 border-t flex flex-col sm:flex-row justify-between gap-2">
