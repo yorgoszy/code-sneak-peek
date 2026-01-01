@@ -69,17 +69,43 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         .gte("created_at", monthStart)
         .lte("created_at", monthEnd);
 
-      // 2) Active assignments for this coach (source of truth) + nested program + user
+      // 2) Active assignments for this coach
       const { data: assignments, error: assignmentsError } = await supabase
         .from("program_assignments")
-        .select(
-          `
-          id,
-          user_id,
-          program_id,
-          training_dates,
-          app_users:app_users!fk_program_assignments_user_id ( id, name ),
-          programs:programs!program_assignments_program_id_fkey (
+        .select("id, user_id, program_id, training_dates")
+        .eq("coach_id", coachId)
+        .eq("status", "active")
+        .not("training_dates", "is", null);
+
+      if (assignmentsError) {
+        console.error("❌ Error fetching assignments:", assignmentsError);
+        throw assignmentsError;
+      }
+
+      console.log("✅ Assignments fetched:", assignments?.length);
+
+      const userIds = Array.from(new Set((assignments || []).map((a: any) => a.user_id).filter(Boolean)));
+      const programIds = Array.from(new Set((assignments || []).map((a: any) => a.program_id).filter(Boolean)));
+
+      // 3) Today programs count
+      const todaysPrograms = (assignments || []).filter((a: any) => (a.training_dates || []).includes(todayStr)).length;
+
+      // 4) Build lookup maps - fetch users
+      let userNameById = new Map<string, string>();
+      if (userIds.length > 0) {
+        const { data: usersData } = await supabase
+          .from("app_users")
+          .select("id, name")
+          .in("id", userIds);
+        userNameById = new Map<string, string>((usersData || []).map((u: any) => [u.id, u.name]));
+      }
+
+      // 5) Fetch programs with nested weeks and days
+      let programById = new Map<string, any>();
+      if (programIds.length > 0) {
+        const { data: programsData, error: programsError } = await supabase
+          .from("programs")
+          .select(`
             id,
             name,
             program_weeks (
@@ -94,38 +120,43 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
                 is_competition_day
               )
             )
-          )
-        `
-        )
-        .eq("coach_id", coachId)
-        .eq("status", "active")
-        .not("training_dates", "is", null);
+          `)
+          .in("id", programIds);
 
-      if (assignmentsError) throw assignmentsError;
+        if (programsError) {
+          console.error("❌ Error fetching programs:", programsError);
+        } else {
+          console.log("✅ Programs fetched:", programsData?.length);
+          programById = new Map<string, any>((programsData || []).map((p: any) => [p.id, p]));
+        }
+      }
 
-      // 3) Today programs count
-      const todaysPrograms = (assignments || []).filter((a: any) => (a.training_dates || []).includes(todayStr)).length;
-
-      // 5) Compute upcoming events
+      // 6) Compute upcoming events
       const tests: UpcomingEvent[] = [];
       const competitions: UpcomingEvent[] = [];
 
       (assignments || []).forEach((assignment: any) => {
         const trainingDates: string[] = assignment.training_dates || [];
-        const program = assignment.programs;
-        const weeks = program?.program_weeks || [];
+        const program = programById.get(assignment.program_id);
+        if (!program) return;
+
+        const weeks = program.program_weeks || [];
         if (!weeks.length) return;
 
-        const daysPerWeek = weeks[0]?.program_days?.length || 0;
-        if (!daysPerWeek) return;
+        // Sort weeks by week_number
+        const sortedWeeks = [...weeks].sort((a: any, b: any) => a.week_number - b.week_number);
 
-        const userName = assignment.app_users?.name || "";
+        const userName = userNameById.get(assignment.user_id) || "";
 
-        weeks.forEach((week: any, weekIndex: number) => {
-          (week.program_days || []).forEach((day: any, dayIndex: number) => {
-            const totalDayIndex = weekIndex * daysPerWeek + dayIndex;
-            if (totalDayIndex >= trainingDates.length) return;
-            const dateStr = trainingDates[totalDayIndex];
+        let dateIndex = 0;
+        sortedWeeks.forEach((week: any) => {
+          const sortedDays = [...(week.program_days || [])].sort((a: any, b: any) => a.day_number - b.day_number);
+          
+          sortedDays.forEach((day: any) => {
+            if (dateIndex >= trainingDates.length) return;
+            const dateStr = trainingDates[dateIndex];
+            dateIndex++;
+
             if (!dateStr || dateStr < todayStr) return;
 
             // Check both is_test_day flag AND if test_types array has values
@@ -153,6 +184,8 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
           });
         });
       });
+
+      console.log("✅ Tests found:", tests.length, "Competitions found:", competitions.length);
 
       tests.sort((a, b) => a.date.localeCompare(b.date));
       competitions.sort((a, b) => a.date.localeCompare(b.date));
