@@ -51,10 +51,11 @@ export const CoachNutritionPlanList: React.FC = () => {
 
   const fetchPlans = async () => {
     try {
-      // Fetch all plans - coach can see all plans to assign to their athletes
+      // Fetch plans created by this coach
       const { data, error } = await supabase
         .from('nutrition_plans')
         .select('*')
+        .eq('coach_id', userProfile?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
