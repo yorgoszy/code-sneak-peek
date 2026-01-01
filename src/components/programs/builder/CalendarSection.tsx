@@ -16,6 +16,7 @@ interface CalendarSectionProps {
   program: ProgramStructure;
   totalDays: number;
   onTrainingDatesChange: (dates: Date[]) => void;
+  isCoach?: boolean;
 }
 
 const WEEKDAY_OPTIONS = [
@@ -31,10 +32,11 @@ const WEEKDAY_OPTIONS = [
 export const CalendarSection: React.FC<CalendarSectionProps> = ({
   program,
   totalDays,
-  onTrainingDatesChange
+  onTrainingDatesChange,
+  isCoach = false
 }) => {
   const [startDate, setStartDate] = useState<string>('');
-  const [weekdays, setWeekdays] = useState<number[]>([1, 3, 5]);
+  const [weekdays, setWeekdays] = useState<number[]>(isCoach ? [] : [1, 3, 5]);
 
   // Auto-calculate weeks based on program structure
   const programWeeksCount = program.weeks?.length || 1;
