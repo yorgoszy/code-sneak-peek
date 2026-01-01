@@ -1,6 +1,5 @@
 
 import React, { useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
@@ -107,37 +106,36 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   };
 
   return (
-    <Card className="rounded-none">
-      <CardHeader className="p-3 md:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <CardTitle className="text-sm md:text-base">Εβδομάδες Προπόνησης</CardTitle>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Button onClick={onAddWeek} className="rounded-none w-full sm:w-auto text-xs md:text-sm" size="sm">
-              <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">+Week</span>
-              <span className="sm:hidden">+ Εβδομάδα</span>
-            </Button>
-            <Button 
-              onClick={() => {
-                const targetWeekId = activeWeek || weeks[0]?.id;
-                console.log('🟢 + Day button clicked. activeWeek:', activeWeek, 'fallback:', weeks[0]?.id);
-                if (targetWeekId) {
-                  setActiveWeek(targetWeekId);
-                  onAddDay(targetWeekId);
-                }
-              }} 
-              disabled={weeks.length === 0} 
-              className="rounded-none w-full sm:w-auto text-xs md:text-sm" 
-              size="sm"
-            >
-              <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">+ Day</span>
-              <span className="sm:hidden">+ Ημέρα</span>
-            </Button>
-          </div>
+    <div className="border rounded-none">
+      {/* Compact header */}
+      <div className="flex items-center justify-between p-2 border-b bg-gray-50">
+        <span className="text-sm font-medium">Εβδομάδες</span>
+        <div className="flex items-center gap-1">
+          <Button onClick={onAddWeek} variant="outline" className="rounded-none h-7 px-2 text-xs" size="sm">
+            <Plus className="w-3 h-3 mr-1" />
+            Week
+          </Button>
+          <Button 
+            onClick={() => {
+              const targetWeekId = activeWeek || weeks[0]?.id;
+              if (targetWeekId) {
+                setActiveWeek(targetWeekId);
+                onAddDay(targetWeekId);
+              }
+            }} 
+            disabled={weeks.length === 0}
+            variant="outline"
+            className="rounded-none h-7 px-2 text-xs" 
+            size="sm"
+          >
+            <Plus className="w-3 h-3 mr-1" />
+            Day
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent className="p-3 md:p-6">
+      </div>
+
+      {/* Content */}
+      <div className="p-2">
         {weeks.length > 0 ? (
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <Tabs value={activeWeek} onValueChange={setActiveWeek} className="w-full">
@@ -186,11 +184,11 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
             </Tabs>
           </DndContext>
         ) : (
-          <div className="text-center py-8 text-gray-500">
-            Προσθέστε μια εβδομάδα για να ξεκινήσετε
+          <div className="text-center py-6 text-gray-500 text-sm">
+            Πατήστε +Week για να ξεκινήσετε
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

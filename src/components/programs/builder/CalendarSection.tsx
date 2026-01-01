@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { CalendarDisplay } from './calendar/CalendarDisplay';
 import { SelectionProgress } from './calendar/SelectionProgress';
@@ -10,21 +10,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { createDateForDisplay } from '@/utils/dateUtils';
+import { Calendar } from 'lucide-react';
 
 interface CalendarSectionProps {
   program: ProgramStructure;
-  totalDays: number; // fallback (π.χ. από τη δομή εβδομάδων)
+  totalDays: number;
   onTrainingDatesChange: (dates: Date[]) => void;
 }
 
 const WEEKDAY_OPTIONS = [
-  { label: 'Δευ', value: 1 },
-  { label: 'Τρι', value: 2 },
-  { label: 'Τετ', value: 3 },
-  { label: 'Πεμ', value: 4 },
-  { label: 'Παρ', value: 5 },
-  { label: 'Σαβ', value: 6 },
-  { label: 'Κυρ', value: 0 }
+  { label: 'Δ', value: 1 },
+  { label: 'Τ', value: 2 },
+  { label: 'Τ', value: 3 },
+  { label: 'Π', value: 4 },
+  { label: 'Π', value: 5 },
+  { label: 'Σ', value: 6 },
+  { label: 'Κ', value: 0 }
 ];
 
 export const CalendarSection: React.FC<CalendarSectionProps> = ({
@@ -32,15 +33,20 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   totalDays,
   onTrainingDatesChange
 }) => {
-  // "Έξυπνη" ανάθεση: διάλεξε ημέρες εβδομάδας + εβδομάδες και γέμισε αυτόματα ημερομηνίες.
   const [startDate, setStartDate] = useState<string>('');
-  const [durationWeeks, setDurationWeeks] = useState<number>(4);
-  const [weekdays, setWeekdays] = useState<number[]>([1, 3, 5]); // default: Δευ/Τετ/Παρ
+  const [weekdays, setWeekdays] = useState<number[]>([1, 3, 5]);
 
+  // Auto-calculate weeks based on program structure
+  const programWeeksCount = program.weeks?.length || 1;
+  const daysPerWeek = program.weeks?.[0]?.program_days?.length || weekdays.length;
+
+  // Compute total days from program structure
   const computedTotalDays = useMemo(() => {
-    const smartTotal = durationWeeks * weekdays.length;
-    return smartTotal > 0 ? smartTotal : totalDays;
-  }, [durationWeeks, weekdays.length, totalDays]);
+    if (program.weeks && program.weeks.length > 0) {
+      return program.weeks.reduce((acc, week) => acc + (week.program_days?.length || 0), 0);
+    }
+    return totalDays;
+  }, [program.weeks, totalDays]);
 
   const {
     selectedDatesAsStrings,
@@ -65,12 +71,13 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     if (!startDate) return;
     if (weekdays.length === 0) return;
 
-    // ΣΗΜΑΝΤΙΚΟ: Δημιουργούμε ημερομηνίες στο "μεσημέρι" (12:00) για να αποφύγουμε timezone/DST shift.
     const start = createDateForDisplay(startDate);
     if (Number.isNaN(start.getTime())) return;
 
+    // Calculate how many weeks we need based on total days and days per week
+    const weeksNeeded = Math.ceil(computedTotalDays / weekdays.length);
     const end = new Date(start);
-    end.setDate(end.getDate() + durationWeeks * 7 - 1);
+    end.setDate(end.getDate() + weeksNeeded * 7 + 7);
 
     const result: Date[] = [];
     const cursor = new Date(start);
@@ -86,70 +93,56 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   };
 
   return (
-    <div className="w-full">
-      <div className="space-y-3">
-        <div className="border rounded-none p-3">
-          <div className="grid gap-3 md:grid-cols-3">
-            <div className="space-y-1">
-              <Label htmlFor="pb-start-date">Έναρξη</Label>
-              <Input
-                id="pb-start-date"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="pb-duration-weeks">Διάρκεια (εβδομάδες)</Label>
-              <Input
-                id="pb-duration-weeks"
-                type="number"
-                min={1}
-                value={durationWeeks}
-                onChange={(e) => setDurationWeeks(Math.max(1, Number(e.target.value || 1)))}
-                className="rounded-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label>Ημέρες προπόνησης</Label>
-              <div className="flex flex-wrap gap-2">
-                {WEEKDAY_OPTIONS.map(opt => {
-                  const active = weekdays.includes(opt.value);
-                  return (
-                    <Button
-                      key={opt.value}
-                      type="button"
-                      variant={active ? 'default' : 'outline'}
-                      onClick={() => toggleWeekday(opt.value)}
-                      className={cn('rounded-none h-8 px-2 text-xs', active && 'bg-[#00ffba] text-black hover:bg-[#00ffba]/90')}
-                    >
-                      {opt.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-3 flex items-center justify-between gap-2">
-            <div className="text-xs text-muted-foreground">
-              Θα δημιουργηθούν <strong>{computedTotalDays}</strong> ημερομηνίες ({durationWeeks} εβδομάδες × {weekdays.length} ημέρες/εβδομάδα)
-            </div>
-            <Button
-              type="button"
-              onClick={generateDates}
-              disabled={!startDate || weekdays.length === 0}
-              className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-            >
-              Αυτόματη δημιουργία
-            </Button>
-          </div>
+    <div className="border rounded-none">
+      {/* Compact header with inline controls */}
+      <div className="flex flex-wrap items-center gap-3 p-3 border-b bg-gray-50">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-gray-500" />
+          <span className="text-sm font-medium">Ημερολόγιο</span>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="pb-start-date" className="text-xs whitespace-nowrap">Έναρξη:</Label>
+          <Input
+            id="pb-start-date"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="rounded-none h-7 w-32 text-xs"
+          />
+        </div>
+
+        <div className="flex items-center gap-1">
+          {WEEKDAY_OPTIONS.map((opt, idx) => {
+            const active = weekdays.includes(opt.value);
+            return (
+              <Button
+                key={idx}
+                type="button"
+                variant={active ? 'default' : 'outline'}
+                onClick={() => toggleWeekday(opt.value)}
+                className={cn('rounded-none h-7 w-7 p-0 text-xs', active && 'bg-[#00ffba] text-black hover:bg-[#00ffba]/90')}
+              >
+                {opt.label}
+              </Button>
+            );
+          })}
+        </div>
+
+        <Button
+          type="button"
+          onClick={generateDates}
+          disabled={!startDate || weekdays.length === 0}
+          size="sm"
+          className="rounded-none h-7 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs"
+        >
+          Δημιουργία ({computedTotalDays} ημέρες)
+        </Button>
+      </div>
+
+      {/* Calendar content */}
+      <div className="p-3">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 min-w-0">
             <CalendarDisplay
               selectedDatesAsStrings={selectedDatesAsStrings}
@@ -163,7 +156,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
             />
           </div>
 
-          <div className="w-full lg:w-80 space-y-3 md:space-y-4">
+          <div className="w-full lg:w-64 space-y-3">
             <WeekProgressDisplay weekProgress={weekProgress} />
             <SelectionProgress selectedCount={selectedDatesAsStrings.length} totalDays={computedTotalDays} />
           </div>
@@ -172,4 +165,3 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     </div>
   );
 };
-

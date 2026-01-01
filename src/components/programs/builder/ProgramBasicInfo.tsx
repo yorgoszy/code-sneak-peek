@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ProgramBasicInfoFields } from './ProgramBasicInfoFields';
-import { AssignmentTypeSelector } from './AssignmentTypeSelector';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { User, Users } from "lucide-react";
 import { IndividualUserSelection } from './IndividualUserSelection';
 import { GroupSelection } from './GroupSelection';
 import type { User as UserType } from '../types';
@@ -21,7 +21,7 @@ interface ProgramBasicInfoProps {
   onGroupChange?: (groupId: string) => void;
   isMultipleMode?: boolean;
   onToggleMode?: (isMultiple: boolean) => void;
-  coachId?: string; // Optional: filter groups by coach
+  coachId?: string;
 }
 
 export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
@@ -45,11 +45,9 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   const handleAssignmentModeChange = (mode: 'individual' | 'group') => {
     setAssignmentMode(mode);
     if (mode === 'group' && onMultipleAthleteChange) {
-      // Clear individual selections when switching to group mode
       onMultipleAthleteChange([]);
     }
     if (mode === 'individual' && onGroupChange) {
-      // Clear group selection when switching to individual mode
       onGroupChange('');
     }
   };
@@ -61,47 +59,84 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   };
 
   return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle>Βασικές Πληροφορίες Προγράμματος</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 md:space-y-4 p-3 md:p-6">
-        <ProgramBasicInfoFields
-          name={name}
-          description={description}
-          onNameChange={onNameChange}
-          onDescriptionChange={onDescriptionChange}
-        />
-
-        {/* Assignment Type Selection */}
-        <div className="space-y-3 md:space-y-4">
-          <AssignmentTypeSelector
-            assignmentMode={assignmentMode}
-            onAssignmentModeChange={handleAssignmentModeChange}
+    <div className="border rounded-none p-3 space-y-3">
+      {/* Row 1: Program Name & Description in one row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <Label htmlFor="program-name" className="text-xs">Όνομα</Label>
+          <Input
+            id="program-name"
+            value={name}
+            onChange={(e) => onNameChange(e.target.value)}
+            placeholder="Όνομα προγράμματος"
+            className="rounded-none h-8 text-sm"
           />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="program-description" className="text-xs">Περιγραφή</Label>
+          <Input
+            id="program-description"
+            value={description}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+            placeholder="Προαιρετική περιγραφή"
+            className="rounded-none h-8 text-sm"
+          />
+        </div>
+      </div>
 
-          {/* Individual User Selection */}
-          {assignmentMode === 'individual' && (
+      {/* Row 2: Assignment type + Selection */}
+      <div className="flex flex-wrap items-end gap-3">
+        {/* Assignment Type Buttons */}
+        <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={() => handleAssignmentModeChange('individual')}
+            className={`px-2 py-1.5 text-xs rounded-none border transition-colors flex items-center gap-1 ${
+              assignmentMode === 'individual'
+                ? 'bg-[#00ffba] text-black border-[#00ffba]'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <User className="w-3 h-3" />
+            Ατομική
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAssignmentModeChange('group')}
+            className={`px-2 py-1.5 text-xs rounded-none border transition-colors flex items-center gap-1 ${
+              assignmentMode === 'group'
+                ? 'bg-[#00ffba] text-black border-[#00ffba]'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <Users className="w-3 h-3" />
+            Ομαδική
+          </button>
+        </div>
+
+        {/* Individual User Selection */}
+        {assignmentMode === 'individual' && (
+          <div className="flex-1 min-w-[200px]">
             <IndividualUserSelection
               selectedUserIds={selectedUserIds}
               users={users}
               onMultipleAthleteChange={onMultipleAthleteChange}
             />
-          )}
+          </div>
+        )}
 
-          {/* Group Selection - Responsive width */}
-          {assignmentMode === 'group' && onGroupChange && (
-            <div className="w-full md:w-[50%] lg:w-[30%]">
-              <GroupSelection
-                selectedGroupId={selectedGroupId}
-                onGroupChange={onGroupChange}
-                onGroupMembersLoad={handleGroupMembersLoad}
-                coachId={coachId}
-              />
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        {/* Group Selection */}
+        {assignmentMode === 'group' && onGroupChange && (
+          <div className="flex-1 min-w-[200px]">
+            <GroupSelection
+              selectedGroupId={selectedGroupId}
+              onGroupChange={onGroupChange}
+              onGroupMembersLoad={handleGroupMembersLoad}
+              coachId={coachId}
+            />
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
