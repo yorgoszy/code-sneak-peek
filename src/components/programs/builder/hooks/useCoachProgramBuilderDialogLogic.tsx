@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import type { User, Exercise } from '../../types';
 import type { ProgramStructure } from './useProgramBuilderState';
 import { coachAssignmentService } from '../services/coachAssignmentService';
@@ -69,7 +70,12 @@ export const useCoachProgramBuilderDialogLogic = ({
 
   const handleAssign = async () => {
     try {
-      console.log('🎯 [Coach] Starting assignment process:', { program, user_ids: program.user_ids, coachId });
+      console.log('🎯 [Coach] Starting assignment process:', { 
+        program, 
+        user_ids: program.user_ids, 
+        coachId,
+        editingAssignment 
+      });
 
       if (!program.name?.trim()) {
         toast.error('Πρώτα αποθηκεύστε το πρόγραμμα');
@@ -86,9 +92,17 @@ export const useCoachProgramBuilderDialogLogic = ({
         return;
       }
 
-      // Ensure program is saved first
+      // Αποθήκευση/Ενημέρωση του προγράμματος πρώτα
       let programToAssign = program;
-      if (!program.id) {
+      
+      // Αν υπάρχει ID, ενημερώνουμε το υπάρχον πρόγραμμα
+      if (program.id) {
+        console.log('🔄 [Coach] Updating existing program:', program.id);
+        const savedProgram = await onCreateProgram(program);
+        programToAssign = { ...program, id: savedProgram?.id || program.id };
+      } else {
+        // Δημιουργία νέου προγράμματος
+        console.log('📋 [Coach] Creating new program...');
         const savedProgram = await onCreateProgram(program);
         if (!savedProgram || !savedProgram.id) {
           throw new Error('Αποτυχία αποθήκευσης προγράμματος');
@@ -104,7 +118,41 @@ export const useCoachProgramBuilderDialogLogic = ({
         return typeof date === 'string' ? date : String(date);
       });
 
-      console.log('🎯 [Coach] Creating assignments for coach_users:', program.user_ids);
+      // Αν υπάρχει editingAssignment, ενημερώνουμε αντί να δημιουργούμε νέο
+      if (editingAssignment?.id) {
+        console.log('🔄 [Coach] Updating existing assignment:', editingAssignment.id);
+        
+        const sortedDates = [...trainingDates].sort();
+        const startDate = sortedDates[0];
+        const endDate = sortedDates[sortedDates.length - 1];
+
+        const { error: updateError } = await supabase
+          .from('program_assignments')
+          .update({
+            training_dates: trainingDates,
+            start_date: startDate,
+            end_date: endDate,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingAssignment.id);
+
+        if (updateError) {
+          throw new Error(`Σφάλμα ενημέρωσης assignment: ${updateError.message}`);
+        }
+
+        console.log('✅ [Coach] Assignment updated successfully');
+        toast.success('Το πρόγραμμα ενημερώθηκε επιτυχώς!');
+        handleClose();
+
+        // Redirect to coach active programs
+        setTimeout(() => {
+          window.location.href = `/dashboard/coach-active-programs?coachId=${coachId}`;
+        }, 1500);
+
+        return;
+      }
+
+      console.log('🎯 [Coach] Creating new assignments for coach_users:', program.user_ids);
 
       // Create assignments for each selected coach_user
       for (const coachUserId of program.user_ids) {
