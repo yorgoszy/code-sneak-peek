@@ -43,7 +43,9 @@ interface AppUser {
   user_status: string;
   birth_date?: string;
   photo_url?: string;
+  avatar_url?: string;
   created_at: string;
+  coach_id?: string;
 }
 
 interface UserWithSubscription extends AppUser {
@@ -120,14 +122,31 @@ const Users = () => {
       // Fetch subscription status for each user
       const usersWithSubscription: UserWithSubscription[] = await Promise.all(
         (usersData || []).map(async (user) => {
-          const { data: subscription } = await supabase
-            .from('user_subscriptions')
-            .select('end_date, status, is_paused')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+          let subscription = null;
+          
+          // Check if user was created by a coach - use coach_subscriptions
+          if (user.coach_id) {
+            const { data: coachSub } = await supabase
+              .from('coach_subscriptions')
+              .select('end_date, status, is_paused')
+              .eq('user_id', user.id)
+              .eq('status', 'active')
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            subscription = coachSub;
+          } else {
+            // Regular user - use user_subscriptions
+            const { data: userSub } = await supabase
+              .from('user_subscriptions')
+              .select('end_date, status, is_paused')
+              .eq('user_id', user.id)
+              .eq('status', 'active')
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            subscription = userSub;
+          }
 
           let subscriptionStatus: 'Ενεργή' | 'Ανενεργή' | 'Παύση' = 'Ανενεργή';
           
@@ -518,7 +537,7 @@ const Users = () => {
                       {/* User Info */}
                       <div className="flex items-center space-x-3 mb-3">
                         <Avatar className="w-10 h-10 flex-shrink-0">
-                          <AvatarImage src={user.photo_url} alt={user.name} />
+                          <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
                           <AvatarFallback>
                             {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                           </AvatarFallback>
@@ -674,7 +693,7 @@ const Users = () => {
                             <TableCell className="font-medium">
                               <div className="flex items-center space-x-3">
                                 <Avatar className="w-8 h-8">
-                                  <AvatarImage src={user.photo_url} alt={user.name} />
+                                  <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
                                   <AvatarFallback>
                                     {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                   </AvatarFallback>
@@ -748,7 +767,7 @@ const Users = () => {
                         {/* User Info */}
                         <div className="flex items-center space-x-3 mb-3">
                           <Avatar className="w-10 h-10 flex-shrink-0">
-                            <AvatarImage src={user.photo_url} alt={user.name} />
+                            <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
                             <AvatarFallback>
                               {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
