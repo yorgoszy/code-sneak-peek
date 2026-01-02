@@ -120,14 +120,31 @@ const Users = () => {
       // Fetch subscription status for each user
       const usersWithSubscription: UserWithSubscription[] = await Promise.all(
         (usersData || []).map(async (user) => {
-          const { data: subscription } = await supabase
-            .from('user_subscriptions')
-            .select('end_date, status, is_paused')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+          let subscription = null;
+          
+          // Check if user was created by a coach - use coach_subscriptions
+          if (user.coach_id) {
+            const { data: coachSub } = await supabase
+              .from('coach_subscriptions')
+              .select('end_date, status, is_paused')
+              .eq('user_id', user.id)
+              .eq('status', 'active')
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            subscription = coachSub;
+          } else {
+            // Regular user - use user_subscriptions
+            const { data: userSub } = await supabase
+              .from('user_subscriptions')
+              .select('end_date, status, is_paused')
+              .eq('user_id', user.id)
+              .eq('status', 'active')
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            subscription = userSub;
+          }
 
           let subscriptionStatus: 'Ενεργή' | 'Ανενεργή' | 'Παύση' = 'Ανενεργή';
           
