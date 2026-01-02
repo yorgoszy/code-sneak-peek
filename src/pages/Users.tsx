@@ -43,7 +43,9 @@ interface AppUser {
   user_status: string;
   birth_date?: string;
   photo_url?: string;
+  avatar_url?: string;
   created_at: string;
+  coach_id?: string;
 }
 
 interface UserWithSubscription extends AppUser {
@@ -535,7 +537,7 @@ const Users = () => {
                       {/* User Info */}
                       <div className="flex items-center space-x-3 mb-3">
                         <Avatar className="w-10 h-10 flex-shrink-0">
-                          <AvatarImage src={user.photo_url} alt={user.name} />
+                          <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
                           <AvatarFallback>
                             {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                           </AvatarFallback>
@@ -691,7 +693,7 @@ const Users = () => {
                             <TableCell className="font-medium">
                               <div className="flex items-center space-x-3">
                                 <Avatar className="w-8 h-8">
-                                  <AvatarImage src={user.photo_url} alt={user.name} />
+                                  <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
                                   <AvatarFallback>
                                     {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                   </AvatarFallback>
@@ -765,7 +767,7 @@ const Users = () => {
                         {/* User Info */}
                         <div className="flex items-center space-x-3 mb-3">
                           <Avatar className="w-10 h-10 flex-shrink-0">
-                            <AvatarImage src={user.photo_url} alt={user.name} />
+                            <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
                             <AvatarFallback>
                               {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
