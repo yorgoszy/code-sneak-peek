@@ -37,8 +37,8 @@ interface UserProfileContentProps {
   setActiveTab?: (tab: string) => void;
 }
 
-// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach
-const isCoachCreatedUser = (userProfile: any) => !userProfile?.auth_user_id && userProfile?.coach_id;
+// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
+const isCoachCreatedUser = (userProfile: any) => !!userProfile?.coach_id;
 
 export const UserProfileContent = ({
   activeTab,

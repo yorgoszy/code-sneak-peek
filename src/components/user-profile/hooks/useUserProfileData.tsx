@@ -26,8 +26,8 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
 
   const fetchUserStats = async () => {
     try {
-      // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach
-      const isCoachCreatedUser = !user?.auth_user_id && user?.coach_id;
+      // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
+      const isCoachCreatedUser = !!user?.coach_id;
 
       // Count athletes if user is trainer
       let athletesCount = 0;
@@ -179,8 +179,8 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
 
   const fetchUserPayments = async () => {
     try {
-      // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach
-      const isCoachCreatedUser = !user?.auth_user_id && user?.coach_id;
+      // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
+      const isCoachCreatedUser = !!user?.coach_id;
 
       if (isCoachCreatedUser) {
         const { data } = await supabase
