@@ -233,13 +233,13 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl p-3">
+      <DialogContent className="w-[95vw] max-w-3xl p-3 sm:p-4 max-h-[90vh] overflow-y-auto rounded-none">
         <DialogHeader className="pb-1">
           <DialogTitle className="text-sm">Προσθήκη Νέας Άσκησης</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-1.5">
-          <div className="grid grid-cols-2 gap-2">
+        <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <Label htmlFor="name" className="text-[10px]">Όνομα *</Label>
               <Input
@@ -247,7 +247,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="π.χ. Bench Press"
-                className="rounded-none h-7 text-xs"
+                className="rounded-none h-8 sm:h-7 text-xs"
                 required
               />
             </div>
@@ -259,7 +259,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
                 placeholder="https://youtube.com/..."
-                className="rounded-none h-7 text-xs"
+                className="rounded-none h-8 sm:h-7 text-xs"
               />
             </div>
           </div>
@@ -284,34 +284,36 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAddCategory(!showAddCategory)}
-                className="rounded-none h-5 text-[10px] px-1.5"
+                className="rounded-none h-6 sm:h-5 text-[10px] px-2 sm:px-1.5"
               >
-                <Plus className="h-2.5 w-2.5 mr-0.5" />
+                <Plus className="h-3 w-3 sm:h-2.5 sm:w-2.5 mr-0.5" />
                 Νέα
               </Button>
             </div>
 
             {showAddCategory && (
-              <div className="mt-1 p-1.5 border bg-gray-50">
-                <div className="flex gap-1.5 items-end">
+              <div className="mt-1 p-2 sm:p-1.5 border bg-gray-50">
+                <div className="flex flex-col sm:flex-row gap-1.5 sm:items-end">
                   <Input
                     placeholder="Όνομα"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="rounded-none h-6 text-[10px] flex-1"
+                    className="rounded-none h-8 sm:h-6 text-xs sm:text-[10px] flex-1"
                   />
                   <Input
                     placeholder="Τύπος"
                     value={newCategoryType}
                     onChange={(e) => setNewCategoryType(e.target.value)}
-                    className="rounded-none h-6 text-[10px] flex-1"
+                    className="rounded-none h-8 sm:h-6 text-xs sm:text-[10px] flex-1"
                   />
-                  <Button type="button" size="sm" onClick={handleAddCategory} className="rounded-none h-6 text-[10px] px-1.5">
-                    OK
-                  </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={() => setShowAddCategory(false)} className="rounded-none h-6 text-[10px] px-1.5">
-                    ✕
-                  </Button>
+                  <div className="flex gap-1.5">
+                    <Button type="button" size="sm" onClick={handleAddCategory} className="rounded-none h-8 sm:h-6 text-xs sm:text-[10px] px-3 sm:px-1.5 flex-1 sm:flex-none">
+                      OK
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => setShowAddCategory(false)} className="rounded-none h-8 sm:h-6 text-xs sm:text-[10px] px-3 sm:px-1.5 flex-1 sm:flex-none">
+                      ✕
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
@@ -319,23 +321,23 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
             {loadingCategories ? (
               <p className="text-[10px] text-gray-500">Φόρτωση...</p>
             ) : (
-              <div className="space-y-1 mt-1">
+              <div className="space-y-1.5 sm:space-y-1 mt-1">
                 {rows.map((rowCategories, rowIndex) => (
                   rowCategories.length > 0 && (
                     <div key={rowIndex} className="border-b pb-1">
-                      <h4 className="text-[9px] font-medium text-gray-500 mb-0.5">{rowLabels[rowIndex]}</h4>
-                      <div className="flex flex-wrap gap-0.5">
+                      <h4 className="text-[10px] sm:text-[9px] font-medium text-gray-500 mb-0.5">{rowLabels[rowIndex]}</h4>
+                      <div className="flex flex-wrap gap-1 sm:gap-0.5">
                         {rowCategories.map(category => (
                           <div 
                             key={category.id} 
-                            className={`px-1.5 py-0 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                            className={`px-2 sm:px-1.5 py-0.5 sm:py-0 border cursor-pointer transition-colors hover:bg-gray-100 ${
                               selectedCategories.includes(category.id) 
                                 ? 'bg-blue-50 border-blue-400 text-blue-700' 
                                 : 'bg-white border-gray-200'
                             }`}
                             onClick={() => handleCategoryClick(category.id)}
                           >
-                            <span className="text-[10px] select-none leading-tight">{formatCategoryName(category.name)}</span>
+                            <span className="text-[11px] sm:text-[10px] select-none leading-tight">{formatCategoryName(category.name)}</span>
                           </div>
                         ))}
                       </div>
@@ -346,19 +348,19 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
                 {/* Equipment Row */}
                 {equipmentCategories.length > 0 && (
                   <div className="border-b pb-1">
-                    <h4 className="text-[9px] font-medium text-gray-500 mb-0.5">{rowLabels[6]}</h4>
-                    <div className="flex flex-wrap gap-0.5">
+                    <h4 className="text-[10px] sm:text-[9px] font-medium text-gray-500 mb-0.5">{rowLabels[6]}</h4>
+                    <div className="flex flex-wrap gap-1 sm:gap-0.5">
                       {equipmentCategories.map(category => (
                         <div 
                           key={category.id} 
-                          className={`px-1.5 py-0 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                          className={`px-2 sm:px-1.5 py-0.5 sm:py-0 border cursor-pointer transition-colors hover:bg-gray-100 ${
                             selectedCategories.includes(category.id) 
                               ? 'bg-blue-50 border-blue-400 text-blue-700' 
                               : 'bg-white border-gray-200'
                           }`}
                           onClick={() => handleCategoryClick(category.id)}
                         >
-                          <span className="text-[10px] select-none leading-tight">{formatCategoryName(category.name)}</span>
+                          <span className="text-[11px] sm:text-[10px] select-none leading-tight">{formatCategoryName(category.name)}</span>
                         </div>
                       ))}
                     </div>
@@ -369,7 +371,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
 
             {/* Selected categories summary */}
             {selectedCategories.length > 0 && (
-              <div className="mt-1 p-1 bg-blue-50 border text-[10px]">
+              <div className="mt-1 p-1.5 sm:p-1 bg-blue-50 border text-[11px] sm:text-[10px]">
                 <span className="font-medium text-blue-900">Επιλεγμένες ({selectedCategories.length}): </span>
                 {selectedCategories.map(categoryId => {
                   const category = categories.find(c => c.id === categoryId);
@@ -379,11 +381,11 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
             )}
           </div>
 
-          <div className="flex justify-end gap-1.5 pt-1">
-            <Button type="button" variant="outline" size="sm" onClick={handleClose} className="rounded-none h-7 text-xs">
+          <div className="flex justify-end gap-2 sm:gap-1.5 pt-2 sm:pt-1">
+            <Button type="button" variant="outline" size="sm" onClick={handleClose} className="rounded-none h-9 sm:h-7 text-xs px-4 sm:px-3">
               Ακύρωση
             </Button>
-            <Button type="submit" size="sm" disabled={loading || loadingCategories} className="rounded-none h-7 text-xs">
+            <Button type="submit" size="sm" disabled={loading || loadingCategories} className="rounded-none h-9 sm:h-7 text-xs px-4 sm:px-3">
               {loading ? 'Προσθήκη...' : 'Προσθήκη'}
             </Button>
           </div>
