@@ -39,6 +39,7 @@ export const useAssignmentDialog = (
     try {
       console.log('🚀 [useAssignmentDialog] Starting assignment process');
       console.log('🚀 [useAssignmentDialog] Program structure:', {
+        id: program.id,
         name: program.name,
         weeks: program.weeks?.length || 0,
         userIds: userIds.length,
@@ -46,63 +47,18 @@ export const useAssignmentDialog = (
         isTemplate: (program as any).is_template
       });
 
-      // 🔥 DEEP COPY για να μην επηρεαστεί το αρχικό πρόγραμμα
-      console.log('📋 [useAssignmentDialog] Creating deep copy for assignment...');
-      console.log('📋 [useAssignmentDialog] Is template:', (program as any).is_template);
+      // Χρησιμοποιούμε το υπάρχον πρόγραμμα αν έχει ID, αλλιώς το δημιουργούμε
+      let programToUse = program;
       
-      // Deep copy με JSON parse/stringify για πλήρη αντιγραφή
-      const programCopy = JSON.parse(JSON.stringify(program));
-      
-      // Δημιουργούμε αντίγραφο χωρίς το ID
-      const programToAssign = {
-        ...programCopy,
-        id: undefined, // Αφαιρούμε το ID για να δημιουργηθεί νέο πρόγραμμα
-        is_template: false, // Τα ανατεθειμένα προγράμματα ΔΕΝ είναι templates
-        name: (program as any).is_template ? program.name : `${program.name} (Ανάθεση)` // Suffix μόνο για κανονικά προγράμματα
-      } as ProgramStructure;
-      
-      console.log('✅ [useAssignmentDialog] Program copy created:', programToAssign.name);
-
-      // 🚨 ΚΡΙΤΙΚΟΣ ΕΛΕΓΧΟΣ: Έλεγχος σειράς ασκήσεων πριν την ανάθεση
-      console.log('🚨 [ASSIGNMENT DIALOG] Checking exercise order before assignment:');
-      programToAssign.weeks?.forEach((week, wIndex) => {
-        console.log(`🚨 [ASSIGNMENT DIALOG] Week ${wIndex + 1}: ${week.name}`);
-        week.program_days?.forEach((day, dIndex) => {
-          console.log(`🚨 [ASSIGNMENT DIALOG] Day ${dIndex + 1}: ${day.name}`);
-          day.program_blocks?.forEach((block, bIndex) => {
-            console.log(`🚨 [ASSIGNMENT DIALOG] Block ${bIndex + 1}: ${block.name} - ${block.program_exercises?.length || 0} exercises`);
-            const exercises = block.program_exercises || [];
-            
-            console.log(`🚨 [ASSIGNMENT DIALOG] Exercise order before assignment:`);
-            exercises.forEach((ex, eIndex) => {
-              console.log(`🚨 [ASSIGNMENT DIALOG]   ${eIndex + 1}. ${ex.exercises?.name} (order: ${ex.exercise_order})`);
-            });
-            
-            // Έλεγχος αν οι ασκήσεις είναι ταξινομημένες σωστά
-            const sortedExercises = [...exercises].sort((a, b) => {
-              const orderA = Number(a.exercise_order) || 0;
-              const orderB = Number(b.exercise_order) || 0;
-              return orderA - orderB;
-            });
-            
-            const isOrderCorrect = exercises.every((ex, index) => {
-              const sortedEx = sortedExercises[index];
-              return ex.id === sortedEx.id;
-            });
-            
-            if (!isOrderCorrect) {
-              console.error(`🚨 [ASSIGNMENT DIALOG ERROR] Exercise order is WRONG in block: ${block.name} before assignment!`);
-            } else {
-              console.log(`✅ [ASSIGNMENT DIALOG OK] Exercise order is correct in block: ${block.name}`);
-            }
-          });
-        });
-      });
-
-      // Αποθήκευση του νέου προγράμματος (αντίγραφο) ΧΩΡΙΣ %1RM υπολογισμούς
-      console.log('💾 [useAssignmentDialog] Saving program copy (original will remain unchanged)...');
-      const savedProgram = await onCreateProgram(programToAssign);
-      console.log('✅ [useAssignmentDialog] Program copy saved with ID:', savedProgram.id);
+      if (!program.id) {
+        // Μόνο αν δεν υπάρχει ID, δημιουργούμε νέο πρόγραμμα
+        console.log('📋 [useAssignmentDialog] No program ID, creating new program...');
+        const savedProgram = await onCreateProgram(program);
+        programToUse = { ...program, id: savedProgram.id };
+        console.log('✅ [useAssignmentDialog] Program created with ID:', savedProgram.id);
+      } else {
+        console.log('✅ [useAssignmentDialog] Using existing program ID:', program.id);
+      }
 
       const assignments = [];
       const allWorkoutCompletions = [];
@@ -111,20 +67,18 @@ export const useAssignmentDialog = (
       for (const userId of userIds) {
         console.log(`👤 [useAssignmentDialog] Processing assignment for user: ${userId}`);
         
-        // 🔄 Αν το ΑΡΧΙΚΟ πρόγραμμα είναι template, επεξεργαζόμαστε ΝΕΟ COPY για κάθε χρήστη
-        // ΣΗΜΑΝΤΙΚΟ: Δεν τροποποιούμε το savedProgram, δημιουργούμε νέο copy
-        let processedProgram = savedProgram;
+        // 🔄 Αν το πρόγραμμα είναι template, επεξεργαζόμαστε copy για κάθε χρήστη
+        let processedProgram = programToUse;
         if ((program as any).is_template) {
-          console.log(`🎯 [useAssignmentDialog] Processing NEW copy for user ${userId} with %1RM calculations...`);
-          // Deep copy του savedProgram πριν το επεξεργαστούμε
-          const programCopyForUser = JSON.parse(JSON.stringify(savedProgram));
+          console.log(`🎯 [useAssignmentDialog] Processing copy for user ${userId} with %1RM calculations...`);
+          const programCopyForUser = JSON.parse(JSON.stringify(programToUse));
           processedProgram = await processTemplateForUser(programCopyForUser, userId);
           console.log(`✅ [useAssignmentDialog] Copy processed for user ${userId}`);
         }
         
         const trainingDatesStrings = trainingDates.map(date => {
           const localDate = new Date(date);
-          localDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+          localDate.setHours(12, 0, 0, 0);
           return localDate.toISOString().split('T')[0];
         });
 
@@ -148,7 +102,7 @@ export const useAssignmentDialog = (
           userId,
           processedProgram.id,
           trainingDatesStrings,
-          programToAssign
+          programToUse
         );
         allWorkoutCompletions.push(...completions);
         console.log(`✅ [useAssignmentDialog] Workout completions created for user ${userId}:`, completions.length);
@@ -156,7 +110,7 @@ export const useAssignmentDialog = (
 
       console.log('🎉 [useAssignmentDialog] All assignments completed successfully');
       console.log('📊 [useAssignmentDialog] Summary:', {
-        programId: savedProgram.id,
+        programId: programToUse.id,
         assignmentsCreated: assignments.length,
         workoutCompletionsCreated: allWorkoutCompletions.length,
         wasTemplate: (program as any).is_template
