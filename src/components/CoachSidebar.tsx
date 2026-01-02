@@ -74,7 +74,7 @@ export const CoachSidebar = ({
     {
       icon: FileText,
       label: "Προγράμματα",
-      path: effectiveCoachId ? `/dashboard/programs?coachId=${effectiveCoachId}` : "/dashboard/programs",
+      path: effectiveCoachId ? `/dashboard/coach-programs?coachId=${effectiveCoachId}` : "/dashboard/coach-programs",
       badge: null,
     },
     {
