@@ -8,10 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Receipt, FileText, Eye, Package, User, Calendar, CreditCard, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
 import { format } from "date-fns";
-import { el } from "date-fns/locale";
+import { generateReceiptPDF, downloadPDFFromBase64 } from "@/utils/pdfGenerator";
 
 interface UserProfilePaymentsProps {
   payments: any[];
@@ -32,18 +31,6 @@ interface ReceiptData {
   mydata_status: 'pending' | 'sent' | 'error';
   mydata_id?: string;
   invoice_mark?: string;
-  // Coach receipt specific fields
-  subscription_type_name?: string;
-  receipt_type?: string;
-}
-
-interface CoachProfileData {
-  business_name: string | null;
-  logo_url: string | null;
-  vat_number: string | null;
-  address: string | null;
-  city: string | null;
-  phone: string | null;
 }
 
 interface Purchase {
@@ -78,7 +65,6 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   const [loading, setLoading] = useState(true);
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [coachProfile, setCoachProfile] = useState<CoachProfileData | null>(null);
 
   const isCoachUser = isCoachCreatedUser(userProfile);
 
@@ -88,26 +74,8 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
       if (!isCoachUser) {
         loadUserPurchases();
       }
-      if (isCoachUser && userProfile?.coach_id) {
-        fetchCoachProfile();
-      }
     }
   }, [userProfile?.id, isCoachUser]);
-
-  const fetchCoachProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('coach_profiles')
-        .select('business_name, logo_url, vat_number, address, city, phone')
-        .eq('coach_id', userProfile.coach_id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      setCoachProfile(data);
-    } catch (error) {
-      console.error('Error fetching coach profile:', error);
-    }
-  };
 
   const loadUserReceipts = async () => {
     try {
@@ -153,9 +121,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
           issue_date: receipt.created_at,
           mydata_status: receipt.mark ? 'sent' : 'pending' as 'pending' | 'sent' | 'error',
           mydata_id: undefined,
-          invoice_mark: receipt.mark || undefined,
-          subscription_type_name: receipt.subscription_types?.name,
-          receipt_type: receipt.receipt_type
+          invoice_mark: receipt.mark || undefined
         }));
 
         setReceipts(transformedReceipts);
@@ -257,18 +223,18 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   };
 
   const handlePrintReceipt = async (receipt: ReceiptData) => {
-    // Απλά ανοίγουμε το dialog - η εκτύπωση γίνεται μέσα στο dialog
     setSelectedReceipt(receipt);
     setIsPreviewOpen(true);
-  };
-
-  const getReceiptTypeLabel = (type: string | undefined) => {
-    if (!type) return '-';
-    switch (type) {
-      case 'subscription': return 'Νέα';
-      case 'renewal': return 'Ανανέωση';
-      default: return type;
-    }
+    
+    // Wait for dialog to render before generating PDF
+    setTimeout(async () => {
+      const pdfBase64 = await generateReceiptPDF('receipt-content');
+      if (pdfBase64) {
+        downloadPDFFromBase64(pdfBase64, `${receipt.receipt_number}.pdf`);
+      }
+      setIsPreviewOpen(false);
+      setSelectedReceipt(null);
+    }, 500);
   };
 
   const formatDate = (dateString: string) => {
@@ -635,93 +601,26 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
         </Tabs>
       )}
 
-      {/* Receipt Preview Dialog - Ίδιο με Coach */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="rounded-none max-w-md">
-          <DialogHeader>
-            <DialogTitle>Απόδειξη {selectedReceipt?.receipt_number}</DialogTitle>
-          </DialogHeader>
-          {selectedReceipt && (
-            <div className="space-y-4 text-sm">
-              {/* Athlete Info */}
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={userProfile?.avatar_url || undefined} />
-                  <AvatarFallback>
-                    {userProfile?.name?.charAt(0) || 'Α'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{userProfile?.name || '-'}</p>
-                  <p className="text-xs text-gray-500">{userProfile?.email || '-'}</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-gray-500">Ημερομηνία:</span>
-                  <p>{format(new Date(selectedReceipt.issue_date), 'dd/MM/yyyy', { locale: el })}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Τύπος:</span>
-                  <p>{selectedReceipt.subscription_type_name || selectedReceipt.items?.[0]?.description || '-'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Είδος:</span>
-                  <p>{getReceiptTypeLabel(selectedReceipt.receipt_type)}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">ΜΑΡΚ ΑΑΔΕ:</span>
-                  <p>{selectedReceipt.invoice_mark || '-'}</p>
-                </div>
-              </div>
-              
-              <div className="pt-2 border-t">
-                <span className="text-gray-500 text-xs">Ποσό:</span>
-                <p className="text-xl font-bold text-[#00ffba]">€{selectedReceipt.total.toFixed(2)}</p>
-              </div>
-
-              {/* Coach Business Info */}
-              {coachProfile && (coachProfile.business_name || coachProfile.logo_url) && (
-                <div className="pt-3 border-t space-y-2">
-                  <div className="flex items-center gap-3">
-                    {coachProfile.logo_url && (
-                      <img 
-                        src={coachProfile.logo_url} 
-                        alt="Logo" 
-                        className="w-12 h-12 object-contain"
-                      />
-                    )}
-                    <div className="flex-1">
-                      {coachProfile.business_name && (
-                        <p className="font-medium text-xs">{coachProfile.business_name}</p>
-                      )}
-                      <div className="text-[10px] text-gray-500">
-                        {coachProfile.address && <span>{coachProfile.address}</span>}
-                        {coachProfile.city && <span>, {coachProfile.city}</span>}
-                      </div>
-                      <div className="text-[10px] text-gray-500">
-                        {coachProfile.vat_number && <span>ΑΦΜ: {coachProfile.vat_number}</span>}
-                        {coachProfile.phone && <span> | Τηλ: {coachProfile.phone}</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex gap-2 pt-2">
-                <Button
-                  onClick={() => window.print()}
-                  className="rounded-none flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700"
-                >
-                  <Printer className="h-4 w-4 mr-2" />
-                  Εκτύπωση
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Receipt Preview Dialog */}
+      <ReceiptPreviewDialog
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        receipt={selectedReceipt ? {
+          id: selectedReceipt.id,
+          receiptNumber: selectedReceipt.receipt_number,
+          customerName: selectedReceipt.customer_name,
+          customerVat: selectedReceipt.customer_vat,
+          customerEmail: selectedReceipt.customer_email,
+          items: selectedReceipt.items,
+          subtotal: selectedReceipt.subtotal,
+          vat: selectedReceipt.vat,
+          total: selectedReceipt.total,
+          date: selectedReceipt.issue_date,
+          myDataStatus: selectedReceipt.mydata_status,
+          myDataId: selectedReceipt.mydata_id,
+          invoiceMark: selectedReceipt.invoice_mark
+        } : null}
+      />
     </>
   );
 };
