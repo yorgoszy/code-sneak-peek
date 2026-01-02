@@ -18,63 +18,103 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Listen for auth state changes - specifically for PASSWORD_RECOVERY event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout | null = null;
+    
+    // Check for recovery tokens in URL
+    const hash = window.location.hash;
+    const searchParams = new URLSearchParams(window.location.search);
+    const hasCode = searchParams.has('code');
+    const hasToken = searchParams.has('token');
+    const hasAccessToken = hash.includes('access_token');
+    const hasRecoveryType = hash.includes('type=recovery') || hash.includes('type=magiclink');
+    
+    console.log('🔐 ResetPassword - URL check:', {
+      hash: hash.substring(0, 100),
+      hasCode,
+      hasToken,
+      hasAccessToken,
+      hasRecoveryType
+    });
+
+    // If we have a PKCE code, exchange it first
+    const exchangeCode = async () => {
+      if (hasCode) {
+        const code = searchParams.get('code');
+        console.log('🔄 Exchanging PKCE code for session...');
+        
+        try {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code!);
+          
+          if (error) {
+            console.error('❌ Code exchange error:', error);
+            if (mounted) setIsValidSession(false);
+            return;
+          }
+          
+          if (data.session) {
+            console.log('✅ Session obtained from code exchange');
+            if (mounted) setIsValidSession(true);
+          }
+        } catch (err) {
+          console.error('❌ Code exchange exception:', err);
+          if (mounted) setIsValidSession(false);
+        }
+        return;
+      }
+      
+      // For hash-based tokens, let the auth listener handle it
+      if (hasAccessToken || hasRecoveryType) {
+        console.log('🔄 Hash tokens found, waiting for auth event...');
+        return;
+      }
+      
+      // Check for existing session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        console.log('✅ Existing session found');
+        if (mounted) setIsValidSession(true);
+        return;
+      }
+      
+      // No tokens and no session
+      console.log('❌ No recovery tokens or session found');
+      if (mounted) setIsValidSession(false);
+    };
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔐 Auth event:', event, 'Session:', !!session);
       
       if (event === 'PASSWORD_RECOVERY') {
         console.log('✅ Password recovery event detected');
-        setIsValidSession(true);
+        if (mounted) setIsValidSession(true);
       } else if (event === 'SIGNED_IN' && session) {
-        // Check if this is a recovery session by looking at the URL hash
-        const hash = window.location.hash;
-        const isRecovery = hash.includes('type=recovery') || hash.includes('type=magiclink');
-        
-        if (isRecovery) {
-          console.log('✅ Recovery session from URL hash');
-          setIsValidSession(true);
-        } else {
-          // Regular sign in - might be from clicking the recovery link
-          // Give it a moment to check if there's a valid session
-          setIsValidSession(true);
-        }
+        console.log('✅ Signed in for password reset');
+        if (mounted) setIsValidSession(true);
       }
     });
 
-    // Also check for existing session that might be a recovery session
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    // Exchange code or check session
+    exchangeCode();
+    
+    // Fallback timeout - if nothing happens after 5 seconds, check again
+    timeoutId = setTimeout(async () => {
+      if (!mounted || isValidSession !== null) return;
       
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        console.log('✅ Existing session found for password reset');
         setIsValidSession(true);
       } else {
-        // Check URL for recovery tokens
-        const hash = window.location.hash;
-        const searchParams = new URLSearchParams(window.location.search);
-        const hasToken = hash.includes('access_token') || 
-                        hash.includes('type=recovery') ||
-                        searchParams.has('token') ||
-                        searchParams.has('code');
-        
-        if (hasToken) {
-          console.log('🔄 Token found in URL, waiting for auth event...');
-          // Wait a bit for the auth event to fire
-          setTimeout(() => {
-            if (isValidSession === null) {
-              setIsValidSession(false);
-            }
-          }, 3000);
-        } else {
-          console.log('❌ No valid recovery session or token');
-          setIsValidSession(false);
-        }
+        setIsValidSession(false);
       }
+    }, 5000);
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      if (timeoutId) clearTimeout(timeoutId);
     };
-
-    checkSession();
-
-    return () => subscription.unsubscribe();
   }, []);
 
   // Redirect if session is definitely invalid
