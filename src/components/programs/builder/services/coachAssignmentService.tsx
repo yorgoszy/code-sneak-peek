@@ -117,33 +117,19 @@ export const coachAssignmentService = {
 
   async ensureProgramStructureExists(program: any) {
     console.log('🏗️ [CoachAssignmentService] Checking program structure for:', program.id);
-
+    
     try {
-      // ΔΕΝ πειράζουμε/σβήνουμε τη δομή του template κατά την ανάθεση.
-      // Απλά βεβαιωνόμαστε ότι υπάρχει ήδη στη DB.
-      const { data: existingWeeks, error } = await supabase
-        .from('program_weeks')
-        .select('id')
-        .eq('program_id', program.id)
-        .limit(1);
-
-      if (error) {
-        console.warn('⚠️ [CoachAssignmentService] Could not check existing structure:', error);
-      }
-
-      if (existingWeeks && existingWeeks.length > 0) {
-        console.log('✅ [CoachAssignmentService] Program structure exists - skipping rebuild');
-        return;
-      }
-
+      console.log('🗑️ [CoachAssignmentService] Deleting existing structure and recreating...');
+      
+      await this.deleteExistingStructure(program.id);
+      
       if (program.weeks && program.weeks.length > 0) {
-        console.log('🏗️ [CoachAssignmentService] No structure found - creating', program.weeks.length, 'weeks');
+        console.log('🏗️ [CoachAssignmentService] Creating new structure with', program.weeks.length, 'weeks');
         await this.createProgramStructure(program.id, program.weeks);
-        console.log('✅ [CoachAssignmentService] Program structure created successfully');
-        return;
+        console.log('✅ [CoachAssignmentService] Program structure recreated successfully');
+      } else {
+        throw new Error('Το πρόγραμμα δεν έχει δομή εβδομάδων');
       }
-
-      throw new Error('Το πρόγραμμα δεν έχει δομή εβδομάδων');
     } catch (error) {
       console.error('❌ [CoachAssignmentService] Error in ensureProgramStructureExists:', error);
       throw error;
