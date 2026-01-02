@@ -68,8 +68,8 @@ interface Purchase {
   };
 }
 
-// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach
-const isCoachCreatedUser = (profile: any) => !profile?.auth_user_id && profile?.coach_id;
+// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
+const isCoachCreatedUser = (profile: any) => !!profile?.coach_id;
 
 export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymentsProps) => {
   const { t } = useTranslation();

@@ -44,8 +44,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
     return allActivePrograms?.filter(p => p.user_id === user.id) || [];
   }, [allActivePrograms, user.id]);
 
-  // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (δεν έχει auth_user_id αλλά έχει coach_id)
-  const isCoachCreatedUser = !user?.auth_user_id && user?.coach_id;
+  // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
+  const isCoachCreatedUser = !!user?.coach_id;
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {

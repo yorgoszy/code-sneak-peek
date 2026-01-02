@@ -199,9 +199,9 @@ export const UserProfileSidebar = forwardRef<
   // Έλεγχος αν ο χρήστης είναι parent
   const isParentUser = userProfile?.role === 'parent';
   
-  // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (δεν έχει auth_user_id αλλά έχει coach_id)
+  // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
   // Αυτοί οι χρήστες δεν έχουν πρόσβαση σε shop, online coaching, online booking
-  const isCoachCreatedUser = !userProfile?.auth_user_id && userProfile?.coach_id;
+  const isCoachCreatedUser = !!userProfile?.coach_id;
 
   const menuItems = [
     { 

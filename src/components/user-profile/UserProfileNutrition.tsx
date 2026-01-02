@@ -44,8 +44,8 @@ interface UserProfileNutritionProps {
   userProfile: any;
 }
 
-// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach
-const isCoachCreatedUser = (userProfile: any) => !userProfile?.auth_user_id && userProfile?.coach_id;
+// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
+const isCoachCreatedUser = (userProfile: any) => !!userProfile?.coach_id;
 
 export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ userId, userProfile }) => {
   const [activeTab, setActiveTab] = useState('active');
