@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Filter, Plus } from "lucide-react";
+import { Filter, Plus, X } from "lucide-react";
 import { ExerciseFilters } from './ExerciseFilters';
 import { ExerciseSearchInput } from './ExerciseSearchInput';
 import { ExerciseGrid } from './ExerciseGrid';
@@ -97,34 +97,47 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
 
   return (
     <>
-      <DialogContent className="rounded-none max-w-6xl max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Filter className="w-5 h-5" />
-              Επιλογή Άσκησης ({exercisesWithCategories.length} διαθέσιμες)
+      <DialogContent className="rounded-none max-w-6xl w-[95vw] sm:w-auto max-h-[90vh] sm:max-h-[80vh] p-3 sm:p-6 flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-sm sm:text-base">
+              <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="truncate">Επιλογή Άσκησης ({exercisesWithCategories.length})</span>
             </div>
-            <Button
-              onClick={() => setAddExerciseDialogOpen(true)}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-              size="sm"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Προσθήκη Άσκησης
-            </Button>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button
+                onClick={() => setAddExerciseDialogOpen(true)}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none flex-1 sm:flex-none"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                <span className="hidden xs:inline">Προσθήκη</span>
+              </Button>
+              <Button
+                onClick={onClose}
+                variant="outline"
+                className="rounded-none flex-1 sm:flex-none"
+                size="sm"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Άκυρο
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          {/* Search and Filters - Horizontal Layout */}
-          <div className="flex gap-4">
-            <ExerciseSearchInput
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
+        <div className="space-y-3 sm:space-y-4 flex-1 overflow-hidden flex flex-col">
+          {/* Search and Filters - Stack on mobile, horizontal on desktop */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 flex-shrink-0">
+            <div className="w-full sm:w-[70%]">
+              <ExerciseSearchInput
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+              />
+            </div>
 
             {/* Filters */}
-            <div className="w-[30%]">
+            <div className="w-full sm:w-[30%]">
               <ExerciseFilters
                 selectedCategories={selectedCategories}
                 onCategoryChange={setSelectedCategories}
@@ -132,8 +145,8 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
             </div>
           </div>
           
-          {/* Exercise List */}
-          <div className="max-h-96 overflow-y-auto border rounded-none">
+          {/* Exercise List - Flexible height */}
+          <div className="flex-1 min-h-0 overflow-y-auto border rounded-none">
             <ExerciseGrid
               exercises={filteredExercises}
               onSelectExercise={handleSelectExercise}
