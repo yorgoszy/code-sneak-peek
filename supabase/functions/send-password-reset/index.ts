@@ -149,16 +149,42 @@ serve(async (req) => {
       }
     }
 
-    console.log("✅ User found, generating reset link...");
-
     // Generate password reset link using Supabase
-    // IMPORTANT: We always force the production reset page to avoid mismatched environments.
-    // This URL must be present in Supabase Auth [Authentication > URL Configuration > Redirect URLs].
-    const redirect = 'https://www.hyperkids.gr/auth/reset-password';
+    // NOTE: We must use a redirect URL that is allow-listed in Supabase Auth > URL Configuration.
+    // We accept the redirectTo sent from the frontend ONLY if it matches our allowlist.
+
+    const DEFAULT_REDIRECT = 'https://www.hyperkids.gr/auth/reset-password';
+
+    const isAllowedRedirect = (value: string) => {
+      try {
+        const url = new URL(value);
+
+        // We only allow our reset password route.
+        if (url.pathname !== '/auth/reset-password') return false;
+
+        const host = url.hostname.toLowerCase();
+
+        // Production domains
+        if (host === 'www.hyperkids.gr' || host === 'hyperkids.gr') return true;
+
+        // Lovable preview domains
+        if (host.endsWith('.lovableproject.com')) return true;
+
+        return false;
+      } catch {
+        return false;
+      }
+    };
+
+    const safeRedirect = redirectTo && isAllowedRedirect(redirectTo)
+      ? redirectTo
+      : DEFAULT_REDIRECT;
 
     console.log("📧 Original redirectTo from request:", redirectTo);
-    console.log("🔗 Forced redirect URL:", redirect);
-    
+    console.log("🔗 Safe redirect URL:", safeRedirect);
+
+    console.log("✅ User found, generating reset link...");
+
     let linkData: any = null;
     let genError: any = null;
 
@@ -166,8 +192,8 @@ serve(async (req) => {
       const { data, error } = await supabase.auth.admin.generateLink({
         type: 'recovery',
         email: target,
-        options: { 
-          redirectTo: redirect,
+        options: {
+          redirectTo: safeRedirect,
           // 24 ώρες διάρκεια (86400 δευτερόλεπτα)
           expiresIn: 86400
         }
@@ -212,14 +238,15 @@ serve(async (req) => {
       });
     }
 
-    // Force redirect_to to always be the reset-password page (some environments may cause Supabase to fall back to Site URL)
+    // Ensure the action link uses the same safe redirect.
+    // (Some environments may cause Supabase to fall back to Site URL.)
     const actionLinkUrl = new URL(linkData.properties.action_link);
-    actionLinkUrl.searchParams.set('redirect_to', redirect);
+    actionLinkUrl.searchParams.set('redirect_to', safeRedirect);
     const finalActionLink = actionLinkUrl.toString();
 
     console.log("🔗 Reset link generated successfully");
     console.log("🔗 Action link (final):", finalActionLink);
-    console.log("🔗 Redirect URL:", redirect);
+    console.log("🔗 Redirect URL:", safeRedirect);
 
     // Initialize Resend
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
