@@ -106,15 +106,14 @@ const CoachProgramsPage = () => {
     if (!effectiveCoachId) return;
     
     try {
-      console.log('🔄 Loading coach programs for:', effectiveCoachId);
+      console.log('🔄 Loading coach programs (templates only) for:', effectiveCoachId);
       
-      // Fetch coach's programs directly from database
-      // (σε παλιότερα saves μπορεί να είναι στο coach_id αντί για created_by)
+      // Fetch coach's programs directly from database WITHOUT assignments
+      // Αυτή η σελίδα δείχνει μόνο τα templates, όχι τα assigned programs
       const { data, error } = await supabase
         .from('programs')
         .select(`
           *,
-          program_assignments!fk_program_assignments_program_id(*),
           program_weeks!fk_program_weeks_program_id(
             *,
             program_days!fk_program_days_week_id(
