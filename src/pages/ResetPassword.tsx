@@ -20,7 +20,10 @@ export default function ResetPassword() {
   useEffect(() => {
     let mounted = true;
     let timeoutId: NodeJS.Timeout | null = null;
-    
+
+    // Keep a ref so timeouts don't read stale state
+    const stateRef = { current: (null as boolean | null) };
+
     // Check for recovery tokens in URL
     const hash = window.location.hash;
     const searchParams = new URLSearchParams(window.location.search);
@@ -28,7 +31,7 @@ export default function ResetPassword() {
     const hasToken = searchParams.has('token');
     const hasAccessToken = hash.includes('access_token');
     const hasRecoveryType = hash.includes('type=recovery') || hash.includes('type=magiclink');
-    
+
     console.log('🔐 ResetPassword - URL check:', {
       hash: hash.substring(0, 100),
       hasCode,
@@ -37,78 +40,100 @@ export default function ResetPassword() {
       hasRecoveryType
     });
 
-    // If we have a PKCE code, exchange it first
-    const exchangeCode = async () => {
-      if (hasCode) {
-        const code = searchParams.get('code');
-        console.log('🔄 Exchanging PKCE code for session...');
-        
-        try {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code!);
-          
-          if (error) {
-            console.error('❌ Code exchange error:', error);
-            if (mounted) setIsValidSession(false);
-            return;
-          }
-          
-          if (data.session) {
-            console.log('✅ Session obtained from code exchange');
-            if (mounted) setIsValidSession(true);
-          }
-        } catch (err) {
-          console.error('❌ Code exchange exception:', err);
-          if (mounted) setIsValidSession(false);
-        }
-        return;
-      }
-      
-      // For hash-based tokens, let the auth listener handle it
-      if (hasAccessToken || hasRecoveryType) {
-        console.log('🔄 Hash tokens found, waiting for auth event...');
-        return;
-      }
-      
-      // Check for existing session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        console.log('✅ Existing session found');
-        if (mounted) setIsValidSession(true);
-        return;
-      }
-      
-      // No tokens and no session
-      console.log('❌ No recovery tokens or session found');
-      if (mounted) setIsValidSession(false);
+    const setValid = (value: boolean) => {
+      stateRef.current = value;
+      if (mounted) setIsValidSession(value);
     };
 
-    // Listen for auth state changes
+    // Listen for auth state changes (must be set before any session checks)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔐 Auth event:', event, 'Session:', !!session);
-      
-      if (event === 'PASSWORD_RECOVERY') {
-        console.log('✅ Password recovery event detected');
-        if (mounted) setIsValidSession(true);
-      } else if (event === 'SIGNED_IN' && session) {
-        console.log('✅ Signed in for password reset');
-        if (mounted) setIsValidSession(true);
+
+      // In recovery flows Supabase may emit different events depending on link type.
+      if ((event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+        console.log('✅ Valid session for password reset detected');
+        setValid(true);
       }
     });
 
-    // Exchange code or check session
-    exchangeCode();
-    
-    // Fallback timeout - if nothing happens after 5 seconds, check again
-    timeoutId = setTimeout(async () => {
-      if (!mounted || isValidSession !== null) return;
-      
+    const checkSessionNow = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setIsValidSession(true);
-      } else {
-        setIsValidSession(false);
+      return !!session;
+    };
+
+    // If we have a PKCE code, exchange it first
+    const exchangeCode = async () => {
+      if (!hasCode) return;
+      const code = searchParams.get('code');
+      if (!code) return;
+
+      console.log('🔄 Exchanging PKCE code for session...');
+
+      try {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (error) {
+          console.error('❌ Code exchange error:', error);
+          setValid(false);
+          return;
+        }
+
+        if (data.session) {
+          console.log('✅ Session obtained from code exchange');
+          setValid(true);
+          return;
+        }
+
+        // Fallback: sometimes the listener sets session slightly later
+        const ok = await checkSessionNow();
+        setValid(ok);
+      } catch (err) {
+        console.error('❌ Code exchange exception:', err);
+        setValid(false);
       }
-    }, 5000);
+    };
+
+    const init = async () => {
+      // 1) PKCE flow
+      if (hasCode) {
+        await exchangeCode();
+        return;
+      }
+
+      // 2) Hash-based recovery flow
+      if (hasAccessToken || hasRecoveryType || hasToken) {
+        console.log('🔄 Recovery tokens found, checking session...');
+
+        // Give Supabase a tick to parse URL/hash and populate storage
+        setTimeout(async () => {
+          if (!mounted || stateRef.current !== null) return;
+          const ok = await checkSessionNow();
+          setValid(ok);
+        }, 0);
+
+        return;
+      }
+
+      // 3) Already logged in?
+      const ok = await checkSessionNow();
+      if (ok) {
+        console.log('✅ Existing session found');
+        setValid(true);
+        return;
+      }
+
+      console.log('❌ No recovery tokens or session found');
+      setValid(false);
+    };
+
+    init();
+
+    // Fallback timeout - if nothing happens after 6 seconds, check again
+    timeoutId = setTimeout(async () => {
+      if (!mounted || stateRef.current !== null) return;
+      const ok = await checkSessionNow();
+      setValid(ok);
+    }, 6000);
 
     return () => {
       mounted = false;

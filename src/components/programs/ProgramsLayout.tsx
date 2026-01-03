@@ -70,6 +70,7 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
           onEditProgram={onEditProgram}
           onDuplicateProgram={onDuplicateProgram}
           onConvertToTemplate={onConvertToTemplate}
+          isTemplateMode={isTemplateMode}
         />
       </div>
 
