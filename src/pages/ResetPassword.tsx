@@ -31,15 +31,13 @@ export default function ResetPassword() {
     const hasToken = searchParams.has('token');
     const hasAccessToken = hash.includes('access_token');
     const hasRecoveryType = hash.includes('type=recovery') || hash.includes('type=magiclink');
-    const hasAnyRecoveryIndicator = hasCode || hasToken || hasAccessToken || hasRecoveryType;
 
     console.log('🔐 ResetPassword - URL check:', {
       hash: hash.substring(0, 100),
       hasCode,
       hasToken,
       hasAccessToken,
-      hasRecoveryType,
-      hasAnyRecoveryIndicator
+      hasRecoveryType
     });
 
     const setValid = (value: boolean) => {
@@ -52,9 +50,8 @@ export default function ResetPassword() {
       console.log('🔐 Auth event:', event, 'Session:', !!session);
 
       // In recovery flows Supabase may emit different events depending on link type.
-      // IMPORTANT: We accept any session when we have recovery indicators
-      if (session && (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
-        console.log('✅ Valid session for password reset detected via event:', event);
+      if ((event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+        console.log('✅ Valid session for password reset detected');
         setValid(true);
       }
     });
@@ -66,9 +63,9 @@ export default function ResetPassword() {
 
     // If we have a PKCE code, exchange it first
     const exchangeCode = async () => {
-      if (!hasCode) return false;
+      if (!hasCode) return;
       const code = searchParams.get('code');
-      if (!code) return false;
+      if (!code) return;
 
       console.log('🔄 Exchanging PKCE code for session...');
 
@@ -77,42 +74,29 @@ export default function ResetPassword() {
 
         if (error) {
           console.error('❌ Code exchange error:', error);
-          // Clear the code from URL to prevent loops
-          window.history.replaceState({}, '', window.location.pathname);
-          return false;
+          setValid(false);
+          return;
         }
 
         if (data.session) {
           console.log('✅ Session obtained from code exchange');
           setValid(true);
-          // Clear the code from URL
-          window.history.replaceState({}, '', window.location.pathname);
-          return true;
+          return;
         }
 
-        return false;
+        // Fallback: sometimes the listener sets session slightly later
+        const ok = await checkSessionNow();
+        setValid(ok);
       } catch (err) {
         console.error('❌ Code exchange exception:', err);
-        window.history.replaceState({}, '', window.location.pathname);
-        return false;
+        setValid(false);
       }
     };
 
     const init = async () => {
-      // 1) PKCE flow - exchange code first
+      // 1) PKCE flow
       if (hasCode) {
-        const success = await exchangeCode();
-        if (success) return;
-        
-        // If code exchange failed, check if we have an existing session anyway
-        const ok = await checkSessionNow();
-        if (ok) {
-          console.log('✅ Existing session found after code exchange attempt');
-          setValid(true);
-          return;
-        }
-        
-        setValid(false);
+        await exchangeCode();
         return;
       }
 
@@ -125,16 +109,15 @@ export default function ResetPassword() {
           if (!mounted || stateRef.current !== null) return;
           const ok = await checkSessionNow();
           setValid(ok);
-        }, 100);
+        }, 0);
 
         return;
       }
 
-      // 3) No recovery indicators - check if already logged in
-      // This allows users who are already logged in to still reset their password
+      // 3) Already logged in?
       const ok = await checkSessionNow();
       if (ok) {
-        console.log('✅ Existing session found (direct access)');
+        console.log('✅ Existing session found');
         setValid(true);
         return;
       }
@@ -145,13 +128,12 @@ export default function ResetPassword() {
 
     init();
 
-    // Fallback timeout - if nothing happens after 4 seconds, check again
+    // Fallback timeout - if nothing happens after 6 seconds, check again
     timeoutId = setTimeout(async () => {
       if (!mounted || stateRef.current !== null) return;
-      console.log('⏰ Timeout reached, final session check...');
       const ok = await checkSessionNow();
       setValid(ok);
-    }, 4000);
+    }, 6000);
 
     return () => {
       mounted = false;
