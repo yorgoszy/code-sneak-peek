@@ -24,6 +24,7 @@ interface ProgramsListProps {
   onDuplicateProgram?: (program: Program) => void;
   onPreviewProgram?: (program: Program) => void;
   onConvertToTemplate?: (program: Program) => void;
+  isTemplateMode?: boolean;
 }
 
 export const ProgramsList: React.FC<ProgramsListProps> = ({
@@ -34,9 +35,12 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   onEditProgram,
   onDuplicateProgram,
   onPreviewProgram,
-  onConvertToTemplate
+  onConvertToTemplate,
+  isTemplateMode = false
 }) => {
   const isMobile = useIsMobile();
+  const showButtonText = isMobile && !isTemplateMode;
+
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -275,8 +279,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                             className={`rounded-none ${isMobile ? 'w-full justify-center' : ''}`}
                             title="Προβολή Προγράμματος"
                           >
-                            <Play className={`${isMobile ? 'w-4 h-4 mr-2' : 'w-4 h-4'}`} />
-                            {isMobile && 'Προβολή'}
+                            <Play className={showButtonText ? 'w-4 h-4 mr-2' : 'w-4 h-4'} />
+                            {showButtonText && 'Προβολή'}
                           </Button>
                         )}
 
@@ -288,8 +292,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                           className={`rounded-none ${isMobile ? 'w-full justify-center' : ''}`}
                           title="Προεπισκόπηση"
                         >
-                          <Eye className={`${isMobile ? 'w-4 h-4 mr-2' : 'w-4 h-4'}`} />
-                          {isMobile && 'Προεπισκόπηση'}
+                          <Eye className={showButtonText ? 'w-4 h-4 mr-2' : 'w-4 h-4'} />
+                          {showButtonText && 'Προεπισκόπηση'}
                         </Button>
 
                         <Button
@@ -302,8 +306,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                           className={`rounded-none ${isMobile ? 'w-full justify-center' : ''}`}
                           title="Επεξεργασία"
                         >
-                          <Edit className={`${isMobile ? 'w-4 h-4 mr-2' : 'w-4 h-4'}`} />
-                          {isMobile && 'Επεξεργασία'}
+                          <Edit className={showButtonText ? 'w-4 h-4 mr-2' : 'w-4 h-4'} />
+                          {showButtonText && 'Επεξεργασία'}
                         </Button>
 
                         {onDuplicateProgram && (
@@ -317,8 +321,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                             className={`rounded-none ${isMobile ? 'w-full justify-center' : ''}`}
                             title="Αντιγραφή"
                           >
-                            <Copy className={`${isMobile ? 'w-4 h-4 mr-2' : 'w-4 h-4'}`} />
-                            {isMobile && 'Αντιγραφή'}
+                            <Copy className={showButtonText ? 'w-4 h-4 mr-2' : 'w-4 h-4'} />
+                            {showButtonText && 'Αντιγραφή'}
                           </Button>
                         )}
 
@@ -334,8 +338,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                             className={`rounded-none bg-[#00ffba]/10 text-[#00ffba] border-[#00ffba] hover:bg-[#00ffba]/20 ${isMobile ? 'w-full justify-center' : ''}`}
                             title="Μετατροπή σε Template"
                           >
-                            <Play className={`${isMobile ? 'w-4 h-4 mr-2' : 'w-4 h-4'}`} />
-                            {isMobile && 'Template'}
+                            <Play className={showButtonText ? 'w-4 h-4 mr-2' : 'w-4 h-4'} />
+                            {showButtonText && 'Template'}
                           </Button>
                         )}
 
@@ -347,8 +351,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                           className={`rounded-none ${isMobile ? 'w-full justify-center' : 'px-2'}`}
                           title="Διαγραφή"
                         >
-                          <Trash2 className={`${isMobile ? 'w-4 h-4 mr-2' : 'w-4 h-4'}`} />
-                          {isMobile && 'Διαγραφή'}
+                          <Trash2 className={showButtonText ? 'w-4 h-4 mr-2' : 'w-4 h-4'} />
+                          {showButtonText && 'Διαγραφή'}
                         </Button>
                       </div>
                     </div>
