@@ -265,7 +265,7 @@ const MyAthletes = () => {
 
   const handleSendPasswordReset = async (user: CoachUser) => {
     try {
-      const redirectUrl = `${window.location.origin}/auth/reset-password`;
+      const redirectUrl = 'https://www.hyperkids.gr/auth/reset-password';
       
       const { error } = await supabase.functions.invoke('send-password-reset', {
         body: {

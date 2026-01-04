@@ -777,7 +777,7 @@ const AnnualPlanning: React.FC = () => {
     fetchUsers();
     fetchAssignedMacrocycles();
     fetchSavedMacrocycles();
-  }, [effectiveCoachId]);
+  }, [effectiveCoachId, isAdminUser, coachIdFromUrl]);
 
   // Auto-select current user if not admin
   useEffect(() => {
@@ -848,24 +848,42 @@ const AnnualPlanning: React.FC = () => {
   }, [dialogYear, dialogOpen, dialogMacrocycle]);
 
   const fetchUsers = async () => {
-    if (!effectiveCoachId) {
-      console.log('No coach ID available, skipping user fetch');
-      return;
+    // Για admin mode: διαλέγει χρήστες που δεν έχουν coach_id (admin users)
+    // Για coach mode: διαλέγει χρήστες που ανήκουν σε αυτόν τον coach
+    if (isAdminUser && !coachIdFromUrl) {
+      // Admin mode - fetch users without coach_id (admin/global users)
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, email, avatar_url, photo_url')
+        .is('coach_id', null)
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching admin users:', error);
+        return;
+      }
+
+      setUsers(data || []);
+    } else {
+      // Coach mode - fetch athletes that belong to this coach
+      if (!effectiveCoachId) {
+        console.log('No coach ID available, skipping user fetch');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, email, avatar_url, photo_url')
+        .eq('coach_id', effectiveCoachId)
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching users:', error);
+        return;
+      }
+
+      setUsers(data || []);
     }
-
-    // Fetch athletes that belong to this coach
-    const { data, error } = await supabase
-      .from('app_users')
-      .select('id, name, email, avatar_url, photo_url')
-      .eq('coach_id', effectiveCoachId)
-      .order('name');
-
-    if (error) {
-      console.error('Error fetching users:', error);
-      return;
-    }
-
-    setUsers(data || []);
   };
 
   const fetchAssignedMacrocycles = async () => {
