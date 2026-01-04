@@ -304,6 +304,11 @@ export const assignmentService = {
                   throw new Error(`Σφάλμα δημιουργίας block: ${blockError.message}`);
                 }
 
+                if (!blockData || !blockData.id) {
+                  console.error('❌ Block data is null or missing id');
+                  throw new Error('Σφάλμα δημιουργίας block: Δεν επιστράφηκε ID');
+                }
+
                 console.log('✅ Block created:', blockData.id);
 
                 if (block.program_exercises && block.program_exercises.length > 0) {

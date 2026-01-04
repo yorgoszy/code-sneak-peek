@@ -236,6 +236,8 @@ export const coachAssignmentService = {
 
             if (day.program_blocks && day.program_blocks.length > 0) {
               for (const block of day.program_blocks) {
+                console.log('🧱 [CoachAssignmentService] Creating block:', block.name);
+                
                 const { data: blockData, error: blockError } = await supabase
                   .from('program_blocks')
                   .insert([{
@@ -251,8 +253,16 @@ export const coachAssignmentService = {
                   .single();
 
                 if (blockError) {
+                  console.error('❌ [CoachAssignmentService] Block creation error:', blockError);
                   throw new Error(`Σφάλμα δημιουργίας block: ${blockError.message}`);
                 }
+
+                if (!blockData || !blockData.id) {
+                  console.error('❌ [CoachAssignmentService] Block data is null or missing id');
+                  throw new Error('Σφάλμα δημιουργίας block: Δεν επιστράφηκε ID');
+                }
+
+                console.log('✅ [CoachAssignmentService] Block created with ID:', blockData.id);
 
                 if (block.program_exercises && block.program_exercises.length > 0) {
                   const sortedExercises = [...block.program_exercises].sort((a, b) => {

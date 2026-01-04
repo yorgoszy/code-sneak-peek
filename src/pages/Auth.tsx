@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useEffect } from "react";
 
 const Auth = () => {
@@ -19,6 +20,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
+  const { userProfile, isCoach, isAdmin, loading: roleLoading } = useRoleCheck();
 
   // Check for password recovery tokens and redirect to reset password page
   useEffect(() => {
@@ -58,11 +60,18 @@ const Auth = () => {
     // Check immediately
     const isRecovery = checkForRecoveryToken();
     
-    // Only redirect to dashboard if not a recovery and user is authenticated
-    if (!isRecovery && !loading && isAuthenticated) {
-      navigate("/dashboard");
+    // Only redirect if not a recovery and user is authenticated
+    if (!isRecovery && !loading && !roleLoading && isAuthenticated && userProfile) {
+      // Redirect based on role
+      if (isCoach() && !isAdmin()) {
+        console.log('🔐 Auth: Coach detected, redirecting to coach-overview');
+        navigate("/dashboard/coach-overview", { replace: true });
+      } else {
+        console.log('🔐 Auth: Redirecting to dashboard');
+        navigate("/dashboard", { replace: true });
+      }
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [isAuthenticated, loading, roleLoading, userProfile, isCoach, isAdmin, navigate]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -303,7 +312,7 @@ const Auth = () => {
     const email = formData.get("reset-email") as string;
 
     try {
-      const redirectUrl = `${window.location.origin}/auth/reset-password`;
+      const redirectUrl = 'https://www.hyperkids.gr/auth/reset-password';
       console.log('🔗 Password reset redirect URL:', redirectUrl);
       
       // Use our custom edge function instead of Supabase built-in
