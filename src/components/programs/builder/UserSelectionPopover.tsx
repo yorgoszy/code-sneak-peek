@@ -82,7 +82,7 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
           </div>
         </div>
 
-        <div className="max-h-48 overflow-y-auto space-y-1 p-2">
+        <div className="max-h-48 overflow-y-scroll overscroll-contain p-2 space-y-1" style={{ scrollbarWidth: 'thin' }}>
           {availableUsers.length === 0 ? (
             <div className="p-4 text-center text-sm text-gray-500">
               Όλοι οι χρήστες έχουν επιλεγεί

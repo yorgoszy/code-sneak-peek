@@ -116,7 +116,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           placeholder="Όνομα"
-          className="rounded-none h-6 text-[10px] w-[90px] md:w-[120px] border border-gray-300"
+          className="rounded-none h-6 text-[10px] w-[90px] md:w-[120px] border border-gray-300 placeholder:text-[8px]"
         />
         
         {/* User Search Popover - 20% width */}
