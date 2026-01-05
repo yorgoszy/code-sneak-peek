@@ -127,12 +127,13 @@ const Users = () => {
         return;
       }
       
-      // For admins: fetch admin users (no coach_id) and coach users separately
-      // Admin users - users without coach_id
+      // For admins: fetch admin users (with admin coach_id) and coach users separately
+      // Admin users - users with admin's coach_id
+      const ADMIN_COACH_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
       const { data: adminUsersData, error: adminError } = await supabase
         .from('app_users')
         .select('*')
-        .is('coach_id', null)
+        .eq('coach_id', ADMIN_COACH_ID)
         .order('created_at', { ascending: false });
       
       if (adminError) {
