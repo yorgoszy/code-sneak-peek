@@ -42,6 +42,8 @@ interface ProgramBuilderProps {
   onReorderDays: (weekId: string, oldIndex: number, newIndex: number) => void;
   onReorderBlocks: (weekId: string, dayId: string, oldIndex: number, newIndex: number) => void;
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
+  onSave?: () => Promise<void>;
+  onAssignments?: () => void;
   coachId?: string;
 }
 
@@ -82,6 +84,8 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onReorderDays,
   onReorderBlocks,
   onReorderExercises,
+  onSave,
+  onAssignments,
   coachId
 }) => {
   console.log('🔄 ProgramBuilder render - user_ids:', program.user_ids);
@@ -90,8 +94,12 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : undefined);
   console.log('🎯 ProgramBuilder - selectedUserId:', selectedUserId);
   
+  const canAssign = program.user_ids && program.user_ids.length > 0 && 
+                   program.training_dates && program.training_dates.length > 0 &&
+                   program.name?.trim();
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <ProgramBasicInfo
         name={program.name}
         description={program.description}
@@ -106,6 +114,9 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onGroupChange={onGroupChange}
         isMultipleMode={true}
         onToggleMode={onToggleAssignmentMode}
+        onSave={onSave}
+        onAssignments={onAssignments}
+        canAssign={!!canAssign}
         coachId={coachId}
       />
       
