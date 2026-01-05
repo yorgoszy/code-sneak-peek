@@ -141,11 +141,12 @@ const Users = () => {
         return;
       }
       
-      // Coach users - users with coach_id
+      // Coach users - users with coach_id that is NOT the admin's coach_id
       const { data: coachUsersData, error: coachError } = await supabase
         .from('app_users')
         .select('*')
         .not('coach_id', 'is', null)
+        .neq('coach_id', ADMIN_COACH_ID)
         .order('created_at', { ascending: false });
       
       if (coachError) {
