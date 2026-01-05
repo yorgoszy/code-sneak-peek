@@ -168,7 +168,7 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
   const previousStats = previousWeek ? calculateWeekMetrics(previousWeek) : null;
 
   return (
-    <div className="flex items-center gap-2 text-[9px] px-1 py-0.5">
+    <div className="flex items-center gap-2 text-[9px] px-1">
       <span className="font-medium text-blue-700">{currentStats.volume}tn</span>
       <span className="font-medium text-green-700">{currentStats.intensity}%</span>
       <span className="font-medium text-orange-700">{currentStats.watts}KW</span>
