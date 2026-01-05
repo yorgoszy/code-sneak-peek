@@ -108,26 +108,30 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   return (
     <div className="border rounded-none">
       {/* Compact header with week tabs inline */}
-      <div className="flex items-center justify-between p-1 border-b bg-gray-50">
+      <div className="flex items-start p-1 border-b bg-gray-50">
         {weeks.length > 0 ? (
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <Tabs value={activeWeek} onValueChange={setActiveWeek} className="flex-1">
-              <div className="flex items-center justify-between w-full">
-                <SortableContext items={weeks.map(week => week.id)} strategy={horizontalListSortingStrategy}>
-                  <WeekTabsHeader
-                    weeks={weeks}
-                    editingWeekId={editingWeekId}
-                    editingWeekName={editingWeekName}
-                    activeWeek={activeWeek}
-                    onWeekNameDoubleClick={handleWeekNameDoubleClick}
-                    onWeekNameSave={handleWeekNameSave}
-                    onWeekNameKeyPress={handleWeekNameKeyPress}
-                    setEditingWeekName={setEditingWeekName}
-                    onDuplicateWeek={onDuplicateWeek}
-                    onRemoveWeek={onRemoveWeek}
-                  />
-                </SortableContext>
-                <div className="flex items-center gap-0.5 ml-2">
+            <Tabs value={activeWeek} onValueChange={setActiveWeek} className="flex-1 min-w-0">
+              <div className="flex items-start gap-2 w-full">
+                {/* Scrollable weeks container */}
+                <div className="flex-1 min-w-0 overflow-x-auto">
+                  <SortableContext items={weeks.map(week => week.id)} strategy={horizontalListSortingStrategy}>
+                    <WeekTabsHeader
+                      weeks={weeks}
+                      editingWeekId={editingWeekId}
+                      editingWeekName={editingWeekName}
+                      activeWeek={activeWeek}
+                      onWeekNameDoubleClick={handleWeekNameDoubleClick}
+                      onWeekNameSave={handleWeekNameSave}
+                      onWeekNameKeyPress={handleWeekNameKeyPress}
+                      setEditingWeekName={setEditingWeekName}
+                      onDuplicateWeek={onDuplicateWeek}
+                      onRemoveWeek={onRemoveWeek}
+                    />
+                  </SortableContext>
+                </div>
+                {/* Fixed position buttons */}
+                <div className="flex flex-col gap-0.5 flex-shrink-0">
                   <Button onClick={onAddWeek} variant="outline" className="rounded-none h-5 px-1.5 text-[9px]" size="sm">
                     <Plus className="w-2.5 h-2.5 mr-0.5" />
                     Week
@@ -182,9 +186,9 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
             </Tabs>
           </DndContext>
         ) : (
-          <>
+          <div className="flex items-start justify-between w-full">
             <span className="text-[10px] text-gray-500">Πατήστε +Week για να ξεκινήσετε</span>
-            <div className="flex items-center gap-0.5">
+            <div className="flex flex-col gap-0.5 flex-shrink-0">
               <Button onClick={onAddWeek} variant="outline" className="rounded-none h-5 px-1.5 text-[9px]" size="sm">
                 <Plus className="w-2.5 h-2.5 mr-0.5" />
                 Week
@@ -199,7 +203,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                 Day
               </Button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

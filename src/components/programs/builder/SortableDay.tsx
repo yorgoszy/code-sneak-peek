@@ -48,7 +48,7 @@ export const SortableDay: React.FC<SortableDayProps> = (props) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative group">
+    <div ref={setNodeRef} style={style} className="relative group w-[350px] flex-shrink-0">
       <DayCard {...props} dragHandleProps={{ attributes, listeners }} />
     </div>
   );
