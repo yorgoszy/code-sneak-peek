@@ -44,19 +44,10 @@ export const useProgramBuilderActions = (
   };
 
   const handleToggleAssignmentMode = (isMultiple: boolean) => {
-    if (isMultiple) {
-      updateProgram({ 
-        is_multiple_assignment: true,
-        user_id: '', // Καθαρίζουμε την ατομική επιλογή
-        user_ids: program.user_ids || []
-      });
-    } else {
-      updateProgram({ 
-        is_multiple_assignment: false,
-        user_ids: [], // Καθαρίζουμε την πολλαπλή επιλογή
-        user_id: program.user_id || ''
-      });
-    }
+    // Διατηρούμε τους επιλεγμένους χρήστες όταν αλλάζει mode
+    updateProgram({ 
+      is_multiple_assignment: isMultiple
+    });
   };
 
   return {

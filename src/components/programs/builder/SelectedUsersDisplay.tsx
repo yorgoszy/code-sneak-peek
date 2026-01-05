@@ -20,10 +20,8 @@ export const SelectedUsersDisplay: React.FC<SelectedUsersDisplayProps> = ({
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  if (selectedUsers.length === 0) return null;
-
   return (
-    <div className="flex items-center gap-1 p-1 border rounded-none bg-gray-50">
+    <div className="flex items-center gap-1 p-1 border rounded-none bg-gray-50 min-h-[24px]">
       <div className="flex flex-wrap gap-0.5 flex-1">
         {selectedUsers.map(user => (
           <div
