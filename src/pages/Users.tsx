@@ -81,6 +81,10 @@ const Users = () => {
   // Coach users state (χρήστες που ανήκουν σε coaches)
   const [coachUsers, setCoachUsers] = useState<UserWithSubscription[]>([]);
   const [activeTab, setActiveTab] = useState<string>("admin-users");
+  
+  // Coaches for filter
+  const [coaches, setCoaches] = useState<Pick<AppUser, 'id' | 'name' | 'email' | 'avatar_url' | 'photo_url'>[]>([]);
+  const [coachFilter, setCoachFilter] = useState<string>("all");
 
   // Check for tablet size
   useEffect(() => {
@@ -146,6 +150,19 @@ const Users = () => {
       if (coachError) {
         console.error('❌ Error fetching coach users:', coachError);
         return;
+      }
+      
+      // Fetch coaches (users with role = 'coach')
+      const { data: coachesData, error: coachesError } = await supabase
+        .from('app_users')
+        .select('id, name, email, avatar_url, photo_url')
+        .eq('role', 'coach')
+        .order('name', { ascending: true });
+      
+      if (coachesError) {
+        console.error('❌ Error fetching coaches:', coachesError);
+      } else {
+        setCoaches(coachesData || []);
       }
 
       // Fetch subscription status for admin users
@@ -414,9 +431,16 @@ const Users = () => {
                           matchesSearchTerm(user.email, searchTerm);
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     const matchesSubscription = subscriptionFilter === "all" || user.subscription_status === subscriptionFilter;
+    const matchesCoach = coachFilter === "all" || user.coach_id === coachFilter;
     
-    return matchesSearch && matchesRole && matchesSubscription;
+    return matchesSearch && matchesRole && matchesSubscription && matchesCoach;
   });
+
+  // Helper to get coach info by id
+  const getCoachInfo = (coachId: string | undefined) => {
+    if (!coachId) return null;
+    return coaches.find(c => c.id === coachId);
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -921,7 +945,7 @@ const Users = () => {
                     </div>
                     
                     {/* Search and Filters for Coach Users */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-4 mt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 mt-4">
                       <div className="relative">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
@@ -931,6 +955,30 @@ const Users = () => {
                           className="pl-10 text-sm"
                         />
                       </div>
+                      
+                      {/* Coach Filter */}
+                      <Select value={coachFilter} onValueChange={setCoachFilter}>
+                        <SelectTrigger className="text-sm">
+                          <Filter className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Φίλτρο Coach" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Όλοι οι Coaches</SelectItem>
+                          {coaches.map((coach) => (
+                            <SelectItem key={coach.id} value={coach.id}>
+                              <div className="flex items-center gap-2">
+                                <Avatar className="w-5 h-5">
+                                  <AvatarImage src={coach.avatar_url || coach.photo_url} alt={coach.name} />
+                                  <AvatarFallback className="text-[8px]">
+                                    {coach.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="truncate">{coach.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       
                       <Select value={roleFilter} onValueChange={setRoleFilter}>
                         <SelectTrigger className="text-sm">
@@ -945,7 +993,7 @@ const Users = () => {
                       </Select>
                       
                       <Select value={subscriptionFilter} onValueChange={setSubscriptionFilter}>
-                        <SelectTrigger className="text-sm sm:col-span-2 lg:col-span-1">
+                        <SelectTrigger className="text-sm">
                           <Filter className="h-4 w-4 mr-2" />
                           <SelectValue placeholder="Κατάσταση συνδρομής" />
                         </SelectTrigger>
@@ -1008,9 +1056,30 @@ const Users = () => {
                                     </span>
                                   </TableCell>
                                   <TableCell>
-                                    <span className="px-2 py-1 text-xs rounded bg-[#00ffba]/20 text-[#00ffba]">
-                                      Coach User
-                                    </span>
+                                    {(() => {
+                                      const coach = getCoachInfo(user.coach_id);
+                                      if (coach) {
+                                        return (
+                                          <div className="flex items-center gap-2">
+                                            <Avatar className="w-6 h-6">
+                                              <AvatarImage src={coach.avatar_url || coach.photo_url} alt={coach.name} />
+                                              <AvatarFallback className="text-[8px]">
+                                                {coach.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                            <div className="min-w-0">
+                                              <div className="text-xs font-medium truncate">{coach.name}</div>
+                                              <div className="text-[10px] text-gray-500 truncate">{coach.email}</div>
+                                            </div>
+                                          </div>
+                                        );
+                                      }
+                                      return (
+                                        <span className="px-2 py-1 text-xs rounded bg-[#00ffba]/20 text-[#00ffba]">
+                                          Coach User
+                                        </span>
+                                      );
+                                    })()}
                                   </TableCell>
                                   <TableCell>
                                     <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
@@ -1065,9 +1134,27 @@ const Users = () => {
                                     <span className={`px-2 py-1 text-xs rounded ${getRoleColor(user.role)}`}>
                                       {user.role}
                                     </span>
-                                    <span className="px-2 py-1 text-xs rounded bg-[#00ffba]/20 text-[#00ffba]">
-                                      Coach User
-                                    </span>
+                                    {(() => {
+                                      const coach = getCoachInfo(user.coach_id);
+                                      if (coach) {
+                                        return (
+                                          <div className="flex items-center gap-1 px-2 py-1 text-xs rounded bg-[#00ffba]/10">
+                                            <Avatar className="w-4 h-4">
+                                              <AvatarImage src={coach.avatar_url || coach.photo_url} alt={coach.name} />
+                                              <AvatarFallback className="text-[6px]">
+                                                {coach.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                            <span className="text-[10px] text-[#00ffba] truncate max-w-[80px]">{coach.name}</span>
+                                          </div>
+                                        );
+                                      }
+                                      return (
+                                        <span className="px-2 py-1 text-xs rounded bg-[#00ffba]/20 text-[#00ffba]">
+                                          Coach User
+                                        </span>
+                                      );
+                                    })()}
                                     <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
                                       {user.subscription_status}
                                     </span>
