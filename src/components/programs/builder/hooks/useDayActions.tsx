@@ -111,9 +111,33 @@ export const useDayActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          program_days: (week.program_days || []).map(day =>
-            day.id === dayId ? { ...day, is_test_day: isTestDay, test_types: testTypes } : day
-          )
+          program_days: (week.program_days || []).map(day => {
+            if (day.id !== dayId) return day;
+
+            const original = day.original_day_name ?? day.name;
+
+            // Enable: save original name (once) + set label name
+            if (isTestDay) {
+              return {
+                ...day,
+                original_day_name: original,
+                name: 'Ημέρα Τεστ',
+                is_test_day: true,
+                test_types: testTypes,
+                // mutual exclusive
+                is_competition_day: false
+              };
+            }
+
+            // Disable: restore original name
+            return {
+              ...day,
+              name: day.original_day_name ?? day.name,
+              original_day_name: undefined,
+              is_test_day: false,
+              test_types: testTypes
+            };
+          })
         };
       }
       return week;
@@ -126,9 +150,32 @@ export const useDayActions = (
       if (week.id === weekId) {
         return {
           ...week,
-          program_days: (week.program_days || []).map(day =>
-            day.id === dayId ? { ...day, is_competition_day: isCompetitionDay } : day
-          )
+          program_days: (week.program_days || []).map(day => {
+            if (day.id !== dayId) return day;
+
+            const original = day.original_day_name ?? day.name;
+
+            // Enable: save original name (once) + set label name
+            if (isCompetitionDay) {
+              return {
+                ...day,
+                original_day_name: original,
+                name: 'Ημέρα Αγώνα',
+                is_competition_day: true,
+                // mutual exclusive
+                is_test_day: false,
+                test_types: []
+              };
+            }
+
+            // Disable: restore original name
+            return {
+              ...day,
+              name: day.original_day_name ?? day.name,
+              original_day_name: undefined,
+              is_competition_day: false
+            };
+          })
         };
       }
       return week;

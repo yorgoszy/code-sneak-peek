@@ -50,6 +50,8 @@ export interface Block {
 export interface Day {
   id: string;
   name: string;
+  /** Builder-only helper: restore name after toggling Test/Competition */
+  original_day_name?: string;
   day_number: number;
   estimated_duration_minutes?: number;
   is_test_day?: boolean;
