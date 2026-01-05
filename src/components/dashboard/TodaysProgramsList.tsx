@@ -63,8 +63,7 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
         return (
           <div 
             key={assignment.id}
-            onClick={() => onProgramClick(assignment)}
-            className="flex items-center justify-between p-2 border border-gray-200 rounded-none hover:bg-gray-50 h-12 cursor-pointer"
+            className="flex items-center justify-between p-2 border border-gray-200 rounded-none hover:bg-gray-50 h-12"
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <Avatar className="w-8 h-8 flex-shrink-0">
