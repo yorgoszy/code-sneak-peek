@@ -66,7 +66,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
   };
 
   return (
-    <div className="flex p-2 gap-0 w-full" style={{ minHeight: '28px' }}>
+    <div className="flex px-2 py-0 gap-0 w-full" style={{ minHeight: '28px' }}>
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
         <label 
           className="block mb-1 text-center w-full cursor-pointer hover:text-[#00ffba]" 
