@@ -154,7 +154,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
       <div className="flex items-center gap-2 flex-wrap">
 
         <Select value={workoutFormat || 'none'} onValueChange={(value) => onWorkoutFormatChange(value === 'none' ? '' : value)}>
-          <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[90px]" onClick={(e) => e.stopPropagation()}>
+          <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[110px]" onClick={(e) => e.stopPropagation()}>
             <SelectValue placeholder="Format" />
           </SelectTrigger>
           <SelectContent className="rounded-none bg-white z-50">
@@ -176,7 +176,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
               onWorkoutDurationChange(formatted);
             }}
             placeholder="00:00"
-            className="h-6 w-[50px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
+            className="h-6 w-[70px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
             onClick={(e) => e.stopPropagation()}
           />
         )}
