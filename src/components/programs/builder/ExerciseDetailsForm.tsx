@@ -202,7 +202,7 @@ export const ExerciseDetailsForm: React.FC<ExerciseDetailsFormProps> = ({
         />
       </div>
       
-      <div className="flex flex-col items-center" style={{ width: '51px' }}>
+      <div className="flex flex-col items-center" style={{ width: '52px' }}>
         <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
         <Input
           value={formatTimeInput(String(exercise.rest || ''))}
