@@ -12,13 +12,15 @@ interface ProgramsForDateCardProps {
   programsForSelectedDate: EnrichedAssignment[];
   onRefresh: () => void;
   onDelete: (assignmentId: string) => void;
+  onProgramClick?: (assignment: EnrichedAssignment) => void;
 }
 
 export const ProgramsForDateCard: React.FC<ProgramsForDateCardProps> = ({
   selectedDate,
   programsForSelectedDate,
   onRefresh,
-  onDelete
+  onDelete,
+  onProgramClick
 }) => {
   const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
@@ -83,6 +85,7 @@ export const ProgramsForDateCard: React.FC<ProgramsForDateCardProps> = ({
               onRefresh={onRefresh}
               onDelete={onDelete}
               workoutStats={calculateProgramStats(assignment)}
+              onCardClick={onProgramClick ? () => onProgramClick(assignment) : undefined}
             />
           ))}
         </div>

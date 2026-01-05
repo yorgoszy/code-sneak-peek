@@ -5,9 +5,10 @@ import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCardUserInfoProps {
   assignment: EnrichedAssignment;
+  onClick?: () => void;
 }
 
-export const ProgramCardUserInfo: React.FC<ProgramCardUserInfoProps> = ({ assignment }) => {
+export const ProgramCardUserInfo: React.FC<ProgramCardUserInfoProps> = ({ assignment, onClick }) => {
   const userName = assignment.app_users?.name || 'Άγνωστος χρήστης';
   
   const getUserInitials = (name: string) => {
@@ -22,7 +23,10 @@ export const ProgramCardUserInfo: React.FC<ProgramCardUserInfoProps> = ({ assign
   const photoUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
 
   return (
-    <div className="flex items-center gap-1 flex-1 min-w-0">
+    <div 
+      className={`flex items-center gap-1 flex-1 min-w-0 ${onClick ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+      onClick={onClick}
+    >
       <Avatar className="w-6 h-6 flex-shrink-0 rounded-full">
         <AvatarImage 
           src={photoUrl || undefined} 
