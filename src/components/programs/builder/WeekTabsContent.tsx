@@ -92,7 +92,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                   items={week.program_days.map(d => d.id)} 
                   strategy={rectSortingStrategy}
                 >
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+                  <div className="flex gap-2 overflow-x-auto pb-2">
                     {week.program_days.map((day) => (
                       <SortableDay
                         key={day.id}
