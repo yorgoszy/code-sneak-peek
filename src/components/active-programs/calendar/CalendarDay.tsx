@@ -101,8 +101,11 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           return (
             <div 
               key={userKey}
-              className={`text-xs cursor-pointer hover:underline truncate w-full text-left flex items-center gap-1 ${colorClass}`}
-              onClick={(e) => onUserNameClick(program, e)}
+              className={`text-xs cursor-pointer hover:underline truncate w-full text-left flex items-center gap-1 py-1 ${colorClass}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onUserNameClick(program, e);
+              }}
             >
               <span className="truncate">{program.userName.split(' ')[0]}</span>
               {program.status === 'completed' && program.rpeScore && (
