@@ -45,6 +45,7 @@ interface ProgramBuilderDialogContentProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onSave: () => Promise<void>;
   onAssignments: () => void;
+  onClose?: () => void;
   onTrainingDatesChange: (dates: Date[]) => void;
   getTotalTrainingDays: () => number;
   coachId?: string;
@@ -88,6 +89,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onReorderExercises,
   onSave,
   onAssignments,
+  onClose,
   onTrainingDatesChange,
   getTotalTrainingDays,
   coachId
@@ -134,6 +136,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onReorderExercises={onReorderExercises}
             onSave={onSave}
             onAssignments={onAssignments}
+            onClose={onClose}
             coachId={coachId}
           />
 

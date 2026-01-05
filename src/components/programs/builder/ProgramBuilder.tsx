@@ -44,6 +44,7 @@ interface ProgramBuilderProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onSave?: () => Promise<void>;
   onAssignments?: () => void;
+  onClose?: () => void;
   coachId?: string;
 }
 
@@ -86,6 +87,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onReorderExercises,
   onSave,
   onAssignments,
+  onClose,
   coachId
 }) => {
   console.log('🔄 ProgramBuilder render - user_ids:', program.user_ids);
@@ -116,6 +118,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onToggleMode={onToggleAssignmentMode}
         onSave={onSave}
         onAssignments={onAssignments}
+        onClose={onClose}
         canAssign={!!canAssign}
         coachId={coachId}
       />

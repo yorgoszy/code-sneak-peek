@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User, Users, Save, Plus, Check, Search } from "lucide-react";
+import { User, Users, Save, Plus, Check, Search, X } from "lucide-react";
 import { matchesSearchTerm } from "@/lib/utils";
 import { SelectedUsersDisplay } from './SelectedUsersDisplay';
 import { GroupSelection } from './GroupSelection';
@@ -26,6 +26,7 @@ interface ProgramBasicInfoProps {
   onToggleMode?: (isMultiple: boolean) => void;
   onSave?: () => Promise<void>;
   onAssignments?: () => void;
+  onClose?: () => void;
   canAssign?: boolean;
   coachId?: string;
 }
@@ -40,6 +41,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   onGroupChange,
   onSave,
   onAssignments,
+  onClose,
   canAssign = false,
   coachId
 }) => {
@@ -241,6 +243,16 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
               className="h-5 px-1.5 text-[9px] rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
             >
               <Users className="w-2.5 h-2.5" />
+            </Button>
+          )}
+          {onClose && (
+            <Button
+              onClick={onClose}
+              variant="destructive"
+              size="sm"
+              className="h-5 px-1.5 text-[9px] rounded-none"
+            >
+              <X className="w-2.5 h-2.5" />
             </Button>
           )}
         </div>
