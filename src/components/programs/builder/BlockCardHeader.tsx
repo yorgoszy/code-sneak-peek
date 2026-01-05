@@ -93,32 +93,25 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
       <div className="flex justify-between items-center">
         <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-600 p-1 rounded">
           {isOpen ? <ChevronDown className="w-3 h-3 text-white" /> : <ChevronRight className="w-3 h-3 text-white" />}
-          <h6 
-            className="text-xs font-medium cursor-pointer flex items-center gap-2 text-white"
-            onDoubleClick={onNameDoubleClick}
-          >
-            {isEditing ? (
-              <input
-                type="text"
-                value={editingName}
-                onChange={(e) => onEditingNameChange(e.target.value)}
-                onBlur={onNameSave}
-                onKeyDown={onNameKeyPress}
-                className="bg-transparent border border-gray-300 rounded px-1 outline-none text-xs text-white"
-                autoFocus
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
-              <>
-                {blockName}
-                {!isOpen && exercisesCount > 0 && (
-                  <span className="text-xs bg-gray-500 px-2 py-1 rounded-full text-white">
-                    {exercisesCount}
-                  </span>
-                )}
-              </>
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <Select value={trainingType || ''} onValueChange={onTrainingTypeChange}>
+              <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[100px]">
+                <SelectValue placeholder="Τύπος" />
+              </SelectTrigger>
+              <SelectContent className="rounded-none bg-white z-50">
+                {Object.entries(TRAINING_TYPE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value} className="text-xs">
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {!isOpen && exercisesCount > 0 && (
+              <span className="text-xs bg-gray-500 px-2 py-1 rounded-full text-white">
+                {exercisesCount}
+              </span>
             )}
-          </h6>
+          </div>
         </CollapsibleTrigger>
         <div className="flex gap-1">
           <Button
@@ -159,18 +152,6 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
       
       {/* Training Type, Workout Format and Sets - inline compact */}
       <div className="flex items-center gap-2 flex-wrap">
-        <Select value={trainingType || ''} onValueChange={onTrainingTypeChange}>
-          <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[100px]" onClick={(e) => e.stopPropagation()}>
-            <SelectValue placeholder="Τύπος" />
-          </SelectTrigger>
-          <SelectContent className="rounded-none bg-white z-50">
-            {Object.entries(TRAINING_TYPE_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value} className="text-xs">
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         <Select value={workoutFormat || 'none'} onValueChange={(value) => onWorkoutFormatChange(value === 'none' ? '' : value)}>
           <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[90px]" onClick={(e) => e.stopPropagation()}>
