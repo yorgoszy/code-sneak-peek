@@ -19,12 +19,25 @@ export const useProgramSave = () => {
       });
 
       // 🔍 ΑΝΑΛΥΣΗ ΑΣΚΗΣΕΩΝ ΠΡΙΝ ΤΗΝ ΑΠΟΘΗΚΕΥΣΗ
-      // Χρησιμοποιούμε το weeks αν έχει στοιχεία, αλλιώς το program_weeks
-      const weeks = (programData.weeks && programData.weeks.length > 0) 
-        ? programData.weeks 
-        : (programData.program_weeks || []);
+      // ΚΡΙΤΙΚΟ: Χρησιμοποιούμε program_weeks αν υπάρχει και έχει δεδομένα, αλλιώς weeks
+      // Αυτό είναι σημαντικό γιατί τα δεδομένα από τη βάση έρχονται ως program_weeks
+      let weeks: any[] = [];
       
-      console.log('🔍 [SAVE] Using weeks source:', programData.weeks?.length > 0 ? 'weeks' : 'program_weeks');
+      // Πρώτη προτεραιότητα: weeks αν έχει δεδομένα
+      if (programData.weeks && Array.isArray(programData.weeks) && programData.weeks.length > 0) {
+        weeks = programData.weeks;
+        console.log('🔍 [SAVE] Using weeks source: weeks array');
+      } 
+      // Δεύτερη προτεραιότητα: program_weeks αν έχει δεδομένα
+      else if (programData.program_weeks && Array.isArray(programData.program_weeks) && programData.program_weeks.length > 0) {
+        weeks = programData.program_weeks;
+        console.log('🔍 [SAVE] Using weeks source: program_weeks array');
+      }
+      // Αν δεν υπάρχουν weeks, σημαίνει ότι το πρόγραμμα δεν έχει δομή - ΔΕΝ ΑΠΟΘΗΚΕΥΟΥΜΕ
+      else {
+        console.warn('⚠️ [SAVE] No weeks data found - this will only update program metadata, NOT structure');
+      }
+      
       console.log('🔍 [SAVE] Weeks count:', weeks.length);
       console.log('🔍 [SAVE ANALYSIS] Program structure before save:');
       weeks.forEach((week, weekIndex) => {
@@ -132,9 +145,14 @@ export const useProgramSave = () => {
               .eq('program_id', programData.id);
           }
 
-          // ΠΑΝΤΑ διαγράφουμε την υπάρχουσα δομή πριν δημιουργήσουμε νέα
-          console.log('🔄 Deleting existing structure before recreation...');
-          await deleteExistingStructure(programData.id);
+          // ΚΡΙΤΙΚΟ: Διαγράφουμε την υπάρχουσα δομή ΜΟΝΟ αν έχουμε νέα weeks για αποθήκευση
+          // Αυτό αποτρέπει τη διαγραφή της δομής αν η αποθήκευση είναι μόνο για metadata
+          if (weeks && weeks.length > 0) {
+            console.log('🔄 Deleting existing structure before recreation (have', weeks.length, 'weeks to save)...');
+            await deleteExistingStructure(programData.id);
+          } else {
+            console.log('⚠️ No weeks to save - keeping existing structure intact');
+          }
         } else {
           // Το πρόγραμμα δεν υπάρχει, δημιουργούμε νέο
           console.log('📝 Program not found, creating new one');
