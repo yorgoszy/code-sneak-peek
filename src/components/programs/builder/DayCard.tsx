@@ -65,6 +65,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(day.name);
+  const [originalName, setOriginalName] = useState<string | null>(null);
 
   const handleNameDoubleClick = () => {
     setIsEditing(true);
@@ -85,6 +86,50 @@ export const DayCard: React.FC<DayCardProps> = ({
       setIsEditing(false);
       setEditingName(day.name);
     }
+  };
+
+  const handleToggleTestDay = () => {
+    const newIsTestDay = !day.is_test_day;
+    if (newIsTestDay) {
+      // Αποθήκευσε το αρχικό όνομα και μετονόμασε
+      if (!originalName) {
+        setOriginalName(day.name);
+      }
+      onUpdateDayName('Ημέρα Τεστ');
+      // Απενεργοποίησε τον αγώνα αν είναι ενεργός
+      if (day.is_competition_day) {
+        onUpdateDayCompetitionDay(false);
+      }
+    } else {
+      // Επαναφορά του αρχικού ονόματος
+      if (originalName) {
+        onUpdateDayName(originalName);
+        setOriginalName(null);
+      }
+    }
+    onUpdateDayTestDay(newIsTestDay, day.test_types || []);
+  };
+
+  const handleToggleCompetitionDay = () => {
+    const newIsCompetitionDay = !day.is_competition_day;
+    if (newIsCompetitionDay) {
+      // Αποθήκευσε το αρχικό όνομα και μετονόμασε
+      if (!originalName) {
+        setOriginalName(day.name);
+      }
+      onUpdateDayName('Ημέρα Αγώνα');
+      // Απενεργοποίησε το τεστ αν είναι ενεργό
+      if (day.is_test_day) {
+        onUpdateDayTestDay(false, []);
+      }
+    } else {
+      // Επαναφορά του αρχικού ονόματος
+      if (originalName) {
+        onUpdateDayName(originalName);
+        setOriginalName(null);
+      }
+    }
+    onUpdateDayCompetitionDay(newIsCompetitionDay);
   };
 
   const blocksCount = day.program_blocks?.length || 0;
@@ -115,8 +160,8 @@ export const DayCard: React.FC<DayCardProps> = ({
           onAddBlock={onAddBlock}
           onDuplicateDay={onDuplicateDay}
           onRemoveDay={onRemoveDay}
-          onToggleTestDay={() => onUpdateDayTestDay(!day.is_test_day, day.test_types || [])}
-          onToggleCompetitionDay={() => onUpdateDayCompetitionDay(!day.is_competition_day)}
+          onToggleTestDay={handleToggleTestDay}
+          onToggleCompetitionDay={handleToggleCompetitionDay}
         />
         
         {isOpen && (
