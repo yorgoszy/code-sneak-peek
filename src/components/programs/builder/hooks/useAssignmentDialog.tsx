@@ -64,9 +64,10 @@ export const useAssignmentDialog = (
       const allWorkoutCompletions = [];
 
       // Δημιουργία assignments για κάθε χρήστη
-      for (const userId of userIds) {
+      for (let i = 0; i < userIds.length; i++) {
+        const userId = userIds[i];
         console.log(`👤 [useAssignmentDialog] Processing assignment for user: ${userId}`);
-        
+
         // 🔄 Αν το πρόγραμμα είναι template, επεξεργαζόμαστε copy για κάθε χρήστη
         let processedProgram = programToUse;
         if ((program as any).is_template) {
@@ -75,7 +76,7 @@ export const useAssignmentDialog = (
           processedProgram = await processTemplateForUser(programCopyForUser, userId);
           console.log(`✅ [useAssignmentDialog] Copy processed for user ${userId}`);
         }
-        
+
         const trainingDatesStrings = trainingDates.map(date => {
           const localDate = new Date(date);
           localDate.setHours(12, 0, 0, 0);
@@ -86,8 +87,10 @@ export const useAssignmentDialog = (
 
         const assignmentData = {
           program: processedProgram,
-          userId: userId,
-          trainingDates: trainingDatesStrings
+          userId,
+          trainingDates: trainingDatesStrings,
+          // ✅ speed + reliability: structure is created once (first user) then reused
+          skipStructureRecreation: i > 0,
         };
 
         console.log(`🔄 [useAssignmentDialog] Creating assignment for user ${userId}...`);

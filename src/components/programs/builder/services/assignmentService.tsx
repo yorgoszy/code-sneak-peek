@@ -3,6 +3,31 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDateToLocalString } from '@/utils/dateUtils';
 import { parseNumberWithComma } from '@/utils/timeCalculations';
 
+type BuilderWeek = any;
+
+/**
+ * Normalizes builder structure to ensure required ordering fields exist.
+ * This prevents partial structure creation when week_number/day_number/etc are missing.
+ */
+const normalizeWeeks = (weeks: BuilderWeek[]): BuilderWeek[] => {
+  return (weeks || []).map((week: any, wIdx: number) => {
+    const week_number = Number(week.week_number ?? wIdx + 1);
+    const program_days = (week.program_days || []).map((day: any, dIdx: number) => {
+      const day_number = Number(day.day_number ?? dIdx + 1);
+      const program_blocks = (day.program_blocks || []).map((block: any, bIdx: number) => {
+        const block_order = Number(block.block_order ?? bIdx + 1);
+        const program_exercises = (block.program_exercises || []).map((ex: any, eIdx: number) => ({
+          ...ex,
+          exercise_order: Number(ex.exercise_order ?? eIdx + 1),
+        }));
+        return { ...block, block_order, program_exercises };
+      });
+      return { ...day, day_number, program_blocks };
+    });
+    return { ...week, week_number, program_days };
+  });
+};
+
 export const assignmentService = {
   async saveAssignment(assignmentData: any) {
     try {
@@ -150,19 +175,22 @@ export const assignmentService = {
 
   async ensureProgramStructureExists(program: any) {
     console.log('🏗️ [AssignmentService] Checking program structure for:', program.id);
-    
+
     try {
+      // ✅ Normalize to avoid missing week_number/day_number causing partial insert failures
+      const normalizedWeeks = normalizeWeeks(program.weeks || []);
+
       // ΚΡΙΤΙΚΗ ΔΙΟΡΘΩΣΗ: Πάντα διαγράφουμε και ξαναδημιουργούμε τη δομή
       // για να διασφαλίσουμε ότι οι αλλαγές αποθηκεύονται σωστά
       console.log('🗑️ [AssignmentService] Deleting existing structure and recreating...');
-      
+
       // Διαγραφή υπάρχουσας δομής
       await this.deleteExistingStructure(program.id);
-      
+
       // Δημιουργία νέας δομής από τον builder
-      if (program.weeks && program.weeks.length > 0) {
-        console.log('🏗️ [AssignmentService] Creating new structure with', program.weeks.length, 'weeks');
-        await this.createProgramStructure(program.id, program.weeks);
+      if (normalizedWeeks.length > 0) {
+        console.log('🏗️ [AssignmentService] Creating new structure with', normalizedWeeks.length, 'weeks');
+        await this.createProgramStructure(program.id, normalizedWeeks);
         console.log('✅ [AssignmentService] Program structure recreated successfully');
       } else {
         throw new Error('Το πρόγραμμα δεν έχει δομή εβδομάδων');
