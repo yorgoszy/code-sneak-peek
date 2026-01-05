@@ -84,9 +84,9 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
         return dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
       });
 
-      console.log('📅 Formatted training dates:', trainingDatesStrings);
-
       // 3. Δημιουργία αναθέσεων
+      const isTemplate = !!(program as any).is_template;
+      
       if (program.is_multiple_assignment && program.user_ids) {
         // Πολλαπλή ανάθεση
         console.log('👥 Δημιουργία πολλαπλών αναθέσεων...');
@@ -95,15 +95,28 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
         const assignments = [];
         for (let i = 0; i < program.user_ids.length; i++) {
           const userId = program.user_ids[i];
+          
+          // Για templates: κάθε χρήστης χρειάζεται δικό του program
+          let programForUser = savedProgram;
+          if (isTemplate) {
+            console.log(`🎯 Creating unique program for user ${userId} (template mode)...`);
+            const userProgram = await programService.saveProgram({
+              ...program,
+              name: `${program.name} - ${userId.slice(0, 8)}`,
+            });
+            programForUser = userProgram;
+          }
+          
           const assignmentData = {
             program: {
-              ...savedProgram,
+              ...programForUser,
               weeks: program.weeks
             },
             userId,
             trainingDates: trainingDatesStrings,
-            // ✅ speed + reliability: structure is created once (first user) then reused
-            skipStructureRecreation: i > 0,
+            // Για templates: κάθε χρήστης έχει δικό του program, άρα ΠΑΝΤΑ δημιουργία δομής
+            // Για μη-templates: skip μετά τον πρώτο (ίδιο program για όλους)
+            skipStructureRecreation: !isTemplate && i > 0,
           };
 
           console.log('📋 Creating assignment for user:', userId);
@@ -115,7 +128,7 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
             console.log('📊 Δημιουργία workout completions για χρήστη:', userId);
             await workoutCompletionService.createWorkoutCompletions(
               assignment[0],
-              savedProgram,
+              programForUser,
               userId,
               trainingDatesStrings,
               program
