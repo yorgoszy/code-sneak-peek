@@ -6,8 +6,6 @@ import { GripVertical } from "lucide-react";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
 import { DayCalculations } from './DayCalculations';
-import { TestDaySelector } from './TestDaySelector';
-import { CompetitionDaySelector } from './CompetitionDaySelector';
 import { Exercise, Day } from '../types';
 
 interface DayCardProps {
@@ -105,6 +103,7 @@ export const DayCard: React.FC<DayCardProps> = ({
         <DayCardHeader
           dayName={day.name}
           isTestDay={day.is_test_day || false}
+          isCompetitionDay={day.is_competition_day || false}
           isOpen={isOpen}
           isEditing={isEditing}
           editingName={editingName}
@@ -116,23 +115,12 @@ export const DayCard: React.FC<DayCardProps> = ({
           onAddBlock={onAddBlock}
           onDuplicateDay={onDuplicateDay}
           onRemoveDay={onRemoveDay}
+          onToggleTestDay={() => onUpdateDayTestDay(!day.is_test_day, day.test_types || [])}
+          onToggleCompetitionDay={() => onUpdateDayCompetitionDay(!day.is_competition_day)}
         />
         
         {isOpen && (
-          <>
-            <TestDaySelector
-              isTestDay={day.is_test_day || false}
-              selectedTestTypes={day.test_types || []}
-              onTestDayChange={(isTestDay) => onUpdateDayTestDay(isTestDay, day.test_types || [])}
-              onTestTypesChange={(testTypes) => onUpdateDayTestDay(day.is_test_day || false, testTypes)}
-            />
-            
-            <CompetitionDaySelector
-              isCompetitionDay={day.is_competition_day || false}
-              onCompetitionDayChange={onUpdateDayCompetitionDay}
-            />
-            
-            <DayCardContent
+          <DayCardContent
             blocks={day.program_blocks || []}
             exercises={exercises}
             selectedUserId={selectedUserId}
@@ -150,7 +138,6 @@ export const DayCard: React.FC<DayCardProps> = ({
             onReorderBlocks={onReorderBlocks}
             onReorderExercises={onReorderExercises}
           />
-          </>
         )}
         
         <DayCalculations 

@@ -3,11 +3,12 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Dumbbell, Trophy } from "lucide-react";
 
 interface DayCardHeaderProps {
   dayName: string;
   isTestDay: boolean;
+  isCompetitionDay: boolean;
   isOpen: boolean;
   isEditing: boolean;
   editingName: string;
@@ -19,11 +20,14 @@ interface DayCardHeaderProps {
   onAddBlock: () => void;
   onDuplicateDay: () => void;
   onRemoveDay: () => void;
+  onToggleTestDay: () => void;
+  onToggleCompetitionDay: () => void;
 }
 
 export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   dayName,
   isTestDay,
+  isCompetitionDay,
   isOpen,
   isEditing,
   editingName,
@@ -34,7 +38,9 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onNameKeyPress,
   onAddBlock,
   onDuplicateDay,
-  onRemoveDay
+  onRemoveDay,
+  onToggleTestDay,
+  onToggleCompetitionDay
 }) => {
   return (
     <CardHeader className="py-1 px-2">
@@ -59,11 +65,6 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             ) : (
               <>
                 {dayName}
-                {isTestDay && (
-                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                    Τεστ
-                  </span>
-                )}
                 {!isOpen && blocksCount > 0 && (
                   <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
                     {blocksCount}
@@ -73,7 +74,40 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             )}
           </CardTitle>
         </CollapsibleTrigger>
-        <div className="flex gap-1">
+        
+        <div className="flex items-center gap-1">
+          {/* Test Day Icon */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleTestDay();
+            }}
+            className={`p-1.5 rounded transition-colors ${
+              isTestDay 
+                ? 'text-yellow-600 bg-yellow-100' 
+                : 'text-gray-300 hover:text-yellow-500 hover:bg-yellow-50'
+            }`}
+            title="Ημέρα Τεστ"
+          >
+            <Dumbbell className="w-4 h-4" />
+          </button>
+          
+          {/* Competition Day Icon */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleCompetitionDay();
+            }}
+            className={`p-1.5 rounded transition-colors ${
+              isCompetitionDay 
+                ? 'text-purple-600 bg-purple-100' 
+                : 'text-gray-300 hover:text-purple-500 hover:bg-purple-50'
+            }`}
+            title="Ημέρα Αγώνα"
+          >
+            <Trophy className="w-4 h-4" />
+          </button>
+          
           <Button
             onClick={(e) => {
               e.stopPropagation();
