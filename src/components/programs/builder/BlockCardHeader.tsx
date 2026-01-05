@@ -60,7 +60,7 @@ const TRAINING_TYPE_LABELS: Record<string, string> = {
 };
 
 const WORKOUT_FORMAT_LABELS: Record<string, string> = {
-  time_cap: 'Time Cap',
+  non_stop: 'Non Stop',
   emom: 'EMOM',
   for_time: 'For Time',
   amrap: 'AMRAP',

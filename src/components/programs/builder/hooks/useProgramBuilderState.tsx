@@ -46,7 +46,7 @@ export interface Block {
     | 'recovery'
     | 'accessory'
     | 'rotational';
-  workout_format?: 'time_cap' | 'emom' | 'for_time' | 'amrap';
+  workout_format?: 'non_stop' | 'emom' | 'for_time' | 'amrap';
   workout_duration?: string;
   block_sets?: number;
   program_exercises: ProgramExercise[];
