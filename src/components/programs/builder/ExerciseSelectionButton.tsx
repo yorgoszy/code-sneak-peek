@@ -25,7 +25,7 @@ export const ExerciseSelectionButton: React.FC<ExerciseSelectionButtonProps> = (
   const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
 
   return (
-    <div className="p-2 border-b bg-gray-100 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
+    <div className="px-2 py-0 border-b bg-gray-100 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
       <Button
         variant="outline"
         size="sm"
