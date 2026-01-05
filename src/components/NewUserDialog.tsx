@@ -74,8 +74,12 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
       if (photoUrl) userData.photo_url = photoUrl;
       
       // If creator is a coach, assign the new user to them
+      // If creator is admin, assign the admin's ID as coach_id
       if (isCoach() && !isAdmin() && userProfile?.id) {
         userData.coach_id = userProfile.id;
+      } else if (isAdmin()) {
+        // Admin ID - all admin users get this as their coach_id
+        userData.coach_id = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
       }
 
       const { data: newUser, error } = await supabase
