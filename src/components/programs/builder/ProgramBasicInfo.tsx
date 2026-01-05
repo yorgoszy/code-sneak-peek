@@ -110,13 +110,13 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   return (
     <div className="space-y-1">
       {/* Row 1: Program Name, User Search, Mode Buttons, Action Buttons */}
-      <div className="flex items-center gap-1 p-1 border rounded-none">
-        {/* Program Name - 20% width */}
+      <div className="flex items-center gap-1 p-1 border rounded-none flex-wrap">
+        {/* Program Name - flexible width with min/max */}
         <Input
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           placeholder="Όνομα"
-          className="rounded-none h-6 text-[10px] w-[120px] border border-gray-300"
+          className="rounded-none h-6 text-[10px] min-w-[80px] max-w-[120px] flex-shrink border border-gray-300"
         />
         
         {/* User Search Popover - 20% width */}
@@ -222,7 +222,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-0.5 flex-shrink-0 ml-auto">
+        <div className="flex gap-0.5 flex-shrink-0 ml-auto items-center">
           {onSave && (
             <Button
               onClick={onSave}
