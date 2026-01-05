@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { Collapsible } from "@/components/ui/collapsible";
 import { GripVertical } from "lucide-react";
@@ -65,7 +65,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(day.name);
-  const [originalName, setOriginalName] = useState<string | null>(null);
+  const originalNameRef = useRef<string | null>(null);
 
   const handleNameDoubleClick = () => {
     setIsEditing(true);
@@ -92,8 +92,8 @@ export const DayCard: React.FC<DayCardProps> = ({
     const newIsTestDay = !day.is_test_day;
     if (newIsTestDay) {
       // Αποθήκευσε το αρχικό όνομα και μετονόμασε
-      if (!originalName) {
-        setOriginalName(day.name);
+      if (!originalNameRef.current) {
+        originalNameRef.current = day.name;
       }
       onUpdateDayName('Ημέρα Τεστ');
       // Απενεργοποίησε τον αγώνα αν είναι ενεργός
@@ -102,9 +102,9 @@ export const DayCard: React.FC<DayCardProps> = ({
       }
     } else {
       // Επαναφορά του αρχικού ονόματος
-      if (originalName) {
-        onUpdateDayName(originalName);
-        setOriginalName(null);
+      if (originalNameRef.current) {
+        onUpdateDayName(originalNameRef.current);
+        originalNameRef.current = null;
       }
     }
     onUpdateDayTestDay(newIsTestDay, day.test_types || []);
@@ -114,8 +114,8 @@ export const DayCard: React.FC<DayCardProps> = ({
     const newIsCompetitionDay = !day.is_competition_day;
     if (newIsCompetitionDay) {
       // Αποθήκευσε το αρχικό όνομα και μετονόμασε
-      if (!originalName) {
-        setOriginalName(day.name);
+      if (!originalNameRef.current) {
+        originalNameRef.current = day.name;
       }
       onUpdateDayName('Ημέρα Αγώνα');
       // Απενεργοποίησε το τεστ αν είναι ενεργό
@@ -124,9 +124,9 @@ export const DayCard: React.FC<DayCardProps> = ({
       }
     } else {
       // Επαναφορά του αρχικού ονόματος
-      if (originalName) {
-        onUpdateDayName(originalName);
-        setOriginalName(null);
+      if (originalNameRef.current) {
+        onUpdateDayName(originalNameRef.current);
+        originalNameRef.current = null;
       }
     }
     onUpdateDayCompetitionDay(newIsCompetitionDay);
