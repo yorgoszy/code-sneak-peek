@@ -100,9 +100,6 @@ export const useAssignmentDialog = (
           program: programForThisUser,
           userId,
           trainingDates: trainingDatesStrings,
-          // ✅ Για templates: κάθε χρήστης έχει δικό του program, άρα ΠΑΝΤΑ δημιουργία δομής
-          // Για μη-templates: skip μετά τον πρώτο (ίδιο program για όλους)
-          skipStructureRecreation: !isTemplate && i > 0,
         };
 
         console.log(`🔄 [useAssignmentDialog] Creating assignment for user ${userId}...`);
