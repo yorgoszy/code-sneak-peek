@@ -89,7 +89,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onBlockSetsChange
 }) => {
   return (
-    <CardHeader className="pb-2 space-y-2">
+    <CardHeader className="p-1 space-y-0">
       <div className="flex justify-between items-center">
         <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-600 p-1 rounded">
           {isOpen ? <ChevronDown className="w-3 h-3 text-white" /> : <ChevronRight className="w-3 h-3 text-white" />}
@@ -157,77 +157,65 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
         </div>
       </div>
       
-      {/* Training Type, Workout Format and Duration */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-white">Τύπος:</span>
-          <Select value={trainingType || ''} onValueChange={onTrainingTypeChange}>
-            <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[120px]" onClick={(e) => e.stopPropagation()}>
-              <SelectValue placeholder="Επιλέξτε" />
-            </SelectTrigger>
-            <SelectContent className="rounded-none bg-white z-50">
-              {Object.entries(TRAINING_TYPE_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value} className="text-xs">
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Training Type, Workout Format and Sets - inline compact */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Select value={trainingType || ''} onValueChange={onTrainingTypeChange}>
+          <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[100px]" onClick={(e) => e.stopPropagation()}>
+            <SelectValue placeholder="Τύπος" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none bg-white z-50">
+            {Object.entries(TRAINING_TYPE_LABELS).map(([value, label]) => (
+              <SelectItem key={value} value={value} className="text-xs">
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-white">Format:</span>
-          <Select value={workoutFormat || 'none'} onValueChange={(value) => onWorkoutFormatChange(value === 'none' ? '' : value)}>
-            <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[100px]" onClick={(e) => e.stopPropagation()}>
-              <SelectValue placeholder="Κανένα" />
-            </SelectTrigger>
-            <SelectContent className="rounded-none bg-white z-50">
-              <SelectItem value="none" className="text-xs">Κανένα</SelectItem>
-              {Object.entries(WORKOUT_FORMAT_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value} className="text-xs">
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Select value={workoutFormat || 'none'} onValueChange={(value) => onWorkoutFormatChange(value === 'none' ? '' : value)}>
+          <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[90px]" onClick={(e) => e.stopPropagation()}>
+            <SelectValue placeholder="Format" />
+          </SelectTrigger>
+          <SelectContent className="rounded-none bg-white z-50">
+            <SelectItem value="none" className="text-xs">Κανένα</SelectItem>
+            {Object.entries(WORKOUT_FORMAT_LABELS).map(([value, label]) => (
+              <SelectItem key={value} value={value} className="text-xs">
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          {workoutFormat && workoutFormat !== 'none' && (
-            <>
-              <span className="text-xs text-white">Χρόνος:</span>
-              <Input
-                type="text"
-                value={workoutDuration || ''}
-                onChange={(e) => {
-                  const formatted = formatTimeInput(e.target.value);
-                  onWorkoutDurationChange(formatted);
-                }}
-                placeholder="00:00"
-                className="h-6 w-[60px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </>
-          )}
-        </div>
+        {workoutFormat && workoutFormat !== 'none' && (
+          <Input
+            type="text"
+            value={workoutDuration || ''}
+            onChange={(e) => {
+              const formatted = formatTimeInput(e.target.value);
+              onWorkoutDurationChange(formatted);
+            }}
+            placeholder="00:00"
+            className="h-6 w-[50px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
 
-        <div className="flex items-center gap-1">
-          <span className="text-xs text-white">Set:</span>
-          <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              onClick={() => onBlockSetsChange(Math.max(1, (blockSets || 1) - 1))}
-              className="p-0.5 text-gray-400 hover:text-white transition-colors"
-            >
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            <span className="text-xs text-white min-w-[20px] text-center">{blockSets || 1}</span>
-            <button
-              type="button"
-              onClick={() => onBlockSetsChange((blockSets || 1) + 1)}
-              className="p-0.5 text-gray-400 hover:text-white transition-colors"
-            >
-              <ChevronUp className="h-4 w-4" />
-            </button>
-          </div>
+        <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => onBlockSetsChange(Math.max(1, (blockSets || 1) - 1))}
+            className="p-0.5 text-gray-400 hover:text-white transition-colors"
+          >
+            <ChevronDown className="h-3 w-3" />
+          </button>
+          <span className="text-xs text-white min-w-[16px] text-center">{blockSets || 1}</span>
+          <button
+            type="button"
+            onClick={() => onBlockSetsChange((blockSets || 1) + 1)}
+            className="p-0.5 text-gray-400 hover:text-white transition-colors"
+          >
+            <ChevronUp className="h-3 w-3" />
+          </button>
           {(blockSets || 1) > 1 && (
             <span className="text-xs text-[#00ffba]">x{blockSets}</span>
           )}
