@@ -181,7 +181,8 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
           />
         )}
 
-        <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <span className="text-xs text-gray-400">Set</span>
           <button
             type="button"
             onClick={() => onBlockSetsChange(Math.max(1, (blockSets || 1) - 1))}
