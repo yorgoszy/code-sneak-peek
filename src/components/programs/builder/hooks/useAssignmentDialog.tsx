@@ -48,13 +48,13 @@ export const useAssignmentDialog = (
       });
 
       // Χρησιμοποιούμε το υπάρχον πρόγραμμα αν έχει ID, αλλιώς το δημιουργούμε
-      let programToUse = program;
-      
+      let baseProgramToUse = program;
+
       if (!program.id) {
         // Μόνο αν δεν υπάρχει ID, δημιουργούμε νέο πρόγραμμα
         console.log('📋 [useAssignmentDialog] No program ID, creating new program...');
         const savedProgram = await onCreateProgram(program);
-        programToUse = { ...program, id: savedProgram.id };
+        baseProgramToUse = { ...program, id: savedProgram.id };
         console.log('✅ [useAssignmentDialog] Program created with ID:', savedProgram.id);
       } else {
         console.log('✅ [useAssignmentDialog] Using existing program ID:', program.id);
@@ -62,19 +62,30 @@ export const useAssignmentDialog = (
 
       const assignments = [];
       const allWorkoutCompletions = [];
+      const isTemplate = !!(program as any).is_template;
 
       // Δημιουργία assignments για κάθε χρήστη
       for (let i = 0; i < userIds.length; i++) {
         const userId = userIds[i];
         console.log(`👤 [useAssignmentDialog] Processing assignment for user: ${userId}`);
 
-        // 🔄 Αν το πρόγραμμα είναι template, επεξεργαζόμαστε copy για κάθε χρήστη
-        let processedProgram = programToUse;
-        if ((program as any).is_template) {
-          console.log(`🎯 [useAssignmentDialog] Processing copy for user ${userId} with %1RM calculations...`);
-          const programCopyForUser = JSON.parse(JSON.stringify(programToUse));
-          processedProgram = await processTemplateForUser(programCopyForUser, userId);
-          console.log(`✅ [useAssignmentDialog] Copy processed for user ${userId}`);
+        let programForThisUser = baseProgramToUse;
+
+        // 🔄 Αν το πρόγραμμα είναι template, κάθε χρήστης παίρνει ΔΙΚΟ ΤΟΥ πρόγραμμα (clone)
+        if (isTemplate) {
+          console.log(`🎯 [useAssignmentDialog] Template detected - creating unique program clone for user ${userId}...`);
+          
+          // 1. Δημιούργησε νέο πρόγραμμα (clone) για αυτόν τον χρήστη
+          const clonedProgram = await onCreateProgram({
+            ...program,
+            name: `${program.name} - ${userId.slice(0, 8)}`, // Unique name
+          });
+          
+          // 2. Επεξεργάσου το clone με τα %1RM του χρήστη
+          const programCopyForUser = JSON.parse(JSON.stringify({ ...baseProgramToUse, id: clonedProgram.id }));
+          programForThisUser = await processTemplateForUser(programCopyForUser, userId);
+          
+          console.log(`✅ [useAssignmentDialog] Unique program clone created for user ${userId} with ID: ${clonedProgram.id}`);
         }
 
         const trainingDatesStrings = trainingDates.map(date => {
@@ -86,11 +97,12 @@ export const useAssignmentDialog = (
         console.log(`📅 [useAssignmentDialog] Training dates for user ${userId}:`, trainingDatesStrings);
 
         const assignmentData = {
-          program: processedProgram,
+          program: programForThisUser,
           userId,
           trainingDates: trainingDatesStrings,
-          // ✅ speed + reliability: structure is created once (first user) then reused
-          skipStructureRecreation: i > 0,
+          // ✅ Για templates: κάθε χρήστης έχει δικό του program, άρα ΠΑΝΤΑ δημιουργία δομής
+          // Για μη-templates: skip μετά τον πρώτο (ίδιο program για όλους)
+          skipStructureRecreation: !isTemplate && i > 0,
         };
 
         console.log(`🔄 [useAssignmentDialog] Creating assignment for user ${userId}...`);
@@ -103,9 +115,9 @@ export const useAssignmentDialog = (
         const completions = await createWorkoutCompletions(
           assignment[0].id,
           userId,
-          processedProgram.id,
+          programForThisUser.id,
           trainingDatesStrings,
-          programToUse
+          programForThisUser
         );
         allWorkoutCompletions.push(...completions);
         console.log(`✅ [useAssignmentDialog] Workout completions created for user ${userId}:`, completions.length);
@@ -113,10 +125,10 @@ export const useAssignmentDialog = (
 
       console.log('🎉 [useAssignmentDialog] All assignments completed successfully');
       console.log('📊 [useAssignmentDialog] Summary:', {
-        programId: programToUse.id,
+        baseProgramId: baseProgramToUse.id,
         assignmentsCreated: assignments.length,
         workoutCompletionsCreated: allWorkoutCompletions.length,
-        wasTemplate: (program as any).is_template
+        wasTemplate: isTemplate
       });
 
       toast.success(`Πρόγραμμα ανατέθηκε επιτυχώς σε ${userIds.length} χρήστες`);
