@@ -3,7 +3,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { FlaskConical } from "lucide-react";
+import { Dumbbell } from "lucide-react";
 
 interface TestDaySelectorProps {
   isTestDay: boolean;
@@ -37,7 +37,7 @@ export const TestDaySelector: React.FC<TestDaySelectorProps> = ({
     <div className="space-y-3 p-3 bg-yellow-50 border border-yellow-200 rounded-none">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FlaskConical className="w-4 h-4 text-yellow-600" />
+          <Dumbbell className="w-4 h-4 text-yellow-600" />
           <Label htmlFor="test-day-switch" className="text-sm font-semibold text-yellow-900">
             Ημέρα Τεστ
           </Label>
