@@ -168,44 +168,11 @@ export const WeekMetrics: React.FC<WeekMetricsProps> = ({ week, previousWeek }) 
   const previousStats = previousWeek ? calculateWeekMetrics(previousWeek) : null;
 
   return (
-    <div className="text-xs space-y-1 mt-1 px-2 py-1 bg-gray-50 rounded">
-      <div className="grid grid-cols-4 gap-2">
-        <div className="text-center">
-          <div className="font-semibold text-blue-700">{currentStats.volume}tn</div>
-          {previousStats && (
-            <PercentageIndicator 
-              percentage={calculatePercentageChange(currentStats.volume, previousStats.volume)} 
-            />
-          )}
-        </div>
-        
-        <div className="text-center">
-          <div className="font-semibold text-green-700">{currentStats.intensity}%</div>
-          {previousStats && (
-            <PercentageIndicator 
-              percentage={calculatePercentageChange(currentStats.intensity, previousStats.intensity)} 
-            />
-          )}
-        </div>
-        
-        <div className="text-center">
-          <div className="font-semibold text-orange-700">{currentStats.watts}KW</div>
-          {previousStats && (
-            <PercentageIndicator 
-              percentage={calculatePercentageChange(currentStats.watts, previousStats.watts)} 
-            />
-          )}
-        </div>
-        
-        <div className="text-center">
-          <div className="font-semibold text-red-700">{currentStats.time}λ</div>
-          {previousStats && (
-            <PercentageIndicator 
-              percentage={calculatePercentageChange(currentStats.time.toString(), previousStats.time.toString())} 
-            />
-          )}
-        </div>
-      </div>
+    <div className="flex items-center gap-2 text-[9px] px-1 py-0.5">
+      <span className="font-medium text-blue-700">{currentStats.volume}tn</span>
+      <span className="font-medium text-green-700">{currentStats.intensity}%</span>
+      <span className="font-medium text-orange-700">{currentStats.watts}KW</span>
+      <span className="font-medium text-red-700">{currentStats.time}λ</span>
     </div>
   );
 };
