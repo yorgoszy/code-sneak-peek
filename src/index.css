@@ -284,4 +284,28 @@ html, body {
   .scrollbar-gray-thin::-webkit-scrollbar-thumb:hover {
     background: #6b7280;
   }
+
+  /* Gold thin scrollbar for days */
+  .scrollbar-gold-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #cb8954 transparent;
+  }
+
+  .scrollbar-gold-thin::-webkit-scrollbar {
+    width: 1px;
+    height: 1px;
+  }
+
+  .scrollbar-gold-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-gold-thin::-webkit-scrollbar-thumb {
+    background: #cb8954;
+    border-radius: 0px;
+  }
+
+  .scrollbar-gold-thin::-webkit-scrollbar-thumb:hover {
+    background: #b07843;
+  }
 }
