@@ -12,6 +12,8 @@ export interface Week {
 export interface Day {
   id: string;
   name: string;
+  /** Used to restore the previous day name when toggling Test/Competition */
+  original_day_name?: string;
   day_number: number;
   estimated_duration_minutes?: number;
   is_test_day?: boolean;
