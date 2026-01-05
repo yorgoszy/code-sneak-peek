@@ -8,6 +8,7 @@ import { EditableProgramDialogHeader } from './EditableProgramDialogHeader';
 import { EditableProgramWeekCard } from './EditableProgramWeekCard';
 import { useEditableProgramState } from './hooks/useEditableProgramState';
 import { useEditableProgramActions } from './hooks/useEditableProgramActions';
+import { buildDisplayWeeks } from "@/utils/programDisplayWeeks";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface EditableProgramViewDialogProps {
@@ -146,13 +147,22 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
   if (baseWeeks.length === 0) return null;
 
   // Ταξινόμηση εβδομάδων και ημερών βάσει order fields
-  const weeks = [...baseWeeks]
+  const sortedBaseWeeks = [...baseWeeks]
     .sort((a: any, b: any) => (a.week_number || 0) - (b.week_number || 0))
     .map((week: any) => ({
       ...week,
-      program_days: [...(week.program_days || [])]
-        .sort((a: any, b: any) => (a.day_number || 0) - (b.day_number || 0))
+      program_days: [...(week.program_days || [])].sort(
+        (a: any, b: any) => (a.day_number || 0) - (b.day_number || 0)
+      )
     }));
+
+  // ΣΕ VIEW MODE: αν οι training_dates υποδεικνύουν περισσότερες εβδομάδες, τις εμφανίζουμε όλες (read-only)
+  const weeks = editMode
+    ? sortedBaseWeeks
+    : buildDisplayWeeks({
+        baseWeeks: sortedBaseWeeks,
+        trainingDates: assignment.training_dates
+      });
 
   if (weeks.length === 0) {
     return (
