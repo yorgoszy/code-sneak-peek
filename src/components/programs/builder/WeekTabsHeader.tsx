@@ -30,8 +30,8 @@ export const WeekTabsHeader: React.FC<WeekTabsHeaderProps> = ({
   onRemoveWeek
 }) => {
   return (
-    <div className="mb-4 md:mb-6 overflow-x-auto">
-      <TabsList className="h-auto p-1 md:p-2 bg-transparent gap-1 md:gap-2 flex-nowrap w-max min-w-full">
+    <div className="overflow-x-auto">
+      <TabsList className="h-auto p-0 bg-transparent gap-1 flex-nowrap w-max min-w-full">
         {weeks.map((week, index) => {
           const previousWeek = index > 0 ? weeks[index - 1] : undefined;
           return (

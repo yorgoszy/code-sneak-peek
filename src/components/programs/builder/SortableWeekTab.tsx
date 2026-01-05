@@ -54,21 +54,21 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
     <div 
       ref={setNodeRef} 
       style={style} 
-      className="flex flex-col items-center group flex-shrink-0 relative min-w-0"
+      className="flex items-center group flex-shrink-0 relative min-w-0 h-[44px]"
     >
       <div
-        className="absolute left-0 top-0 bottom-0 w-3 md:w-4 flex items-center justify-center cursor-move z-10"
+        className="absolute left-0 top-0 bottom-0 w-3 flex items-center justify-center cursor-move z-10"
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="w-2 h-2 md:w-3 md:h-3 text-gray-400" />
+        <GripVertical className="w-2 h-2 text-gray-400" />
       </div>
       
-      <div className="ml-3 md:ml-4 flex flex-col items-center min-w-0">
+      <div className="ml-3 flex flex-col justify-center min-w-0 h-full py-0.5">
         <div className="flex items-center min-w-0">
           <TabsTrigger 
             value={week.id} 
-            className={`rounded-none whitespace-nowrap px-2 md:px-4 text-xs md:text-sm min-w-0 transition-colors ${
+            className={`rounded-none whitespace-nowrap px-2 text-[10px] h-5 min-w-0 transition-colors ${
               isActive ? 'bg-foreground/10 font-semibold' : ''
             }`}
             onDoubleClick={() => onWeekNameDoubleClick(week)}
@@ -80,17 +80,15 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
                   onChange={(e) => setEditingWeekName(e.target.value)}
                   onBlur={onWeekNameSave}
                   onKeyDown={onWeekNameKeyPress}
-                  className="bg-transparent border-none outline-none text-center min-w-0 text-xs md:text-sm"
+                  className="bg-transparent border-none outline-none text-center min-w-0 text-[10px]"
                   autoFocus
                   onClick={(e) => e.stopPropagation()}
                 />
             ) : (
-              <div className="flex flex-col items-center">
-                <span>{week.name}</span>
-              </div>
+              <span>{week.name}</span>
             )}
           </TabsTrigger>
-          <div className="flex opacity-0 group-hover:opacity-100 transition-opacity ml-1 md:ml-2">
+          <div className="flex opacity-0 group-hover:opacity-100 transition-opacity ml-0.5">
             <Button
               size="sm"
               variant="ghost"
@@ -98,9 +96,9 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
                 e.stopPropagation();
                 onDuplicateWeek(week.id);
               }}
-              className="h-5 w-5 md:h-6 md:w-6 p-0 rounded-none"
+              className="h-4 w-4 p-0 rounded-none"
             >
-              <Copy className="w-2 h-2 md:w-3 md:h-3" />
+              <Copy className="w-2 h-2" />
             </Button>
             <Button
               size="sm"
@@ -109,16 +107,14 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
                 e.stopPropagation();
                 onRemoveWeek(week.id);
               }}
-              className="h-5 w-5 md:h-6 md:w-6 p-0 rounded-none text-red-600 hover:text-red-800"
+              className="h-4 w-4 p-0 rounded-none text-red-600 hover:text-red-800"
             >
-              <Trash2 className="w-2 h-2 md:w-3 md:h-3" />
+              <Trash2 className="w-2 h-2" />
             </Button>
           </div>
         </div>
         
-        <div className="mt-2 w-full">
-          <WeekMetrics week={week} previousWeek={previousWeek} />
-        </div>
+        <WeekMetrics week={week} previousWeek={previousWeek} />
       </div>
     </div>
   );
