@@ -93,16 +93,19 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
         toast.info(`Δημιουργία αναθέσεων για ${program.user_ids.length} αθλητές...`);
         
         const assignments = [];
-        for (const userId of program.user_ids) {
+        for (let i = 0; i < program.user_ids.length; i++) {
+          const userId = program.user_ids[i];
           const assignmentData = {
             program: {
               ...savedProgram,
               weeks: program.weeks
             },
-            userId: userId,
-            trainingDates: trainingDatesStrings
+            userId,
+            trainingDates: trainingDatesStrings,
+            // ✅ speed + reliability: structure is created once (first user) then reused
+            skipStructureRecreation: i > 0,
           };
-          
+
           console.log('📋 Creating assignment for user:', userId);
           const assignment = await assignmentService.saveAssignment(assignmentData);
           assignments.push(assignment);
