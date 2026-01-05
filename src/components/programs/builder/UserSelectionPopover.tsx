@@ -70,6 +70,7 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
         align="start"
         side="bottom"
         sideOffset={4}
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {/* Search Input */}
         <div className="p-3 border-b border-gray-200">
@@ -85,8 +86,8 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
         </div>
 
         <div 
-          className="max-h-48 overflow-y-scroll overscroll-contain"
-          style={{ scrollbarWidth: 'thin' }}
+          className="max-h-[200px] overflow-y-auto overscroll-contain touch-pan-y"
+          style={{ WebkitOverflowScrolling: 'touch' }}
         >
           <div className="p-2 space-y-1">
             {availableUsers.length === 0 ? (
