@@ -92,13 +92,13 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
               {program.app_users?.name || 'Άγνωστος Αθλητής'}
             </h2>
             {isTestDay && (
-              <Badge className="bg-purple-100 text-purple-800 border-purple-200 rounded-none text-xs px-1.5 py-0">
+              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 rounded-none text-xs px-1.5 py-0">
                 <FlaskConical className="w-3 h-3 mr-1" />
                 Τεστ
               </Badge>
             )}
             {isCompetitionDay && (
-              <Badge className="bg-amber-100 text-amber-800 border-amber-200 rounded-none text-xs px-1.5 py-0">
+              <Badge className="bg-purple-100 text-purple-800 border-purple-200 rounded-none text-xs px-1.5 py-0">
                 <Trophy className="w-3 h-3 mr-1" />
                 Αγώνας
               </Badge>
@@ -109,7 +109,7 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
               {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
             </p>
             {isTestDay && testTypes.length > 0 && (
-              <p className="text-xs text-purple-600">
+              <p className="text-xs text-yellow-600">
                 ({testTypes.map(type => TEST_TYPE_LABELS[type] || type).join(', ')})
               </p>
             )}
