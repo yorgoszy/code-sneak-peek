@@ -200,24 +200,24 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
           <button
             type="button"
             onClick={() => handleAssignmentModeChange('individual')}
-            className={`px-1 py-0.5 text-[9px] rounded-none border transition-colors flex items-center gap-0.5 ${
+            className={`px-2 py-1 text-[10px] rounded-none border transition-colors flex items-center gap-1 ${
               assignmentMode === 'individual'
                 ? 'bg-[#00ffba] text-black border-[#00ffba]'
                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
             }`}
           >
-            <User className="w-2 h-2" />
+            <User className="w-3 h-3" />
           </button>
           <button
             type="button"
             onClick={() => handleAssignmentModeChange('group')}
-            className={`px-1 py-0.5 text-[9px] rounded-none border transition-colors flex items-center gap-0.5 ${
+            className={`px-2 py-1 text-[10px] rounded-none border transition-colors flex items-center gap-1 ${
               assignmentMode === 'group'
                 ? 'bg-[#00ffba] text-black border-[#00ffba]'
                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
             }`}
           >
-            <Users className="w-2 h-2" />
+            <Users className="w-3 h-3" />
           </button>
         </div>
 
