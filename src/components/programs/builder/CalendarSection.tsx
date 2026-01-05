@@ -98,7 +98,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     <div className="border rounded-none">
       {/* Compact header with inline controls */}
       <div className="flex flex-wrap items-center gap-3 p-3 border-b bg-gray-50">
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           <Calendar className="w-4 h-4 text-gray-500" />
           <span className="text-sm font-medium">Ημερολόγιο</span>
         </div>
@@ -112,6 +112,15 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
             onChange={(e) => setStartDate(e.target.value)}
             className="rounded-none h-7 w-32 text-xs"
           />
+          <Button
+            type="button"
+            onClick={generateDates}
+            disabled={!startDate || weekdays.length === 0}
+            size="sm"
+            className="rounded-none h-7 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs md:hidden"
+          >
+            Δημιουργία
+          </Button>
         </div>
 
         <div className="flex items-center gap-1">
@@ -136,7 +145,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
           onClick={generateDates}
           disabled={!startDate || weekdays.length === 0}
           size="sm"
-          className="rounded-none h-7 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs"
+          className="rounded-none h-7 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs hidden md:inline-flex"
         >
           Δημιουργία ({computedTotalDays} ημέρες)
         </Button>
