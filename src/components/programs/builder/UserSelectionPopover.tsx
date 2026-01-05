@@ -82,7 +82,7 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
           </div>
         </div>
 
-        <div className="max-h-48 overflow-y-scroll overscroll-contain p-2 space-y-1" style={{ scrollbarWidth: 'thin' }}>
+        <div className="max-h-48 overflow-y-scroll overscroll-contain" style={{ scrollbarWidth: 'thin' }}>
           {availableUsers.length === 0 ? (
             <div className="p-4 text-center text-sm text-gray-500">
               Όλοι οι χρήστες έχουν επιλεγεί
@@ -92,32 +92,35 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
               Δεν βρέθηκαν χρήστες
             </div>
           ) : (
-            filteredUsers.map(user => {
-              const isSelected = selectedUserIds.includes(user.id);
-              return (
-                <div
-                  key={user.id}
-                  onClick={(e) => handleUserClick(user.id, e)}
-                  className={`flex items-center gap-2 p-1.5 cursor-pointer rounded-none transition-colors ${
-                    isSelected ? 'bg-[#00ffba]/20 border border-[#00ffba]' : 'hover:bg-muted'
-                  }`}
-                >
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={user.photo_url || user.avatar_url || ""} />
-                    <AvatarFallback className="text-[8px]">{getUserInitials(user.name)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{user.name}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
+            <div className="p-1 space-y-0.5">
+              {filteredUsers.map(user => {
+                const isSelected = selectedUserIds.includes(user.id);
+                return (
+                  <div
+                    key={user.id}
+                    onClick={(e) => handleUserClick(user.id, e)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    className={`flex items-center gap-2 p-1.5 cursor-pointer rounded-none transition-colors ${
+                      isSelected ? 'bg-[#00ffba]/20 border border-[#00ffba]' : 'hover:bg-muted'
+                    }`}
+                  >
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={user.photo_url || user.avatar_url || ""} alt={user.name} />
+                      <AvatarFallback className="text-[8px]">{getUserInitials(user.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">{user.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                    {isSelected ? (
+                      <Check className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
+                    ) : (
+                      <Plus className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
+                    )}
                   </div>
-                  {isSelected ? (
-                    <Check className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
-                  ) : (
-                    <Plus className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
-                  )}
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           )}
         </div>
       </PopoverContent>
