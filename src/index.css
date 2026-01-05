@@ -202,6 +202,24 @@ html, body {
     scrollbar-color: #cb8954 transparent;
   }
 
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 2px;
+    height: 2px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cb8954;
+    border-radius: 1px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #b87648;
+  }
+
   /* Gold scrollbar for planning sections */
   .scrollbar-gold {
     scrollbar-width: thin;
