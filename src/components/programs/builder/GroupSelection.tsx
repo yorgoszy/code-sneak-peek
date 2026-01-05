@@ -26,14 +26,16 @@ interface GroupSelectionProps {
   selectedGroupId: string;
   onGroupChange: (groupId: string) => void;
   onGroupMembersLoad: (userIds: string[]) => void;
-  coachId?: string; // Optional: filter groups by coach
+  coachId?: string;
+  compact?: boolean;
 }
 
 export const GroupSelection: React.FC<GroupSelectionProps> = ({
   selectedGroupId,
   onGroupChange,
   onGroupMembersLoad,
-  coachId
+  coachId,
+  compact = false
 }) => {
   const [groups, setGroups] = useState<GroupType[]>([]);
   const [allGroupsMembers, setAllGroupsMembers] = useState<{[key: string]: GroupMember[]}>({});
@@ -63,7 +65,6 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
         `)
         .order('name');
 
-      // Filter by coach if provided
       if (coachId) {
         query = query.eq('coach_id', coachId);
       }
@@ -84,8 +85,9 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
 
       setGroups(groupsWithMemberCount);
       
-      // Fetch members for all groups for preview
-      await fetchAllGroupsMembers(groupsWithMemberCount);
+      if (!compact) {
+        await fetchAllGroupsMembers(groupsWithMemberCount);
+      }
     } catch (error) {
       console.error('Error fetching groups:', error);
     } finally {
@@ -112,7 +114,7 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
             )
           `)
           .eq('group_id', group.id)
-          .limit(3); // Only fetch first 3 for preview
+          .limit(3);
 
         if (!error && membersData) {
           const members = membersData.map(member => ({
@@ -179,6 +181,24 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
 
   const selectedGroup = groups.find(group => group.id === selectedGroupId);
 
+  // Compact mode - just a small select
+  if (compact) {
+    return (
+      <Select value={selectedGroupId} onValueChange={handleGroupChange} disabled={loading}>
+        <SelectTrigger className="rounded-none h-6 text-[10px]">
+          <SelectValue placeholder="Ομάδα..." />
+        </SelectTrigger>
+        <SelectContent className="rounded-none">
+          {groups.map((group) => (
+            <SelectItem key={group.id} value={group.id} className="rounded-none text-xs">
+              {group.name} ({group.member_count})
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+
   return (
     <div className="w-full">
       <Card className="rounded-none">
@@ -206,7 +226,6 @@ export const GroupSelection: React.FC<GroupSelectionProps> = ({
                         </Badge>
                       </div>
                       
-                      {/* Preview of group members */}
                       {allGroupsMembers[group.id] && allGroupsMembers[group.id].length > 0 && (
                         <div className="mt-2 pl-6">
                           <p className="text-xs text-gray-500 mb-1">Μέλη:</p>

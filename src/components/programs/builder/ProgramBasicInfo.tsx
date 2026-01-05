@@ -1,9 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { User, Users, Save } from "lucide-react";
-import { IndividualUserSelection } from './IndividualUserSelection';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User, Users, Save, Plus, Check, Search } from "lucide-react";
+import { matchesSearchTerm } from "@/lib/utils";
+import { SelectedUsersDisplay } from './SelectedUsersDisplay';
 import { GroupSelection } from './GroupSelection';
 import type { User as UserType } from '../types';
 
@@ -29,24 +32,35 @@ interface ProgramBasicInfoProps {
 
 export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   name,
-  description,
-  selectedUserId,
   selectedUserIds = [],
   selectedGroupId = '',
   users,
   onNameChange,
-  onDescriptionChange,
-  onAthleteChange,
   onMultipleAthleteChange,
   onGroupChange,
-  isMultipleMode = false,
-  onToggleMode,
   onSave,
   onAssignments,
   canAssign = false,
   coachId
 }) => {
   const [assignmentMode, setAssignmentMode] = useState<'individual' | 'group'>('individual');
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const selectedUsers = users.filter(user => selectedUserIds.includes(user.id));
+  const availableUsers = users.filter(user => !selectedUserIds.includes(user.id));
+
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm.trim()) return availableUsers;
+    return availableUsers.filter(user => 
+      matchesSearchTerm(user.name, searchTerm) || 
+      matchesSearchTerm(user.email, searchTerm)
+    );
+  }, [availableUsers, searchTerm]);
+
+  const getUserInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
 
   const handleAssignmentModeChange = (mode: 'individual' | 'group') => {
     setAssignmentMode(mode);
@@ -64,16 +78,122 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
     }
   };
 
+  const handleUserToggle = (userId: string) => {
+    if (!onMultipleAthleteChange) return;
+    const newSelectedIds = selectedUserIds.includes(userId)
+      ? selectedUserIds.filter(id => id !== userId)
+      : [...selectedUserIds, userId];
+    onMultipleAthleteChange(newSelectedIds);
+  };
+
+  const handleUserClick = (userId: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    handleUserToggle(userId);
+    if (!selectedUserIds.includes(userId)) {
+      setIsPopoverOpen(false);
+    }
+  };
+
+  const handleClearAll = () => {
+    if (onMultipleAthleteChange) {
+      onMultipleAthleteChange([]);
+    }
+  };
+
+  const handleRemoveUser = (userId: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    handleUserToggle(userId);
+  };
+
   return (
-    <div className="space-y-0">
-      {/* Row 1: Program Name & Buttons - No border, compact */}
+    <div className="space-y-1">
+      {/* Row 1: Program Name, User Search, Mode Buttons, Action Buttons */}
       <div className="flex items-center gap-1 p-1 border rounded-none">
+        {/* Program Name - 20% width */}
         <Input
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
-          placeholder="Όνομα προγράμματος"
-          className="rounded-none h-6 text-xs flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+          placeholder="Όνομα"
+          className="rounded-none h-6 text-xs w-[120px] border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
         />
+        
+        {/* User Search Popover - 20% width */}
+        {assignmentMode === 'individual' && (
+          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="h-6 px-2 text-[10px] rounded-none w-[120px] justify-start"
+                disabled={availableUsers.length === 0}
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                {availableUsers.length === 0 ? "Όλοι επιλεγμένοι" : "Χρήστης..."}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-0 rounded-none z-[100]" align="start" side="bottom" sideOffset={4}>
+              <div className="p-2 border-b border-gray-200">
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
+                  <Input
+                    placeholder="Αναζήτηση..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-7 rounded-none h-6 text-xs"
+                  />
+                </div>
+              </div>
+              <div className="max-h-48 overflow-y-scroll overscroll-contain" style={{ scrollbarWidth: 'thin' }}>
+                <div className="p-1 space-y-0.5">
+                  {filteredUsers.length === 0 ? (
+                    <div className="p-3 text-center text-xs text-gray-500">
+                      {availableUsers.length === 0 ? "Όλοι επιλεγμένοι" : "Δεν βρέθηκαν"}
+                    </div>
+                  ) : (
+                    filteredUsers.map(user => (
+                      <div
+                        key={user.id}
+                        className="flex items-center justify-between p-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={(e) => handleUserClick(user.id, e)}
+                        onMouseDown={(e) => e.preventDefault()}
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <Avatar className="w-5 h-5">
+                            <AvatarImage src={user.photo_url || user.avatar_url || ""} alt={user.name} />
+                            <AvatarFallback className="text-[8px]">{getUserInitials(user.name)}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-xs truncate">{user.name}</p>
+                            <p className="text-[10px] text-gray-600 truncate">{user.email}</p>
+                          </div>
+                        </div>
+                        {selectedUserIds.includes(user.id) ? (
+                          <Check className="w-3 h-3 text-[#00ffba]" />
+                        ) : (
+                          <Plus className="w-3 h-3 text-[#00ffba]" />
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+
+        {/* Group Selection - inline compact */}
+        {assignmentMode === 'group' && onGroupChange && (
+          <div className="w-[120px]">
+            <GroupSelection
+              selectedGroupId={selectedGroupId}
+              onGroupChange={onGroupChange}
+              onGroupMembersLoad={handleGroupMembersLoad}
+              coachId={coachId}
+              compact
+            />
+          </div>
+        )}
         
         {/* Assignment Type Buttons */}
         <div className="flex gap-0.5 flex-shrink-0">
@@ -102,7 +222,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-0.5 flex-shrink-0">
+        <div className="flex gap-0.5 flex-shrink-0 ml-auto">
           {onSave && (
             <Button
               onClick={onSave}
@@ -126,25 +246,14 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
         </div>
       </div>
 
-      {/* Row 2: User/Group Selection - Compact, no gaps */}
-      <div className="border border-t-0 rounded-none p-1.5">
-        {assignmentMode === 'individual' && (
-          <IndividualUserSelection
-            selectedUserIds={selectedUserIds}
-            users={users}
-            onMultipleAthleteChange={onMultipleAthleteChange}
-          />
-        )}
-
-        {assignmentMode === 'group' && onGroupChange && (
-          <GroupSelection
-            selectedGroupId={selectedGroupId}
-            onGroupChange={onGroupChange}
-            onGroupMembersLoad={handleGroupMembersLoad}
-            coachId={coachId}
-          />
-        )}
-      </div>
+      {/* Row 2: Selected Users Display - Only shows when users are selected */}
+      {assignmentMode === 'individual' && selectedUsers.length > 0 && (
+        <SelectedUsersDisplay
+          selectedUsers={selectedUsers}
+          onClearAll={handleClearAll}
+          onRemoveUser={handleRemoveUser}
+        />
+      )}
     </div>
   );
 };
