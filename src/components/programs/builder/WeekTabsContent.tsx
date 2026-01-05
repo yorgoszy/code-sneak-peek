@@ -82,20 +82,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   return (
     <>
       {weeks.map((week) => (
-        <TabsContent key={week.id} value={week.id} className="mt-1">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-medium text-gray-700">{week.name}</h3>
-              <Button
-                onClick={() => onAddDay(week.id)}
-                size="sm"
-                className="rounded-none h-5 px-1.5 text-[9px]"
-              >
-                <Plus className="w-2.5 h-2.5 mr-0.5" />
-                +Day
-              </Button>
-            </div>
-
+        <TabsContent key={week.id} value={week.id} className="mt-0">
             {week.program_days && week.program_days.length > 0 ? (
               <DndContext 
                 collisionDetection={closestCenter} 
@@ -105,7 +92,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                   items={week.program_days.map(d => d.id)} 
                   strategy={rectSortingStrategy}
                 >
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2 pl-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                     {week.program_days.map((day) => (
                       <SortableDay
                         key={day.id}
@@ -169,7 +156,6 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                 </Button>
               </div>
             )}
-          </div>
         </TabsContent>
       ))}
     </>
