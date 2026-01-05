@@ -112,15 +112,6 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
             onChange={(e) => setStartDate(e.target.value)}
             className="rounded-none h-7 w-32 text-xs"
           />
-          <Button
-            type="button"
-            onClick={generateDates}
-            disabled={!startDate || weekdays.length === 0}
-            size="sm"
-            className="rounded-none h-7 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs md:hidden"
-          >
-            Δημιουργία
-          </Button>
         </div>
 
         <div className="flex items-center gap-1">
@@ -138,6 +129,15 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
               </Button>
             );
           })}
+          <Button
+            type="button"
+            onClick={generateDates}
+            disabled={!startDate || weekdays.length === 0}
+            size="sm"
+            className="rounded-none h-7 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs md:hidden ml-1"
+          >
+            Δημιουργία
+          </Button>
         </div>
 
         <Button
