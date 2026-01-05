@@ -66,67 +66,59 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
       </PopoverTrigger>
       
       <PopoverContent 
-        className="w-80 p-0 rounded-none z-[100]" 
+        className="w-80 p-0 rounded-none bg-background border z-50" 
         align="start"
-        side="bottom"
-        sideOffset={4}
-        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {/* Search Input */}
-        <div className="p-3 border-b border-gray-200">
+        <div className="p-2 border-b">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
             <Input
               placeholder="Αναζήτηση χρήστη..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 rounded-none h-8"
+              className="pl-7 rounded-none h-7 text-xs"
             />
           </div>
         </div>
 
-        <div 
-          className="max-h-[200px] overflow-y-auto overscroll-contain touch-pan-y"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          <div className="p-2 space-y-1">
-            {availableUsers.length === 0 ? (
-              <div className="p-4 text-center text-sm text-gray-500">
-                Όλοι οι χρήστες έχουν επιλεγεί
-              </div>
-            ) : filteredUsers.length === 0 ? (
-              <div className="p-4 text-center text-sm text-gray-500">
-                Δεν βρέθηκαν χρήστες
-              </div>
-            ) : (
-              filteredUsers.map(user => (
+        <div className="max-h-48 overflow-y-auto space-y-1 p-2">
+          {availableUsers.length === 0 ? (
+            <div className="p-4 text-center text-sm text-gray-500">
+              Όλοι οι χρήστες έχουν επιλεγεί
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="p-4 text-center text-sm text-gray-500">
+              Δεν βρέθηκαν χρήστες
+            </div>
+          ) : (
+            filteredUsers.map(user => {
+              const isSelected = selectedUserIds.includes(user.id);
+              return (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-3 rounded hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200 cursor-pointer select-none"
                   onClick={(e) => handleUserClick(user.id, e)}
-                  onMouseDown={(e) => e.preventDefault()}
+                  className={`flex items-center gap-2 p-1.5 cursor-pointer rounded-none transition-colors ${
+                    isSelected ? 'bg-[#00ffba]/20 border border-[#00ffba]' : 'hover:bg-muted'
+                  }`}
                 >
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <Avatar className="w-6 h-6 flex-shrink-0">
-                      <AvatarImage src={user.photo_url || user.avatar_url || ""} alt={user.name} />
-                      <AvatarFallback className="text-xs">
-                        {getUserInitials(user.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm truncate">{user.name}</p>
-                      <p className="text-xs text-gray-600 truncate">{user.email}</p>
-                    </div>
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={user.photo_url || user.avatar_url || ""} />
+                    <AvatarFallback className="text-[8px]">{getUserInitials(user.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{user.name}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
                   </div>
-                  {selectedUserIds.includes(user.id) ? (
-                    <Check className="w-4 h-4 text-[#00ffba] flex-shrink-0" />
+                  {isSelected ? (
+                    <Check className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
                   ) : (
-                    <Plus className="w-4 h-4 text-[#00ffba] flex-shrink-0" />
+                    <Plus className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
                   )}
                 </div>
-              ))
-            )}
-          </div>
+              );
+            })
+          )}
         </div>
       </PopoverContent>
     </Popover>
