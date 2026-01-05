@@ -76,7 +76,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
         </CollapsibleTrigger>
         
         <div className="flex items-center gap-1">
-          {/* Test Day Icon */}
+          {/* Test Day Icon - Yellow */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -92,7 +92,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             <Dumbbell className="w-4 h-4" />
           </button>
           
-          {/* Competition Day Icon */}
+          {/* Competition Day Icon - Purple */}
           <button
             onClick={(e) => {
               e.stopPropagation();
