@@ -31,7 +31,7 @@ export const WeekTabsHeader: React.FC<WeekTabsHeaderProps> = ({
 }) => {
   return (
     <div className="overflow-x-auto scrollbar-thin">
-      <TabsList className="h-auto p-0 bg-transparent gap-1 flex-nowrap w-max min-w-full">
+      <TabsList className="h-auto p-0 bg-transparent gap-1 flex-nowrap w-max min-w-full justify-start">
         {weeks.map((week, index) => {
           const previousWeek = index > 0 ? weeks[index - 1] : undefined;
           return (
