@@ -35,7 +35,7 @@ export const SelectedUsersDisplay: React.FC<SelectedUsersDisplayProps> = ({
                 <AvatarImage src={user.photo_url || user.avatar_url || ""} alt={user.name} />
                 <AvatarFallback className="text-[8px]">{getUserInitials(user.name)}</AvatarFallback>
               </Avatar>
-              <span className="text-[10px] truncate max-w-[60px]">{user.name}</span>
+              <span className="text-[10px] truncate max-w-[40px] md:max-w-[60px]">{user.name}</span>
               <button
                 onClick={(e) => onRemoveUser(user.id, e)}
                 className="text-gray-400 hover:text-red-500 p-0"
@@ -55,7 +55,8 @@ export const SelectedUsersDisplay: React.FC<SelectedUsersDisplayProps> = ({
         disabled={selectedUsers.length === 0}
         className="rounded-none text-[9px] h-4 px-1 text-gray-500 hover:text-red-600 disabled:opacity-40"
       >
-        Καθαρισμός
+        <span className="hidden md:inline">Καθαρισμός</span>
+        <X className="w-3 h-3 md:hidden" />
       </Button>
     </div>
   );
