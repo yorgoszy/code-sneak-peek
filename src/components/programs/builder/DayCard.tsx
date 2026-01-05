@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Collapsible } from "@/components/ui/collapsible";
 import { GripVertical } from "lucide-react";
@@ -65,7 +65,6 @@ export const DayCard: React.FC<DayCardProps> = ({
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(day.name);
-  const originalNameRef = useRef<string | null>(null);
 
   const handleNameDoubleClick = () => {
     setIsEditing(true);
@@ -90,44 +89,16 @@ export const DayCard: React.FC<DayCardProps> = ({
 
   const handleToggleTestDay = () => {
     const newIsTestDay = !day.is_test_day;
-    if (newIsTestDay) {
-      // Αποθήκευσε το αρχικό όνομα και μετονόμασε
-      if (!originalNameRef.current) {
-        originalNameRef.current = day.name;
-      }
-      onUpdateDayName('Ημέρα Τεστ');
-      // Απενεργοποίησε τον αγώνα αν είναι ενεργός
-      if (day.is_competition_day) {
-        onUpdateDayCompetitionDay(false);
-      }
-    } else {
-      // Επαναφορά του αρχικού ονόματος
-      if (originalNameRef.current) {
-        onUpdateDayName(originalNameRef.current);
-        originalNameRef.current = null;
-      }
+    if (newIsTestDay && day.is_competition_day) {
+      onUpdateDayCompetitionDay(false);
     }
     onUpdateDayTestDay(newIsTestDay, day.test_types || []);
   };
 
   const handleToggleCompetitionDay = () => {
     const newIsCompetitionDay = !day.is_competition_day;
-    if (newIsCompetitionDay) {
-      // Αποθήκευσε το αρχικό όνομα και μετονόμασε
-      if (!originalNameRef.current) {
-        originalNameRef.current = day.name;
-      }
-      onUpdateDayName('Ημέρα Αγώνα');
-      // Απενεργοποίησε το τεστ αν είναι ενεργό
-      if (day.is_test_day) {
-        onUpdateDayTestDay(false, []);
-      }
-    } else {
-      // Επαναφορά του αρχικού ονόματος
-      if (originalNameRef.current) {
-        onUpdateDayName(originalNameRef.current);
-        originalNameRef.current = null;
-      }
+    if (newIsCompetitionDay && day.is_test_day) {
+      onUpdateDayTestDay(false, []);
     }
     onUpdateDayCompetitionDay(newIsCompetitionDay);
   };
