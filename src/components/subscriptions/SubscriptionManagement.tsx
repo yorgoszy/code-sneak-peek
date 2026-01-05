@@ -158,15 +158,46 @@ export const SubscriptionManagement: React.FC = () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
 
-      const { data: subscriptions, error: subscriptionsError } = await supabase
+      // Φόρτωση ενεργών συνδρομών
+      const { data: activeSubscriptions, error: activeError } = await supabase
         .from('user_subscriptions')
         .select(`
           *,
           subscription_types (*),
           app_users!user_subscriptions_user_id_fkey (name, email, subscription_status, role, user_status)
         `)
-        .or(`status.eq.active,and(status.eq.expired,end_date.gte.${thirtyDaysAgoStr})`)
+        .eq('status', 'active')
         .order('end_date', { ascending: true });
+
+      if (activeError) {
+        console.error('Error loading active subscriptions:', activeError);
+        throw activeError;
+      }
+      console.log('✅ Active subscriptions loaded:', activeSubscriptions?.length);
+
+      // Φόρτωση ληγμένων του τελευταίου μήνα
+      const { data: expiredSubscriptions, error: expiredError } = await supabase
+        .from('user_subscriptions')
+        .select(`
+          *,
+          subscription_types (*),
+          app_users!user_subscriptions_user_id_fkey (name, email, subscription_status, role, user_status)
+        `)
+        .eq('status', 'expired')
+        .gte('end_date', thirtyDaysAgoStr)
+        .order('end_date', { ascending: true });
+
+      if (expiredError) {
+        console.error('Error loading expired subscriptions:', expiredError);
+        throw expiredError;
+      }
+      console.log('✅ Expired subscriptions loaded:', expiredSubscriptions?.length);
+
+      // Συνδυασμός και ταξινόμηση
+      const subscriptions = [...(activeSubscriptions || []), ...(expiredSubscriptions || [])].sort((a, b) => 
+        new Date(a.end_date).getTime() - new Date(b.end_date).getTime()
+      );
+      const subscriptionsError = null;
 
       if (subscriptionsError) {
         console.error('Error loading user subscriptions:', subscriptionsError);
