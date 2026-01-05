@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { User, Play, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
@@ -63,7 +62,8 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
         return (
           <div 
             key={assignment.id}
-            className="flex items-center justify-between p-2 border border-gray-200 rounded-none hover:bg-gray-50 h-12"
+            onClick={() => onProgramClick(assignment)}
+            className="flex items-center justify-between p-2 border border-gray-200 rounded-none hover:bg-gray-50 h-12 cursor-pointer"
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <Avatar className="w-8 h-8 flex-shrink-0">
@@ -89,21 +89,13 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onProgramClick(assignment)}
-                className="h-7 w-7 p-0 rounded-none"
-                title={isCompleted ? "Προβολή ολοκληρωμένης προπόνησης" : "Έναρξη προπόνησης"}
-              >
-                {isCompleted ? (
-                  <CheckCircle className="h-3.5 w-3.5 text-[#00ffba]" />
-                ) : isMissed ? (
-                  <CheckCircle className="h-3.5 w-3.5 text-red-600" />
-                ) : (
-                  <Play className="h-3.5 w-3.5" />
-                )}
-              </Button>
+              {isCompleted ? (
+                <CheckCircle className="h-4 w-4 text-[#00ffba]" />
+              ) : isMissed ? (
+                <CheckCircle className="h-4 w-4 text-red-600" />
+              ) : (
+                <Play className="h-4 w-4 text-gray-600" />
+              )}
             </div>
           </div>
         );
