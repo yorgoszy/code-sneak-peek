@@ -88,7 +88,7 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
               <span>{week.name}</span>
             )}
           </TabsTrigger>
-          <div className="flex opacity-0 group-hover:opacity-100 transition-opacity ml-0.5">
+          <div className="flex ml-0.5">
             <Button
               size="sm"
               variant="ghost"
