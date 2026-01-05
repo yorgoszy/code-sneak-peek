@@ -66,9 +66,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
 
   const handleAssignmentModeChange = (mode: 'individual' | 'group') => {
     setAssignmentMode(mode);
-    if (mode === 'group' && onMultipleAthleteChange) {
-      onMultipleAthleteChange([]);
-    }
+    // Δεν καθαρίζουμε τους ήδη επιλεγμένους χρήστες όταν αλλάζουμε mode
     if (mode === 'individual' && onGroupChange) {
       onGroupChange('');
     }
@@ -258,14 +256,12 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
         </div>
       </div>
 
-      {/* Row 2: Selected Users Display - Only shows when users are selected */}
-      {assignmentMode === 'individual' && selectedUsers.length > 0 && (
-        <SelectedUsersDisplay
-          selectedUsers={selectedUsers}
-          onClearAll={handleClearAll}
-          onRemoveUser={handleRemoveUser}
-        />
-      )}
+      {/* Row 2: Selected Users Display - Always visible */}
+      <SelectedUsersDisplay
+        selectedUsers={selectedUsers}
+        onClearAll={handleClearAll}
+        onRemoveUser={handleRemoveUser}
+      />
     </div>
   );
 };
