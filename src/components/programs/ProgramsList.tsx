@@ -58,11 +58,15 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   };
 
   const getAssignmentInfo = (program: Program) => {
-    const assignment = program.program_assignments?.[0];
-    if (!assignment) return null;
+    // Εμφάνιση ΟΛΩ των assignments, όχι μόνο του πρώτου
+    const assignments = program.program_assignments || [];
+    if (assignments.length === 0) return null;
 
-    const totalSessions = assignment.training_dates?.length || 0;
-    const completedSessions = Math.floor(totalSessions * 0.3); // Mock: 30% completed
+    // Αν υπάρχει μόνο ένα assignment, δείχνουμε τα στοιχεία του χρήστη
+    const firstAssignment = assignments[0];
+    const totalSessions = firstAssignment.training_dates?.length || 0;
+    // Αφαιρέθηκε το mock 30% completed - τώρα ξεκινά από 0
+    const completedSessions = 0;
     const remainingSessions = totalSessions - completedSessions;
     const progressPercentage = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
     
@@ -71,10 +75,13 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
       completedSessions,
       remainingSessions,
       progressPercentage,
-      assignmentDate: assignment.created_at ? format(new Date(assignment.created_at), 'dd/MM/yyyy', { locale: el }) : '',
-      athletePhoto: assignment.app_users?.photo_url,
-      athleteName: assignment.app_users?.name,
-      trainingDates: assignment.training_dates || []
+      assignmentDate: firstAssignment.created_at ? format(new Date(firstAssignment.created_at), 'dd/MM/yyyy', { locale: el }) : '',
+      athletePhoto: assignments.length === 1 ? firstAssignment.app_users?.photo_url : undefined,
+      athleteName: assignments.length === 1 
+        ? firstAssignment.app_users?.name 
+        : `${assignments.length} αθλητές`,
+      trainingDates: firstAssignment.training_dates || [],
+      assignmentsCount: assignments.length
     };
   };
 
