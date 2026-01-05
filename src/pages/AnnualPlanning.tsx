@@ -848,17 +848,20 @@ const AnnualPlanning: React.FC = () => {
   }, [dialogYear, dialogOpen, dialogMacrocycle]);
 
   const fetchUsers = async () => {
-    // Φέρνουμε ΟΛΟΥΣ τους χρήστες (ίδιο με το program builder)
+    // Φέρνουμε ΟΛΟΥΣ τους χρήστες χωρίς κανένα φίλτρο (ίδιο με το program builder - useProgramsData)
+    console.log('📊 AnnualPlanning - Fetching ALL users from app_users...');
+    
     const { data, error } = await supabase
       .from('app_users')
       .select('id, name, email, avatar_url, photo_url')
       .order('name');
 
     if (error) {
-      console.error('Error fetching users:', error);
+      console.error('❌ Error fetching users:', error);
       return;
     }
 
+    console.log('✅ AnnualPlanning - Fetched', data?.length || 0, 'users');
     setUsers(data || []);
   };
 

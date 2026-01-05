@@ -214,53 +214,62 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
         training_days: typeof program.training_days === 'number' 
           ? [] 
           : program.training_days || [],
-        program_weeks: (program.program_weeks || []).map((week: any) => ({
-          id: week.id,
-          name: week.name,
-          week_number: week.week_number,
-          program_days: (week.program_days || []).map((day: any) => ({
-            id: day.id,
-            name: day.name,
-            day_number: day.day_number,
-            estimated_duration_minutes: day.estimated_duration_minutes || undefined,
-            is_test_day: day.is_test_day || false,
-            test_types: day.test_types || [],
-            is_competition_day: day.is_competition_day || false,
-            program_blocks: (day.program_blocks || []).map((block: any) => ({
-              id: block.id,
-              name: block.name,
-              block_order: block.block_order,
-              training_type: block.training_type || undefined,
-              workout_format: block.workout_format || undefined,
-              workout_duration: block.workout_duration || undefined,
-              block_sets: block.block_sets || 1,
-              program_exercises: (block.program_exercises || []).map((exercise: any) => ({
-                id: exercise.id,
-                exercise_id: exercise.exercise_id,
-                sets: exercise.sets,
-                reps: exercise.reps,
-                reps_mode: exercise.reps_mode || 'reps',
-                kg: exercise.kg || undefined,
-                kg_mode: exercise.kg_mode || 'kg',
-                percentage_1rm: exercise.percentage_1rm || undefined,
-                velocity_ms: exercise.velocity_ms || undefined,
-                tempo: exercise.tempo || undefined,
-                rest: exercise.rest || undefined,
-                notes: exercise.notes || undefined,
-                exercise_order: exercise.exercise_order,
-                // Handle potential SelectQueryError in exercises
-                exercises: exercise.exercises && typeof exercise.exercises === 'object' && !exercise.exercises.error
-                  ? {
-                      id: exercise.exercises.id,
-                      name: exercise.exercises.name,
-                      description: exercise.exercises.description || undefined,
-                      video_url: exercise.exercises.video_url || undefined
-                    }
-                  : undefined
+        // ΣΗΜΑΝΤΙΚΟ: Ταξινόμηση εβδομάδων, ημερών και blocks
+        program_weeks: [...(program.program_weeks || [])]
+          .sort((a: any, b: any) => (a.week_number || 0) - (b.week_number || 0))
+          .map((week: any) => ({
+            id: week.id,
+            name: week.name,
+            week_number: week.week_number,
+            program_days: [...(week.program_days || [])]
+              .sort((a: any, b: any) => (a.day_number || 0) - (b.day_number || 0))
+              .map((day: any) => ({
+                id: day.id,
+                name: day.name,
+                day_number: day.day_number,
+                estimated_duration_minutes: day.estimated_duration_minutes || undefined,
+                is_test_day: day.is_test_day || false,
+                test_types: day.test_types || [],
+                is_competition_day: day.is_competition_day || false,
+                program_blocks: [...(day.program_blocks || [])]
+                  .sort((a: any, b: any) => (a.block_order || 0) - (b.block_order || 0))
+                  .map((block: any) => ({
+                    id: block.id,
+                    name: block.name,
+                    block_order: block.block_order,
+                    training_type: block.training_type || undefined,
+                    workout_format: block.workout_format || undefined,
+                    workout_duration: block.workout_duration || undefined,
+                    block_sets: block.block_sets || 1,
+                    program_exercises: [...(block.program_exercises || [])]
+                      .sort((a: any, b: any) => (a.exercise_order || 0) - (b.exercise_order || 0))
+                      .map((exercise: any) => ({
+                        id: exercise.id,
+                        exercise_id: exercise.exercise_id,
+                        sets: exercise.sets,
+                        reps: exercise.reps,
+                        reps_mode: exercise.reps_mode || 'reps',
+                        kg: exercise.kg || undefined,
+                        kg_mode: exercise.kg_mode || 'kg',
+                        percentage_1rm: exercise.percentage_1rm || undefined,
+                        velocity_ms: exercise.velocity_ms || undefined,
+                        tempo: exercise.tempo || undefined,
+                        rest: exercise.rest || undefined,
+                        notes: exercise.notes || undefined,
+                        exercise_order: exercise.exercise_order,
+                        // Handle potential SelectQueryError in exercises
+                        exercises: exercise.exercises && typeof exercise.exercises === 'object' && !exercise.exercises.error
+                          ? {
+                              id: exercise.exercises.id,
+                              name: exercise.exercises.name,
+                              description: exercise.exercises.description || undefined,
+                              video_url: exercise.exercises.video_url || undefined
+                            }
+                          : undefined
+                      }))
+                  }))
               }))
-            }))
           }))
-        }))
       } : undefined;
 
       return {

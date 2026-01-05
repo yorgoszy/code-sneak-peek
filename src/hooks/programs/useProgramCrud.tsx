@@ -204,7 +204,7 @@ export const useProgramCrud = () => {
         }))
       });
 
-      // Δημιουργούμε τη δομή εβδομάδων με νέα IDs
+      // Δημιουργούμε τη δομή εβδομάδων με νέα IDs - ΣΥΜΠΕΡΙΛΑΜΒΑΝΟΥΜΕ ΟΛΑ ΤΑ ΠΕΔΙΑ ΤΩΝ BLOCKS
       const duplicatedWeeks = (program.program_weeks || []).map(week => ({
         id: crypto.randomUUID(),
         name: week.name,
@@ -214,10 +214,18 @@ export const useProgramCrud = () => {
           name: day.name,
           day_number: day.day_number,
           estimated_duration_minutes: day.estimated_duration_minutes,
+          is_test_day: day.is_test_day,
+          test_types: day.test_types,
+          is_competition_day: day.is_competition_day,
           program_blocks: (day.program_blocks || []).map(block => ({
             id: crypto.randomUUID(),
             name: block.name,
             block_order: block.block_order,
+            // ΣΗΜΑΝΤΙΚΟ: Αντιγραφή training_type, workout_format, workout_duration, block_sets
+            training_type: block.training_type,
+            workout_format: block.workout_format,
+            workout_duration: block.workout_duration,
+            block_sets: block.block_sets,
             program_exercises: (block.program_exercises || []).map(exercise => ({
               id: crypto.randomUUID(),
               exercise_id: exercise.exercise_id,

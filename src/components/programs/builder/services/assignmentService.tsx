@@ -119,8 +119,14 @@ export const assignmentService = {
 
       console.log('💾 [AssignmentService] Data to insert into database:', insertData);
 
-      // Ελέγχουμε αν το πρόγραμμα έχει τη σωστή δομή
-      await this.ensureProgramStructureExists(assignmentData.program);
+      // ΒΕΛΤΙΣΤΟΠΟΙΗΣΗ: Αν skipStructureRecreation=true, παραλείπουμε τη δημιουργία δομής
+      // (η δομή δημιουργήθηκε ήδη από τον πρώτο χρήστη)
+      if (!assignmentData.skipStructureRecreation) {
+        console.log('🏗️ [AssignmentService] Creating/updating program structure...');
+        await this.ensureProgramStructureExists(assignmentData.program);
+      } else {
+        console.log('⏭️ [AssignmentService] Skipping structure recreation (already created for another user)');
+      }
 
       // Αποθήκευση στη βάση δεδομένων
       const { data, error } = await supabase

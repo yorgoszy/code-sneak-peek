@@ -133,7 +133,10 @@ export const useProgramBuilderDialogLogic = ({
       console.log('🎯 Creating assignments for users:', program.user_ids);
       console.log('🎯 Training dates:', trainingDates);
 
-      // Create assignments for each selected user
+      // Create assignments for each selected user - ΒΕΛΤΙΣΤΟΠΟΙΗΣΗ:
+      // Η δομή δημιουργείται μόνο μία φορά (στον πρώτο χρήστη), μετά μόνο assignments
+      let structureCreated = false;
+      
       for (const userId of program.user_ids) {
         console.log(`📝 Creating assignment for user: ${userId}`);
         
@@ -141,10 +144,12 @@ export const useProgramBuilderDialogLogic = ({
           program: programToAssign,
           userId,
           trainingDates,
-          coachId
+          coachId,
+          skipStructureRecreation: structureCreated // Skip recreation after first one
         };
 
         await assignmentService.saveAssignment(assignmentData);
+        structureCreated = true; // After first assignment, skip structure recreation
         console.log(`✅ Assignment created for user: ${userId}`);
       }
 
