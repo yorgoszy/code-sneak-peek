@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ensureCompetitionProgramCard } from "@/pages/annual-planning/competitionProgram";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { MultipleRecipientSelection } from "@/components/annual-planning/MultipleRecipientSelection";
+import { AnnualPlanningUserSelection } from "@/components/annual-planning/AnnualPlanningUserSelection";
 
 
 interface AppUser {
@@ -1805,21 +1805,12 @@ const AnnualPlanning: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
                 {/* User/Group Selection - Only show for admins */}
                 <div className="space-y-1">
-                  {isAdminUser ? (
-                    <MultipleRecipientSelection
-                      selectedUserIds={selectedUserIds}
-                      selectedGroupIds={selectedGroupIds}
-                      onUserIdsChange={setSelectedUserIds}
-                      onGroupIdsChange={setSelectedGroupIds}
-                      disabled={isAssigning}
-                      coachId={effectiveCoachId}
-                    />
-                  ) : roleLoading ? (
+                  {roleLoading ? (
                     <div className="p-1.5 bg-muted rounded-none text-xs text-muted-foreground">
                       Φόρτωση...
                     </div>
                   ) : (
-                    <MultipleRecipientSelection
+                    <AnnualPlanningUserSelection
                       selectedUserIds={selectedUserIds}
                       selectedGroupIds={selectedGroupIds}
                       onUserIdsChange={setSelectedUserIds}
