@@ -3,9 +3,12 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Dumbbell, Trophy } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Dumbbell, Trophy, Clipboard } from "lucide-react";
+import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
+import type { Day } from '../types';
 
 interface DayCardHeaderProps {
+  day: Day;
   dayName: string;
   isTestDay: boolean;
   isCompetitionDay: boolean;
@@ -22,9 +25,11 @@ interface DayCardHeaderProps {
   onRemoveDay: () => void;
   onToggleTestDay: () => void;
   onToggleCompetitionDay: () => void;
+  onPasteBlock?: () => void;
 }
 
 export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
+  day,
   dayName,
   isTestDay,
   isCompetitionDay,
@@ -40,8 +45,16 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onDuplicateDay,
   onRemoveDay,
   onToggleTestDay,
-  onToggleCompetitionDay
+  onToggleCompetitionDay,
+  onPasteBlock
 }) => {
+  const { copyDay, hasBlock } = useProgramClipboard();
+
+  const handleCopyDay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    copyDay(day);
+  };
+
   return (
     <CardHeader className="py-1 px-2">
       <div className="flex justify-between items-center">
@@ -119,6 +132,29 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
           >
             <Plus className="w-3 h-3" />
           </Button>
+          {hasBlock() && onPasteBlock && (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPasteBlock();
+              }}
+              size="sm"
+              variant="ghost"
+              className="rounded-none text-[#00ffba]"
+              title="Επικόλληση Block"
+            >
+              <Clipboard className="w-3 h-3" />
+            </Button>
+          )}
+          <Button
+            onClick={handleCopyDay}
+            size="sm"
+            variant="ghost"
+            className="rounded-none"
+            title="Αντιγραφή Ημέρας στο Clipboard"
+          >
+            <Copy className="w-3 h-3 text-blue-500" />
+          </Button>
           <Button
             onClick={(e) => {
               e.stopPropagation();
@@ -127,6 +163,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             size="sm"
             variant="ghost"
             className="rounded-none"
+            title="Διπλασιασμός Ημέρας"
           >
             <Copy className="w-3 h-3" />
           </Button>

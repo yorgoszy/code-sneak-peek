@@ -1,5 +1,6 @@
 
 import { ProgramStructure, Block } from './useProgramBuilderState';
+import { toast } from 'sonner';
 
 export const useDayActions = (
   program: ProgramStructure,
@@ -183,12 +184,51 @@ export const useDayActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
+  // Paste day from clipboard
+  const pasteDay = (weekId: string, clipboardDay: any) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        const newDay = {
+          id: generateId(),
+          name: clipboardDay.name,
+          day_number: (week.program_days?.length || 0) + 1,
+          is_test_day: clipboardDay.is_test_day,
+          test_types: clipboardDay.test_types,
+          is_competition_day: clipboardDay.is_competition_day,
+          program_blocks: (clipboardDay.program_blocks || []).map((block, blockIdx) => ({
+            id: generateId(),
+            name: block.name,
+            block_order: blockIdx + 1,
+            training_type: block.training_type,
+            workout_format: block.workout_format,
+            workout_duration: block.workout_duration,
+            block_sets: block.block_sets || 1,
+            program_exercises: (block.program_exercises || []).map((exercise, exIdx) => ({
+              ...exercise,
+              id: generateId(),
+              exercise_order: exIdx + 1
+            }))
+          }))
+        };
+        
+        return {
+          ...week,
+          program_days: [...(week.program_days || []), newDay]
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+    toast.success('Ημέρα επικολλήθηκε επιτυχώς');
+  };
+
   return {
     addDay,
     removeDay,
     duplicateDay,
     updateDayName,
     updateDayTestDay,
-    updateDayCompetitionDay
+    updateDayCompetitionDay,
+    pasteDay
   };
 };

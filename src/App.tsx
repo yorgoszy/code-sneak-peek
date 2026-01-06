@@ -7,6 +7,7 @@ import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 import { BlockTimerProvider } from "@/contexts/BlockTimerContext";
 import { AIProgramBuilderProvider } from "@/contexts/AIProgramBuilderContext";
+import { ProgramClipboardProvider } from "@/contexts/ProgramClipboardContext";
 import { AIControlledProgramBuilderDialog } from "@/components/programs/builder/AIControlledProgramBuilderDialog";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RootRedirect } from "@/components/RootRedirect";
@@ -86,9 +87,10 @@ function App() {
       <AnalyticsProvider>
         <QueryClientProvider client={queryClient}>
           <AIProgramBuilderProvider>
-            <BlockTimerProvider>
-              <div className="min-h-screen bg-gray-50">
-                <Toaster />
+            <ProgramClipboardProvider>
+              <BlockTimerProvider>
+                <div className="min-h-screen bg-gray-50">
+                  <Toaster />
                 <AIControlledProgramBuilderDialog />
                 <Suspense fallback={<CustomLoadingScreen />}>
               <Routes>
@@ -173,9 +175,10 @@ function App() {
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-              </Suspense>
-            </div>
-          </BlockTimerProvider>
+                </Suspense>
+              </div>
+            </BlockTimerProvider>
+            </ProgramClipboardProvider>
           </AIProgramBuilderProvider>
         </QueryClientProvider>
       </AnalyticsProvider>
