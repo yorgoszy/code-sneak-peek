@@ -6,6 +6,7 @@ export interface User {
   avatar_url?: string;
   role?: string;
   is_athlete?: boolean;
+  coach_id?: string | null;
 }
 
 export interface Exercise {

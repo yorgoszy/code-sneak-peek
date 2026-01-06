@@ -33,6 +33,9 @@ const Programs = () => {
 
   const { users, exercises } = useProgramsData();
   const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
+  
+  // Get admin's id to filter users by coach_id
+  const adminCoachId = dashboardUserProfile?.id;
 
   // Check for tablet size
   React.useEffect(() => {
@@ -294,6 +297,7 @@ const Programs = () => {
             onDeleteExercise={() => {}}
             onOpenBuilder={handleOpenBuilder}
             onConvertToTemplate={handleConvertToTemplate}
+            coachId={adminCoachId}
           />
         </div>
       </div>

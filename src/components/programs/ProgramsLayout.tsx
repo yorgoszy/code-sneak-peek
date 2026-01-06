@@ -30,6 +30,8 @@ interface ProgramsLayoutProps {
   onOpenBuilder: () => void;
   isTemplateMode?: boolean;
   onConvertToTemplate?: (program: Program) => void;
+  /** Coach ID για φιλτράρισμα χρηστών */
+  coachId?: string;
 }
 
 export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
@@ -47,7 +49,8 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   onDuplicateProgram,
   onOpenBuilder,
   isTemplateMode = false,
-  onConvertToTemplate
+  onConvertToTemplate,
+  coachId
 }) => {
   const isMobile = useIsMobile();
 
@@ -82,6 +85,7 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
           editingProgram={editingProgram}
           isOpen={builderDialogOpen}
           onOpenChange={onBuilderDialogClose}
+          coachId={coachId}
         />
       )}
     </div>
