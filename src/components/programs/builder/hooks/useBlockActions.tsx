@@ -1,5 +1,6 @@
 
 import { ProgramStructure } from './useProgramBuilderState';
+import { toast } from 'sonner';
 
 export const useBlockActions = (
   program: ProgramStructure,
@@ -279,6 +280,47 @@ export const useBlockActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
+  // Paste block from clipboard
+  const pasteBlock = (weekId: string, dayId: string, clipboardBlock: any) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          program_days: (week.program_days || []).map(day => {
+            if (day.id === dayId) {
+              const currentBlocks = day.program_blocks || [];
+              
+              // Create new block with new IDs
+              const newBlock = {
+                id: generateId(),
+                name: clipboardBlock.name,
+                block_order: currentBlocks.length + 1,
+                training_type: clipboardBlock.training_type,
+                workout_format: clipboardBlock.workout_format,
+                workout_duration: clipboardBlock.workout_duration,
+                block_sets: clipboardBlock.block_sets || 1,
+                program_exercises: (clipboardBlock.program_exercises || []).map((exercise, idx) => ({
+                  ...exercise,
+                  id: generateId(),
+                  exercise_order: idx + 1
+                }))
+              };
+              
+              return {
+                ...day,
+                program_blocks: [...currentBlocks, newBlock]
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+    toast.success('Block επικολλήθηκε επιτυχώς');
+  };
+
   return {
     addBlock,
     removeBlock,
@@ -287,6 +329,7 @@ export const useBlockActions = (
     updateBlockTrainingType,
     updateBlockWorkoutFormat,
     updateBlockWorkoutDuration,
-    updateBlockSets
+    updateBlockSets,
+    pasteBlock
   };
 };

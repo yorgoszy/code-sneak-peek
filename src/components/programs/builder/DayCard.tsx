@@ -7,6 +7,7 @@ import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
 import { DayCalculations } from './DayCalculations';
 import { Exercise, Day } from '../types';
+import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 
 interface DayCardProps {
   day: Day;
@@ -31,6 +32,7 @@ interface DayCardProps {
   onDuplicateExercise: (blockId: string, exerciseId: string) => void;
   onReorderBlocks: (oldIndex: number, newIndex: number) => void;
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
+  onPasteBlock?: (block: any) => void;
   dragHandleProps?: {
     attributes: any;
     listeners: any;
@@ -60,11 +62,20 @@ export const DayCard: React.FC<DayCardProps> = ({
   onDuplicateExercise,
   onReorderBlocks,
   onReorderExercises,
+  onPasteBlock,
   dragHandleProps
 }) => {
+  const { paste, hasBlock } = useProgramClipboard();
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(day.name);
+
+  const handlePasteBlock = () => {
+    const clipboardData = paste();
+    if (clipboardData && clipboardData.type === 'block' && onPasteBlock) {
+      onPasteBlock(clipboardData.data);
+    }
+  };
 
   const handleNameDoubleClick = () => {
     setIsEditing(true);
@@ -117,6 +128,7 @@ export const DayCard: React.FC<DayCardProps> = ({
       
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <DayCardHeader
+          day={day}
           dayName={day.name}
           isTestDay={day.is_test_day || false}
           isCompetitionDay={day.is_competition_day || false}
@@ -133,6 +145,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           onRemoveDay={onRemoveDay}
           onToggleTestDay={handleToggleTestDay}
           onToggleCompetitionDay={handleToggleCompetitionDay}
+          onPasteBlock={hasBlock() ? handlePasteBlock : undefined}
         />
         
         {isOpen && (

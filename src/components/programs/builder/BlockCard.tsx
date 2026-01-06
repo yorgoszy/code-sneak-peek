@@ -128,6 +128,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
       <Card className={`rounded-none w-full transition-all duration-200 ${isOpen ? 'min-h-[120px]' : 'min-h-[40px]'}`} style={{ backgroundColor: '#31365d' }}>
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <BlockCardHeader
+            block={block}
             blockName={block.name}
             trainingType={block.training_type}
             workoutFormat={block.workout_format}

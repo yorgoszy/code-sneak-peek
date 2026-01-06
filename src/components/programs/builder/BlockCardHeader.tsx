@@ -7,8 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Copy } from "lucide-react";
 import { formatTimeInput } from '@/utils/timeFormatting';
+import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
+import type { Block } from '../types';
 
 interface BlockCardHeaderProps {
+  block?: Block;
   blockName: string;
   trainingType?: string;
   workoutFormat?: string;
@@ -29,6 +32,7 @@ interface BlockCardHeaderProps {
   onWorkoutFormatChange: (format: string) => void;
   onWorkoutDurationChange: (duration: string) => void;
   onBlockSetsChange: (sets: number) => void;
+  onCopyBlock?: () => void;
 }
 
 // Training types που εμφανίζονται στο dropdown
@@ -57,6 +61,7 @@ const WORKOUT_FORMAT_LABELS: Record<string, string> = {
 };
 
 export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
+  block,
   blockName,
   trainingType,
   workoutFormat,
@@ -76,8 +81,20 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onTrainingTypeChange,
   onWorkoutFormatChange,
   onWorkoutDurationChange,
-  onBlockSetsChange
+  onBlockSetsChange,
+  onCopyBlock
 }) => {
+  const { copyBlock } = useProgramClipboard();
+
+  const handleCopyToClipboard = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (block) {
+      copyBlock(block);
+    } else if (onCopyBlock) {
+      onCopyBlock();
+    }
+  };
+
   return (
     <CardHeader className="p-1 space-y-0">
       <div className="flex justify-between items-center">
@@ -116,6 +133,15 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             <Plus className="w-2 h-2 text-white" />
           </Button>
           <Button
+            onClick={handleCopyToClipboard}
+            size="sm"
+            variant="ghost"
+            className="rounded-none hover:bg-gray-600"
+            title="Αντιγραφή Block στο Clipboard"
+          >
+            <Copy className="w-2 h-2 text-blue-400" />
+          </Button>
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               onDuplicateBlock();
@@ -123,6 +149,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             size="sm"
             variant="ghost"
             className="rounded-none hover:bg-gray-600"
+            title="Διπλασιασμός Block"
           >
             <Copy className="w-2 h-2 text-white" />
           </Button>
