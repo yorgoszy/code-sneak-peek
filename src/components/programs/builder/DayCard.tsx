@@ -65,7 +65,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   onPasteBlock,
   dragHandleProps
 }) => {
-  const { paste, hasBlock } = useProgramClipboard();
+  const { paste, hasBlock, clearClipboard } = useProgramClipboard();
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(day.name);
@@ -74,6 +74,7 @@ export const DayCard: React.FC<DayCardProps> = ({
     const clipboardData = paste();
     if (clipboardData && clipboardData.type === 'block' && onPasteBlock) {
       onPasteBlock(clipboardData.data);
+      clearClipboard();
     }
   };
 
