@@ -1,11 +1,11 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
-import type { Block, Day } from '@/components/programs/types';
+import type { Block, Day, Week } from '@/components/programs/types';
 
 interface ClipboardData {
-  type: 'block' | 'day';
-  data: Block | Day;
+  type: 'block' | 'day' | 'week';
+  data: Block | Day | Week;
   timestamp: number;
 }
 
@@ -13,9 +13,11 @@ interface ProgramClipboardContextType {
   clipboard: ClipboardData | null;
   copyBlock: (block: Block) => void;
   copyDay: (day: Day) => void;
+  copyWeek: (week: Week) => void;
   paste: () => ClipboardData | null;
   hasBlock: boolean;
   hasDay: boolean;
+  hasWeek: boolean;
   clearClipboard: () => void;
 }
 
@@ -98,6 +100,19 @@ export const ProgramClipboardProvider: React.FC<{ children: React.ReactNode }> =
     toast.success('Ημέρα αντιγράφηκε στο clipboard');
   }, [saveToStorage]);
 
+  const copyWeek = useCallback((week: Week) => {
+    // Deep clone week with all days, blocks and exercises
+    const clonedWeek: Week = JSON.parse(JSON.stringify(week));
+    const data: ClipboardData = {
+      type: 'week',
+      data: clonedWeek,
+      timestamp: Date.now()
+    };
+    setClipboard(data);
+    saveToStorage(data);
+    toast.success('Εβδομάδα αντιγράφηκε στο clipboard');
+  }, [saveToStorage]);
+
   const paste = useCallback(() => {
     if (clipboard) {
       // Return deep clone to avoid mutations
@@ -111,6 +126,7 @@ export const ProgramClipboardProvider: React.FC<{ children: React.ReactNode }> =
 
   const hasBlock = clipboard?.type === 'block';
   const hasDay = clipboard?.type === 'day';
+  const hasWeek = clipboard?.type === 'week';
 
   const clearClipboard = useCallback(() => {
     setClipboard(null);
@@ -122,9 +138,11 @@ export const ProgramClipboardProvider: React.FC<{ children: React.ReactNode }> =
       clipboard,
       copyBlock,
       copyDay,
+      copyWeek,
       paste,
       hasBlock,
       hasDay,
+      hasWeek,
       clearClipboard
     }}>
       {children}

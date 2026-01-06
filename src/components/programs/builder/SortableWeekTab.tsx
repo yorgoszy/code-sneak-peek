@@ -2,11 +2,12 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { TabsTrigger } from "@/components/ui/tabs";
-import { Copy, Trash2, GripVertical } from "lucide-react";
+import { Copy, Trash2, GripVertical, ClipboardPaste } from "lucide-react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { WeekMetrics } from './WeekMetrics';
 import { Week } from '../types';
+import { useProgramClipboard } from '@/contexts/ProgramClipboardContext';
 
 interface SortableWeekTabProps {
   week: Week;
@@ -20,6 +21,7 @@ interface SortableWeekTabProps {
   setEditingWeekName: (name: string) => void;
   onDuplicateWeek: (weekId: string) => void;
   onRemoveWeek: (weekId: string) => void;
+  onPasteWeek?: (clipboardWeek: Week) => void;
 }
 
 export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
@@ -33,8 +35,11 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
   onWeekNameKeyPress,
   setEditingWeekName,
   onDuplicateWeek,
-  onRemoveWeek
+  onRemoveWeek,
+  onPasteWeek
 }) => {
+  const { copyWeek, paste, hasWeek, clearClipboard } = useProgramClipboard();
+  
   const {
     attributes,
     listeners,
@@ -48,6 +53,20 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+  };
+
+  const handleCopyWeek = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    copyWeek(week);
+  };
+
+  const handlePasteWeek = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const clipboardData = paste();
+    if (clipboardData && clipboardData.type === 'week' && onPasteWeek) {
+      onPasteWeek(clipboardData.data as Week);
+      clearClipboard();
+    }
   };
 
   return (
@@ -92,13 +111,21 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
             <Button
               size="sm"
               variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDuplicateWeek(week.id);
-              }}
+              onClick={handleCopyWeek}
               className="h-4 w-4 p-0 rounded-none"
+              title="Αντιγραφή Εβδομάδας"
             >
               <Copy className="w-2 h-2" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handlePasteWeek}
+              className={`h-4 w-4 p-0 rounded-none ${hasWeek ? 'text-[#00ffba] hover:text-[#00ffba]/80' : 'text-gray-400'}`}
+              disabled={!hasWeek}
+              title={hasWeek ? "Επικόλληση Εβδομάδας" : "Αντέγραψε πρώτα μια εβδομάδα"}
+            >
+              <ClipboardPaste className="w-2 h-2" />
             </Button>
             <Button
               size="sm"
