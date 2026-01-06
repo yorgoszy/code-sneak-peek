@@ -137,6 +137,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onReorderDays={actions.reorderDays}
         onReorderBlocks={actions.reorderBlocks}
         onReorderExercises={actions.reorderExercises}
+        onPasteBlock={actions.pasteBlock}
         onSave={handleSave}
         onAssignments={handleAssign}
         onClose={handleClose}
