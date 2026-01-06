@@ -172,12 +172,14 @@ const Groups = () => {
     setCreating(true);
     try {
       // Create the group using the app_users id instead of auth user id
+      // Admin groups get admin's coach_id
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
         .insert([{
           name: groupName,
           description: groupDescription,
-          created_by: userProfile.id
+          created_by: userProfile.id,
+          coach_id: userProfile.id // Admin is the coach_id for admin-created groups
         }])
         .select()
         .single();

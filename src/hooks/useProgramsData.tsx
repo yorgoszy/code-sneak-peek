@@ -16,10 +16,10 @@ export const useProgramsData = () => {
     try {
       setLoading(true);
       
-      // Fetch users
+      // Fetch users with coach_id for filtering
       const { data: usersData } = await supabase
         .from('app_users')
-        .select('*')
+        .select('id, name, email, photo_url, avatar_url, role, is_athlete, coach_id')
         .order('name');
 
       // Fetch exercises with categories

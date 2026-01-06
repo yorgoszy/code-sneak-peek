@@ -31,16 +31,21 @@ export const useProgramBuilderDialogLogic = ({
   coachId
 }: UseProgramBuilderDialogLogicProps) => {
   const availableUsers = useMemo(() => {
+    console.log('🔍 useProgramBuilderDialogLogic - filtering users, coachId:', coachId);
+    console.log('🔍 Total users before filter:', users.length);
+    
     // First filter by role
     let filtered = users.filter(user => 
       user.role === 'athlete' || 
       user.role === 'user' || 
       !user.role  // Include users without role defined
     );
+    console.log('🔍 After role filter:', filtered.length);
     
     // If coachId is provided, filter by coach_id
     if (coachId) {
       filtered = filtered.filter(user => user.coach_id === coachId);
+      console.log('🔍 After coachId filter:', filtered.length);
     }
     
     return filtered;
