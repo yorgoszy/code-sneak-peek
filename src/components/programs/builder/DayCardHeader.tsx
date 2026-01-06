@@ -132,7 +132,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
           >
             <Plus className="w-3 h-3" />
           </Button>
-          {hasBlock && onPasteBlock && (
+          {onPasteBlock && (
             <Button
               onClick={(e) => {
                 e.stopPropagation();
@@ -140,8 +140,9 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
               }}
               size="sm"
               variant="ghost"
-              className="rounded-none text-[#00ffba]"
-              title="Επικόλληση Block"
+              className="rounded-none"
+              disabled={!hasBlock}
+              title={hasBlock ? "Επικόλληση Block" : "Αντέγραψε πρώτα ένα block"}
             >
               <Clipboard className="w-3 h-3" />
             </Button>
