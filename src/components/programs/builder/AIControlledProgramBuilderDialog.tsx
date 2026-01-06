@@ -167,6 +167,7 @@ export const AIControlledProgramBuilderDialog: React.FC = () => {
         onReorderDays={actions.reorderDays}
         onReorderBlocks={actions.reorderBlocks}
         onReorderExercises={actions.reorderExercises}
+        onPasteBlock={actions.pasteBlock}
         onSave={handleSave}
         onAssignments={handleAssign}
         onTrainingDatesChange={handleTrainingDatesChange}
