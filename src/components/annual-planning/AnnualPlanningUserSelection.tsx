@@ -78,17 +78,11 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('app_users')
         .select('id, name, email, photo_url, avatar_url, coach_id')
-        .in('role', ['athlete', 'user'])
         .order('name');
 
-      if (coachId) {
-        query = query.eq('coach_id', coachId);
-      }
-
-      const { data, error } = await query;
       if (!error && data) {
         setUsers(data);
       }
@@ -101,7 +95,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
 
   const fetchGroups = async () => {
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('groups')
         .select(`
           id,
@@ -112,11 +106,6 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
         `)
         .order('name');
 
-      if (coachId) {
-        query = query.eq('coach_id', coachId);
-      }
-
-      const { data, error } = await query;
       if (!error && data) {
         const groupsWithMemberCount = data.map(group => ({
           id: group.id,
@@ -182,19 +171,16 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
 
   const handleGroupChange = async (groupId: string) => {
     onGroupIdsChange([groupId]);
-    
+
     // Fetch group members and add them to selectedUserIds
     try {
       const { data: membersData, error } = await supabase
         .from('group_members')
-        .select(`
-          user_id,
-          app_users!inner(id)
-        `)
+        .select('user_id')
         .eq('group_id', groupId);
 
       if (!error && membersData) {
-        const memberIds = membersData.map(m => m.app_users.id);
+        const memberIds = membersData.map(m => m.user_id);
         onUserIdsChange(memberIds);
       }
     } catch (error) {
