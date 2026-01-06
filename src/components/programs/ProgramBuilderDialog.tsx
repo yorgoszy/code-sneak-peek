@@ -97,11 +97,13 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     actions.handleToggleAssignmentMode(isMultiple);
   };
 
+  console.log('🔍 ProgramBuilderDialog - availableUsers:', availableUsers.length, 'coachId:', coachId);
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <ProgramBuilderDialogContent
         program={program}
-        users={users}
+        users={availableUsers}
         exercises={exercises}
         onNameChange={(name) => updateProgram({ name })}
         onDescriptionChange={(description) => updateProgram({ description })}
