@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import type { Block, Day } from '@/components/programs/types';
 
@@ -14,8 +14,8 @@ interface ProgramClipboardContextType {
   copyBlock: (block: Block) => void;
   copyDay: (day: Day) => void;
   paste: () => ClipboardData | null;
-  hasBlock: () => boolean;
-  hasDay: () => boolean;
+  hasBlock: boolean;
+  hasDay: boolean;
   clearClipboard: () => void;
 }
 
@@ -23,22 +23,46 @@ const ProgramClipboardContext = createContext<ProgramClipboardContextType | unde
 
 const STORAGE_KEY = 'program_clipboard';
 
-export const ProgramClipboardProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [clipboard, setClipboard] = useState<ClipboardData | null>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        // Expire clipboard after 1 hour
-        if (Date.now() - parsed.timestamp < 3600000) {
-          return parsed;
-        }
+const loadFromStorage = (): ClipboardData | null => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Expire clipboard after 1 hour
+      if (Date.now() - parsed.timestamp < 3600000) {
+        return parsed;
       }
-    } catch {
-      // ignore
     }
-    return null;
-  });
+  } catch {
+    // ignore
+  }
+  return null;
+};
+
+export const ProgramClipboardProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [clipboard, setClipboard] = useState<ClipboardData | null>(() => loadFromStorage());
+
+  // Listen for storage changes from other tabs/windows
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        setClipboard(loadFromStorage());
+      }
+    };
+    
+    // Also refresh on focus (same tab updates)
+    const handleFocus = () => {
+      setClipboard(loadFromStorage());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
 
   const saveToStorage = useCallback((data: ClipboardData) => {
     try {
@@ -85,13 +109,8 @@ export const ProgramClipboardProvider: React.FC<{ children: React.ReactNode }> =
     return null;
   }, [clipboard]);
 
-  const hasBlock = useCallback(() => {
-    return clipboard?.type === 'block';
-  }, [clipboard]);
-
-  const hasDay = useCallback(() => {
-    return clipboard?.type === 'day';
-  }, [clipboard]);
+  const hasBlock = clipboard?.type === 'block';
+  const hasDay = clipboard?.type === 'day';
 
   const clearClipboard = useCallback(() => {
     setClipboard(null);
