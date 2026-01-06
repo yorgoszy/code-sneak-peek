@@ -145,7 +145,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           onRemoveDay={onRemoveDay}
           onToggleTestDay={handleToggleTestDay}
           onToggleCompetitionDay={handleToggleCompetitionDay}
-          onPasteBlock={hasBlock && onPasteBlock ? handlePasteBlock : undefined}
+          onPasteBlock={onPasteBlock ? handlePasteBlock : undefined}
         />
         
         {isOpen && (

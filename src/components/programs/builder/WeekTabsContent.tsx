@@ -140,6 +140,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                         onReorderExercises={(blockId, oldIndex, newIndex) =>
                           onReorderExercises(week.id, day.id, blockId, oldIndex, newIndex)
                         }
+                        onPasteBlock={(clipboardBlock) => onPasteBlock(week.id, day.id, clipboardBlock)}
                       />
                     ))}
                   </div>
