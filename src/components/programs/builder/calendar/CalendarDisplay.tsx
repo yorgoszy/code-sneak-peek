@@ -33,7 +33,7 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   return (
     <Card className="rounded-none">
       <CardHeader className="py-2">
-        <CardTitle className="flex items-center justify-between text-sm">
+        <CardTitle className="flex items-center justify-between text-[11px]">
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-4 h-4" />
             Επιλογή Ημερομηνιών
