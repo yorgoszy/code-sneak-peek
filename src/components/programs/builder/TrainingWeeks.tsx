@@ -18,6 +18,7 @@ interface TrainingWeeksProps {
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
   onUpdateWeekName: (weekId: string, name: string) => void;
+  onPasteWeek?: (clipboardWeek: Week) => void;
   onAddDay: (weekId: string) => void;
   onRemoveDay: (weekId: string, dayId: string) => void;
   onDuplicateDay: (weekId: string, dayId: string) => void;
@@ -51,6 +52,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onRemoveWeek,
   onDuplicateWeek,
   onUpdateWeekName,
+  onPasteWeek,
   onAddDay,
   onRemoveDay,
   onDuplicateDay,
@@ -129,6 +131,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                       setEditingWeekName={setEditingWeekName}
                       onDuplicateWeek={onDuplicateWeek}
                       onRemoveWeek={onRemoveWeek}
+                      onPasteWeek={onPasteWeek}
                     />
                   </SortableContext>
                 </div>

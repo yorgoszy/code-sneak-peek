@@ -161,6 +161,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onRemoveWeek={actions.removeWeek}
         onDuplicateWeek={actions.duplicateWeek}
         onUpdateWeekName={actions.updateWeekName}
+        onPasteWeek={actions.pasteWeek}
         onAddDay={actions.addDay}
         onRemoveDay={actions.removeDay}
         onDuplicateDay={actions.duplicateDay}

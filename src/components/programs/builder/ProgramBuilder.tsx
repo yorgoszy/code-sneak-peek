@@ -20,6 +20,7 @@ interface ProgramBuilderProps {
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
   onUpdateWeekName: (weekId: string, name: string) => void;
+  onPasteWeek?: (clipboardWeek: any) => void;
   onAddDay: (weekId: string) => void;
   onRemoveDay: (weekId: string, dayId: string) => void;
   onDuplicateDay: (weekId: string, dayId: string) => void;
@@ -64,6 +65,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onRemoveWeek,
   onDuplicateWeek,
   onUpdateWeekName,
+  onPasteWeek,
   onAddDay,
   onRemoveDay,
   onDuplicateDay,
@@ -133,6 +135,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onRemoveWeek={onRemoveWeek}
         onDuplicateWeek={onDuplicateWeek}
         onUpdateWeekName={onUpdateWeekName}
+        onPasteWeek={onPasteWeek}
         onAddDay={onAddDay}
         onRemoveDay={onRemoveDay}
         onDuplicateDay={onDuplicateDay}

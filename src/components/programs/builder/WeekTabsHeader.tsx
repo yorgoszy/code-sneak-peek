@@ -15,6 +15,7 @@ interface WeekTabsHeaderProps {
   setEditingWeekName: (name: string) => void;
   onDuplicateWeek: (weekId: string) => void;
   onRemoveWeek: (weekId: string) => void;
+  onPasteWeek?: (clipboardWeek: Week) => void;
 }
 
 export const WeekTabsHeader: React.FC<WeekTabsHeaderProps> = ({
@@ -27,7 +28,8 @@ export const WeekTabsHeader: React.FC<WeekTabsHeaderProps> = ({
   onWeekNameKeyPress,
   setEditingWeekName,
   onDuplicateWeek,
-  onRemoveWeek
+  onRemoveWeek,
+  onPasteWeek
 }) => {
   return (
     <div className="overflow-x-auto scrollbar-gray-thin">
@@ -48,6 +50,7 @@ export const WeekTabsHeader: React.FC<WeekTabsHeaderProps> = ({
               setEditingWeekName={setEditingWeekName}
               onDuplicateWeek={onDuplicateWeek}
               onRemoveWeek={onRemoveWeek}
+              onPasteWeek={onPasteWeek}
             />
           );
         })}

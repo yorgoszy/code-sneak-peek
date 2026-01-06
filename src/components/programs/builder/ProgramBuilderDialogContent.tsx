@@ -21,6 +21,7 @@ interface ProgramBuilderDialogContentProps {
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
   onUpdateWeekName: (weekId: string, name: string) => void;
+  onPasteWeek?: (clipboardWeek: any) => void;
   onAddDay: (weekId: string) => void;
   onRemoveDay: (weekId: string, dayId: string) => void;
   onDuplicateDay: (weekId: string, dayId: string) => void;
@@ -66,6 +67,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onRemoveWeek,
   onDuplicateWeek,
   onUpdateWeekName,
+  onPasteWeek,
   onAddDay,
   onRemoveDay,
   onDuplicateDay,
@@ -114,6 +116,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onRemoveWeek={onRemoveWeek}
             onDuplicateWeek={onDuplicateWeek}
             onUpdateWeekName={onUpdateWeekName}
+            onPasteWeek={onPasteWeek}
             onAddDay={onAddDay}
             onRemoveDay={onRemoveDay}
             onDuplicateDay={onDuplicateDay}
