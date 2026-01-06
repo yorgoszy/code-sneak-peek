@@ -2021,7 +2021,7 @@ const AnnualPlanning: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-2 sm:p-4 pt-0">
-          <div className="overflow-x-auto scrollbar-gold">
+          <div className="overflow-x-auto scrollbar-gray">
             <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
               <thead>
                 <tr>

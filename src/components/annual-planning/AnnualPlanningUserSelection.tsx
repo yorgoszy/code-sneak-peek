@@ -78,11 +78,16 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('app_users')
         .select('id, name, email, photo_url, avatar_url, coach_id')
         .order('name');
 
+      if (coachId) {
+        query = query.eq('coach_id', coachId);
+      }
+
+      const { data, error } = await query;
       if (!error && data) {
         setUsers(data);
       }
@@ -95,7 +100,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
 
   const fetchGroups = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('groups')
         .select(`
           id,
@@ -106,6 +111,11 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
         `)
         .order('name');
 
+      if (coachId) {
+        query = query.eq('coach_id', coachId);
+      }
+
+      const { data, error } = await query;
       if (!error && data) {
         const groupsWithMemberCount = data.map(group => ({
           id: group.id,
