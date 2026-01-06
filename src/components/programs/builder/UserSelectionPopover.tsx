@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Check, Search } from "lucide-react";
 import { matchesSearchTerm } from "@/lib/utils";
 import type { User as UserType } from '../types';
@@ -82,7 +83,7 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
           </div>
         </div>
 
-        <div className="max-h-48 overflow-y-scroll overscroll-contain" style={{ scrollbarWidth: 'thin' }}>
+        <ScrollArea className="h-48">
           {availableUsers.length === 0 ? (
             <div className="p-4 text-center text-sm text-gray-500">
               Όλοι οι χρήστες έχουν επιλεγεί
@@ -122,7 +123,7 @@ export const UserSelectionPopover: React.FC<UserSelectionPopoverProps> = ({
               })}
             </div>
           )}
-        </div>
+        </ScrollArea>
       </PopoverContent>
     </Popover>
   );

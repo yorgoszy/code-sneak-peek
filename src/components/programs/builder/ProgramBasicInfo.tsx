@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { User, Users, Save, Plus, Check, Search, X } from "lucide-react";
 import { matchesSearchTerm } from "@/lib/utils";
 import { SelectedUsersDisplay } from './SelectedUsersDisplay';
@@ -116,7 +117,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           placeholder="Όνομα"
-          className="rounded-none h-6 text-[11px] w-[90px] md:w-[120px] border border-gray-300 placeholder:text-[8px]"
+          className="rounded-none h-6 text-[11px] w-[90px] md:w-[120px] border border-gray-300 placeholder:text-[11px]"
         />
         
         {/* User Search Popover - 20% width */}
@@ -132,7 +133,14 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                 {availableUsers.length === 0 ? "Όλοι επιλεγμένοι" : "Χρήστης..."}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-72 p-0 rounded-none z-[100]" align="start" side="bottom" sideOffset={4}>
+            <PopoverContent
+              className="w-72 p-0 rounded-none z-[100]"
+              align="start"
+              side="bottom"
+              sideOffset={4}
+              onWheelCapture={(e) => e.stopPropagation()}
+              onTouchMoveCapture={(e) => e.stopPropagation()}
+            >
               <div className="p-2 border-b border-gray-200">
                 <div className="relative">
                   <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
@@ -144,7 +152,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                   />
                 </div>
               </div>
-              <div className="max-h-48 overflow-y-scroll overscroll-contain" style={{ scrollbarWidth: 'thin' }}>
+              <ScrollArea className="h-48">
                 <div className="p-1 space-y-0.5">
                   {filteredUsers.length === 0 ? (
                     <div className="p-3 text-center text-xs text-gray-500">
@@ -177,7 +185,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
                     ))
                   )}
                 </div>
-              </div>
+              </ScrollArea>
             </PopoverContent>
           </Popover>
         )}
