@@ -831,11 +831,11 @@ const Users = () => {
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
-                                        className="rounded-none text-blue-600 hover:text-blue-700 text-[10px] px-1"
+                                        className="rounded-none text-blue-600 hover:text-blue-700"
                                         onClick={() => handleTestPasswordReset(user)}
-                                        title="Test Password Reset - https://www.hyperkids.gr/auth/reset-password"
+                                        title="Test Password Reset"
                                       >
-                                        hyperkids.gr/auth/reset-password
+                                        <Mail className="h-3 w-3" />
                                       </Button>
                                       <Button 
                                         variant="outline" 
