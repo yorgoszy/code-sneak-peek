@@ -122,6 +122,16 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
 
   const loadProgramFromData = useCallback((programData: any) => {
     console.log('🔄 Loading program data:', programData);
+    console.log('🔄 [loadProgramFromData] Sources check:', {
+      hasWeeks: !!programData.weeks,
+      weeksLength: programData.weeks?.length || 0,
+      hasProgramWeeks: !!programData.program_weeks,
+      programWeeksLength: programData.program_weeks?.length || 0
+    });
+    
+    // ΚΡΙΤΙΚΟ: Χρησιμοποιούμε program_weeks (από DB) ή weeks (αν υπάρχει ήδη στο format του builder)
+    const sourceWeeks = programData.program_weeks || programData.weeks || [];
+    console.log('🔄 [loadProgramFromData] Using source with', sourceWeeks.length, 'weeks');
     
     const loadedProgram: ProgramStructure = {
       id: programData.id,
@@ -133,11 +143,11 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
       is_multiple_assignment: programData.is_multiple_assignment || true,
       is_template: programData.is_template || false,
       training_dates: programData.training_dates?.map((date: string) => new Date(date)) || [],
-      weeks: programData.program_weeks?.map((week: any) => ({
+      weeks: sourceWeeks.map((week: any) => ({
         id: week.id,
         name: week.name,
         week_number: week.week_number,
-        program_days: week.program_days?.map((day: any) => ({
+        program_days: (week.program_days || []).map((day: any) => ({
           id: day.id,
           name: day.name,
           day_number: day.day_number,
@@ -145,9 +155,9 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
           is_test_day: day.is_test_day || false,
           test_types: day.test_types || [],
           is_competition_day: day.is_competition_day || false,
-          program_blocks: day.program_blocks
-            ?.sort((a: any, b: any) => (a.block_order || 0) - (b.block_order || 0))
-            ?.map((block: any) => ({
+          program_blocks: (day.program_blocks || [])
+            .sort((a: any, b: any) => (a.block_order || 0) - (b.block_order || 0))
+            .map((block: any) => ({
               id: block.id,
               name: block.name,
               block_order: block.block_order,
@@ -155,9 +165,9 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
               workout_format: block.workout_format || '',
               workout_duration: block.workout_duration || '',
               block_sets: block.block_sets || 1,
-              program_exercises: block.program_exercises
-                ?.sort((a: any, b: any) => (a.exercise_order || 0) - (b.exercise_order || 0))
-                ?.map((pe: any) => {
+              program_exercises: (block.program_exercises || [])
+                .sort((a: any, b: any) => (a.exercise_order || 0) - (b.exercise_order || 0))
+                .map((pe: any) => {
                   const exercise = exercises.find(ex => ex.id === pe.exercise_id);
                   return {
                     id: pe.id,
@@ -175,12 +185,23 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
                     notes: pe.notes || '',
                     exercises: exercise
                   };
-                }) || []
-            })) || []
-        })) || []
-      })) || []
+                })
+            }))
+        }))
+      }))
     };
 
+    console.log('🔄 [loadProgramFromData] Loaded program structure:', {
+      id: loadedProgram.id,
+      weeksCount: loadedProgram.weeks.length,
+      totalDays: loadedProgram.weeks.reduce((t, w) => t + (w.program_days?.length || 0), 0),
+      totalBlocks: loadedProgram.weeks.reduce((t, w) => 
+        t + w.program_days.reduce((dt, d) => dt + (d.program_blocks?.length || 0), 0), 0),
+      totalExercises: loadedProgram.weeks.reduce((t, w) => 
+        t + w.program_days.reduce((dt, d) => 
+          dt + d.program_blocks.reduce((bt, b) => bt + (b.program_exercises?.length || 0), 0), 0), 0)
+    });
+    
     setProgram(loadedProgram);
   }, [exercises]);
 
