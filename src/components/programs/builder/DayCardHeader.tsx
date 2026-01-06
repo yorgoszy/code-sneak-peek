@@ -132,7 +132,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
           >
             <Plus className="w-3 h-3" />
           </Button>
-          {hasBlock() && onPasteBlock && (
+          {hasBlock && onPasteBlock && (
             <Button
               onClick={(e) => {
                 e.stopPropagation();
