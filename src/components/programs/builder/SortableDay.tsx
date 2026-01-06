@@ -29,6 +29,7 @@ interface SortableDayProps {
   onDuplicateExercise: (blockId: string, exerciseId: string) => void;
   onReorderBlocks: (oldIndex: number, newIndex: number) => void;
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
+  onPasteBlock?: (clipboardBlock: any) => void;
 }
 
 export const SortableDay: React.FC<SortableDayProps> = (props) => {
