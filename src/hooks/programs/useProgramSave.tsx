@@ -19,23 +19,38 @@ export const useProgramSave = () => {
       });
 
       // 🔍 ΑΝΑΛΥΣΗ ΑΣΚΗΣΕΩΝ ΠΡΙΝ ΤΗΝ ΑΠΟΘΗΚΕΥΣΗ
-      // ΚΡΙΤΙΚΟ: Χρησιμοποιούμε program_weeks αν υπάρχει και έχει δεδομένα, αλλιώς weeks
-      // Αυτό είναι σημαντικό γιατί τα δεδομένα από τη βάση έρχονται ως program_weeks
+      // ΚΡΙΤΙΚΟ: Χρησιμοποιούμε weeks (από builder) ή program_weeks (από DB)
       let weeks: any[] = [];
       
-      // Πρώτη προτεραιότητα: weeks αν έχει δεδομένα
+      // Log διαθέσιμων πηγών για debugging
+      console.log('🔍 [SAVE] Data sources check:', {
+        hasWeeks: !!programData.weeks,
+        weeksIsArray: Array.isArray(programData.weeks),
+        weeksLength: programData.weeks?.length || 0,
+        hasProgramWeeks: !!programData.program_weeks,
+        programWeeksIsArray: Array.isArray(programData.program_weeks),
+        programWeeksLength: programData.program_weeks?.length || 0
+      });
+      
+      // Πρώτη προτεραιότητα: weeks αν έχει δεδομένα (από program builder)
       if (programData.weeks && Array.isArray(programData.weeks) && programData.weeks.length > 0) {
         weeks = programData.weeks;
-        console.log('🔍 [SAVE] Using weeks source: weeks array');
+        console.log('🔍 [SAVE] Using weeks source: weeks array with', weeks.length, 'weeks');
       } 
-      // Δεύτερη προτεραιότητα: program_weeks αν έχει δεδομένα
+      // Δεύτερη προτεραιότητα: program_weeks αν έχει δεδομένα (από DB fetch)
       else if (programData.program_weeks && Array.isArray(programData.program_weeks) && programData.program_weeks.length > 0) {
         weeks = programData.program_weeks;
-        console.log('🔍 [SAVE] Using weeks source: program_weeks array');
+        console.log('🔍 [SAVE] Using weeks source: program_weeks array with', weeks.length, 'weeks');
       }
-      // Αν δεν υπάρχουν weeks, σημαίνει ότι το πρόγραμμα δεν έχει δομή - ΔΕΝ ΑΠΟΘΗΚΕΥΟΥΜΕ
+      // ΚΡΙΤΙΚΟ: Αν δεν υπάρχουν weeks αλλά υπάρχει program ID, πρέπει να κρατήσουμε την υπάρχουσα δομή!
+      else if (programData.id) {
+        console.warn('⚠️ [SAVE] No weeks data found but program has ID - ABORTING structure deletion to prevent data loss');
+        console.warn('⚠️ [SAVE] This will only update program metadata, NOT structure');
+        // Αντί να συνεχίσουμε και να σβήσουμε τα δεδομένα, κρατάμε weeks κενό
+        // και ΔΕΝ θα διαγράψουμε την υπάρχουσα δομή (γραμμή 150)
+      }
       else {
-        console.warn('⚠️ [SAVE] No weeks data found - this will only update program metadata, NOT structure');
+        console.log('ℹ️ [SAVE] No weeks data - new program without structure');
       }
       
       console.log('🔍 [SAVE] Weeks count:', weeks.length);
@@ -148,8 +163,57 @@ export const useProgramSave = () => {
           // ΚΡΙΤΙΚΟ: Διαγράφουμε την υπάρχουσα δομή ΜΟΝΟ αν έχουμε νέα weeks για αποθήκευση
           // Αυτό αποτρέπει τη διαγραφή της δομής αν η αποθήκευση είναι μόνο για metadata
           if (weeks && weeks.length > 0) {
-            console.log('🔄 Deleting existing structure before recreation (have', weeks.length, 'weeks to save)...');
-            await deleteExistingStructure(programData.id);
+            // SAFETY CHECK: Βεβαιωνόμαστε ότι τα weeks έχουν πραγματικά περιεχόμενο
+            let totalExercisesInNewWeeks = 0;
+            weeks.forEach((week: any) => {
+              week.program_days?.forEach((day: any) => {
+                day.program_blocks?.forEach((block: any) => {
+                  totalExercisesInNewWeeks += block.program_exercises?.length || 0;
+                });
+              });
+            });
+            
+            console.log('🔍 [SAFETY CHECK] New weeks have', totalExercisesInNewWeeks, 'exercises total');
+            
+            // ΚΡΙΤΙΚΟ: Αν έχουμε weeks αλλά δεν έχουν ασκήσεις, ελέγχουμε αν είναι ηθελημένο
+            // Για να μη σβήσουμε κατά λάθος ένα πρόγραμμα με ασκήσεις
+            if (totalExercisesInNewWeeks === 0) {
+              // Ελέγχουμε αν υπήρχαν ασκήσεις στην υπάρχουσα δομή
+              const { count: existingExercisesCount } = await supabase
+                .from('program_exercises')
+                .select('id', { count: 'exact', head: true })
+                .in('block_id', 
+                  await supabase
+                    .from('program_blocks')
+                    .select('id')
+                    .in('day_id', 
+                      await supabase
+                        .from('program_days')
+                        .select('id')
+                        .in('week_id',
+                          await supabase
+                            .from('program_weeks')
+                            .select('id')
+                            .eq('program_id', programData.id)
+                            .then(r => r.data?.map(w => w.id) || [])
+                        )
+                        .then(r => r.data?.map(d => d.id) || [])
+                    )
+                    .then(r => r.data?.map(b => b.id) || [])
+                );
+              
+              if (existingExercisesCount && existingExercisesCount > 0) {
+                console.error('🚨 [CRITICAL SAFETY] Aborting structure deletion - existing program has', existingExercisesCount, 'exercises but new data has 0!');
+                console.error('🚨 [CRITICAL SAFETY] This would delete all exercises. Keeping existing structure.');
+                // ΔΕΝ διαγράφουμε - κρατάμε την υπάρχουσα δομή
+              } else {
+                console.log('🔄 Deleting existing structure before recreation (have', weeks.length, 'weeks to save, 0 exercises - confirmed empty)...');
+                await deleteExistingStructure(programData.id);
+              }
+            } else {
+              console.log('🔄 Deleting existing structure before recreation (have', weeks.length, 'weeks with', totalExercisesInNewWeeks, 'exercises to save)...');
+              await deleteExistingStructure(programData.id);
+            }
           } else {
             console.log('⚠️ No weeks to save - keeping existing structure intact');
           }
