@@ -261,6 +261,37 @@ html, body {
     scrollbar-width: none;
   }
 
+  /* Gray scrollbar */
+  .scrollbar-gray {
+    scrollbar-width: thin;
+    scrollbar-color: #9ca3af transparent;
+  }
+
+  .scrollbar-gray::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-gray::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-gray::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+    border-radius: 2px;
+  }
+
+  .scrollbar-gray::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+
+  @media (max-width: 1024px) {
+    .scrollbar-gray::-webkit-scrollbar {
+      width: 1.2px;
+      height: 1.2px;
+    }
+  }
+
   /* Gray thin scrollbar for weeks */
   .scrollbar-gray-thin {
     scrollbar-width: thin;
