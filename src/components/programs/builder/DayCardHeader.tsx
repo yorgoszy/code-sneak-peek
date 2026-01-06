@@ -140,7 +140,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
               }}
               size="sm"
               variant="ghost"
-              className="rounded-none"
+              className={`rounded-none ${hasBlock ? 'text-[#00ffba] hover:text-[#00ffba]/80' : 'text-gray-400'}`}
               disabled={!hasBlock}
               title={hasBlock ? "Επικόλληση Block" : "Αντέγραψε πρώτα ένα block"}
             >
