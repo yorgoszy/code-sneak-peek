@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useProgramClipboard } from '@/contexts/ProgramClipboardContext';
 import { useExercises } from '@/hooks/useExercises';
-import { useCoachContext } from '@/contexts/CoachContext';
+import { useSafeCoachContext } from '@/contexts/CoachContext';
 import { SimpleExerciseSelectionDialog } from './SimpleExerciseSelectionDialog';
 import { formatTimeInput } from '@/utils/timeFormatting';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
@@ -64,10 +64,10 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
 
   const { paste, hasBlock, clearClipboard } = useProgramClipboard();
   const { exercises: availableExercises } = useExercises();
-  const { coachId: contextCoachId } = useCoachContext();
+  const coachContext = useSafeCoachContext();
 
   // Χρησιμοποιούμε το coachId από context αν δεν περαστεί ως prop
-  const effectiveCoachId = coachId || contextCoachId;
+  const effectiveCoachId = coachId || coachContext?.coachId || null;
 
   const handlePasteBlock = () => {
     const clipboardData = paste();

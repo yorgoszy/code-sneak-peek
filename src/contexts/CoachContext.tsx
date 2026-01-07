@@ -51,6 +51,12 @@ export const useCoachContext = (): CoachContextType => {
   return context;
 };
 
+// Safe version that returns null if not within CoachProvider
+export const useSafeCoachContext = (): CoachContextType | null => {
+  const context = useContext(CoachContext);
+  return context ?? null;
+};
+
 // Hook that throws if coachId is null (for components that require a coachId)
 export const useRequiredCoachId = (): string => {
   const { coachId, isLoading } = useCoachContext();
