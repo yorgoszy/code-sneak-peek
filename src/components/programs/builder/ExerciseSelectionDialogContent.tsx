@@ -115,12 +115,11 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
               </Button>
               <Button
                 onClick={onClose}
-                variant="outline"
+                variant="destructive"
                 className="rounded-none flex-1 sm:flex-none"
                 size="sm"
               >
-                <X className="w-4 h-4 mr-1" />
-                Άκυρο
+                <X className="w-4 h-4" />
               </Button>
             </div>
           </DialogTitle>
