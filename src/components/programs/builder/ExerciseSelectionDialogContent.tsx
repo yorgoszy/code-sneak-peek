@@ -108,7 +108,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
 
   return (
     <>
-      <DialogContent className="rounded-none max-w-6xl w-[95vw] md:w-[90vw] lg:w-auto max-h-[90vh] sm:max-h-[80vh] p-3 sm:p-4 md:p-6 flex flex-col">
+      <DialogContent className="rounded-none max-w-6xl w-[95vw] md:w-[90vw] lg:w-auto h-[90vh] sm:h-[80vh] p-3 sm:p-4 md:p-6 flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1 text-sm sm:text-base">
