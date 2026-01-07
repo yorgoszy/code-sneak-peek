@@ -24,6 +24,7 @@ interface DayCardContentProps {
   onDuplicateExercise: (blockId: string, exerciseId: string) => void;
   onReorderBlocks: (oldIndex: number, newIndex: number) => void;
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
+  onPasteBlock?: (blockId: string) => void;
 }
 
 export const DayCardContent: React.FC<DayCardContentProps> = ({
@@ -42,7 +43,8 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
   onRemoveExercise,
   onDuplicateExercise,
   onReorderBlocks,
-  onReorderExercises
+  onReorderExercises,
+  onPasteBlock
 }) => {
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
@@ -80,6 +82,7 @@ export const DayCardContent: React.FC<DayCardContentProps> = ({
                   onRemoveExercise={(exerciseId) => onRemoveExercise(block.id, exerciseId)}
                   onDuplicateExercise={(exerciseId) => onDuplicateExercise(block.id, exerciseId)}
                   onReorderExercises={(oldIndex, newIndex) => onReorderExercises(block.id, oldIndex, newIndex)}
+                  onPasteBlock={onPasteBlock ? () => onPasteBlock(block.id) : undefined}
                 />
               ))}
             </div>

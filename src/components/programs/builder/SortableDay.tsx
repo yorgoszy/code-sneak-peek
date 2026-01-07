@@ -30,6 +30,8 @@ interface SortableDayProps {
   onReorderBlocks: (oldIndex: number, newIndex: number) => void;
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
   onPasteBlock?: (clipboardBlock: any) => void;
+  onPasteBlockAtBlock?: (blockId: string) => void;
+  onPasteDay?: () => void;
 }
 
 export const SortableDay: React.FC<SortableDayProps> = (props) => {

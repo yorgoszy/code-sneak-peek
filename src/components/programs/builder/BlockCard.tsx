@@ -51,6 +51,7 @@ interface BlockCardProps {
   onRemoveExercise: (exerciseId: string) => void;
   onDuplicateExercise: (exerciseId: string) => void;
   onReorderExercises: (oldIndex: number, newIndex: number) => void;
+  onPasteBlock?: () => void;
 }
 
 export const BlockCard: React.FC<BlockCardProps> = ({
@@ -68,7 +69,8 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   onUpdateExercise,
   onRemoveExercise,
   onDuplicateExercise,
-  onReorderExercises
+  onReorderExercises,
+  onPasteBlock
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -149,6 +151,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
             onWorkoutFormatChange={onUpdateBlockWorkoutFormat}
             onWorkoutDurationChange={onUpdateBlockWorkoutDuration}
             onBlockSetsChange={onUpdateBlockSets}
+            onPasteBlock={onPasteBlock}
           />
           
           <BlockCardContent
