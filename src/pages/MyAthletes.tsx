@@ -461,59 +461,6 @@ const MyAthletes = () => {
                   </div>
                 </div>
 
-                {/* Admin mapping helper: show athletes that are currently attached to admin (legacy) */}
-                {isAdminViewingCoach && (loadingAdminAthletes || adminAthletes.length > 0) && (
-                  <div className="mb-4 border border-border rounded-none">
-                    <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">Αθλητές για αντιστοίχιση</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          Αυτοί οι αθλητές έχουν αποθηκευτεί στον admin. Πάτα “Μεταφορά” για να μπουν στον coach.
-                        </p>
-                      </div>
-                      <div className="text-xs text-muted-foreground shrink-0">
-                        {loadingAdminAthletes ? "..." : `${adminAthletes.length}`}
-                      </div>
-                    </div>
-
-                    <div className="divide-y divide-border">
-                      {loadingAdminAthletes ? (
-                        <div className="px-3 py-3 text-sm text-muted-foreground">Φόρτωση...</div>
-                      ) : (
-                        adminAthletes
-                          .filter((a) =>
-                            matchesSearchTerm(a.name, searchTerm) || matchesSearchTerm(a.email, searchTerm)
-                          )
-                          .slice(0, 30)
-                          .map((a) => (
-                            <div key={a.id} className="flex items-center justify-between gap-3 px-3 py-2">
-                              <div className="flex items-center gap-3 min-w-0">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={a.avatar_url || ""} />
-                                  <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
-                                    {a.name?.charAt(0)?.toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="min-w-0">
-                                  <p className="text-sm font-medium text-foreground truncate">{a.name}</p>
-                                  <p className="text-xs text-muted-foreground truncate">{a.email}</p>
-                                </div>
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="rounded-none"
-                                onClick={() => reassignAthleteToCoach(a.id)}
-                              >
-                                <ArrowRightLeft className="h-4 w-4 mr-2" />
-                                Μεταφορά
-                              </Button>
-                            </div>
-                          ))
-                      )}
-                    </div>
-                  </div>
-                )}
 
                 {loadingAthletes ? (
                   <div className="text-center py-8">
