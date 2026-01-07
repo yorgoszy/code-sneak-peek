@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useProgramClipboard } from '@/contexts/ProgramClipboardContext';
 import { useExercises } from '@/hooks/useExercises';
-import { useSafeCoachContext } from '@/contexts/CoachContext';
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { SimpleExerciseSelectionDialog } from './SimpleExerciseSelectionDialog';
 import { formatTimeInput } from '@/utils/timeFormatting';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
@@ -64,10 +64,8 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
 
   const { paste, hasBlock, clearClipboard } = useProgramClipboard();
   const { exercises: availableExercises } = useExercises();
-  const coachContext = useSafeCoachContext();
-
-  // Χρησιμοποιούμε το coachId από context αν δεν περαστεί ως prop
-  const effectiveCoachId = coachId || coachContext?.coachId || null;
+  const { userProfile } = useRoleCheck();
+  const myId = userProfile?.id ?? null;
 
   const handlePasteBlock = () => {
     const clipboardData = paste();
@@ -155,6 +153,11 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
         exercise_name: ex.exercises?.name
       }));
 
+      if (!myId) {
+        toast.error('Δεν βρέθηκε χρήστης για αποθήκευση template');
+        return;
+      }
+
       const { error } = await supabase
         .from('block_templates')
         .insert({
@@ -164,7 +167,7 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
           workout_duration: workoutDuration || null,
           block_sets: blockSets,
           exercises: exercisesForStorage,
-          created_by: effectiveCoachId || null
+          created_by: myId
         });
 
       if (error) throw error;
