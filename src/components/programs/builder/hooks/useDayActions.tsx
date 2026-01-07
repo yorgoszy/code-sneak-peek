@@ -56,8 +56,10 @@ export const useDayActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  const duplicateDay = (weekId: string, dayId: string) => {
-    const updatedWeeks = (program.weeks || []).map(week => {
+  const duplicateDay = async (weekId: string, dayId: string) => {
+    let updatedWeeks: any[] = [];
+    
+    updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         const dayToDuplicate = week.program_days?.find(day => day.id === dayId);
         if (!dayToDuplicate) return week;
@@ -90,6 +92,20 @@ export const useDayActions = (
       return week;
     });
     updateProgram({ weeks: updatedWeeks });
+
+    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
+    if (saveProgram && program.id) {
+      console.log('💾 [DUPLICATE DAY] Auto-saving to database...');
+      try {
+        await saveProgram({
+          ...program,
+          weeks: updatedWeeks
+        });
+        console.log('✅ [DUPLICATE DAY] Auto-save completed');
+      } catch (error) {
+        console.error('❌ [DUPLICATE DAY] Auto-save failed:', error);
+      }
+    }
   };
 
   const updateDayName = (weekId: string, dayId: string, name: string) => {
@@ -185,8 +201,10 @@ export const useDayActions = (
   };
 
   // Paste day from clipboard
-  const pasteDay = (weekId: string, clipboardDay: any) => {
-    const updatedWeeks = (program.weeks || []).map(week => {
+  const pasteDay = async (weekId: string, clipboardDay: any) => {
+    let updatedWeeks: any[] = [];
+    
+    updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         const newDay = {
           id: generateId(),
@@ -220,6 +238,20 @@ export const useDayActions = (
     });
     updateProgram({ weeks: updatedWeeks });
     toast.success('Ημέρα επικολλήθηκε επιτυχώς');
+
+    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
+    if (saveProgram && program.id) {
+      console.log('💾 [PASTE DAY] Auto-saving to database...');
+      try {
+        await saveProgram({
+          ...program,
+          weeks: updatedWeeks
+        });
+        console.log('✅ [PASTE DAY] Auto-save completed');
+      } catch (error) {
+        console.error('❌ [PASTE DAY] Auto-save failed:', error);
+      }
+    }
   };
 
   return {

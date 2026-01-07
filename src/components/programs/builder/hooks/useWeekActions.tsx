@@ -123,10 +123,24 @@ export const useWeekActions = (
     
     console.log('🚨 [DUPLICATE WEEK] Updating program with weeks count:', updatedWeeks.length);
     
-    // Άμεση ενημέρωση του state - ΧΩΡΙΣ auto-save
+    // Άμεση ενημέρωση του state
     updateProgram({ weeks: updatedWeeks });
 
-    console.log('🚨 [DUPLICATE WEEK] Week duplication completed successfully (no auto-save)');
+    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
+    if (saveProgram && program.id) {
+      console.log('💾 [DUPLICATE WEEK] Auto-saving to database...');
+      try {
+        await saveProgram({
+          ...program,
+          weeks: updatedWeeks
+        });
+        console.log('✅ [DUPLICATE WEEK] Auto-save completed');
+      } catch (error) {
+        console.error('❌ [DUPLICATE WEEK] Auto-save failed:', error);
+      }
+    }
+
+    console.log('🚨 [DUPLICATE WEEK] Week duplication completed successfully');
   };
 
   const updateWeekName = (weekId: string, name: string) => {
@@ -136,7 +150,7 @@ export const useWeekActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  const pasteWeek = (clipboardWeek: any) => {
+  const pasteWeek = async (clipboardWeek: any) => {
     const newWeekData = {
       id: generateId(),
       name: `${clipboardWeek.name} (Επικόλληση)`,
@@ -179,6 +193,20 @@ export const useWeekActions = (
 
     const updatedWeeks = [...(program.weeks || []), newWeekData];
     updateProgram({ weeks: updatedWeeks });
+
+    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
+    if (saveProgram && program.id) {
+      console.log('💾 [PASTE WEEK] Auto-saving to database...');
+      try {
+        await saveProgram({
+          ...program,
+          weeks: updatedWeeks
+        });
+        console.log('✅ [PASTE WEEK] Auto-save completed');
+      } catch (error) {
+        console.error('❌ [PASTE WEEK] Auto-save failed:', error);
+      }
+    }
   };
 
   return {
