@@ -296,11 +296,9 @@ export const useBlockActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  // Paste block from clipboard
-  const pasteBlock = async (weekId: string, dayId: string, clipboardBlock: any) => {
-    let updatedWeeks: any[] = [];
-    
-    updatedWeeks = (program.weeks || []).map(week => {
+  // Paste block from clipboard (δεν κάνει auto-save για να αποφύγουμε κλείσιμο dialog)
+  const pasteBlock = (weekId: string, dayId: string, clipboardBlock: any) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
           ...week,
@@ -317,7 +315,7 @@ export const useBlockActions = (
                 workout_format: clipboardBlock.workout_format,
                 workout_duration: clipboardBlock.workout_duration,
                 block_sets: clipboardBlock.block_sets || 1,
-                program_exercises: (clipboardBlock.program_exercises || []).map((exercise, idx) => ({
+                program_exercises: (clipboardBlock.program_exercises || []).map((exercise: any, idx: number) => ({
                   ...exercise,
                   id: generateId(),
                   exercise_order: idx + 1
@@ -337,27 +335,11 @@ export const useBlockActions = (
     });
     updateProgram({ weeks: updatedWeeks });
     toast.success('Block επικολλήθηκε επιτυχώς');
-
-    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
-    if (saveProgram && program.id) {
-      console.log('💾 [PASTE BLOCK] Auto-saving to database...');
-      try {
-        await saveProgram({
-          ...program,
-          weeks: updatedWeeks
-        });
-        console.log('✅ [PASTE BLOCK] Auto-save completed');
-      } catch (error) {
-        console.error('❌ [PASTE BLOCK] Auto-save failed:', error);
-      }
-    }
   };
 
-  // Paste block content into existing block (replace content)
-  const pasteBlockAtBlock = async (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => {
-    let updatedWeeks: any[] = [];
-    
-    updatedWeeks = (program.weeks || []).map(week => {
+  // Paste block content into existing block (replace content) - δεν κάνει auto-save
+  const pasteBlockAtBlock = (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
           ...week,
@@ -394,29 +376,13 @@ export const useBlockActions = (
     });
     updateProgram({ weeks: updatedWeeks });
     toast.success('Block επικολλήθηκε επιτυχώς');
-
-    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
-    if (saveProgram && program.id) {
-      console.log('💾 [PASTE BLOCK AT BLOCK] Auto-saving to database...');
-      try {
-        await saveProgram({
-          ...program,
-          weeks: updatedWeeks
-        });
-        console.log('✅ [PASTE BLOCK AT BLOCK] Auto-save completed');
-      } catch (error) {
-        console.error('❌ [PASTE BLOCK AT BLOCK] Auto-save failed:', error);
-      }
-    }
   };
 
-  // Load block template into existing block
-  const loadBlockTemplate = async (weekId: string, dayId: string, blockId: string, template: any) => {
+  // Load block template into existing block - δεν κάνει auto-save
+  const loadBlockTemplate = (weekId: string, dayId: string, blockId: string, template: any) => {
     console.log('📦 [LOAD TEMPLATE] Loading template into block:', { weekId, dayId, blockId, template });
     
-    let updatedWeeks: any[] = [];
-    
-    updatedWeeks = (program.weeks || []).map(week => {
+    const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
           ...week,
@@ -462,20 +428,6 @@ export const useBlockActions = (
     });
     updateProgram({ weeks: updatedWeeks });
     toast.success('Template φορτώθηκε επιτυχώς');
-
-    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
-    if (saveProgram && program.id) {
-      console.log('💾 [LOAD TEMPLATE] Auto-saving to database...');
-      try {
-        await saveProgram({
-          ...program,
-          weeks: updatedWeeks
-        });
-        console.log('✅ [LOAD TEMPLATE] Auto-save completed');
-      } catch (error) {
-        console.error('❌ [LOAD TEMPLATE] Auto-save failed:', error);
-      }
-    }
   };
 
   return {
