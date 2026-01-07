@@ -200,7 +200,7 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-[95vw] max-w-[500px] h-[80vh] max-h-[600px] overflow-hidden rounded-none p-3 flex flex-col">
+        <DialogContent className="w-[95vw] max-w-[420px] h-[80vh] max-h-[600px] overflow-hidden rounded-none p-3 flex flex-col">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-sm">Επεξεργασία Block Template</DialogTitle>
           </DialogHeader>
