@@ -228,20 +228,7 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="w-[95vw] max-w-[420px] h-[80vh] max-h-[600px] overflow-hidden rounded-none p-3 flex flex-col">
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-sm flex items-center justify-between">
-              <span>Επεξεργασία Block Template</span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handlePasteBlock}
-                disabled={!hasBlock}
-                className={`rounded-none h-7 text-xs ${hasBlock ? 'text-[#00ffba] border-[#00ffba]' : ''}`}
-              >
-                <ClipboardPaste className="w-3 h-3 mr-1" />
-                Επικόλληση Block
-              </Button>
-            </DialogTitle>
+            <DialogTitle className="text-sm">Επεξεργασία Block Template</DialogTitle>
           </DialogHeader>
 
           {/* Template Name Input */}
@@ -283,14 +270,27 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
                       )}
                     </div>
                   </CollapsibleTrigger>
-                  <Button
-                    onClick={() => setShowExerciseDialog(true)}
-                    size="sm"
-                    variant="ghost"
-                    className="rounded-none hover:bg-gray-600"
-                  >
-                    <Plus className="w-2 h-2 text-white" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {hasBlock && (
+                      <Button
+                        onClick={handlePasteBlock}
+                        size="sm"
+                        variant="ghost"
+                        className="rounded-none hover:bg-gray-600"
+                        title="Επικόλληση Block"
+                      >
+                        <ClipboardPaste className="w-3 h-3 text-[#00ffba]" />
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => setShowExerciseDialog(true)}
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-none hover:bg-gray-600"
+                    >
+                      <Plus className="w-2 h-2 text-white" />
+                    </Button>
+                  </div>
                 </div>
                 
                 {/* Training Type, Workout Format and Sets */}
