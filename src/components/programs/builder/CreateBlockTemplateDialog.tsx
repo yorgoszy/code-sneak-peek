@@ -317,16 +317,16 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
                             className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
                           />
                           <Input
-                            value={exercise.kg || ''}
-                            onChange={(e) => handleUpdateExercise(exercise.id, 'kg', e.target.value)}
-                            placeholder="Kg"
-                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
-                          />
-                          <Input
                             value={exercise.percentage_1rm || ''}
                             onChange={(e) => handleUpdateExercise(exercise.id, 'percentage_1rm', e.target.value)}
                             placeholder="%1RM"
                             className="h-5 w-10 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
+                          />
+                          <Input
+                            value={exercise.kg || ''}
+                            onChange={(e) => handleUpdateExercise(exercise.id, 'kg', e.target.value)}
+                            placeholder="Kg"
+                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
                           />
                           <Input
                             value={exercise.velocity_ms || ''}
