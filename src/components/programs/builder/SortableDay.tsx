@@ -32,6 +32,7 @@ interface SortableDayProps {
   onPasteBlock?: (clipboardBlock: any) => void;
   onPasteBlockAtBlock?: (blockId: string, clipboardBlock: any) => void;
   onPasteDay?: (clipboardDay: any) => void;
+  onSelectBlockTemplate?: (blockId: string, template: any) => void;
 }
 
 export const SortableDay: React.FC<SortableDayProps> = (props) => {

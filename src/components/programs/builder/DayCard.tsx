@@ -35,6 +35,7 @@ interface DayCardProps {
   onPasteBlock?: (block: any) => void;
   onPasteBlockAtBlock?: (blockId: string, clipboardBlock: any) => void;
   onPasteDay?: (clipboardDay: any) => void;
+  onSelectBlockTemplate?: (blockId: string, template: any) => void;
   dragHandleProps?: {
     attributes: any;
     listeners: any;
@@ -67,6 +68,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   onPasteBlock,
   onPasteBlockAtBlock,
   onPasteDay,
+  onSelectBlockTemplate,
   dragHandleProps
 }) => {
   const { paste, hasBlock, hasDay, clearClipboard } = useProgramClipboard();
@@ -188,6 +190,7 @@ export const DayCard: React.FC<DayCardProps> = ({
             onReorderBlocks={onReorderBlocks}
             onReorderExercises={onReorderExercises}
             onPasteBlock={onPasteBlockAtBlock ? handlePasteBlockAtBlock : undefined}
+            onSelectBlockTemplate={onSelectBlockTemplate}
           />
         )}
         
