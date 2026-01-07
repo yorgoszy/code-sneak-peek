@@ -634,9 +634,7 @@ const CoachSubscriptionsContent = () => {
 
 const CoachSubscriptions = () => {
   return (
-    <CoachLayout title="Συνδρομές">
-      <CoachSubscriptionsContent />
-    </CoachLayout>
+    <CoachLayout title="Συνδρομές" ContentComponent={CoachSubscriptionsContent} />
   );
 };
 

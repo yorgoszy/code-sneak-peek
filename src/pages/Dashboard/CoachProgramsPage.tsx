@@ -213,9 +213,7 @@ const CoachProgramsContent = () => {
 
 const CoachProgramsPage = () => {
   return (
-    <CoachLayout title="Προγράμματα">
-      <CoachProgramsContent />
-    </CoachLayout>
+    <CoachLayout title="Προγράμματα" ContentComponent={CoachProgramsContent} />
   );
 };
 

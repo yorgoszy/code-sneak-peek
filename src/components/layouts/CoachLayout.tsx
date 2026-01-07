@@ -124,17 +124,19 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
 };
 
 interface CoachLayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   title?: string;
   showHeader?: boolean;
   requireAuth?: boolean;
+  ContentComponent?: React.ComponentType;
 }
 
 export const CoachLayout: React.FC<CoachLayoutProps> = ({ 
   children, 
   title,
   showHeader = true,
-  requireAuth = true 
+  requireAuth = true,
+  ContentComponent
 }) => {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { loading: rolesLoading } = useRoleCheck();
@@ -150,7 +152,7 @@ export const CoachLayout: React.FC<CoachLayoutProps> = ({
   return (
     <CoachProvider>
       <CoachLayoutContent title={title} showHeader={showHeader}>
-        {children}
+        {ContentComponent ? <ContentComponent /> : children}
       </CoachLayoutContent>
     </CoachProvider>
   );

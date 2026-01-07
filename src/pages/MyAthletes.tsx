@@ -445,9 +445,7 @@ const MyAthletesContent = () => {
 
 const MyAthletes = () => {
   return (
-    <CoachLayout title="Οι Αθλητές μου">
-      <MyAthletesContent />
-    </CoachLayout>
+    <CoachLayout title="Οι Αθλητές μου" ContentComponent={MyAthletesContent} />
   );
 };
 

@@ -352,9 +352,7 @@ const CoachProgramCardsContent = () => {
 
 const CoachProgramCardsPage = () => {
   return (
-    <CoachLayout title="Program Cards">
-      <CoachProgramCardsContent />
-    </CoachLayout>
+    <CoachLayout title="Program Cards" ContentComponent={CoachProgramCardsContent} />
   );
 };
 

@@ -523,9 +523,7 @@ const CoachGroupsContent = () => {
 
 const CoachGroupsPage = () => {
   return (
-    <CoachLayout title="Ομάδες">
-      <CoachGroupsContent />
-    </CoachLayout>
+    <CoachLayout title="Ομάδες" ContentComponent={CoachGroupsContent} />
   );
 };
 
