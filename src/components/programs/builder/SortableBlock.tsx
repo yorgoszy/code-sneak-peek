@@ -23,6 +23,7 @@ interface SortableBlockProps {
   onDuplicateExercise: (exerciseId: string) => void;
   onReorderExercises: (oldIndex: number, newIndex: number) => void;
   onPasteBlock?: () => void;
+  onSelectBlockTemplate?: (template: any) => void;
 }
 
 export const SortableBlock: React.FC<SortableBlockProps> = (props) => {

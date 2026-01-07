@@ -37,6 +37,7 @@ interface WeekTabsContentProps {
   onPasteBlock: (weekId: string, dayId: string, clipboardBlock: any) => void;
   onPasteBlockAtBlock: (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => void;
   onPasteDay: (weekId: string, clipboardDay: any) => void;
+  onSelectBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
 }
 
 export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
@@ -67,7 +68,8 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   onReorderExercises,
   onPasteBlock,
   onPasteBlockAtBlock,
-  onPasteDay
+  onPasteDay,
+  onSelectBlockTemplate
 }) => {
   const handleDragEnd = (event: DragEndEvent, weekId: string) => {
     const { active, over } = event;
@@ -147,6 +149,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                         onPasteBlock={(clipboardBlock) => onPasteBlock(week.id, day.id, clipboardBlock)}
                         onPasteBlockAtBlock={(blockId, clipboardBlock) => onPasteBlockAtBlock(week.id, day.id, blockId, clipboardBlock)}
                         onPasteDay={(clipboardDay) => onPasteDay(week.id, clipboardDay)}
+                        onSelectBlockTemplate={onSelectBlockTemplate ? (blockId, template) => onSelectBlockTemplate(week.id, day.id, blockId, template) : undefined}
                       />
                     ))}
                   </div>
