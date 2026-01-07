@@ -397,12 +397,33 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
                               </div>
                               
                               <div className="flex flex-col items-center" style={{ width: '60px' }}>
-                                <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Reps</label>
+                                <label 
+                                  className="block mb-1 text-center w-full cursor-pointer hover:text-[#00ffba]" 
+                                  style={{ fontSize: '10px', color: '#666' }}
+                                  onClick={() => {
+                                    const currentMode = exercise.reps_mode || 'reps';
+                                    let newMode: 'reps' | 'time' | 'meter';
+                                    if (currentMode === 'reps') newMode = 'time';
+                                    else if (currentMode === 'time') newMode = 'meter';
+                                    else newMode = 'reps';
+                                    handleUpdateExercise(exercise.id, 'reps_mode', newMode);
+                                  }}
+                                >
+                                  {exercise.reps_mode === 'time' ? 'Time' : exercise.reps_mode === 'meter' ? 'Meter' : 'Reps'}
+                                </label>
                                 <Input
-                                  value={exercise.reps || ''}
-                                  onChange={(e) => handleUpdateExercise(exercise.id, 'reps', e.target.value)}
+                                  value={exercise.reps_mode === 'time' ? formatTimeInput(String(exercise.reps || '')) : (exercise.reps || '')}
+                                  onChange={(e) => {
+                                    if (exercise.reps_mode === 'time') {
+                                      const formatted = formatTimeInput(e.target.value);
+                                      handleUpdateExercise(exercise.id, 'reps', formatted);
+                                    } else {
+                                      handleUpdateExercise(exercise.id, 'reps', e.target.value);
+                                    }
+                                  }}
                                   className="text-center w-full"
                                   style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '0 4px' }}
+                                  placeholder={exercise.reps_mode === 'time' ? '00:00' : ''}
                                 />
                               </div>
                               
@@ -419,7 +440,22 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
                               </div>
                               
                               <div className="flex flex-col items-center" style={{ width: '60px' }}>
-                                <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
+                                <label 
+                                  className="block mb-1 text-center w-full cursor-pointer hover:text-[#00ffba]" 
+                                  style={{ fontSize: '10px', color: '#666' }}
+                                  onClick={() => {
+                                    const currentMode = exercise.kg_mode || 'kg';
+                                    let newMode: 'kg' | 'rpm' | 'meter' | 's/m' | 'km/h';
+                                    if (currentMode === 'kg') newMode = 'rpm';
+                                    else if (currentMode === 'rpm') newMode = 'meter';
+                                    else if (currentMode === 'meter') newMode = 's/m';
+                                    else if (currentMode === 's/m') newMode = 'km/h';
+                                    else newMode = 'kg';
+                                    handleUpdateExercise(exercise.id, 'kg_mode', newMode);
+                                  }}
+                                >
+                                  {exercise.kg_mode === 'rpm' ? 'rpm' : exercise.kg_mode === 'meter' ? 'meter' : exercise.kg_mode === 's/m' ? 's/m' : exercise.kg_mode === 'km/h' ? 'km/h' : 'Kg'}
+                                </label>
                                 <Input
                                   type="text"
                                   inputMode="decimal"
