@@ -4,7 +4,7 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Search, Menu, Eye, Mail, ArrowRightLeft } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Search, Menu, Eye, Mail } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { matchesSearchTerm } from "@/lib/utils";
 import {
@@ -57,9 +57,6 @@ const MyAthletes = () => {
   const [loadingAthletes, setLoadingAthletes] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Admin-only: athletes currently attached to admin (legacy/wrong) that can be reassigned
-  const [adminAthletes, setAdminAthletes] = useState<CoachUser[]>([]);
-  const [loadingAdminAthletes, setLoadingAdminAthletes] = useState(false);
 
   // Dialog states
   const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
@@ -171,66 +168,13 @@ const MyAthletes = () => {
     }
   };
 
-  const fetchAdminAthletes = async () => {
-    if (!isAdminViewingCoach || loadingAdminAthletes || !userProfile?.id) {
-      setAdminAthletes([]);
-      return;
-    }
-
-    setLoadingAdminAthletes(true);
-    try {
-      // Fetch από app_users αντί coach_users
-      const { data, error } = await supabase
-        .from("app_users")
-        .select("*")
-        .eq("coach_id", userProfile.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("❌ Error fetching admin athletes:", error);
-        return;
-      }
-
-      setAdminAthletes(data || []);
-    } finally {
-      setLoadingAdminAthletes(false);
-    }
-  };
-
-  const reassignAthleteToCoach = async (athleteId: string) => {
-    if (!effectiveCoachId) return;
-
-    try {
-      // Update στο app_users αντί coach_users
-      const { error } = await supabase
-        .from("app_users")
-        .update({ coach_id: effectiveCoachId })
-        .eq("id", athleteId);
-
-      if (error) {
-        console.error("❌ Error reassigning athlete:", error);
-        toast.error("Αποτυχία μεταφοράς αθλητή");
-        return;
-      }
-
-      toast.success("Ο αθλητής μεταφέρθηκε στον coach");
-      fetchAthletes();
-      fetchAdminAthletes();
-    } catch (e) {
-      console.error(e);
-      toast.error("Αποτυχία μεταφοράς αθλητή");
-    }
-  };
 
   useEffect(() => {
     if (!rolesLoading && effectiveCoachId) {
       fetchAthletes();
     }
-    if (!rolesLoading) {
-      fetchAdminAthletes();
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rolesLoading, effectiveCoachId, isAdminViewingCoach, userProfile?.id]);
+  }, [rolesLoading, effectiveCoachId]);
 
   if (loading || rolesLoading) {
     return (
