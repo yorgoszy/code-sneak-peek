@@ -27,6 +27,7 @@ interface ExerciseSelectionDialogContentProps {
   onClose: () => void;
   onExercisesUpdate?: (exercises: Exercise[]) => void;
   onSelectBlockTemplate?: (template: any) => void;
+  coachId?: string;
 }
 
 export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogContentProps> = ({
@@ -34,7 +35,8 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   onSelectExercise,
   onClose,
   onExercisesUpdate,
-  onSelectBlockTemplate
+  onSelectBlockTemplate,
+  coachId
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -203,12 +205,14 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
       <CreateBlockTemplateDialog
         open={createTemplateDialogOpen}
         onOpenChange={setCreateTemplateDialogOpen}
+        coachId={coachId}
       />
 
       <SelectBlockTemplateDialog
         open={selectTemplateDialogOpen}
         onOpenChange={setSelectTemplateDialogOpen}
         onSelectTemplate={handleSelectTemplate}
+        coachId={coachId}
       />
     </>
   );
