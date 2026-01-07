@@ -17,6 +17,7 @@ interface ExerciseSelectionDialogProps {
   onSelectExercise: (exerciseId: string) => void;
   onExercisesUpdate?: (exercises: Exercise[]) => void;
   onSelectBlockTemplate?: (template: any) => void;
+  coachId?: string;
 }
 
 export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = ({
@@ -25,7 +26,8 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
   exercises,
   onSelectExercise,
   onExercisesUpdate,
-  onSelectBlockTemplate
+  onSelectBlockTemplate,
+  coachId
 }) => {
   const handleClose = () => {
     onOpenChange(false);
@@ -39,6 +41,7 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
         onClose={handleClose}
         onExercisesUpdate={onExercisesUpdate}
         onSelectBlockTemplate={onSelectBlockTemplate}
+        coachId={coachId}
       />
     </Dialog>
   );

@@ -13,6 +13,7 @@ import { formatTimeInput } from '@/utils/timeFormatting';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useExercises } from '@/hooks/useExercises';
 import { EditBlockTemplateDialog } from './EditBlockTemplateDialog';
+import { useSearchParams } from 'react-router-dom';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,12 +35,14 @@ interface BlockTemplate {
   block_sets: number;
   exercises: any[];
   created_at: string;
+  created_by: string | null;
 }
 
 interface SelectBlockTemplateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelectTemplate: (template: BlockTemplate) => void;
+  coachId?: string;
 }
 
 const TRAINING_TYPE_LABELS: Record<string, string> = {
@@ -69,8 +72,10 @@ const WORKOUT_FORMAT_LABELS: Record<string, string> = {
 export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps> = ({
   open,
   onOpenChange,
-  onSelectTemplate
+  onSelectTemplate,
+  coachId: propCoachId
 }) => {
+  const [searchParams] = useSearchParams();
   const [templates, setTemplates] = useState<BlockTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -79,22 +84,66 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
   const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(new Set());
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [templateToEdit, setTemplateToEdit] = useState<BlockTemplate | null>(null);
+  const [effectiveCoachId, setEffectiveCoachId] = useState<string | null>(null);
 
   const { exercises: availableExercises } = useExercises();
 
+  // Determine the effective coach ID
   useEffect(() => {
+    const determineCoachId = async () => {
+      // Priority: prop > URL param > current user if coach
+      if (propCoachId) {
+        setEffectiveCoachId(propCoachId);
+        return;
+      }
+
+      const urlCoachId = searchParams.get('coachId');
+      if (urlCoachId) {
+        setEffectiveCoachId(urlCoachId);
+        return;
+      }
+
+      // Check if current user is a coach
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: appUser } = await supabase
+          .from('app_users')
+          .select('id, role')
+          .eq('auth_user_id', user.id)
+          .single();
+        
+        if (appUser?.role === 'coach') {
+          setEffectiveCoachId(appUser.id);
+        }
+      }
+    };
+
     if (open) {
+      determineCoachId();
+    }
+  }, [open, propCoachId, searchParams]);
+
+  useEffect(() => {
+    if (open && effectiveCoachId !== null) {
       fetchTemplates();
     }
-  }, [open]);
+  }, [open, effectiveCoachId]);
 
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from('block_templates')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // Filter by coach ID if available
+      if (effectiveCoachId) {
+        query = query.eq('created_by', effectiveCoachId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
