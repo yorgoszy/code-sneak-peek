@@ -93,6 +93,41 @@ export default function ResetPassword() {
       }
     };
 
+    // Some Supabase flows may redirect back with token/token_hash in the URL.
+    // In that case we must verify it to obtain a session.
+    const verifyTokenFromUrl = async () => {
+      const token = searchParams.get('token') || searchParams.get('token_hash');
+      const type = (searchParams.get('type') as any) || 'recovery';
+      if (!token) return;
+
+      console.log('🔄 Verifying token from URL...', { hasToken: true, type });
+
+      try {
+        const { data, error } = await supabase.auth.verifyOtp({
+          token_hash: token,
+          type,
+        });
+
+        if (error) {
+          console.error('❌ verifyOtp error:', error);
+          setValid(false);
+          return;
+        }
+
+        if (data.session) {
+          console.log('✅ Session obtained from verifyOtp');
+          setValid(true);
+          return;
+        }
+
+        const ok = await checkSessionNow();
+        setValid(ok);
+      } catch (err) {
+        console.error('❌ verifyOtp exception:', err);
+        setValid(false);
+      }
+    };
+
     const init = async () => {
       // 1) PKCE flow
       if (hasCode) {
@@ -100,8 +135,14 @@ export default function ResetPassword() {
         return;
       }
 
-      // 2) Hash-based recovery flow
-      if (hasAccessToken || hasRecoveryType || hasToken) {
+      // 2) Token-based flow
+      if (hasToken) {
+        await verifyTokenFromUrl();
+        return;
+      }
+
+      // 3) Hash-based recovery flow
+      if (hasAccessToken || hasRecoveryType) {
         console.log('🔄 Recovery tokens found, checking session...');
 
         // Give Supabase a tick to parse URL/hash and populate storage
@@ -114,7 +155,7 @@ export default function ResetPassword() {
         return;
       }
 
-      // 3) Already logged in?
+      // 4) Already logged in?
       const ok = await checkSessionNow();
       if (ok) {
         console.log('✅ Existing session found');
