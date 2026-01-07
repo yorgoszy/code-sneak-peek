@@ -148,7 +148,7 @@ export const CoachSidebar = ({
   const handleMenuClick = async (item: any) => {
     if (item.path === "logout") {
       await signOut();
-      navigate("/");
+      navigate("/auth");
       return;
     }
     if (item.external) {

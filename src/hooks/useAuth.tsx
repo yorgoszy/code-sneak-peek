@@ -47,17 +47,45 @@ export const useAuth = () => {
 
   const signOut = async () => {
     console.log('🔧 useAuth: Signing out');
-    // Πρώτα καθαρίζουμε το local state
+
+    // Πρώτα καθαρίζουμε το local state (ώστε να μην “κολλάει” το UI)
     setUser(null);
     setSession(null);
     setLoading(false);
-    
+
+    // Fallback καθαρισμός storage για περιπτώσεις "session_not_found" (403)
+    const clearAuthStorage = () => {
+      try {
+        // Supabase-js αποθηκεύει session σε key τύπου: sb-<project-ref>-auth-token
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if (!key) continue;
+          if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+            localStorage.removeItem(key);
+          }
+        }
+
+        // Σε κάποια περιβάλλοντα μπορεί να γράφονται και σε sessionStorage
+        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+          const key = sessionStorage.key(i);
+          if (!key) continue;
+          if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+            sessionStorage.removeItem(key);
+          }
+        }
+      } catch (e) {
+        console.warn('🔧 useAuth: Storage clear warning:', e);
+      }
+    };
+
     try {
-      // Προσπαθούμε να κάνουμε signOut με scope: 'local' για να αποφύγουμε server errors
+      // Προσπαθούμε local sign out (δεν μας νοιάζει αν ο server πει session_not_found)
       await supabase.auth.signOut({ scope: 'local' });
       console.log('🔧 useAuth: SignOut completed');
     } catch (error) {
       console.error('🔧 useAuth: SignOut error (ignored):', error);
+    } finally {
+      clearAuthStorage();
     }
   };
 
