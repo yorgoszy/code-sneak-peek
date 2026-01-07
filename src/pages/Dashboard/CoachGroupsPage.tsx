@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Users, Search, Eye, Menu } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { Plus, Edit, Trash2, Users, Search, Eye } from "lucide-react";
 import { matchesSearchTerm } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -32,6 +27,8 @@ import { useToast } from "@/hooks/use-toast";
 import { CoachEditGroupDialog } from "@/components/coach/CoachEditGroupDialog";
 import { DeleteGroupDialog } from "@/components/DeleteGroupDialog";
 import { ViewGroupDialog } from "@/components/ViewGroupDialog";
+import { CoachLayout } from "@/components/layouts/CoachLayout";
+import { useCoachContext } from "@/contexts/CoachContext";
 
 interface AppUser {
   id: string;
@@ -55,16 +52,8 @@ interface Group {
   created_by: string;
 }
 
-const CoachGroupsPage = () => {
-  const { user, loading, signOut, isAuthenticated } = useAuth();
-  const { userProfile, isCoach, isAdmin, loading: roleLoading } = useRoleCheck();
-  const [searchParams] = useSearchParams();
-  const coachIdParam = searchParams.get('coachId');
-  
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
-  const isMobile = useIsMobile();
+const CoachGroupsContent = () => {
+  const { coachId } = useCoachContext();
   const [users, setUsers] = useState<AppUser[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -84,18 +73,15 @@ const CoachGroupsPage = () => {
   
   const { toast } = useToast();
 
-  // Determine effective coach ID
-  const effectiveCoachId = isAdmin() && coachIdParam ? coachIdParam : userProfile?.id;
-
   const fetchUsers = async () => {
-    if (!effectiveCoachId) return;
+    if (!coachId) return;
     
     setLoadingUsers(true);
     try {
       const { data, error } = await supabase
         .from('app_users')
         .select('*')
-        .eq('coach_id', effectiveCoachId)
+        .eq('coach_id', coachId)
         .order('name', { ascending: true });
 
       if (error) {
@@ -111,14 +97,14 @@ const CoachGroupsPage = () => {
   };
 
   const fetchGroups = async () => {
-    if (!effectiveCoachId) return;
+    if (!coachId) return;
     
     setLoadingGroups(true);
     try {
       const { data, error } = await supabase
         .from('groups')
         .select('*')
-        .or(`created_by.eq.${effectiveCoachId},coach_id.eq.${effectiveCoachId}`)
+        .or(`created_by.eq.${coachId},coach_id.eq.${coachId}`)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -133,23 +119,12 @@ const CoachGroupsPage = () => {
     }
   };
 
-  // Tablet detection
   useEffect(() => {
-    const checkTablet = () => {
-      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
-    };
-    
-    checkTablet();
-    window.addEventListener('resize', checkTablet);
-    return () => window.removeEventListener('resize', checkTablet);
-  }, []);
-
-  useEffect(() => {
-    if (effectiveCoachId) {
+    if (coachId) {
       fetchUsers();
       fetchGroups();
     }
-  }, [effectiveCoachId]);
+  }, [coachId]);
 
   const handleCreateGroup = async () => {
     if (!groupName.trim() || selectedUsers.length === 0) {
@@ -161,7 +136,7 @@ const CoachGroupsPage = () => {
       return;
     }
 
-    if (!effectiveCoachId) {
+    if (!coachId) {
       toast({
         variant: "destructive",
         title: "Σφάλμα",
@@ -177,8 +152,8 @@ const CoachGroupsPage = () => {
         .insert([{
           name: groupName,
           description: groupDescription,
-          created_by: effectiveCoachId,
-          coach_id: effectiveCoachId
+          created_by: coachId,
+          coach_id: coachId
         }])
         .select()
         .single();
@@ -262,28 +237,6 @@ const CoachGroupsPage = () => {
       .slice(0, 2);
   };
 
-  if (loading || roleLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Φόρτωση...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  if (!isCoach() && !isAdmin()) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('el-GR');
   };
@@ -297,325 +250,235 @@ const CoachGroupsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
-        <CoachSidebar 
-          isCollapsed={isCollapsed} 
-          setIsCollapsed={setIsCollapsed}
-          contextCoachId={coachIdParam || undefined}
-        />
-      </div>
-
-      {/* Mobile/Tablet Sidebar Overlay */}
-      {(isMobile || isTablet) && showMobileSidebar && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setShowMobileSidebar(false)} />
-          <div className="fixed top-0 left-0 h-full">
-            <CoachSidebar 
-              isCollapsed={false} 
-              setIsCollapsed={() => {}}
-              contextCoachId={coachIdParam || undefined}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile/Tablet Header */}
-        {(isMobile || isTablet) && (
-          <div className="lg:hidden bg-background border-b border-border px-4 py-3">
-            <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowMobileSidebar(true)}
-                className="rounded-none"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              <h1 className="text-lg font-semibold text-foreground">Ομάδες</h1>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="rounded-none"
-                onClick={handleSignOut}
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Desktop Top Navigation */}
-        <nav className="hidden lg:block bg-background border-b border-border px-6 py-4">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Existing Groups */}
+      <Card className="rounded-none">
+        <CardHeader>
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Ομάδες</h1>
-              <p className="text-sm text-muted-foreground">
-                Διαχείριση ομάδων αθλητών
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">
-                {userProfile?.name || user?.email}
-              </span>
-              <Button 
-                variant="outline" 
-                className="rounded-none"
-                onClick={handleSignOut}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Αποσύνδεση
-              </Button>
-            </div>
+            <CardTitle className="text-lg font-semibold">
+              Υπάρχουσες Ομάδες ({groups.length})
+            </CardTitle>
           </div>
-        </nav>
+        </CardHeader>
+        <CardContent>
+          {loadingGroups ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Φόρτωση ομάδων...</p>
+            </div>
+          ) : groups.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Δεν βρέθηκαν ομάδες</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Όνομα</TableHead>
+                    <TableHead className="hidden md:table-cell">Περιγραφή</TableHead>
+                    <TableHead className="hidden lg:table-cell">Δημιουργία</TableHead>
+                    <TableHead>Ενέργειες</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {groups.map((group) => (
+                    <TableRow key={group.id}>
+                      <TableCell className="font-medium">
+                        <div>
+                          <div>{group.name}</div>
+                          <div className="md:hidden text-xs text-muted-foreground mt-1">
+                            {group.description && `${group.description} • `}
+                            {formatDate(group.created_at)}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">{group.description || '-'}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{formatDate(group.created_at)}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-1 lg:space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none"
+                            onClick={() => handleViewGroup(group)}
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none"
+                            onClick={() => handleEditGroup(group)}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="rounded-none text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteGroup(group)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Groups Content */}
-        <div className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 overflow-hidden">
-          {/* Existing Groups */}
-          <Card className="rounded-none">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg font-semibold">
-                  Υπάρχουσες Ομάδες ({groups.length})
-                </CardTitle>
+      {/* Create New Group */}
+      <Card className="rounded-none">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg font-semibold">
+              Δημιουργία Νέας Ομάδας
+            </CardTitle>
+            <Button 
+              className="rounded-none"
+              onClick={() => setNewGroupDialogOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Νέα Ομάδα
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Search Users */}
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Αναζήτηση αθλητών..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 rounded-none"
+              />
+            </div>
+
+            {/* Users List */}
+            {loadingUsers ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Φόρτωση αθλητών...</p>
               </div>
-            </CardHeader>
-            <CardContent>
-              {loadingGroups ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Φόρτωση ομάδων...</p>
-                </div>
-              ) : groups.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Δεν βρέθηκαν ομάδες</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Όνομα</TableHead>
-                        <TableHead className="hidden md:table-cell">Περιγραφή</TableHead>
-                        <TableHead className="hidden lg:table-cell">Δημιουργία</TableHead>
-                        <TableHead>Ενέργειες</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {groups.map((group) => (
-                        <TableRow key={group.id}>
-                          <TableCell className="font-medium">
+            ) : (
+              <div className="max-h-96 overflow-y-auto border rounded-none">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedUsers(filteredUsers.map(u => u.id));
+                            } else {
+                              setSelectedUsers([]);
+                            }
+                          }}
+                        />
+                      </TableHead>
+                      <TableHead>Αθλητής</TableHead>
+                      <TableHead className="hidden md:table-cell">Email</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedUsers.includes(user.id)}
+                            onCheckedChange={(checked) => handleUserSelect(user.id, !!checked)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8 rounded-full">
+                              <AvatarImage src={user.photo_url || user.avatar_url || ''} />
+                              <AvatarFallback className="rounded-full">
+                                {getInitials(user.name)}
+                              </AvatarFallback>
+                            </Avatar>
                             <div>
-                              <div>{group.name}</div>
-                              <div className="md:hidden text-xs text-muted-foreground mt-1">
-                                {group.description && `${group.description} • `}
-                                {formatDate(group.created_at)}
-                              </div>
+                              <div className="font-medium">{user.name}</div>
+                              <div className="md:hidden text-xs text-muted-foreground">{user.email}</div>
                             </div>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">{group.description || '-'}</TableCell>
-                          <TableCell className="hidden lg:table-cell">{formatDate(group.created_at)}</TableCell>
-                          <TableCell>
-                            <div className="flex space-x-1 lg:space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="rounded-none"
-                                onClick={() => handleViewGroup(group)}
-                              >
-                                <Eye className="h-3 w-3" />
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="rounded-none"
-                                onClick={() => handleEditGroup(group)}
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="rounded-none text-destructive hover:text-destructive"
-                                onClick={() => handleDeleteGroup(group)}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">{user.email}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
 
-          {/* Create New Group */}
-          <Card className="rounded-none">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg font-semibold">
-                  Δημιουργία Νέας Ομάδας
-                </CardTitle>
-                <Button 
-                  className="rounded-none"
+            {selectedUsers.length > 0 && (
+              <div className="flex items-center justify-between p-3 bg-muted rounded-none">
+                <span className="text-sm">
+                  {selectedUsers.length} αθλητές επιλεγμένοι
+                </span>
+                <Button
                   onClick={() => setNewGroupDialogOpen(true)}
+                  className="rounded-none"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Νέα Ομάδα
+                  <Users className="h-4 w-4 mr-2" />
+                  Δημιουργία Ομάδας
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* Search Users */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Αναζήτηση αθλητών..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 rounded-none"
-                  />
-                </div>
-
-                {/* Users List */}
-                {loadingUsers ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Φόρτωση αθλητών...</p>
-                  </div>
-                ) : (
-                  <div className="max-h-96 overflow-y-auto border rounded-none">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-12">
-                            <Checkbox
-                              checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedUsers(filteredUsers.map(u => u.id));
-                                } else {
-                                  setSelectedUsers([]);
-                                }
-                              }}
-                            />
-                          </TableHead>
-                          <TableHead>Αθλητής</TableHead>
-                          <TableHead className="hidden md:table-cell">Email</TableHead>
-                          <TableHead className="hidden lg:table-cell">Κατάσταση</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredUsers.map((u) => (
-                          <TableRow key={u.id}>
-                            <TableCell>
-                              <Checkbox
-                                checked={selectedUsers.includes(u.id)}
-                                onCheckedChange={(checked) => handleUserSelect(u.id, checked as boolean)}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={u.photo_url || u.avatar_url || ''} />
-                                  <AvatarFallback className="text-xs">
-                                    {getInitials(u.name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <div className="font-medium">{u.name}</div>
-                                  <div className="md:hidden text-xs text-muted-foreground">{u.email}</div>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">{u.email}</TableCell>
-                            <TableCell className="hidden lg:table-cell">
-                              <span className={`px-2 py-1 text-xs rounded-none ${
-                                u.user_status === 'active' ? 'bg-green-100 text-green-800' :
-                                u.user_status === 'inactive' ? 'bg-red-100 text-red-800' :
-                                'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {u.user_status}
-                              </span>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-
-                {selectedUsers.length > 0 && (
-                  <div className="bg-primary/10 p-4 rounded-none">
-                    <p className="text-sm text-primary">
-                      <Users className="inline h-4 w-4 mr-1" />
-                      Επιλεγμένοι αθλητές: {selectedUsers.length}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* New Group Dialog */}
       <Dialog open={newGroupDialogOpen} onOpenChange={setNewGroupDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-none">
+        <DialogContent className="rounded-none">
           <DialogHeader>
             <DialogTitle>Νέα Ομάδα</DialogTitle>
             <DialogDescription>
-              Δημιουργήστε μια νέα ομάδα αθλητών
+              Δημιουργήστε μια νέα ομάδα για τους επιλεγμένους αθλητές
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="groupName">Όνομα Ομάδας</Label>
               <Input
                 id="groupName"
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
-                placeholder="Εισάγετε το όνομα της ομάδας"
-                required
+                placeholder="π.χ. Ομάδα Α"
                 className="rounded-none"
               />
             </div>
-            
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="groupDescription">Περιγραφή (προαιρετικό)</Label>
               <Input
                 id="groupDescription"
                 value={groupDescription}
                 onChange={(e) => setGroupDescription(e.target.value)}
-                placeholder="Εισάγετε περιγραφή της ομάδας"
+                placeholder="π.χ. Αρχάριοι"
                 className="rounded-none"
               />
             </div>
-
-            <div className="bg-muted p-3 rounded-none">
-              <p className="text-sm text-muted-foreground">
-                Επιλεγμένοι αθλητές: {selectedUsers.length}
-              </p>
+            <div className="text-sm text-muted-foreground">
+              {selectedUsers.length} αθλητές θα προστεθούν στην ομάδα
             </div>
-            
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
                 onClick={() => setNewGroupDialogOpen(false)}
                 className="rounded-none"
               >
                 Ακύρωση
               </Button>
-              <Button 
+              <Button
                 onClick={handleCreateGroup}
-                disabled={creating}
+                disabled={creating || !groupName.trim() || selectedUsers.length === 0}
                 className="rounded-none"
               >
                 {creating ? "Δημιουργία..." : "Δημιουργία"}
@@ -625,32 +488,45 @@ const CoachGroupsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* View Group Dialog */}
-      <ViewGroupDialog
-        isOpen={viewGroupDialogOpen}
-        onClose={() => setViewGroupDialogOpen(false)}
-        group={selectedGroup}
-      />
-
       {/* Edit Group Dialog */}
-      <CoachEditGroupDialog
-        isOpen={editGroupDialogOpen}
-        onClose={() => setEditGroupDialogOpen(false)}
-        onGroupUpdated={fetchGroups}
-        group={selectedGroup}
-        coachId={effectiveCoachId || ''}
-      />
+      {selectedGroup && (
+        <CoachEditGroupDialog
+          group={selectedGroup}
+          isOpen={editGroupDialogOpen}
+          onClose={() => setEditGroupDialogOpen(false)}
+          onGroupUpdated={fetchGroups}
+          coachId={coachId || ''}
+        />
+      )}
 
       {/* Delete Group Dialog */}
-      <DeleteGroupDialog
-        isOpen={deleteGroupDialogOpen}
-        onClose={() => setDeleteGroupDialogOpen(false)}
-        onGroupDeleted={fetchGroups}
-        group={selectedGroup}
-      />
+      {selectedGroup && (
+        <DeleteGroupDialog
+          group={selectedGroup}
+          isOpen={deleteGroupDialogOpen}
+          onClose={() => setDeleteGroupDialogOpen(false)}
+          onGroupDeleted={fetchGroups}
+        />
+      )}
+
+      {/* View Group Dialog */}
+      {selectedGroup && (
+        <ViewGroupDialog
+          group={selectedGroup}
+          isOpen={viewGroupDialogOpen}
+          onClose={() => setViewGroupDialogOpen(false)}
+        />
+      )}
     </div>
   );
 };
 
-export default CoachGroupsPage;
+const CoachGroupsPage = () => {
+  return (
+    <CoachLayout title="Ομάδες">
+      <CoachGroupsContent />
+    </CoachLayout>
+  );
+};
 
+export default CoachGroupsPage;
