@@ -85,10 +85,8 @@ export const useBlockActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  const duplicateBlock = async (weekId: string, dayId: string, blockId: string) => {
-    let updatedWeeks: any[] = [];
-    
-    updatedWeeks = (program.weeks || []).map(week => {
+  const duplicateBlock = (weekId: string, dayId: string, blockId: string) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
           ...week,
@@ -130,20 +128,6 @@ export const useBlockActions = (
       return week;
     });
     updateProgram({ weeks: updatedWeeks });
-
-    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
-    if (saveProgram && program.id) {
-      console.log('💾 [DUPLICATE BLOCK] Auto-saving to database...');
-      try {
-        await saveProgram({
-          ...program,
-          weeks: updatedWeeks
-        });
-        console.log('✅ [DUPLICATE BLOCK] Auto-save completed');
-      } catch (error) {
-        console.error('❌ [DUPLICATE BLOCK] Auto-save failed:', error);
-      }
-    }
   };
 
   const updateBlockName = (weekId: string, dayId: string, blockId: string, name: string) => {
