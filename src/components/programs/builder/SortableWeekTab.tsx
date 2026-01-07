@@ -120,6 +120,16 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
             <Button
               size="sm"
               variant="ghost"
+              onClick={handlePasteWeek}
+              className={`h-4 w-4 p-0 rounded-none ${hasWeek ? 'text-[#00ffba] hover:text-[#00ffba]/80' : 'text-gray-400'}`}
+              disabled={!hasWeek}
+              title={hasWeek ? "Επικόλληση Εβδομάδας" : "Αντέγραψε πρώτα μια εβδομάδα"}
+            >
+              <ClipboardPaste className="w-2 h-2" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
               onClick={(e) => {
                 e.stopPropagation();
                 onDuplicateWeek(week.id);
@@ -128,16 +138,6 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
               title="Διπλασιασμός Εβδομάδας"
             >
               <Files className="w-2 h-2" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handlePasteWeek}
-              className={`h-4 w-4 p-0 rounded-none ${hasWeek ? 'text-[#00ffba] hover:text-[#00ffba]/80' : 'text-gray-400'}`}
-              disabled={!hasWeek}
-              title={hasWeek ? "Επικόλληση Εβδομάδας" : "Αντέγραψε πρώτα μια εβδομάδα"}
-            >
-              <ClipboardPaste className="w-2 h-2" />
             </Button>
             <Button
               size="sm"
