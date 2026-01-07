@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Save, Copy, Play } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Save, Copy, Play, ClipboardPaste } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useExercises } from '@/hooks/useExercises';
+import { useProgramClipboard } from '@/contexts/ProgramClipboardContext';
 import { SimpleExerciseSelectionDialog } from './SimpleExerciseSelectionDialog';
 import { formatTimeInput } from '@/utils/timeFormatting';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
@@ -74,6 +75,32 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
 
   const { exercises: availableExercises } = useExercises();
+  const { paste, hasBlock } = useProgramClipboard();
+
+  const handlePasteBlock = () => {
+    const clipboardData = paste();
+    if (clipboardData && clipboardData.type === 'block') {
+      const block = clipboardData.data as any;
+      setTemplateName(block.name || templateName);
+      setTrainingType(block.training_type || '');
+      setWorkoutFormat(block.workout_format || '');
+      setWorkoutDuration(block.workout_duration || '');
+      setBlockSets(block.block_sets || 1);
+      
+      const transformedExercises = (block.program_exercises || []).map((ex: any) => {
+        const foundExercise = availableExercises.find(e => e.id === ex.exercise_id);
+        return {
+          ...ex,
+          id: ex.id || crypto.randomUUID(),
+          reps_mode: ex.reps_mode || 'reps',
+          kg_mode: ex.kg_mode || 'kg',
+          exercises: foundExercise || ex.exercises || { name: 'Άγνωστη άσκηση', video_url: null }
+        };
+      });
+      setExercises(transformedExercises);
+      toast.success('Block επικολλήθηκε!');
+    }
+  };
 
   useEffect(() => {
     if (open && template) {
@@ -202,7 +229,20 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="w-[95vw] max-w-[420px] h-[80vh] max-h-[600px] overflow-hidden rounded-none p-3 flex flex-col">
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-sm">Επεξεργασία Block Template</DialogTitle>
+            <DialogTitle className="text-sm flex items-center justify-between">
+              <span>Επεξεργασία Block Template</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handlePasteBlock}
+                disabled={!hasBlock}
+                className={`rounded-none h-7 text-xs ${hasBlock ? 'text-[#00ffba] border-[#00ffba]' : ''}`}
+              >
+                <ClipboardPaste className="w-3 h-3 mr-1" />
+                Επικόλληση Block
+              </Button>
+            </DialogTitle>
           </DialogHeader>
 
           {/* Template Name Input */}
