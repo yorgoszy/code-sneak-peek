@@ -41,27 +41,31 @@ const CoachProgramCardsContent = () => {
 
     setIsLoading(true);
     try {
+      // Lightweight query - μόνο τα απαραίτητα για το card (χωρίς τα exercises)
       const { data: assignments, error: assignError } = await supabase
         .from('program_assignments')
         .select(`
-          *,
+          id,
+          user_id,
+          program_id,
+          status,
+          training_dates,
+          start_date,
+          end_date,
+          created_at,
+          coach_id,
           programs!fk_program_assignments_program_id (
-            *,
-            program_weeks!fk_program_weeks_program_id (
-              *,
-              program_days!fk_program_days_week_id (
-                *,
-                program_blocks!fk_program_blocks_day_id (
-                  *,
-                  program_exercises!fk_program_exercises_block_id (
-                    *,
-                    exercises!fk_program_exercises_exercise_id (*)
-                  )
-                )
-              )
-            )
+            id,
+            name,
+            description
           ),
-          app_users!fk_program_assignments_user_id (*)
+          app_users!fk_program_assignments_user_id (
+            id,
+            name,
+            email,
+            photo_url,
+            avatar_url
+          )
         `)
         .eq('coach_id', coachId)
         .in('status', ['active', 'completed']);
@@ -83,16 +87,24 @@ const CoachProgramCardsContent = () => {
     fetchCoachPrograms();
   }, [fetchCoachPrograms]);
 
-  // Fetch workout completions
+  // Fetch workout completions - only for the specific assignments (not ALL)
   React.useEffect(() => {
     const loadCompletions = async () => {
       if (activePrograms.length > 0) {
-        const allCompletions = await completionsCache.getAllWorkoutCompletions();
+        const assignmentIds = activePrograms.map(a => a.id);
+        await completionsCache.fetchMultipleCompletions(assignmentIds);
+        
+        // Get completions from cache for these assignments
+        const allCompletions: any[] = [];
+        for (const id of assignmentIds) {
+          const completions = await completionsCache.getWorkoutCompletions(id);
+          allCompletions.push(...completions);
+        }
         setWorkoutCompletions(allCompletions);
       }
     };
     loadCompletions();
-  }, [activePrograms, completionsCache, realtimeKey]);
+  }, [activePrograms.length, realtimeKey]);
 
   const calculateProgramStats = (assignment: any) => {
     const trainingDates = assignment.training_dates || [];

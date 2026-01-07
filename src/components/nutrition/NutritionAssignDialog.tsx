@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CalendarIcon, Loader2, Search, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -22,6 +23,25 @@ interface NutritionAssignDialogProps {
   onSuccess: () => void;
   coachId?: string;
 }
+
+// Helper function to normalize text for search (removes accents and converts to lowercase)
+const normalizeText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ά/g, 'α')
+    .replace(/έ/g, 'ε')
+    .replace(/ή/g, 'η')
+    .replace(/ί/g, 'ι')
+    .replace(/ό/g, 'ο')
+    .replace(/ύ/g, 'υ')
+    .replace(/ώ/g, 'ω')
+    .replace(/ϊ/g, 'ι')
+    .replace(/ϋ/g, 'υ')
+    .replace(/ΐ/g, 'ι')
+    .replace(/ΰ/g, 'υ');
+};
 
 export const NutritionAssignDialog: React.FC<NutritionAssignDialogProps> = ({
   isOpen,
@@ -42,14 +62,18 @@ export const NutritionAssignDialog: React.FC<NutritionAssignDialogProps> = ({
     if (isOpen) {
       fetchUsers();
     }
-  }, [isOpen]);
+  }, [isOpen, coachId]);
 
   useEffect(() => {
     if (searchTerm) {
+      const normalizedSearch = normalizeText(searchTerm);
       setFilteredUsers(
-        users.filter(user => 
-          user.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        users.filter(user => {
+          const normalizedName = normalizeText(user.name || '');
+          const normalizedEmail = normalizeText(user.email || '');
+          return normalizedName.includes(normalizedSearch) || 
+                 normalizedEmail.includes(normalizedSearch);
+        })
       );
     } else {
       setFilteredUsers(users);
@@ -58,10 +82,17 @@ export const NutritionAssignDialog: React.FC<NutritionAssignDialogProps> = ({
 
   const fetchUsers = async () => {
     try {
-      let q = supabase.from('app_users').select('id, name, photo_url').order('name');
-      if (coachId) q = q.eq('coach_id', coachId);
+      // Always filter by coach_id when provided
+      let query = supabase
+        .from('app_users')
+        .select('id, name, email, photo_url, avatar_url')
+        .order('name');
+      
+      if (coachId) {
+        query = query.eq('coach_id', coachId);
+      }
 
-      const { data, error } = await q;
+      const { data, error } = await query;
 
       if (error) throw error;
       setUsers(data || []);
@@ -138,26 +169,38 @@ export const NutritionAssignDialog: React.FC<NutritionAssignDialogProps> = ({
               />
             </div>
             
-            <div className="max-h-[200px] overflow-y-auto space-y-1">
-              {filteredUsers.map(user => (
-                <Card
-                  key={user.id}
-                  className={`rounded-none cursor-pointer transition-colors ${
-                    selectedUserId === user.id 
-                      ? 'border-[#00ffba] bg-[#00ffba]/5' 
-                      : 'hover:border-gray-300'
-                  }`}
-                  onClick={() => setSelectedUserId(user.id)}
-                >
-                  <CardContent className="p-2 flex items-center gap-2">
-                    <div className="w-7 h-7 bg-[#cb8954] rounded-full flex items-center justify-center text-white text-xs">
-                      {user.name?.charAt(0)}
-                    </div>
-                    <span className="text-sm">{user.name}</span>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {users.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-4">
+                {coachId ? 'Δεν υπάρχουν χρήστες' : 'Δεν βρέθηκαν χρήστες'}
+              </p>
+            ) : (
+              <div className="max-h-[200px] overflow-y-auto space-y-1">
+                {filteredUsers.map(user => (
+                  <Card
+                    key={user.id}
+                    className={`rounded-none cursor-pointer transition-colors ${
+                      selectedUserId === user.id 
+                        ? 'border-[#00ffba] bg-[#00ffba]/5' 
+                        : 'hover:border-gray-300'
+                    }`}
+                    onClick={() => setSelectedUserId(user.id)}
+                  >
+                    <CardContent className="p-2 flex items-center gap-2">
+                      <Avatar className="h-7 w-7 rounded-full">
+                        <AvatarImage src={user.photo_url || user.avatar_url || ''} />
+                        <AvatarFallback className="bg-[#cb8954] text-white text-xs rounded-full">
+                          {user.name?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm block truncate">{user.name}</span>
+                        <span className="text-[10px] text-gray-500 block truncate">{user.email}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Date Selection */}
