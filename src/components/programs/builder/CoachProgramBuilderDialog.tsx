@@ -98,6 +98,7 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <ProgramBuilderDialogContent
+        onClose={handleClose}
         program={program}
         users={users}
         exercises={exercises}
