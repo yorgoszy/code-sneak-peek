@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { formatTimeInput } from "@/utils/timeFormatting";
 import { getVideoThumbnail, isValidVideoUrl } from "@/utils/videoUtils";
 import { useExercises } from "@/hooks/useExercises";
-import { useCoachContext } from "@/contexts/CoachContext";
+import { useSafeCoachContext } from "@/contexts/CoachContext";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { EditBlockTemplateDialog } from "./EditBlockTemplateDialog";
 import {
@@ -85,11 +85,11 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
   const [templateToEdit, setTemplateToEdit] = useState<BlockTemplate | null>(null);
 
   const { exercises: availableExercises } = useExercises();
-  const { coachId: contextCoachId } = useCoachContext();
+  const coachContext = useSafeCoachContext();
   const { userProfile, isAdmin } = useRoleCheck();
 
   // Χρησιμοποιούμε το coachId από context αν δεν περαστεί ως prop
-  const effectiveCoachId = coachId || contextCoachId;
+  const effectiveCoachId = coachId || coachContext?.coachId || null;
 
   useEffect(() => {
     if (open) {
