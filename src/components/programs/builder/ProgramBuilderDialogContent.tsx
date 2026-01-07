@@ -47,6 +47,7 @@ interface ProgramBuilderDialogContentProps {
   onPasteBlock?: (weekId: string, dayId: string, clipboardBlock: any) => void;
   onPasteBlockAtBlock?: (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => void;
   onPasteDay?: (weekId: string, clipboardDay: any) => void;
+  onLoadBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
   onSave: () => Promise<void>;
   onAssignments: () => void;
   onClose?: () => void;
@@ -95,6 +96,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onPasteBlock,
   onPasteBlockAtBlock,
   onPasteDay,
+  onLoadBlockTemplate,
   onSave,
   onAssignments,
   onClose,
@@ -146,6 +148,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onPasteBlock={onPasteBlock}
             onPasteBlockAtBlock={onPasteBlockAtBlock}
             onPasteDay={onPasteDay}
+            onLoadBlockTemplate={onLoadBlockTemplate}
             onSave={onSave}
             onAssignments={onAssignments}
             onClose={onClose}

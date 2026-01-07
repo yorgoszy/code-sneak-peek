@@ -13,6 +13,7 @@ interface Category {
 interface ExerciseFiltersProps {
   selectedCategories: string[];
   onCategoryChange: (categories: string[]) => void;
+  closeOnClickOutside?: boolean;
 }
 
 // Κατηγορίες οργανωμένες σε σειρές (ίδιο με AddExerciseDialog)
@@ -37,11 +38,27 @@ const rowLabels = [
 
 export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
   selectedCategories,
-  onCategoryChange
+  onCategoryChange,
+  closeOnClickOutside = false
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    if (!closeOnClickOutside || !isOpen) return;
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, closeOnClickOutside]);
 
   useEffect(() => {
     fetchCategories();
@@ -101,7 +118,7 @@ export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
   const { rows, equipmentCategories } = getCategorizedRows();
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       {/* Trigger Button */}
       <button
         type="button"
