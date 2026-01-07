@@ -46,6 +46,7 @@ interface ProgramBuilderProps {
   onPasteBlock: (weekId: string, dayId: string, clipboardBlock: any) => void;
   onPasteBlockAtBlock: (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => void;
   onPasteDay: (weekId: string, clipboardDay: any) => void;
+  onLoadBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
   onSave?: () => Promise<void>;
   onAssignments?: () => void;
   onClose?: () => void;
@@ -93,6 +94,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onPasteBlock,
   onPasteBlockAtBlock,
   onPasteDay,
+  onLoadBlockTemplate,
   onSave,
   onAssignments,
   onClose,
@@ -162,10 +164,11 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onReorderDays={onReorderDays}
         onReorderBlocks={onReorderBlocks}
         onReorderExercises={onReorderExercises}
-        onPasteBlock={onPasteBlock}
-        onPasteBlockAtBlock={onPasteBlockAtBlock}
-        onPasteDay={onPasteDay}
-      />
+                onPasteBlock={onPasteBlock}
+                onPasteBlockAtBlock={onPasteBlockAtBlock}
+                onPasteDay={onPasteDay}
+                onSelectBlockTemplate={onLoadBlockTemplate}
+              />
     </div>
   );
 };

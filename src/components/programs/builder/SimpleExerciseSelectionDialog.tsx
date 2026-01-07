@@ -1,9 +1,9 @@
 
 import React, { useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Play } from "lucide-react";
+import { Search, Play, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { matchesSearchTerm } from "@/lib/utils";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
@@ -74,11 +74,15 @@ export const SimpleExerciseSelectionDialog: React.FC<SimpleExerciseSelectionDial
       <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-sm">Επιλογή Άσκησης</DialogTitle>
+          <DialogClose className="absolute right-4 top-4 rounded-none opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
         </DialogHeader>
 
         <div className="flex-1 flex flex-col min-h-0">
           {/* Search and Filters - Always in one row */}
-          <div className="grid grid-cols-2 gap-2 mb-2 flex-shrink-0">
+          <div className="grid grid-cols-2 gap-2 mb-2 flex-shrink-0 pr-3">
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
@@ -91,6 +95,7 @@ export const SimpleExerciseSelectionDialog: React.FC<SimpleExerciseSelectionDial
             <ExerciseFilters
               selectedCategories={selectedCategories}
               onCategoryChange={setSelectedCategories}
+              closeOnClickOutside
             />
           </div>
 

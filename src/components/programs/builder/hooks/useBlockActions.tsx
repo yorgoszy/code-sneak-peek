@@ -410,6 +410,74 @@ export const useBlockActions = (
     }
   };
 
+  // Load block template into existing block
+  const loadBlockTemplate = async (weekId: string, dayId: string, blockId: string, template: any) => {
+    console.log('📦 [LOAD TEMPLATE] Loading template into block:', { weekId, dayId, blockId, template });
+    
+    let updatedWeeks: any[] = [];
+    
+    updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          program_days: (week.program_days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                program_blocks: (day.program_blocks || []).map(block => {
+                  if (block.id === blockId) {
+                    // Replace block content with template content
+                    return {
+                      ...block,
+                      name: template.name || block.name,
+                      training_type: template.training_type || block.training_type,
+                      workout_format: template.workout_format || block.workout_format,
+                      workout_duration: template.workout_duration || block.workout_duration,
+                      block_sets: template.block_sets || block.block_sets || 1,
+                      program_exercises: (template.exercises || []).map((exercise: any, idx: number) => ({
+                        id: generateId(),
+                        exercise_id: exercise.exercise_id,
+                        exercise_order: idx + 1,
+                        sets: exercise.sets,
+                        reps: exercise.reps,
+                        reps_mode: exercise.reps_mode,
+                        kg: exercise.kg,
+                        kg_mode: exercise.kg_mode,
+                        percentage_1rm: exercise.percentage_1rm,
+                        tempo: exercise.tempo,
+                        rest: exercise.rest,
+                        notes: exercise.notes
+                      }))
+                    };
+                  }
+                  return block;
+                })
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+    toast.success('Template φορτώθηκε επιτυχώς');
+
+    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
+    if (saveProgram && program.id) {
+      console.log('💾 [LOAD TEMPLATE] Auto-saving to database...');
+      try {
+        await saveProgram({
+          ...program,
+          weeks: updatedWeeks
+        });
+        console.log('✅ [LOAD TEMPLATE] Auto-save completed');
+      } catch (error) {
+        console.error('❌ [LOAD TEMPLATE] Auto-save failed:', error);
+      }
+    }
+  };
+
   return {
     addBlock,
     removeBlock,
@@ -420,6 +488,7 @@ export const useBlockActions = (
     updateBlockWorkoutDuration,
     updateBlockSets,
     pasteBlock,
-    pasteBlockAtBlock
+    pasteBlockAtBlock,
+    loadBlockTemplate
   };
 };

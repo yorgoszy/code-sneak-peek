@@ -141,6 +141,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onPasteBlock={actions.pasteBlock}
         onPasteBlockAtBlock={actions.pasteBlockAtBlock}
         onPasteDay={actions.pasteDay}
+        onLoadBlockTemplate={actions.loadBlockTemplate}
         onSave={handleSave}
         onAssignments={handleAssign}
         onClose={handleClose}
