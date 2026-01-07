@@ -171,27 +171,17 @@ export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
         </div>
       )}
 
-      {/* Selected categories badges - inside the dropdown area */}
-      {selectedCategories.length > 0 && !isOpen && (
-        <div className="absolute top-full left-0 right-0 flex flex-wrap gap-1 mt-1 z-40">
-          {selectedCategories.map(category => (
-            <Badge
-              key={category}
-              variant="secondary"
-              className="bg-[#00ffba] text-black rounded-none flex items-center gap-0.5 cursor-pointer hover:bg-[#00ffba]/90 text-[9px] px-1 py-0 h-4"
-              onClick={() => handleCategoryRemove(category)}
-            >
-              {formatCategoryName(category)}
-              <X className="w-2 h-2" />
-            </Badge>
-          ))}
-          <button
-            onClick={() => onCategoryChange([])}
-            className="text-[9px] text-gray-500 hover:text-gray-700 px-1 h-4 border border-gray-300 hover:bg-gray-100"
-          >
-            ✕
-          </button>
-        </div>
+      {/* Clear all button - inline in trigger when filters selected */}
+      {selectedCategories.length > 0 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onCategoryChange([]);
+          }}
+          className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] text-gray-500 hover:text-gray-700 px-1 h-5 hover:bg-gray-100"
+        >
+          ✕
+        </button>
       )}
     </div>
   );
