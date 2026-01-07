@@ -75,7 +75,7 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
 
   const { exercises: availableExercises } = useExercises();
-  const { paste, hasBlock } = useProgramClipboard();
+  const { paste, hasBlock, clearClipboard } = useProgramClipboard();
 
   const handlePasteBlock = () => {
     const clipboardData = paste();
@@ -96,6 +96,7 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
       });
       
       setExercises(prev => [...prev, ...newExercises]);
+      clearClipboard();
       toast.success(`${newExercises.length} ασκήσεις προστέθηκαν!`);
     }
   };

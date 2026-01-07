@@ -60,7 +60,7 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
   const [saving, setSaving] = useState(false);
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
 
-  const { paste, hasBlock } = useProgramClipboard();
+  const { paste, hasBlock, clearClipboard } = useProgramClipboard();
   const { exercises: availableExercises } = useExercises();
 
   const handlePasteBlock = () => {
@@ -73,6 +73,7 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
       setWorkoutDuration(block.workout_duration || '');
       setBlockSets(block.block_sets || 1);
       setExercises(block.program_exercises || []);
+      clearClipboard();
       toast.success('Block επικολλήθηκε!');
     }
   };

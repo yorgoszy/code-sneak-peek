@@ -157,15 +157,19 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
         
         <div className="space-y-3 flex-1 overflow-hidden flex flex-col">
           {/* Search and Filters */}
-          <div className="grid grid-cols-2 gap-2 flex-shrink-0">
-            <ExerciseSearchInput
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
-            <ExerciseFilters
-              selectedCategories={selectedCategories}
-              onCategoryChange={setSelectedCategories}
-            />
+          <div className="flex gap-2 flex-shrink-0">
+            <div className="w-1/2">
+              <ExerciseSearchInput
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+              />
+            </div>
+            <div className="w-1/2">
+              <ExerciseFilters
+                selectedCategories={selectedCategories}
+                onCategoryChange={setSelectedCategories}
+              />
+            </div>
           </div>
           
           {/* Exercise List - Flexible height */}
