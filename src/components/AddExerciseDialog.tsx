@@ -19,6 +19,7 @@ interface AddExerciseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  coachId?: string;
 }
 
 // Κατηγορίες οργανωμένες σε σειρές
@@ -38,7 +39,7 @@ const categoryRows = [
   // Row 7: Equipment - θα είναι όλα τα υπόλοιπα
 ];
 
-export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExerciseDialogProps) => {
+export const AddExerciseDialog = ({ open, onOpenChange, onSuccess, coachId }: AddExerciseDialogProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
@@ -136,6 +137,7 @@ export const AddExerciseDialog = ({ open, onOpenChange, onSuccess }: AddExercise
           name: name.trim(),
           description: description.trim() || null,
           video_url: videoUrl.trim() || null,
+          coach_id: coachId || null,
         })
         .select()
         .single();
