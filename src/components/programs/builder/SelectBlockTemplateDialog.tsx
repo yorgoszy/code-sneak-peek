@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { toast } from "sonner";
 import { formatTimeInput } from "@/utils/timeFormatting";
 import { getVideoThumbnail, isValidVideoUrl } from "@/utils/videoUtils";
 import { useExercises } from "@/hooks/useExercises";
+import { useCoachContext } from "@/contexts/CoachContext";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { EditBlockTemplateDialog } from "./EditBlockTemplateDialog";
 import {
@@ -85,13 +85,17 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
   const [templateToEdit, setTemplateToEdit] = useState<BlockTemplate | null>(null);
 
   const { exercises: availableExercises } = useExercises();
+  const { coachId: contextCoachId } = useCoachContext();
   const { userProfile, isAdmin } = useRoleCheck();
+
+  // Χρησιμοποιούμε το coachId από context αν δεν περαστεί ως prop
+  const effectiveCoachId = coachId || contextCoachId;
 
   useEffect(() => {
     if (open) {
       fetchTemplates();
     }
-  }, [open, coachId]);
+  }, [open, effectiveCoachId]);
 
   const fetchTemplates = async () => {
     try {
@@ -104,14 +108,14 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
 
       // Φιλτράρουμε templates ώστε να βλέπουμε:
       // - global (created_by IS NULL)
-      // - του coach (created_by = coachId)
+      // - του coach (created_by = effectiveCoachId)
       // - του admin (created_by = currentUserId) όταν admin βλέπει coach panel
       const myId = userProfile?.id;
 
-      if (coachId) {
-        const ors = [`created_by.eq.${coachId}`, 'created_by.is.null'];
+      if (effectiveCoachId) {
+        const ors = [`created_by.eq.${effectiveCoachId}`, 'created_by.is.null'];
 
-        if (isAdmin() && myId && myId !== coachId) {
+        if (isAdmin() && myId && myId !== effectiveCoachId) {
           ors.push(`created_by.eq.${myId}`);
         }
 

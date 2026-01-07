@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useProgramClipboard } from '@/contexts/ProgramClipboardContext';
 import { useExercises } from '@/hooks/useExercises';
+import { useCoachContext } from '@/contexts/CoachContext';
 import { SimpleExerciseSelectionDialog } from './SimpleExerciseSelectionDialog';
 import { formatTimeInput } from '@/utils/timeFormatting';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
@@ -64,6 +64,10 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
 
   const { paste, hasBlock, clearClipboard } = useProgramClipboard();
   const { exercises: availableExercises } = useExercises();
+  const { coachId: contextCoachId } = useCoachContext();
+
+  // Χρησιμοποιούμε το coachId από context αν δεν περαστεί ως prop
+  const effectiveCoachId = coachId || contextCoachId;
 
   const handlePasteBlock = () => {
     const clipboardData = paste();
@@ -160,7 +164,7 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
           workout_duration: workoutDuration || null,
           block_sets: blockSets,
           exercises: exercisesForStorage,
-          created_by: coachId || null
+          created_by: effectiveCoachId || null
         });
 
       if (error) throw error;
