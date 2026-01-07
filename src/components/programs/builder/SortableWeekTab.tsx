@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { TabsTrigger } from "@/components/ui/tabs";
-import { Copy, Trash2, GripVertical, ClipboardPaste } from "lucide-react";
+import { Copy, Trash2, GripVertical, ClipboardPaste, Files } from "lucide-react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { WeekMetrics } from './WeekMetrics';
@@ -116,6 +116,18 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
               title="Αντιγραφή Εβδομάδας"
             >
               <Copy className="w-2 h-2" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicateWeek(week.id);
+              }}
+              className="h-4 w-4 p-0 rounded-none"
+              title="Διπλασιασμός Εβδομάδας"
+            >
+              <Files className="w-2 h-2" />
             </Button>
             <Button
               size="sm"
