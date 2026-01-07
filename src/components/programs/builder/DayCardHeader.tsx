@@ -3,7 +3,7 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Files, Dumbbell, Trophy, Clipboard } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Files, Dumbbell, Trophy, ClipboardPaste } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Day } from '../types';
 
@@ -25,7 +25,6 @@ interface DayCardHeaderProps {
   onRemoveDay: () => void;
   onToggleTestDay: () => void;
   onToggleCompetitionDay: () => void;
-  onPasteBlock?: () => void;
   onPasteDay?: () => void;
 }
 
@@ -47,10 +46,9 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onRemoveDay,
   onToggleTestDay,
   onToggleCompetitionDay,
-  onPasteBlock,
   onPasteDay
 }) => {
-  const { copyDay, hasBlock, hasDay } = useProgramClipboard();
+  const { copyDay, hasDay } = useProgramClipboard();
 
   const handleCopyDay = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -134,21 +132,6 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
           >
             <Plus className="w-3 h-3" />
           </Button>
-          {onPasteBlock && (
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPasteBlock();
-              }}
-              size="sm"
-              variant="ghost"
-              className={`rounded-none ${hasBlock ? 'text-[#00ffba] hover:text-[#00ffba]/80' : 'text-gray-400'}`}
-              disabled={!hasBlock}
-              title={hasBlock ? "Επικόλληση Block" : "Αντέγραψε πρώτα ένα block"}
-            >
-              <Clipboard className="w-3 h-3" />
-            </Button>
-          )}
           <Button
             onClick={handleCopyDay}
             size="sm"
@@ -170,7 +153,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
               disabled={!hasDay}
               title={hasDay ? "Επικόλληση Ημέρας" : "Αντέγραψε πρώτα μια ημέρα"}
             >
-              <Clipboard className="w-3 h-3" />
+              <ClipboardPaste className="w-3 h-3" />
             </Button>
           )}
           <Button
