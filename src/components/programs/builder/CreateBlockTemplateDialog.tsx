@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useProgramClipboard } from '@/contexts/ProgramClipboardContext';
 import { useExercises } from '@/hooks/useExercises';
-import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
+import { SimpleExerciseSelectionDialog } from './SimpleExerciseSelectionDialog';
 import { formatTimeInput } from '@/utils/timeFormatting';
 
 interface CreateBlockTemplateDialogProps {
@@ -374,7 +374,7 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
         </DialogContent>
       </Dialog>
 
-      <ExerciseSelectionDialog
+      <SimpleExerciseSelectionDialog
         open={showExerciseDialog}
         onOpenChange={setShowExerciseDialog}
         exercises={availableExercises}
