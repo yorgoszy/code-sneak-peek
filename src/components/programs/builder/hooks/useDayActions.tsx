@@ -200,36 +200,38 @@ export const useDayActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  // Paste day from clipboard - δεν κάνει auto-save
-  const pasteDay = (weekId: string, clipboardDay: any) => {
+  // Paste day - αντικαθιστά την υπάρχουσα ημέρα
+  const pasteDay = (weekId: string, dayId: string, clipboardDay: any) => {
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
-        const newDay = {
-          id: generateId(),
-          name: clipboardDay.name,
-          day_number: (week.program_days?.length || 0) + 1,
-          is_test_day: clipboardDay.is_test_day,
-          test_types: clipboardDay.test_types,
-          is_competition_day: clipboardDay.is_competition_day,
-          program_blocks: (clipboardDay.program_blocks || []).map((block: any, blockIdx: number) => ({
-            id: generateId(),
-            name: block.name,
-            block_order: blockIdx + 1,
-            training_type: block.training_type,
-            workout_format: block.workout_format,
-            workout_duration: block.workout_duration,
-            block_sets: block.block_sets || 1,
-            program_exercises: (block.program_exercises || []).map((exercise: any, exIdx: number) => ({
-              ...exercise,
-              id: generateId(),
-              exercise_order: exIdx + 1
-            }))
-          }))
-        };
-        
         return {
           ...week,
-          program_days: [...(week.program_days || []), newDay]
+          program_days: (week.program_days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                name: clipboardDay.name,
+                is_test_day: clipboardDay.is_test_day,
+                test_types: clipboardDay.test_types,
+                is_competition_day: clipboardDay.is_competition_day,
+                program_blocks: (clipboardDay.program_blocks || []).map((block: any, blockIdx: number) => ({
+                  id: generateId(),
+                  name: block.name,
+                  block_order: blockIdx + 1,
+                  training_type: block.training_type,
+                  workout_format: block.workout_format,
+                  workout_duration: block.workout_duration,
+                  block_sets: block.block_sets || 1,
+                  program_exercises: (block.program_exercises || []).map((exercise: any, exIdx: number) => ({
+                    ...exercise,
+                    id: generateId(),
+                    exercise_order: exIdx + 1
+                  }))
+                }))
+              };
+            }
+            return day;
+          })
         };
       }
       return week;

@@ -21,7 +21,7 @@ interface SortableWeekTabProps {
   setEditingWeekName: (name: string) => void;
   onDuplicateWeek: (weekId: string) => void;
   onRemoveWeek: (weekId: string) => void;
-  onPasteWeek?: (clipboardWeek: Week) => void;
+  onPasteWeek?: (weekId: string, clipboardWeek: Week) => void;
 }
 
 export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
@@ -64,7 +64,7 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
     e.stopPropagation();
     const clipboardData = paste();
     if (clipboardData && clipboardData.type === 'week' && onPasteWeek) {
-      onPasteWeek(clipboardData.data as Week);
+      onPasteWeek(week.id, clipboardData.data as Week);
       clearClipboard();
     }
   };

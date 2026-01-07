@@ -1,4 +1,5 @@
 
+import { toast } from 'sonner';
 import { ProgramStructure } from './useProgramBuilderState';
 
 export const useWeekActions = (
@@ -150,50 +151,53 @@ export const useWeekActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  // Paste week - δεν κάνει auto-save
-  const pasteWeek = (clipboardWeek: any) => {
-    const newWeekData = {
-      id: generateId(),
-      name: `${clipboardWeek.name} (Επικόλληση)`,
-      week_number: (program.weeks?.length || 0) + 1,
-      program_days: (clipboardWeek.program_days || []).map((day: any, dayIdx: number) => ({
-        id: generateId(),
-        name: day.name,
-        day_number: dayIdx + 1,
-        estimated_duration_minutes: day.estimated_duration_minutes,
-        is_test_day: day.is_test_day,
-        test_types: day.test_types,
-        is_competition_day: day.is_competition_day,
-        program_blocks: (day.program_blocks || []).map((block: any) => ({
-          id: generateId(),
-          name: block.name,
-          block_order: block.block_order,
-          training_type: block.training_type,
-          workout_format: block.workout_format,
-          workout_duration: block.workout_duration,
-          block_sets: block.block_sets || 1,
-          program_exercises: (block.program_exercises || []).map((exercise: any, exIdx: number) => ({
+  // Paste week - αντικαθιστά την υπάρχουσα εβδομάδα
+  const pasteWeek = (weekId: string, clipboardWeek: any) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          name: clipboardWeek.name,
+          program_days: (clipboardWeek.program_days || []).map((day: any, dayIdx: number) => ({
             id: generateId(),
-            exercise_id: exercise.exercise_id,
-            exercise_order: exIdx + 1,
-            sets: exercise.sets,
-            reps: exercise.reps,
-            reps_mode: exercise.reps_mode,
-            kg: exercise.kg,
-            kg_mode: exercise.kg_mode,
-            percentage_1rm: exercise.percentage_1rm,
-            velocity_ms: exercise.velocity_ms,
-            tempo: exercise.tempo,
-            rest: exercise.rest,
-            notes: exercise.notes,
-            exercises: exercise.exercises
+            name: day.name,
+            day_number: dayIdx + 1,
+            estimated_duration_minutes: day.estimated_duration_minutes,
+            is_test_day: day.is_test_day,
+            test_types: day.test_types,
+            is_competition_day: day.is_competition_day,
+            program_blocks: (day.program_blocks || []).map((block: any) => ({
+              id: generateId(),
+              name: block.name,
+              block_order: block.block_order,
+              training_type: block.training_type,
+              workout_format: block.workout_format,
+              workout_duration: block.workout_duration,
+              block_sets: block.block_sets || 1,
+              program_exercises: (block.program_exercises || []).map((exercise: any, exIdx: number) => ({
+                id: generateId(),
+                exercise_id: exercise.exercise_id,
+                exercise_order: exIdx + 1,
+                sets: exercise.sets,
+                reps: exercise.reps,
+                reps_mode: exercise.reps_mode,
+                kg: exercise.kg,
+                kg_mode: exercise.kg_mode,
+                percentage_1rm: exercise.percentage_1rm,
+                velocity_ms: exercise.velocity_ms,
+                tempo: exercise.tempo,
+                rest: exercise.rest,
+                notes: exercise.notes,
+                exercises: exercise.exercises
+              }))
+            }))
           }))
-        }))
-      }))
-    };
-
-    const updatedWeeks = [...(program.weeks || []), newWeekData];
+        };
+      }
+      return week;
+    });
     updateProgram({ weeks: updatedWeeks });
+    toast.success('Εβδομάδα επικολλήθηκε επιτυχώς');
   };
 
   return {
