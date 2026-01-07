@@ -136,6 +136,8 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
         onReorderBlocks={actions.reorderBlocks}
         onReorderExercises={actions.reorderExercises}
         onPasteBlock={actions.pasteBlock}
+        onPasteBlockAtBlock={actions.pasteBlockAtBlock}
+        onPasteDay={actions.pasteDay}
         onSave={handleSave}
         onAssignments={handleAssign}
         onTrainingDatesChange={handleTrainingDatesChange}
