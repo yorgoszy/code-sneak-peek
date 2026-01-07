@@ -81,24 +81,22 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
     const clipboardData = paste();
     if (clipboardData && clipboardData.type === 'block') {
       const block = clipboardData.data as any;
-      setTemplateName(block.name || templateName);
-      setTrainingType(block.training_type || '');
-      setWorkoutFormat(block.workout_format || '');
-      setWorkoutDuration(block.workout_duration || '');
-      setBlockSets(block.block_sets || 1);
       
-      const transformedExercises = (block.program_exercises || []).map((ex: any) => {
+      // Προσθήκη ασκήσεων στις υπάρχουσες (χωρίς αντικατάσταση)
+      const newExercises = (block.program_exercises || []).map((ex: any) => {
         const foundExercise = availableExercises.find(e => e.id === ex.exercise_id);
         return {
           ...ex,
-          id: ex.id || crypto.randomUUID(),
+          id: crypto.randomUUID(), // Νέο ID για κάθε άσκηση
+          exercise_order: exercises.length + (block.program_exercises || []).indexOf(ex) + 1,
           reps_mode: ex.reps_mode || 'reps',
           kg_mode: ex.kg_mode || 'kg',
           exercises: foundExercise || ex.exercises || { name: 'Άγνωστη άσκηση', video_url: null }
         };
       });
-      setExercises(transformedExercises);
-      toast.success('Block επικολλήθηκε!');
+      
+      setExercises(prev => [...prev, ...newExercises]);
+      toast.success(`${newExercises.length} ασκήσεις προστέθηκαν!`);
     }
   };
 
