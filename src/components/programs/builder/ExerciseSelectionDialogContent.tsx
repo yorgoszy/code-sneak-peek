@@ -61,14 +61,14 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
       );
     }
 
-    // Category filter
+    // Category filter - AND logic: exercise must have ALL selected categories
     if (selectedCategories.length > 0) {
       filtered = filtered.filter(exercise => {
         if (!exercise.categories || exercise.categories.length === 0) {
           return false;
         }
-        // Check if exercise has ANY of the selected categories
-        return selectedCategories.some(selectedCat => 
+        // Check if exercise has ALL of the selected categories
+        return selectedCategories.every(selectedCat => 
           exercise.categories!.some(exerciseCat => 
             exerciseCat.toLowerCase() === selectedCat.toLowerCase()
           )
