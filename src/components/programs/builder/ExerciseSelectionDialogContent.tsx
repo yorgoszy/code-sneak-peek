@@ -1,18 +1,17 @@
-
 import React, { useState, useMemo } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Filter, Plus, X, Save, FolderOpen } from "lucide-react";
+import { Filter, Plus, X, Save, FolderOpen, Play } from "lucide-react";
 import { ExerciseFilters } from './ExerciseFilters';
 import { ExerciseSearchInput } from './ExerciseSearchInput';
-import { ExerciseGrid } from './ExerciseGrid';
-import { ExerciseCard } from './ExerciseCard';
 import { AddExerciseDialog } from '@/components/AddExerciseDialog';
 import { CreateBlockTemplateDialog } from './CreateBlockTemplateDialog';
 import { SelectBlockTemplateDialog } from './SelectBlockTemplateDialog';
 import { useExerciseRealtime } from './hooks/useExerciseRealtime';
 import { useExerciseWithCategories } from './hooks/useExerciseWithCategories';
 import { matchesSearchTerm } from "@/lib/utils";
+import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
+import { FEATURE_FLAGS } from '@/config/featureFlags';
 
 interface Exercise {
   id: string;
@@ -36,7 +35,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   onClose,
   onExercisesUpdate,
   onSelectBlockTemplate,
-  coachId
+  coachId,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -45,42 +44,30 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   const [selectTemplateDialogOpen, setSelectTemplateDialogOpen] = useState(false);
 
   // Handle real-time exercise updates
-  const { currentExercises } = useExerciseRealtime(
-    initialExercises,
-    (newExercise) => {
-      console.log('🎯 Real-time exercise received, adding with categories:', newExercise.name);
-      addExerciseWithCategories(newExercise);
-      // Notify parent about the updated exercises list
-      if (onExercisesUpdate) {
-        onExercisesUpdate([...exercisesWithCategories, newExercise]);
-      }
+  const { currentExercises } = useExerciseRealtime(initialExercises, (newExercise) => {
+    console.log('🎯 Real-time exercise received, adding with categories:', newExercise.name);
+    addExerciseWithCategories(newExercise);
+    if (onExercisesUpdate) {
+      onExercisesUpdate([...exercisesWithCategories, newExercise]);
     }
-  );
+  });
 
   // Handle exercises with categories
   const { exercisesWithCategories, addExerciseWithCategories } = useExerciseWithCategories(currentExercises);
 
+
   const filteredExercises = useMemo(() => {
     let filtered = exercisesWithCategories;
 
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(exercise => 
-        matchesSearchTerm(exercise.name, searchTerm)
-      );
+    if (searchTerm.trim()) {
+      filtered = filtered.filter((exercise) => matchesSearchTerm(exercise.name, searchTerm));
     }
 
-    // Category filter - AND logic: exercise must have ALL selected categories
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter(exercise => {
-        if (!exercise.categories || exercise.categories.length === 0) {
-          return false;
-        }
-        // Check if exercise has ALL of the selected categories
-        return selectedCategories.every(selectedCat => 
-          exercise.categories!.some(exerciseCat => 
-            exerciseCat.toLowerCase() === selectedCat.toLowerCase()
-          )
+      filtered = filtered.filter((exercise) => {
+        if (!exercise.categories || exercise.categories.length === 0) return false;
+        return selectedCategories.every((selectedCat) =>
+          exercise.categories!.some((exerciseCat) => exerciseCat.toLowerCase() === selectedCat.toLowerCase())
         );
       });
     }
@@ -96,7 +83,6 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   };
 
   const handleExerciseAdded = () => {
-    // Close the add exercise dialog
     setAddExerciseDialogOpen(false);
     console.log('✅ Exercise added successfully - real-time update should show it automatically');
   };
@@ -113,8 +99,6 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
       <DialogContent
         className="rounded-none max-w-6xl w-[95vw] md:w-[90vw] lg:w-auto h-[90vh] sm:h-[80vh] p-3 sm:p-4 md:p-6 flex flex-col"
         onPointerDownOutside={(e) => {
-          // Prevent the parent dialog from closing when a nested dialog is open
-          // (Radix treats clicks inside the nested portal as "outside" of the parent)
           if (addExerciseDialogOpen || createTemplateDialogOpen || selectTemplateDialogOpen) {
             e.preventDefault();
           }
@@ -131,15 +115,19 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
               <Filter className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">Επιλογή Άσκησης ({exercisesWithCategories.length})</span>
             </div>
+
             <div className="flex items-center gap-1 flex-nowrap flex-shrink-0">
-              <Button
-                onClick={() => setAddExerciseDialogOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-7 px-1.5 sm:px-2 text-xs"
-                size="sm"
-              >
-                <Plus className="w-3 h-3 sm:mr-0.5" />
-                <span className="hidden sm:inline">Άσκηση</span>
-              </Button>
+              {FEATURE_FLAGS.exerciseSelectionAddExerciseButton && (
+                <Button
+                  onClick={() => setAddExerciseDialogOpen(true)}
+                  className="rounded-none h-7 px-1.5 sm:px-2 text-xs"
+                  size="sm"
+                >
+                  <Plus className="w-3 h-3 sm:mr-0.5" />
+                  <span className="hidden sm:inline">Άσκηση</span>
+                </Button>
+              )}
+
               <Button
                 onClick={() => setCreateTemplateDialogOpen(true)}
                 variant="outline"
@@ -149,6 +137,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
                 <Save className="w-3 h-3 sm:mr-0.5" />
                 <span className="hidden sm:inline">Template</span>
               </Button>
+
               <Button
                 onClick={() => setSelectTemplateDialogOpen(true)}
                 variant="outline"
@@ -158,53 +147,72 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
                 <FolderOpen className="w-3 h-3 sm:mr-0.5" />
                 <span className="hidden sm:inline">Templates</span>
               </Button>
-              <Button
-                onClick={onClose}
-                variant="destructive"
-                className="rounded-none h-7 w-7 p-0"
-                size="sm"
-              >
+
+              <Button onClick={onClose} variant="destructive" className="rounded-none h-7 w-7 p-0" size="sm">
                 <X className="w-3 h-3" />
               </Button>
             </div>
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="flex-1 overflow-hidden flex flex-col">
-          {/* Exercise List with Search at top */}
           <div className="flex-1 min-h-0 overflow-y-auto border rounded-none">
             <div className="p-2">
-              {/* Search and Filters - Always in one row */}
+              {/* Search + Filters */}
               <div className="grid grid-cols-2 gap-2 mb-2 sticky top-0 bg-background z-10 pb-2">
-                <ExerciseSearchInput
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                />
-                <ExerciseFilters
-                  selectedCategories={selectedCategories}
-                  onCategoryChange={setSelectedCategories}
-                />
+                <ExerciseSearchInput searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+                <ExerciseFilters selectedCategories={selectedCategories} onCategoryChange={setSelectedCategories} />
               </div>
-              
-              {/* Exercise Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {filteredExercises.length === 0 ? (
-                  <div className="col-span-2 text-center py-8 text-gray-500">
-                    {selectedCategories.length > 0 || searchTerm 
-                      ? 'Δεν βρέθηκαν ασκήσεις που να ταιριάζουν με τα κριτήρια'
-                      : 'Δεν βρέθηκαν ασκήσεις'
-                    }
-                  </div>
-                ) : (
-                  filteredExercises.map((exercise) => (
-                    <ExerciseCard
+
+              {/* Cards (ίδιες με SimpleExerciseSelectionDialog) */}
+              <div className="grid grid-cols-2 gap-2">
+                {filteredExercises.map((exercise) => {
+                  const hasValidVideo = exercise.video_url && isValidVideoUrl(exercise.video_url);
+                  const thumbnailUrl = hasValidVideo ? getVideoThumbnail(exercise.video_url!) : null;
+
+                  return (
+                    <Button
                       key={exercise.id}
-                      exercise={exercise}
-                      onSelect={handleSelectExercise}
-                    />
-                  ))
-                )}
+                      variant="outline"
+                      className="h-auto py-2 px-3 rounded-none justify-start text-left"
+                      onClick={() => handleSelectExercise(exercise.id)}
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        {hasValidVideo && thumbnailUrl ? (
+                          <div className="w-8 h-6 rounded-none overflow-hidden bg-muted flex-shrink-0">
+                            <img
+                              src={thumbnailUrl}
+                              alt={`${exercise.name} thumbnail`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.currentTarget as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+                                  parent.className = 'w-8 h-6 rounded-none bg-muted flex items-center justify-center flex-shrink-0';
+                                }
+                              }}
+                            />
+                          </div>
+                        ) : hasValidVideo ? (
+                          <div className="w-8 h-6 rounded-none bg-muted flex items-center justify-center flex-shrink-0">
+                            <Play className="w-3 h-3" />
+                          </div>
+                        ) : null}
+
+                        <span className="text-xs truncate">{exercise.name}</span>
+                      </div>
+                    </Button>
+                  );
+                })}
               </div>
+
+              {filteredExercises.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  {selectedCategories.length > 0 || searchTerm ? 'Δεν βρέθηκαν ασκήσεις που να ταιριάζουν με τα κριτήρια' : 'Δεν βρέθηκαν ασκήσεις'}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -217,11 +225,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
         coachId={coachId}
       />
 
-      <CreateBlockTemplateDialog
-        open={createTemplateDialogOpen}
-        onOpenChange={setCreateTemplateDialogOpen}
-        coachId={coachId}
-      />
+      <CreateBlockTemplateDialog open={createTemplateDialogOpen} onOpenChange={setCreateTemplateDialogOpen} coachId={coachId} />
 
       <SelectBlockTemplateDialog
         open={selectTemplateDialogOpen}

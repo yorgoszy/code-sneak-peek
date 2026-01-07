@@ -138,6 +138,7 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
         onPasteBlock={actions.pasteBlock}
         onPasteBlockAtBlock={actions.pasteBlockAtBlock}
         onPasteDay={actions.pasteDay}
+        onLoadBlockTemplate={actions.loadBlockTemplate}
         onSave={handleSave}
         onAssignments={handleAssign}
         onTrainingDatesChange={handleTrainingDatesChange}
