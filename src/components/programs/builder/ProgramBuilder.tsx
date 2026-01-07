@@ -168,6 +168,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
                 onPasteBlockAtBlock={onPasteBlockAtBlock}
                 onPasteDay={onPasteDay}
                 onSelectBlockTemplate={onLoadBlockTemplate}
+                coachId={coachId}
               />
     </div>
   );

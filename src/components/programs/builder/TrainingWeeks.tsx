@@ -45,6 +45,7 @@ interface TrainingWeeksProps {
   onPasteBlockAtBlock: (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => void;
   onPasteDay: (weekId: string, dayId: string, clipboardDay: any) => void;
   onSelectBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
+  coachId?: string;
 }
 
 export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
@@ -81,7 +82,8 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onPasteBlock,
   onPasteBlockAtBlock,
   onPasteDay,
-  onSelectBlockTemplate
+  onSelectBlockTemplate,
+  coachId
 }) => {
   const {
     activeWeek,
@@ -197,6 +199,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                 onPasteBlockAtBlock={onPasteBlockAtBlock}
                 onPasteDay={onPasteDay}
                 onSelectBlockTemplate={onSelectBlockTemplate}
+                coachId={coachId}
               />
             </Tabs>
           </DndContext>
