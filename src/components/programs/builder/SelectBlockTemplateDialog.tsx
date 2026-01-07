@@ -13,7 +13,6 @@ import { formatTimeInput } from '@/utils/timeFormatting';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useExercises } from '@/hooks/useExercises';
 import { EditBlockTemplateDialog } from './EditBlockTemplateDialog';
-import { useSearchParams } from 'react-router-dom';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -73,9 +72,8 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
   open,
   onOpenChange,
   onSelectTemplate,
-  coachId: propCoachId
+  coachId
 }) => {
-  const [searchParams] = useSearchParams();
   const [templates, setTemplates] = useState<BlockTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,50 +82,14 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
   const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(new Set());
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [templateToEdit, setTemplateToEdit] = useState<BlockTemplate | null>(null);
-  const [effectiveCoachId, setEffectiveCoachId] = useState<string | null>(null);
 
   const { exercises: availableExercises } = useExercises();
 
-  // Determine the effective coach ID
   useEffect(() => {
-    const determineCoachId = async () => {
-      // Priority: prop > URL param > current user if coach
-      if (propCoachId) {
-        setEffectiveCoachId(propCoachId);
-        return;
-      }
-
-      const urlCoachId = searchParams.get('coachId');
-      if (urlCoachId) {
-        setEffectiveCoachId(urlCoachId);
-        return;
-      }
-
-      // Check if current user is a coach
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: appUser } = await supabase
-          .from('app_users')
-          .select('id, role')
-          .eq('auth_user_id', user.id)
-          .single();
-        
-        if (appUser?.role === 'coach') {
-          setEffectiveCoachId(appUser.id);
-        }
-      }
-    };
-
     if (open) {
-      determineCoachId();
-    }
-  }, [open, propCoachId, searchParams]);
-
-  useEffect(() => {
-    if (open && effectiveCoachId !== null) {
       fetchTemplates();
     }
-  }, [open, effectiveCoachId]);
+  }, [open, coachId]);
 
   const fetchTemplates = async () => {
     try {
@@ -139,8 +101,8 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
         .order('created_at', { ascending: false });
 
       // Filter by coach ID if available
-      if (effectiveCoachId) {
-        query = query.eq('created_by', effectiveCoachId);
+      if (coachId) {
+        query = query.eq('created_by', coachId);
       }
 
       const { data, error } = await query;
