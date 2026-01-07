@@ -1,11 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Search, Menu, CreditCard, Plus } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Search, CreditCard, Plus } from "lucide-react";
 import { matchesSearchTerm } from "@/lib/utils";
 import {
   Table,
@@ -20,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
@@ -32,6 +27,9 @@ import { CoachSubscriptionEditDialog } from "@/components/coach/subscriptions/Co
 import { CoachFinancialOverview } from "@/components/coach/CoachFinancialOverview";
 import { CoachExpenseManagement } from "@/components/coach/CoachExpenseManagement";
 import { CoachReceiptsManagement } from "@/components/coach/CoachReceiptsManagement";
+import { CoachLayout } from "@/components/layouts/CoachLayout";
+import { useCoachContext } from "@/contexts/CoachContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SubscriptionType {
   id: string;
@@ -63,18 +61,10 @@ interface CoachSubscription {
   } | null;
 }
 
-const CoachSubscriptions = () => {
-  const { user, loading, signOut, isAuthenticated } = useAuth();
-  const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
-  const [searchParams] = useSearchParams();
-
-  const coachIdParam = searchParams.get("coachId");
-  const isAdminViewingCoach = !!coachIdParam && isAdmin() && coachIdParam !== userProfile?.id;
-
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
+const CoachSubscriptionsContent = () => {
+  const { coachId } = useCoachContext();
   const isMobile = useIsMobile();
+  
   const [subscriptions, setSubscriptions] = useState<CoachSubscription[]>([]);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
   const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
@@ -91,22 +81,8 @@ const CoachSubscriptions = () => {
 
   const triggerFinancialRefresh = () => setFinancialRefreshKey(prev => prev + 1);
 
-  const effectiveCoachId = useMemo(() => {
-    if (coachIdParam && isAdmin() && coachIdParam !== userProfile?.id) return coachIdParam;
-    return userProfile?.id ?? null;
-  }, [coachIdParam, isAdmin, userProfile?.id]);
-
-  useEffect(() => {
-    const checkTabletSize = () => {
-      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
-    };
-    checkTabletSize();
-    window.addEventListener("resize", checkTabletSize);
-    return () => window.removeEventListener("resize", checkTabletSize);
-  }, []);
-
   const fetchSubscriptions = async () => {
-    if (loadingSubscriptions || !effectiveCoachId) return;
+    if (loadingSubscriptions || !coachId) return;
 
     setLoadingSubscriptions(true);
     try {
@@ -117,7 +93,7 @@ const CoachSubscriptions = () => {
           subscription_types (id, name, price, duration_months),
           app_users!coach_subscriptions_user_id_fkey (name, email, avatar_url)
         `)
-        .eq("coach_id", effectiveCoachId)
+        .eq("coach_id", coachId)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -135,13 +111,13 @@ const CoachSubscriptions = () => {
   };
 
   const fetchSubscriptionTypes = async () => {
-    if (!effectiveCoachId) return;
+    if (!coachId) return;
     
     try {
       const { data, error } = await supabase
         .from("subscription_types")
         .select("id, name, price, duration_months")
-        .eq("coach_id", effectiveCoachId);
+        .eq("coach_id", coachId);
 
       if (error) throw error;
       setSubscriptionTypes(data || []);
@@ -224,7 +200,7 @@ const CoachSubscriptions = () => {
     const { data, error } = await supabase
       .from('coach_receipts')
       .select('receipt_number')
-      .eq('coach_id', effectiveCoachId)
+      .eq('coach_id', coachId)
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -251,19 +227,17 @@ const CoachSubscriptions = () => {
       const currentEndDate = new Date(subscription.end_date);
       const today = new Date();
       
-      // Start from whichever is later: today or end_date
       const newStartDate = currentEndDate > today ? currentEndDate : today;
       const newEndDate = new Date(newStartDate);
       newEndDate.setMonth(newEndDate.getMonth() + durationMonths);
       newEndDate.setDate(newEndDate.getDate() - 1);
 
-      // Create subscription
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from("coach_subscriptions")
         .insert({
-          coach_id: effectiveCoachId,
+          coach_id: coachId,
           user_id: subscription.user_id,
-          coach_user_id: subscription.user_id, // legacy field
+          coach_user_id: subscription.user_id,
           subscription_type_id: subscription.subscription_types.id,
           start_date: newStartDate.toISOString().split("T")[0],
           end_date: newEndDate.toISOString().split("T")[0],
@@ -275,14 +249,13 @@ const CoachSubscriptions = () => {
 
       if (subscriptionError) throw subscriptionError;
 
-      // Create receipt automatically
       const receiptNumber = await generateReceiptNumber();
       const { error: receiptError } = await supabase
         .from('coach_receipts')
         .insert({
-          coach_id: effectiveCoachId,
+          coach_id: coachId,
           user_id: subscription.user_id,
-          coach_user_id: subscription.user_id, // legacy field
+          coach_user_id: subscription.user_id,
           subscription_id: subscriptionData.id,
           receipt_number: receiptNumber,
           amount: subscription.subscription_types.price,
@@ -335,28 +308,11 @@ const CoachSubscriptions = () => {
   };
 
   useEffect(() => {
-    if (!rolesLoading && effectiveCoachId) {
+    if (coachId) {
       fetchSubscriptions();
       fetchSubscriptionTypes();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rolesLoading, effectiveCoachId]);
-
-  if (loading || rolesLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Φόρτωση...</p>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
+  }, [coachId]);
 
   const getStatusColor = (status: string, isPaused: boolean) => {
     if (isPaused) return "bg-yellow-100 text-yellow-800";
@@ -399,14 +355,12 @@ const CoachSubscriptions = () => {
       const aDays = Math.ceil((aEnd.getTime() - today.getTime()) / (1000 * 3600 * 24));
       const bDays = Math.ceil((bEnd.getTime() - today.getTime()) / (1000 * 3600 * 24));
       
-      // Ληγμένες πρώτα (αρνητικές ημέρες)
       const aExpired = aDays < 0;
       const bExpired = bDays < 0;
       
       if (aExpired && !bExpired) return -1;
       if (!aExpired && bExpired) return 1;
       
-      // Μέσα στην ίδια κατηγορία, ταξινόμηση κατά ημερομηνία λήξης
       return aEnd.getTime() - bEnd.getTime();
     });
 
@@ -438,365 +392,255 @@ const CoachSubscriptions = () => {
     return "text-green-600";
   };
 
+  if (!coachId) return null;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="flex flex-1 overflow-hidden">
-        {/* Desktop Sidebar */}
-        <div className="hidden lg:block">
-          <CoachSidebar
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-            contextCoachId={isAdminViewingCoach ? coachIdParam : undefined}
-          />
-        </div>
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-5 rounded-none">
+          <TabsTrigger value="subscriptions" className="rounded-none text-xs sm:text-sm">
+            Συνδρομές
+          </TabsTrigger>
+          <TabsTrigger value="types" className="rounded-none text-xs sm:text-sm">
+            Τύποι
+          </TabsTrigger>
+          <TabsTrigger value="overview" className="rounded-none text-xs sm:text-sm">
+            Επισκόπηση
+          </TabsTrigger>
+          <TabsTrigger value="receipts" className="rounded-none text-xs sm:text-sm">
+            Αποδείξεις
+          </TabsTrigger>
+          <TabsTrigger value="expenses" className="rounded-none text-xs sm:text-sm">
+            Έξοδα
+          </TabsTrigger>
+        </TabsList>
 
-        {/* Mobile/Tablet Sidebar Overlay */}
-        {showMobileSidebar && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div
-              className="absolute inset-0 bg-black bg-opacity-50"
-              onClick={() => setShowMobileSidebar(false)}
-            />
-            <div className="absolute left-0 top-0 h-full bg-white shadow-xl">
-              <CoachSidebar
-                isCollapsed={false}
-                setIsCollapsed={() => {}}
-                contextCoachId={isAdminViewingCoach ? coachIdParam : undefined}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Main Content */}
-        <div className="flex-1 overflow-auto">
-          {/* Mobile/Tablet header */}
-          {(isMobile || isTablet) && (
-            <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-3 py-4 shadow-sm lg:hidden">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-none"
-                    onClick={() => setShowMobileSidebar(true)}
-                  >
-                    <Menu className="h-4 w-4" />
-                  </Button>
-                  <h1 className="ml-4 text-lg font-semibold text-gray-900">Συνδρομές</h1>
-                </div>
-                <Button variant="outline" size="sm" className="rounded-none" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4" />
+        <TabsContent value="subscriptions" className="mt-4">
+          <Card className="rounded-none">
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-[#00ffba]" />
+                  Συνδρομές ({filteredSubscriptions.length})
+                </CardTitle>
+                <Button
+                  onClick={() => setNewSubscriptionOpen(true)}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Νέα Συνδρομή
                 </Button>
               </div>
-            </nav>
-          )}
-
-          {/* Desktop Top Navigation */}
-          {!(isMobile || isTablet) && (
-            <nav className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
-              <div className="flex justify-between items-center">
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">Συνδρομές</h1>
-                  <p className="text-xs lg:text-sm text-gray-600 hidden sm:block">
-                    Διαχείριση συνδρομών αθλητών
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2 lg:space-x-4">
-                  <div className="hidden md:flex items-center text-xs lg:text-sm text-gray-600">
-                    <span className="truncate max-w-32 lg:max-w-none">
-                      {userProfile?.name || user?.email}
-                    </span>
-                    <span className="ml-2 px-2 py-1 bg-[#00ffba]/20 text-[#00ffba] text-xs rounded">
-                      Coach
-                    </span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="rounded-none text-xs lg:text-sm px-2 lg:px-4"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="h-3 w-3 lg:h-4 lg:w-4 lg:mr-2" />
-                    <span className="hidden lg:inline">Αποσύνδεση</span>
-                  </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Αναζήτηση με όνομα ή email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 rounded-none"
+                  />
                 </div>
               </div>
-            </nav>
-          )}
 
-          {/* Subscriptions Content */}
-          <div className="flex-1 p-2 lg:p-6 space-y-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="rounded-none mb-4 flex-wrap">
-                <TabsTrigger value="subscriptions" className="rounded-none">
-                  Συνδρομές
-                </TabsTrigger>
-                <TabsTrigger value="receipts" className="rounded-none">
-                  Έσοδα
-                </TabsTrigger>
-                <TabsTrigger value="expenses" className="rounded-none">
-                  Έξοδα
-                </TabsTrigger>
-                <TabsTrigger value="financial" className="rounded-none">
-                  Έσοδα-Έξοδα
-                </TabsTrigger>
-                <TabsTrigger value="types" className="rounded-none">
-                  Τύποι
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="subscriptions">
-                <Card className="rounded-none">
-                  <CardHeader className="py-3 sm:py-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2">
-                        <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
-                        Συνδρομές ({filteredSubscriptions.length})
-                      </CardTitle>
-                      <Button 
-                        onClick={() => setNewSubscriptionOpen(true)}
-                        size={isMobile ? "sm" : "default"}
-                        className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-8 sm:h-10 text-xs sm:text-sm px-2 sm:px-4"
-                      >
-                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Νέα Συνδρομή</span>
-                        <span className="sm:hidden">Νέα</span>
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {/* Search */}
-                    <div className="mb-4">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                          placeholder="Αναζήτηση με όνομα ή email..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10 rounded-none"
-                        />
-                      </div>
-                    </div>
-
-                    {loadingSubscriptions ? (
-                      <div className="text-center py-8">
-                        <p className="text-gray-500">Φόρτωση συνδρομών...</p>
-                      </div>
-                    ) : filteredSubscriptions.length === 0 ? (
-                      <div className="text-center py-8">
-                        <p className="text-gray-500">Δεν βρέθηκαν συνδρομές</p>
-                      </div>
-                    ) : (
-                      <>
-                        {/* Desktop Table */}
-                        <div className="hidden md:block">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Αθλητής</TableHead>
-                                <TableHead>Τύπος Συνδρομής</TableHead>
-                                <TableHead>Έναρξη</TableHead>
-                                <TableHead>Λήξη</TableHead>
-                                <TableHead>Κατάσταση</TableHead>
-                                <TableHead>Πληρωμή</TableHead>
-                                <TableHead>Ενέργειες</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {filteredSubscriptions.map((sub) => (
-                                <TableRow key={sub.id}>
-                                  <TableCell>
-                                    <div className="flex items-center space-x-3">
-                                      <Avatar className="h-8 w-8">
-                                        <AvatarImage
-                                          src={sub.app_users?.avatar_url || ""}
-                                        />
-                                        <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
-                                          {sub.app_users?.name?.charAt(0)?.toUpperCase() || "?"}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <div>
-                                        <p className="font-medium">{sub.app_users?.name || "Άγνωστος"}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {sub.app_users?.email || "-"}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>{sub.subscription_types?.name || "-"}</TableCell>
-                                  <TableCell>{formatDate(sub.start_date)}</TableCell>
-                                  <TableCell>
-                                    <div>
-                                      <span>{formatDate(sub.end_date)}</span>
-                                      <span className={`ml-2 text-xs ${getDaysExpiryColor(sub.end_date, sub.is_paused)}`}>
-                                        ({getDaysExpiryText(sub.end_date, sub.is_paused)})
-                                      </span>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <span
-                                      className={`px-2 py-1 text-xs rounded ${getStatusColor(
-                                        sub.status,
-                                        sub.is_paused
-                                      )}`}
-                                    >
-                                      {getStatusLabel(sub.status, sub.is_paused)}
-                                    </span>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge 
-                                      variant={sub.is_paid !== false ? "default" : "destructive"}
-                                      className="rounded-none text-xs"
-                                    >
-                                      {sub.is_paid !== false ? 'Πληρωμένη' : 'Απλήρωτη'}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    <CoachSubscriptionActions
-                                      subscriptionId={sub.id}
-                                      isPaused={sub.is_paused}
-                                      isPaid={sub.is_paid !== false}
-                                      onTogglePayment={togglePaymentStatus}
-                                      onPause={pauseSubscription}
-                                      onResume={resumeSubscription}
-                                      onRenew={renewSubscription}
-                                      onEdit={openEditDialog}
-                                      onDelete={openDeleteDialog}
-                                    />
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-
-                        {/* Mobile Cards */}
-                        <div className="md:hidden space-y-3">
-                          {filteredSubscriptions.map((sub) => (
-                            <Card key={sub.id} className="rounded-none">
-                              <CardContent className="p-4">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-3">
-                                    <Avatar className="h-10 w-10">
-                                      <AvatarImage
-                                        src={sub.app_users?.avatar_url || ""}
-                                      />
-                                      <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
-                                        {sub.app_users?.name?.charAt(0)?.toUpperCase() || "?"}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="font-medium">{sub.app_users?.name || "Άγνωστος"}</p>
-                                      <p className="text-sm text-gray-500">
-                                        {sub.subscription_types?.name || "-"}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col items-end gap-1">
-                                    <span
-                                      className={`px-2 py-1 text-xs rounded ${getStatusColor(
-                                        sub.status,
-                                        sub.is_paused
-                                      )}`}
-                                    >
-                                      {getStatusLabel(sub.status, sub.is_paused)}
-                                    </span>
-                                    <Badge 
-                                      variant={sub.is_paid !== false ? "default" : "destructive"}
-                                      className="rounded-none text-xs"
-                                    >
-                                      {sub.is_paid !== false ? 'Πληρωμένη' : 'Απλήρωτη'}
-                                    </Badge>
-                                  </div>
+              {loadingSubscriptions ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Φόρτωση συνδρομών...</p>
+                </div>
+              ) : filteredSubscriptions.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Δεν βρέθηκαν συνδρομές</p>
+                </div>
+              ) : (
+                <>
+                  {/* Desktop Table */}
+                  <div className="hidden md:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Αθλητής</TableHead>
+                          <TableHead>Τύπος</TableHead>
+                          <TableHead>Έναρξη</TableHead>
+                          <TableHead>Λήξη</TableHead>
+                          <TableHead>Υπόλοιπο</TableHead>
+                          <TableHead>Κατάσταση</TableHead>
+                          <TableHead>Πληρωμή</TableHead>
+                          <TableHead className="text-right">Ενέργειες</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredSubscriptions.map((sub) => (
+                          <TableRow key={sub.id}>
+                            <TableCell>
+                              <div className="flex items-center space-x-3">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={sub.app_users?.avatar_url || ''} />
+                                  <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
+                                    {sub.app_users?.name?.charAt(0).toUpperCase() || '?'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="font-medium">{sub.app_users?.name || 'Άγνωστο'}</p>
+                                  <p className="text-xs text-gray-500">{sub.app_users?.email}</p>
                                 </div>
-                                <div className="mt-3 text-sm text-gray-600">
-                                  <span>{formatDate(sub.start_date)} - {formatDate(sub.end_date)}</span>
-                                  <span className={`ml-2 text-xs ${getDaysExpiryColor(sub.end_date, sub.is_paused)}`}>
-                                    ({getDaysExpiryText(sub.end_date, sub.is_paused)})
-                                  </span>
-                                </div>
-                                <div className="mt-3 pt-3 border-t">
-                                  <CoachSubscriptionActions
-                                    subscriptionId={sub.id}
-                                    isPaused={sub.is_paused}
-                                    isPaid={sub.is_paid !== false}
-                                    onTogglePayment={togglePaymentStatus}
-                                    onPause={pauseSubscription}
-                                    onResume={resumeSubscription}
-                                    onRenew={renewSubscription}
-                                    onEdit={openEditDialog}
-                                    onDelete={openDeleteDialog}
-                                  />
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                              </div>
+                            </TableCell>
+                            <TableCell>{sub.subscription_types?.name || '-'}</TableCell>
+                            <TableCell>{formatDate(sub.start_date)}</TableCell>
+                            <TableCell>{formatDate(sub.end_date)}</TableCell>
+                            <TableCell>
+                              <span className={getDaysExpiryColor(sub.end_date, sub.is_paused)}>
+                                {getDaysExpiryText(sub.end_date, sub.is_paused)}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`${getStatusColor(sub.status, sub.is_paused)} rounded-none`}>
+                                {getStatusLabel(sub.status, sub.is_paused)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`${sub.is_paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} rounded-none`}>
+                                {sub.is_paid ? 'Πληρώθηκε' : 'Απλήρωτη'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <CoachSubscriptionActions
+                                subscriptionId={sub.id}
+                                isPaused={sub.is_paused}
+                                isPaid={sub.is_paid || false}
+                                onTogglePayment={() => togglePaymentStatus(sub.id, sub.is_paid || false)}
+                                onPause={() => pauseSubscription(sub.id)}
+                                onResume={() => resumeSubscription(sub.id)}
+                                onRenew={() => renewSubscription(sub.id)}
+                                onEdit={() => openEditDialog(sub.id)}
+                                onDelete={() => openDeleteDialog(sub.id)}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
 
-              <TabsContent value="types">
-                {effectiveCoachId && (
-                  <SubscriptionTypesTab coachId={effectiveCoachId} />
-                )}
-              </TabsContent>
+                  {/* Mobile Cards */}
+                  <div className="md:hidden space-y-3">
+                    {filteredSubscriptions.map((sub) => (
+                      <Card key={sub.id} className="rounded-none">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={sub.app_users?.avatar_url || ''} />
+                                <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
+                                  {sub.app_users?.name?.charAt(0).toUpperCase() || '?'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium">{sub.app_users?.name || 'Άγνωστο'}</p>
+                                <p className="text-xs text-gray-500">{sub.subscription_types?.name}</p>
+                              </div>
+                            </div>
+                            <Badge className={`${getStatusColor(sub.status, sub.is_paused)} rounded-none`}>
+                              {getStatusLabel(sub.status, sub.is_paused)}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                            <div>
+                              <span className="text-gray-500">Λήξη:</span>
+                              <span className={`ml-1 ${getDaysExpiryColor(sub.end_date, sub.is_paused)}`}>
+                                {getDaysExpiryText(sub.end_date, sub.is_paused)}
+                              </span>
+                            </div>
+                            <div>
+                              <Badge className={`${sub.is_paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} rounded-none`}>
+                                {sub.is_paid ? 'Πληρώθηκε' : 'Απλήρωτη'}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex justify-end">
+                            <CoachSubscriptionActions
+                              subscriptionId={sub.id}
+                              isPaused={sub.is_paused}
+                              isPaid={sub.is_paid || false}
+                              onTogglePayment={() => togglePaymentStatus(sub.id, sub.is_paid || false)}
+                              onPause={() => pauseSubscription(sub.id)}
+                              onResume={() => resumeSubscription(sub.id)}
+                              onRenew={() => renewSubscription(sub.id)}
+                              onEdit={() => openEditDialog(sub.id)}
+                              onDelete={() => openDeleteDialog(sub.id)}
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-              <TabsContent value="receipts">
-                {effectiveCoachId && (
-                  <CoachReceiptsManagement coachId={effectiveCoachId} onDataChange={triggerFinancialRefresh} />
-                )}
-              </TabsContent>
+        <TabsContent value="types" className="mt-4">
+          <SubscriptionTypesTab
+            coachId={coachId}
+            onTypesChange={fetchSubscriptionTypes}
+          />
+        </TabsContent>
 
-              <TabsContent value="expenses">
-                {effectiveCoachId && (
-                  <CoachExpenseManagement coachId={effectiveCoachId} onDataChange={triggerFinancialRefresh} />
-                )}
-              </TabsContent>
+        <TabsContent value="overview" className="mt-4">
+          <CoachFinancialOverview coachId={coachId} refreshKey={financialRefreshKey} />
+        </TabsContent>
 
-              <TabsContent value="financial">
-                {effectiveCoachId && (
-                  <CoachFinancialOverview coachId={effectiveCoachId} refreshKey={financialRefreshKey} />
-                )}
-              </TabsContent>
-            </Tabs>
+        <TabsContent value="receipts" className="mt-4">
+          <CoachReceiptsManagement coachId={coachId} onReceiptChange={triggerFinancialRefresh} />
+        </TabsContent>
 
-            {/* New Subscription Dialog */}
-            {effectiveCoachId && (
-              <NewSubscriptionDialog
-                open={newSubscriptionOpen}
-                onOpenChange={setNewSubscriptionOpen}
-                coachId={effectiveCoachId}
-                onSuccess={fetchSubscriptions}
-              />
-            )}
+        <TabsContent value="expenses" className="mt-4">
+          <CoachExpenseManagement coachId={coachId} onExpenseChange={triggerFinancialRefresh} />
+        </TabsContent>
+      </Tabs>
 
-            {/* Edit Subscription Dialog */}
-            <CoachSubscriptionEditDialog
-              isOpen={editDialogOpen}
-              onClose={() => {
-                setEditDialogOpen(false);
-                setSubscriptionToEdit(null);
-              }}
-              subscription={subscriptionToEdit}
-              subscriptionTypes={subscriptionTypes}
-              onSuccess={fetchSubscriptions}
-            />
+      {/* Dialogs */}
+      <NewSubscriptionDialog
+        open={newSubscriptionOpen}
+        onOpenChange={setNewSubscriptionOpen}
+        coachId={coachId}
+        subscriptionTypes={subscriptionTypes}
+        onSubscriptionCreated={() => {
+          fetchSubscriptions();
+          setNewSubscriptionOpen(false);
+        }}
+      />
 
-            {/* Delete Subscription Dialog */}
-            <CoachSubscriptionDeleteDialog
-              isOpen={deleteDialogOpen}
-              onClose={() => {
-                setDeleteDialogOpen(false);
-                setSubscriptionToDelete(null);
-              }}
-              onDelete={deleteSubscription}
-            />
-          </div>
-        </div>
-      </div>
+      <CoachSubscriptionDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={deleteSubscription}
+      />
+
+      {subscriptionToEdit && (
+        <CoachSubscriptionEditDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          subscription={subscriptionToEdit}
+          subscriptionTypes={subscriptionTypes}
+          onSubscriptionUpdated={() => {
+            fetchSubscriptions();
+            setEditDialogOpen(false);
+          }}
+        />
+      )}
     </div>
+  );
+};
+
+const CoachSubscriptions = () => {
+  return (
+    <CoachLayout title="Συνδρομές">
+      <CoachSubscriptionsContent />
+    </CoachLayout>
   );
 };
 
