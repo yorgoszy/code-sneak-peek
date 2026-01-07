@@ -13,7 +13,8 @@ import {
   Layers,
   CalendarDays,
   Utensils,
-  LogOut
+  LogOut,
+  Dumbbell
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -71,6 +72,12 @@ export const CoachSidebar = ({
       icon: CreditCard,
       label: "Συνδρομές",
       path: effectiveCoachId ? `/dashboard/coach-subscriptions?coachId=${effectiveCoachId}` : "/dashboard/coach-subscriptions",
+      badge: null,
+    },
+    {
+      icon: Dumbbell,
+      label: "Ασκήσεις",
+      path: effectiveCoachId ? `/dashboard/coach-exercises?coachId=${effectiveCoachId}` : "/dashboard/coach-exercises",
       badge: null,
     },
     { type: "separator" },

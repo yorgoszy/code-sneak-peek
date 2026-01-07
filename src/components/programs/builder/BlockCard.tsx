@@ -53,6 +53,7 @@ interface BlockCardProps {
   onReorderExercises: (oldIndex: number, newIndex: number) => void;
   onPasteBlock?: () => void;
   onSelectBlockTemplate?: (template: any) => void;
+  coachId?: string;
 }
 
 export const BlockCard: React.FC<BlockCardProps> = ({
@@ -72,7 +73,8 @@ export const BlockCard: React.FC<BlockCardProps> = ({
   onDuplicateExercise,
   onReorderExercises,
   onPasteBlock,
-  onSelectBlockTemplate
+  onSelectBlockTemplate,
+  coachId
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -179,6 +181,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
             setShowExerciseDialog(false);
           }
         }}
+        coachId={coachId}
       />
     </>
   );

@@ -40,6 +40,7 @@ interface DayCardProps {
     attributes: any;
     listeners: any;
   };
+  coachId?: string;
 }
 
 export const DayCard: React.FC<DayCardProps> = ({
@@ -69,7 +70,8 @@ export const DayCard: React.FC<DayCardProps> = ({
   onPasteBlockAtBlock,
   onPasteDay,
   onSelectBlockTemplate,
-  dragHandleProps
+  dragHandleProps,
+  coachId
 }) => {
   const { paste, hasBlock, hasDay, clearClipboard } = useProgramClipboard();
   const [isOpen, setIsOpen] = useState(true);
@@ -191,6 +193,7 @@ export const DayCard: React.FC<DayCardProps> = ({
             onReorderExercises={onReorderExercises}
             onPasteBlock={onPasteBlockAtBlock ? handlePasteBlockAtBlock : undefined}
             onSelectBlockTemplate={onSelectBlockTemplate}
+            coachId={coachId}
           />
         )}
         

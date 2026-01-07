@@ -200,6 +200,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
         open={addExerciseDialogOpen}
         onOpenChange={setAddExerciseDialogOpen}
         onSuccess={handleExerciseAdded}
+        coachId={coachId}
       />
 
       <CreateBlockTemplateDialog
