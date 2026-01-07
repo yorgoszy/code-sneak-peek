@@ -11,6 +11,7 @@ import { ProgramClipboardProvider } from "@/contexts/ProgramClipboardContext";
 import { AIControlledProgramBuilderDialog } from "@/components/programs/builder/AIControlledProgramBuilderDialog";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RootRedirect } from "@/components/RootRedirect";
+import { FEATURE_FLAGS } from "@/config/featureFlags";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
@@ -93,95 +94,102 @@ function App() {
               <BlockTimerProvider>
                 <div className="min-h-screen bg-gray-50">
                   <Toaster />
-                <AIControlledProgramBuilderDialog />
-                <Suspense fallback={<CustomLoadingScreen />}>
-              <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<RootRedirect />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/reset-password" element={<ResetPassword />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/online-coaching" element={<OnlineCoaching />} />
-                <Route path="/payment-success" element={<PaymentSuccess />} />
-                <Route path="/install" element={<InstallPWA />} />
-                <Route path="/install-calendar" element={<ProtectedRoute><InstallCalendarWidget /></ProtectedRoute>} />
-                <Route path="/calendar-widget" element={<ProtectedRoute><CalendarWidget /></ProtectedRoute>} />
-                <Route path="/install-subscriptions" element={<ProtectedRoute><InstallSubscriptionsWidget /></ProtectedRoute>} />
-                <Route path="/subscriptions-widget" element={<ProtectedRoute><SubscriptionsWidget /></ProtectedRoute>} />
-                <Route path="/install-athletes-progress" element={<ProtectedRoute><InstallAthletesProgressWidget /></ProtectedRoute>} />
-                <Route path="/athletes-progress-widget" element={<ProtectedRoute><AthletesProgressWidget /></ProtectedRoute>} />
-                
-                {/* Sprint Timing System */}
-                <Route path="/sprint-timing" element={<SprintTimingLanding />} />
-                <Route path="/sprint-timing/master" element={<SprintTimingMaster />} />
-                <Route path="/sprint-timing/master/:sessionCode" element={<SprintTimingMaster />} />
-                <Route path="/sprint-timing/join/:sessionCode" element={<SprintTimingJoin />} />
-          <Route path="/sprint-timing/start/:sessionCode" element={<SprintTimingStart />} />
-          <Route path="/sprint-timing/distance/:sessionCode" element={<SprintTimingDistance />} />
-          <Route path="/sprint-timing/:distance/:sessionCode" element={<SprintTimingIntermediate />} />
-          <Route path="/sprint-timing/stop/:sessionCode" element={<SprintTimingStop />} />
-          <Route path="/sprint-timing/timer/:sessionCode" element={<SprintTimingTimer />} />
-                
-                {/* Coach routes */}
-                <Route path="/dashboard/my-athletes" element={<ProtectedRoute><MyAthletes /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-subscriptions" element={<ProtectedRoute><CoachSubscriptions /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-progress" element={<ProtectedRoute><CoachProgressTrackingWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-athletes-progress" element={<ProtectedRoute><CoachAthletesProgressWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-profile" element={<ProtectedRoute><CoachProfile /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-overview" element={<ProtectedRoute><CoachOverviewPage /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-programs" element={<ProtectedRoute><CoachProgramsPage /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-active-programs" element={<ProtectedRoute><CoachActiveProgramsPage /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-program-cards" element={<ProtectedRoute><CoachProgramCardsPage /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-groups" element={<ProtectedRoute><CoachGroupsPage /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-exercises" element={<ProtectedRoute><CoachExercisesPage /></ProtectedRoute>} />
-                <Route path="/dashboard/coach-shop" element={<ProtectedRoute><CoachShop /></ProtectedRoute>} />
-                
-                {/* Admin-only routes */}
-                <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
-                <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
-                <Route path="/dashboard/groups" element={<ProtectedRoute requireAdmin><Groups /></ProtectedRoute>} />
-                <Route path="/dashboard/subscriptions" element={<ProtectedRoute requireAdmin><Subscriptions /></ProtectedRoute>} />
-                <Route path="/dashboard/exercises" element={<ProtectedRoute requireAdmin><Exercises /></ProtectedRoute>} />
-                <Route path="/dashboard/programs" element={<ProtectedRoute requireAdmin><Programs /></ProtectedRoute>} />
-                <Route path="/dashboard/program-templates" element={<ProtectedRoute requireAdmin><ProgramTemplates /></ProtectedRoute>} />
-                <Route path="/dashboard/active-programs" element={<ProtectedRoute requireAdmin><ActivePrograms /></ProtectedRoute>} />
-                <Route path="/dashboard/program-cards" element={<ProtectedRoute requireAdmin><ProgramCards /></ProtectedRoute>} />
-                <Route path="/dashboard/tests" element={<ProtectedRoute requireAdmin><Tests /></ProtectedRoute>} />
-                <Route path="/dashboard/test-results" element={<ProtectedRoute requireAdmin><TestResultsWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/progress" element={<ProtectedRoute requireAdmin><ProgressTrackingWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/athletes-progress" element={<ProtectedRoute requireAdmin><AthletesProgressWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/analytics" element={<ProtectedRoute requireAdmin><Analytics /></ProtectedRoute>} />
-                <Route path="/dashboard/articles" element={<ProtectedRoute requireAdmin><ArticlesWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/results" element={<ProtectedRoute requireAdmin><ResultsWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/shop" element={<ProtectedRoute requireAdmin><AdminShopWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/offers" element={<ProtectedRoute requireAdmin><Offers /></ProtectedRoute>} />
-                <Route path="/dashboard/online-coaching" element={<ProtectedRoute requireAdmin><OnlineCoachingWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/online-booking" element={<ProtectedRoute requireAdmin><OnlineBookingWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/booking-sections" element={<ProtectedRoute requireAdmin><BookingSectionsWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/school-notes" element={<ProtectedRoute requireAdmin><SchoolNotesWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/stretches" element={<ProtectedRoute requireAdmin><StretchesManagementWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/muscle-mapping" element={<ProtectedRoute requireAdmin><MuscleMappingWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/one-rm" element={<ProtectedRoute requireAdmin><OneRMManagementWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/rid-ai-coach" element={<ProtectedRoute><RidAiCoachPage /></ProtectedRoute>} />
-                <Route path="/dashboard/ai-knowledge" element={<ProtectedRoute requireAdmin><AdminAIKnowledgeWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/nutrition" element={<ProtectedRoute><NutritionWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/annual-planning" element={<ProtectedRoute><AnnualPlanningWithSidebar /></ProtectedRoute>} />
-                <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />
-                <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
-                
-                {/* Protected user routes */}
-                <Route path="/meeting/:roomId" element={<ProtectedRoute><MeetingRoom /></ProtectedRoute>} />
-                <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-                <Route path="/dashboard/user-profile/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-                <Route path="/dashboard/user-profile/:userId/edit" element={<ProtectedRoute><ProfileEdit /></ProtectedRoute>} />
-                <Route path="/dashboard/user-profile/:userId/shop" element={<ProtectedRoute><ShopWithSidebar /></ProtectedRoute>} />
-                
-                {/* 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-                </Suspense>
-              </div>
-            </BlockTimerProvider>
+                  <AIControlledProgramBuilderDialog />
+                  <Suspense fallback={<CustomLoadingScreen />}>
+                    <Routes>
+                      {/* Public routes */}
+                      <Route path="/" element={<RootRedirect />} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/auth/reset-password" element={<ResetPassword />} />
+                      <Route path="/shop" element={<Shop />} />
+                      <Route path="/online-coaching" element={<OnlineCoaching />} />
+                      <Route path="/payment-success" element={<PaymentSuccess />} />
+                      <Route path="/install" element={<InstallPWA />} />
+                      <Route path="/install-calendar" element={<ProtectedRoute><InstallCalendarWidget /></ProtectedRoute>} />
+                      <Route path="/calendar-widget" element={<ProtectedRoute><CalendarWidget /></ProtectedRoute>} />
+                      <Route path="/install-subscriptions" element={<ProtectedRoute><InstallSubscriptionsWidget /></ProtectedRoute>} />
+                      <Route path="/subscriptions-widget" element={<ProtectedRoute><SubscriptionsWidget /></ProtectedRoute>} />
+                      <Route path="/install-athletes-progress" element={<ProtectedRoute><InstallAthletesProgressWidget /></ProtectedRoute>} />
+                      <Route path="/athletes-progress-widget" element={<ProtectedRoute><AthletesProgressWidget /></ProtectedRoute>} />
+
+                      {/* Sprint Timing System */}
+                      <Route path="/sprint-timing" element={<SprintTimingLanding />} />
+                      <Route path="/sprint-timing/master" element={<SprintTimingMaster />} />
+                      <Route path="/sprint-timing/master/:sessionCode" element={<SprintTimingMaster />} />
+                      <Route path="/sprint-timing/join/:sessionCode" element={<SprintTimingJoin />} />
+                      <Route path="/sprint-timing/start/:sessionCode" element={<SprintTimingStart />} />
+                      <Route path="/sprint-timing/distance/:sessionCode" element={<SprintTimingDistance />} />
+                      <Route path="/sprint-timing/:distance/:sessionCode" element={<SprintTimingIntermediate />} />
+                      <Route path="/sprint-timing/stop/:sessionCode" element={<SprintTimingStop />} />
+                      <Route path="/sprint-timing/timer/:sessionCode" element={<SprintTimingTimer />} />
+
+                      {/* Coach routes */}
+                      <Route path="/dashboard/my-athletes" element={<ProtectedRoute><MyAthletes /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-subscriptions" element={<ProtectedRoute><CoachSubscriptions /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-progress" element={<ProtectedRoute><CoachProgressTrackingWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-athletes-progress" element={<ProtectedRoute><CoachAthletesProgressWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-profile" element={<ProtectedRoute><CoachProfile /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-overview" element={<ProtectedRoute><CoachOverviewPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-programs" element={<ProtectedRoute><CoachProgramsPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-active-programs" element={<ProtectedRoute><CoachActiveProgramsPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-program-cards" element={<ProtectedRoute><CoachProgramCardsPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-groups" element={<ProtectedRoute><CoachGroupsPage /></ProtectedRoute>} />
+                      <Route
+                        path="/dashboard/coach-exercises"
+                        element={
+                          FEATURE_FLAGS.coachExercisesPage
+                            ? <ProtectedRoute><CoachExercisesPage /></ProtectedRoute>
+                            : <ProtectedRoute><NotFound /></ProtectedRoute>
+                        }
+                      />
+                      <Route path="/dashboard/coach-shop" element={<ProtectedRoute><CoachShop /></ProtectedRoute>} />
+
+                      {/* Admin-only routes */}
+                      <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
+                      <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
+                      <Route path="/dashboard/groups" element={<ProtectedRoute requireAdmin><Groups /></ProtectedRoute>} />
+                      <Route path="/dashboard/subscriptions" element={<ProtectedRoute requireAdmin><Subscriptions /></ProtectedRoute>} />
+                      <Route path="/dashboard/exercises" element={<ProtectedRoute requireAdmin><Exercises /></ProtectedRoute>} />
+                      <Route path="/dashboard/programs" element={<ProtectedRoute requireAdmin><Programs /></ProtectedRoute>} />
+                      <Route path="/dashboard/program-templates" element={<ProtectedRoute requireAdmin><ProgramTemplates /></ProtectedRoute>} />
+                      <Route path="/dashboard/active-programs" element={<ProtectedRoute requireAdmin><ActivePrograms /></ProtectedRoute>} />
+                      <Route path="/dashboard/program-cards" element={<ProtectedRoute requireAdmin><ProgramCards /></ProtectedRoute>} />
+                      <Route path="/dashboard/tests" element={<ProtectedRoute requireAdmin><Tests /></ProtectedRoute>} />
+                      <Route path="/dashboard/test-results" element={<ProtectedRoute requireAdmin><TestResultsWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/progress" element={<ProtectedRoute requireAdmin><ProgressTrackingWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/athletes-progress" element={<ProtectedRoute requireAdmin><AthletesProgressWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/analytics" element={<ProtectedRoute requireAdmin><Analytics /></ProtectedRoute>} />
+                      <Route path="/dashboard/articles" element={<ProtectedRoute requireAdmin><ArticlesWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/results" element={<ProtectedRoute requireAdmin><ResultsWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/shop" element={<ProtectedRoute requireAdmin><AdminShopWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/offers" element={<ProtectedRoute requireAdmin><Offers /></ProtectedRoute>} />
+                      <Route path="/dashboard/online-coaching" element={<ProtectedRoute requireAdmin><OnlineCoachingWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/online-booking" element={<ProtectedRoute requireAdmin><OnlineBookingWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/booking-sections" element={<ProtectedRoute requireAdmin><BookingSectionsWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/school-notes" element={<ProtectedRoute requireAdmin><SchoolNotesWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/stretches" element={<ProtectedRoute requireAdmin><StretchesManagementWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/muscle-mapping" element={<ProtectedRoute requireAdmin><MuscleMappingWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/one-rm" element={<ProtectedRoute requireAdmin><OneRMManagementWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/rid-ai-coach" element={<ProtectedRoute><RidAiCoachPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/ai-knowledge" element={<ProtectedRoute requireAdmin><AdminAIKnowledgeWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/nutrition" element={<ProtectedRoute><NutritionWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/annual-planning" element={<ProtectedRoute><AnnualPlanningWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />
+                      <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
+
+                      {/* Protected user routes */}
+                      <Route path="/meeting/:roomId" element={<ProtectedRoute><MeetingRoom /></ProtectedRoute>} />
+                      <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+                      <Route path="/dashboard/user-profile/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+                      <Route path="/dashboard/user-profile/:userId/edit" element={<ProtectedRoute><ProfileEdit /></ProtectedRoute>} />
+                      <Route path="/dashboard/user-profile/:userId/shop" element={<ProtectedRoute><ShopWithSidebar /></ProtectedRoute>} />
+
+                      {/* 404 */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </div>
+              </BlockTimerProvider>
             </ProgramClipboardProvider>
           </AIProgramBuilderProvider>
         </QueryClientProvider>
@@ -191,3 +199,4 @@ function App() {
 }
 
 export default App;
+

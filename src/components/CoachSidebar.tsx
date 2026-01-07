@@ -1,6 +1,6 @@
-import { 
-  Home, 
-  Users, 
+import {
+  Home,
+  Users,
   UsersRound,
   ArrowLeft,
   Brain,
@@ -15,7 +15,7 @@ import {
   Utensils,
   LogOut,
   Dumbbell,
-  ShoppingBag
+  ShoppingBag,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -24,6 +24,7 @@ import { useState } from "react";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
+import { FEATURE_FLAGS } from "@/config/featureFlags";
 
 interface CoachSidebarProps {
   isCollapsed: boolean;
@@ -81,12 +82,19 @@ export const CoachSidebar = ({
       path: effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop",
       badge: null,
     },
-    {
-      icon: Dumbbell,
-      label: "Ασκήσεις",
-      path: effectiveCoachId ? `/dashboard/coach-exercises?coachId=${effectiveCoachId}` : "/dashboard/coach-exercises",
-      badge: null,
-    },
+
+    // Προσωρινά κρυμμένο
+    ...(FEATURE_FLAGS.coachExercisesPage
+      ? [
+          {
+            icon: Dumbbell,
+            label: "Ασκήσεις",
+            path: effectiveCoachId ? `/dashboard/coach-exercises?coachId=${effectiveCoachId}` : "/dashboard/coach-exercises",
+            badge: null,
+          },
+        ]
+      : []),
+
     { type: "separator" },
     {
       icon: FileText,
@@ -159,7 +167,7 @@ export const CoachSidebar = ({
       return;
     }
     if (item.external) {
-      window.open(item.path, '_blank');
+      window.open(item.path, "_blank");
     } else {
       navigate(item.path);
     }
@@ -190,12 +198,10 @@ export const CoachSidebar = ({
         const pathWithoutQuery = typeof item.path === "string" ? item.path.split("?")[0] : "";
         const isActive =
           location.pathname === pathWithoutQuery ||
-          (pathWithoutQuery.startsWith("/dashboard/my-athletes") &&
-            location.pathname === "/dashboard/my-athletes") ||
+          (pathWithoutQuery.startsWith("/dashboard/my-athletes") && location.pathname === "/dashboard/my-athletes") ||
           (pathWithoutQuery.startsWith("/dashboard/coach-subscriptions") &&
             location.pathname === "/dashboard/coach-subscriptions") ||
-          (pathWithoutQuery.startsWith("/dashboard/coach-progress") &&
-            location.pathname === "/dashboard/coach-progress") ||
+          (pathWithoutQuery.startsWith("/dashboard/coach-progress") && location.pathname === "/dashboard/coach-progress") ||
           (pathWithoutQuery.startsWith("/dashboard/coach-athletes-progress") &&
             location.pathname === "/dashboard/coach-athletes-progress");
 
@@ -248,7 +254,7 @@ export const CoachSidebar = ({
         headerContent={headerContent}
         navigationContent={navigationContent}
       />
-      
+
       <EnhancedAIChatDialog
         isOpen={isAIChatOpen}
         onClose={() => setIsAIChatOpen(false)}
