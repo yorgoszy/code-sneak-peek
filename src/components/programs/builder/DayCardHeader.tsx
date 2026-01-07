@@ -3,7 +3,7 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Dumbbell, Trophy, Clipboard } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Files, Dumbbell, Trophy, Clipboard } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Day } from '../types';
 
@@ -166,7 +166,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             className="rounded-none"
             title="Διπλασιασμός Ημέρας"
           >
-            <Copy className="w-3 h-3" />
+            <Files className="w-3 h-3" />
           </Button>
           <Button
             onClick={(e) => {

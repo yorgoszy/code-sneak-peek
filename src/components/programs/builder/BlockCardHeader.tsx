@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Copy } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Copy, Files } from "lucide-react";
 import { formatTimeInput } from '@/utils/timeFormatting';
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Block } from '../types';
@@ -151,7 +151,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             className="rounded-none hover:bg-gray-600"
             title="Διπλασιασμός Block"
           >
-            <Copy className="w-2 h-2 text-white" />
+            <Files className="w-2 h-2 text-white" />
           </Button>
           <Button
             onClick={(e) => {
