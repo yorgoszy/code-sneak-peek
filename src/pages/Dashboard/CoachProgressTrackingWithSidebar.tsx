@@ -10,9 +10,7 @@ const CoachProgressTrackingContent = () => {
 
 const CoachProgressTrackingWithSidebar = () => {
   return (
-    <CoachLayout title="Τεστ" showHeader={false}>
-      <CoachProgressTrackingContent />
-    </CoachLayout>
+    <CoachLayout title="Τεστ" showHeader={false} ContentComponent={CoachProgressTrackingContent} />
   );
 };
 

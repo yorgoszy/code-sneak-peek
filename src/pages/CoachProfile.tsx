@@ -16,9 +16,7 @@ const CoachProfileContent = () => {
 
 const CoachProfile = () => {
   return (
-    <CoachLayout title="Ρυθμίσεις Προφίλ">
-      <CoachProfileContent />
-    </CoachLayout>
+    <CoachLayout title="Ρυθμίσεις Προφίλ" ContentComponent={CoachProfileContent} />
   );
 };
 

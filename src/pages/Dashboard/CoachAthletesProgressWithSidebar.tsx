@@ -133,9 +133,7 @@ const CoachAthletesProgressContent = () => {
 
 export const CoachAthletesProgressWithSidebar = () => {
   return (
-    <CoachLayout title="Πρόοδος Αθλητών">
-      <CoachAthletesProgressContent />
-    </CoachLayout>
+    <CoachLayout title="Πρόοδος Αθλητών" ContentComponent={CoachAthletesProgressContent} />
   );
 };
 
