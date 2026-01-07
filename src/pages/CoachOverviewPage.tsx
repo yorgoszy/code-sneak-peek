@@ -1,17 +1,15 @@
 import { CoachLayout } from "@/components/layouts/CoachLayout";
-import { useEffectiveCoachId } from "@/hooks/useEffectiveCoachId";
+import { useCoachContext } from "@/contexts/CoachContext";
 import { CoachOverview } from "@/components/coach/CoachOverview";
-import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 
 const CoachOverviewContent = () => {
-  const { effectiveCoachId, loading } = useEffectiveCoachId();
+  const { coachId } = useCoachContext();
   
-  if (loading) return <CustomLoadingScreen />;
-  if (!effectiveCoachId) return null;
+  if (!coachId) return null;
   
   return (
     <div className="max-w-6xl mx-auto">
-      <CoachOverview coachId={effectiveCoachId} />
+      <CoachOverview coachId={coachId} />
     </div>
   );
 };
