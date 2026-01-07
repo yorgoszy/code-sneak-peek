@@ -88,7 +88,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
           </CardTitle>
         </CollapsibleTrigger>
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0">
           {/* Test Day Icon - Yellow */}
           <button
             onClick={(e) => {

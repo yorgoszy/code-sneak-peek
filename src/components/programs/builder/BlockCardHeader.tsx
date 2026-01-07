@@ -120,7 +120,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             )}
           </div>
         </CollapsibleTrigger>
-        <div className="flex gap-1">
+        <div className="flex gap-0">
           <Button
             onClick={(e) => {
               e.stopPropagation();

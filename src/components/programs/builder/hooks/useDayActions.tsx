@@ -25,7 +25,7 @@ export const useDayActions = (
 
         const newDay = {
           id: generateId(),
-          name: `Ημέρα ${(week.program_days?.length || 0) + 1}`,
+          name: `Day ${(week.program_days?.length || 0) + 1}`,
           day_number: (week.program_days?.length || 0) + 1,
           program_blocks: defaultBlocks
         };

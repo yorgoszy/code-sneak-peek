@@ -23,14 +23,14 @@ export const useWeekActions = (
     // Δημιουργούμε 3 ημέρες με τα default blocks
     const defaultDays = [1, 2, 3].map(dayNum => ({
       id: generateId(),
-      name: `Ημέρα ${dayNum}`,
+      name: `Day ${dayNum}`,
       day_number: dayNum,
       program_blocks: createDefaultBlocks()
     }));
 
     const newWeek = {
       id: generateId(),
-      name: `Εβδομάδα ${weekNumber}`,
+      name: `Week ${weekNumber}`,
       week_number: weekNumber,
       program_days: defaultDays
     };
