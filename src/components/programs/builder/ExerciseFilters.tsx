@@ -171,9 +171,9 @@ export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
         </div>
       )}
 
-      {/* Selected categories badges */}
-      {selectedCategories.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-1">
+      {/* Selected categories badges - inside the dropdown area */}
+      {selectedCategories.length > 0 && !isOpen && (
+        <div className="absolute top-full left-0 right-0 flex flex-wrap gap-1 mt-1 z-40">
           {selectedCategories.map(category => (
             <Badge
               key={category}
