@@ -106,24 +106,16 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
         .select('*')
         .order('created_at', { ascending: false });
 
-      // Φιλτράρουμε templates ώστε να βλέπουμε:
-      // - global (created_by IS NULL)
-      // - του coach (created_by = effectiveCoachId)
-      // - του admin (created_by = currentUserId) όταν admin βλέπει coach panel
+      // Κάθε χρήστης βλέπει ΜΟΝΟ τα δικά του templates
       const myId = userProfile?.id;
-
-      if (effectiveCoachId) {
-        const ors = [`created_by.eq.${effectiveCoachId}`, 'created_by.is.null'];
-
-        if (isAdmin() && myId && myId !== effectiveCoachId) {
-          ors.push(`created_by.eq.${myId}`);
-        }
-
-        query = query.or(ors.join(','));
+      
+      if (myId) {
+        query = query.eq('created_by', myId);
       } else {
-        const ors = ['created_by.is.null'];
-        if (myId) ors.push(`created_by.eq.${myId}`);
-        query = query.or(ors.join(','));
+        // Αν δεν υπάρχει user, δεν δείχνουμε τίποτα
+        setTemplates([]);
+        setLoading(false);
+        return;
       }
 
       const { data, error } = await query;
