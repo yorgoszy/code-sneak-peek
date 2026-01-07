@@ -583,10 +583,7 @@ const CoachSubscriptionsContent = () => {
         </TabsContent>
 
         <TabsContent value="types" className="mt-4">
-          <SubscriptionTypesTab
-            coachId={coachId}
-            onTypesChange={fetchSubscriptionTypes}
-          />
+          <SubscriptionTypesTab coachId={coachId} />
         </TabsContent>
 
         <TabsContent value="overview" className="mt-4">
@@ -594,11 +591,11 @@ const CoachSubscriptionsContent = () => {
         </TabsContent>
 
         <TabsContent value="receipts" className="mt-4">
-          <CoachReceiptsManagement coachId={coachId} onReceiptChange={triggerFinancialRefresh} />
+          <CoachReceiptsManagement coachId={coachId} onDataChange={triggerFinancialRefresh} />
         </TabsContent>
 
         <TabsContent value="expenses" className="mt-4">
-          <CoachExpenseManagement coachId={coachId} onExpenseChange={triggerFinancialRefresh} />
+          <CoachExpenseManagement coachId={coachId} onDataChange={triggerFinancialRefresh} />
         </TabsContent>
       </Tabs>
 
@@ -607,26 +604,25 @@ const CoachSubscriptionsContent = () => {
         open={newSubscriptionOpen}
         onOpenChange={setNewSubscriptionOpen}
         coachId={coachId}
-        subscriptionTypes={subscriptionTypes}
-        onSubscriptionCreated={() => {
+        onSuccess={() => {
           fetchSubscriptions();
           setNewSubscriptionOpen(false);
         }}
       />
 
       <CoachSubscriptionDeleteDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={deleteSubscription}
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onDelete={deleteSubscription}
       />
 
       {subscriptionToEdit && (
         <CoachSubscriptionEditDialog
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
+          isOpen={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
           subscription={subscriptionToEdit}
           subscriptionTypes={subscriptionTypes}
-          onSubscriptionUpdated={() => {
+          onSuccess={() => {
             fetchSubscriptions();
             setEditDialogOpen(false);
           }}

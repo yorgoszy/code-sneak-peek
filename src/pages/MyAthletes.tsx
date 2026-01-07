@@ -415,7 +415,7 @@ const MyAthletesContent = () => {
         open={newUserDialogOpen}
         onOpenChange={setNewUserDialogOpen}
         coachId={coachId}
-        onUserCreated={handleUserCreated}
+        onSuccess={handleUserCreated}
       />
 
       {selectedUser && (
@@ -429,13 +429,13 @@ const MyAthletesContent = () => {
             open={editUserDialogOpen}
             onOpenChange={setEditUserDialogOpen}
             user={selectedUser}
-            onUserUpdated={handleUserUpdated}
+            onSuccess={handleUserUpdated}
           />
           <DeleteCoachUserDialog
             open={deleteUserDialogOpen}
             onOpenChange={setDeleteUserDialogOpen}
             user={selectedUser}
-            onUserDeleted={handleUserDeleted}
+            onSuccess={handleUserDeleted}
           />
         </>
       )}
