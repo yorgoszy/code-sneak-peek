@@ -3,10 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Trash2, X, Check } from "lucide-react";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Trash2, ChevronDown, ChevronRight, ChevronUp, Check, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
+import { formatTimeInput } from '@/utils/timeFormatting';
+import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
+import { useExercises } from '@/hooks/useExercises';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +41,30 @@ interface SelectBlockTemplateDialogProps {
   onSelectTemplate: (template: BlockTemplate) => void;
 }
 
+const TRAINING_TYPE_LABELS: Record<string, string> = {
+  'warm up': 'warm up',
+  str: 'str',
+  'str/spd': 'str/spd',
+  pwr: 'pwr',
+  'spd/str': 'spd/str',
+  spd: 'spd',
+  'str/end': 'str/end',
+  'pwr/end': 'pwr/end',
+  'spd/end': 'spd/end',
+  end: 'end',
+  hpr: 'hpr',
+  recovery: 'rec',
+  accessory: 'acc',
+  rotational: 'rot',
+};
+
+const WORKOUT_FORMAT_LABELS: Record<string, string> = {
+  non_stop: 'Non Stop',
+  emom: 'EMOM',
+  for_time: 'For Time',
+  amrap: 'AMRAP',
+};
+
 export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps> = ({
   open,
   onOpenChange,
@@ -46,6 +75,9 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<BlockTemplate | null>(null);
+  const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(new Set());
+
+  const { exercises: availableExercises } = useExercises();
 
   useEffect(() => {
     if (open) {
@@ -104,6 +136,29 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
     onOpenChange(false);
   };
 
+  const toggleExpanded = (templateId: string) => {
+    setExpandedTemplates(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(templateId)) {
+        newSet.delete(templateId);
+      } else {
+        newSet.add(templateId);
+      }
+      return newSet;
+    });
+  };
+
+  const getExerciseName = (exercise: any) => {
+    if (exercise.exercise_name) return exercise.exercise_name;
+    const found = availableExercises.find(e => e.id === exercise.exercise_id);
+    return found?.name || 'Άγνωστη άσκηση';
+  };
+
+  const getExerciseVideoUrl = (exercise: any) => {
+    const found = availableExercises.find(e => e.id === exercise.exercise_id);
+    return found?.video_url;
+  };
+
   const filteredTemplates = templates.filter(t => 
     t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (t.training_type && t.training_type.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -127,7 +182,7 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
             />
           </div>
 
-          <div className="flex-1 overflow-y-auto border">
+          <div className="flex-1 overflow-y-auto space-y-2">
             {loading ? (
               <div className="p-4 text-center text-gray-500 text-sm">Φόρτωση...</div>
             ) : filteredTemplates.length === 0 ? (
@@ -135,64 +190,190 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
                 {searchTerm ? 'Δεν βρέθηκαν templates' : 'Δεν υπάρχουν templates ακόμα'}
               </div>
             ) : (
-              <div className="divide-y">
-                {filteredTemplates.map(template => (
-                  <div 
-                    key={template.id} 
-                    className="p-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between group"
-                    onClick={() => handleSelectTemplate(template)}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm truncate">{template.name}</span>
-                        {template.training_type && (
-                          <Badge variant="outline" className="rounded-none text-[10px] px-1">
-                            {template.training_type}
-                          </Badge>
-                        )}
-                        {template.workout_format && (
-                          <Badge variant="secondary" className="rounded-none text-[10px] px-1">
-                            {template.workout_format}
-                          </Badge>
-                        )}
-                      </div>
-                      {template.description && (
-                        <p className="text-xs text-gray-500 truncate mt-0.5">{template.description}</p>
-                      )}
-                      <div className="text-[10px] text-gray-400 mt-1">
-                        {template.exercises?.length || 0} ασκήσεις
-                        {template.block_sets > 1 && ` • ${template.block_sets} sets`}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 p-0 rounded-none text-[#00ffba] hover:text-[#00ffba]/80"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectTemplate(template);
-                        }}
-                      >
-                        <Check className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 p-0 rounded-none text-red-600 hover:text-red-800"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setTemplateToDelete(template);
-                          setDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              filteredTemplates.map(template => {
+                const isExpanded = expandedTemplates.has(template.id);
+                
+                return (
+                  <Card key={template.id} className="rounded-none w-full" style={{ backgroundColor: '#31365d' }}>
+                    <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(template.id)}>
+                      <CardHeader className="p-1 space-y-0">
+                        <div className="flex justify-between items-center">
+                          <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-600 p-1 rounded flex-1">
+                            {isExpanded ? <ChevronDown className="w-3 h-3 text-white" /> : <ChevronRight className="w-3 h-3 text-white" />}
+                            <div className="flex items-center gap-2">
+                              {template.training_type && (
+                                <span className="text-xs text-white bg-gray-700 px-2 py-0.5 rounded-none">
+                                  {TRAINING_TYPE_LABELS[template.training_type] || template.training_type}
+                                </span>
+                              )}
+                              <span className="text-xs text-white font-medium">{template.name}</span>
+                              {!isExpanded && template.exercises?.length > 0 && (
+                                <span className="text-xs bg-gray-500 px-2 py-0.5 rounded-full text-white">
+                                  {template.exercises.length}
+                                </span>
+                              )}
+                            </div>
+                          </CollapsibleTrigger>
+                          <div className="flex gap-0">
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectTemplate(template);
+                              }}
+                              size="sm"
+                              variant="ghost"
+                              className="rounded-none hover:bg-gray-600"
+                              title="Επιλογή"
+                            >
+                              <Check className="w-3 h-3 text-[#00ffba]" />
+                            </Button>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setTemplateToDelete(template);
+                                setDeleteDialogOpen(true);
+                              }}
+                              size="sm"
+                              variant="ghost"
+                              className="rounded-none hover:bg-gray-600"
+                              title="Διαγραφή"
+                            >
+                              <Trash2 className="w-3 h-3 text-red-400" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Workout Format and Sets */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {template.workout_format && (
+                            <span className="text-xs text-gray-400">
+                              {WORKOUT_FORMAT_LABELS[template.workout_format] || template.workout_format}
+                            </span>
+                          )}
+                          {template.workout_duration && (
+                            <span className="text-xs text-white">{template.workout_duration}</span>
+                          )}
+                          {template.block_sets > 1 && (
+                            <span className="text-xs text-[#00ffba]">x{template.block_sets}</span>
+                          )}
+                        </div>
+                      </CardHeader>
+
+                      <CollapsibleContent>
+                        <CardContent className="p-0 m-0">
+                          {template.exercises?.length === 0 ? (
+                            <div className="p-3 text-center text-gray-400 text-xs">
+                              Δεν υπάρχουν ασκήσεις
+                            </div>
+                          ) : (
+                            <div className="w-full">
+                              {template.exercises?.map((exercise, index) => {
+                                const exerciseName = getExerciseName(exercise);
+                                const videoUrl = getExerciseVideoUrl(exercise);
+                                const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
+                                const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
+
+                                return (
+                                  <div key={index} className="bg-white border-0 border-b w-full" style={{ fontSize: '12px' }}>
+                                    {/* Exercise Selection Button */}
+                                    <div className="px-2 py-0 border-b bg-gray-100 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
+                                      <div className="flex-1 text-sm h-6 flex items-center px-2 bg-gray-200" style={{ borderRadius: '0px', fontSize: '12px' }}>
+                                        <div className="flex items-center gap-2 w-full">
+                                          <div className="flex items-center gap-1 flex-1">
+                                            <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm">
+                                              {index + 1}
+                                            </span>
+                                            <span className="truncate">{exerciseName}</span>
+                                          </div>
+                                          
+                                          {/* Video Thumbnail */}
+                                          {hasValidVideo && thumbnailUrl ? (
+                                            <div className="w-8 h-5 rounded-none overflow-hidden bg-gray-100 flex-shrink-0">
+                                              <img
+                                                src={thumbnailUrl}
+                                                alt={`${exerciseName} video thumbnail`}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                  const target = e.currentTarget as HTMLImageElement;
+                                                  target.style.display = 'none';
+                                                }}
+                                              />
+                                            </div>
+                                          ) : hasValidVideo ? (
+                                            <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                              <Play className="w-2 h-2 text-gray-400" />
+                                            </div>
+                                          ) : (
+                                            <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                              <span className="text-xs text-gray-400">-</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Exercise Details Form */}
+                                    <div className="flex px-2 py-0 gap-0 w-full" style={{ minHeight: '28px' }}>
+                                      <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Sets</label>
+                                        <div className="text-center w-full bg-gray-50 border" style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '2px 4px' }}>
+                                          {exercise.sets || '-'}
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Reps</label>
+                                        <div className="text-center w-full bg-gray-50 border" style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '2px 4px' }}>
+                                          {exercise.reps || '-'}
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>%1RM</label>
+                                        <div className="text-center w-full bg-gray-50 border" style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '2px 4px' }}>
+                                          {exercise.percentage_1rm || '-'}
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
+                                        <div className="text-center w-full bg-gray-50 border" style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '2px 4px' }}>
+                                          {exercise.kg || '-'}
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
+                                        <div className="text-center w-full bg-gray-50 border" style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '2px 4px' }}>
+                                          {exercise.velocity_ms || '-'}
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Tempo</label>
+                                        <div className="text-center w-full bg-gray-50 border" style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '2px 4px' }}>
+                                          {exercise.tempo || '-'}
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex flex-col items-center" style={{ width: '52px' }}>
+                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
+                                        <div className="text-center w-full bg-gray-50 border" style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '2px 4px' }}>
+                                          {exercise.rest || '-'}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </Card>
+                );
+              })
             )}
           </div>
 
