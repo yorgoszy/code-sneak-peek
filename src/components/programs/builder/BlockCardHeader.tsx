@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Copy, Files } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Copy, Files, ClipboardPaste } from "lucide-react";
 import { formatTimeInput } from '@/utils/timeFormatting';
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Block } from '../types';
@@ -33,6 +33,7 @@ interface BlockCardHeaderProps {
   onWorkoutDurationChange: (duration: string) => void;
   onBlockSetsChange: (sets: number) => void;
   onCopyBlock?: () => void;
+  onPasteBlock?: () => void;
 }
 
 // Training types που εμφανίζονται στο dropdown
@@ -82,9 +83,10 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onWorkoutFormatChange,
   onWorkoutDurationChange,
   onBlockSetsChange,
-  onCopyBlock
+  onCopyBlock,
+  onPasteBlock
 }) => {
-  const { copyBlock } = useProgramClipboard();
+  const { copyBlock, hasBlock } = useProgramClipboard();
 
   const handleCopyToClipboard = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -141,6 +143,21 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
           >
             <Copy className="w-2 h-2 text-blue-400" />
           </Button>
+          {onPasteBlock && (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPasteBlock();
+              }}
+              size="sm"
+              variant="ghost"
+              className={`rounded-none hover:bg-gray-600 ${hasBlock ? 'text-[#00ffba]' : 'text-gray-500'}`}
+              disabled={!hasBlock}
+              title={hasBlock ? "Επικόλληση Block" : "Αντέγραψε πρώτα ένα block"}
+            >
+              <ClipboardPaste className="w-2 h-2" />
+            </Button>
+          )}
           <Button
             onClick={(e) => {
               e.stopPropagation();

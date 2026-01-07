@@ -33,6 +33,8 @@ interface DayCardProps {
   onReorderBlocks: (oldIndex: number, newIndex: number) => void;
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
   onPasteBlock?: (block: any) => void;
+  onPasteBlockAtBlock?: (blockId: string) => void;
+  onPasteDay?: () => void;
   dragHandleProps?: {
     attributes: any;
     listeners: any;
@@ -63,9 +65,11 @@ export const DayCard: React.FC<DayCardProps> = ({
   onReorderBlocks,
   onReorderExercises,
   onPasteBlock,
+  onPasteBlockAtBlock,
+  onPasteDay,
   dragHandleProps
 }) => {
-  const { paste, hasBlock, clearClipboard } = useProgramClipboard();
+  const { paste, hasBlock, hasDay, clearClipboard } = useProgramClipboard();
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(day.name);
@@ -74,6 +78,22 @@ export const DayCard: React.FC<DayCardProps> = ({
     const clipboardData = paste();
     if (clipboardData && clipboardData.type === 'block' && onPasteBlock) {
       onPasteBlock(clipboardData.data);
+      clearClipboard();
+    }
+  };
+
+  const handlePasteDay = () => {
+    const clipboardData = paste();
+    if (clipboardData && clipboardData.type === 'day' && onPasteDay) {
+      onPasteDay();
+      clearClipboard();
+    }
+  };
+
+  const handlePasteBlockAtBlock = (blockId: string) => {
+    const clipboardData = paste();
+    if (clipboardData && clipboardData.type === 'block' && onPasteBlockAtBlock) {
+      onPasteBlockAtBlock(blockId);
       clearClipboard();
     }
   };
@@ -147,6 +167,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           onToggleTestDay={handleToggleTestDay}
           onToggleCompetitionDay={handleToggleCompetitionDay}
           onPasteBlock={onPasteBlock ? handlePasteBlock : undefined}
+          onPasteDay={onPasteDay ? handlePasteDay : undefined}
         />
         
         {isOpen && (
@@ -167,6 +188,7 @@ export const DayCard: React.FC<DayCardProps> = ({
             onDuplicateExercise={onDuplicateExercise}
             onReorderBlocks={onReorderBlocks}
             onReorderExercises={onReorderExercises}
+            onPasteBlock={onPasteBlockAtBlock ? handlePasteBlockAtBlock : undefined}
           />
         )}
         

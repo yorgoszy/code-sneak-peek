@@ -42,6 +42,8 @@ interface TrainingWeeksProps {
   onReorderBlocks: (weekId: string, dayId: string, oldIndex: number, newIndex: number) => void;
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onPasteBlock: (weekId: string, dayId: string, clipboardBlock: any) => void;
+  onPasteBlockAtBlock: (weekId: string, dayId: string, blockId: string) => void;
+  onPasteDay: (weekId: string, dayId: string) => void;
 }
 
 export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
@@ -75,7 +77,9 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onReorderDays,
   onReorderBlocks,
   onReorderExercises,
-  onPasteBlock
+  onPasteBlock,
+  onPasteBlockAtBlock,
+  onPasteDay
 }) => {
   const {
     activeWeek,
@@ -188,6 +192,8 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                 onReorderBlocks={onReorderBlocks}
                 onReorderExercises={onReorderExercises}
                 onPasteBlock={onPasteBlock}
+                onPasteBlockAtBlock={onPasteBlockAtBlock}
+                onPasteDay={onPasteDay}
               />
             </Tabs>
           </DndContext>

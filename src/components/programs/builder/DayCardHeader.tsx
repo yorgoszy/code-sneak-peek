@@ -26,6 +26,7 @@ interface DayCardHeaderProps {
   onToggleTestDay: () => void;
   onToggleCompetitionDay: () => void;
   onPasteBlock?: () => void;
+  onPasteDay?: () => void;
 }
 
 export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
@@ -46,9 +47,10 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onRemoveDay,
   onToggleTestDay,
   onToggleCompetitionDay,
-  onPasteBlock
+  onPasteBlock,
+  onPasteDay
 }) => {
-  const { copyDay, hasBlock } = useProgramClipboard();
+  const { copyDay, hasBlock, hasDay } = useProgramClipboard();
 
   const handleCopyDay = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -156,6 +158,21 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
           >
             <Copy className="w-3 h-3 text-blue-500" />
           </Button>
+          {onPasteDay && (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPasteDay();
+              }}
+              size="sm"
+              variant="ghost"
+              className={`rounded-none ${hasDay ? 'text-[#00ffba] hover:text-[#00ffba]/80' : 'text-gray-400'}`}
+              disabled={!hasDay}
+              title={hasDay ? "Επικόλληση Ημέρας" : "Αντέγραψε πρώτα μια ημέρα"}
+            >
+              <Clipboard className="w-3 h-3" />
+            </Button>
+          )}
           <Button
             onClick={(e) => {
               e.stopPropagation();

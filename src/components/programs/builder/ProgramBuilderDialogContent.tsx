@@ -45,6 +45,8 @@ interface ProgramBuilderDialogContentProps {
   onReorderBlocks: (weekId: string, dayId: string, oldIndex: number, newIndex: number) => void;
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onPasteBlock?: (weekId: string, dayId: string, clipboardBlock: any) => void;
+  onPasteBlockAtBlock?: (weekId: string, dayId: string, blockId: string) => void;
+  onPasteDay?: (weekId: string, dayId: string) => void;
   onSave: () => Promise<void>;
   onAssignments: () => void;
   onClose?: () => void;
@@ -91,6 +93,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onReorderBlocks,
   onReorderExercises,
   onPasteBlock,
+  onPasteBlockAtBlock,
+  onPasteDay,
   onSave,
   onAssignments,
   onClose,
@@ -140,6 +144,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
             onReorderBlocks={onReorderBlocks}
             onReorderExercises={onReorderExercises}
             onPasteBlock={onPasteBlock}
+            onPasteBlockAtBlock={onPasteBlockAtBlock}
+            onPasteDay={onPasteDay}
             onSave={onSave}
             onAssignments={onAssignments}
             onClose={onClose}
