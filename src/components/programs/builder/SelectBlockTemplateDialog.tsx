@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Trash2, ChevronDown, ChevronRight, ChevronUp, Check, Play } from "lucide-react";
+import { Search, Trash2, ChevronDown, ChevronRight, ChevronUp, Check, Play, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatTimeInput } from '@/utils/timeFormatting';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useExercises } from '@/hooks/useExercises';
+import { EditBlockTemplateDialog } from './EditBlockTemplateDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,6 +77,8 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<BlockTemplate | null>(null);
   const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(new Set());
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [templateToEdit, setTemplateToEdit] = useState<BlockTemplate | null>(null);
 
   const { exercises: availableExercises } = useExercises();
 
@@ -226,6 +229,19 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
                               title="Επιλογή"
                             >
                               <Check className="w-3 h-3 text-[#00ffba]" />
+                            </Button>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setTemplateToEdit(template);
+                                setEditDialogOpen(true);
+                              }}
+                              size="sm"
+                              variant="ghost"
+                              className="rounded-none hover:bg-gray-600"
+                              title="Επεξεργασία"
+                            >
+                              <Pencil className="w-3 h-3 text-white" />
                             </Button>
                             <Button
                               onClick={(e) => {
@@ -409,6 +425,15 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <EditBlockTemplateDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        template={templateToEdit}
+        onSuccess={() => {
+          fetchTemplates();
+        }}
+      />
     </>
   );
 };
