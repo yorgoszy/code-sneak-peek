@@ -2,11 +2,13 @@
 import React, { useState, useMemo } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Filter, Plus, X } from "lucide-react";
+import { Filter, Plus, X, Save, FolderOpen } from "lucide-react";
 import { ExerciseFilters } from './ExerciseFilters';
 import { ExerciseSearchInput } from './ExerciseSearchInput';
 import { ExerciseGrid } from './ExerciseGrid';
 import { AddExerciseDialog } from '@/components/AddExerciseDialog';
+import { CreateBlockTemplateDialog } from './CreateBlockTemplateDialog';
+import { SelectBlockTemplateDialog } from './SelectBlockTemplateDialog';
 import { useExerciseRealtime } from './hooks/useExerciseRealtime';
 import { useExerciseWithCategories } from './hooks/useExerciseWithCategories';
 import { matchesSearchTerm } from "@/lib/utils";
@@ -23,17 +25,21 @@ interface ExerciseSelectionDialogContentProps {
   onSelectExercise: (exerciseId: string) => void;
   onClose: () => void;
   onExercisesUpdate?: (exercises: Exercise[]) => void;
+  onSelectBlockTemplate?: (template: any) => void;
 }
 
 export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogContentProps> = ({
   exercises: initialExercises,
   onSelectExercise,
   onClose,
-  onExercisesUpdate
+  onExercisesUpdate,
+  onSelectBlockTemplate
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [addExerciseDialogOpen, setAddExerciseDialogOpen] = useState(false);
+  const [createTemplateDialogOpen, setCreateTemplateDialogOpen] = useState(false);
+  const [selectTemplateDialogOpen, setSelectTemplateDialogOpen] = useState(false);
 
   // Handle real-time exercise updates
   const { currentExercises } = useExerciseRealtime(
@@ -90,9 +96,13 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     // Close the add exercise dialog
     setAddExerciseDialogOpen(false);
     console.log('✅ Exercise added successfully - real-time update should show it automatically');
-    
-    // Note: The real-time subscription will handle updating the exercises list
-    // and calling onExercisesUpdate if provided
+  };
+
+  const handleSelectTemplate = (template: any) => {
+    if (onSelectBlockTemplate) {
+      onSelectBlockTemplate(template);
+      onClose();
+    }
   };
 
   return (
@@ -104,19 +114,37 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
               <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="truncate">Επιλογή Άσκησης ({exercisesWithCategories.length})</span>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto flex-wrap">
               <Button
                 onClick={() => setAddExerciseDialogOpen(true)}
                 className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none flex-1 sm:flex-none"
                 size="sm"
               >
-                <Plus className="w-4 h-4 mr-1" />
-                <span className="hidden xs:inline">Προσθήκη</span>
+                <Plus className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Άσκηση</span>
+              </Button>
+              <Button
+                onClick={() => setCreateTemplateDialogOpen(true)}
+                variant="outline"
+                className="rounded-none flex-1 sm:flex-none"
+                size="sm"
+              >
+                <Save className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Template</span>
+              </Button>
+              <Button
+                onClick={() => setSelectTemplateDialogOpen(true)}
+                variant="outline"
+                className="rounded-none flex-1 sm:flex-none"
+                size="sm"
+              >
+                <FolderOpen className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Templates</span>
               </Button>
               <Button
                 onClick={onClose}
                 variant="destructive"
-                className="rounded-none flex-1 sm:flex-none"
+                className="rounded-none"
                 size="sm"
               >
                 <X className="w-4 h-4" />
@@ -160,6 +188,17 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
         open={addExerciseDialogOpen}
         onOpenChange={setAddExerciseDialogOpen}
         onSuccess={handleExerciseAdded}
+      />
+
+      <CreateBlockTemplateDialog
+        open={createTemplateDialogOpen}
+        onOpenChange={setCreateTemplateDialogOpen}
+      />
+
+      <SelectBlockTemplateDialog
+        open={selectTemplateDialogOpen}
+        onOpenChange={setSelectTemplateDialogOpen}
+        onSelectTemplate={handleSelectTemplate}
       />
     </>
   );
