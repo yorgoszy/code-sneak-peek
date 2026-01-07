@@ -110,47 +110,45 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     <>
       <DialogContent className="rounded-none max-w-6xl w-[95vw] md:w-[90vw] lg:w-auto max-h-[90vh] sm:max-h-[80vh] p-3 sm:p-4 md:p-6 flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm sm:text-base">
-                <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="truncate">Επιλογή Άσκησης ({exercisesWithCategories.length})</span>
-              </div>
-              <Button
-                onClick={onClose}
-                variant="destructive"
-                className="rounded-none h-6 w-6 p-0"
-                size="sm"
-              >
-                <X className="w-3 h-3" />
-              </Button>
+          <DialogTitle className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1 text-sm sm:text-base">
+              <Filter className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">Επιλογή Άσκησης ({exercisesWithCategories.length})</span>
             </div>
-            <div className="flex items-center gap-1 flex-nowrap">
+            <div className="flex items-center gap-1 flex-nowrap flex-shrink-0">
               <Button
                 onClick={() => setAddExerciseDialogOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-7 px-2 text-xs"
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-7 px-1.5 sm:px-2 text-xs"
                 size="sm"
               >
-                <Plus className="w-3 h-3 mr-0.5" />
-                <span>Άσκηση</span>
+                <Plus className="w-3 h-3 sm:mr-0.5" />
+                <span className="hidden sm:inline">Άσκηση</span>
               </Button>
               <Button
                 onClick={() => setCreateTemplateDialogOpen(true)}
                 variant="outline"
-                className="rounded-none h-7 px-2 text-xs"
+                className="rounded-none h-7 px-1.5 sm:px-2 text-xs"
                 size="sm"
               >
-                <Save className="w-3 h-3 mr-0.5" />
-                <span>Template</span>
+                <Save className="w-3 h-3 sm:mr-0.5" />
+                <span className="hidden sm:inline">Template</span>
               </Button>
               <Button
                 onClick={() => setSelectTemplateDialogOpen(true)}
                 variant="outline"
-                className="rounded-none h-7 px-2 text-xs"
+                className="rounded-none h-7 px-1.5 sm:px-2 text-xs"
                 size="sm"
               >
-                <FolderOpen className="w-3 h-3 mr-0.5" />
-                <span>Templates</span>
+                <FolderOpen className="w-3 h-3 sm:mr-0.5" />
+                <span className="hidden sm:inline">Templates</span>
+              </Button>
+              <Button
+                onClick={onClose}
+                variant="destructive"
+                className="rounded-none h-7 w-7 p-0"
+                size="sm"
+              >
+                <X className="w-3 h-3" />
               </Button>
             </div>
           </DialogTitle>
