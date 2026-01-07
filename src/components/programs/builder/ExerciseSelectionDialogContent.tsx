@@ -127,9 +127,9 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
         </DialogHeader>
         
         <div className="space-y-3 sm:space-y-4 flex-1 overflow-hidden flex flex-col">
-          {/* Search and Filters - Stack on mobile, horizontal on desktop */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 flex-shrink-0">
-            <div className="w-full sm:w-[70%]">
+          {/* Search and Filters - Side by side on mobile (50/50), horizontal on desktop */}
+          <div className="flex flex-row gap-2 sm:gap-4 flex-shrink-0">
+            <div className="w-1/2 sm:w-[70%]">
               <ExerciseSearchInput
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
@@ -137,7 +137,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
             </div>
 
             {/* Filters */}
-            <div className="w-full sm:w-[30%]">
+            <div className="w-1/2 sm:w-[30%]">
               <ExerciseFilters
                 selectedCategories={selectedCategories}
                 onCategoryChange={setSelectedCategories}
