@@ -7,6 +7,8 @@ import { Search, Play } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { matchesSearchTerm } from "@/lib/utils";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
+import { ExerciseFilters } from './ExerciseFilters';
+import { useExerciseWithCategories } from './hooks/useExerciseWithCategories';
 
 interface Exercise {
   id: string;
@@ -29,39 +31,71 @@ export const SimpleExerciseSelectionDialog: React.FC<SimpleExerciseSelectionDial
   onSelectExercise
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  // Handle exercises with categories
+  const { exercisesWithCategories } = useExerciseWithCategories(exercises);
 
   const filteredExercises = useMemo(() => {
-    if (!searchTerm.trim()) return exercises;
-    return exercises.filter(exercise => matchesSearchTerm(exercise.name, searchTerm));
-  }, [exercises, searchTerm]);
+    let filtered = exercisesWithCategories;
+
+    // Search filter
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(exercise => matchesSearchTerm(exercise.name, searchTerm));
+    }
+
+    // Category filter - AND logic: exercise must have ALL selected categories
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(exercise => {
+        if (!exercise.categories || exercise.categories.length === 0) {
+          return false;
+        }
+        // Check if exercise has ALL of the selected categories
+        return selectedCategories.every(selectedCat => 
+          exercise.categories!.some(exerciseCat => 
+            exerciseCat.toLowerCase() === selectedCat.toLowerCase()
+          )
+        );
+      });
+    }
+
+    return filtered;
+  }, [exercisesWithCategories, searchTerm, selectedCategories]);
 
   const handleSelect = (exerciseId: string) => {
     onSelectExercise(exerciseId);
     onOpenChange(false);
     setSearchTerm('');
+    setSelectedCategories([]);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] rounded-none">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl h-[80vh] rounded-none flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-sm">Επιλογή Άσκησης</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Αναζήτηση άσκησης..."
-              className="pl-8 rounded-none h-8 text-xs"
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Search and Filters - Always in one row */}
+          <div className="grid grid-cols-2 gap-2 mb-2 flex-shrink-0">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Αναζήτηση άσκησης..."
+                className="pl-8 rounded-none h-8 text-xs"
+              />
+            </div>
+            <ExerciseFilters
+              selectedCategories={selectedCategories}
+              onCategoryChange={setSelectedCategories}
             />
           </div>
 
           {/* Exercise List */}
-          <ScrollArea className="h-[400px]">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="grid grid-cols-2 gap-2 pr-3">
               {filteredExercises.map(exercise => {
                 const hasValidVideo = exercise.video_url && isValidVideoUrl(exercise.video_url);
@@ -104,13 +138,16 @@ export const SimpleExerciseSelectionDialog: React.FC<SimpleExerciseSelectionDial
                 );
               })}
             </div>
+            
+            {filteredExercises.length === 0 && (
+              <div className="text-center py-8 text-gray-500 text-sm">
+                {selectedCategories.length > 0 || searchTerm 
+                  ? 'Δεν βρέθηκαν ασκήσεις που να ταιριάζουν με τα κριτήρια'
+                  : 'Δεν βρέθηκαν ασκήσεις'
+                }
+              </div>
+            )}
           </ScrollArea>
-
-          {filteredExercises.length === 0 && (
-            <div className="text-center py-8 text-gray-500 text-sm">
-              Δεν βρέθηκαν ασκήσεις
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>
