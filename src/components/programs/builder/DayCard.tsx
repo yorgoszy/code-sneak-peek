@@ -33,7 +33,7 @@ interface DayCardProps {
   onReorderBlocks: (oldIndex: number, newIndex: number) => void;
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
   onPasteBlock?: (block: any) => void;
-  onPasteBlockAtBlock?: (blockId: string) => void;
+  onPasteBlockAtBlock?: (blockId: string, clipboardBlock: any) => void;
   onPasteDay?: () => void;
   dragHandleProps?: {
     attributes: any;
@@ -93,7 +93,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   const handlePasteBlockAtBlock = (blockId: string) => {
     const clipboardData = paste();
     if (clipboardData && clipboardData.type === 'block' && onPasteBlockAtBlock) {
-      onPasteBlockAtBlock(blockId);
+      onPasteBlockAtBlock(blockId, clipboardData.data);
       clearClipboard();
     }
   };

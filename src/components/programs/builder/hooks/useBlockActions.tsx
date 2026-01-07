@@ -353,6 +353,63 @@ export const useBlockActions = (
     }
   };
 
+  // Paste block content into existing block (replace content)
+  const pasteBlockAtBlock = async (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => {
+    let updatedWeeks: any[] = [];
+    
+    updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          program_days: (week.program_days || []).map(day => {
+            if (day.id === dayId) {
+              return {
+                ...day,
+                program_blocks: (day.program_blocks || []).map(block => {
+                  if (block.id === blockId) {
+                    // Replace block content with clipboard block content
+                    return {
+                      ...block,
+                      name: clipboardBlock.name,
+                      training_type: clipboardBlock.training_type,
+                      workout_format: clipboardBlock.workout_format,
+                      workout_duration: clipboardBlock.workout_duration,
+                      block_sets: clipboardBlock.block_sets || 1,
+                      program_exercises: (clipboardBlock.program_exercises || []).map((exercise: any, idx: number) => ({
+                        ...exercise,
+                        id: generateId(),
+                        exercise_order: idx + 1
+                      }))
+                    };
+                  }
+                  return block;
+                })
+              };
+            }
+            return day;
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+    toast.success('Block επικολλήθηκε επιτυχώς');
+
+    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
+    if (saveProgram && program.id) {
+      console.log('💾 [PASTE BLOCK AT BLOCK] Auto-saving to database...');
+      try {
+        await saveProgram({
+          ...program,
+          weeks: updatedWeeks
+        });
+        console.log('✅ [PASTE BLOCK AT BLOCK] Auto-save completed');
+      } catch (error) {
+        console.error('❌ [PASTE BLOCK AT BLOCK] Auto-save failed:', error);
+      }
+    }
+  };
+
   return {
     addBlock,
     removeBlock,
@@ -362,6 +419,7 @@ export const useBlockActions = (
     updateBlockWorkoutFormat,
     updateBlockWorkoutDuration,
     updateBlockSets,
-    pasteBlock
+    pasteBlock,
+    pasteBlockAtBlock
   };
 };

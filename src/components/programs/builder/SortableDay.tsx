@@ -30,7 +30,7 @@ interface SortableDayProps {
   onReorderBlocks: (oldIndex: number, newIndex: number) => void;
   onReorderExercises: (blockId: string, oldIndex: number, newIndex: number) => void;
   onPasteBlock?: (clipboardBlock: any) => void;
-  onPasteBlockAtBlock?: (blockId: string) => void;
+  onPasteBlockAtBlock?: (blockId: string, clipboardBlock: any) => void;
   onPasteDay?: () => void;
 }
 
