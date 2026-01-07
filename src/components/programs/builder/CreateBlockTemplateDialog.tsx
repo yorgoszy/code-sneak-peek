@@ -6,13 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Save, ClipboardPaste, GripVertical, X } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Save, ClipboardPaste, Copy, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useProgramClipboard } from '@/contexts/ProgramClipboardContext';
 import { useExercises } from '@/hooks/useExercises';
 import { SimpleExerciseSelectionDialog } from './SimpleExerciseSelectionDialog';
 import { formatTimeInput } from '@/utils/timeFormatting';
+import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 
 interface CreateBlockTemplateDialogProps {
   open: boolean;
@@ -100,6 +101,18 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
 
   const handleRemoveExercise = (exerciseId: string) => {
     setExercises(exercises.filter(e => e.id !== exerciseId));
+  };
+
+  const handleDuplicateExercise = (exerciseId: string) => {
+    const exercise = exercises.find(e => e.id === exerciseId);
+    if (exercise) {
+      const newExercise = {
+        ...exercise,
+        id: crypto.randomUUID(),
+        exercise_order: exercises.length + 1
+      };
+      setExercises([...exercises, newExercise]);
+    }
   };
 
   const handleUpdateExercise = (exerciseId: string, field: string, value: any) => {
@@ -293,69 +306,168 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
                       Κάντε κλικ στο + για να προσθέσετε ασκήσεις
                     </div>
                   ) : (
-                    <div className="w-full overflow-x-auto">
-                      {exercises.map((exercise, index) => (
-                        <div 
-                          key={exercise.id} 
-                          className="flex items-center gap-1 p-1 border-t border-gray-600 bg-gray-700/50 min-w-fit"
-                        >
-                          <GripVertical className="w-3 h-3 text-gray-500 flex-shrink-0" />
-                          <span className="text-[10px] text-white min-w-[20px]">{index + 1}.</span>
-                          <span className="text-[10px] text-white min-w-[100px] max-w-[150px] truncate">
-                            {exercise.exercises?.name || 'Άγνωστη άσκηση'}
-                          </span>
-                          <Input
-                            value={exercise.sets || ''}
-                            onChange={(e) => handleUpdateExercise(exercise.id, 'sets', e.target.value)}
-                            placeholder="Sets"
-                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
-                          />
-                          <Input
-                            value={exercise.reps || ''}
-                            onChange={(e) => handleUpdateExercise(exercise.id, 'reps', e.target.value)}
-                            placeholder="Reps"
-                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
-                          />
-                          <Input
-                            value={exercise.percentage_1rm || ''}
-                            onChange={(e) => handleUpdateExercise(exercise.id, 'percentage_1rm', e.target.value)}
-                            placeholder="%1RM"
-                            className="h-5 w-10 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
-                          />
-                          <Input
-                            value={exercise.kg || ''}
-                            onChange={(e) => handleUpdateExercise(exercise.id, 'kg', e.target.value)}
-                            placeholder="Kg"
-                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
-                          />
-                          <Input
-                            value={exercise.velocity_ms || ''}
-                            onChange={(e) => handleUpdateExercise(exercise.id, 'velocity_ms', e.target.value)}
-                            placeholder="m/s"
-                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
-                          />
-                          <Input
-                            value={exercise.tempo || ''}
-                            onChange={(e) => handleUpdateExercise(exercise.id, 'tempo', e.target.value)}
-                            placeholder="Tempo"
-                            className="h-5 w-11 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
-                          />
-                          <Input
-                            value={exercise.rest || ''}
-                            onChange={(e) => handleUpdateExercise(exercise.id, 'rest', e.target.value)}
-                            placeholder="Rest"
-                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
-                          />
-                          <Button
-                            onClick={() => handleRemoveExercise(exercise.id)}
-                            size="sm"
-                            variant="ghost"
-                            className="h-5 w-5 p-0 rounded-none hover:bg-red-600/20 flex-shrink-0"
-                          >
-                            <X className="w-3 h-3 text-red-400" />
-                          </Button>
-                        </div>
-                      ))}
+                    <div className="w-full">
+                      {exercises.map((exercise, index) => {
+                        const selectedExercise = exercise.exercises;
+                        const videoUrl = selectedExercise?.video_url;
+                        const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
+                        const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
+
+                        return (
+                          <div key={exercise.id} className="bg-white border-0 border-b w-full" style={{ fontSize: '12px' }}>
+                            {/* Exercise Selection Button - Same as ExerciseSelectionButton */}
+                            <div className="px-2 py-0 border-b bg-gray-100 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 text-sm h-6 justify-start px-2 bg-gray-200 hover:bg-gray-300"
+                                style={{ borderRadius: '0px', fontSize: '12px' }}
+                                onClick={() => setShowExerciseDialog(true)}
+                              >
+                                {selectedExercise ? (
+                                  <div className="flex items-center gap-2 w-full">
+                                    <div className="flex items-center gap-1 flex-1">
+                                      <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm">
+                                        {index + 1}
+                                      </span>
+                                      <span className="truncate">{selectedExercise.name}</span>
+                                    </div>
+                                    
+                                    {/* Video Thumbnail */}
+                                    {hasValidVideo && thumbnailUrl ? (
+                                      <div className="w-8 h-5 rounded-none overflow-hidden bg-gray-100 flex-shrink-0">
+                                        <img
+                                          src={thumbnailUrl}
+                                          alt={`${selectedExercise.name} video thumbnail`}
+                                          className="w-full h-full object-cover"
+                                          onError={(e) => {
+                                            const target = e.currentTarget as HTMLImageElement;
+                                            target.style.display = 'none';
+                                          }}
+                                        />
+                                      </div>
+                                    ) : hasValidVideo ? (
+                                      <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                        <Play className="w-2 h-2 text-gray-400" />
+                                      </div>
+                                    ) : (
+                                      <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-xs text-gray-400">-</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : 'Επιλογή...'}
+                              </Button>
+                              
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDuplicateExercise(exercise.id)}
+                                  className="p-1 h-6 w-6"
+                                  style={{ borderRadius: '0px' }}
+                                >
+                                  <Copy className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRemoveExercise(exercise.id)}
+                                  className="p-1 h-6 w-6"
+                                  style={{ borderRadius: '0px' }}
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Exercise Details Form - Same as ExerciseDetailsForm */}
+                            <div className="flex px-2 py-0 gap-0 w-full" style={{ minHeight: '28px' }}>
+                              <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Sets</label>
+                                <Input
+                                  type="text"
+                                  value={exercise.sets || ''}
+                                  onChange={(e) => handleUpdateExercise(exercise.id, 'sets', e.target.value)}
+                                  className="text-center w-full"
+                                  style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '0 4px' }}
+                                />
+                              </div>
+                              
+                              <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Reps</label>
+                                <Input
+                                  value={exercise.reps || ''}
+                                  onChange={(e) => handleUpdateExercise(exercise.id, 'reps', e.target.value)}
+                                  className="text-center w-full"
+                                  style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '0 4px' }}
+                                />
+                              </div>
+                              
+                              <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>%1RM</label>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={exercise.percentage_1rm || ''}
+                                  onChange={(e) => handleUpdateExercise(exercise.id, 'percentage_1rm', e.target.value)}
+                                  className="text-center w-full"
+                                  style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '0 4px' }}
+                                />
+                              </div>
+                              
+                              <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={exercise.kg || ''}
+                                  onChange={(e) => handleUpdateExercise(exercise.id, 'kg', e.target.value)}
+                                  className="text-center w-full"
+                                  style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '0 4px' }}
+                                />
+                              </div>
+                              
+                              <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={exercise.velocity_ms || ''}
+                                  onChange={(e) => handleUpdateExercise(exercise.id, 'velocity_ms', e.target.value)}
+                                  className="text-center w-full"
+                                  style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '0 4px' }}
+                                />
+                              </div>
+                              
+                              <div className="flex flex-col items-center" style={{ width: '60px' }}>
+                                <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Tempo</label>
+                                <Input
+                                  value={exercise.tempo || ''}
+                                  onChange={(e) => handleUpdateExercise(exercise.id, 'tempo', e.target.value)}
+                                  className="text-center w-full"
+                                  style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '0 4px' }}
+                                  placeholder="1.1.1"
+                                />
+                              </div>
+                              
+                              <div className="flex flex-col items-center" style={{ width: '52px' }}>
+                                <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
+                                <Input
+                                  value={formatTimeInput(String(exercise.rest || ''))}
+                                  onChange={(e) => {
+                                    const formatted = formatTimeInput(e.target.value);
+                                    handleUpdateExercise(exercise.id, 'rest', formatted);
+                                  }}
+                                  className="text-center w-full"
+                                  style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '0 4px' }}
+                                  placeholder="00:00"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </CardContent>
