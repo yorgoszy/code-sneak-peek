@@ -630,6 +630,56 @@ export type Database = {
           },
         ]
       }
+      block_templates: {
+        Row: {
+          block_sets: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          exercises: Json | null
+          id: string
+          name: string
+          training_type: string | null
+          updated_at: string
+          workout_duration: string | null
+          workout_format: string | null
+        }
+        Insert: {
+          block_sets?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          exercises?: Json | null
+          id?: string
+          name: string
+          training_type?: string | null
+          updated_at?: string
+          workout_duration?: string | null
+          workout_format?: string | null
+        }
+        Update: {
+          block_sets?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          exercises?: Json | null
+          id?: string
+          name?: string
+          training_type?: string | null
+          updated_at?: string
+          workout_duration?: string | null
+          workout_format?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "block_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_sections: {
         Row: {
           available_hours: Json | null
