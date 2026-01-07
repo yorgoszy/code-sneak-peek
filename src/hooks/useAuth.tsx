@@ -47,7 +47,14 @@ export const useAuth = () => {
 
   const signOut = async () => {
     console.log('🔧 useAuth: Signing out');
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('🔧 useAuth: SignOut error, clearing local state anyway:', error);
+    }
+    // Πάντα καθαρίζουμε το local state, ακόμα κι αν το API αποτύχει
+    setUser(null);
+    setSession(null);
   };
 
   console.log('🔧 useAuth: Current state:', { 
