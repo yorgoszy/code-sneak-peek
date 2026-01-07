@@ -241,17 +241,16 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
                     </div>
                   </CollapsibleTrigger>
                   <div className="flex items-center gap-1">
-                    {hasBlock && (
-                      <Button
-                        onClick={handlePasteBlock}
-                        size="sm"
-                        variant="ghost"
-                        className="rounded-none hover:bg-gray-600"
-                        title="Επικόλληση Block"
-                      >
-                        <ClipboardPaste className="w-3 h-3 text-[#00ffba]" />
-                      </Button>
-                    )}
+                    <Button
+                      onClick={handlePasteBlock}
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-none hover:bg-gray-600"
+                      title="Επικόλληση Block"
+                      disabled={!hasBlock}
+                    >
+                      <ClipboardPaste className={`w-3 h-3 ${hasBlock ? 'text-[#00ffba]' : 'text-gray-500'}`} />
+                    </Button>
                     <Button
                       onClick={() => setShowExerciseDialog(true)}
                       size="sm"
