@@ -105,7 +105,9 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
         exercise_order: exercises.length + 1,
         sets: '',
         reps: '',
+        reps_mode: 'reps' as const,
         kg: '',
+        kg_mode: 'kg' as const,
         percentage_1rm: '',
         velocity_ms: '',
         tempo: '',
@@ -198,7 +200,7 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-none p-3">
+        <DialogContent className="w-[95vw] max-w-[500px] h-[80vh] max-h-[600px] overflow-hidden rounded-none p-3 flex flex-col">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-sm">Επεξεργασία Block Template</DialogTitle>
           </DialogHeader>
@@ -213,8 +215,10 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
             />
           </div>
 
-          {/* Block Card - Same UI as ProgramBuilder */}
-          <Card className="rounded-none w-full" style={{ backgroundColor: '#31365d' }}>
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto">
+            {/* Block Card - Same UI as ProgramBuilder */}
+            <Card className="rounded-none w-full" style={{ backgroundColor: '#31365d' }}>
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
               <CardHeader className="p-1 space-y-0">
                 <div className="flex justify-between items-center">
@@ -513,8 +517,10 @@ export const EditBlockTemplateDialog: React.FC<EditBlockTemplateDialogProps> = (
             </Collapsible>
           </Card>
 
-          {/* Save Button */}
-          <div className="flex justify-end gap-2 mt-3">
+          </div>
+
+          {/* Save Button - Fixed at bottom */}
+          <div className="flex justify-end gap-2 pt-3 border-t mt-2 flex-shrink-0">
             <Button
               type="button"
               variant="outline"
