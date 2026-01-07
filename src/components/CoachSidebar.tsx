@@ -76,6 +76,12 @@ export const CoachSidebar = ({
       badge: null,
     },
     {
+      icon: ShoppingBag,
+      label: "Shop",
+      path: effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop",
+      badge: null,
+    },
+    {
       icon: Dumbbell,
       label: "Ασκήσεις",
       path: effectiveCoachId ? `/dashboard/coach-exercises?coachId=${effectiveCoachId}` : "/dashboard/coach-exercises",
@@ -129,12 +135,6 @@ export const CoachSidebar = ({
       icon: Settings,
       label: "Ρυθμίσεις Προφίλ",
       path: effectiveCoachId ? `/dashboard/coach-profile?coachId=${effectiveCoachId}` : "/dashboard/coach-profile",
-      badge: null,
-    },
-    {
-      icon: ShoppingBag,
-      label: "Shop",
-      path: effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop",
       badge: null,
     },
     { type: "separator" },
