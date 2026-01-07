@@ -36,7 +36,7 @@ interface WeekTabsContentProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onPasteBlock: (weekId: string, dayId: string, clipboardBlock: any) => void;
   onPasteBlockAtBlock: (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => void;
-  onPasteDay: (weekId: string, dayId: string) => void;
+  onPasteDay: (weekId: string, clipboardDay: any) => void;
 }
 
 export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
@@ -146,7 +146,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                         }
                         onPasteBlock={(clipboardBlock) => onPasteBlock(week.id, day.id, clipboardBlock)}
                         onPasteBlockAtBlock={(blockId, clipboardBlock) => onPasteBlockAtBlock(week.id, day.id, blockId, clipboardBlock)}
-                        onPasteDay={() => onPasteDay(week.id, day.id)}
+                        onPasteDay={(clipboardDay) => onPasteDay(week.id, clipboardDay)}
                       />
                     ))}
                   </div>

@@ -46,7 +46,7 @@ interface ProgramBuilderDialogContentProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onPasteBlock?: (weekId: string, dayId: string, clipboardBlock: any) => void;
   onPasteBlockAtBlock?: (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => void;
-  onPasteDay?: (weekId: string, dayId: string) => void;
+  onPasteDay?: (weekId: string, clipboardDay: any) => void;
   onSave: () => Promise<void>;
   onAssignments: () => void;
   onClose?: () => void;
