@@ -45,6 +45,7 @@ export const useExercises = () => {
     try {
       setLoadingExercises(true);
       
+      // Admin βλέπει μόνο global ασκήσεις (χωρίς coach_id)
       const { data: exercisesData, error: exercisesError } = await supabase
         .from('exercises')
         .select(`
@@ -58,7 +59,8 @@ export const useExercises = () => {
               type
             )
           )
-        `);
+        `)
+        .is('coach_id', null);
 
       if (exercisesError) throw exercisesError;
 
