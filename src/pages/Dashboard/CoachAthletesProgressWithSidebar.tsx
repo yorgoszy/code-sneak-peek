@@ -1,64 +1,26 @@
-import { CoachSidebar } from "@/components/CoachSidebar";
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Menu, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProgressSection } from "@/components/user-profile/UserProgressSection";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
 import { Combobox } from "@/components/ui/combobox";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/hooks/useAuth";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { useSearchParams } from "react-router-dom";
+import { CoachLayout } from "@/components/layouts/CoachLayout";
+import { useCoachContext } from "@/contexts/CoachContext";
 
-export const CoachAthletesProgressWithSidebar = () => {
-  const isMobile = useIsMobile();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-  const [showTabletSidebar, setShowTabletSidebar] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
+const CoachAthletesProgressContent = () => {
+  const { coachId } = useCoachContext();
   const [users, setUsers] = useState<any[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  
-  const { user, signOut } = useAuth();
-  const { userProfile, isAdmin } = useRoleCheck();
-  const [searchParams] = useSearchParams();
-
-  // Determine the effective coach ID
-  const effectiveCoachId = useMemo(() => {
-    const urlCoachId = searchParams.get('coachId');
-    if (urlCoachId && isAdmin()) {
-      return urlCoachId;
-    }
-    return userProfile?.id;
-  }, [searchParams, isAdmin, userProfile?.id]);
-
-  // Detect tablet screen size
-  useEffect(() => {
-    const checkTablet = () => {
-      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
-    };
-    checkTablet();
-    window.addEventListener('resize', checkTablet);
-    return () => window.removeEventListener('resize', checkTablet);
-  }, []);
 
   useEffect(() => {
-    if (isMobile) {
-      setShowMobileSidebar(false);
-    }
-  }, [isMobile]);
-
-  useEffect(() => {
-    if (effectiveCoachId) {
+    if (coachId) {
       loadCoachAthletes();
     }
-  }, [effectiveCoachId]);
+  }, [coachId]);
 
   const loadCoachAthletes = async () => {
-    if (!effectiveCoachId) return;
+    if (!coachId) return;
     
     try {
       setLoading(true);
@@ -67,7 +29,7 @@ export const CoachAthletesProgressWithSidebar = () => {
       const { data: athletes, error: athletesError } = await supabase
         .from('app_users')
         .select('id, name, email, photo_url, avatar_url')
-        .eq('coach_id', effectiveCoachId);
+        .eq('coach_id', coachId);
 
       if (athletesError) throw athletesError;
 
@@ -79,11 +41,11 @@ export const CoachAthletesProgressWithSidebar = () => {
 
       // Βρίσκουμε ποιοι έχουν κάνει τεστ (coach tables) - τώρα με user_id
       const [strengthRes, anthropometricRes, enduranceRes, jumpRes, functionalRes] = await Promise.all([
-        supabase.from('coach_strength_test_sessions').select('user_id').eq('coach_id', effectiveCoachId),
-        supabase.from('coach_anthropometric_test_sessions').select('user_id').eq('coach_id', effectiveCoachId),
-        supabase.from('coach_endurance_test_sessions').select('user_id').eq('coach_id', effectiveCoachId),
-        supabase.from('coach_jump_test_sessions').select('user_id').eq('coach_id', effectiveCoachId),
-        supabase.from('coach_functional_test_sessions').select('user_id').eq('coach_id', effectiveCoachId),
+        supabase.from('coach_strength_test_sessions').select('user_id').eq('coach_id', coachId),
+        supabase.from('coach_anthropometric_test_sessions').select('user_id').eq('coach_id', coachId),
+        supabase.from('coach_endurance_test_sessions').select('user_id').eq('coach_id', coachId),
+        supabase.from('coach_jump_test_sessions').select('user_id').eq('coach_id', coachId),
+        supabase.from('coach_functional_test_sessions').select('user_id').eq('coach_id', coachId),
       ]);
 
       // Συλλέγουμε τα unique user IDs που έχουν τεστ
@@ -120,134 +82,60 @@ export const CoachAthletesProgressWithSidebar = () => {
     setSelectedUserId(userId);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
   if (loading) {
     return <CustomLoadingScreen />;
   }
 
   return (
-    <div className="min-h-screen bg-background flex w-full">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
-        <CoachSidebar
-          isCollapsed={isCollapsed}
-          setIsCollapsed={setIsCollapsed}
-          contextCoachId={effectiveCoachId}
-        />
-      </div>
-
-      {/* Tablet Sidebar Overlay */}
-      {showTabletSidebar && isTablet && (
-        <div className="fixed inset-0 z-50">
-          <div 
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setShowTabletSidebar(false)}
-          />
-          <div className="absolute left-0 top-0 h-full bg-background shadow-xl">
-            <CoachSidebar
-              isCollapsed={false}
-              setIsCollapsed={() => {}}
-              contextCoachId={effectiveCoachId}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Sidebar Overlay */}
-      {showMobileSidebar && !isTablet && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div 
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setShowMobileSidebar(false)}
-          />
-          <div className="absolute left-0 top-0 h-full bg-background shadow-xl">
-            <CoachSidebar
-              isCollapsed={false}
-              setIsCollapsed={() => {}}
-              contextCoachId={effectiveCoachId}
-            />
-          </div>
-        </div>
-      )}
-      
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col w-full">
-        {/* Header for tablet/mobile */}
-        <header className="h-14 md:h-16 flex items-center justify-between border-b bg-background px-4 md:px-6 lg:hidden">
-          <div className="flex items-center">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="rounded-none mr-4"
-              onClick={() => isTablet ? setShowTabletSidebar(true) : setShowMobileSidebar(true)}
-            >
-              <Menu className="h-4 w-4" />
-            </Button>
-            <h1 className="text-lg md:text-xl font-semibold">Πρόοδος Αθλητών</h1>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-none"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </header>
-        
-        <main className="flex-1 p-3 md:p-6 lg:p-8 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-            {/* Desktop Header */}
-            <div className="hidden lg:block">
-              <h1 className="text-2xl font-semibold mb-4">Πρόοδος Αθλητών</h1>
+    <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+      <Card className="rounded-none">
+        <CardContent className="pt-6">
+          <div className="space-y-3 md:space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Επιλέξτε Αθλητή
+              </label>
+              <div className="w-full">
+                <Combobox
+                  options={userOptions}
+                  value={selectedUserId}
+                  onValueChange={handleUserSelect}
+                  placeholder="Αναζήτηση με όνομα ή email..."
+                  emptyMessage="Δεν βρέθηκε αθλητής με τεστ."
+                />
+              </div>
             </div>
-
-            <Card className="rounded-none">
-              <CardContent className="pt-6">
-                <div className="space-y-3 md:space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Επιλέξτε Αθλητή
-                    </label>
-                    <div className="w-full">
-                      <Combobox
-                        options={userOptions}
-                        value={selectedUserId}
-                        onValueChange={handleUserSelect}
-                        placeholder="Αναζήτηση με όνομα ή email..."
-                        emptyMessage="Δεν βρέθηκε αθλητής με τεστ."
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {selectedUserId && effectiveCoachId && (
-              <UserProgressSection 
-                userId={selectedUserId} 
-                useCoachTables={true}
-                coachId={effectiveCoachId}
-              />
-            )}
-
-            {!selectedUserId && (
-              <Card className="rounded-none">
-                <CardContent className="text-center py-12 text-muted-foreground">
-                  {users.length === 0 
-                    ? "Δεν υπάρχουν αθλητές με τεστ"
-                    : "Επιλέξτε έναν αθλητή για να δείτε την πρόοδό του"
-                  }
-                </CardContent>
-              </Card>
-            )}
           </div>
-        </main>
-      </div>
+        </CardContent>
+      </Card>
+
+      {selectedUserId && coachId && (
+        <UserProgressSection 
+          userId={selectedUserId} 
+          useCoachTables={true}
+          coachId={coachId}
+        />
+      )}
+
+      {!selectedUserId && (
+        <Card className="rounded-none">
+          <CardContent className="text-center py-12 text-muted-foreground">
+            {users.length === 0 
+              ? "Δεν υπάρχουν αθλητές με τεστ"
+              : "Επιλέξτε έναν αθλητή για να δείτε την πρόοδό του"
+            }
+          </CardContent>
+        </Card>
+      )}
     </div>
+  );
+};
+
+export const CoachAthletesProgressWithSidebar = () => {
+  return (
+    <CoachLayout title="Πρόοδος Αθλητών">
+      <CoachAthletesProgressContent />
+    </CoachLayout>
   );
 };
 
