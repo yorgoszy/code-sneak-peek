@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Trash2, ChevronDown, ChevronRight, ChevronUp, Check, Play, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { formatTimeInput } from '@/utils/timeFormatting';
-import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
-import { useExercises } from '@/hooks/useExercises';
-import { EditBlockTemplateDialog } from './EditBlockTemplateDialog';
+import { formatTimeInput } from "@/utils/timeFormatting";
+import { getVideoThumbnail, isValidVideoUrl } from "@/utils/videoUtils";
+import { useExercises } from "@/hooks/useExercises";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { EditBlockTemplateDialog } from "./EditBlockTemplateDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -84,6 +85,7 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
   const [templateToEdit, setTemplateToEdit] = useState<BlockTemplate | null>(null);
 
   const { exercises: availableExercises } = useExercises();
+  const { userProfile, isAdmin } = useRoleCheck();
 
   useEffect(() => {
     if (open) {
@@ -94,27 +96,42 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      
+
       let query = supabase
         .from('block_templates')
         .select('*')
         .order('created_at', { ascending: false });
 
-      // Filter by coach ID if available
+      // Φιλτράρουμε templates ώστε να βλέπουμε:
+      // - global (created_by IS NULL)
+      // - του coach (created_by = coachId)
+      // - του admin (created_by = currentUserId) όταν admin βλέπει coach panel
+      const myId = userProfile?.id;
+
       if (coachId) {
-        query = query.eq('created_by', coachId);
+        const ors = [`created_by.eq.${coachId}`, 'created_by.is.null'];
+
+        if (isAdmin() && myId && myId !== coachId) {
+          ors.push(`created_by.eq.${myId}`);
+        }
+
+        query = query.or(ors.join(','));
+      } else {
+        const ors = ['created_by.is.null'];
+        if (myId) ors.push(`created_by.eq.${myId}`);
+        query = query.or(ors.join(','));
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
-      
+
       // Parse exercises JSON
       const parsedTemplates = (data || []).map(t => ({
         ...t,
         exercises: typeof t.exercises === 'string' ? JSON.parse(t.exercises) : (t.exercises || [])
       }));
-      
+
       setTemplates(parsedTemplates);
     } catch (error) {
       console.error('Error fetching templates:', error);
