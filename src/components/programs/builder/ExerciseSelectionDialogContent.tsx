@@ -107,40 +107,14 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
 
   return (
     <>
-      <DialogContent className="rounded-none max-w-6xl w-[95vw] sm:w-auto max-h-[90vh] sm:max-h-[80vh] p-3 sm:p-6 flex flex-col">
+      <DialogContent className="rounded-none max-w-6xl w-[95vw] md:w-[90vw] lg:w-auto max-h-[90vh] sm:max-h-[80vh] p-3 sm:p-4 md:p-6 flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-sm sm:text-base">
-              <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="truncate">Επιλογή Άσκησης ({exercisesWithCategories.length})</span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto flex-wrap">
-              <Button
-                onClick={() => setAddExerciseDialogOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none flex-1 sm:flex-none"
-                size="sm"
-              >
-                <Plus className="w-4 h-4 sm:mr-1" />
-                <span className="hidden sm:inline">Άσκηση</span>
-              </Button>
-              <Button
-                onClick={() => setCreateTemplateDialogOpen(true)}
-                variant="outline"
-                className="rounded-none flex-1 sm:flex-none"
-                size="sm"
-              >
-                <Save className="w-4 h-4 sm:mr-1" />
-                <span className="hidden sm:inline">Template</span>
-              </Button>
-              <Button
-                onClick={() => setSelectTemplateDialogOpen(true)}
-                variant="outline"
-                className="rounded-none flex-1 sm:flex-none"
-                size="sm"
-              >
-                <FolderOpen className="w-4 h-4 sm:mr-1" />
-                <span className="hidden sm:inline">Templates</span>
-              </Button>
+          <DialogTitle className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm sm:text-base">
+                <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="truncate">Επιλογή Άσκησης ({exercisesWithCategories.length})</span>
+              </div>
               <Button
                 onClick={onClose}
                 variant="destructive"
@@ -150,21 +124,47 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
                 <X className="w-4 h-4" />
               </Button>
             </div>
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+              <Button
+                onClick={() => setAddExerciseDialogOpen(true)}
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-8"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                <span>Άσκηση</span>
+              </Button>
+              <Button
+                onClick={() => setCreateTemplateDialogOpen(true)}
+                variant="outline"
+                className="rounded-none h-8"
+                size="sm"
+              >
+                <Save className="w-4 h-4 mr-1" />
+                <span>Template</span>
+              </Button>
+              <Button
+                onClick={() => setSelectTemplateDialogOpen(true)}
+                variant="outline"
+                className="rounded-none h-8"
+                size="sm"
+              >
+                <FolderOpen className="w-4 h-4 mr-1" />
+                <span>Templates</span>
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-3 sm:space-y-4 flex-1 overflow-hidden flex flex-col">
-          {/* Search and Filters - Side by side on mobile (50/50), horizontal on desktop */}
-          <div className="flex flex-row gap-2 sm:gap-4 flex-shrink-0">
-            <div className="w-1/2 sm:w-[70%]">
+        <div className="space-y-3 flex-1 overflow-hidden flex flex-col">
+          {/* Search and Filters */}
+          <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+            <div className="flex-1">
               <ExerciseSearchInput
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
               />
             </div>
-
-            {/* Filters */}
-            <div className="w-1/2 sm:w-[30%]">
+            <div className="w-full sm:w-[200px] md:w-[250px]">
               <ExerciseFilters
                 selectedCategories={selectedCategories}
                 onCategoryChange={setSelectedCategories}
