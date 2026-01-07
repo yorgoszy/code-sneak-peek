@@ -200,11 +200,9 @@ export const useDayActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  // Paste day from clipboard
-  const pasteDay = async (weekId: string, clipboardDay: any) => {
-    let updatedWeeks: any[] = [];
-    
-    updatedWeeks = (program.weeks || []).map(week => {
+  // Paste day from clipboard - δεν κάνει auto-save
+  const pasteDay = (weekId: string, clipboardDay: any) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         const newDay = {
           id: generateId(),
@@ -213,7 +211,7 @@ export const useDayActions = (
           is_test_day: clipboardDay.is_test_day,
           test_types: clipboardDay.test_types,
           is_competition_day: clipboardDay.is_competition_day,
-          program_blocks: (clipboardDay.program_blocks || []).map((block, blockIdx) => ({
+          program_blocks: (clipboardDay.program_blocks || []).map((block: any, blockIdx: number) => ({
             id: generateId(),
             name: block.name,
             block_order: blockIdx + 1,
@@ -221,7 +219,7 @@ export const useDayActions = (
             workout_format: block.workout_format,
             workout_duration: block.workout_duration,
             block_sets: block.block_sets || 1,
-            program_exercises: (block.program_exercises || []).map((exercise, exIdx) => ({
+            program_exercises: (block.program_exercises || []).map((exercise: any, exIdx: number) => ({
               ...exercise,
               id: generateId(),
               exercise_order: exIdx + 1
@@ -238,20 +236,6 @@ export const useDayActions = (
     });
     updateProgram({ weeks: updatedWeeks });
     toast.success('Ημέρα επικολλήθηκε επιτυχώς');
-
-    // Auto-save στη βάση αν υπάρχει το πρόγραμμα
-    if (saveProgram && program.id) {
-      console.log('💾 [PASTE DAY] Auto-saving to database...');
-      try {
-        await saveProgram({
-          ...program,
-          weeks: updatedWeeks
-        });
-        console.log('✅ [PASTE DAY] Auto-save completed');
-      } catch (error) {
-        console.error('❌ [PASTE DAY] Auto-save failed:', error);
-      }
-    }
   };
 
   return {
