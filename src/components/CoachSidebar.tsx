@@ -12,7 +12,8 @@ import {
   Calendar,
   Layers,
   CalendarDays,
-  Utensils
+  Utensils,
+  LogOut
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -20,6 +21,7 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useState } from "react";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/useAuth";
 
 interface CoachSidebarProps {
   isCollapsed: boolean;
@@ -39,6 +41,7 @@ export const CoachSidebar = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { userProfile, isAdmin } = useRoleCheck();
+  const { signOut } = useAuth();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -127,9 +130,20 @@ export const CoachSidebar = ({
       path: "/",
       badge: null,
     },
+    {
+      icon: LogOut,
+      label: "Αποσύνδεση",
+      path: "logout",
+      badge: null,
+    },
   ];
 
-  const handleMenuClick = (item: any) => {
+  const handleMenuClick = async (item: any) => {
+    if (item.path === "logout") {
+      await signOut();
+      navigate("/");
+      return;
+    }
     if (item.external) {
       window.open(item.path, '_blank');
     } else {
