@@ -47,14 +47,18 @@ export const useAuth = () => {
 
   const signOut = async () => {
     console.log('🔧 useAuth: Signing out');
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error('🔧 useAuth: SignOut error, clearing local state anyway:', error);
-    }
-    // Πάντα καθαρίζουμε το local state, ακόμα κι αν το API αποτύχει
+    // Πρώτα καθαρίζουμε το local state
     setUser(null);
     setSession(null);
+    setLoading(false);
+    
+    try {
+      // Προσπαθούμε να κάνουμε signOut με scope: 'local' για να αποφύγουμε server errors
+      await supabase.auth.signOut({ scope: 'local' });
+      console.log('🔧 useAuth: SignOut completed');
+    } catch (error) {
+      console.error('🔧 useAuth: SignOut error (ignored):', error);
+    }
   };
 
   console.log('🔧 useAuth: Current state:', { 
