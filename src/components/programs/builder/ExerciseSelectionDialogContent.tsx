@@ -6,6 +6,7 @@ import { Filter, Plus, X, Save, FolderOpen } from "lucide-react";
 import { ExerciseFilters } from './ExerciseFilters';
 import { ExerciseSearchInput } from './ExerciseSearchInput';
 import { ExerciseGrid } from './ExerciseGrid';
+import { ExerciseCard } from './ExerciseCard';
 import { AddExerciseDialog } from '@/components/AddExerciseDialog';
 import { CreateBlockTemplateDialog } from './CreateBlockTemplateDialog';
 import { SelectBlockTemplateDialog } from './SelectBlockTemplateDialog';
@@ -155,27 +156,42 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-3 flex-1 overflow-hidden flex flex-col">
-          {/* Search and Filters - Same grid as exercises */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 px-2 flex-shrink-0">
-            <ExerciseSearchInput
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
-            <ExerciseFilters
-              selectedCategories={selectedCategories}
-              onCategoryChange={setSelectedCategories}
-            />
-          </div>
-          
-          {/* Exercise List - Flexible height */}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {/* Exercise List with Search at top */}
           <div className="flex-1 min-h-0 overflow-y-auto border rounded-none">
-            <ExerciseGrid
-              exercises={filteredExercises}
-              onSelectExercise={handleSelectExercise}
-              selectedCategories={selectedCategories}
-              searchTerm={searchTerm}
-            />
+            <div className="p-2">
+              {/* Search and Filters - Same grid as exercises */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 sticky top-0 bg-background z-10 pb-2">
+                <ExerciseSearchInput
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                />
+                <ExerciseFilters
+                  selectedCategories={selectedCategories}
+                  onCategoryChange={setSelectedCategories}
+                />
+              </div>
+              
+              {/* Exercise Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {filteredExercises.length === 0 ? (
+                  <div className="col-span-2 text-center py-8 text-gray-500">
+                    {selectedCategories.length > 0 || searchTerm 
+                      ? 'Δεν βρέθηκαν ασκήσεις που να ταιριάζουν με τα κριτήρια'
+                      : 'Δεν βρέθηκαν ασκήσεις'
+                    }
+                  </div>
+                ) : (
+                  filteredExercises.map((exercise) => (
+                    <ExerciseCard
+                      key={exercise.id}
+                      exercise={exercise}
+                      onSelect={handleSelectExercise}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </DialogContent>
