@@ -21,7 +21,7 @@ interface ProgramBuilderDialogContentProps {
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
   onUpdateWeekName: (weekId: string, name: string) => void;
-  onPasteWeek?: (clipboardWeek: any) => void;
+  onPasteWeek?: (weekId: string, clipboardWeek: any) => void;
   onAddDay: (weekId: string) => void;
   onRemoveDay: (weekId: string, dayId: string) => void;
   onDuplicateDay: (weekId: string, dayId: string) => void;
@@ -46,7 +46,7 @@ interface ProgramBuilderDialogContentProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onPasteBlock?: (weekId: string, dayId: string, clipboardBlock: any) => void;
   onPasteBlockAtBlock?: (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => void;
-  onPasteDay?: (weekId: string, clipboardDay: any) => void;
+  onPasteDay?: (weekId: string, dayId: string, clipboardDay: any) => void;
   onLoadBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
   onSave: () => Promise<void>;
   onAssignments: () => void;

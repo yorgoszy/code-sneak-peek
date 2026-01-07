@@ -18,7 +18,7 @@ interface TrainingWeeksProps {
   onRemoveWeek: (weekId: string) => void;
   onDuplicateWeek: (weekId: string) => void;
   onUpdateWeekName: (weekId: string, name: string) => void;
-  onPasteWeek?: (clipboardWeek: Week) => void;
+  onPasteWeek?: (weekId: string, clipboardWeek: Week) => void;
   onAddDay: (weekId: string) => void;
   onRemoveDay: (weekId: string, dayId: string) => void;
   onDuplicateDay: (weekId: string, dayId: string) => void;
@@ -43,7 +43,7 @@ interface TrainingWeeksProps {
   onReorderExercises: (weekId: string, dayId: string, blockId: string, oldIndex: number, newIndex: number) => void;
   onPasteBlock: (weekId: string, dayId: string, clipboardBlock: any) => void;
   onPasteBlockAtBlock: (weekId: string, dayId: string, blockId: string, clipboardBlock: any) => void;
-  onPasteDay: (weekId: string, clipboardDay: any) => void;
+  onPasteDay: (weekId: string, dayId: string, clipboardDay: any) => void;
   onSelectBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
 }
 
