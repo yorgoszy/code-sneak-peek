@@ -338,7 +338,9 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
                                       </div>
                                       
                                       <div className="flex flex-col items-center" style={{ width: '60px' }}>
-                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Reps</label>
+                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
+                                          {exercise.reps_mode === 'time' ? 'Time' : exercise.reps_mode === 'meter' ? 'Meter' : 'Reps'}
+                                        </label>
                                         <div className="text-center w-full bg-gray-50 border" style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '2px 4px' }}>
                                           {exercise.reps || '-'}
                                         </div>
@@ -352,7 +354,9 @@ export const SelectBlockTemplateDialog: React.FC<SelectBlockTemplateDialogProps>
                                       </div>
                                       
                                       <div className="flex flex-col items-center" style={{ width: '60px' }}>
-                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Kg</label>
+                                        <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
+                                          {exercise.kg_mode === 'rpm' ? 'rpm' : exercise.kg_mode === 'meter' ? 'meter' : exercise.kg_mode === 's/m' ? 's/m' : exercise.kg_mode === 'km/h' ? 'km/h' : 'Kg'}
+                                        </label>
                                         <div className="text-center w-full bg-gray-50 border" style={{ borderRadius: '0px', fontSize: '12px', height: '22px', padding: '2px 4px' }}>
                                           {exercise.kg || '-'}
                                         </div>
