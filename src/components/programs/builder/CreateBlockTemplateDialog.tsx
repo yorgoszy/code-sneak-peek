@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,6 @@ import { useExercises } from '@/hooks/useExercises';
 import { SimpleExerciseSelectionDialog } from './SimpleExerciseSelectionDialog';
 import { formatTimeInput } from '@/utils/timeFormatting';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
-import { useSearchParams } from 'react-router-dom';
 
 interface CreateBlockTemplateDialogProps {
   open: boolean;
@@ -51,9 +50,8 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
   open,
   onOpenChange,
   onSuccess,
-  coachId: propCoachId
+  coachId
 }) => {
-  const [searchParams] = useSearchParams();
   const [templateName, setTemplateName] = useState('');
   const [trainingType, setTrainingType] = useState('');
   const [workoutFormat, setWorkoutFormat] = useState('');
@@ -63,45 +61,9 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
   const [isOpen, setIsOpen] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
-  const [effectiveCoachId, setEffectiveCoachId] = useState<string | null>(null);
 
   const { paste, hasBlock, clearClipboard } = useProgramClipboard();
   const { exercises: availableExercises } = useExercises();
-
-  // Determine the effective coach ID
-  useEffect(() => {
-    const determineCoachId = async () => {
-      // Priority: prop > URL param > current user if coach
-      if (propCoachId) {
-        setEffectiveCoachId(propCoachId);
-        return;
-      }
-
-      const urlCoachId = searchParams.get('coachId');
-      if (urlCoachId) {
-        setEffectiveCoachId(urlCoachId);
-        return;
-      }
-
-      // Check if current user is a coach
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: appUser } = await supabase
-          .from('app_users')
-          .select('id, role')
-          .eq('auth_user_id', user.id)
-          .single();
-        
-        if (appUser?.role === 'coach') {
-          setEffectiveCoachId(appUser.id);
-        }
-      }
-    };
-
-    if (open) {
-      determineCoachId();
-    }
-  }, [open, propCoachId, searchParams]);
 
   const handlePasteBlock = () => {
     const clipboardData = paste();
@@ -198,7 +160,7 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
           workout_duration: workoutDuration || null,
           block_sets: blockSets,
           exercises: exercisesForStorage,
-          created_by: effectiveCoachId || null
+          created_by: coachId || null
         });
 
       if (error) throw error;
