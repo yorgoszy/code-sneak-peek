@@ -86,6 +86,8 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
         sets: '',
         reps: '',
         kg: '',
+        percentage_1rm: '',
+        velocity_ms: '',
         tempo: '',
         rest: '',
         notes: '',
@@ -291,52 +293,64 @@ export const CreateBlockTemplateDialog: React.FC<CreateBlockTemplateDialogProps>
                       Κάντε κλικ στο + για να προσθέσετε ασκήσεις
                     </div>
                   ) : (
-                    <div className="w-full">
+                    <div className="w-full overflow-x-auto">
                       {exercises.map((exercise, index) => (
                         <div 
                           key={exercise.id} 
-                          className="flex items-center gap-1 p-1 border-t border-gray-600 bg-gray-700/50"
+                          className="flex items-center gap-1 p-1 border-t border-gray-600 bg-gray-700/50 min-w-fit"
                         >
                           <GripVertical className="w-3 h-3 text-gray-500 flex-shrink-0" />
                           <span className="text-[10px] text-white min-w-[20px]">{index + 1}.</span>
-                          <span className="text-[10px] text-white flex-1 truncate">
+                          <span className="text-[10px] text-white min-w-[100px] max-w-[150px] truncate">
                             {exercise.exercises?.name || 'Άγνωστη άσκηση'}
                           </span>
                           <Input
                             value={exercise.sets || ''}
                             onChange={(e) => handleUpdateExercise(exercise.id, 'sets', e.target.value)}
                             placeholder="Sets"
-                            className="h-5 w-10 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-1"
+                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
                           />
                           <Input
                             value={exercise.reps || ''}
                             onChange={(e) => handleUpdateExercise(exercise.id, 'reps', e.target.value)}
                             placeholder="Reps"
-                            className="h-5 w-10 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-1"
+                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
                           />
                           <Input
                             value={exercise.kg || ''}
                             onChange={(e) => handleUpdateExercise(exercise.id, 'kg', e.target.value)}
                             placeholder="Kg"
-                            className="h-5 w-10 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-1"
+                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
+                          />
+                          <Input
+                            value={exercise.percentage_1rm || ''}
+                            onChange={(e) => handleUpdateExercise(exercise.id, 'percentage_1rm', e.target.value)}
+                            placeholder="%1RM"
+                            className="h-5 w-10 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
+                          />
+                          <Input
+                            value={exercise.velocity_ms || ''}
+                            onChange={(e) => handleUpdateExercise(exercise.id, 'velocity_ms', e.target.value)}
+                            placeholder="m/s"
+                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
                           />
                           <Input
                             value={exercise.tempo || ''}
                             onChange={(e) => handleUpdateExercise(exercise.id, 'tempo', e.target.value)}
                             placeholder="Tempo"
-                            className="h-5 w-12 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-1"
+                            className="h-5 w-11 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
                           />
                           <Input
                             value={exercise.rest || ''}
                             onChange={(e) => handleUpdateExercise(exercise.id, 'rest', e.target.value)}
                             placeholder="Rest"
-                            className="h-5 w-10 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-1"
+                            className="h-5 w-9 text-[10px] rounded-none bg-gray-600 border-gray-500 text-white text-center px-0.5"
                           />
                           <Button
                             onClick={() => handleRemoveExercise(exercise.id)}
                             size="sm"
                             variant="ghost"
-                            className="h-5 w-5 p-0 rounded-none hover:bg-red-600/20"
+                            className="h-5 w-5 p-0 rounded-none hover:bg-red-600/20 flex-shrink-0"
                           >
                             <X className="w-3 h-3 text-red-400" />
                           </Button>
