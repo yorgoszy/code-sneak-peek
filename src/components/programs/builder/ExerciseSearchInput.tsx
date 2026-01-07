@@ -19,7 +19,7 @@ export const ExerciseSearchInput: React.FC<ExerciseSearchInputProps> = ({
         placeholder="Αναζήτηση άσκησης..."
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="pl-10 rounded-none h-8"
+        className="pl-10 rounded-none h-8 text-[11px] placeholder:text-[11px]"
       />
     </div>
   );
