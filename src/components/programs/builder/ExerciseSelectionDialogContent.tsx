@@ -125,31 +125,31 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+            <div className="flex items-center gap-1 flex-nowrap">
               <Button
                 onClick={() => setAddExerciseDialogOpen(true)}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-8"
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-7 px-2 text-xs"
                 size="sm"
               >
-                <Plus className="w-4 h-4 mr-1" />
+                <Plus className="w-3 h-3 mr-0.5" />
                 <span>Άσκηση</span>
               </Button>
               <Button
                 onClick={() => setCreateTemplateDialogOpen(true)}
                 variant="outline"
-                className="rounded-none h-8"
+                className="rounded-none h-7 px-2 text-xs"
                 size="sm"
               >
-                <Save className="w-4 h-4 mr-1" />
+                <Save className="w-3 h-3 mr-0.5" />
                 <span>Template</span>
               </Button>
               <Button
                 onClick={() => setSelectTemplateDialogOpen(true)}
                 variant="outline"
-                className="rounded-none h-8"
+                className="rounded-none h-7 px-2 text-xs"
                 size="sm"
               >
-                <FolderOpen className="w-4 h-4 mr-1" />
+                <FolderOpen className="w-3 h-3 mr-0.5" />
                 <span>Templates</span>
               </Button>
             </div>
@@ -160,8 +160,8 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
           {/* Exercise List with Search at top */}
           <div className="flex-1 min-h-0 overflow-y-auto border rounded-none">
             <div className="p-2">
-              {/* Search and Filters - Same grid as exercises */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 sticky top-0 bg-background z-10 pb-2">
+              {/* Search and Filters - Always in one row */}
+              <div className="grid grid-cols-2 gap-2 mb-2 sticky top-0 bg-background z-10 pb-2">
                 <ExerciseSearchInput
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
