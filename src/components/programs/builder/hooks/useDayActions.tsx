@@ -65,7 +65,7 @@ export const useDayActions = (
         const newDay = {
           ...JSON.parse(JSON.stringify(dayToDuplicate)),
           id: generateId(),
-          name: `${dayToDuplicate.name} (Αντίγραφο)`,
+          name: `${dayToDuplicate.name}c`,
           day_number: (week.program_days?.length || 0) + 1,
           program_blocks: dayToDuplicate.program_blocks.map(block => ({
             id: generateId(),

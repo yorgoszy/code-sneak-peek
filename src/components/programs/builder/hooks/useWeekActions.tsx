@@ -52,7 +52,7 @@ export const useWeekActions = (
     // Δημιουργούμε το νέο week structure με fresh IDs
     const newWeekData = {
       id: generateId(),
-      name: `${weekToDuplicate.name} (Αντίγραφο)`,
+      name: `${weekToDuplicate.name}c`,
       week_number: (program.weeks?.length || 0) + 1,
       program_days: weekToDuplicate.program_days.map(day => {
         return {
