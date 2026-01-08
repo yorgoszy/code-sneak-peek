@@ -38,7 +38,11 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
   onRemoveWeek,
   onPasteWeek
 }) => {
-  const { copyWeek, paste, hasWeek, clearClipboard } = useProgramClipboard();
+  const { copyWeek, paste, hasWeek, clearClipboard, clipboard } = useProgramClipboard();
+  
+  // Check if this specific week is the one in clipboard
+  const isThisWeekCopied = clipboard?.type === 'week' && week && clipboard.data && 
+    (clipboard.data as Week).id === week.id;
   
   const {
     attributes,
@@ -115,7 +119,7 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
               className="h-4 w-4 p-0 rounded-none"
               title="Αντιγραφή Εβδομάδας"
             >
-              <Copy className="w-2 h-2" />
+              <Copy className={`w-2 h-2 ${isThisWeekCopied ? 'text-red-500' : ''}`} />
             </Button>
             <Button
               size="sm"

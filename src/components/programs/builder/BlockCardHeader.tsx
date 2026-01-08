@@ -86,7 +86,11 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   onCopyBlock,
   onPasteBlock
 }) => {
-  const { copyBlock, hasBlock } = useProgramClipboard();
+  const { copyBlock, hasBlock, hasDay, hasWeek, clipboard } = useProgramClipboard();
+  
+  // Check if this specific block is the one in clipboard
+  const isThisBlockCopied = clipboard?.type === 'block' && block && clipboard.data && 
+    (clipboard.data as Block).id === block.id;
 
   const handleCopyToClipboard = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -100,11 +104,11 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
   return (
     <CardHeader className="p-1 space-y-0">
       <div className="flex justify-between items-center">
-        <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-600 p-1 rounded">
-          {isOpen ? <ChevronDown className="w-3 h-3 text-white" /> : <ChevronRight className="w-3 h-3 text-white" />}
-          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+        <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-600 p-1 rounded flex-1 min-w-0">
+          {isOpen ? <ChevronDown className="w-3 h-3 text-white flex-shrink-0" /> : <ChevronRight className="w-3 h-3 text-white flex-shrink-0" />}
+          <div className="flex items-center gap-2 min-w-0" onClick={(e) => e.stopPropagation()}>
             <Select value={trainingType || ''} onValueChange={onTrainingTypeChange}>
-              <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[100px]">
+              <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[100px] flex-shrink-0">
                 <SelectValue placeholder="Τύπος" />
               </SelectTrigger>
               <SelectContent className="rounded-none bg-white z-50">
@@ -122,7 +126,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             )}
           </div>
         </CollapsibleTrigger>
-        <div className="flex gap-0">
+        <div className="flex gap-0 flex-shrink-0">
           <Button
             onClick={(e) => {
               e.stopPropagation();
@@ -130,18 +134,18 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none hover:bg-gray-600"
+            className="rounded-none hover:bg-gray-600 h-6 w-6 p-0"
           >
-            <Plus className="w-2 h-2 text-white" />
+            <Plus className="w-3 h-3 text-white" />
           </Button>
           <Button
             onClick={handleCopyToClipboard}
             size="sm"
             variant="ghost"
-            className="rounded-none hover:bg-gray-600"
+            className="rounded-none hover:bg-gray-600 h-6 w-6 p-0"
             title="Αντιγραφή Block στο Clipboard"
           >
-            <Copy className="w-2 h-2 text-blue-400" />
+            <Copy className={`w-3 h-3 ${isThisBlockCopied ? 'text-red-500' : 'text-white'}`} />
           </Button>
           {onPasteBlock && (
             <Button
@@ -151,11 +155,11 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
               }}
               size="sm"
               variant="ghost"
-              className={`rounded-none hover:bg-gray-600 ${hasBlock ? 'text-[#00ffba]' : 'text-gray-500'}`}
+              className={`rounded-none hover:bg-gray-600 h-6 w-6 p-0 ${hasBlock ? 'text-[#00ffba]' : 'text-gray-500'}`}
               disabled={!hasBlock}
               title={hasBlock ? "Επικόλληση Block" : "Αντέγραψε πρώτα ένα block"}
             >
-              <ClipboardPaste className="w-2 h-2" />
+              <ClipboardPaste className="w-3 h-3" />
             </Button>
           )}
           <Button
@@ -165,10 +169,10 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none hover:bg-gray-600"
+            className="rounded-none hover:bg-gray-600 h-6 w-6 p-0"
             title="Διπλασιασμός Block"
           >
-            <Files className="w-2 h-2 text-white" />
+            <Files className="w-3 h-3 text-white" />
           </Button>
           <Button
             onClick={(e) => {
@@ -177,9 +181,9 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none hover:bg-gray-600"
+            className="rounded-none hover:bg-gray-600 h-6 w-6 p-0"
           >
-            <Trash2 className="w-2 h-2 text-white" />
+            <Trash2 className="w-3 h-3 text-white" />
           </Button>
         </div>
       </div>
