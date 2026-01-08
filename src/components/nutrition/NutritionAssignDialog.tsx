@@ -82,26 +82,70 @@ export const NutritionAssignDialog: React.FC<NutritionAssignDialogProps> = ({
 
   const fetchUsers = async () => {
     try {
-      let query = supabase
-        .from('app_users')
-        .select('id, name, email, photo_url, avatar_url')
-        .order('name');
-      
-      if (coachId) {
-        // Coach: φέρνει μόνο τους δικούς του χρήστες
-        query = query.eq('coach_id', coachId);
-      } else {
-        // Admin: φέρνει μόνο χρήστες χωρίς coach_id
-        query = query.is('coach_id', null);
+      // Θέλουμε να δείχνει μόνο τους χρήστες του τρέχοντος coach/admin.
+      // Αν δοθεί coachId (από την κάρτα), το χρησιμοποιούμε. Αλλιώς βρίσκουμε το current app_user id.
+
+      let effectiveCoachId = coachId;
+
+      if (!effectiveCoachId) {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+
+        const authUserId = authData.user?.id;
+        if (!authUserId) {
+          setUsers([]);
+          setFilteredUsers([]);
+          return;
+        }
+
+        const { data: me, error: meError } = await supabase
+          .from('app_users')
+          .select('id, role')
+          .eq('auth_user_id', authUserId)
+          .maybeSingle();
+
+        if (meError) throw meError;
+        effectiveCoachId = me?.id || undefined;
+
+        // Αν για κάποιον admin υπάρχουν legacy users με coach_id null, τους συμπεριλαμβάνουμε.
+        if (me?.role === 'admin' && !effectiveCoachId) {
+          // no-op, handled below
+        }
+
+        // κρατάμε και role για fallback query
+        if (me?.role === 'admin') {
+          const { data, error } = await supabase
+            .from('app_users')
+            .select('id, name, email, photo_url, avatar_url')
+            .or(`coach_id.eq.${me.id},coach_id.is.null`)
+            .order('name');
+
+          if (error) throw error;
+          setUsers(data || []);
+          setFilteredUsers(data || []);
+          return;
+        }
       }
 
-      const { data, error } = await query;
+      if (!effectiveCoachId) {
+        setUsers([]);
+        setFilteredUsers([]);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, email, photo_url, avatar_url')
+        .eq('coach_id', effectiveCoachId)
+        .order('name');
 
       if (error) throw error;
       setUsers(data || []);
       setFilteredUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
+      setUsers([]);
+      setFilteredUsers([]);
     }
   };
 
