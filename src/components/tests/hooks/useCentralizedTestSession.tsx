@@ -1,6 +1,3 @@
-
-
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +16,25 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
 
+  const hasValidData = (data: any): boolean => {
+    if (!data || typeof data !== 'object') return false;
+    return Object.values(data).some(value => 
+      value !== null && value !== undefined && value !== '' && value !== 0 && 
+      (Array.isArray(value) ? value.length > 0 : true)
+    );
+  };
+
+  const hasValidStrengthData = (data: any): boolean => {
+    if (!data || !data.exercise_tests || !Array.isArray(data.exercise_tests)) return false;
+    
+    return data.exercise_tests.some((exerciseTest: any) => 
+      exerciseTest.exercise_id && 
+      exerciseTest.attempts && 
+      Array.isArray(exerciseTest.attempts) && 
+      exerciseTest.attempts.length > 0
+    );
+  };
+
   const saveAllTests = async (testData: TestSessionData) => {
     if (!user) {
       toast({
@@ -32,6 +48,20 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
     setSaving(true);
     
     try {
+      // Ελέγχουμε αν ο αθλητής έχει coach_id - αν ναι, αποθηκεύουμε στους coach tables
+      const { data: athleteData, error: athleteError } = await supabase
+        .from('app_users')
+        .select('coach_id')
+        .eq('id', selectedAthleteId)
+        .maybeSingle();
+
+      if (athleteError) throw athleteError;
+      
+      const isCoachAthlete = !!athleteData?.coach_id;
+      const coachId = athleteData?.coach_id;
+
+      console.log('🔍 Αθλητής:', selectedAthleteId, 'Coach ID:', coachId, 'isCoachAthlete:', isCoachAthlete);
+
       // Δημιουργία κεντρικού test session
       const testTypes: string[] = [];
       if (testData.anthropometric && hasValidData(testData.anthropometric)) testTypes.push('Σωματομετρικά');
@@ -49,48 +79,13 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
         return false;
       }
 
-      console.log('🔄 Δημιουργία κεντρικού test session για:', testTypes);
+      console.log('🔄 Δημιουργία test sessions για:', testTypes, isCoachAthlete ? '(coach tables)' : '(regular tables)');
 
-      const { data: testSession, error: sessionError } = await supabase
-        .from('test_sessions')
-        .insert({
-          user_id: selectedAthleteId,
-          test_date: selectedDate,
-          test_types: testTypes,
-          completed_at: new Date().toISOString(),
-          notes: `Ολοκληρωμένο session τεστ - ${testTypes.join(', ')}`
-        })
-        .select()
-        .single();
-
-      if (sessionError) throw sessionError;
-
-      const sessionId = testSession.id;
-      console.log('✅ Κεντρικό session δημιουργήθηκε:', sessionId);
-
-      // Αποθήκευση σωματομετρικών δεδομένων
-      if (testData.anthropometric && hasValidData(testData.anthropometric)) {
-        await saveAnthropometricData(sessionId, testData.anthropometric);
-      }
-
-      // Αποθήκευση λειτουργικών δεδομένων
-      if (testData.functional && hasValidData(testData.functional)) {
-        await saveFunctionalData(sessionId, testData.functional);
-      }
-
-      // Αποθήκευση δεδομένων αντοχής
-      if (testData.endurance && hasValidData(testData.endurance)) {
-        await saveEnduranceData(sessionId, testData.endurance);
-      }
-
-      // Αποθήκευση δεδομένων αλμάτων
-      if (testData.jump && hasValidData(testData.jump)) {
-        await saveJumpData(sessionId, testData.jump);
-      }
-
-      // Αποθήκευση δεδομένων δύναμης - ΝΕΑ ΛΟΓΙΚΗ
-      if (testData.strength && hasValidStrengthData(testData.strength)) {
-        await saveStrengthData(sessionId, testData.strength);
+      // Αν ο αθλητής ανήκει σε coach, αποθηκεύουμε στους coach tables
+      if (isCoachAthlete && coachId) {
+        await saveToCoachTables(testData, coachId);
+      } else {
+        await saveToRegularTables(testData, testTypes);
       }
 
       toast({
@@ -113,6 +108,248 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
     }
   };
 
+  // ========== COACH TABLES ==========
+  const saveToCoachTables = async (testData: TestSessionData, coachId: string) => {
+    // Σωματομετρικά
+    if (testData.anthropometric && hasValidData(testData.anthropometric)) {
+      const { data: session, error: sessionError } = await supabase
+        .from('coach_anthropometric_test_sessions')
+        .insert({
+          coach_id: coachId,
+          user_id: selectedAthleteId,
+          test_date: selectedDate
+        })
+        .select()
+        .single();
+      if (sessionError) throw sessionError;
+      await saveCoachAnthropometricData(session.id, testData.anthropometric);
+    }
+
+    // Λειτουργικά
+    if (testData.functional && hasValidData(testData.functional)) {
+      const { data: session, error: sessionError } = await supabase
+        .from('coach_functional_test_sessions')
+        .insert({
+          coach_id: coachId,
+          user_id: selectedAthleteId,
+          test_date: selectedDate
+        })
+        .select()
+        .single();
+      if (sessionError) throw sessionError;
+      await saveCoachFunctionalData(session.id, testData.functional);
+    }
+
+    // Αντοχή
+    if (testData.endurance && hasValidData(testData.endurance)) {
+      const { data: session, error: sessionError } = await supabase
+        .from('coach_endurance_test_sessions')
+        .insert({
+          coach_id: coachId,
+          user_id: selectedAthleteId,
+          test_date: selectedDate
+        })
+        .select()
+        .single();
+      if (sessionError) throw sessionError;
+      await saveCoachEnduranceData(session.id, testData.endurance);
+    }
+
+    // Άλματα
+    if (testData.jump && hasValidData(testData.jump)) {
+      const { data: session, error: sessionError } = await supabase
+        .from('coach_jump_test_sessions')
+        .insert({
+          coach_id: coachId,
+          user_id: selectedAthleteId,
+          test_date: selectedDate
+        })
+        .select()
+        .single();
+      if (sessionError) throw sessionError;
+      await saveCoachJumpData(session.id, testData.jump);
+    }
+
+    // Δύναμη
+    if (testData.strength && hasValidStrengthData(testData.strength)) {
+      const { data: session, error: sessionError } = await supabase
+        .from('coach_strength_test_sessions')
+        .insert({
+          coach_id: coachId,
+          user_id: selectedAthleteId,
+          test_date: selectedDate
+        })
+        .select()
+        .single();
+      if (sessionError) throw sessionError;
+      await saveCoachStrengthData(session.id, testData.strength);
+    }
+
+    console.log('✅ Όλα τα coach sessions δημιουργήθηκαν');
+  };
+
+  const saveCoachAnthropometricData = async (sessionId: string, data: any) => {
+    const { error } = await supabase
+      .from('coach_anthropometric_test_data')
+      .insert({
+        test_session_id: sessionId,
+        height: parseFloat(data.height) || null,
+        weight: parseFloat(data.weight) || null,
+        body_fat_percentage: parseFloat(data.bodyFatPercentage) || null,
+        muscle_mass_percentage: parseFloat(data.muscleMassPercentage) || null,
+        waist_circumference: parseFloat(data.waistCircumference) || null,
+        hip_circumference: parseFloat(data.hipCircumference) || null,
+        chest_circumference: parseFloat(data.chestCircumference) || null,
+        arm_circumference: parseFloat(data.armCircumference) || null,
+        thigh_circumference: parseFloat(data.thighCircumference) || null
+      });
+    if (error) throw error;
+    console.log('✅ Coach σωματομετρικά αποθηκεύτηκαν');
+  };
+
+  const saveCoachFunctionalData = async (sessionId: string, data: any) => {
+    let totalFmsScore: number | null = null;
+    if (data.fmsScores && typeof data.fmsScores === 'object') {
+      const scores = Object.values(data.fmsScores) as unknown[];
+      if (scores.length > 0) {
+        let sum = 0;
+        for (const score of scores) {
+          const numericScore = typeof score === 'number' ? score : parseInt(String(score)) || 0;
+          sum += numericScore;
+        }
+        totalFmsScore = sum;
+      }
+    }
+
+    const { error } = await supabase
+      .from('coach_functional_test_data')
+      .insert({
+        test_session_id: sessionId,
+        fms_score: totalFmsScore,
+        fms_detailed_scores: data.fmsScores || null,
+        posture_issues: data.selectedPosture || null,
+        squat_issues: data.selectedSquatIssues || null,
+        single_leg_squat_issues: data.selectedSingleLegIssues || null,
+        muscles_need_stretching: data.musclesNeedStretching || null,
+        muscles_need_strengthening: data.musclesNeedStrengthening || null
+      });
+    if (error) throw error;
+    console.log('✅ Coach λειτουργικά αποθηκεύτηκαν');
+  };
+
+  const saveCoachEnduranceData = async (sessionId: string, data: any) => {
+    const { error } = await supabase
+      .from('coach_endurance_test_data')
+      .insert({
+        test_session_id: sessionId,
+        push_ups: parseInt(data.pushUps) || null,
+        pull_ups: parseInt(data.pullUps) || null,
+        crunches: parseInt(data.crunches) || null,
+        t2b: parseInt(data.t2b) || null,
+        farmer_kg: parseFloat(data.farmerKg) || null,
+        farmer_meters: parseFloat(data.farmerMeters) || null,
+        farmer_seconds: parseFloat(data.farmerSeconds) || null,
+        max_hr: parseInt(data.maxHr) || null,
+        resting_hr_1min: parseInt(data.restingHr1min) || null,
+        vo2_max: parseFloat(data.vo2Max) || null,
+        sprint_seconds: parseFloat(data.sprintSeconds) || null,
+        sprint_meters: parseFloat(data.sprintMeters) || null,
+        sprint_watt: parseFloat(data.sprintWatt) || null,
+        sprint_resistance: data.sprintResistance || null,
+        mas_meters: parseFloat(data.masMeters) || null,
+        mas_minutes: parseFloat(data.masMinutes) || null,
+        mas_ms: parseFloat(data.masMs) || null,
+        mas_kmh: parseFloat(data.masKmh) || null
+      });
+    if (error) throw error;
+    console.log('✅ Coach αντοχή αποθηκεύτηκαν');
+  };
+
+  const saveCoachJumpData = async (sessionId: string, data: any) => {
+    const { error } = await supabase
+      .from('coach_jump_test_data')
+      .insert({
+        test_session_id: sessionId,
+        non_counter_movement_jump: parseFloat(data.nonCounterMovementJump) || null,
+        counter_movement_jump: parseFloat(data.counterMovementJump) || null,
+        depth_jump: parseFloat(data.depthJump) || null,
+        broad_jump: parseFloat(data.broadJump) || null,
+        triple_jump_left: parseFloat(data.tripleJumpLeft) || null,
+        triple_jump_right: parseFloat(data.tripleJumpRight) || null
+      });
+    if (error) throw error;
+    console.log('✅ Coach άλματα αποθηκεύτηκαν');
+  };
+
+  const saveCoachStrengthData = async (sessionId: string, data: any) => {
+    if (!data || !data.exercise_tests || data.exercise_tests.length === 0) return;
+
+    for (const exerciseTest of data.exercise_tests) {
+      if (!exerciseTest.exercise_id || !exerciseTest.attempts || exerciseTest.attempts.length === 0) continue;
+
+      for (const attempt of exerciseTest.attempts) {
+        const { error } = await supabase
+          .from('coach_strength_test_data')
+          .insert({
+            test_session_id: sessionId,
+            exercise_id: exerciseTest.exercise_id,
+            weight_kg: parseFloat(attempt.weight_kg) || null,
+            velocity_ms: parseFloat(attempt.velocity_ms) || null,
+            is_1rm: attempt.is_1rm || false
+          });
+        if (error) throw error;
+      }
+    }
+    console.log('✅ Coach δύναμη αποθηκεύτηκαν');
+  };
+
+  // ========== REGULAR TABLES ==========
+  const saveToRegularTables = async (testData: TestSessionData, testTypes: string[]) => {
+    const { data: testSession, error: sessionError } = await supabase
+      .from('test_sessions')
+      .insert({
+        user_id: selectedAthleteId,
+        test_date: selectedDate,
+        test_types: testTypes,
+        completed_at: new Date().toISOString(),
+        notes: `Ολοκληρωμένο session τεστ - ${testTypes.join(', ')}`
+      })
+      .select()
+      .single();
+
+    if (sessionError) throw sessionError;
+
+    const sessionId = testSession.id;
+    console.log('✅ Κεντρικό session δημιουργήθηκε:', sessionId);
+
+    // Αποθήκευση σωματομετρικών δεδομένων
+    if (testData.anthropometric && hasValidData(testData.anthropometric)) {
+      await saveAnthropometricData(sessionId, testData.anthropometric);
+    }
+
+    // Αποθήκευση λειτουργικών δεδομένων
+    if (testData.functional && hasValidData(testData.functional)) {
+      await saveFunctionalData(sessionId, testData.functional);
+    }
+
+    // Αποθήκευση δεδομένων αντοχής
+    if (testData.endurance && hasValidData(testData.endurance)) {
+      await saveEnduranceData(sessionId, testData.endurance);
+    }
+
+    // Αποθήκευση δεδομένων αλμάτων
+    if (testData.jump && hasValidData(testData.jump)) {
+      await saveJumpData(sessionId, testData.jump);
+    }
+
+    // Αποθήκευση δεδομένων δύναμης
+    if (testData.strength && hasValidStrengthData(testData.strength)) {
+      await saveStrengthData(sessionId, testData.strength);
+    }
+
+    console.log('✅ Όλα τα regular sessions δημιουργήθηκαν');
+  };
+
   const saveAnthropometricData = async (sessionId: string, data: any) => {
     const { error } = await supabase
       .from('anthropometric_test_data')
@@ -128,13 +365,11 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
         arm_circumference: parseFloat(data.armCircumference) || null,
         thigh_circumference: parseFloat(data.thighCircumference) || null
       });
-
     if (error) throw error;
     console.log('✅ Σωματομετρικά δεδομένα αποθηκεύτηκαν');
   };
 
   const saveFunctionalData = async (sessionId: string, data: any) => {
-    // Calculate total FMS score with proper type handling
     let totalFmsScore: number | null = null;
     if (data.fmsScores && typeof data.fmsScores === 'object') {
       const scores = Object.values(data.fmsScores) as unknown[];
@@ -158,7 +393,6 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
         squat_issues: data.selectedSquatIssues || null,
         single_leg_squat_issues: data.selectedSingleLegIssues || null
       });
-
     if (error) throw error;
     console.log('✅ Λειτουργικά δεδομένα αποθηκεύτηκαν');
   };
@@ -280,7 +514,6 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
         triple_jump_left: parseFloat(data.tripleJumpLeft) || null,
         triple_jump_right: parseFloat(data.tripleJumpRight) || null
       });
-
     if (error) throw error;
     console.log('✅ Δεδομένα αλμάτων αποθηκεύτηκαν');
   };
@@ -320,25 +553,6 @@ export const useCentralizedTestSession = (selectedAthleteId: string, selectedDat
     }
 
     console.log('✅ Δεδομένα δύναμης αποθηκεύτηκαν στον κεντρικό πίνακα');
-  };
-
-  const hasValidData = (data: any): boolean => {
-    if (!data || typeof data !== 'object') return false;
-    return Object.values(data).some(value => 
-      value !== null && value !== undefined && value !== '' && value !== 0 && 
-      (Array.isArray(value) ? value.length > 0 : true)
-    );
-  };
-
-  const hasValidStrengthData = (data: any): boolean => {
-    if (!data || !data.exercise_tests || !Array.isArray(data.exercise_tests)) return false;
-    
-    return data.exercise_tests.some((exerciseTest: any) => 
-      exerciseTest.exercise_id && 
-      exerciseTest.attempts && 
-      Array.isArray(exerciseTest.attempts) && 
-      exerciseTest.attempts.length > 0
-    );
   };
 
   return {
