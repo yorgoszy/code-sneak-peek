@@ -44,23 +44,47 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
   const [exerciseStatuses, setExerciseStatuses] = useState<Record<string, ExerciseStatus>>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [currentAppUserId, setCurrentAppUserId] = useState<string | null>(null);
 
   const { exercisesWithCategories } = useExerciseWithCategories(exercises);
+
+  const ensureCurrentAppUserId = async () => {
+    if (currentAppUserId) return currentAppUserId;
+
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Not authenticated');
+
+    const { data: appUser, error: appUserError } = await supabase
+      .from('app_users')
+      .select('id')
+      .eq('auth_user_id', authData.user.id)
+      .single();
+
+    if (appUserError) throw appUserError;
+
+    setCurrentAppUserId(appUser.id);
+    return appUser.id;
+  };
 
   // Φόρτωση υπαρχόντων δεδομένων όταν ανοίγει το dialog
   useEffect(() => {
     if (open && fmsExercise) {
       loadExistingMappings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, fmsExercise]);
 
   const loadExistingMappings = async () => {
     setLoading(true);
     try {
+      const appUserId = await ensureCurrentAppUserId();
+
       const { data, error } = await supabase
         .from('fms_exercise_mappings')
         .select('exercise_id, status')
-        .eq('fms_exercise', fmsExercise);
+        .eq('fms_exercise', fmsExercise)
+        .eq('user_id', appUserId);
 
       if (error) throw error;
 
@@ -88,29 +112,28 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
     });
   }, [exercisesWithCategories, searchTerm, selectedCategories]);
 
-  // Click logic: null (green) -> red -> yellow -> null (green)
-  // 1 click = red, 2 clicks = yellow, no click = green (default)
+  // Click cycle: άχρωμο -> κόκκινο -> κίτρινο -> πράσινο -> άχρωμο
+  // 1 κλικ = Κόκκινο, 2 κλικ = Κίτρινο, 3 κλικ = Πράσινο, 4 κλικ = Άχρωμο
   const handleExerciseClick = (exerciseId: string) => {
     setExerciseStatuses(prev => {
-      const currentStatus = prev[exerciseId];
+      const currentStatus = prev[exerciseId] ?? null;
       let newStatus: ExerciseStatus;
-      
+
       switch (currentStatus) {
         case null:
-        case undefined:
-        case 'green':
           newStatus = 'red';
           break;
         case 'red':
           newStatus = 'yellow';
           break;
         case 'yellow':
-          newStatus = null; // Back to green (default)
+          newStatus = 'green';
           break;
+        case 'green':
         default:
-          newStatus = 'red';
+          newStatus = null;
       }
-      
+
       return { ...prev, [exerciseId]: newStatus };
     });
   };
@@ -121,27 +144,33 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
         return 'bg-red-500 text-white border-red-600';
       case 'yellow':
         return 'bg-yellow-400 text-black border-yellow-500';
-      default:
-        // null/undefined/green = green (default safe)
+      case 'green':
         return 'bg-green-500 text-white border-green-600';
+      default:
+        // άχρωμο
+        return 'bg-white text-black border-gray-200 hover:border-gray-300';
     }
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Διαγραφή όλων των υπαρχόντων mappings για αυτό το fms_exercise
+      const appUserId = await ensureCurrentAppUserId();
+
+      // Διαγραφή όλων των υπαρχόντων mappings (μόνο του τρέχοντα χρήστη) για αυτό το fms_exercise
       const { error: deleteError } = await supabase
         .from('fms_exercise_mappings')
         .delete()
-        .eq('fms_exercise', fmsExercise);
+        .eq('fms_exercise', fmsExercise)
+        .eq('user_id', appUserId);
 
       if (deleteError) throw deleteError;
 
-      // Insert only red and yellow mappings (green is default, no need to store)
+      // Αποθηκεύουμε μόνο ό,τι έχει χρώμα (red/yellow/green). Το άχρωμο δεν αποθηκεύεται.
       const mappingsToInsert = Object.entries(exerciseStatuses)
-        .filter(([_, status]) => status === 'red' || status === 'yellow')
+        .filter(([_, status]) => status === 'red' || status === 'yellow' || status === 'green')
         .map(([exerciseId, status]) => ({
+          user_id: appUserId,
           fms_exercise: fmsExercise,
           exercise_id: exerciseId,
           status: status as string
@@ -166,7 +195,7 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
     }
   };
 
-  const selectedCount = Object.values(exerciseStatuses).filter(s => s !== null).length;
+  const selectedCount = Object.values(exerciseStatuses).filter(s => s !== null && s !== undefined).length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -186,7 +215,7 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
             </Button>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            1 κλικ = Κόκκινο (Απαγορεύεται) | 2 κλικ = Κίτρινο (Με προσοχή) | Χωρίς κλικ = Πράσινο (Ασφαλές)
+            1 κλικ = Κόκκινο (Απαγορεύεται) | 2 κλικ = Κίτρινο (Με προσοχή) | 3 κλικ = Πράσινο (Ασφαλές) | 4 κλικ = Άχρωμο
           </p>
         </DialogHeader>
 
