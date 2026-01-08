@@ -68,14 +68,10 @@ export const assignmentService = {
             // Το assigned_by πρέπει να δείχνει ποιος έκανε την ανάθεση (coach/admin)
             inferredAssignedBy = inferredAssignedBy || me.id;
 
-            // ΜΟΝΟ αν είναι coach και ΔΕΝ είναι admin, γεμίζουμε coach_id
-            // Admin assignments δεν πρέπει να έχουν coach_id ώστε να εμφανίζονται στις admin σελίδες
-            if (!inferredCoachId && me.role === 'coach') {
+            // Αν δεν έχει coachId και είναι coach ή admin, βάζουμε το id τους
+            // Έτσι τα assignments φιλτράρονται σωστά ανά coach/admin
+            if (!inferredCoachId && (me.role === 'coach' || me.role === 'admin')) {
               inferredCoachId = me.id;
-            }
-            // Αν είναι admin, καθαρίζουμε το coachId για να μην φιλτράρεται
-            if (me.role === 'admin') {
-              inferredCoachId = undefined;
             }
           }
         }

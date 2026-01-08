@@ -34,13 +34,9 @@ export const useProgramBuilderDialogLogic = ({
     console.log('🔍 useProgramBuilderDialogLogic - filtering users, coachId:', coachId);
     console.log('🔍 Total users before filter:', users.length);
     
-    // First filter by role
-    let filtered = users.filter(user => 
-      user.role === 'athlete' || 
-      user.role === 'user' || 
-      !user.role  // Include users without role defined
-    );
-    console.log('🔍 After role filter:', filtered.length);
+    // Δείχνουμε ΟΛΟΥΣ τους χρήστες (όλοι οι ρόλοι)
+    let filtered = [...users];
+    console.log('🔍 Total users (all roles):', filtered.length);
     
     // If coachId is provided, filter by coach_id
     if (coachId) {
