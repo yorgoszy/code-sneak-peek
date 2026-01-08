@@ -141,14 +141,17 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
 
       if (deleteError) throw deleteError;
 
-      // Αποθηκεύουμε μόνο ό,τι έχει χρώμα (red/yellow/green). Το άχρωμο δεν αποθηκεύεται.
-      const mappingsToInsert = Object.entries(exerciseStatuses)
-        .filter(([_, status]) => status === 'red' || status === 'yellow' || status === 'green')
-        .map(([exerciseId, status]) => ({
+      // Αποθηκεύουμε red/yellow όπως είναι, και όλες οι υπόλοιπες (χωρίς κλικ ή green) ως green
+      const mappingsToInsert = exercises.map(exercise => {
+        const status = exerciseStatuses[exercise.id];
+        // Αν έχει κόκκινο ή κίτρινο, κράτα το - αλλιώς είναι πράσινο
+        const finalStatus = (status === 'red' || status === 'yellow') ? status : 'green';
+        return {
           fms_exercise: fmsExercise,
-          exercise_id: exerciseId,
-          status: status as string
-        }));
+          exercise_id: exercise.id,
+          status: finalStatus
+        };
+      });
 
       if (mappingsToInsert.length > 0) {
         const { error: insertError } = await supabase
