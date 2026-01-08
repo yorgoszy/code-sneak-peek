@@ -50,14 +50,17 @@ const singleLegSquatOptions = [
   'ΕΞΩ ΣΤΡΟΦΗ ΚΟΡΜΟΥ'
 ];
 
-// FMS exercises
+// FMS exercises - same order as FunctionalTests tab
 const fmsRows = [
-  ['DEEP SQUAT', 'HURDLE STEP', 'INLINE LUNGE'],
-  ['SHOULDER', 'ASLR', 'PUSH UP'],
-  ['ROTARY']
+  ['Shoulder Mobility', 'Straight Leg Raise'],
+  ['Trunk Stability Push-Up', 'Rotary Stability'],
+  ['Inline Lunge', 'Deep Squat', 'Hurdle Step']
 ];
 
-const hasLeftRight = ['HURDLE STEP', 'INLINE LUNGE', 'SHOULDER', 'ASLR', 'ROTARY'];
+const hasLeftRight = ['Shoulder Mobility', 'Straight Leg Raise', 'Rotary Stability', 'Inline Lunge', 'Hurdle Step'];
+
+// Risk level types for FMS
+type RiskLevel = 'forbidden' | 'caution' | 'safe';
 
 export const AllTestsPanel = () => {
   const [muscles, setMuscles] = useState<Muscle[]>([]);
@@ -345,54 +348,150 @@ export const AllTestsPanel = () => {
             <h3 className="font-semibold text-sm">FMS</h3>
           </div>
           
+          {/* Legend */}
+          <div className="flex gap-4 mb-3 text-xs">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-red-500"></div>
+              <span>Απαγορεύεται</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-yellow-400"></div>
+              <span>Με προσοχή</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-green-500"></div>
+              <span>Ασφαλές</span>
+            </div>
+          </div>
+          
           <div className="space-y-2">
             {fmsRows.map((row, rowIndex) => (
               <div 
                 key={rowIndex} 
                 className={cn(
                   "grid gap-2",
-                  rowIndex === 2 ? "grid-cols-1" : "grid-cols-3"
+                  rowIndex === 2 ? "grid-cols-3" : "grid-cols-2"
                 )}
               >
                 {row.map((exercise) => (
                   <div key={exercise} className="border border-gray-300 p-2">
-                    <div className="text-xs font-medium mb-1 text-center">{exercise}</div>
+                    <div className="text-xs font-medium mb-2 text-center">{exercise}</div>
                     {hasLeftRight.includes(exercise) ? (
-                      <div className="grid grid-cols-2 gap-1">
-                        <div 
-                          className={cn(
-                            "text-center py-1 text-xs cursor-pointer transition-colors border",
-                            hasMappingAny(`${exercise} L`, 'fms')
-                              ? "bg-black text-white"
-                              : "hover:bg-gray-50"
-                          )}
-                          onClick={() => handleOpenDialog(`${exercise} L`, 'fms')}
-                        >
-                          L
+                      <div className="space-y-1">
+                        {/* Left side */}
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-bold w-3">L</span>
+                          <div className="flex gap-0.5 flex-1">
+                            <div 
+                              className={cn(
+                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
+                                hasMappingAny(`${exercise} L forbidden`, 'fms')
+                                  ? "bg-red-500 text-white"
+                                  : "bg-red-100 hover:bg-red-200"
+                              )}
+                              onClick={() => handleOpenDialog(`${exercise} L forbidden`, 'fms')}
+                            >
+                              ✗
+                            </div>
+                            <div 
+                              className={cn(
+                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
+                                hasMappingAny(`${exercise} L caution`, 'fms')
+                                  ? "bg-yellow-400 text-black"
+                                  : "bg-yellow-100 hover:bg-yellow-200"
+                              )}
+                              onClick={() => handleOpenDialog(`${exercise} L caution`, 'fms')}
+                            >
+                              !
+                            </div>
+                            <div 
+                              className={cn(
+                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
+                                hasMappingAny(`${exercise} L safe`, 'fms')
+                                  ? "bg-green-500 text-white"
+                                  : "bg-green-100 hover:bg-green-200"
+                              )}
+                              onClick={() => handleOpenDialog(`${exercise} L safe`, 'fms')}
+                            >
+                              ✓
+                            </div>
+                          </div>
                         </div>
-                        <div 
-                          className={cn(
-                            "text-center py-1 text-xs cursor-pointer transition-colors border",
-                            hasMappingAny(`${exercise} R`, 'fms')
-                              ? "bg-black text-white"
-                              : "hover:bg-gray-50"
-                          )}
-                          onClick={() => handleOpenDialog(`${exercise} R`, 'fms')}
-                        >
-                          R
+                        {/* Right side */}
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-bold w-3">R</span>
+                          <div className="flex gap-0.5 flex-1">
+                            <div 
+                              className={cn(
+                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
+                                hasMappingAny(`${exercise} R forbidden`, 'fms')
+                                  ? "bg-red-500 text-white"
+                                  : "bg-red-100 hover:bg-red-200"
+                              )}
+                              onClick={() => handleOpenDialog(`${exercise} R forbidden`, 'fms')}
+                            >
+                              ✗
+                            </div>
+                            <div 
+                              className={cn(
+                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
+                                hasMappingAny(`${exercise} R caution`, 'fms')
+                                  ? "bg-yellow-400 text-black"
+                                  : "bg-yellow-100 hover:bg-yellow-200"
+                              )}
+                              onClick={() => handleOpenDialog(`${exercise} R caution`, 'fms')}
+                            >
+                              !
+                            </div>
+                            <div 
+                              className={cn(
+                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
+                                hasMappingAny(`${exercise} R safe`, 'fms')
+                                  ? "bg-green-500 text-white"
+                                  : "bg-green-100 hover:bg-green-200"
+                              )}
+                              onClick={() => handleOpenDialog(`${exercise} R safe`, 'fms')}
+                            >
+                              ✓
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ) : (
-                      <div 
-                        className={cn(
-                          "text-center py-1 text-xs cursor-pointer transition-colors border",
-                          hasMappingAny(exercise, 'fms')
-                            ? "bg-black text-white"
-                            : "hover:bg-gray-50"
-                        )}
-                        onClick={() => handleOpenDialog(exercise, 'fms')}
-                      >
-                        0-3
+                      <div className="flex gap-0.5">
+                        <div 
+                          className={cn(
+                            "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
+                            hasMappingAny(`${exercise} forbidden`, 'fms')
+                              ? "bg-red-500 text-white"
+                              : "bg-red-100 hover:bg-red-200"
+                          )}
+                          onClick={() => handleOpenDialog(`${exercise} forbidden`, 'fms')}
+                        >
+                          ✗
+                        </div>
+                        <div 
+                          className={cn(
+                            "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
+                            hasMappingAny(`${exercise} caution`, 'fms')
+                              ? "bg-yellow-400 text-black"
+                              : "bg-yellow-100 hover:bg-yellow-200"
+                          )}
+                          onClick={() => handleOpenDialog(`${exercise} caution`, 'fms')}
+                        >
+                          !
+                        </div>
+                        <div 
+                          className={cn(
+                            "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
+                            hasMappingAny(`${exercise} safe`, 'fms')
+                              ? "bg-green-500 text-white"
+                              : "bg-green-100 hover:bg-green-200"
+                          )}
+                          onClick={() => handleOpenDialog(`${exercise} safe`, 'fms')}
+                        >
+                          ✓
+                        </div>
                       </div>
                     )}
                   </div>
