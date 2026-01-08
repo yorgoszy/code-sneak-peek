@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useExerciseWithCategories } from '@/components/programs/builder/hooks/useExerciseWithCategories';
 import { ExerciseFilters } from '@/components/programs/builder/ExerciseFilters';
+import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 
 interface Exercise {
   id: string;
@@ -79,8 +80,9 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
   const filteredExercises = useMemo(() => {
     return exercisesWithCategories.filter(exercise => {
       const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
+      // AND logic: η άσκηση πρέπει να έχει ΟΛΕΣ τις επιλεγμένες κατηγορίες
       const matchesCategory = selectedCategories.length === 0 || 
-        exercise.categories?.some(cat => selectedCategories.includes(cat));
+        selectedCategories.every(cat => exercise.categories?.includes(cat));
       return matchesSearch && matchesCategory;
     });
   }, [exercisesWithCategories, searchTerm, selectedCategories]);
@@ -233,16 +235,33 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-1">
               {filteredExercises.map((exercise) => {
                 const status = exerciseStatuses[exercise.id];
+                const videoUrl = (exercise as any).video_url;
+                const hasVideo = videoUrl && isValidVideoUrl(videoUrl);
+                const thumbnail = hasVideo ? getVideoThumbnail(videoUrl) : null;
+                
                 return (
                   <button
                     key={exercise.id}
                     onClick={() => handleExerciseClick(exercise.id)}
                     className={cn(
-                      "p-3 text-left text-sm border transition-all duration-150",
+                      "p-2 text-left text-sm border transition-all duration-150 flex flex-col",
                       getStatusColor(status)
                     )}
                   >
-                    <div className="font-medium line-clamp-2">{exercise.name}</div>
+                    {/* Thumbnail */}
+                    {thumbnail && (
+                      <div className="w-full aspect-video mb-2 overflow-hidden bg-gray-100">
+                        <img 
+                          src={thumbnail} 
+                          alt={exercise.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className="font-medium line-clamp-2 text-xs">{exercise.name}</div>
                     {status && (
                       <div className="text-[10px] mt-1 opacity-80">
                         {status === 'red' ? 'Απαγορεύεται' : status === 'yellow' ? 'Με προσοχή' : 'Ασφαλές'}
