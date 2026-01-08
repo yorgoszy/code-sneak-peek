@@ -1,9 +1,11 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Copy, Trash2, Play } from "lucide-react";
+import { Copy, Trash2, Play, AlertTriangle } from "lucide-react";
 import { Exercise } from '../types';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
+import { useFmsExerciseStatusContext } from '@/contexts/FmsExerciseStatusContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ExerciseSelectionButtonProps {
   selectedExercise: Exercise | undefined;
@@ -23,56 +25,97 @@ export const ExerciseSelectionButton: React.FC<ExerciseSelectionButtonProps> = (
   const videoUrl = selectedExercise?.video_url;
   const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
   const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
+  
+  // Get FMS status for this exercise
+  const { exerciseStatusMap } = useFmsExerciseStatusContext();
+  const fmsStatus = selectedExercise ? exerciseStatusMap.get(selectedExercise.id) : null;
+  
+  // Determine background color based on FMS status
+  const getBgColor = () => {
+    if (fmsStatus === 'red') return 'bg-red-100 hover:bg-red-200 border-red-300';
+    if (fmsStatus === 'yellow') return 'bg-yellow-100 hover:bg-yellow-200 border-yellow-300';
+    return 'bg-gray-200 hover:bg-gray-300';
+  };
+  
+  const getStatusTooltip = () => {
+    if (fmsStatus === 'red') return 'Προσοχή: Μη συνιστώμενη άσκηση βάσει FMS';
+    if (fmsStatus === 'yellow') return 'Προσοχή: Άσκηση με επιφύλαξη βάσει FMS';
+    return null;
+  };
+
+  const statusTooltip = getStatusTooltip();
+
+  const buttonContent = (
+    <Button
+      variant="outline"
+      size="sm"
+      className={`flex-1 text-sm h-6 justify-start px-2 ${getBgColor()}`}
+      style={{ borderRadius: '0px', fontSize: '12px' }}
+      onClick={onSelectExercise}
+    >
+      {selectedExercise ? (
+        <div className="flex items-center gap-2 w-full">
+          <div className="flex items-center gap-1 flex-1">
+            {fmsStatus && (
+              <AlertTriangle 
+                className={`w-3 h-3 flex-shrink-0 ${fmsStatus === 'red' ? 'text-red-600' : 'text-yellow-600'}`} 
+              />
+            )}
+            {exerciseNumber && (
+              <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm">
+                {exerciseNumber}
+              </span>
+            )}
+            <span className="truncate">{selectedExercise.name}</span>
+          </div>
+          
+          {/* Video Thumbnail */}
+          {hasValidVideo && thumbnailUrl ? (
+            <div className="w-8 h-5 rounded-none overflow-hidden bg-gray-100 flex-shrink-0">
+              <img
+                src={thumbnailUrl}
+                alt={`${selectedExercise.name} video thumbnail`}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+              <div className="hidden w-full h-full bg-gray-200 flex items-center justify-center">
+                <Play className="w-2 h-2 text-gray-400" />
+              </div>
+            </div>
+          ) : hasValidVideo ? (
+            <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <Play className="w-2 h-2 text-gray-400" />
+            </div>
+          ) : (
+            <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs text-gray-400">-</span>
+            </div>
+          )}
+        </div>
+      ) : 'Επιλογή...'}
+    </Button>
+  );
 
   return (
     <div className="px-2 py-0 border-b bg-gray-100 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
-      <Button
-        variant="outline"
-        size="sm"
-        className="flex-1 text-sm h-6 justify-start px-2 bg-gray-200 hover:bg-gray-300"
-        style={{ borderRadius: '0px', fontSize: '12px' }}
-        onClick={onSelectExercise}
-      >
-        {selectedExercise ? (
-          <div className="flex items-center gap-2 w-full">
-            <div className="flex items-center gap-1 flex-1">
-              {exerciseNumber && (
-                <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm">
-                  {exerciseNumber}
-                </span>
-              )}
-              <span className="truncate">{selectedExercise.name}</span>
-            </div>
-            
-            {/* Video Thumbnail */}
-            {hasValidVideo && thumbnailUrl ? (
-              <div className="w-8 h-5 rounded-none overflow-hidden bg-gray-100 flex-shrink-0">
-                <img
-                  src={thumbnailUrl}
-                  alt={`${selectedExercise.name} video thumbnail`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.currentTarget as HTMLImageElement;
-                    target.style.display = 'none';
-                    target.nextElementSibling?.classList.remove('hidden');
-                  }}
-                />
-                <div className="hidden w-full h-full bg-gray-200 flex items-center justify-center">
-                  <Play className="w-2 h-2 text-gray-400" />
-                </div>
-              </div>
-            ) : hasValidVideo ? (
-              <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <Play className="w-2 h-2 text-gray-400" />
-              </div>
-            ) : (
-              <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs text-gray-400">-</span>
-              </div>
-            )}
-          </div>
-        ) : 'Επιλογή...'}
-      </Button>
+      {statusTooltip ? (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {buttonContent}
+            </TooltipTrigger>
+            <TooltipContent className="rounded-none">
+              <p>{statusTooltip}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        buttonContent
+      )}
       
       <div className="flex gap-1">
         <Button
