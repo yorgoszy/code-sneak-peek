@@ -88,21 +88,21 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
           </CardTitle>
         </CollapsibleTrigger>
         
-        <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
+        <div className="flex items-center flex-shrink-0 ml-auto">
           {/* Test Day Icon - Yellow */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onToggleTestDay();
             }}
-            className={`p-1.5 rounded transition-colors ${
+            className={`p-1 rounded transition-colors ${
               isTestDay 
                 ? 'text-yellow-600 bg-yellow-100' 
                 : 'text-gray-300 hover:text-yellow-500 hover:bg-yellow-50'
             }`}
             title="Ημέρα Τεστ"
           >
-            <Dumbbell className="w-4 h-4" />
+            <Dumbbell className="w-3.5 h-3.5" />
           </button>
           
           {/* Competition Day Icon - Purple */}
@@ -111,14 +111,14 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
               e.stopPropagation();
               onToggleCompetitionDay();
             }}
-            className={`p-1.5 rounded transition-colors ${
+            className={`p-1 rounded transition-colors ${
               isCompetitionDay 
                 ? 'text-purple-600 bg-purple-100' 
                 : 'text-gray-300 hover:text-purple-500 hover:bg-purple-50'
             }`}
             title="Ημέρα Αγώνα"
           >
-            <Trophy className="w-4 h-4" />
+            <Trophy className="w-3.5 h-3.5" />
           </button>
           
           <Button
@@ -128,7 +128,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none h-6 w-6 p-0"
           >
             <Plus className="w-3 h-3" />
           </Button>
@@ -136,7 +136,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             onClick={handleCopyDay}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none h-6 w-6 p-0"
             title="Αντιγραφή Ημέρας στο Clipboard"
           >
             <Copy className="w-3 h-3 text-blue-500" />
@@ -149,7 +149,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
               }}
               size="sm"
               variant="ghost"
-              className={`rounded-none ${hasDay ? 'text-[#00ffba] hover:text-[#00ffba]/80' : 'text-gray-400'}`}
+              className={`rounded-none h-6 w-6 p-0 ${hasDay ? 'text-[#00ffba] hover:text-[#00ffba]/80' : 'text-gray-400'}`}
               disabled={!hasDay}
               title={hasDay ? "Επικόλληση Ημέρας" : "Αντέγραψε πρώτα μια ημέρα"}
             >
@@ -163,7 +163,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none h-6 w-6 p-0"
             title="Διπλασιασμός Ημέρας"
           >
             <Files className="w-3 h-3" />
@@ -175,7 +175,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none h-6 w-6 p-0"
           >
             <Trash2 className="w-3 h-3" />
           </Button>
