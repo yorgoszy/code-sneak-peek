@@ -98,12 +98,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           // Φιλτράρισμα για ενεργές συνδρομές
           const activeSubscriptions = coachSubscriptions?.filter(sub => sub.status === 'active') || [];
 
-          // Payment status από την πιο πρόσφατη συνδρομή
-          if (coachSubscriptions && coachSubscriptions.length > 0) {
-            setPaymentStatus(coachSubscriptions[0].is_paid);
-          } else {
-            setPaymentStatus(null);
-          }
+          // Payment status μόνο αν υπάρχει ενεργή συνδρομή με is_paid = true
+          const hasActivePaidSubscription = activeSubscriptions.some(sub => sub.is_paid === true);
+          setPaymentStatus(activeSubscriptions.length > 0 ? hasActivePaidSubscription : null);
 
           if (activeSubscriptions.length === 0) {
             setSubscriptionDays(null);
@@ -153,11 +150,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
 
         const activeSubscriptions = allSubscriptions?.filter(sub => sub.status === 'active') || [];
 
-        if (allSubscriptions && allSubscriptions.length > 0) {
-          setPaymentStatus(allSubscriptions[0].is_paid);
-        } else {
-          setPaymentStatus(null);
-        }
+        // Payment status μόνο αν υπάρχει ενεργή συνδρομή με is_paid = true
+        const hasActivePaidSubscription = activeSubscriptions.some(sub => sub.is_paid === true);
+        setPaymentStatus(activeSubscriptions.length > 0 ? hasActivePaidSubscription : null);
 
         if (activeSubscriptions.length === 0) {
           setSubscriptionDays(null);
