@@ -219,12 +219,29 @@ const Users = () => {
 
   // Helper function to fetch subscription statuses
   const fetchSubscriptionStatuses = async (usersData: AppUser[]): Promise<UserWithSubscription[]> => {
+    // First, get all coach_ids and check which ones are actually coaches
+    const coachIds = [...new Set(usersData.filter(u => u.coach_id).map(u => u.coach_id!))];
+    
+    let coachRoles: Record<string, string> = {};
+    if (coachIds.length > 0) {
+      const { data: coachData } = await supabase
+        .from('app_users')
+        .select('id, role')
+        .in('id', coachIds);
+      
+      if (coachData) {
+        coachRoles = Object.fromEntries(coachData.map(c => [c.id, c.role]));
+      }
+    }
+
     return Promise.all(
       usersData.map(async (user) => {
         let subscription = null;
         
-        // Check if user was created by a coach - use coach_subscriptions
-        if (user.coach_id) {
+        // Check if user was created by a coach (coach_id points to a user with role='coach')
+        const isCoachManaged = user.coach_id && coachRoles[user.coach_id] === 'coach';
+        
+        if (isCoachManaged) {
           const { data: coachSub } = await supabase
             .from('coach_subscriptions')
             .select('end_date, status, is_paused')

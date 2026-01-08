@@ -31,9 +31,38 @@ const UserProfile = () => {
   const sidebarRef = useRef<{ refreshOffers: () => void }>(null);
 
   const { isAdmin } = useRoleCheck();
+  const [isCoachManagedUser, setIsCoachManagedUser] = useState(false);
   
   // Εμφάνιση sidebar βάσει του ρόλου του ΠΡΟΒΑΛΛΟΜΕΝΟΥ χρήστη, όχι του logged-in user
-  const showCoachSidebar = userProfile?.role === 'coach';
+  // Αν ο χρήστης είναι coach, δείχνουμε CoachSidebar
+  // Αν ο χρήστης διαχειρίζεται από coach (coach_id δείχνει σε role=coach), δείχνουμε CoachSidebar
+  const showCoachSidebar = userProfile?.role === 'coach' || isCoachManagedUser;
+
+  // Έλεγχος αν ο χρήστης διαχειρίζεται από coach
+  useEffect(() => {
+    const checkCoachManaged = async () => {
+      if (!userProfile?.coach_id) {
+        setIsCoachManagedUser(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('role')
+        .eq('id', userProfile.coach_id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking coach role:', error);
+        setIsCoachManagedUser(false);
+        return;
+      }
+
+      setIsCoachManagedUser(data?.role === 'coach');
+    };
+
+    checkCoachManaged();
+  }, [userProfile?.coach_id]);
 
   // Check for tablet size
   useEffect(() => {
