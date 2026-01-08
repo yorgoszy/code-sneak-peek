@@ -118,17 +118,32 @@ export const AllTestsPanel = () => {
     setFmsDialogOpen(true);
   };
 
-  // Fetch FMS mapping counts
+  // Fetch FMS mapping counts (handles Supabase default 1000 row limit via pagination)
   const fetchFmsMappingCounts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('fms_exercise_mappings')
-        .select('fms_exercise, status');
+      const pageSize = 1000;
+      let from = 0;
+      let allRows: { fms_exercise: string; status: string }[] = [];
 
-      if (error) throw error;
+      // Paginate until we get less than pageSize
+      // (Supabase REST has a default limit of 1000 rows per request)
+      while (true) {
+        const { data, error } = await supabase
+          .from('fms_exercise_mappings')
+          .select('fms_exercise, status')
+          .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+
+        const batch = data ?? [];
+        allRows = allRows.concat(batch as any);
+
+        if (batch.length < pageSize) break;
+        from += pageSize;
+      }
 
       const counts: Record<string, Record<string, number>> = {};
-      data?.forEach(mapping => {
+      allRows.forEach((mapping) => {
         if (!counts[mapping.fms_exercise]) {
           counts[mapping.fms_exercise] = { red: 0, yellow: 0, green: 0 };
         }
