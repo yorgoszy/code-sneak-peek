@@ -109,7 +109,11 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <h2 className="text-xl font-semibold">{t('overview.testsEvaluations')}</h2>
-            <UserProfileTests tests={tests} />
+            <UserProgressSection
+              userId={userProfile?.id}
+              useCoachTables={isCoachCreatedUser(userProfile)}
+              coachId={isCoachCreatedUser(userProfile) ? userProfile?.coach_id : undefined}
+            />
           </div>
         );
       case "progress":
