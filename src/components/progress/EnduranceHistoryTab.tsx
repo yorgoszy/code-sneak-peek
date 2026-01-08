@@ -40,9 +40,9 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
     try {
       let sessionsData: any[] = [];
 
+      // Προτεραιότητα: coach tables (αν ζητήθηκαν) -> fallback σε regular tables
       if (useCoachTables && selectedUserId) {
-        // Fetch from coach tables
-        const { data, error } = await supabase
+        const { data: coachSessions, error: coachError } = await supabase
           .from('coach_endurance_test_sessions')
           .select(`
             id,
@@ -79,13 +79,59 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
           .eq('user_id', selectedUserId)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        
-        // Transform coach data to match expected format
-        sessionsData = (data || []).map(session => ({
-          ...session,
-          endurance_test_data: session.coach_endurance_test_data || []
-        })).filter(session => session.endurance_test_data && session.endurance_test_data.length > 0);
+        if (coachError) throw coachError;
+
+        const transformed = (coachSessions || [])
+          .map(session => ({
+            ...session,
+            endurance_test_data: session.coach_endurance_test_data || [],
+          }))
+          .filter(session => session.endurance_test_data && session.endurance_test_data.length > 0);
+
+        if (transformed.length > 0) {
+          sessionsData = transformed;
+        } else {
+          // fallback για legacy/παλιές εγγραφές
+          const { data, error } = await supabase
+            .from('endurance_test_sessions')
+            .select(`
+              id,
+              user_id,
+              test_date,
+              notes,
+              created_at,
+              endurance_test_data!endurance_test_data_test_session_id_fkey (
+                id,
+                exercise_id,
+                mas_meters,
+                mas_minutes,
+                mas_ms,
+                mas_kmh,
+                push_ups,
+                pull_ups,
+                t2b,
+                farmer_kg,
+                farmer_meters,
+                farmer_seconds,
+                sprint_seconds,
+                sprint_meters,
+                sprint_resistance,
+                sprint_watt,
+                vo2_max,
+                max_hr,
+                resting_hr_1min,
+                exercises (
+                  id,
+                  name
+                )
+              )
+            `)
+            .eq('user_id', selectedUserId)
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+          sessionsData = (data || []).filter(session => session.endurance_test_data && session.endurance_test_data.length > 0);
+        }
       } else {
         // Fetch from regular tables
         let sessionsQuery = supabase
@@ -132,10 +178,8 @@ export const EnduranceHistoryTab: React.FC<EnduranceHistoryTabProps> = ({ select
 
         const { data, error } = await sessionsQuery;
         if (error) throw error;
-        
-        sessionsData = (data || []).filter(session => 
-          session.endurance_test_data && session.endurance_test_data.length > 0
-        );
+
+        sessionsData = (data || []).filter(session => session.endurance_test_data && session.endurance_test_data.length > 0);
       }
 
       const { data: usersData, error: usersError } = await supabase
