@@ -25,17 +25,53 @@ export default function ProgressTracking() {
 
   const fetchUsers = async () => {
     try {
-      // Φέρνουμε μόνο χρήστες του admin (χωρίς coach_id)
-      const { data, error } = await supabase
+      // Βρίσκουμε το current app_user (μέσω auth_user_id) και φέρνουμε μόνο τους χρήστες που ανήκουν σε αυτόν.
+      // (Στο schema σας ο admin φαίνεται να έχει coach_id = το δικό του id, οπότε αυτό το pattern δουλεύει και για admin και για coach.)
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+
+      const authUserId = authData.user?.id;
+      if (!authUserId) {
+        setUsers([]);
+        return;
+      }
+
+      const { data: me, error: meError } = await supabase
+        .from('app_users')
+        .select('id, role')
+        .eq('auth_user_id', authUserId)
+        .maybeSingle();
+
+      if (meError) throw meError;
+      if (!me?.id) {
+        setUsers([]);
+        return;
+      }
+
+      let query = supabase
         .from('app_users')
         .select('id, name, email')
-        .is('coach_id', null)
         .order('name');
 
+      // default: coach_id = current user
+      query = query.eq('coach_id', me.id);
+
+      // fallback για legacy δεδομένα admin χωρίς coach_id
+      if (me.role === 'admin') {
+        query = supabase
+          .from('app_users')
+          .select('id, name, email')
+          .or(`coach_id.eq.${me.id},coach_id.is.null`)
+          .order('name');
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
+
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
+      setUsers([]);
     }
   };
 
