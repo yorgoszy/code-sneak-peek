@@ -44,28 +44,8 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
   const [exerciseStatuses, setExerciseStatuses] = useState<Record<string, ExerciseStatus>>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [currentAppUserId, setCurrentAppUserId] = useState<string | null>(null);
 
   const { exercisesWithCategories } = useExerciseWithCategories(exercises);
-
-  const ensureCurrentAppUserId = async () => {
-    if (currentAppUserId) return currentAppUserId;
-
-    const { data: authData, error: authError } = await supabase.auth.getUser();
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('Not authenticated');
-
-    const { data: appUser, error: appUserError } = await supabase
-      .from('app_users')
-      .select('id')
-      .eq('auth_user_id', authData.user.id)
-      .single();
-
-    if (appUserError) throw appUserError;
-
-    setCurrentAppUserId(appUser.id);
-    return appUser.id;
-  };
 
   // Φόρτωση υπαρχόντων δεδομένων όταν ανοίγει το dialog
   useEffect(() => {
@@ -78,13 +58,11 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
   const loadExistingMappings = async () => {
     setLoading(true);
     try {
-      const appUserId = await ensureCurrentAppUserId();
-
+      // Global data - no user_id filter
       const { data, error } = await supabase
         .from('fms_exercise_mappings')
         .select('exercise_id, status')
-        .eq('fms_exercise', fmsExercise)
-        .eq('user_id', appUserId);
+        .eq('fms_exercise', fmsExercise);
 
       if (error) throw error;
 
@@ -155,14 +133,11 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
   const handleSave = async () => {
     setSaving(true);
     try {
-      const appUserId = await ensureCurrentAppUserId();
-
-      // Διαγραφή όλων των υπαρχόντων mappings (μόνο του τρέχοντα χρήστη) για αυτό το fms_exercise
+      // Διαγραφή όλων των υπαρχόντων mappings (global) για αυτό το fms_exercise
       const { error: deleteError } = await supabase
         .from('fms_exercise_mappings')
         .delete()
-        .eq('fms_exercise', fmsExercise)
-        .eq('user_id', appUserId);
+        .eq('fms_exercise', fmsExercise);
 
       if (deleteError) throw deleteError;
 
@@ -170,7 +145,6 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
       const mappingsToInsert = Object.entries(exerciseStatuses)
         .filter(([_, status]) => status === 'red' || status === 'yellow' || status === 'green')
         .map(([exerciseId, status]) => ({
-          user_id: appUserId,
           fms_exercise: fmsExercise,
           exercise_id: exerciseId,
           status: status as string
