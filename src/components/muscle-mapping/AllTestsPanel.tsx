@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Trash2, ArrowUp, MoveHorizontal, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
+import { FmsExerciseSelectionDialog } from './FmsExerciseSelectionDialog';
 import { useExercises } from '@/hooks/useExercises';
 
 interface Muscle {
@@ -77,12 +77,12 @@ export const AllTestsPanel = () => {
   const [muscleSearchStretch, setMuscleSearchStretch] = useState('');
   
   // FMS Exercise Selection Dialog state
-  const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
-  const [selectedFmsCell, setSelectedFmsCell] = useState<string>('');
+  const [fmsDialogOpen, setFmsDialogOpen] = useState(false);
+  const [selectedFmsExercise, setSelectedFmsExercise] = useState<string>('');
   const { exercises, loadingExercises } = useExercises();
   
-  // Store selected exercises for each FMS cell: { "Shoulder Mobility L forbidden": [{id, name}, ...], ... }
-  const [fmsExercises, setFmsExercises] = useState<Record<string, Array<{id: string, name: string}>>>({});
+  // Αποθήκευση mapping counts για εμφάνιση στο UI
+  const [fmsMappingCounts, setFmsMappingCounts] = useState<Record<string, Record<string, number>>>({});
 
   useEffect(() => {
     fetchData();
@@ -112,46 +112,50 @@ export const AllTestsPanel = () => {
     setDialogOpen(true);
   };
 
-  // Handle FMS cell click - open exercise selection
-  const handleFmsCellClick = (cellKey: string) => {
-    setSelectedFmsCell(cellKey);
-    setExerciseDialogOpen(true);
+  // Open FMS exercise selection for a specific FMS exercise
+  const handleOpenFmsDialog = (fmsExercise: string) => {
+    setSelectedFmsExercise(fmsExercise);
+    setFmsDialogOpen(true);
   };
 
-  // Handle exercise selection for FMS
-  const handleExerciseSelected = (exerciseId: string) => {
-    const selectedExercise = exercises.find(e => e.id === exerciseId);
-    if (!selectedExercise || !selectedFmsCell) return;
-    
-    // Add exercise to the FMS cell
-    setFmsExercises(prev => {
-      const currentExercises = prev[selectedFmsCell] || [];
-      // Don't add if already exists
-      if (currentExercises.some(e => e.id === exerciseId)) {
-        toast.error('Η άσκηση υπάρχει ήδη');
-        return prev;
-      }
-      return {
-        ...prev,
-        [selectedFmsCell]: [...currentExercises, { id: exerciseId, name: selectedExercise.name }]
-      };
-    });
-    
-    toast.success(`Άσκηση "${selectedExercise.name}" προστέθηκε`);
-    setExerciseDialogOpen(false);
+  // Fetch FMS mapping counts
+  const fetchFmsMappingCounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('fms_exercise_mappings')
+        .select('fms_exercise, status');
+
+      if (error) throw error;
+
+      const counts: Record<string, Record<string, number>> = {};
+      data?.forEach(mapping => {
+        if (!counts[mapping.fms_exercise]) {
+          counts[mapping.fms_exercise] = { red: 0, yellow: 0, green: 0 };
+        }
+        counts[mapping.fms_exercise][mapping.status]++;
+      });
+      setFmsMappingCounts(counts);
+    } catch (error) {
+      console.error('Error fetching FMS mapping counts:', error);
+    }
   };
 
-  // Remove exercise from FMS cell
-  const handleRemoveFmsExercise = (cellKey: string, exerciseId: string) => {
-    setFmsExercises(prev => ({
-      ...prev,
-      [cellKey]: (prev[cellKey] || []).filter(e => e.id !== exerciseId)
-    }));
+  useEffect(() => {
+    fetchFmsMappingCounts();
+  }, []);
+
+  const handleFmsSaved = () => {
+    fetchFmsMappingCounts();
   };
 
-  // Check if FMS cell has exercises
-  const hasFmsExercises = (cellKey: string) => {
-    return (fmsExercises[cellKey] || []).length > 0;
+  // Get count for a specific FMS exercise and status
+  const getFmsCount = (fmsExercise: string, status: 'red' | 'yellow' | 'green') => {
+    return fmsMappingCounts[fmsExercise]?.[status] || 0;
+  };
+
+  const hasFmsExercises = (fmsExercise: string) => {
+    const counts = fmsMappingCounts[fmsExercise];
+    return counts && (counts.red > 0 || counts.yellow > 0 || counts.green > 0);
   };
 
   const isMuscleAlreadyMapped = (muscleId: string, actionType: 'strengthen' | 'stretch') => {
@@ -425,108 +429,59 @@ export const AllTestsPanel = () => {
                   rowIndex === 2 ? "grid-cols-3" : "grid-cols-2"
                 )}
               >
-                {row.map((exercise) => (
-                  <div key={exercise} className="border border-gray-300 p-2">
-                    <div className="text-xs font-medium mb-2 text-center">{exercise}</div>
-                    {hasLeftRight.includes(exercise) ? (
-                      <div className="space-y-1">
-                        {/* Left side */}
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-bold w-3">L</span>
-                          <div className="flex gap-0.5 flex-1">
-                            {(['forbidden', 'caution', 'safe'] as const).map((level) => {
-                              const cellKey = `${exercise} L ${level}`;
-                              const hasExercises = hasFmsExercises(cellKey);
-                              const bgClass = level === 'forbidden' 
-                                ? (hasExercises ? "bg-red-500 text-white" : "bg-red-100 hover:bg-red-200")
-                                : level === 'caution'
-                                  ? (hasExercises ? "bg-yellow-400 text-black" : "bg-yellow-100 hover:bg-yellow-200")
-                                  : (hasExercises ? "bg-green-500 text-white" : "bg-green-100 hover:bg-green-200");
-                              const icon = level === 'forbidden' ? '✗' : level === 'caution' ? '!' : '✓';
-                              
-                              return (
-                                <div 
-                                  key={level}
-                                  className={cn(
-                                    "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border min-h-[24px] relative group",
-                                    bgClass
-                                  )}
-                                  onClick={() => handleFmsCellClick(cellKey)}
-                                  title={fmsExercises[cellKey]?.map(e => e.name).join(', ') || 'Κλικ για προσθήκη άσκησης'}
-                                >
-                                  {hasExercises ? (
-                                    <span className="font-bold">{fmsExercises[cellKey]?.length}</span>
-                                  ) : icon}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                        {/* Right side */}
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-bold w-3">R</span>
-                          <div className="flex gap-0.5 flex-1">
-                            {(['forbidden', 'caution', 'safe'] as const).map((level) => {
-                              const cellKey = `${exercise} R ${level}`;
-                              const hasExercises = hasFmsExercises(cellKey);
-                              const bgClass = level === 'forbidden' 
-                                ? (hasExercises ? "bg-red-500 text-white" : "bg-red-100 hover:bg-red-200")
-                                : level === 'caution'
-                                  ? (hasExercises ? "bg-yellow-400 text-black" : "bg-yellow-100 hover:bg-yellow-200")
-                                  : (hasExercises ? "bg-green-500 text-white" : "bg-green-100 hover:bg-green-200");
-                              const icon = level === 'forbidden' ? '✗' : level === 'caution' ? '!' : '✓';
-                              
-                              return (
-                                <div 
-                                  key={level}
-                                  className={cn(
-                                    "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border min-h-[24px] relative group",
-                                    bgClass
-                                  )}
-                                  onClick={() => handleFmsCellClick(cellKey)}
-                                  title={fmsExercises[cellKey]?.map(e => e.name).join(', ') || 'Κλικ για προσθήκη άσκησης'}
-                                >
-                                  {hasExercises ? (
-                                    <span className="font-bold">{fmsExercises[cellKey]?.length}</span>
-                                  ) : icon}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
+                {row.map((exercise) => {
+                  const hasExercises = hasFmsExercises(exercise);
+                  const redCount = getFmsCount(exercise, 'red');
+                  const yellowCount = getFmsCount(exercise, 'yellow');
+                  const greenCount = getFmsCount(exercise, 'green');
+                  
+                  return (
+                    <div 
+                      key={exercise} 
+                      className={cn(
+                        "border border-gray-300 p-2 cursor-pointer hover:bg-gray-50 transition-colors",
+                        hasExercises && "border-2 border-gray-500"
+                      )}
+                      onClick={() => handleOpenFmsDialog(exercise)}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="text-xs font-medium">{exercise}</div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-5 w-5 p-0 rounded-none hover:bg-gray-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenFmsDialog(exercise);
+                          }}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
                       </div>
-                    ) : (
-                      <div className="flex gap-0.5">
-                        {(['forbidden', 'caution', 'safe'] as const).map((level) => {
-                          const cellKey = `${exercise} ${level}`;
-                          const hasExercises = hasFmsExercises(cellKey);
-                          const bgClass = level === 'forbidden' 
-                            ? (hasExercises ? "bg-red-500 text-white" : "bg-red-100 hover:bg-red-200")
-                            : level === 'caution'
-                              ? (hasExercises ? "bg-yellow-400 text-black" : "bg-yellow-100 hover:bg-yellow-200")
-                              : (hasExercises ? "bg-green-500 text-white" : "bg-green-100 hover:bg-green-200");
-                          const icon = level === 'forbidden' ? '✗' : level === 'caution' ? '!' : '✓';
-                          
-                          return (
-                            <div 
-                              key={level}
-                              className={cn(
-                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border min-h-[24px] relative group",
-                                bgClass
-                              )}
-                              onClick={() => handleFmsCellClick(cellKey)}
-                              title={fmsExercises[cellKey]?.map(e => e.name).join(', ') || 'Κλικ για προσθήκη άσκησης'}
-                            >
-                              {hasExercises ? (
-                                <span className="font-bold">{fmsExercises[cellKey]?.length}</span>
-                              ) : icon}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      
+                      {/* Εμφάνιση μετρητών αν υπάρχουν ασκήσεις */}
+                      {hasExercises && (
+                        <div className="flex gap-1 mt-1">
+                          {redCount > 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-red-500 text-white font-medium">
+                              {redCount}
+                            </span>
+                          )}
+                          {yellowCount > 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-yellow-400 text-black font-medium">
+                              {yellowCount}
+                            </span>
+                          )}
+                          {greenCount > 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-green-500 text-white font-medium">
+                              {greenCount}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
@@ -694,16 +649,17 @@ export const AllTestsPanel = () => {
       </Dialog>
 
       {/* FMS Exercise Selection Dialog */}
-      <SimpleExerciseSelectionDialog
-        open={exerciseDialogOpen}
-        onOpenChange={setExerciseDialogOpen}
+      <FmsExerciseSelectionDialog
+        open={fmsDialogOpen}
+        onOpenChange={setFmsDialogOpen}
         exercises={exercises.map(e => ({
           id: e.id,
           name: e.name,
           description: e.description || undefined,
           video_url: e.video_url || undefined
         }))}
-        onSelectExercise={handleExerciseSelected}
+        fmsExercise={selectedFmsExercise}
+        onSave={handleFmsSaved}
       />
     </>
   );
