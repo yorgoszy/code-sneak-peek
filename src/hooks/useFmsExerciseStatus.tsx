@@ -15,11 +15,9 @@ interface UseFmsExerciseStatusResult {
   userFmsScores: Record<string, number> | null;
 }
 
-// FMS scores: 1 = red (problem), 2 = yellow (caution), 3 = green (ok)
-const getFmsStatusFromScore = (score: number): FmsStatus => {
-  if (score <= 1) return 'red';
-  if (score === 2) return 'yellow';
-  return 'green';
+// FMS scores: 0-1 = problematic (apply mapping color), 2-3 = ok (no coloring)
+const shouldApplyFmsStatus = (score: number): boolean => {
+  return score <= 1;
 };
 
 export const useFmsExerciseStatus = (userId: string | null): UseFmsExerciseStatusResult => {
@@ -157,24 +155,17 @@ export const useFmsExerciseStatus = (userId: string | null): UseFmsExerciseStatu
       const normalizedFmsExercise = normalizeKey(mapping.fms_exercise);
       const userScore = normalizedScores[normalizedFmsExercise];
 
-      if (userScore !== undefined) {
-        // Only mark as red/yellow if user has a low score for this FMS exercise
-        // AND the exercise is NOT marked as green in the mapping
-        const scoreStatus = getFmsStatusFromScore(userScore);
-        
-        if (scoreStatus === 'red' || scoreStatus === 'yellow') {
-          // If mapping says red/yellow (exercise is contraindicated), use mapping status
-          // If mapping says green (exercise is good for this FMS), don't mark it
-          if (mapping.status === 'red' || mapping.status === 'yellow') {
-            // Use the worse status between score status and mapping status
-            const currentStatus = statusMap.get(mapping.exercise_id);
-            const newStatus = mapping.status;
-            
-            if (!currentStatus || 
-                (currentStatus === 'yellow' && newStatus === 'red') ||
-                (currentStatus === 'green' && (newStatus === 'red' || newStatus === 'yellow'))) {
-              statusMap.set(mapping.exercise_id, newStatus);
-            }
+      // Only apply coloring if user has score 0 or 1 for this FMS exercise
+      if (userScore !== undefined && shouldApplyFmsStatus(userScore)) {
+        // Use the status from the mapping (red or yellow)
+        if (mapping.status === 'red' || mapping.status === 'yellow') {
+          const currentStatus = statusMap.get(mapping.exercise_id);
+          const newStatus = mapping.status;
+          
+          // Use the worse status (red > yellow)
+          if (!currentStatus || 
+              (currentStatus === 'yellow' && newStatus === 'red')) {
+            statusMap.set(mapping.exercise_id, newStatus);
           }
         }
       }
