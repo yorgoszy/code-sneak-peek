@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Plus, Trash2, ArrowUp, MoveHorizontal, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
+import { useExercises } from '@/hooks/useExercises';
 
 interface Muscle {
   id: string;
@@ -73,6 +75,11 @@ export const AllTestsPanel = () => {
   const [selectedMusclesStretch, setSelectedMusclesStretch] = useState<string[]>([]);
   const [muscleSearchStrengthen, setMuscleSearchStrengthen] = useState('');
   const [muscleSearchStretch, setMuscleSearchStretch] = useState('');
+  
+  // FMS Exercise Selection Dialog state
+  const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
+  const [selectedFmsCell, setSelectedFmsCell] = useState<string>('');
+  const { exercises, loadingExercises } = useExercises();
 
   useEffect(() => {
     fetchData();
@@ -100,6 +107,20 @@ export const AllTestsPanel = () => {
     setMuscleSearchStrengthen('');
     setMuscleSearchStretch('');
     setDialogOpen(true);
+  };
+
+  // Handle FMS cell click - open exercise selection
+  const handleFmsCellClick = (cellKey: string) => {
+    setSelectedFmsCell(cellKey);
+    setExerciseDialogOpen(true);
+  };
+
+  // Handle exercise selection for FMS
+  const handleExerciseSelected = (exerciseId: string) => {
+    const selectedExercise = exercises.find(e => e.id === exerciseId);
+    console.log('Exercise selected for FMS cell:', selectedFmsCell, selectedExercise?.name);
+    toast.success(`Άσκηση "${selectedExercise?.name}" επιλέχθηκε για ${selectedFmsCell}`);
+    setExerciseDialogOpen(false);
   };
 
   const isMuscleAlreadyMapped = (muscleId: string, actionType: 'strengthen' | 'stretch') => {
@@ -389,7 +410,7 @@ export const AllTestsPanel = () => {
                                   ? "bg-red-500 text-white"
                                   : "bg-red-100 hover:bg-red-200"
                               )}
-                              onClick={() => handleOpenDialog(`${exercise} L forbidden`, 'fms')}
+                              onClick={() => handleFmsCellClick(`${exercise} L forbidden`)}
                             >
                               ✗
                             </div>
@@ -400,7 +421,7 @@ export const AllTestsPanel = () => {
                                   ? "bg-yellow-400 text-black"
                                   : "bg-yellow-100 hover:bg-yellow-200"
                               )}
-                              onClick={() => handleOpenDialog(`${exercise} L caution`, 'fms')}
+                              onClick={() => handleFmsCellClick(`${exercise} L caution`)}
                             >
                               !
                             </div>
@@ -411,7 +432,7 @@ export const AllTestsPanel = () => {
                                   ? "bg-green-500 text-white"
                                   : "bg-green-100 hover:bg-green-200"
                               )}
-                              onClick={() => handleOpenDialog(`${exercise} L safe`, 'fms')}
+                              onClick={() => handleFmsCellClick(`${exercise} L safe`)}
                             >
                               ✓
                             </div>
@@ -428,7 +449,7 @@ export const AllTestsPanel = () => {
                                   ? "bg-red-500 text-white"
                                   : "bg-red-100 hover:bg-red-200"
                               )}
-                              onClick={() => handleOpenDialog(`${exercise} R forbidden`, 'fms')}
+                              onClick={() => handleFmsCellClick(`${exercise} R forbidden`)}
                             >
                               ✗
                             </div>
@@ -439,7 +460,7 @@ export const AllTestsPanel = () => {
                                   ? "bg-yellow-400 text-black"
                                   : "bg-yellow-100 hover:bg-yellow-200"
                               )}
-                              onClick={() => handleOpenDialog(`${exercise} R caution`, 'fms')}
+                              onClick={() => handleFmsCellClick(`${exercise} R caution`)}
                             >
                               !
                             </div>
@@ -450,7 +471,7 @@ export const AllTestsPanel = () => {
                                   ? "bg-green-500 text-white"
                                   : "bg-green-100 hover:bg-green-200"
                               )}
-                              onClick={() => handleOpenDialog(`${exercise} R safe`, 'fms')}
+                              onClick={() => handleFmsCellClick(`${exercise} R safe`)}
                             >
                               ✓
                             </div>
@@ -466,7 +487,7 @@ export const AllTestsPanel = () => {
                               ? "bg-red-500 text-white"
                               : "bg-red-100 hover:bg-red-200"
                           )}
-                          onClick={() => handleOpenDialog(`${exercise} forbidden`, 'fms')}
+                          onClick={() => handleFmsCellClick(`${exercise} forbidden`)}
                         >
                           ✗
                         </div>
@@ -477,7 +498,7 @@ export const AllTestsPanel = () => {
                               ? "bg-yellow-400 text-black"
                               : "bg-yellow-100 hover:bg-yellow-200"
                           )}
-                          onClick={() => handleOpenDialog(`${exercise} caution`, 'fms')}
+                          onClick={() => handleFmsCellClick(`${exercise} caution`)}
                         >
                           !
                         </div>
@@ -488,7 +509,7 @@ export const AllTestsPanel = () => {
                               ? "bg-green-500 text-white"
                               : "bg-green-100 hover:bg-green-200"
                           )}
-                          onClick={() => handleOpenDialog(`${exercise} safe`, 'fms')}
+                          onClick={() => handleFmsCellClick(`${exercise} safe`)}
                         >
                           ✓
                         </div>
@@ -661,6 +682,19 @@ export const AllTestsPanel = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* FMS Exercise Selection Dialog */}
+      <SimpleExerciseSelectionDialog
+        open={exerciseDialogOpen}
+        onOpenChange={setExerciseDialogOpen}
+        exercises={exercises.map(e => ({
+          id: e.id,
+          name: e.name,
+          description: e.description || undefined,
+          video_url: e.video_url || undefined
+        }))}
+        onSelectExercise={handleExerciseSelected}
+      />
     </>
   );
 };
