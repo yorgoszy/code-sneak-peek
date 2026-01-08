@@ -39,16 +39,16 @@ const rowLabels = [
 export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
   selectedCategories,
   onCategoryChange,
-  closeOnClickOutside = false
+  closeOnClickOutside = true // Default true για να κλείνει πάντα
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside - ALWAYS active by default
   React.useEffect(() => {
-    if (!closeOnClickOutside || !isOpen) return;
+    if (!isOpen) return;
     
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -58,7 +58,7 @@ export const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
     
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen, closeOnClickOutside]);
+  }, [isOpen]);
 
   useEffect(() => {
     fetchCategories();
