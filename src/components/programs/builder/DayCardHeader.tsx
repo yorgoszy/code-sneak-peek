@@ -48,7 +48,11 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onToggleCompetitionDay,
   onPasteDay
 }) => {
-  const { copyDay, hasDay } = useProgramClipboard();
+  const { copyDay, hasDay, clipboard } = useProgramClipboard();
+  
+  // Check if this specific day is the one in clipboard
+  const isThisDayCopied = clipboard?.type === 'day' && day && clipboard.data && 
+    (clipboard.data as Day).id === day.id;
 
   const handleCopyDay = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -128,7 +132,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none h-7 w-7 p-0"
           >
             <Plus className="w-3 h-3" />
           </Button>
@@ -136,10 +140,10 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             onClick={handleCopyDay}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none h-7 w-7 p-0"
             title="Αντιγραφή Ημέρας στο Clipboard"
           >
-            <Copy className="w-3 h-3 text-blue-500" />
+            <Copy className={`w-3 h-3 ${isThisDayCopied ? 'text-red-500' : 'text-gray-600'}`} />
           </Button>
           {onPasteDay && (
             <Button
@@ -149,7 +153,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
               }}
               size="sm"
               variant="ghost"
-              className={`rounded-none ${hasDay ? 'text-[#00ffba] hover:text-[#00ffba]/80' : 'text-gray-400'}`}
+              className={`rounded-none h-7 w-7 p-0 ${hasDay ? 'text-[#00ffba] hover:text-[#00ffba]/80' : 'text-gray-400'}`}
               disabled={!hasDay}
               title={hasDay ? "Επικόλληση Ημέρας" : "Αντέγραψε πρώτα μια ημέρα"}
             >
@@ -163,7 +167,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none h-7 w-7 p-0"
             title="Διπλασιασμός Ημέρας"
           >
             <Files className="w-3 h-3" />
@@ -175,7 +179,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             }}
             size="sm"
             variant="ghost"
-            className="rounded-none"
+            className="rounded-none h-7 w-7 p-0"
           >
             <Trash2 className="w-3 h-3" />
           </Button>
