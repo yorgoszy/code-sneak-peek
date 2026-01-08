@@ -35,47 +35,28 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
-  const [effectiveUseCoachTables, setEffectiveUseCoachTables] = useState(useCoachTables);
-
-  useEffect(() => {
-    setEffectiveUseCoachTables(useCoachTables);
-  }, [useCoachTables]);
 
   const fetchResults = useCallback(async () => {
     setLoading(true);
     try {
       let sessionsData: any[] = [];
 
-      // Προτεραιότητα: coach tables (αν ζητήθηκαν) -> fallback σε regular tables
       if (useCoachTables && selectedUserId) {
-        const { data: coachSessions, error: coachError } = await supabase
+        // Fetch from coach tables
+        const { data: sessions, error } = await supabase
           .from('coach_functional_test_sessions')
           .select('id, user_id, test_date, notes')
           .eq('user_id', selectedUserId)
           .order('test_date', { ascending: false });
 
-        if (coachError) throw coachError;
-
-        if ((coachSessions || []).length > 0) {
-          sessionsData = coachSessions || [];
-          setEffectiveUseCoachTables(true);
-        } else {
-          const { data: regularSessions, error } = await supabase
-            .from('functional_test_sessions')
-            .select('id, user_id, test_date, notes')
-            .eq('user_id', selectedUserId)
-            .order('test_date', { ascending: false });
-
-          if (error) throw error;
-          sessionsData = regularSessions || [];
-          setEffectiveUseCoachTables(false);
-        }
+        if (error) throw error;
+        sessionsData = sessions || [];
       } else {
         let query = supabase
           .from('functional_test_sessions')
           .select('id, user_id, test_date, notes')
           .order('test_date', { ascending: false });
-
+        
         if (selectedUserId) {
           query = query.eq('user_id', selectedUserId);
         } else if (coachUserIds && coachUserIds.length > 0) {
@@ -85,14 +66,13 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
         const { data: sessions, error } = await query;
         if (error) throw error;
         sessionsData = sessions || [];
-        setEffectiveUseCoachTables(false);
       }
 
       const newResults: FunctionalResult[] = sessionsData.map(session => ({
         id: session.id,
         test_date: session.test_date,
         user_name: usersMap.get(session.user_id) || "Άγνωστος Χρήστης",
-        user_id: session.user_id,
+        user_id: session.user_id
       }));
 
       setResults(newResults);
@@ -119,7 +99,7 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
 
   const fetchFunctionalData = async () => {
     const data: Record<string, any> = {};
-    const tableName = effectiveUseCoachTables ? 'coach_functional_test_data' : 'functional_test_data';
+    const tableName = useCoachTables ? 'coach_functional_test_data' : 'functional_test_data';
     
     for (const result of results) {
       const { data: funcData, error } = await supabase

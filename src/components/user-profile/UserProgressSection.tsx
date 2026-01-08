@@ -67,32 +67,34 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
 
   const checkFunctionalTest = useCallback(async () => {
     if (!userId) return;
-
+    
     try {
-      // Προτεραιότητα: coach tables (αν ζητήθηκαν) -> fallback σε regular tables
+      let data, error;
+      
       if (useCoachTables && coachId) {
-        const { data: coachData, error: coachError } = await supabase
+        const result = await supabase
           .from('coach_functional_test_sessions')
           .select('id')
           .eq('coach_id', coachId)
           .eq('user_id', userId)
           .limit(1);
-
-        if (coachError) throw coachError;
-        if (coachData && coachData.length > 0) {
-          setHasFunctionalTest(true);
-          return;
-        }
+        data = result.data;
+        error = result.error;
+      } else {
+        const result = await supabase
+          .from('functional_test_sessions')
+          .select('id')
+          .eq('user_id', userId)
+          .limit(1);
+        data = result.data;
+        error = result.error;
       }
 
-      const { data, error } = await supabase
-        .from('functional_test_sessions')
-        .select('id')
-        .eq('user_id', userId)
-        .limit(1);
-
-      if (error) throw error;
-      setHasFunctionalTest(!!data?.length);
+      if (!error && data && data.length > 0) {
+        setHasFunctionalTest(true);
+      } else {
+        setHasFunctionalTest(false);
+      }
     } catch (error) {
       console.error('Error checking functional test:', error);
       setHasFunctionalTest(false);
@@ -108,9 +110,11 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
 
   const fetchHistoricalData = async () => {
     try {
-      // Προτεραιότητα: coach tables (αν ζητήθηκαν) -> fallback σε regular tables
+      let data, error;
+      
       if (useCoachTables && coachId) {
-        const coachResult = await supabase
+        // Fetch from coach tables
+        const result = await supabase
           .from('coach_strength_test_sessions')
           .select(`
             id,
@@ -126,12 +130,12 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
           .eq('user_id', userId)
           .order('test_date', { ascending: false })
           .order('created_at', { ascending: false });
-
-        if (coachResult.error) throw coachResult.error;
-
+        
+        if (result.error) throw result.error;
+        
         // Transform coach data to match regular format
         const transformedData: any[] = [];
-        (coachResult.data || []).forEach((session: any) => {
+        (result.data || []).forEach((session: any) => {
           (session.coach_strength_test_data || []).forEach((attempt: any) => {
             if (attempt.velocity_ms) {
               transformedData.push({
@@ -142,39 +146,37 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
                 test_session_id: session.id,
                 strength_test_sessions: {
                   user_id: userId,
-                  test_date: session.test_date,
-                },
+                  test_date: session.test_date
+                }
               });
             }
           });
         });
-
-        if (transformedData.length > 0) {
-          setRawHistoricalData(transformedData);
-          return;
-        }
-        // αλλιώς fallback σε regular tables (για legacy/παλιές εγγραφές)
+        data = transformedData;
+      } else {
+        const result = await supabase
+          .from('strength_test_attempts')
+          .select(`
+            id,
+            weight_kg,
+            velocity_ms,
+            exercise_id,
+            test_session_id,
+            strength_test_sessions!inner (
+              user_id,
+              test_date
+            )
+          `)
+          .eq('strength_test_sessions.user_id', userId)
+          .not('velocity_ms', 'is', null)
+          .order('weight_kg', { ascending: false });
+        
+        if (result.error) throw result.error;
+        data = result.data;
       }
 
-      const result = await supabase
-        .from('strength_test_attempts')
-        .select(`
-          id,
-          weight_kg,
-          velocity_ms,
-          exercise_id,
-          test_session_id,
-          strength_test_sessions!inner (
-            user_id,
-            test_date
-          )
-        `)
-        .eq('strength_test_sessions.user_id', userId)
-        .not('velocity_ms', 'is', null)
-        .order('weight_kg', { ascending: false });
+      setRawHistoricalData(data || []);
 
-      if (result.error) throw result.error;
-      setRawHistoricalData(result.data || []);
     } catch (error) {
       console.error('Error fetching historical data:', error);
     }

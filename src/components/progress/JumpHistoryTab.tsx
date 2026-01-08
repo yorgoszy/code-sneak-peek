@@ -72,9 +72,9 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
 
       let sessionsData: any[] = [];
 
-      // Προτεραιότητα: coach tables (αν ζητήθηκαν) -> fallback σε regular tables
       if (useCoachTables && selectedUserId) {
-        const { data: coachSessions, error: coachError } = await supabase
+        // Fetch from coach tables
+        const { data, error } = await supabase
           .from('coach_jump_test_sessions')
           .select(`
             id,
@@ -94,41 +94,13 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
           .eq('user_id', selectedUserId)
           .order('test_date', { ascending: false });
 
-        if (coachError) throw coachError;
-
-        const transformed = (coachSessions || []).map(session => ({
+        if (error) throw error;
+        
+        // Transform coach data to match expected format
+        sessionsData = (data || []).map(session => ({
           ...session,
-          jump_test_data: session.coach_jump_test_data || [],
+          jump_test_data: session.coach_jump_test_data || []
         }));
-
-        if (transformed.length > 0) {
-          sessionsData = transformed;
-        } else {
-          // fallback για legacy/παλιές εγγραφές
-          const { data, error } = await supabase
-            .from('jump_test_sessions')
-            .select(`
-              id,
-              user_id,
-              test_date,
-              notes,
-              jump_test_data (
-                id,
-                non_counter_movement_jump,
-                counter_movement_jump,
-                depth_jump,
-                broad_jump,
-                triple_jump_left,
-                triple_jump_right
-              )
-            `)
-            .eq('user_id', selectedUserId)
-            .order('test_date', { ascending: false })
-            .order('created_at', { ascending: false });
-
-          if (error) throw error;
-          sessionsData = (data as any) || [];
-        }
       } else {
         // Fetch from regular tables
         let sessionsQuery = supabase
@@ -159,7 +131,7 @@ export const JumpHistoryTab: React.FC<JumpHistoryTabProps> = ({ selectedUserId, 
 
         const { data, error } = await sessionsQuery;
         if (error) throw error;
-        sessionsData = (data as any) || [];
+        sessionsData = data as any || [];
       }
 
       setSessions(sessionsData);

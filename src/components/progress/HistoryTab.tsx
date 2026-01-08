@@ -47,10 +47,10 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
   const fetchSessions = async () => {
     try {
       let sessionsData: any[] = [];
-
-      // Προτεραιότητα: coach tables (αν ζητήθηκαν) -> fallback σε regular tables
+      
       if (useCoachTables && selectedUserId) {
-        const { data: coachData, error: coachError } = await supabase
+        // Fetch from coach tables
+        const { data, error } = await supabase
           .from('coach_strength_test_sessions')
           .select(`
             id,
@@ -72,54 +72,19 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
           .eq('user_id', selectedUserId)
           .order('created_at', { ascending: false });
 
-        if (coachError) throw coachError;
-
+        if (error) throw error;
+        
         // Transform coach data to match expected format
-        const transformed = (coachData || []).map(session => ({
+        sessionsData = (data || []).map(session => ({
           ...session,
           strength_test_attempts: session.coach_strength_test_data?.map((d: any, index: number) => ({
             id: d.id,
             weight_kg: d.weight_kg,
             velocity_ms: d.velocity_ms,
             attempt_number: index + 1,
-            exercises: d.exercises,
-          })) || [],
+            exercises: d.exercises
+          })) || []
         }));
-
-        if (transformed.length > 0) {
-          sessionsData = transformed;
-        } else {
-          // fallback σε regular tables για legacy/παλιές εγγραφές
-          const { data, error } = await supabase
-            .from('strength_test_sessions')
-            .select(`
-              id,
-              test_date,
-              notes,
-              created_at,
-              user_id,
-              app_users!strength_test_sessions_user_id_fkey (
-                id,
-                name,
-                email
-              ),
-              strength_test_attempts (
-                id,
-                weight_kg,
-                velocity_ms,
-                attempt_number,
-                exercises (
-                  id,
-                  name
-                )
-              )
-            `)
-            .eq('user_id', selectedUserId)
-            .order('created_at', { ascending: false });
-
-          if (error) throw error;
-          sessionsData = data || [];
-        }
       } else {
         // Fetch from regular tables
         let query = supabase
@@ -162,7 +127,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
       const { data: usersData, error: usersError } = await supabase
         .from('app_users')
         .select('id, name, email');
-
+        
       if (usersError) throw usersError;
 
       const map = new Map<string, any>();

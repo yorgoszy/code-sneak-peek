@@ -38,7 +38,7 @@ interface EditFormData {
 export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds, useCoachTables = false }) => {
   const { t } = useTranslation();
   const usersMap = useUserNamesMap();
-  const { results, loading, refetch, effectiveUseCoachTables } = useAnthropometricTestResults(usersMap, selectedUserId, coachUserIds, useCoachTables);
+  const { results, loading, refetch } = useAnthropometricTestResults(usersMap, selectedUserId, coachUserIds, useCoachTables);
   const [anthropometricData, setAnthropometricData] = useState<Record<string, any>>({});
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [userSearch, setUserSearch] = useState<string>("");
@@ -76,7 +76,7 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
 
   const fetchAnthropometricData = async () => {
     const data: Record<string, any> = {};
-    const tableName = effectiveUseCoachTables ? 'coach_anthropometric_test_data' : 'anthropometric_test_data';
+    const tableName = useCoachTables ? 'coach_anthropometric_test_data' : 'anthropometric_test_data';
     
     for (const result of results) {
       const { data: anthroData, error } = await supabase
@@ -101,8 +101,8 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
   const handleDeleteConfirm = async () => {
     if (!sessionToDelete) return;
 
-    const sessionsTable = effectiveUseCoachTables ? 'coach_anthropometric_test_sessions' : 'anthropometric_test_sessions';
-    const dataTable = effectiveUseCoachTables ? 'coach_anthropometric_test_data' : 'anthropometric_test_data';
+    const sessionsTable = useCoachTables ? 'coach_anthropometric_test_sessions' : 'anthropometric_test_sessions';
+    const dataTable = useCoachTables ? 'coach_anthropometric_test_data' : 'anthropometric_test_data';
 
     try {
       // Delete anthropometric data first (foreign key)
@@ -158,7 +158,7 @@ export const AnthropometricHistoryTab: React.FC<AnthropometricHistoryTabProps> =
   const handleEditSave = async () => {
     if (!editingSessionId) return;
 
-    const dataTable = effectiveUseCoachTables ? 'coach_anthropometric_test_data' : 'anthropometric_test_data';
+    const dataTable = useCoachTables ? 'coach_anthropometric_test_data' : 'anthropometric_test_data';
 
     try {
       const updateData: Record<string, number | null> = {};
