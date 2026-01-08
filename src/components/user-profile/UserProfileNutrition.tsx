@@ -44,10 +44,46 @@ interface UserProfileNutritionProps {
   userProfile: any;
 }
 
-// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
-const isCoachCreatedUser = (userProfile: any) => !!userProfile?.coach_id;
+// Έλεγχος αν ο χρήστης ανήκει σε coach (coach_id που δείχνει σε trainer)
+const useIsCoachManagedUser = (userProfile: any) => {
+  const [isCoachManaged, setIsCoachManaged] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      if (!userProfile?.coach_id) {
+        if (!cancelled) setIsCoachManaged(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('role')
+        .eq('id', userProfile.coach_id)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (error) {
+        console.error('Error resolving coach role:', error);
+        setIsCoachManaged(false);
+        return;
+      }
+
+      setIsCoachManaged(data?.role === 'trainer');
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [userProfile?.coach_id]);
+
+  return isCoachManaged;
+};
 
 export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ userId, userProfile }) => {
+  const isCoachManagedUser = useIsCoachManagedUser(userProfile);
   const [activeTab, setActiveTab] = useState('active');
   const [assignments, setAssignments] = useState<NutritionAssignment[]>([]);
   const [coachPlans, setCoachPlans] = useState<NutritionPlan[]>([]);
@@ -56,11 +92,11 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
 
   useEffect(() => {
     fetchAssignments();
-    // Αν είναι coach-created user, φέρνουμε και τα πλάνα του coach
-    if (isCoachCreatedUser(userProfile)) {
+    // Μόνο για coach-managed users φέρνουμε και τα πλάνα του coach
+    if (isCoachManagedUser) {
       fetchCoachPlans();
     }
-  }, [userId, userProfile?.coach_id]);
+  }, [userId, userProfile?.coach_id, isCoachManagedUser]);
 
   const fetchAssignments = async () => {
     try {
@@ -114,9 +150,9 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
 
   const today = new Date().toISOString().split('T')[0];
   
-  // Για coach-created users, τα πλάνα του coach που δεν είναι assigned εμφανίζονται ως "ενεργά"
+  // Για coach-managed users, τα πλάνα του coach που δεν είναι assigned εμφανίζονται ως "ενεργά"
   const assignedPlanIds = new Set(assignments.map(a => a.plan_id));
-  const unassignedCoachPlans = isCoachCreatedUser(userProfile) 
+  const unassignedCoachPlans = isCoachManagedUser
     ? coachPlans.filter(plan => !assignedPlanIds.has(plan.id))
     : [];
   

@@ -37,8 +37,43 @@ interface UserProfileContentProps {
   setActiveTab?: (tab: string) => void;
 }
 
-// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
-const isCoachCreatedUser = (userProfile: any) => !!userProfile?.coach_id;
+// Έλεγχος αν ο χρήστης ανήκει σε coach (coach_id που δείχνει σε trainer)
+const useIsCoachManagedUser = (userProfile: any) => {
+  const [isCoachManaged, setIsCoachManaged] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      if (!userProfile?.coach_id) {
+        if (!cancelled) setIsCoachManaged(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('role')
+        .eq('id', userProfile.coach_id)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (error) {
+        console.error('Error resolving coach role:', error);
+        setIsCoachManaged(false);
+        return;
+      }
+
+      setIsCoachManaged(data?.role === 'trainer');
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [userProfile?.coach_id]);
+
+  return isCoachManaged;
+};
 
 export const UserProfileContent = ({
   activeTab,
@@ -54,6 +89,7 @@ export const UserProfileContent = ({
   const { t } = useTranslation();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const { isAdmin } = useRoleCheck();
+  const isCoachManagedUser = useIsCoachManagedUser(userProfile);
 
   // Άνοιγμα του AI chat dialog όταν το tab είναι "ai-trainer" - χρησιμοποιείται μόνο για άλλα components
   useEffect(() => {
@@ -111,8 +147,8 @@ export const UserProfileContent = ({
             <h2 className="text-xl font-semibold">{t('overview.testsEvaluations')}</h2>
             <UserProgressSection
               userId={userProfile?.id}
-              useCoachTables={isCoachCreatedUser(userProfile)}
-              coachId={isCoachCreatedUser(userProfile) ? userProfile?.coach_id : undefined}
+              useCoachTables={isCoachManagedUser}
+              coachId={isCoachManagedUser ? userProfile?.coach_id : undefined}
             />
           </div>
         );
@@ -123,8 +159,8 @@ export const UserProfileContent = ({
             <h2 className="text-xl font-semibold">{t('overview.progress')}</h2>
             <UserProgressSection
               userId={userProfile?.id}
-              useCoachTables={isCoachCreatedUser(userProfile)}
-              coachId={isCoachCreatedUser(userProfile) ? userProfile?.coach_id : undefined}
+              useCoachTables={isCoachManagedUser}
+              coachId={isCoachManagedUser ? userProfile?.coach_id : undefined}
             />
           </div>
         );
@@ -133,7 +169,7 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <h2 className="text-xl font-semibold">{t('overview.history')}</h2>
-            <UserProfileHistory userId={userProfile?.id} useCoachTables={isCoachCreatedUser(userProfile)} />
+            <UserProfileHistory userId={userProfile?.id} useCoachTables={isCoachManagedUser} />
           </div>
         );
       case "payments":

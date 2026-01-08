@@ -44,14 +44,44 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
     return allActivePrograms?.filter(p => p.user_id === user.id) || [];
   }, [allActivePrograms, user.id]);
 
-  // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
-  const isCoachCreatedUser = !!user?.coach_id;
+  const [isCoachManagedUser, setIsCoachManagedUser] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      if (!user?.coach_id) {
+        if (!cancelled) setIsCoachManagedUser(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('role')
+        .eq('id', user.coach_id)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (error) {
+        console.error('Error resolving coach role:', error);
+        setIsCoachManagedUser(false);
+        return;
+      }
+
+      setIsCoachManagedUser(data?.role === 'trainer');
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.coach_id]);
   
   useEffect(() => {
     const fetchSubscriptionData = async () => {
       try {
-        // Αν ο χρήστης δημιουργήθηκε από coach, φόρτωση από coach_subscriptions
-        if (isCoachCreatedUser) {
+        // Αν ο χρήστης ανήκει σε coach, φόρτωση από coach_subscriptions
+        if (isCoachManagedUser) {
           const { data: coachSubscriptions, error } = await supabase
             .from('coach_subscriptions')
             .select('*, subscription_types(name, price)')
@@ -663,8 +693,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
         <div className={`grid ${isMobile ? 'gap-2' : 'gap-4'} ${
           isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-6 lg:grid-cols-12'
         }`}>
-          {/* Αγορές - Πρώτο - Κρύβεται για coach-created users */}
-          {!isCoachCreatedUser && (
+          {/* Αγορές - Πρώτο - Κρύβεται για coach-managed users */}
+          {!isCoachManagedUser && (
             <button 
               onClick={() => {
                 if (setActiveTab) {
@@ -687,8 +717,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </button>
           )}
 
-          {/* Ενεργές Προσφορές - Δεύτερο - Κρύβεται για coach-created users */}
-          {!isCoachCreatedUser && (
+          {/* Ενεργές Προσφορές - Δεύτερο - Κρύβεται για coach-managed users */}
+          {!isCoachManagedUser && (
             <button 
               onClick={() => {
                 if (setActiveTab) {
@@ -968,8 +998,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </button>
 
-          {/* Επισκέψεις - Κρύβεται για coach-created users */}
-          {!isCoachCreatedUser && (
+          {/* Επισκέψεις - Κρύβεται για coach-managed users */}
+          {!isCoachManagedUser && (
             <button
               onClick={() => {
                 if (setActiveTab) {
@@ -1000,8 +1030,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </button>
           )}
 
-          {/* Επερχόμενη Επίσκεψη - Κρύβεται για coach-created users */}
-          {!isCoachCreatedUser && (
+          {/* Επερχόμενη Επίσκεψη - Κρύβεται για coach-managed users */}
+          {!isCoachManagedUser && (
             <button 
               onClick={() => {
                 if (setActiveTab) {
@@ -1037,8 +1067,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           )}
 
 
-          {/* Βιντεοκλήσεις - Κρύβεται για coach-created users */}
-          {!isCoachCreatedUser && (
+          {/* Βιντεοκλήσεις - Κρύβεται για coach-managed users */}
+          {!isCoachManagedUser && (
             <button 
               onClick={() => {
                 if (setActiveTab) {
@@ -1069,8 +1099,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </button>
           )}
           
-          {/* Επερχόμενη Βιντεοκλήση - Κρύβεται για coach-created users */}
-          {!isCoachCreatedUser && (
+          {/* Επερχόμενη Βιντεοκλήση - Κρύβεται για coach-managed users */}
+          {!isCoachManagedUser && (
             <button 
               onClick={() => {
                 if (upcomingVideocall) {
