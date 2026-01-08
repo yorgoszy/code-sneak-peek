@@ -80,6 +80,9 @@ export const AllTestsPanel = () => {
   const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
   const [selectedFmsCell, setSelectedFmsCell] = useState<string>('');
   const { exercises, loadingExercises } = useExercises();
+  
+  // Store selected exercises for each FMS cell: { "Shoulder Mobility L forbidden": [{id, name}, ...], ... }
+  const [fmsExercises, setFmsExercises] = useState<Record<string, Array<{id: string, name: string}>>>({});
 
   useEffect(() => {
     fetchData();
@@ -118,9 +121,37 @@ export const AllTestsPanel = () => {
   // Handle exercise selection for FMS
   const handleExerciseSelected = (exerciseId: string) => {
     const selectedExercise = exercises.find(e => e.id === exerciseId);
-    console.log('Exercise selected for FMS cell:', selectedFmsCell, selectedExercise?.name);
-    toast.success(`Άσκηση "${selectedExercise?.name}" επιλέχθηκε για ${selectedFmsCell}`);
+    if (!selectedExercise || !selectedFmsCell) return;
+    
+    // Add exercise to the FMS cell
+    setFmsExercises(prev => {
+      const currentExercises = prev[selectedFmsCell] || [];
+      // Don't add if already exists
+      if (currentExercises.some(e => e.id === exerciseId)) {
+        toast.error('Η άσκηση υπάρχει ήδη');
+        return prev;
+      }
+      return {
+        ...prev,
+        [selectedFmsCell]: [...currentExercises, { id: exerciseId, name: selectedExercise.name }]
+      };
+    });
+    
+    toast.success(`Άσκηση "${selectedExercise.name}" προστέθηκε`);
     setExerciseDialogOpen(false);
+  };
+
+  // Remove exercise from FMS cell
+  const handleRemoveFmsExercise = (cellKey: string, exerciseId: string) => {
+    setFmsExercises(prev => ({
+      ...prev,
+      [cellKey]: (prev[cellKey] || []).filter(e => e.id !== exerciseId)
+    }));
+  };
+
+  // Check if FMS cell has exercises
+  const hasFmsExercises = (cellKey: string) => {
+    return (fmsExercises[cellKey] || []).length > 0;
   };
 
   const isMuscleAlreadyMapped = (muscleId: string, actionType: 'strengthen' | 'stretch') => {
@@ -403,116 +434,95 @@ export const AllTestsPanel = () => {
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-bold w-3">L</span>
                           <div className="flex gap-0.5 flex-1">
-                            <div 
-                              className={cn(
-                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
-                                hasMappingAny(`${exercise} L forbidden`, 'fms')
-                                  ? "bg-red-500 text-white"
-                                  : "bg-red-100 hover:bg-red-200"
-                              )}
-                              onClick={() => handleFmsCellClick(`${exercise} L forbidden`)}
-                            >
-                              ✗
-                            </div>
-                            <div 
-                              className={cn(
-                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
-                                hasMappingAny(`${exercise} L caution`, 'fms')
-                                  ? "bg-yellow-400 text-black"
-                                  : "bg-yellow-100 hover:bg-yellow-200"
-                              )}
-                              onClick={() => handleFmsCellClick(`${exercise} L caution`)}
-                            >
-                              !
-                            </div>
-                            <div 
-                              className={cn(
-                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
-                                hasMappingAny(`${exercise} L safe`, 'fms')
-                                  ? "bg-green-500 text-white"
-                                  : "bg-green-100 hover:bg-green-200"
-                              )}
-                              onClick={() => handleFmsCellClick(`${exercise} L safe`)}
-                            >
-                              ✓
-                            </div>
+                            {(['forbidden', 'caution', 'safe'] as const).map((level) => {
+                              const cellKey = `${exercise} L ${level}`;
+                              const hasExercises = hasFmsExercises(cellKey);
+                              const bgClass = level === 'forbidden' 
+                                ? (hasExercises ? "bg-red-500 text-white" : "bg-red-100 hover:bg-red-200")
+                                : level === 'caution'
+                                  ? (hasExercises ? "bg-yellow-400 text-black" : "bg-yellow-100 hover:bg-yellow-200")
+                                  : (hasExercises ? "bg-green-500 text-white" : "bg-green-100 hover:bg-green-200");
+                              const icon = level === 'forbidden' ? '✗' : level === 'caution' ? '!' : '✓';
+                              
+                              return (
+                                <div 
+                                  key={level}
+                                  className={cn(
+                                    "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border min-h-[24px] relative group",
+                                    bgClass
+                                  )}
+                                  onClick={() => handleFmsCellClick(cellKey)}
+                                  title={fmsExercises[cellKey]?.map(e => e.name).join(', ') || 'Κλικ για προσθήκη άσκησης'}
+                                >
+                                  {hasExercises ? (
+                                    <span className="font-bold">{fmsExercises[cellKey]?.length}</span>
+                                  ) : icon}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                         {/* Right side */}
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-bold w-3">R</span>
                           <div className="flex gap-0.5 flex-1">
-                            <div 
-                              className={cn(
-                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
-                                hasMappingAny(`${exercise} R forbidden`, 'fms')
-                                  ? "bg-red-500 text-white"
-                                  : "bg-red-100 hover:bg-red-200"
-                              )}
-                              onClick={() => handleFmsCellClick(`${exercise} R forbidden`)}
-                            >
-                              ✗
-                            </div>
-                            <div 
-                              className={cn(
-                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
-                                hasMappingAny(`${exercise} R caution`, 'fms')
-                                  ? "bg-yellow-400 text-black"
-                                  : "bg-yellow-100 hover:bg-yellow-200"
-                              )}
-                              onClick={() => handleFmsCellClick(`${exercise} R caution`)}
-                            >
-                              !
-                            </div>
-                            <div 
-                              className={cn(
-                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
-                                hasMappingAny(`${exercise} R safe`, 'fms')
-                                  ? "bg-green-500 text-white"
-                                  : "bg-green-100 hover:bg-green-200"
-                              )}
-                              onClick={() => handleFmsCellClick(`${exercise} R safe`)}
-                            >
-                              ✓
-                            </div>
+                            {(['forbidden', 'caution', 'safe'] as const).map((level) => {
+                              const cellKey = `${exercise} R ${level}`;
+                              const hasExercises = hasFmsExercises(cellKey);
+                              const bgClass = level === 'forbidden' 
+                                ? (hasExercises ? "bg-red-500 text-white" : "bg-red-100 hover:bg-red-200")
+                                : level === 'caution'
+                                  ? (hasExercises ? "bg-yellow-400 text-black" : "bg-yellow-100 hover:bg-yellow-200")
+                                  : (hasExercises ? "bg-green-500 text-white" : "bg-green-100 hover:bg-green-200");
+                              const icon = level === 'forbidden' ? '✗' : level === 'caution' ? '!' : '✓';
+                              
+                              return (
+                                <div 
+                                  key={level}
+                                  className={cn(
+                                    "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border min-h-[24px] relative group",
+                                    bgClass
+                                  )}
+                                  onClick={() => handleFmsCellClick(cellKey)}
+                                  title={fmsExercises[cellKey]?.map(e => e.name).join(', ') || 'Κλικ για προσθήκη άσκησης'}
+                                >
+                                  {hasExercises ? (
+                                    <span className="font-bold">{fmsExercises[cellKey]?.length}</span>
+                                  ) : icon}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
                     ) : (
                       <div className="flex gap-0.5">
-                        <div 
-                          className={cn(
-                            "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
-                            hasMappingAny(`${exercise} forbidden`, 'fms')
-                              ? "bg-red-500 text-white"
-                              : "bg-red-100 hover:bg-red-200"
-                          )}
-                          onClick={() => handleFmsCellClick(`${exercise} forbidden`)}
-                        >
-                          ✗
-                        </div>
-                        <div 
-                          className={cn(
-                            "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
-                            hasMappingAny(`${exercise} caution`, 'fms')
-                              ? "bg-yellow-400 text-black"
-                              : "bg-yellow-100 hover:bg-yellow-200"
-                          )}
-                          onClick={() => handleFmsCellClick(`${exercise} caution`)}
-                        >
-                          !
-                        </div>
-                        <div 
-                          className={cn(
-                            "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border",
-                            hasMappingAny(`${exercise} safe`, 'fms')
-                              ? "bg-green-500 text-white"
-                              : "bg-green-100 hover:bg-green-200"
-                          )}
-                          onClick={() => handleFmsCellClick(`${exercise} safe`)}
-                        >
-                          ✓
-                        </div>
+                        {(['forbidden', 'caution', 'safe'] as const).map((level) => {
+                          const cellKey = `${exercise} ${level}`;
+                          const hasExercises = hasFmsExercises(cellKey);
+                          const bgClass = level === 'forbidden' 
+                            ? (hasExercises ? "bg-red-500 text-white" : "bg-red-100 hover:bg-red-200")
+                            : level === 'caution'
+                              ? (hasExercises ? "bg-yellow-400 text-black" : "bg-yellow-100 hover:bg-yellow-200")
+                              : (hasExercises ? "bg-green-500 text-white" : "bg-green-100 hover:bg-green-200");
+                          const icon = level === 'forbidden' ? '✗' : level === 'caution' ? '!' : '✓';
+                          
+                          return (
+                            <div 
+                              key={level}
+                              className={cn(
+                                "flex-1 text-center py-1 text-[10px] cursor-pointer transition-colors border min-h-[24px] relative group",
+                                bgClass
+                              )}
+                              onClick={() => handleFmsCellClick(cellKey)}
+                              title={fmsExercises[cellKey]?.map(e => e.name).join(', ') || 'Κλικ για προσθήκη άσκησης'}
+                            >
+                              {hasExercises ? (
+                                <span className="font-bold">{fmsExercises[cellKey]?.length}</span>
+                              ) : icon}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
