@@ -80,9 +80,11 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
   const filteredExercises = useMemo(() => {
     return exercisesWithCategories.filter(exercise => {
       const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
-      // AND logic: η άσκηση πρέπει να έχει ΟΛΕΣ τις επιλεγμένες κατηγορίες
+      // AND logic: η άσκηση πρέπει να έχει ΟΛΕΣ τις επιλεγμένες κατηγορίες (case-insensitive)
       const matchesCategory = selectedCategories.length === 0 || 
-        selectedCategories.every(cat => exercise.categories?.includes(cat));
+        selectedCategories.every(cat => 
+          exercise.categories?.some(exCat => exCat.toLowerCase() === cat.toLowerCase())
+        );
       return matchesSearch && matchesCategory;
     });
   }, [exercisesWithCategories, searchTerm, selectedCategories]);
@@ -228,7 +230,7 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
           </div>
         </div>
 
-        <ScrollArea className="flex-1 min-h-0">
+        <ScrollArea className="flex-1 min-h-0 h-[400px]">
           {loading ? (
             <div className="text-center py-8 text-gray-500">Φόρτωση...</div>
           ) : (
