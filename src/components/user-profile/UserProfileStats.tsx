@@ -68,7 +68,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
         return;
       }
 
-      setIsCoachManagedUser(data?.role === 'trainer');
+      setIsCoachManagedUser(data?.role === 'coach');
     };
 
     run();

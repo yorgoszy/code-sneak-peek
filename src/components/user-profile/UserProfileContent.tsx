@@ -63,7 +63,7 @@ const useIsCoachManagedUser = (userProfile: any) => {
         return;
       }
 
-      setIsCoachManaged(data?.role === 'trainer');
+      setIsCoachManaged(data?.role === 'coach');
     };
 
     run();

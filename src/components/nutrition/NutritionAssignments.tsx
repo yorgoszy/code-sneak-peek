@@ -8,6 +8,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { NutritionPlanViewDialog } from "./NutritionPlanViewDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface NutritionAssignment {
   id: string;
@@ -33,6 +43,8 @@ export const NutritionAssignments: React.FC<{ coachId?: string }> = ({ coachId }
   const [loading, setLoading] = useState(true);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAssignments();
@@ -91,22 +103,30 @@ export const NutritionAssignments: React.FC<{ coachId?: string }> = ({ coachId }
     }
   };
 
-  const handleDelete = async (assignmentId: string) => {
-    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την ανάθεση;')) return;
+  const handleDeleteClick = (assignmentId: string) => {
+    setAssignmentToDelete(assignmentId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!assignmentToDelete) return;
 
     try {
       const { error } = await supabase
         .from('nutrition_assignments')
         .delete()
-        .eq('id', assignmentId);
+        .eq('id', assignmentToDelete);
 
       if (error) throw error;
       
-      setAssignments(prev => prev.filter(a => a.id !== assignmentId));
+      setAssignments(prev => prev.filter(a => a.id !== assignmentToDelete));
       toast.success('Η ανάθεση διαγράφηκε');
     } catch (error) {
       console.error('Error deleting assignment:', error);
       toast.error('Σφάλμα κατά τη διαγραφή');
+    } finally {
+      setDeleteDialogOpen(false);
+      setAssignmentToDelete(null);
     }
   };
 
@@ -207,7 +227,7 @@ export const NutritionAssignments: React.FC<{ coachId?: string }> = ({ coachId }
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(assignment.id)}
+                      onClick={() => handleDeleteClick(assignment.id)}
                       className="rounded-none h-7 w-7 p-0 text-red-500 hover:text-red-700"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -227,6 +247,26 @@ export const NutritionAssignments: React.FC<{ coachId?: string }> = ({ coachId }
           planId={selectedPlanId}
         />
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogDescription>
+              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Η ανάθεση διατροφής θα διαγραφεί οριστικά.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete} 
+              className="bg-destructive hover:bg-destructive/90 rounded-none"
+            >
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

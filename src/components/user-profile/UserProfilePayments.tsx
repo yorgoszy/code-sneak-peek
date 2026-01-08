@@ -82,7 +82,7 @@ const resolveIsCoachManagedUser = async (profile: any): Promise<boolean> => {
     return false;
   }
 
-  return data?.role === 'trainer';
+  return data?.role === 'coach';
 };
 
 export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymentsProps) => {
