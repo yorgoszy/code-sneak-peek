@@ -57,11 +57,11 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
 
   return (
     <CardHeader className="py-1 px-2">
-      <div className="flex justify-between items-center">
-        <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded">
-          {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+      <div className="flex items-center">
+        <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded min-w-0 flex-shrink">
+          {isOpen ? <ChevronDown className="w-4 h-4 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 flex-shrink-0" />}
           <CardTitle 
-            className="text-sm cursor-pointer flex items-center gap-2"
+            className="text-sm cursor-pointer flex items-center gap-2 truncate"
             onDoubleClick={onNameDoubleClick}
           >
             {isEditing ? (
@@ -71,15 +71,15 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
                 onChange={(e) => onEditingNameChange(e.target.value)}
                 onBlur={onNameSave}
                 onKeyDown={onNameKeyPress}
-                className="bg-transparent border border-gray-300 rounded px-1 outline-none"
+                className="bg-transparent border border-gray-300 rounded px-1 outline-none w-24"
                 autoFocus
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
               <>
-                {dayName}
+                <span className="truncate max-w-[100px]">{dayName}</span>
                 {!isOpen && blocksCount > 0 && (
-                  <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-gray-200 px-2 py-1 rounded-full flex-shrink-0">
                     {blocksCount}
                   </span>
                 )}
@@ -88,7 +88,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
           </CardTitle>
         </CollapsibleTrigger>
         
-        <div className="flex items-center gap-0">
+        <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
           {/* Test Day Icon - Yellow */}
           <button
             onClick={(e) => {
