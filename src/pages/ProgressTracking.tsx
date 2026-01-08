@@ -25,9 +25,11 @@ export default function ProgressTracking() {
 
   const fetchUsers = async () => {
     try {
+      // Φέρνουμε μόνο χρήστες του admin (χωρίς coach_id)
       const { data, error } = await supabase
         .from('app_users')
         .select('id, name, email')
+        .is('coach_id', null)
         .order('name');
 
       if (error) throw error;
