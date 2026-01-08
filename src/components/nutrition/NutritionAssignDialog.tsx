@@ -82,14 +82,17 @@ export const NutritionAssignDialog: React.FC<NutritionAssignDialogProps> = ({
 
   const fetchUsers = async () => {
     try {
-      // Always filter by coach_id when provided
       let query = supabase
         .from('app_users')
         .select('id, name, email, photo_url, avatar_url')
         .order('name');
       
       if (coachId) {
+        // Coach: φέρνει μόνο τους δικούς του χρήστες
         query = query.eq('coach_id', coachId);
+      } else {
+        // Admin: φέρνει μόνο χρήστες χωρίς coach_id
+        query = query.is('coach_id', null);
       }
 
       const { data, error } = await query;
