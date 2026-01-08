@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { X, Search, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -174,7 +173,7 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-none max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="rounded-none max-w-4xl h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg">
@@ -230,7 +229,7 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
           </div>
         </div>
 
-        <ScrollArea className="flex-1 min-h-0 h-[400px]">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           {loading ? (
             <div className="text-center py-8 text-gray-500">Φόρτωση...</div>
           ) : (
@@ -240,7 +239,7 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
                 const videoUrl = (exercise as any).video_url;
                 const hasVideo = videoUrl && isValidVideoUrl(videoUrl);
                 const thumbnail = hasVideo ? getVideoThumbnail(videoUrl) : null;
-                
+
                 return (
                   <button
                     key={exercise.id}
@@ -253,8 +252,8 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
                     {/* Thumbnail */}
                     {thumbnail && (
                       <div className="w-full aspect-video mb-2 overflow-hidden bg-gray-100">
-                        <img 
-                          src={thumbnail} 
+                        <img
+                          src={thumbnail}
                           alt={exercise.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
@@ -274,7 +273,7 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
               })}
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         <div className="flex-shrink-0 flex items-center justify-between pt-4 border-t">
           <span className="text-sm text-gray-600">

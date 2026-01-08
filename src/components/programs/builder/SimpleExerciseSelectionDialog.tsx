@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Play, X } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { matchesSearchTerm } from "@/lib/utils";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseFilters } from './ExerciseFilters';
@@ -100,12 +99,12 @@ export const SimpleExerciseSelectionDialog: React.FC<SimpleExerciseSelectionDial
           </div>
 
           {/* Exercise List */}
-          <ScrollArea className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="grid grid-cols-2 gap-2 pr-3">
               {filteredExercises.map(exercise => {
                 const hasValidVideo = exercise.video_url && isValidVideoUrl(exercise.video_url);
                 const thumbnailUrl = hasValidVideo ? getVideoThumbnail(exercise.video_url!) : null;
-                
+
                 return (
                   <Button
                     key={exercise.id}
@@ -143,16 +142,16 @@ export const SimpleExerciseSelectionDialog: React.FC<SimpleExerciseSelectionDial
                 );
               })}
             </div>
-            
+
             {filteredExercises.length === 0 && (
               <div className="text-center py-8 text-gray-500 text-sm">
-                {selectedCategories.length > 0 || searchTerm 
+                {selectedCategories.length > 0 || searchTerm
                   ? 'Δεν βρέθηκαν ασκήσεις που να ταιριάζουν με τα κριτήρια'
                   : 'Δεν βρέθηκαν ασκήσεις'
                 }
               </div>
             )}
-          </ScrollArea>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
