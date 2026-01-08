@@ -88,7 +88,8 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
     });
   }, [exercisesWithCategories, searchTerm, selectedCategories]);
 
-  // Cycle through statuses: null -> red -> yellow -> green -> null
+  // Click logic: null (green) -> red -> yellow -> null (green)
+  // 1 click = red, 2 clicks = yellow, no click = green (default)
   const handleExerciseClick = (exerciseId: string) => {
     setExerciseStatuses(prev => {
       const currentStatus = prev[exerciseId];
@@ -97,16 +98,14 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
       switch (currentStatus) {
         case null:
         case undefined:
+        case 'green':
           newStatus = 'red';
           break;
         case 'red':
           newStatus = 'yellow';
           break;
         case 'yellow':
-          newStatus = 'green';
-          break;
-        case 'green':
-          newStatus = null;
+          newStatus = null; // Back to green (default)
           break;
         default:
           newStatus = 'red';
@@ -122,10 +121,9 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
         return 'bg-red-500 text-white border-red-600';
       case 'yellow':
         return 'bg-yellow-400 text-black border-yellow-500';
-      case 'green':
-        return 'bg-green-500 text-white border-green-600';
       default:
-        return 'bg-white hover:bg-gray-50 border-gray-200';
+        // null/undefined/green = green (default safe)
+        return 'bg-green-500 text-white border-green-600';
     }
   };
 
@@ -140,14 +138,13 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
 
       if (deleteError) throw deleteError;
 
-      // Εισαγωγή των νέων mappings
+      // Insert only red and yellow mappings (green is default, no need to store)
       const mappingsToInsert = Object.entries(exerciseStatuses)
-        .filter(([_, status]) => status !== null)
+        .filter(([_, status]) => status === 'red' || status === 'yellow')
         .map(([exerciseId, status]) => ({
           fms_exercise: fmsExercise,
           exercise_id: exerciseId,
-          status: status as string,
-          user_id: '00000000-0000-0000-0000-000000000000' // Placeholder, θα χρησιμοποιείται globally
+          status: status as string
         }));
 
       if (mappingsToInsert.length > 0) {
@@ -189,41 +186,44 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
             </Button>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            1 κλικ = Κόκκινο (Απαγορεύεται) | 2 κλικ = Κίτρινο (Με προσοχή) | 3 κλικ = Πράσινο (Ασφαλές) | 4 κλικ = Αφαίρεση
+            1 κλικ = Κόκκινο (Απαγορεύεται) | 2 κλικ = Κίτρινο (Με προσοχή) | Χωρίς κλικ = Πράσινο (Ασφαλές)
           </p>
         </DialogHeader>
 
-        <div className="flex-shrink-0 space-y-3 py-3">
+        {/* Search, Filters, Legend - ALL IN ONE ROW */}
+        <div className="flex-shrink-0 flex items-center gap-2 py-2">
           {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <div className="relative flex-1 max-w-[200px]">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
             <input
               type="text"
-              placeholder="Αναζήτηση άσκησης..."
+              placeholder="Αναζήτηση..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-none text-sm"
+              className="w-full pl-7 pr-2 py-1 border rounded-none text-xs h-7"
             />
           </div>
           
           {/* Filters */}
-          <ExerciseFilters
-            selectedCategories={selectedCategories}
-            onCategoryChange={setSelectedCategories}
-          />
+          <div className="w-[180px]">
+            <ExerciseFilters
+              selectedCategories={selectedCategories}
+              onCategoryChange={setSelectedCategories}
+            />
+          </div>
 
           {/* Legend */}
-          <div className="flex flex-wrap gap-3 text-xs">
+          <div className="flex items-center gap-2 text-[10px] ml-auto">
             <div className="flex items-center gap-1">
-              <div className="w-4 h-4 bg-red-500 border border-red-600"></div>
+              <div className="w-3 h-3 bg-red-500 border border-red-600"></div>
               <span>Απαγορεύεται</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-4 h-4 bg-yellow-400 border border-yellow-500"></div>
+              <div className="w-3 h-3 bg-yellow-400 border border-yellow-500"></div>
               <span>Με προσοχή</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-4 h-4 bg-green-500 border border-green-600"></div>
+              <div className="w-3 h-3 bg-green-500 border border-green-600"></div>
               <span>Ασφαλές</span>
             </div>
           </div>
@@ -263,11 +263,9 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
                       </div>
                     )}
                     <div className="font-medium line-clamp-2 text-xs">{exercise.name}</div>
-                    {status && (
-                      <div className="text-[10px] mt-1 opacity-80">
-                        {status === 'red' ? 'Απαγορεύεται' : status === 'yellow' ? 'Με προσοχή' : 'Ασφαλές'}
-                      </div>
-                    )}
+                    <div className="text-[10px] mt-1 opacity-80">
+                      {status === 'red' ? 'Απαγορεύεται' : status === 'yellow' ? 'Με προσοχή' : 'Ασφαλές'}
+                    </div>
                   </button>
                 );
               })}
