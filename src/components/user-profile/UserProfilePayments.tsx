@@ -68,8 +68,22 @@ interface Purchase {
   };
 }
 
-// Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
-const isCoachCreatedUser = (profile: any) => !!profile?.coach_id;
+// Έλεγχος αν ο χρήστης ανήκει σε coach (coach_id που δείχνει σε trainer)
+const resolveIsCoachManagedUser = async (profile: any): Promise<boolean> => {
+  if (!profile?.coach_id) return false;
+  const { data, error } = await supabase
+    .from('app_users')
+    .select('role')
+    .eq('id', profile.coach_id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error resolving coach role:', error);
+    return false;
+  }
+
+  return data?.role === 'trainer';
+};
 
 export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymentsProps) => {
   const { t } = useTranslation();
@@ -79,8 +93,21 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [coachProfile, setCoachProfile] = useState<CoachProfileData | null>(null);
+  const [isCoachUser, setIsCoachUser] = useState(false);
 
-  const isCoachUser = isCoachCreatedUser(userProfile);
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      const coachManaged = await resolveIsCoachManagedUser(userProfile);
+      if (!cancelled) setIsCoachUser(coachManaged);
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [userProfile?.coach_id, userProfile?.id]);
 
   useEffect(() => {
     if (userProfile?.id) {

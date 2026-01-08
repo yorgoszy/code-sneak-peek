@@ -24,10 +24,26 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
     }
   }, [user, isOpen]);
 
+  const resolveIsCoachManagedUser = async (): Promise<boolean> => {
+    if (!user?.coach_id) return false;
+
+    const { data, error } = await supabase
+      .from('app_users')
+      .select('role')
+      .eq('id', user.coach_id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error resolving coach role:', error);
+      return false;
+    }
+
+    return data?.role === 'trainer';
+  };
+
   const fetchUserStats = async () => {
     try {
-      // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
-      const isCoachCreatedUser = !!user?.coach_id;
+      const isCoachCreatedUser = await resolveIsCoachManagedUser();
 
       // Count athletes if user is trainer
       let athletesCount = 0;
@@ -179,8 +195,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
 
   const fetchUserPayments = async () => {
     try {
-      // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
-      const isCoachCreatedUser = !!user?.coach_id;
+      const isCoachCreatedUser = await resolveIsCoachManagedUser();
 
       if (isCoachCreatedUser) {
         const { data } = await supabase
