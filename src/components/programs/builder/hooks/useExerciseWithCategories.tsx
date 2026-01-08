@@ -26,26 +26,39 @@ export const useExerciseWithCategories = (exercises: Exercise[]) => {
 
   const fetchExerciseCategories = async () => {
     try {
-      // Fetch exercise categories from the database
-      const { data: exerciseCategories, error } = await supabase
-        .from('exercise_to_category')
-        .select(`
-          exercise_id,
-          exercise_categories!inner(name)
-        `);
+      // Fetch ALL exercise categories with pagination (Supabase default limit is 1000)
+      const pageSize = 1000;
+      let from = 0;
+      let allExerciseCategories: { exercise_id: string; exercise_categories: { name: string } | null }[] = [];
 
-      if (error) {
-        console.error('Error fetching exercise categories:', error);
-        setExercisesWithCategories(exercises.map(ex => ({ ...ex, categories: [] })));
-        return;
+      while (true) {
+        const { data, error } = await supabase
+          .from('exercise_to_category')
+          .select(`
+            exercise_id,
+            exercise_categories!inner(name)
+          `)
+          .range(from, from + pageSize - 1);
+
+        if (error) {
+          console.error('Error fetching exercise categories:', error);
+          setExercisesWithCategories(exercises.map(ex => ({ ...ex, categories: [] })));
+          return;
+        }
+
+        const batch = data ?? [];
+        allExerciseCategories = allExerciseCategories.concat(batch as any);
+
+        if (batch.length < pageSize) break;
+        from += pageSize;
       }
 
-      console.log('📊 Fetched exercise categories:', exerciseCategories?.length || 0);
+      console.log('📊 Fetched exercise categories:', allExerciseCategories.length);
 
       // Map exercises with their categories
       const exercisesWithCats = exercises.map(exercise => {
-        const exerciseCats = exerciseCategories
-          ?.filter(ec => ec.exercise_id === exercise.id)
+        const exerciseCats = allExerciseCategories
+          .filter(ec => ec.exercise_id === exercise.id)
           .map(ec => ec.exercise_categories?.name)
           .filter(Boolean) as string[];
         
