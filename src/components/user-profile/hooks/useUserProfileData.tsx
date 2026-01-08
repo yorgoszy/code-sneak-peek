@@ -38,7 +38,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
       return false;
     }
 
-    return data?.role === 'trainer';
+    return data?.role === 'coach';
   };
 
   const fetchUserStats = async () => {
