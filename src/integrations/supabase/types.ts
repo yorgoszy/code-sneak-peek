@@ -2793,6 +2793,44 @@ export type Database = {
           },
         ]
       }
+      functional_muscle_exercises: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          exercise_type: string
+          id: string
+          issue_name: string
+          muscle_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          exercise_type: string
+          id?: string
+          issue_name: string
+          muscle_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          exercise_type?: string
+          id?: string
+          issue_name?: string
+          muscle_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "functional_muscle_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       functional_test_data: {
         Row: {
           created_at: string | null

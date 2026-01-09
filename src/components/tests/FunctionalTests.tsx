@@ -1,11 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { PostureTest } from "./functional/PostureTest";
 import { SquatTest } from "./functional/SquatTest";
 import { SingleLegSquatTest } from "./functional/SingleLegSquatTest";
 import { FMSTest } from "./functional/FMSTest";
+import { MuscleExerciseLinkDialog } from "./functional/MuscleExerciseLinkDialog";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowLeft, ArrowUp, MoveHorizontal, X } from "lucide-react";
+import { ArrowRight, ArrowLeft, ArrowUp, MoveHorizontal, X, Link } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface FunctionalData {
@@ -49,6 +49,14 @@ export const FunctionalTests = ({
     strengthen: [],
     stretch: [],
   });
+  
+  // Dialog state for muscle-exercise linking
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [selectedMuscleForLink, setSelectedMuscleForLink] = useState<{
+    muscle: string;
+    issue: string;
+    type: 'stretching' | 'strengthening';
+  } | null>(null);
 
   useEffect(() => {
     // When switching athlete/date, reset results state.
@@ -165,6 +173,24 @@ export const FunctionalTests = ({
       .filter(Boolean)
   )].filter(m => !removedMuscles.stretch.includes(m));
 
+  const handleMuscleClick = (muscle: string, type: 'strengthening' | 'stretching') => {
+    // Get the first issue that caused this muscle to be recommended
+    const mapping = muscleMappings.find(
+      m => m.muscle_name?.trim() === muscle && 
+      ((type === 'strengthening' && m.action_type === 'strengthen') ||
+       (type === 'stretching' && m.action_type === 'stretch'))
+    );
+    
+    if (mapping) {
+      setSelectedMuscleForLink({
+        muscle,
+        issue: mapping.issue_name,
+        type: type === 'strengthening' ? 'strengthening' : 'stretching',
+      });
+      setLinkDialogOpen(true);
+    }
+  };
+
   useEffect(() => {
     if (!showResults) return;
     onMusclesChange?.({ strengthen: strengthenMuscles, stretch: stretchMuscles });
@@ -198,8 +224,14 @@ export const FunctionalTests = ({
               {strengthenMuscles.length > 0 ? (
                 <ul className="space-y-1">
                   {strengthenMuscles.map((muscle) => (
-                    <li key={muscle} className="text-sm bg-green-50 px-3 py-2 border border-green-200 flex items-center justify-between">
-                      <span>{muscle}</span>
+                    <li key={muscle} className="text-sm bg-green-50 px-3 py-2 border border-green-200 flex items-center justify-between group">
+                      <button 
+                        onClick={() => handleMuscleClick(muscle, 'strengthening')}
+                        className="flex items-center gap-2 text-left hover:text-green-700 cursor-pointer"
+                      >
+                        <Link className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <span>{muscle}</span>
+                      </button>
                       <button 
                         onClick={() => handleRemoveMuscle(muscle, 'strengthen')}
                         className="text-red-500 hover:text-red-700 p-1"
@@ -223,8 +255,14 @@ export const FunctionalTests = ({
               {stretchMuscles.length > 0 ? (
                 <ul className="space-y-1">
                   {stretchMuscles.map((muscle) => (
-                    <li key={muscle} className="text-sm bg-blue-50 px-3 py-2 border border-blue-200 flex items-center justify-between">
-                      <span>{muscle}</span>
+                    <li key={muscle} className="text-sm bg-blue-50 px-3 py-2 border border-blue-200 flex items-center justify-between group">
+                      <button 
+                        onClick={() => handleMuscleClick(muscle, 'stretching')}
+                        className="flex items-center gap-2 text-left hover:text-blue-700 cursor-pointer"
+                      >
+                        <Link className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <span>{muscle}</span>
+                      </button>
                       <button 
                         onClick={() => handleRemoveMuscle(muscle, 'stretch')}
                         className="text-red-500 hover:text-red-700 p-1"
@@ -252,6 +290,17 @@ export const FunctionalTests = ({
             ))}
           </div>
         </div>
+
+        {/* Dialog for muscle-exercise linking */}
+        {selectedMuscleForLink && (
+          <MuscleExerciseLinkDialog
+            open={linkDialogOpen}
+            onOpenChange={setLinkDialogOpen}
+            muscleName={selectedMuscleForLink.muscle}
+            issueName={selectedMuscleForLink.issue}
+            exerciseType={selectedMuscleForLink.type}
+          />
+        )}
       </div>
     );
   }
