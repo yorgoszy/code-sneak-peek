@@ -108,9 +108,11 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = ({
         <ExerciseSelectionButton
           selectedExercise={selectedExercise}
           exerciseNumber={exerciseNumber}
+          allExercises={exercises}
           onSelectExercise={() => setShowExerciseDialog(true)}
           onDuplicate={onDuplicate}
           onRemove={onRemove}
+          onReplaceExercise={(newExerciseId) => onUpdate('exercise_id', newExerciseId)}
         />
         
         <ExerciseDetailsForm

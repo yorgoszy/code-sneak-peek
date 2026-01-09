@@ -87,28 +87,6 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     return filtered;
   }, [exercisesWithCategories, searchTerm, selectedCategories]);
 
-  // Get exercise status color
-  const getExerciseStatusStyle = (exerciseId: string) => {
-    const status = exerciseStatusMap.get(exerciseId);
-    if (status === 'red') {
-      return 'border-red-500 border-2 bg-red-50';
-    }
-    if (status === 'yellow') {
-      return 'border-yellow-400 border-2 bg-yellow-50';
-    }
-    return '';
-  };
-
-  const getExerciseStatusIndicator = (exerciseId: string) => {
-    const status = exerciseStatusMap.get(exerciseId);
-    if (status === 'red') {
-      return <div className="w-3 h-3 rounded-full bg-red-500 flex-shrink-0" title="Απαγορευμένη άσκηση" />;
-    }
-    if (status === 'yellow') {
-      return <div className="w-3 h-3 rounded-full bg-yellow-400 flex-shrink-0" title="Με προσοχή" />;
-    }
-    return null;
-  };
 
   const handleSelectExercise = (exercise: Exercise) => {
     const status = exerciseStatusMap.get(exercise.id);
@@ -260,21 +238,15 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
                 {filteredExercises.map((exercise) => {
                   const hasValidVideo = exercise.video_url && isValidVideoUrl(exercise.video_url);
                   const thumbnailUrl = hasValidVideo ? getVideoThumbnail(exercise.video_url!) : null;
-                  const statusStyle = getExerciseStatusStyle(exercise.id);
-                  const statusIndicator = getExerciseStatusIndicator(exercise.id);
 
                   return (
                     <Button
                       key={exercise.id}
                       variant="outline"
-                      className={cn(
-                        "h-auto py-2 px-3 rounded-none justify-start text-left",
-                        statusStyle
-                      )}
+                      className="h-auto py-2 px-3 rounded-none justify-start text-left"
                       onClick={() => handleSelectExercise(exercise)}
                     >
                       <div className="flex items-center gap-2 w-full">
-                        {statusIndicator}
                         {hasValidVideo && thumbnailUrl ? (
                           <div className="w-8 h-6 rounded-none overflow-hidden bg-muted flex-shrink-0">
                             <img
