@@ -3,7 +3,7 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Copy, ClipboardPaste, ArrowUp, ArrowDown } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Day, EffortType } from '../types';
 
@@ -179,36 +179,36 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             <span className="text-[8px] font-bold leading-none">esd</span>
           </button>
           
-          {/* Test Day Icon - Yellow */}
+          {/* Test Day Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onToggleTestDay();
             }}
-            className={`p-1.5 rounded transition-colors ${
+            className={`p-1.5 rounded transition-colors flex items-center justify-center w-7 h-7 ${
               isTestDay 
                 ? 'text-yellow-600 bg-yellow-100' 
                 : 'text-gray-300 hover:text-yellow-500 hover:bg-yellow-50'
             }`}
             title="Ημέρα Τεστ"
           >
-            <Dumbbell className="w-4 h-4" />
+            <span className="text-[8px] font-bold leading-none">test</span>
           </button>
           
-          {/* Competition Day Icon - Purple */}
+          {/* Competition Day Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onToggleCompetitionDay();
             }}
-            className={`p-1.5 rounded transition-colors ${
+            className={`p-1.5 rounded transition-colors flex items-center justify-center w-7 h-7 ${
               isCompetitionDay 
                 ? 'text-purple-600 bg-purple-100' 
                 : 'text-gray-300 hover:text-purple-500 hover:bg-purple-50'
             }`}
             title="Ημέρα Αγώνα"
           >
-            <Trophy className="w-4 h-4" />
+            <span className="text-[8px] font-bold leading-none">comp</span>
           </button>
           
           <Button
