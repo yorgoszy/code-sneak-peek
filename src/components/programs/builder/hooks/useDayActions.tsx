@@ -241,7 +241,54 @@ export const useDayActions = (
   };
 
   // Update day effort (upper/lower) - cycles: none -> DE -> ME -> none
+  // Also updates warm-up exercises based on selected body parts
   const updateDayEffort = async (weekId: string, dayId: string, bodyPart: 'upper' | 'lower', effort: EffortType) => {
+    // Get selected user ID for warm up exercises
+    const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : '');
+    
+    // First, update the effort values
+    const currentWeek = program.weeks?.find(w => w.id === weekId);
+    const currentDay = currentWeek?.program_days?.find(d => d.id === dayId);
+    
+    // Calculate the new effort values
+    const newUpperEffort = bodyPart === 'upper' ? effort : (currentDay?.upper_effort || 'none');
+    const newLowerEffort = bodyPart === 'lower' ? effort : (currentDay?.lower_effort || 'none');
+    
+    // Determine which body regions to include based on active efforts
+    const includeUpper = newUpperEffort !== 'none';
+    const includeLower = newLowerEffort !== 'none';
+    
+    // Fetch warm-up exercises if we have active efforts
+    let warmUpExercises: ProgramExercise[] = [];
+    if (selectedUserId && (includeUpper || includeLower)) {
+      const allExercises = await fetchAthleteWarmUpExercises(selectedUserId);
+      
+      // Filter exercises based on active body parts
+      const filteredExercises = allExercises.filter(ex => {
+        if (includeUpper && ex.body_region === 'upper') return true;
+        if (includeLower && ex.body_region === 'lower') return true;
+        return false;
+      });
+      
+      warmUpExercises = filteredExercises.map((warmUp, index) => ({
+        id: generateId(),
+        exercise_id: warmUp.exercise_id,
+        exercise_order: index + 1,
+        sets: 1,
+        reps: warmUp.exercise_type === 'stretching' ? '30' : '10',
+        reps_mode: warmUp.exercise_type === 'stretching' ? 'time' as const : 'reps' as const,
+        kg: '',
+        kg_mode: 'kg' as const,
+        tempo: '',
+        rest: '',
+        notes: `${warmUp.muscle_name} - ${warmUp.exercise_type === 'stretching' ? 'Διάταση' : 'Ενδυνάμωση'}`,
+        exercises: exercises?.find(ex => ex.id === warmUp.exercise_id)
+      }));
+      
+      console.log('🏋️ Updated warm-up exercises:', warmUpExercises.length, 
+        'Upper:', includeUpper, 'Lower:', includeLower);
+    }
+    
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
@@ -249,10 +296,22 @@ export const useDayActions = (
           program_days: (week.program_days || []).map(day => {
             if (day.id !== dayId) return day;
             
+            // Update warm-up block with filtered exercises
+            const updatedBlocks = day.program_blocks.map(block => {
+              if (block.training_type === 'warm up') {
+                return {
+                  ...block,
+                  program_exercises: warmUpExercises
+                };
+              }
+              return block;
+            });
+            
             return {
               ...day,
-              upper_effort: bodyPart === 'upper' ? effort : day.upper_effort,
-              lower_effort: bodyPart === 'lower' ? effort : day.lower_effort,
+              upper_effort: newUpperEffort,
+              lower_effort: newLowerEffort,
+              program_blocks: updatedBlocks
             };
           })
         };
