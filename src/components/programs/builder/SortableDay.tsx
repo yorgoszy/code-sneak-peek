@@ -16,6 +16,7 @@ interface SortableDayProps {
   onUpdateDayName: (name: string) => void;
   onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (isCompetitionDay: boolean) => void;
+  onUpdateDayBodyFocus: (bodyFocus: 'upper' | 'lower' | undefined) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;

@@ -19,6 +19,7 @@ interface DayCardProps {
   onUpdateDayName: (name: string) => void;
   onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (isCompetitionDay: boolean) => void;
+  onUpdateDayBodyFocus: (bodyFocus: 'upper' | 'lower' | undefined) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
@@ -53,6 +54,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
+  onUpdateDayBodyFocus,
   onAddExercise,
   onRemoveBlock,
   onDuplicateBlock,
@@ -139,6 +141,12 @@ export const DayCard: React.FC<DayCardProps> = ({
     onUpdateDayCompetitionDay(newIsCompetitionDay);
   };
 
+  const handleToggleBodyFocus = (focus: 'upper' | 'lower') => {
+    // Toggle off if same, otherwise set new focus
+    const newFocus = day.body_focus === focus ? undefined : focus;
+    onUpdateDayBodyFocus(newFocus);
+  };
+
   const blocksCount = day.program_blocks?.length || 0;
 
   return (
@@ -157,6 +165,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           dayName={day.name}
           isTestDay={day.is_test_day || false}
           isCompetitionDay={day.is_competition_day || false}
+          bodyFocus={day.body_focus}
           isOpen={isOpen}
           isEditing={isEditing}
           editingName={editingName}
@@ -170,6 +179,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           onRemoveDay={onRemoveDay}
           onToggleTestDay={handleToggleTestDay}
           onToggleCompetitionDay={handleToggleCompetitionDay}
+          onToggleBodyFocus={handleToggleBodyFocus}
           onPasteDay={onPasteDay ? handlePasteDay : undefined}
         />
         

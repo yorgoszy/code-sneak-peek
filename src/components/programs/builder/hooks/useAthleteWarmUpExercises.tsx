@@ -5,7 +5,36 @@ export interface WarmUpExercise {
   exercise_name: string;
   exercise_type: 'stretching' | 'strengthening';
   muscle_name: string;
+  body_region: 'upper' | 'lower';
 }
+
+// Mapping muscles to body regions
+const UPPER_BODY_MUSCLES = [
+  'τραπεζ', 'ωμοπλάτ', 'θωρακ', 'ραχιαίος', 'αυχεν', 'κεφαλ', 'οδοντ',
+  'ρομβοειδ', 'σκαλην', 'στερνοκλειδ', 'υπακάνθ', 'υποπλάτ', 'στρογγύλ',
+  'ώμου', 'βραχιον', 'δικέφαλ', 'τρικέφαλ', 'πήχ', 'καρπ',
+  'ανελκτήρ'
+];
+
+const LOWER_BODY_MUSCLES = [
+  'γλουτ', 'τετρακέφαλ', 'δικέφαλ μηρ', 'γαστροκν', 'κνήμ', 'μηρ',
+  'λαγον', 'ψοΐτ', 'καμπτήρ', 'προσαγ', 'απαγ', 'πελμ', 'ποδ',
+  'ισχι'
+];
+
+const getMuscleBodyRegion = (muscleName: string): 'upper' | 'lower' => {
+  const lowerName = muscleName.toLowerCase();
+  
+  // Check for lower body first (more specific)
+  for (const keyword of LOWER_BODY_MUSCLES) {
+    if (lowerName.includes(keyword.toLowerCase())) {
+      return 'lower';
+    }
+  }
+  
+  // Default to upper body for remaining muscles
+  return 'upper';
+};
 
 /**
  * Fetches warm up exercises for an athlete based on their functional test muscles
@@ -78,7 +107,8 @@ export const fetchAthleteWarmUpExercises = async (userId: string): Promise<WarmU
           exercise_id: link.exercise_id,
           exercise_name: link.exercises.name,
           exercise_type: link.exercise_type,
-          muscle_name: link.muscle_name
+          muscle_name: link.muscle_name,
+          body_region: getMuscleBodyRegion(link.muscle_name)
         });
       }
     });

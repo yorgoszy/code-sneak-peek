@@ -19,6 +19,8 @@ export interface Day {
   is_test_day?: boolean;
   test_types?: string[];
   is_competition_day?: boolean;
+  /** Body focus for warm-up exercises: 'upper' or 'lower' */
+  body_focus?: 'upper' | 'lower';
   program_blocks: Block[];
 }
 

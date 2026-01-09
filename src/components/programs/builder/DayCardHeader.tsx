@@ -3,7 +3,7 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Files, Dumbbell, Trophy, ClipboardPaste } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Files, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Day } from '../types';
 
@@ -12,6 +12,7 @@ interface DayCardHeaderProps {
   dayName: string;
   isTestDay: boolean;
   isCompetitionDay: boolean;
+  bodyFocus?: 'upper' | 'lower';
   isOpen: boolean;
   isEditing: boolean;
   editingName: string;
@@ -25,6 +26,7 @@ interface DayCardHeaderProps {
   onRemoveDay: () => void;
   onToggleTestDay: () => void;
   onToggleCompetitionDay: () => void;
+  onToggleBodyFocus: (focus: 'upper' | 'lower') => void;
   onPasteDay?: () => void;
 }
 
@@ -33,6 +35,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   dayName,
   isTestDay,
   isCompetitionDay,
+  bodyFocus,
   isOpen,
   isEditing,
   editingName,
@@ -46,6 +49,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onRemoveDay,
   onToggleTestDay,
   onToggleCompetitionDay,
+  onToggleBodyFocus,
   onPasteDay
 }) => {
   const { copyDay, hasDay, clipboard } = useProgramClipboard();
@@ -93,6 +97,38 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
         </CollapsibleTrigger>
         
         <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
+          {/* Upper Body Icon */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleBodyFocus('upper');
+            }}
+            className={`p-1.5 rounded transition-colors ${
+              bodyFocus === 'upper'
+                ? 'text-[#00ffba] bg-[#00ffba]/10' 
+                : 'text-gray-300 hover:text-[#00ffba] hover:bg-[#00ffba]/5'
+            }`}
+            title="Άνω Κορμός - Upper Body"
+          >
+            <ArrowUp className="w-4 h-4" />
+          </button>
+          
+          {/* Lower Body Icon */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleBodyFocus('lower');
+            }}
+            className={`p-1.5 rounded transition-colors ${
+              bodyFocus === 'lower'
+                ? 'text-[#00ffba] bg-[#00ffba]/10' 
+                : 'text-gray-300 hover:text-[#00ffba] hover:bg-[#00ffba]/5'
+            }`}
+            title="Κάτω Κορμός - Lower Body"
+          >
+            <ArrowDown className="w-4 h-4" />
+          </button>
+          
           {/* Test Day Icon - Yellow */}
           <button
             onClick={(e) => {
