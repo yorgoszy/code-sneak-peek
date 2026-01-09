@@ -5,11 +5,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface Muscle {
   id: string;
   name: string;
   muscle_group: string | null;
+}
+
+interface MuscleExerciseLink {
+  muscle_name: string;
+  exercise_type: 'stretching' | 'strengthening';
+  exercise_id: string;
+  exercise_name?: string;
 }
 
 export const MuscleList = () => {
@@ -18,9 +30,11 @@ export const MuscleList = () => {
   const [newMuscleName, setNewMuscleName] = useState('');
   const [newMuscleGroup, setNewMuscleGroup] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [muscleExerciseLinks, setMuscleExerciseLinks] = useState<MuscleExerciseLink[]>([]);
 
   useEffect(() => {
     fetchMuscles();
+    fetchMuscleExerciseLinks();
   }, []);
 
   const fetchMuscles = async () => {
@@ -37,6 +51,43 @@ export const MuscleList = () => {
       setMuscles(data || []);
     }
     setLoading(false);
+  };
+
+  const fetchMuscleExerciseLinks = async () => {
+    const { data, error } = await supabase
+      .from('functional_muscle_exercises')
+      .select(`
+        muscle_name,
+        exercise_type,
+        exercise_id,
+        exercises:exercise_id (name)
+      `);
+    
+    if (error) {
+      console.error('Error fetching muscle exercise links:', error);
+      return;
+    }
+    
+    const links: MuscleExerciseLink[] = (data || []).map((item: any) => ({
+      muscle_name: item.muscle_name,
+      exercise_type: item.exercise_type,
+      exercise_id: item.exercise_id,
+      exercise_name: item.exercises?.name
+    }));
+    
+    setMuscleExerciseLinks(links);
+  };
+
+  const getLinksForMuscle = (muscleName: string) => {
+    return muscleExerciseLinks.filter(link => link.muscle_name === muscleName);
+  };
+
+  const hasStretchingLink = (muscleName: string) => {
+    return muscleExerciseLinks.some(link => link.muscle_name === muscleName && link.exercise_type === 'stretching');
+  };
+
+  const hasStrengtheningLink = (muscleName: string) => {
+    return muscleExerciseLinks.some(link => link.muscle_name === muscleName && link.exercise_type === 'strengthening');
   };
 
   const handleAddMuscle = async () => {
@@ -152,20 +203,60 @@ export const MuscleList = () => {
                   {group} ({groupMuscles.length})
                 </div>
                 <div className="p-2 flex flex-wrap gap-1.5 sm:gap-2">
-                  {groupMuscles.map(muscle => (
-                    <div 
-                      key={muscle.id}
-                      className="flex items-center gap-1.5 sm:gap-2 bg-white border px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm group hover:bg-gray-50"
-                    >
-                      <span className="truncate max-w-[150px] sm:max-w-none">{muscle.name}</span>
-                      <button
-                        onClick={() => handleDeleteMuscle(muscle.id, muscle.name)}
-                        className="text-red-500 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
+                  {groupMuscles.map(muscle => {
+                    const links = getLinksForMuscle(muscle.name);
+                    const hasStretching = hasStretchingLink(muscle.name);
+                    const hasStrengthening = hasStrengtheningLink(muscle.name);
+                    const hasLinks = links.length > 0;
+                    
+                    return (
+                      <Popover key={muscle.id}>
+                        <PopoverTrigger asChild>
+                          <div 
+                            className={`flex items-center gap-1.5 sm:gap-2 bg-white border px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm group hover:bg-gray-50 ${hasLinks ? 'cursor-pointer' : ''}`}
+                          >
+                            {/* Exercise type indicators */}
+                            <div className="flex gap-0.5">
+                              {hasStrengthening && (
+                                <span className="w-2 h-2 rounded-full bg-red-500" title="Ενδυνάμωση" />
+                              )}
+                              {hasStretching && (
+                                <span className="w-2 h-2 rounded-full bg-yellow-400" title="Διάταση" />
+                              )}
+                            </div>
+                            <span className="truncate max-w-[150px] sm:max-w-none">{muscle.name}</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteMuscle(muscle.id, muscle.name);
+                              }}
+                              className="text-red-500 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </PopoverTrigger>
+                        {hasLinks && (
+                          <PopoverContent className="w-auto p-2 rounded-none" side="top" align="start">
+                            <div className="space-y-1.5">
+                              <p className="text-xs font-semibold text-gray-700 border-b pb-1">{muscle.name}</p>
+                              {links.map((link, idx) => (
+                                <div key={idx} className="flex items-center gap-2 text-xs">
+                                  <span 
+                                    className={`w-2 h-2 rounded-full ${link.exercise_type === 'strengthening' ? 'bg-red-500' : 'bg-yellow-400'}`} 
+                                  />
+                                  <span className="text-gray-500">
+                                    {link.exercise_type === 'strengthening' ? 'Ενδυνάμωση:' : 'Διάταση:'}
+                                  </span>
+                                  <span className="font-medium">{link.exercise_name || 'Άγνωστη άσκηση'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        )}
+                      </Popover>
+                    );
+                  })}
                 </div>
               </div>
             ))}
