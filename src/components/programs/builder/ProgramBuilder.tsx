@@ -27,6 +27,7 @@ interface ProgramBuilderProps {
   onUpdateDayName: (weekId: string, dayId: string, name: string) => void;
   onUpdateDayTestDay: (weekId: string, dayId: string, isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (weekId: string, dayId: string, isCompetitionDay: boolean) => void;
+  onUpdateDayBodyFocus: (weekId: string, dayId: string, bodyFocus: 'upper' | 'lower' | undefined) => void;
   onAddBlock: (weekId: string, dayId: string) => void;
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
@@ -75,6 +76,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
+  onUpdateDayBodyFocus,
   onAddBlock,
   onRemoveBlock,
   onDuplicateBlock,
@@ -148,6 +150,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onUpdateDayName={onUpdateDayName}
         onUpdateDayTestDay={onUpdateDayTestDay}
         onUpdateDayCompetitionDay={onUpdateDayCompetitionDay}
+        onUpdateDayBodyFocus={onUpdateDayBodyFocus}
         onAddBlock={onAddBlock}
         onRemoveBlock={onRemoveBlock}
         onDuplicateBlock={onDuplicateBlock}
