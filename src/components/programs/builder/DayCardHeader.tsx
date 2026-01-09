@@ -2,8 +2,7 @@
 import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Day, EffortType } from '../types';
 
@@ -94,46 +93,37 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   return (
     <CardHeader className="py-1 px-2">
       <div className="flex items-center">
-        <CollapsibleTrigger asChild>
-          <div 
-            className="flex items-center gap-1 hover:bg-gray-50 p-1 rounded min-w-0 flex-shrink cursor-pointer"
+        <div className="flex items-center gap-1 p-1 min-w-0 flex-shrink">
+          <CardTitle 
+            className="text-sm cursor-pointer flex items-center gap-2 truncate"
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              onNameDoubleClick();
+            }}
           >
-            {isOpen ? (
-              <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+            {isEditing ? (
+              <input
+                type="text"
+                value={editingName}
+                onChange={(e) => onEditingNameChange(e.target.value)}
+                onBlur={onNameSave}
+                onKeyDown={onNameKeyPress}
+                className="bg-transparent border border-gray-300 rounded px-1 outline-none w-24"
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+              />
             ) : (
-              <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <>
+                <span className="truncate max-w-[100px]">{dayName}</span>
+                {!isOpen && blocksCount > 0 && (
+                  <span className="text-xs bg-gray-200 px-2 py-1 rounded-full flex-shrink-0">
+                    {blocksCount}
+                  </span>
+                )}
+              </>
             )}
-            <CardTitle 
-              className="text-sm cursor-pointer flex items-center gap-2 truncate"
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                onNameDoubleClick();
-              }}
-            >
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editingName}
-                  onChange={(e) => onEditingNameChange(e.target.value)}
-                  onBlur={onNameSave}
-                  onKeyDown={onNameKeyPress}
-                  className="bg-transparent border border-gray-300 rounded px-1 outline-none w-24"
-                  autoFocus
-                  onClick={(e) => e.stopPropagation()}
-                />
-              ) : (
-                <>
-                  <span className="truncate max-w-[100px]">{dayName}</span>
-                  {!isOpen && blocksCount > 0 && (
-                    <span className="text-xs bg-gray-200 px-2 py-1 rounded-full flex-shrink-0">
-                      {blocksCount}
-                    </span>
-                  )}
-                </>
-              )}
-            </CardTitle>
-          </div>
-        </CollapsibleTrigger>
+          </CardTitle>
+        </div>
         
         <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
           {/* Upper Body Icon - cycles: none -> DE -> ME -> none */}
