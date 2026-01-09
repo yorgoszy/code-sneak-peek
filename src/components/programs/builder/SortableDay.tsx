@@ -12,7 +12,6 @@ export interface SortableDayProps {
   selectedUserId?: string;
   onAddBlock: () => void;
   onRemoveDay: () => void;
-  onDuplicateDay: () => void;
   onUpdateDayName: (name: string) => void;
   onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (isCompetitionDay: boolean) => void;

@@ -125,7 +125,6 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
         onPasteWeek={actions.pasteWeek}
         onAddDay={actions.addDay}
         onRemoveDay={actions.removeDay}
-        onDuplicateDay={actions.duplicateDay}
         onUpdateDayName={actions.updateDayName}
         onUpdateDayTestDay={actions.updateDayTestDay}
         onUpdateDayCompetitionDay={actions.updateDayCompetitionDay}

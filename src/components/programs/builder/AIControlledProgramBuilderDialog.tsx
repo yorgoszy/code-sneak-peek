@@ -159,7 +159,6 @@ export const AIControlledProgramBuilderDialog: React.FC = () => {
         onUpdateWeekName={actions.updateWeekName}
         onAddDay={actions.addDay}
         onRemoveDay={actions.removeDay}
-        onDuplicateDay={actions.duplicateDay}
         onUpdateDayName={actions.updateDayName}
         onUpdateDayTestDay={actions.updateDayTestDay}
         onUpdateDayCompetitionDay={actions.updateDayCompetitionDay}
