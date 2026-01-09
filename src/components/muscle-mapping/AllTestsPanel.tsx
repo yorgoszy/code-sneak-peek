@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, ArrowUp, MoveHorizontal, Check } from 'lucide-react';
+import { Plus, Trash2, ArrowUp, MoveHorizontal, Check, Link } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { FmsExerciseSelectionDialog } from './FmsExerciseSelectionDialog';
 import { useExercises } from '@/hooks/useExercises';
-
+import { MuscleExerciseLinkDialog } from '@/components/tests/functional/MuscleExerciseLinkDialog';
 interface Muscle {
   id: string;
   name: string;
@@ -83,6 +83,18 @@ export const AllTestsPanel = () => {
   
   // Αποθήκευση mapping counts για εμφάνιση στο UI
   const [fmsMappingCounts, setFmsMappingCounts] = useState<Record<string, Record<string, number>>>({});
+  
+  // State for muscle-exercise link dialog
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [selectedMuscleForLink, setSelectedMuscleForLink] = useState<{
+    muscleName: string;
+    exerciseType: 'stretching' | 'strengthening';
+  } | null>(null);
+
+  const handleOpenLinkDialog = (muscleName: string, exerciseType: 'stretching' | 'strengthening') => {
+    setSelectedMuscleForLink({ muscleName, exerciseType });
+    setLinkDialogOpen(true);
+  };
 
   useEffect(() => {
     fetchData();
@@ -527,12 +539,21 @@ export const AllTestsPanel = () => {
                       className="flex items-center justify-between bg-blue-50 border border-blue-200 px-3 py-2 text-sm"
                     >
                       <span>{m.muscles?.name}</span>
-                      <button
-                        onClick={() => handleDeleteMapping(m.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleOpenLinkDialog(m.muscles?.name || '', 'stretching')}
+                          className="text-blue-600 hover:text-blue-800"
+                          title="Σύνδεση με άσκηση"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMapping(m.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -602,12 +623,21 @@ export const AllTestsPanel = () => {
                       className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 text-sm"
                     >
                       <span>{m.muscles?.name}</span>
-                      <button
-                        onClick={() => handleDeleteMapping(m.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleOpenLinkDialog(m.muscles?.name || '', 'strengthening')}
+                          className="text-green-600 hover:text-green-800"
+                          title="Σύνδεση με άσκηση"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMapping(m.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -676,6 +706,17 @@ export const AllTestsPanel = () => {
         fmsExercise={selectedFmsExercise}
         onSave={handleFmsSaved}
       />
+
+      {/* Muscle-Exercise Link Dialog */}
+      {selectedMuscleForLink && (
+        <MuscleExerciseLinkDialog
+          open={linkDialogOpen}
+          onOpenChange={setLinkDialogOpen}
+          muscleName={selectedMuscleForLink.muscleName}
+          issueName={selectedIssue}
+          exerciseType={selectedMuscleForLink.exerciseType}
+        />
+      )}
     </>
   );
 };
