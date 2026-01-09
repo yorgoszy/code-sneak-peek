@@ -62,6 +62,7 @@ export const useProgramStructure = () => {
               is_test_day: !!day.is_test_day,
               test_types: day.test_types || [],
               is_competition_day: !!day.is_competition_day,
+              is_esd_day: !!day.is_esd_day,
               upper_effort: day.upper_effort || 'none',
               lower_effort: day.lower_effort || 'none'
             }])

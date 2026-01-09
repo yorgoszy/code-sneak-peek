@@ -149,6 +149,7 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
             is_test_day,
             test_types,
             is_competition_day,
+            is_esd_day,
             program_blocks(
               id,
               name,
