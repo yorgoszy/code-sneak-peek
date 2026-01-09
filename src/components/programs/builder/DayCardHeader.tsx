@@ -176,14 +176,14 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
               e.stopPropagation();
               onToggleEsdDay();
             }}
-            className={`p-1.5 rounded transition-colors ${
+            className={`p-1.5 rounded transition-colors flex items-center justify-center w-7 h-7 ${
               isEsdDay 
                 ? 'text-orange-600 bg-orange-100' 
                 : 'text-gray-300 hover:text-orange-500 hover:bg-orange-50'
             }`}
             title="ESD (Energy System Development)"
           >
-            <span className="text-[10px] font-bold leading-none">esd</span>
+            <span className="text-[8px] font-bold leading-none">esd</span>
           </button>
           
           {/* Test Day Icon - Yellow */}
