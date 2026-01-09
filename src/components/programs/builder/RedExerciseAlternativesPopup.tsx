@@ -78,7 +78,7 @@ export const RedExerciseAlternativesPopup: React.FC<RedExerciseAlternativesPopup
         {children || <span />}
       </PopoverTrigger>
       <PopoverContent 
-        className="w-fit p-1 rounded-none"
+        className="!w-fit !min-w-0 p-1 rounded-none"
         side="top" 
         align="start"
         sideOffset={4}
