@@ -3,7 +3,7 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown, Zap, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown, ChevronDown, ChevronRight } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Day, EffortType } from '../types';
 
@@ -12,6 +12,7 @@ interface DayCardHeaderProps {
   dayName: string;
   isTestDay: boolean;
   isCompetitionDay: boolean;
+  isEsdDay: boolean;
   upperEffort?: EffortType;
   lowerEffort?: EffortType;
   isOpen: boolean;
@@ -26,6 +27,7 @@ interface DayCardHeaderProps {
   onRemoveDay: () => void;
   onToggleTestDay: () => void;
   onToggleCompetitionDay: () => void;
+  onToggleEsdDay: () => void;
   onToggleEffort: (bodyPart: 'upper' | 'lower') => void;
   onPasteDay?: () => void;
 }
@@ -35,6 +37,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   dayName,
   isTestDay,
   isCompetitionDay,
+  isEsdDay,
   upperEffort = 'none',
   lowerEffort = 'none',
   isOpen,
@@ -49,6 +52,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onRemoveDay,
   onToggleTestDay,
   onToggleCompetitionDay,
+  onToggleEsdDay,
   onToggleEffort,
   onPasteDay
 }) => {
@@ -166,16 +170,20 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             )}
           </button>
 
-          {/* ESD Button - Speed/Explosive Strength Day */}
+          {/* ESD Button - Energy System Development */}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              // TODO: Add ESD logic
+              onToggleEsdDay();
             }}
-            className="p-1.5 rounded transition-colors text-gray-300 hover:text-orange-500 hover:bg-orange-50"
-            title="ESD (Explosive Strength Day)"
+            className={`p-1.5 rounded transition-colors ${
+              isEsdDay 
+                ? 'text-orange-600 bg-orange-100' 
+                : 'text-gray-300 hover:text-orange-500 hover:bg-orange-50'
+            }`}
+            title="ESD (Energy System Development)"
           >
-            <Zap className="w-4 h-4" />
+            <span className="text-[10px] font-bold leading-none">esd</span>
           </button>
           
           {/* Test Day Icon - Yellow */}

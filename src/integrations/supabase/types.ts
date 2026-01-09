@@ -4328,6 +4328,7 @@ export type Database = {
           estimated_duration_minutes: number | null
           id: string
           is_competition_day: boolean | null
+          is_esd_day: boolean | null
           is_test_day: boolean | null
           lower_effort: string | null
           name: string
@@ -4342,6 +4343,7 @@ export type Database = {
           estimated_duration_minutes?: number | null
           id?: string
           is_competition_day?: boolean | null
+          is_esd_day?: boolean | null
           is_test_day?: boolean | null
           lower_effort?: string | null
           name: string
@@ -4356,6 +4358,7 @@ export type Database = {
           estimated_duration_minutes?: number | null
           id?: string
           is_competition_day?: boolean | null
+          is_esd_day?: boolean | null
           is_test_day?: boolean | null
           lower_effort?: string | null
           name?: string

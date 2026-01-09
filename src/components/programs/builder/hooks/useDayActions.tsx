@@ -240,6 +240,25 @@ export const useDayActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
+  const updateDayEsdDay = (weekId: string, dayId: string, isEsdDay: boolean) => {
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          program_days: (week.program_days || []).map(day => {
+            if (day.id !== dayId) return day;
+            return {
+              ...day,
+              is_esd_day: isEsdDay
+            };
+          })
+        };
+      }
+      return week;
+    });
+    updateProgram({ weeks: updatedWeeks });
+  };
+
   // Update day effort (upper/lower) - cycles: none -> DE -> ME -> none
   // Also updates warm-up exercises based on selected body parts
   const updateDayEffort = async (weekId: string, dayId: string, bodyPart: 'upper' | 'lower', effort: EffortType) => {
@@ -384,6 +403,7 @@ export const useDayActions = (
     updateDayName,
     updateDayTestDay,
     updateDayCompetitionDay,
+    updateDayEsdDay,
     updateDayEffort,
     pasteDay
   };
