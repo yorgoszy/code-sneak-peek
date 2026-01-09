@@ -72,5 +72,6 @@ export interface EnrichedAssignment {
     email: string;
     photo_url?: string;
     avatar_url?: string;
+    coach_id?: string | null;
   } | null;
 }

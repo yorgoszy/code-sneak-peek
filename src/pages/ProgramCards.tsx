@@ -285,8 +285,8 @@ const ProgramCards = () => {
     }
   });
 
-  // Admin sees ALL assignments
-  const adminPrograms = activePrograms;
+  // Admin βλέπει μόνο assignments χρηστών χωρίς coach_id (δημιουργήθηκαν από admin)
+  const adminPrograms = activePrograms.filter(p => !p.app_users?.coach_id);
 
   // Calculate stats for each program
   const programsWithStats = adminPrograms.map(assignment => ({

@@ -193,7 +193,7 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
     const userIds = assignments.map(a => a.user_id).filter(Boolean);
     const { data: users, error: usersError } = await supabase
       .from('app_users')
-      .select('id, name, email, photo_url')
+      .select('id, name, email, photo_url, coach_id')
       .in('id', userIds);
 
     if (usersError) {
