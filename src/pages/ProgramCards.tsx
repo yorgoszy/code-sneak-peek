@@ -285,8 +285,8 @@ const ProgramCards = () => {
     }
   });
 
-  // Φιλτράρουμε μόνο τα admin assignments (χωρίς coach_id)
-  const adminPrograms = activePrograms.filter(assignment => !assignment.coach_id);
+  // Admin sees ALL assignments
+  const adminPrograms = activePrograms;
 
   // Calculate stats for each program
   const programsWithStats = adminPrograms.map(assignment => ({

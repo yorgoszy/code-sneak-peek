@@ -55,8 +55,8 @@ const ActivePrograms = () => {
 
   const { data: allPrograms = [], isLoading, error, refetch } = useActivePrograms();
   
-  // Filter out coach assignments - admin sees only assignments without coach_id
-  const activePrograms = allPrograms.filter(p => !p.coach_id);
+  // Admin sees ALL assignments (with or without coach_id)
+  const activePrograms = allPrograms;
   const { getWorkoutCompletions } = useWorkoutCompletions();
   const completionsCache = useWorkoutCompletionsCache();
   
