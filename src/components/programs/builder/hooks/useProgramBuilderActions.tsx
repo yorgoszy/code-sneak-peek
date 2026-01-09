@@ -29,8 +29,8 @@ export const useProgramBuilderActions = (
     updateProgram(preservedUpdates);
   };
 
-  const weekActions = useWeekActions(program, updateProgramWithPreservation, generateId, saveProgram);
-  const dayActions = useDayActions(program, updateProgramWithPreservation, generateId, saveProgram);
+  const weekActions = useWeekActions(program, updateProgramWithPreservation, generateId, saveProgram, exercises);
+  const dayActions = useDayActions(program, updateProgramWithPreservation, generateId, saveProgram, exercises);
   const blockActions = useBlockActions(program, updateProgramWithPreservation, generateId, saveProgram);
   const exerciseActions = useExerciseActions(program, updateProgramWithPreservation, generateId, exercises, saveProgram);
   const reorderActions = useReorderActions(program, updateProgramWithPreservation);

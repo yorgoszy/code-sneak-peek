@@ -1,20 +1,67 @@
 
-import { ProgramStructure, Block } from './useProgramBuilderState';
+import { ProgramStructure, Block, ProgramExercise } from './useProgramBuilderState';
 import { toast } from 'sonner';
+import { fetchAthleteWarmUpExercises, WarmUpExercise } from './useAthleteWarmUpExercises';
 
 export const useDayActions = (
   program: ProgramStructure,
   updateProgram: (updates: Partial<ProgramStructure>) => void,
   generateId: () => string,
-  saveProgram?: (programData: any) => Promise<any>
+  saveProgram?: (programData: any) => Promise<any>,
+  exercises?: any[]
 ) => {
-  const addDay = (weekId: string) => {
+  // Helper function to create warm up exercises from athlete's functional test data
+  const createWarmUpExercisesFromAthleteData = async (userId: string): Promise<ProgramExercise[]> => {
+    if (!userId) return [];
+    
+    try {
+      const warmUpExercises = await fetchAthleteWarmUpExercises(userId);
+      
+      return warmUpExercises.map((warmUp, index) => ({
+        id: generateId(),
+        exercise_id: warmUp.exercise_id,
+        sets: 1,
+        reps: '',
+        reps_mode: 'reps' as const,
+        kg: '',
+        kg_mode: 'kg' as const,
+        percentage_1rm: 0,
+        velocity_ms: 0,
+        tempo: '',
+        rest: '',
+        notes: warmUp.exercise_type === 'stretching' ? 'Stretching' : 'Strengthening',
+        exercise_order: index + 1,
+        exercises: exercises?.find(ex => ex.id === warmUp.exercise_id) || {
+          id: warmUp.exercise_id,
+          name: warmUp.exercise_name,
+          description: ''
+        }
+      }));
+    } catch (error) {
+      console.error('Error creating warm up exercises:', error);
+      return [];
+    }
+  };
+
+  const addDay = async (weekId: string) => {
     console.log('🔵 addDay called with weekId:', weekId);
+    
+    // Get selected user ID for warm up exercises
+    const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : '');
+    
+    // Fetch athlete warm up exercises
+    let warmUpExercises: ProgramExercise[] = [];
+    if (selectedUserId) {
+      console.log('🏋️ Fetching warm up exercises for athlete:', selectedUserId);
+      warmUpExercises = await createWarmUpExercisesFromAthleteData(selectedUserId);
+      console.log('🏋️ Found warm up exercises:', warmUpExercises.length);
+    }
+    
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         // Δημιουργούμε τα 7 προκαθορισμένα blocks με τη σωστή σειρά
         const defaultBlocks = [
-          { id: generateId(), name: 'warm up', training_type: 'warm up' as Block['training_type'], block_order: 1, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'warm up', training_type: 'warm up' as Block['training_type'], block_order: 1, block_sets: 1, program_exercises: warmUpExercises },
           { id: generateId(), name: 'power', training_type: 'power' as Block['training_type'], block_order: 2, block_sets: 1, program_exercises: [] },
           { id: generateId(), name: 'str', training_type: 'str' as Block['training_type'], block_order: 3, block_sets: 1, program_exercises: [] },
           { id: generateId(), name: 'end', training_type: 'end' as Block['training_type'], block_order: 4, block_sets: 1, program_exercises: [] },
@@ -30,7 +77,7 @@ export const useDayActions = (
           program_blocks: defaultBlocks
         };
         
-        console.log('✅ Created new day with 6 default blocks:', newDay);
+        console.log('✅ Created new day with default blocks, warm up exercises:', warmUpExercises.length);
         
         return {
           ...week,
