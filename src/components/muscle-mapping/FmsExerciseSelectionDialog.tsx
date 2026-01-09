@@ -1,13 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, Search, Save } from 'lucide-react';
+import { X, Search, Save, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useExerciseWithCategories } from '@/components/programs/builder/hooks/useExerciseWithCategories';
 import { ExerciseFilters } from '@/components/programs/builder/ExerciseFilters';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
+import { FmsAlternativesDialog } from './FmsAlternativesDialog';
 
 interface Exercise {
   id: string;
@@ -17,12 +18,6 @@ interface Exercise {
 }
 
 type ExerciseStatus = 'red' | 'yellow' | 'green' | null;
-
-interface ExerciseWithStatus {
-  id: string;
-  name: string;
-  status: ExerciseStatus;
-}
 
 interface FmsExerciseSelectionDialogProps {
   open: boolean;
@@ -44,6 +39,8 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
   const [exerciseStatuses, setExerciseStatuses] = useState<Record<string, ExerciseStatus>>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<ExerciseStatus | 'all'>('all');
+  const [showAlternativesDialog, setShowAlternativesDialog] = useState(false);
 
   const { exercisesWithCategories } = useExerciseWithCategories(exercises);
 
@@ -78,6 +75,20 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
     }
   };
 
+  // Υπολογισμός αριθμών για κάθε status
+  const statusCounts = useMemo(() => {
+    const counts = { red: 0, yellow: 0, green: 0 };
+    Object.values(exerciseStatuses).forEach(status => {
+      if (status === 'red') counts.red++;
+      else if (status === 'yellow') counts.yellow++;
+      else if (status === 'green') counts.green++;
+    });
+    // Για τις ασκήσεις χωρίς status, θεωρούνται green
+    const withoutStatus = exercises.length - counts.red - counts.yellow - counts.green;
+    counts.green += withoutStatus;
+    return counts;
+  }, [exerciseStatuses, exercises.length]);
+
   const filteredExercises = useMemo(() => {
     return exercisesWithCategories.filter(exercise => {
       const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -86,9 +97,19 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
         selectedCategories.every(cat => 
           exercise.categories?.some(exCat => exCat.toLowerCase() === cat.toLowerCase())
         );
-      return matchesSearch && matchesCategory;
+      
+      // Status filter
+      const exerciseStatus = exerciseStatuses[exercise.id] ?? 'green';
+      const matchesStatus = statusFilter === 'all' || exerciseStatus === statusFilter;
+      
+      return matchesSearch && matchesCategory && matchesStatus;
     });
-  }, [exercisesWithCategories, searchTerm, selectedCategories]);
+  }, [exercisesWithCategories, searchTerm, selectedCategories, statusFilter, exerciseStatuses]);
+
+  // Λίστα κόκκινων ασκήσεων
+  const redExercises = useMemo(() => {
+    return exercises.filter(ex => exerciseStatuses[ex.id] === 'red');
+  }, [exercises, exerciseStatuses]);
 
   // Click cycle: άχρωμο -> κόκκινο -> κίτρινο -> πράσινο -> άχρωμο
   // 1 κλικ = Κόκκινο, 2 κλικ = Κίτρινο, 3 κλικ = Πράσινο, 4 κλικ = Άχρωμο
@@ -172,127 +193,176 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
     }
   };
 
+  const handleStatusFilterClick = (status: ExerciseStatus) => {
+    if (statusFilter === status) {
+      setStatusFilter('all');
+    } else {
+      setStatusFilter(status);
+    }
+  };
+
   const selectedCount = Object.values(exerciseStatuses).filter(s => s !== null && s !== undefined).length;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-none max-w-4xl h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg">
-              Επιλογή Ασκήσεων - {fmsExercise}
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onOpenChange(false)}
-              className="rounded-none"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <p className="text-xs text-gray-500 mt-1">
-            1 κλικ = Κόκκινο (Απαγορεύεται) | 2 κλικ = Κίτρινο (Με προσοχή) | 3 κλικ = Πράσινο (Ασφαλές) | 4 κλικ = Άχρωμο
-          </p>
-        </DialogHeader>
-
-        {/* Search, Filters, Legend - ALL IN ONE ROW */}
-        <div className="flex-shrink-0 flex items-center gap-2 py-2">
-          {/* Search */}
-          <div className="relative flex-1 max-w-[200px]">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Αναζήτηση..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-7 pr-2 py-1 border rounded-none text-xs h-7"
-            />
-          </div>
-          
-          {/* Filters */}
-          <div className="w-[180px]">
-            <ExerciseFilters
-              selectedCategories={selectedCategories}
-              onCategoryChange={setSelectedCategories}
-            />
-          </div>
-
-          {/* Legend */}
-          <div className="flex items-center gap-2 text-[10px] ml-auto">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-red-500 border border-red-600"></div>
-              <span>Απαγορεύεται</span>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="rounded-none max-w-4xl h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-lg">
+                Επιλογή Ασκήσεων - {fmsExercise}
+              </DialogTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onOpenChange(false)}
+                className="rounded-none"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-yellow-400 border border-yellow-500"></div>
-              <span>Με προσοχή</span>
+            <p className="text-xs text-gray-500 mt-1">
+              1 κλικ = Κόκκινο (Απαγορεύεται) | 2 κλικ = Κίτρινο (Με προσοχή) | 3 κλικ = Πράσινο (Ασφαλές) | 4 κλικ = Άχρωμο
+            </p>
+          </DialogHeader>
+
+          {/* Search, Filters, Legend - ALL IN ONE ROW */}
+          <div className="flex-shrink-0 flex items-center gap-2 py-2">
+            {/* Search */}
+            <div className="relative flex-1 max-w-[200px]">
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Αναζήτηση..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-7 pr-2 py-1 border rounded-none text-xs h-7"
+              />
             </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-green-500 border border-green-600"></div>
-              <span>Ασφαλές</span>
+            
+            {/* Filters */}
+            <div className="w-[180px]">
+              <ExerciseFilters
+                selectedCategories={selectedCategories}
+                onCategoryChange={setSelectedCategories}
+              />
+            </div>
+
+            {/* Legend - Clickable filters */}
+            <div className="flex items-center gap-2 text-[10px] ml-auto">
+              <button
+                onClick={() => handleStatusFilterClick('red')}
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1 border transition-all cursor-pointer",
+                  statusFilter === 'red' ? 'ring-2 ring-red-400 bg-red-50' : 'hover:bg-gray-50'
+                )}
+              >
+                <div className="w-3 h-3 bg-red-500 border border-red-600"></div>
+                <span>Απαγορεύεται ({statusCounts.red})</span>
+              </button>
+              <button
+                onClick={() => handleStatusFilterClick('yellow')}
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1 border transition-all cursor-pointer",
+                  statusFilter === 'yellow' ? 'ring-2 ring-yellow-400 bg-yellow-50' : 'hover:bg-gray-50'
+                )}
+              >
+                <div className="w-3 h-3 bg-yellow-400 border border-yellow-500"></div>
+                <span>Με προσοχή ({statusCounts.yellow})</span>
+              </button>
+              <button
+                onClick={() => handleStatusFilterClick('green')}
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1 border transition-all cursor-pointer",
+                  statusFilter === 'green' ? 'ring-2 ring-green-400 bg-green-50' : 'hover:bg-gray-50'
+                )}
+              >
+                <div className="w-3 h-3 bg-green-500 border border-green-600"></div>
+                <span>Ασφαλές ({statusCounts.green})</span>
+              </button>
             </div>
           </div>
-        </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          {loading ? (
-            <div className="text-center py-8 text-gray-500">Φόρτωση...</div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-1">
-              {filteredExercises.map((exercise) => {
-                const status = exerciseStatuses[exercise.id];
-                const videoUrl = (exercise as any).video_url;
-                const hasVideo = videoUrl && isValidVideoUrl(videoUrl);
-                const thumbnail = hasVideo ? getVideoThumbnail(videoUrl) : null;
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">Φόρτωση...</div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-1">
+                {filteredExercises.map((exercise) => {
+                  const status = exerciseStatuses[exercise.id];
+                  const videoUrl = (exercise as any).video_url;
+                  const hasVideo = videoUrl && isValidVideoUrl(videoUrl);
+                  const thumbnail = hasVideo ? getVideoThumbnail(videoUrl) : null;
 
-                return (
-                  <button
-                    key={exercise.id}
-                    onClick={() => handleExerciseClick(exercise.id)}
-                    className={cn(
-                      "p-2 text-left text-sm border transition-all duration-150 flex flex-col",
-                      getStatusColor(status)
-                    )}
-                  >
-                    {/* Thumbnail */}
-                    {thumbnail && (
-                      <div className="w-full aspect-video mb-2 overflow-hidden bg-gray-100">
-                        <img
-                          src={thumbnail}
-                          alt={exercise.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
+                  return (
+                    <button
+                      key={exercise.id}
+                      onClick={() => handleExerciseClick(exercise.id)}
+                      className={cn(
+                        "p-2 text-left text-sm border transition-all duration-150 flex flex-col",
+                        getStatusColor(status)
+                      )}
+                    >
+                      {/* Thumbnail */}
+                      {thumbnail && (
+                        <div className="w-full aspect-video mb-2 overflow-hidden bg-gray-100">
+                          <img
+                            src={thumbnail}
+                            alt={exercise.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                      <div className="font-medium line-clamp-2 text-xs">{exercise.name}</div>
+                      <div className="text-[10px] mt-1 opacity-80">
+                        {status === 'red' ? 'Απαγορεύεται' : status === 'yellow' ? 'Με προσοχή' : 'Ασφαλές'}
                       </div>
-                    )}
-                    <div className="font-medium line-clamp-2 text-xs">{exercise.name}</div>
-                    <div className="text-[10px] mt-1 opacity-80">
-                      {status === 'red' ? 'Απαγορεύεται' : status === 'yellow' ? 'Με προσοχή' : 'Ασφαλές'}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-        <div className="flex-shrink-0 flex items-center justify-between pt-4 border-t">
-          <span className="text-sm text-gray-600">
-            {selectedCount} ασκήσεις επιλεγμένες
-          </span>
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+          <div className="flex-shrink-0 flex items-center justify-between pt-4 border-t">
+            <span className="text-sm text-gray-600">
+              {selectedCount} ασκήσεις επιλεγμένες
+            </span>
+            <div className="flex items-center gap-2">
+              {redExercises.length > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAlternativesDialog(true)}
+                  className="rounded-none"
+                >
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  Εναλλακτικές ({redExercises.length})
+                </Button>
+              )}
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog για εναλλακτικές ασκήσεις */}
+      <FmsAlternativesDialog
+        open={showAlternativesDialog}
+        onOpenChange={setShowAlternativesDialog}
+        fmsExercise={fmsExercise}
+        redExercises={redExercises}
+        allExercises={exercises}
+      />
+    </>
   );
 };
