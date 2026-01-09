@@ -61,7 +61,9 @@ export const useProgramStructure = () => {
               estimated_duration_minutes: day.estimated_duration_minutes || 60,
               is_test_day: !!day.is_test_day,
               test_types: day.test_types || [],
-              is_competition_day: !!day.is_competition_day
+              is_competition_day: !!day.is_competition_day,
+              upper_effort: day.upper_effort || 'none',
+              lower_effort: day.lower_effort || 'none'
             }])
             .select()
             .single();

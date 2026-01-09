@@ -4329,9 +4329,11 @@ export type Database = {
           id: string
           is_competition_day: boolean | null
           is_test_day: boolean | null
+          lower_effort: string | null
           name: string
           test_types: string[] | null
           updated_at: string | null
+          upper_effort: string | null
           week_id: string | null
         }
         Insert: {
@@ -4341,9 +4343,11 @@ export type Database = {
           id?: string
           is_competition_day?: boolean | null
           is_test_day?: boolean | null
+          lower_effort?: string | null
           name: string
           test_types?: string[] | null
           updated_at?: string | null
+          upper_effort?: string | null
           week_id?: string | null
         }
         Update: {
@@ -4353,9 +4357,11 @@ export type Database = {
           id?: string
           is_competition_day?: boolean | null
           is_test_day?: boolean | null
+          lower_effort?: string | null
           name?: string
           test_types?: string[] | null
           updated_at?: string | null
+          upper_effort?: string | null
           week_id?: string | null
         }
         Relationships: [
