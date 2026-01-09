@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
-import { Exercise, Week } from '../types';
+import { Exercise, Week, EffortType } from '../types';
 import { WeekTabsHeader } from './WeekTabsHeader';
 import { WeekTabsContent } from './WeekTabsContent';
 import { useWeekEditingState } from './hooks/useWeekEditingState';
@@ -25,7 +25,7 @@ interface TrainingWeeksProps {
   onUpdateDayName: (weekId: string, dayId: string, name: string) => void;
   onUpdateDayTestDay: (weekId: string, dayId: string, isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (weekId: string, dayId: string, isCompetitionDay: boolean) => void;
-  onUpdateDayBodyFocus: (weekId: string, dayId: string, bodyFocus: 'upper' | 'lower' | undefined) => void;
+  onUpdateDayEffort: (weekId: string, dayId: string, bodyPart: 'upper' | 'lower', effort: EffortType) => void;
   onAddBlock: (weekId: string, dayId: string) => void;
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
@@ -64,7 +64,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
-  onUpdateDayBodyFocus,
+  onUpdateDayEffort,
   onAddBlock,
   onRemoveBlock,
   onDuplicateBlock,
@@ -183,7 +183,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                 onUpdateDayName={onUpdateDayName}
                 onUpdateDayTestDay={onUpdateDayTestDay}
                 onUpdateDayCompetitionDay={onUpdateDayCompetitionDay}
-                onUpdateDayBodyFocus={onUpdateDayBodyFocus}
+                onUpdateDayEffort={onUpdateDayEffort}
                 onAddExercise={onAddExercise}
                 onRemoveBlock={onRemoveBlock}
                 onDuplicateBlock={onDuplicateBlock}

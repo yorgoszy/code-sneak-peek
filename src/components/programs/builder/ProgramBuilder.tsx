@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, Exercise } from '../types';
+import { User, Exercise, EffortType } from '../types';
 import { ProgramBasicInfo } from './ProgramBasicInfo';
 import { TrainingWeeks } from './TrainingWeeks';
 import { ProgramStructure } from './hooks/useProgramBuilderState';
@@ -27,7 +27,7 @@ interface ProgramBuilderProps {
   onUpdateDayName: (weekId: string, dayId: string, name: string) => void;
   onUpdateDayTestDay: (weekId: string, dayId: string, isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (weekId: string, dayId: string, isCompetitionDay: boolean) => void;
-  onUpdateDayBodyFocus: (weekId: string, dayId: string, bodyFocus: 'upper' | 'lower' | undefined) => void;
+  onUpdateDayEffort: (weekId: string, dayId: string, bodyPart: 'upper' | 'lower', effort: EffortType) => void;
   onAddBlock: (weekId: string, dayId: string) => void;
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
@@ -76,7 +76,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
-  onUpdateDayBodyFocus,
+  onUpdateDayEffort,
   onAddBlock,
   onRemoveBlock,
   onDuplicateBlock,
@@ -150,7 +150,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onUpdateDayName={onUpdateDayName}
         onUpdateDayTestDay={onUpdateDayTestDay}
         onUpdateDayCompetitionDay={onUpdateDayCompetitionDay}
-        onUpdateDayBodyFocus={onUpdateDayBodyFocus}
+        onUpdateDayEffort={onUpdateDayEffort}
         onAddBlock={onAddBlock}
         onRemoveBlock={onRemoveBlock}
         onDuplicateBlock={onDuplicateBlock}

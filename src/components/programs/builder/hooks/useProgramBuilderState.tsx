@@ -9,6 +9,8 @@ export interface Week {
   program_days: Day[];
 }
 
+export type EffortType = 'none' | 'DE' | 'ME';
+
 export interface Day {
   id: string;
   name: string;
@@ -19,8 +21,10 @@ export interface Day {
   is_test_day?: boolean;
   test_types?: string[];
   is_competition_day?: boolean;
-  /** Body focus for warm-up exercises: 'upper' or 'lower' */
-  body_focus?: 'upper' | 'lower';
+  /** Upper body effort type: DE (Dynamic Effort) or ME (Max Effort) */
+  upper_effort?: EffortType;
+  /** Lower body effort type: DE (Dynamic Effort) or ME (Max Effort) */
+  lower_effort?: EffortType;
   program_blocks: Block[];
 }
 
