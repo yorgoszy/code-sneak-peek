@@ -178,7 +178,7 @@ export const useDayActions = (
               return {
                 ...day,
                 original_day_name: original,
-                name: 'Τεστ',
+                name: 'Test',
                 is_test_day: true,
                 test_types: testTypes,
                 // mutual exclusive
