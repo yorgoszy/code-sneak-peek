@@ -241,8 +241,8 @@ export const useDayActions = (
   };
 
   // Update day effort (upper/lower) - cycles: none -> DE -> ME -> none
-  // Also updates warm-up exercises based on selected body parts - INSTANT using cache
-  const updateDayEffort = (weekId: string, dayId: string, bodyPart: 'upper' | 'lower', effort: EffortType) => {
+  // Also updates warm-up exercises based on selected body parts
+  const updateDayEffort = async (weekId: string, dayId: string, bodyPart: 'upper' | 'lower', effort: EffortType) => {
     // Get selected user ID for warm up exercises
     const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : '');
     
@@ -258,41 +258,43 @@ export const useDayActions = (
     const includeUpper = newUpperEffort !== 'none';
     const includeLower = newLowerEffort !== 'none';
     
-    // Get warm-up exercises from cache (instant) - no await needed
+    // Get warm-up exercises - try cache first, then fetch if needed
     let warmUpExercises: ProgramExercise[] = [];
     if (selectedUserId && (includeUpper || includeLower)) {
-      // Try cache first (instant), fallback to async fetch in background
-      const cachedExercises = getCachedWarmUpExercises(selectedUserId);
+      // Try cache first (instant)
+      let allExercises = getCachedWarmUpExercises(selectedUserId);
       
-      if (cachedExercises) {
-        // Filter exercises based on active body parts
-        const filteredExercises = cachedExercises.filter(ex => {
-          if (includeUpper && ex.body_region === 'upper') return true;
-          if (includeLower && ex.body_region === 'lower') return true;
-          return false;
-        });
-        
-        warmUpExercises = filteredExercises.map((warmUp, index) => ({
-          id: generateId(),
-          exercise_id: warmUp.exercise_id,
-          exercise_order: index + 1,
-          sets: 1,
-          reps: warmUp.exercise_type === 'stretching' ? '30' : '10',
-          reps_mode: warmUp.exercise_type === 'stretching' ? 'time' as const : 'reps' as const,
-          kg: '',
-          kg_mode: 'kg' as const,
-          tempo: '',
-          rest: '',
-          notes: `${warmUp.muscle_name} - ${warmUp.exercise_type === 'stretching' ? 'Διάταση' : 'Ενδυνάμωση'}`,
-          exercises: exercises?.find(ex => ex.id === warmUp.exercise_id)
-        }));
-        
-        console.log('🚀 Instant warm-up update from cache:', warmUpExercises.length);
+      // If no cache, fetch and wait
+      if (!allExercises) {
+        console.log('⏳ No cache - fetching warm-up exercises...');
+        allExercises = await fetchAthleteWarmUpExercises(selectedUserId);
       } else {
-        // No cache - trigger background fetch for next time
-        fetchAthleteWarmUpExercises(selectedUserId);
-        console.log('⏳ Cache miss - fetching in background for next click');
+        console.log('🚀 Using cached warm-up exercises');
       }
+      
+      // Filter exercises based on active body parts
+      const filteredExercises = allExercises.filter(ex => {
+        if (includeUpper && ex.body_region === 'upper') return true;
+        if (includeLower && ex.body_region === 'lower') return true;
+        return false;
+      });
+      
+      warmUpExercises = filteredExercises.map((warmUp, index) => ({
+        id: generateId(),
+        exercise_id: warmUp.exercise_id,
+        exercise_order: index + 1,
+        sets: 1,
+        reps: warmUp.exercise_type === 'stretching' ? '30' : '10',
+        reps_mode: warmUp.exercise_type === 'stretching' ? 'time' as const : 'reps' as const,
+        kg: '',
+        kg_mode: 'kg' as const,
+        tempo: '',
+        rest: '',
+        notes: `${warmUp.muscle_name} - ${warmUp.exercise_type === 'stretching' ? 'Διάταση' : 'Ενδυνάμωση'}`,
+        exercises: exercises?.find(ex => ex.id === warmUp.exercise_id)
+      }));
+      
+      console.log('🏋️ Warm-up exercises:', warmUpExercises.length, 'Upper:', includeUpper, 'Lower:', includeLower);
     }
     
     const updatedWeeks = (program.weeks || []).map(week => {
