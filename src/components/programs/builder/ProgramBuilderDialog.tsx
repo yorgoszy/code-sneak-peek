@@ -67,7 +67,13 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     updateProgram({ training_dates: dates });
   };
 
-  const handleAthleteChange = (userId: string) => {
+  const handleAthleteChange = async (userId: string) => {
+    // Prefetch warm-up exercises immediately for instant effort updates
+    if (userId) {
+      const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
+      prefetchAthleteWarmUpExercises(userId);
+    }
+    
     // 🔄 Καθαρισμός kg για ασκήσεις με percentage_1rm
     const clearKgForPercentageExercises = (weeks: any[]) => {
       return weeks.map(week => ({
@@ -98,8 +104,14 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     });
   };
 
-  const handleMultipleAthleteChange = (userIds: string[]) => {
+  const handleMultipleAthleteChange = async (userIds: string[]) => {
     console.log('🔄 ProgramBuilderDialog - handleMultipleAthleteChange called with:', userIds);
+    
+    // Prefetch warm-up exercises for first user
+    if (userIds.length > 0) {
+      const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
+      prefetchAthleteWarmUpExercises(userIds[0]);
+    }
     
     // 🔄 Καθαρισμός kg για ασκήσεις με percentage_1rm ώστε να επαναυπολογιστούν
     // με βάση το 1RM του νέου χρήστη

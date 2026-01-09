@@ -68,7 +68,12 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
     updateProgram({ training_dates: dates });
   };
 
-  const handleAthleteChange = (userId: string) => {
+  const handleAthleteChange = async (userId: string) => {
+    // Prefetch warm-up exercises immediately for instant effort updates
+    if (userId) {
+      const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
+      prefetchAthleteWarmUpExercises(userId);
+    }
     updateProgram({ 
       user_id: userId,
       is_multiple_assignment: false,
@@ -76,8 +81,13 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
     });
   };
 
-  const handleMultipleAthleteChange = (userIds: string[]) => {
+  const handleMultipleAthleteChange = async (userIds: string[]) => {
     console.log('🔄 CoachProgramBuilderDialog - handleMultipleAthleteChange called with:', userIds);
+    // Prefetch warm-up exercises for first user
+    if (userIds.length > 0) {
+      const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
+      prefetchAthleteWarmUpExercises(userIds[0]);
+    }
     updateProgram({ 
       user_ids: userIds,
       is_multiple_assignment: true,
