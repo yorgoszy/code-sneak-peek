@@ -137,8 +137,20 @@ export const AIControlledProgramBuilderDialog: React.FC = () => {
         exercises={exercises}
         onNameChange={(name) => updateProgram({ name })}
         onDescriptionChange={(description) => updateProgram({ description })}
-        onAthleteChange={(user_id) => updateProgram({ user_id, user_ids: [user_id] })}
-        onMultipleAthleteChange={(user_ids) => updateProgram({ user_ids })}
+        onAthleteChange={async (user_id) => {
+          if (user_id) {
+            const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
+            prefetchAthleteWarmUpExercises(user_id);
+          }
+          updateProgram({ user_id, user_ids: [user_id] });
+        }}
+        onMultipleAthleteChange={async (user_ids) => {
+          if (user_ids.length > 0) {
+            const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
+            prefetchAthleteWarmUpExercises(user_ids[0]);
+          }
+          updateProgram({ user_ids });
+        }}
         onGroupChange={(groupId) => updateProgram({ selected_group_id: groupId })}
         onToggleAssignmentMode={(isMultiple) => updateProgram({ is_multiple_assignment: isMultiple })}
         onAddWeek={actions.addWeek}

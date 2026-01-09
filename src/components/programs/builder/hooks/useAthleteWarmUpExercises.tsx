@@ -8,6 +8,10 @@ export interface WarmUpExercise {
   body_region: 'upper' | 'lower';
 }
 
+// Cache for warm-up exercises by user ID
+const warmUpCache = new Map<string, { exercises: WarmUpExercise[], timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 // Mapping muscles to body regions
 const UPPER_BODY_MUSCLES = [
   'τραπεζ', 'ωμοπλάτ', 'θωρακ', 'ραχιαίος', 'αυχεν', 'κεφαλ', 'οδοντ',
@@ -37,11 +41,50 @@ const getMuscleBodyRegion = (muscleName: string): 'upper' | 'lower' => {
 };
 
 /**
+ * Pre-fetch and cache warm-up exercises for an athlete
+ * Call this when selecting a user to avoid delays
+ */
+export const prefetchAthleteWarmUpExercises = async (userId: string): Promise<void> => {
+  if (!userId) return;
+  await fetchAthleteWarmUpExercises(userId);
+};
+
+/**
+ * Get cached warm-up exercises synchronously (returns empty if not cached)
+ */
+export const getCachedWarmUpExercises = (userId: string): WarmUpExercise[] | null => {
+  const cached = warmUpCache.get(userId);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.exercises;
+  }
+  return null;
+};
+
+/**
+ * Clear cache for a specific user or all users
+ */
+export const clearWarmUpCache = (userId?: string): void => {
+  if (userId) {
+    warmUpCache.delete(userId);
+  } else {
+    warmUpCache.clear();
+  }
+};
+
+/**
  * Fetches warm up exercises for an athlete based on their functional test muscles
  * Gets the latest functional test data and finds linked exercises from functional_muscle_exercises
+ * Uses caching to avoid repeated database calls
  */
 export const fetchAthleteWarmUpExercises = async (userId: string): Promise<WarmUpExercise[]> => {
   if (!userId) return [];
+
+  // Check cache first
+  const cached = warmUpCache.get(userId);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log('🚀 Using cached warm-up exercises for:', userId);
+    return cached.exercises;
+  }
 
   try {
     // Step 1: Get the latest functional test session for this user
@@ -55,6 +98,7 @@ export const fetchAthleteWarmUpExercises = async (userId: string): Promise<WarmU
 
     if (sessionError || !sessionData) {
       console.log('No functional test session found for user:', userId);
+      warmUpCache.set(userId, { exercises: [], timestamp: Date.now() });
       return [];
     }
 
@@ -67,6 +111,7 @@ export const fetchAthleteWarmUpExercises = async (userId: string): Promise<WarmU
 
     if (testError || !testData) {
       console.log('No functional test data found for session:', sessionData.id);
+      warmUpCache.set(userId, { exercises: [], timestamp: Date.now() });
       return [];
     }
 
@@ -76,6 +121,7 @@ export const fetchAthleteWarmUpExercises = async (userId: string): Promise<WarmU
 
     if (allMuscles.length === 0) {
       console.log('No muscles found in functional test data');
+      warmUpCache.set(userId, { exercises: [], timestamp: Date.now() });
       return [];
     }
 
@@ -95,6 +141,7 @@ export const fetchAthleteWarmUpExercises = async (userId: string): Promise<WarmU
 
     if (linkError || !linkedExercises) {
       console.log('No linked exercises found:', linkError);
+      warmUpCache.set(userId, { exercises: [], timestamp: Date.now() });
       return [];
     }
 
@@ -114,7 +161,11 @@ export const fetchAthleteWarmUpExercises = async (userId: string): Promise<WarmU
     });
 
     const result = Array.from(exerciseMap.values());
-    console.log('🏋️ Found warm up exercises for athlete:', result.length);
+    console.log('🏋️ Fetched and cached warm up exercises for athlete:', result.length);
+    
+    // Cache the result
+    warmUpCache.set(userId, { exercises: result, timestamp: Date.now() });
+    
     return result;
   } catch (error) {
     console.error('Error fetching athlete warm up exercises:', error);
