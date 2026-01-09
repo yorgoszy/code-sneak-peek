@@ -87,6 +87,13 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     return filtered;
   }, [exercisesWithCategories, searchTerm, selectedCategories]);
 
+  // Get exercise background color based on FMS status
+  const getExerciseBgColor = (exerciseId: string) => {
+    const status = exerciseStatusMap.get(exerciseId);
+    if (status === 'red') return 'bg-red-100 hover:bg-red-200';
+    if (status === 'yellow') return 'bg-yellow-100 hover:bg-yellow-200';
+    return '';
+  };
 
   const handleSelectExercise = (exercise: Exercise) => {
     const status = exerciseStatusMap.get(exercise.id);
@@ -238,12 +245,13 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
                 {filteredExercises.map((exercise) => {
                   const hasValidVideo = exercise.video_url && isValidVideoUrl(exercise.video_url);
                   const thumbnailUrl = hasValidVideo ? getVideoThumbnail(exercise.video_url!) : null;
+                  const bgColor = getExerciseBgColor(exercise.id);
 
                   return (
                     <Button
                       key={exercise.id}
                       variant="outline"
-                      className="h-auto py-2 px-3 rounded-none justify-start text-left"
+                      className={cn("h-auto py-2 px-3 rounded-none justify-start text-left", bgColor)}
                       onClick={() => handleSelectExercise(exercise)}
                     >
                       <div className="flex items-center gap-2 w-full">
