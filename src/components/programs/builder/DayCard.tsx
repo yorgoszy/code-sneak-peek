@@ -6,7 +6,7 @@ import { GripVertical } from "lucide-react";
 import { DayCardHeader } from './DayCardHeader';
 import { DayCardContent } from './DayCardContent';
 import { DayCalculations } from './DayCalculations';
-import { Exercise, Day } from '../types';
+import { Exercise, Day, EffortType } from '../types';
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 
 interface DayCardProps {
@@ -19,7 +19,7 @@ interface DayCardProps {
   onUpdateDayName: (name: string) => void;
   onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (isCompetitionDay: boolean) => void;
-  onUpdateDayBodyFocus: (bodyFocus: 'upper' | 'lower' | undefined) => void;
+  onUpdateDayEffort: (bodyPart: 'upper' | 'lower', effort: EffortType) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
@@ -54,7 +54,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
-  onUpdateDayBodyFocus,
+  onUpdateDayEffort,
   onAddExercise,
   onRemoveBlock,
   onDuplicateBlock,
@@ -141,10 +141,27 @@ export const DayCard: React.FC<DayCardProps> = ({
     onUpdateDayCompetitionDay(newIsCompetitionDay);
   };
 
-  const handleToggleBodyFocus = (focus: 'upper' | 'lower') => {
-    // Toggle off if same, otherwise set new focus
-    const newFocus = day.body_focus === focus ? undefined : focus;
-    onUpdateDayBodyFocus(newFocus);
+  // Cycle effort: none -> DE -> ME -> none
+  const handleToggleEffort = (bodyPart: 'upper' | 'lower') => {
+    const currentEffort = bodyPart === 'upper' ? day.upper_effort : day.lower_effort;
+    let newEffort: EffortType;
+    
+    switch (currentEffort) {
+      case 'none':
+      case undefined:
+        newEffort = 'DE';
+        break;
+      case 'DE':
+        newEffort = 'ME';
+        break;
+      case 'ME':
+        newEffort = 'none';
+        break;
+      default:
+        newEffort = 'DE';
+    }
+    
+    onUpdateDayEffort(bodyPart, newEffort);
   };
 
   const blocksCount = day.program_blocks?.length || 0;
@@ -165,7 +182,8 @@ export const DayCard: React.FC<DayCardProps> = ({
           dayName={day.name}
           isTestDay={day.is_test_day || false}
           isCompetitionDay={day.is_competition_day || false}
-          bodyFocus={day.body_focus}
+          upperEffort={day.upper_effort || 'none'}
+          lowerEffort={day.lower_effort || 'none'}
           isOpen={isOpen}
           isEditing={isEditing}
           editingName={editingName}
@@ -179,7 +197,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           onRemoveDay={onRemoveDay}
           onToggleTestDay={handleToggleTestDay}
           onToggleCompetitionDay={handleToggleCompetitionDay}
-          onToggleBodyFocus={handleToggleBodyFocus}
+          onToggleEffort={handleToggleEffort}
           onPasteDay={onPasteDay ? handlePasteDay : undefined}
         />
         

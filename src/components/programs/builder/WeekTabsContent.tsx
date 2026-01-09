@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { SortableDay } from './SortableDay';
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
-import { Exercise, Week } from '../types';
+import { Exercise, Week, EffortType } from '../types';
 
 interface WeekTabsContentProps {
   weeks: Week[];
@@ -20,7 +20,7 @@ interface WeekTabsContentProps {
   onUpdateDayName: (weekId: string, dayId: string, name: string) => void;
   onUpdateDayTestDay: (weekId: string, dayId: string, isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (weekId: string, dayId: string, isCompetitionDay: boolean) => void;
-  onUpdateDayBodyFocus: (weekId: string, dayId: string, bodyFocus: 'upper' | 'lower' | undefined) => void;
+  onUpdateDayEffort: (weekId: string, dayId: string, bodyPart: 'upper' | 'lower', effort: EffortType) => void;
   onAddExercise: (weekId: string, dayId: string, blockId: string, exerciseId: string) => void;
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
   onDuplicateBlock: (weekId: string, dayId: string, blockId: string) => void;
@@ -54,7 +54,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
-  onUpdateDayBodyFocus,
+  onUpdateDayEffort,
   onAddExercise,
   onRemoveBlock,
   onDuplicateBlock,
@@ -124,8 +124,8 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                         onUpdateDayCompetitionDay={(isCompetitionDay) =>
                           onUpdateDayCompetitionDay(week.id, day.id, isCompetitionDay)
                         }
-                        onUpdateDayBodyFocus={(bodyFocus) =>
-                          onUpdateDayBodyFocus(week.id, day.id, bodyFocus)
+                        onUpdateDayEffort={(bodyPart, effort) =>
+                          onUpdateDayEffort(week.id, day.id, bodyPart, effort)
                         }
                         onAddExercise={(blockId, exerciseId) =>
                           onAddExercise(week.id, day.id, blockId, exerciseId)
