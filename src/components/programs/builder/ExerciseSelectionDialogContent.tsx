@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Filter, Plus, X, Save, FolderOpen, Play } from "lucide-react";
+import { Filter, Plus, X, Save, FolderOpen, Play, AlertTriangle } from "lucide-react";
 import { ExerciseFilters } from './ExerciseFilters';
 import { ExerciseSearchInput } from './ExerciseSearchInput';
 import { AddExerciseDialog } from '@/components/AddExerciseDialog';
@@ -9,9 +9,12 @@ import { CreateBlockTemplateDialog } from './CreateBlockTemplateDialog';
 import { SelectBlockTemplateDialog } from './SelectBlockTemplateDialog';
 import { useExerciseRealtime } from './hooks/useExerciseRealtime';
 import { useExerciseWithCategories } from './hooks/useExerciseWithCategories';
+import { useFmsExerciseStatusContext } from '@/contexts/FmsExerciseStatusContext';
 import { matchesSearchTerm } from "@/lib/utils";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
+import { cn } from '@/lib/utils';
+import { RedExerciseAlternativesPopup } from './RedExerciseAlternativesPopup';
 
 interface Exercise {
   id: string;
@@ -42,6 +45,15 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   const [addExerciseDialogOpen, setAddExerciseDialogOpen] = useState(false);
   const [createTemplateDialogOpen, setCreateTemplateDialogOpen] = useState(false);
   const [selectTemplateDialogOpen, setSelectTemplateDialogOpen] = useState(false);
+  
+  // Red exercise alternatives popup state
+  const [redExercisePopup, setRedExercisePopup] = useState<{
+    open: boolean;
+    exercise: Exercise | null;
+  }>({ open: false, exercise: null });
+
+  // Get FMS exercise status from context
+  const { exerciseStatusMap, loading: fmsLoading } = useFmsExerciseStatusContext();
 
   // Handle real-time exercise updates
   const { currentExercises } = useExerciseRealtime(initialExercises, (newExercise) => {
@@ -75,11 +87,61 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     return filtered;
   }, [exercisesWithCategories, searchTerm, selectedCategories]);
 
-  const handleSelectExercise = (exerciseId: string) => {
-    onSelectExercise(exerciseId);
+  // Get exercise status color
+  const getExerciseStatusStyle = (exerciseId: string) => {
+    const status = exerciseStatusMap.get(exerciseId);
+    if (status === 'red') {
+      return 'border-red-500 border-2 bg-red-50';
+    }
+    if (status === 'yellow') {
+      return 'border-yellow-400 border-2 bg-yellow-50';
+    }
+    return '';
+  };
+
+  const getExerciseStatusIndicator = (exerciseId: string) => {
+    const status = exerciseStatusMap.get(exerciseId);
+    if (status === 'red') {
+      return <div className="w-3 h-3 rounded-full bg-red-500 flex-shrink-0" title="Απαγορευμένη άσκηση" />;
+    }
+    if (status === 'yellow') {
+      return <div className="w-3 h-3 rounded-full bg-yellow-400 flex-shrink-0" title="Με προσοχή" />;
+    }
+    return null;
+  };
+
+  const handleSelectExercise = (exercise: Exercise) => {
+    const status = exerciseStatusMap.get(exercise.id);
+    
+    // If it's a red exercise, show the alternatives popup
+    if (status === 'red') {
+      setRedExercisePopup({ open: true, exercise });
+      return;
+    }
+    
+    // Otherwise, proceed normally
+    onSelectExercise(exercise.id);
     onClose();
     setSearchTerm('');
     setSelectedCategories([]);
+  };
+
+  const handleAlternativeSelected = (alternativeId: string) => {
+    setRedExercisePopup({ open: false, exercise: null });
+    onSelectExercise(alternativeId);
+    onClose();
+    setSearchTerm('');
+    setSelectedCategories([]);
+  };
+
+  const handleUseRedExerciseAnyway = () => {
+    if (redExercisePopup.exercise) {
+      onSelectExercise(redExercisePopup.exercise.id);
+      onClose();
+      setSearchTerm('');
+      setSelectedCategories([]);
+    }
+    setRedExercisePopup({ open: false, exercise: null });
   };
 
   const handleExerciseAdded = () => {
@@ -94,26 +156,55 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     }
   };
 
+  // Count red/yellow exercises
+  const statusCounts = useMemo(() => {
+    let red = 0;
+    let yellow = 0;
+    exercisesWithCategories.forEach(ex => {
+      const status = exerciseStatusMap.get(ex.id);
+      if (status === 'red') red++;
+      if (status === 'yellow') yellow++;
+    });
+    return { red, yellow };
+  }, [exercisesWithCategories, exerciseStatusMap]);
+
   return (
     <>
       <DialogContent
-        className="rounded-none max-w-6xl w-[95vw] md:w-[90vw] lg:w-auto h-[90vh] sm:h-[80vh] p-3 sm:p-4 md:p-6 flex flex-col"
+        className="rounded-none w-[900px] h-[600px] max-w-[95vw] max-h-[90vh] p-3 sm:p-4 md:p-6 flex flex-col"
         onPointerDownOutside={(e) => {
-          if (addExerciseDialogOpen || createTemplateDialogOpen || selectTemplateDialogOpen) {
+          if (addExerciseDialogOpen || createTemplateDialogOpen || selectTemplateDialogOpen || redExercisePopup.open) {
             e.preventDefault();
           }
         }}
         onInteractOutside={(e) => {
-          if (addExerciseDialogOpen || createTemplateDialogOpen || selectTemplateDialogOpen) {
+          if (addExerciseDialogOpen || createTemplateDialogOpen || selectTemplateDialogOpen || redExercisePopup.open) {
             e.preventDefault();
           }
         }}
       >
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1 text-sm sm:text-base">
+            <div className="flex items-center gap-2 text-sm sm:text-base">
               <Filter className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">Επιλογή Άσκησης ({exercisesWithCategories.length})</span>
+              {/* Status legend */}
+              {(statusCounts.red > 0 || statusCounts.yellow > 0) && (
+                <div className="flex items-center gap-2 ml-2 text-xs text-muted-foreground">
+                  {statusCounts.red > 0 && (
+                    <div className="flex items-center gap-1">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                      <span>{statusCounts.red}</span>
+                    </div>
+                  )}
+                  {statusCounts.yellow > 0 && (
+                    <div className="flex items-center gap-1">
+                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                      <span>{statusCounts.yellow}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-1 flex-nowrap flex-shrink-0">
@@ -164,20 +255,26 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
                 <ExerciseFilters selectedCategories={selectedCategories} onCategoryChange={setSelectedCategories} />
               </div>
 
-              {/* Cards (ίδιες με SimpleExerciseSelectionDialog) */}
+              {/* Cards */}
               <div className="grid grid-cols-2 gap-2">
                 {filteredExercises.map((exercise) => {
                   const hasValidVideo = exercise.video_url && isValidVideoUrl(exercise.video_url);
                   const thumbnailUrl = hasValidVideo ? getVideoThumbnail(exercise.video_url!) : null;
+                  const statusStyle = getExerciseStatusStyle(exercise.id);
+                  const statusIndicator = getExerciseStatusIndicator(exercise.id);
 
                   return (
                     <Button
                       key={exercise.id}
                       variant="outline"
-                      className="h-auto py-2 px-3 rounded-none justify-start text-left"
-                      onClick={() => handleSelectExercise(exercise.id)}
+                      className={cn(
+                        "h-auto py-2 px-3 rounded-none justify-start text-left",
+                        statusStyle
+                      )}
+                      onClick={() => handleSelectExercise(exercise)}
                     >
                       <div className="flex items-center gap-2 w-full">
+                        {statusIndicator}
                         {hasValidVideo && thumbnailUrl ? (
                           <div className="w-8 h-6 rounded-none overflow-hidden bg-muted flex-shrink-0">
                             <img
@@ -232,6 +329,16 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
         onOpenChange={setSelectTemplateDialogOpen}
         onSelectTemplate={handleSelectTemplate}
         coachId={coachId}
+      />
+
+      {/* Red Exercise Alternatives Popup */}
+      <RedExerciseAlternativesPopup
+        open={redExercisePopup.open}
+        onOpenChange={(open) => setRedExercisePopup({ open, exercise: open ? redExercisePopup.exercise : null })}
+        redExercise={redExercisePopup.exercise}
+        allExercises={exercisesWithCategories}
+        onSelectAlternative={handleAlternativeSelected}
+        onUseAnyway={handleUseRedExerciseAnyway}
       />
     </>
   );
