@@ -4,7 +4,6 @@ import { Copy, Trash2, Play, RefreshCw } from "lucide-react";
 import { Exercise } from '../types';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useFmsExerciseStatusContext } from '@/contexts/FmsExerciseStatusContext';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { RedExerciseAlternativesPopup } from './RedExerciseAlternativesPopup';
 
 interface ExerciseSelectionButtonProps {
@@ -41,11 +40,6 @@ export const ExerciseSelectionButton: React.FC<ExerciseSelectionButtonProps> = (
     if (fmsStatus === 'red') return 'bg-red-100 hover:bg-red-200 border-red-300';
     if (fmsStatus === 'yellow') return 'bg-yellow-100 hover:bg-yellow-200 border-yellow-300';
     return 'bg-gray-200 hover:bg-gray-300';
-  };
-
-  const handleReplaceClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowAlternativesPopup(true);
   };
 
   const handleAlternativeSelected = (alternativeId: string) => {
@@ -124,24 +118,15 @@ export const ExerciseSelectionButton: React.FC<ExerciseSelectionButtonProps> = (
             onSelectAlternative={handleAlternativeSelected}
             onUseAnyway={() => setShowAlternativesPopup(false)}
           >
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleReplaceClick}
-                    className="p-1 h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-100"
-                    style={{ borderRadius: '0px' }}
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="rounded-none">
-                  <p>Αντικατάσταση άσκησης</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-100"
+              style={{ borderRadius: '0px' }}
+              title="Αντικατάσταση άσκησης"
+            >
+              <RefreshCw className="w-3 h-3" />
+            </Button>
           </RedExerciseAlternativesPopup>
         )}
         <Button
