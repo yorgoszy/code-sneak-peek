@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Filter, Plus, X, Save, FolderOpen, Play, AlertTriangle, Check } from "lucide-react";
+import { Filter, Plus, X, Save, FolderOpen, Play, AlertTriangle } from "lucide-react";
 import { ExerciseFilters } from './ExerciseFilters';
 import { ExerciseSearchInput } from './ExerciseSearchInput';
 import { AddExerciseDialog } from '@/components/AddExerciseDialog';
@@ -26,7 +26,6 @@ interface Exercise {
 interface ExerciseSelectionDialogContentProps {
   exercises: Exercise[];
   onSelectExercise: (exerciseId: string) => void;
-  onSelectMultipleExercises?: (exerciseIds: string[]) => void;
   onClose: () => void;
   onExercisesUpdate?: (exercises: Exercise[]) => void;
   onSelectBlockTemplate?: (template: any) => void;
@@ -36,7 +35,6 @@ interface ExerciseSelectionDialogContentProps {
 export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogContentProps> = ({
   exercises: initialExercises,
   onSelectExercise,
-  onSelectMultipleExercises,
   onClose,
   onExercisesUpdate,
   onSelectBlockTemplate,
@@ -47,12 +45,6 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   const [addExerciseDialogOpen, setAddExerciseDialogOpen] = useState(false);
   const [createTemplateDialogOpen, setCreateTemplateDialogOpen] = useState(false);
   const [selectTemplateDialogOpen, setSelectTemplateDialogOpen] = useState(false);
-  
-  // Multi-select state
-  const [multiSelectMode, setMultiSelectMode] = useState(false);
-  const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
-  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const longPressTriggeredRef = useRef(false);
   
   // Red exercise alternatives popup state
   const [redExercisePopup, setRedExercisePopup] = useState<{
@@ -75,36 +67,6 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   // Handle exercises with categories
   const { exercisesWithCategories, addExerciseWithCategories } = useExerciseWithCategories(currentExercises);
 
-  // Handle Ctrl key for multi-select mode
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        setMultiSelectMode(true);
-      }
-    };
-    
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (!e.ctrlKey && !e.metaKey) {
-        setMultiSelectMode(false);
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
-
-  // Clear multi-select when dialog closes
-  useEffect(() => {
-    return () => {
-      setSelectedExercises([]);
-      setMultiSelectMode(false);
-    };
-  }, []);
 
   const filteredExercises = useMemo(() => {
     let filtered = exercisesWithCategories;
@@ -133,89 +95,21 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     return '';
   };
 
-  const handleSelectExercise = (exercise: Exercise, isMultiSelect: boolean) => {
+  const handleSelectExercise = (exercise: Exercise) => {
     const status = exerciseStatusMap.get(exercise.id);
     
-    // If it's a red exercise and not in multi-select mode, show the alternatives popup
-    if (status === 'red' && !isMultiSelect) {
+    // If it's a red exercise, show the alternatives popup
+    if (status === 'red') {
       setRedExercisePopup({ open: true, exercise });
       return;
     }
     
-    if (isMultiSelect) {
-      // Toggle selection in multi-select mode
-      setSelectedExercises(prev => {
-        if (prev.includes(exercise.id)) {
-          return prev.filter(id => id !== exercise.id);
-        } else {
-          return [...prev, exercise.id];
-        }
-      });
-    } else {
-      // Single select - add immediately
-      onSelectExercise(exercise.id);
-      onClose();
-      setSearchTerm('');
-      setSelectedCategories([]);
-    }
+    // Otherwise, proceed normally
+    onSelectExercise(exercise.id);
+    onClose();
+    setSearchTerm('');
+    setSelectedCategories([]);
   };
-
-  const handleConfirmMultiSelect = () => {
-    if (selectedExercises.length > 0) {
-      if (onSelectMultipleExercises) {
-        onSelectMultipleExercises(selectedExercises);
-      } else {
-        // Fallback: add one by one in order
-        selectedExercises.forEach(id => onSelectExercise(id));
-      }
-      onClose();
-      setSearchTerm('');
-      setSelectedCategories([]);
-      setSelectedExercises([]);
-    }
-  };
-
-  const handleCancelMultiSelect = () => {
-    setSelectedExercises([]);
-  };
-
-  // Long press handlers for mobile
-  const handleTouchStart = useCallback((exercise: Exercise) => {
-    longPressTriggeredRef.current = false;
-    longPressTimerRef.current = setTimeout(() => {
-      longPressTriggeredRef.current = true;
-      // Enter multi-select mode and select this exercise
-      setSelectedExercises(prev => {
-        if (prev.includes(exercise.id)) {
-          return prev;
-        }
-        return [...prev, exercise.id];
-      });
-    }, 500); // 500ms long press
-  }, []);
-
-  const handleTouchEnd = useCallback((exercise: Exercise) => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    
-    // If long press was triggered, don't do anything else
-    if (longPressTriggeredRef.current) {
-      longPressTriggeredRef.current = false;
-      return true; // Indicate long press happened
-    }
-    
-    return false; // Normal click
-  }, []);
-
-  const handleTouchMove = useCallback(() => {
-    // Cancel long press if user moves finger
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-  }, []);
 
   const handleAlternativeSelected = (alternativeId: string) => {
     setRedExercisePopup({ open: false, exercise: null });
@@ -258,8 +152,6 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
     });
     return { red, yellow };
   }, [exercisesWithCategories, exerciseStatusMap]);
-
-  const hasSelectedExercises = selectedExercises.length > 0;
 
   return (
     <>
@@ -339,40 +231,6 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
           </DialogTitle>
         </DialogHeader>
 
-        {/* Multi-select info bar */}
-        {hasSelectedExercises && (
-          <div className="flex items-center justify-between bg-[#00ffba]/20 border border-[#00ffba] p-2 rounded-none mb-2">
-            <span className="text-sm font-medium">
-              {selectedExercises.length} άσκηση{selectedExercises.length > 1 ? 'εις' : ''} επιλεγμέν{selectedExercises.length > 1 ? 'ες' : 'η'}
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleCancelMultiSelect}
-                variant="outline"
-                size="sm"
-                className="rounded-none h-7 text-xs"
-              >
-                Ακύρωση
-              </Button>
-              <Button
-                onClick={handleConfirmMultiSelect}
-                size="sm"
-                className="rounded-none h-7 text-xs bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-              >
-                <Check className="w-3 h-3 mr-1" />
-                Προσθήκη
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Multi-select hint */}
-        {!hasSelectedExercises && (
-          <div className="text-xs text-muted-foreground mb-2">
-            💡 Ctrl+click για πολλαπλή επιλογή • Κινητό: παρατεταμένο πάτημα
-          </div>
-        )}
-
         <div className="flex-1 overflow-hidden flex flex-col">
           <div className="flex-1 min-h-0 overflow-y-auto border rounded-none">
             <div className="p-2">
@@ -388,38 +246,14 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
                   const hasValidVideo = exercise.video_url && isValidVideoUrl(exercise.video_url);
                   const thumbnailUrl = hasValidVideo ? getVideoThumbnail(exercise.video_url!) : null;
                   const bgColor = getExerciseBgColor(exercise.id);
-                  const isSelected = selectedExercises.includes(exercise.id);
-                  const selectionIndex = selectedExercises.indexOf(exercise.id);
 
                   return (
                     <Button
                       key={exercise.id}
                       variant="outline"
-                      className={cn(
-                        "h-auto py-2 px-3 rounded-none justify-start text-left relative",
-                        bgColor,
-                        isSelected && "ring-2 ring-[#00ffba] bg-[#00ffba]/10"
-                      )}
-                      onClick={(e) => {
-                        const isMulti = e.ctrlKey || e.metaKey || hasSelectedExercises;
-                        handleSelectExercise(exercise, isMulti);
-                      }}
-                      onTouchStart={() => handleTouchStart(exercise)}
-                      onTouchEnd={(e) => {
-                        const wasLongPress = handleTouchEnd(exercise);
-                        if (wasLongPress) {
-                          e.preventDefault();
-                        }
-                      }}
-                      onTouchMove={handleTouchMove}
+                      className={cn("h-auto py-2 px-3 rounded-none justify-start text-left", bgColor)}
+                      onClick={() => handleSelectExercise(exercise)}
                     >
-                      {/* Selection indicator */}
-                      {isSelected && (
-                        <div className="absolute top-1 right-1 w-5 h-5 bg-[#00ffba] text-black text-xs font-bold flex items-center justify-center rounded-full">
-                          {selectionIndex + 1}
-                        </div>
-                      )}
-                      
                       <div className="flex items-center gap-2 w-full">
                         {hasValidVideo && thumbnailUrl ? (
                           <div className="w-8 h-6 rounded-none overflow-hidden bg-muted flex-shrink-0">

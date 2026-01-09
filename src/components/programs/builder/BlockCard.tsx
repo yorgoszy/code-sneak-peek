@@ -117,12 +117,6 @@ export const BlockCard: React.FC<BlockCardProps> = ({
     setShowExerciseDialog(false);
   };
 
-  const handleMultipleExercisesSelect = (exerciseIds: string[]) => {
-    // Add exercises in the order they were selected
-    exerciseIds.forEach(id => onAddExercise(id));
-    setShowExerciseDialog(false);
-  };
-
   // Όταν αλλάζει το training type, ενημερώνουμε ΜΟΝΟ το training type.
   // Το όνομα ενημερώνεται μέσα από το updateBlockTrainingType (στο state layer), αλλιώς γίνεται overwrite με stale state.
   const handleTrainingTypeChange = (trainingType: string) => {
@@ -181,7 +175,6 @@ export const BlockCard: React.FC<BlockCardProps> = ({
         onOpenChange={setShowExerciseDialog}
         exercises={exercises}
         onSelectExercise={handleExerciseSelect}
-        onSelectMultipleExercises={handleMultipleExercisesSelect}
         onSelectBlockTemplate={(template) => {
           if (onSelectBlockTemplate) {
             onSelectBlockTemplate(template);
