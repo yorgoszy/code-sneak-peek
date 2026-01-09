@@ -101,23 +101,27 @@ export const ExerciseSelectionButton: React.FC<ExerciseSelectionButtonProps> = (
   );
 
   return (
-    <div className="px-2 py-0 border-b bg-gray-100 flex items-center gap-2 w-full" style={{ minHeight: '28px' }}>
-      {statusTooltip ? (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {buttonContent}
-            </TooltipTrigger>
-            <TooltipContent className="rounded-none">
-              <p>{statusTooltip}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      ) : (
-        buttonContent
-      )}
+    <div className="px-2 py-0 border-b bg-gray-100 flex items-center w-full" style={{ minHeight: '28px' }}>
+      {/* Exercise button - takes remaining space with overflow hidden */}
+      <div className="flex-1 min-w-0 overflow-hidden">
+        {statusTooltip ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {buttonContent}
+              </TooltipTrigger>
+              <TooltipContent className="rounded-none">
+                <p>{statusTooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          buttonContent
+        )}
+      </div>
       
-      <div className="flex gap-1">
+      {/* Icons - fixed position on the right */}
+      <div className="flex gap-1 flex-shrink-0 ml-1">
         <Button
           variant="ghost"
           size="sm"
