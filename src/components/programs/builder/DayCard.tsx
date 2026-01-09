@@ -196,7 +196,6 @@ export const DayCard: React.FC<DayCardProps> = ({
           onToggleCompetitionDay={handleToggleCompetitionDay}
           onToggleEffort={handleToggleEffort}
           onPasteDay={onPasteDay ? handlePasteDay : undefined}
-          onToggleCollapse={() => setIsOpen(!isOpen)}
         />
         
         {isOpen && (
