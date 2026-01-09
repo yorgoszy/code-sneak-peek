@@ -161,6 +161,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
           is_test_day: day.is_test_day || false,
           test_types: day.test_types || [],
           is_competition_day: day.is_competition_day || false,
+          upper_effort: day.upper_effort || 'none',
+          lower_effort: day.lower_effort || 'none',
           program_blocks: (day.program_blocks || [])
             .sort((a: any, b: any) => (a.block_order || 0) - (b.block_order || 0))
             .map((block: any) => ({
