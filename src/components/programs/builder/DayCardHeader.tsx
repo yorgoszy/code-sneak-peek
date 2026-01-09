@@ -3,7 +3,7 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Files, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown, Zap } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Day, EffortType } from '../types';
 
@@ -23,12 +23,12 @@ interface DayCardHeaderProps {
   onNameSave: () => void;
   onNameKeyPress: (e: React.KeyboardEvent) => void;
   onAddBlock: () => void;
-  onDuplicateDay: () => void;
   onRemoveDay: () => void;
   onToggleTestDay: () => void;
   onToggleCompetitionDay: () => void;
   onToggleEffort: (bodyPart: 'upper' | 'lower') => void;
   onPasteDay?: () => void;
+  onToggleCollapse: () => void;
 }
 
 export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
@@ -47,10 +47,10 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onNameSave,
   onNameKeyPress,
   onAddBlock,
-  onDuplicateDay,
   onRemoveDay,
   onToggleTestDay,
   onToggleCompetitionDay,
+  onToggleCollapse,
   onToggleEffort,
   onPasteDay
 }) => {
@@ -92,11 +92,16 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   return (
     <CardHeader className="py-1 px-2">
       <div className="flex items-center">
-        <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded min-w-0 flex-shrink">
-          {isOpen ? <ChevronDown className="w-4 h-4 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+        <div 
+          className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded min-w-0 flex-shrink cursor-pointer"
+          onClick={onToggleCollapse}
+        >
           <CardTitle 
             className="text-sm cursor-pointer flex items-center gap-2 truncate"
-            onDoubleClick={onNameDoubleClick}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              onNameDoubleClick();
+            }}
           >
             {isEditing ? (
               <input
@@ -120,7 +125,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
               </>
             )}
           </CardTitle>
-        </CollapsibleTrigger>
+        </div>
         
         <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
           {/* Upper Body Icon - cycles: none -> DE -> ME -> none */}
@@ -224,18 +229,17 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
               <ClipboardPaste className="w-3 h-3" />
             </Button>
           )}
-          <Button
+          {/* ESD Button - Speed/Explosive Strength Day */}
+          <button
             onClick={(e) => {
               e.stopPropagation();
-              onDuplicateDay();
+              // TODO: Add ESD logic
             }}
-            size="sm"
-            variant="ghost"
-            className="rounded-none h-7 w-7 p-0"
-            title="Διπλασιασμός Ημέρας"
+            className="p-1.5 rounded transition-colors text-gray-300 hover:text-orange-500 hover:bg-orange-50"
+            title="ESD (Explosive Strength Day)"
           >
-            <Files className="w-3 h-3" />
-          </Button>
+            <Zap className="w-4 h-4" />
+          </button>
           <Button
             onClick={(e) => {
               e.stopPropagation();

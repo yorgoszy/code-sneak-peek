@@ -23,7 +23,6 @@ interface ProgramBuilderProps {
   onPasteWeek?: (weekId: string, clipboardWeek: any) => void;
   onAddDay: (weekId: string) => void;
   onRemoveDay: (weekId: string, dayId: string) => void;
-  onDuplicateDay: (weekId: string, dayId: string) => void;
   onUpdateDayName: (weekId: string, dayId: string, name: string) => void;
   onUpdateDayTestDay: (weekId: string, dayId: string, isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (weekId: string, dayId: string, isCompetitionDay: boolean) => void;
@@ -72,7 +71,6 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onPasteWeek,
   onAddDay,
   onRemoveDay,
-  onDuplicateDay,
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
@@ -146,7 +144,6 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onPasteWeek={onPasteWeek}
         onAddDay={onAddDay}
         onRemoveDay={onRemoveDay}
-        onDuplicateDay={onDuplicateDay}
         onUpdateDayName={onUpdateDayName}
         onUpdateDayTestDay={onUpdateDayTestDay}
         onUpdateDayCompetitionDay={onUpdateDayCompetitionDay}

@@ -15,7 +15,6 @@ interface DayCardProps {
   selectedUserId?: string;
   onAddBlock: () => void;
   onRemoveDay: () => void;
-  onDuplicateDay: () => void;
   onUpdateDayName: (name: string) => void;
   onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (isCompetitionDay: boolean) => void;
@@ -50,7 +49,6 @@ export const DayCard: React.FC<DayCardProps> = ({
   selectedUserId,
   onAddBlock,
   onRemoveDay,
-  onDuplicateDay,
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
@@ -193,12 +191,12 @@ export const DayCard: React.FC<DayCardProps> = ({
           onNameSave={handleNameSave}
           onNameKeyPress={handleNameKeyPress}
           onAddBlock={onAddBlock}
-          onDuplicateDay={onDuplicateDay}
           onRemoveDay={onRemoveDay}
           onToggleTestDay={handleToggleTestDay}
           onToggleCompetitionDay={handleToggleCompetitionDay}
           onToggleEffort={handleToggleEffort}
           onPasteDay={onPasteDay ? handlePasteDay : undefined}
+          onToggleCollapse={() => setIsOpen(!isOpen)}
         />
         
         {isOpen && (
