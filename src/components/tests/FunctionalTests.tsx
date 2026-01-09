@@ -297,7 +297,6 @@ export const FunctionalTests = ({
             open={linkDialogOpen}
             onOpenChange={setLinkDialogOpen}
             muscleName={selectedMuscleForLink.muscle}
-            issueName={selectedMuscleForLink.issue}
             exerciseType={selectedMuscleForLink.type}
           />
         )}
