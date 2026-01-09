@@ -3,7 +3,7 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown, Zap } from "lucide-react";
+import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown, Zap, ChevronDown, ChevronRight } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Day, EffortType } from '../types';
 
@@ -28,7 +28,6 @@ interface DayCardHeaderProps {
   onToggleCompetitionDay: () => void;
   onToggleEffort: (bodyPart: 'upper' | 'lower') => void;
   onPasteDay?: () => void;
-  onToggleCollapse: () => void;
 }
 
 export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
@@ -50,7 +49,6 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onRemoveDay,
   onToggleTestDay,
   onToggleCompetitionDay,
-  onToggleCollapse,
   onToggleEffort,
   onPasteDay
 }) => {
@@ -92,40 +90,46 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   return (
     <CardHeader className="py-1 px-2">
       <div className="flex items-center">
-        <div 
-          className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded min-w-0 flex-shrink cursor-pointer"
-          onClick={onToggleCollapse}
-        >
-          <CardTitle 
-            className="text-sm cursor-pointer flex items-center gap-2 truncate"
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              onNameDoubleClick();
-            }}
+        <CollapsibleTrigger asChild>
+          <div 
+            className="flex items-center gap-1 hover:bg-gray-50 p-1 rounded min-w-0 flex-shrink cursor-pointer"
           >
-            {isEditing ? (
-              <input
-                type="text"
-                value={editingName}
-                onChange={(e) => onEditingNameChange(e.target.value)}
-                onBlur={onNameSave}
-                onKeyDown={onNameKeyPress}
-                className="bg-transparent border border-gray-300 rounded px-1 outline-none w-24"
-                autoFocus
-                onClick={(e) => e.stopPropagation()}
-              />
+            {isOpen ? (
+              <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
             ) : (
-              <>
-                <span className="truncate max-w-[100px]">{dayName}</span>
-                {!isOpen && blocksCount > 0 && (
-                  <span className="text-xs bg-gray-200 px-2 py-1 rounded-full flex-shrink-0">
-                    {blocksCount}
-                  </span>
-                )}
-              </>
+              <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
             )}
-          </CardTitle>
-        </div>
+            <CardTitle 
+              className="text-sm cursor-pointer flex items-center gap-2 truncate"
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                onNameDoubleClick();
+              }}
+            >
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editingName}
+                  onChange={(e) => onEditingNameChange(e.target.value)}
+                  onBlur={onNameSave}
+                  onKeyDown={onNameKeyPress}
+                  className="bg-transparent border border-gray-300 rounded px-1 outline-none w-24"
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <>
+                  <span className="truncate max-w-[100px]">{dayName}</span>
+                  {!isOpen && blocksCount > 0 && (
+                    <span className="text-xs bg-gray-200 px-2 py-1 rounded-full flex-shrink-0">
+                      {blocksCount}
+                    </span>
+                  )}
+                </>
+              )}
+            </CardTitle>
+          </div>
+        </CollapsibleTrigger>
         
         <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
           {/* Upper Body Icon - cycles: none -> DE -> ME -> none */}
@@ -160,6 +164,18 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
                 {lowerEffort}
               </span>
             )}
+          </button>
+
+          {/* ESD Button - Speed/Explosive Strength Day */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              // TODO: Add ESD logic
+            }}
+            className="p-1.5 rounded transition-colors text-gray-300 hover:text-orange-500 hover:bg-orange-50"
+            title="ESD (Explosive Strength Day)"
+          >
+            <Zap className="w-4 h-4" />
           </button>
           
           {/* Test Day Icon - Yellow */}
@@ -229,17 +245,6 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
               <ClipboardPaste className="w-3 h-3" />
             </Button>
           )}
-          {/* ESD Button - Speed/Explosive Strength Day */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              // TODO: Add ESD logic
-            }}
-            className="p-1.5 rounded transition-colors text-gray-300 hover:text-orange-500 hover:bg-orange-50"
-            title="ESD (Explosive Strength Day)"
-          >
-            <Zap className="w-4 h-4" />
-          </button>
           <Button
             onClick={(e) => {
               e.stopPropagation();
