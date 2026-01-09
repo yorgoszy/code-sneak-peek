@@ -21,6 +21,7 @@ export interface Day {
   is_test_day?: boolean;
   test_types?: string[];
   is_competition_day?: boolean;
+  is_esd_day?: boolean;
   /** Upper body effort type: DE (Dynamic Effort) or ME (Max Effort) */
   upper_effort?: EffortType;
   /** Lower body effort type: DE (Dynamic Effort) or ME (Max Effort) */
@@ -161,6 +162,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
           is_test_day: day.is_test_day || false,
           test_types: day.test_types || [],
           is_competition_day: day.is_competition_day || false,
+          is_esd_day: day.is_esd_day || false,
           upper_effort: day.upper_effort || 'none',
           lower_effort: day.lower_effort || 'none',
           program_blocks: (day.program_blocks || [])
