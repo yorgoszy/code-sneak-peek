@@ -107,7 +107,7 @@ export const useActivePrograms = () => {
         const userIds = assignments.map(a => a.user_id).filter(Boolean);
         const { data: users, error: usersError } = await supabase
           .from('app_users')
-          .select('id, name, email, photo_url')
+          .select('id, name, email, photo_url, coach_id')
           .in('id', userIds);
 
         if (usersError) {
@@ -167,14 +167,15 @@ export const useActivePrograms = () => {
             progress: assignment.progress,
             training_dates: assignment.training_dates,
             programs: sortedProgram,
-            app_users: user
-              ? {
-                  id: user.id,
-                  name: user.name,
-                  email: user.email,
-                  photo_url: user.photo_url
-                }
-              : null
+             app_users: user
+               ? {
+                   id: user.id,
+                   name: user.name,
+                   email: user.email,
+                   photo_url: user.photo_url,
+                   coach_id: (user as any).coach_id
+                 }
+               : null
           };
         });
 
