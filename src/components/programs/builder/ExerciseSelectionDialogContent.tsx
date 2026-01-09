@@ -14,7 +14,7 @@ import { matchesSearchTerm } from "@/lib/utils";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
 import { cn } from '@/lib/utils';
-import { RedExerciseAlternativesPopup } from './RedExerciseAlternativesPopup';
+import { RedExerciseAlternativesDialog } from './RedExerciseAlternativesDialog';
 
 interface Exercise {
   id: string;
@@ -311,8 +311,8 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
         coachId={coachId}
       />
 
-      {/* Red Exercise Alternatives Popup */}
-      <RedExerciseAlternativesPopup
+      {/* Red Exercise Alternatives Dialog */}
+      <RedExerciseAlternativesDialog
         open={redExercisePopup.open}
         onOpenChange={(open) => setRedExercisePopup({ open, exercise: open ? redExercisePopup.exercise : null })}
         redExercise={redExercisePopup.exercise}
