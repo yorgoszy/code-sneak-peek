@@ -121,6 +121,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onUpdateDayName={actions.updateDayName}
         onUpdateDayTestDay={actions.updateDayTestDay}
         onUpdateDayCompetitionDay={actions.updateDayCompetitionDay}
+        onUpdateDayEsdDay={actions.updateDayEsdDay}
         onUpdateDayEffort={actions.updateDayEffort}
         onAddBlock={actions.addBlock}
         onRemoveBlock={actions.removeBlock}

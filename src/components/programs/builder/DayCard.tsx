@@ -18,6 +18,7 @@ interface DayCardProps {
   onUpdateDayName: (name: string) => void;
   onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (isCompetitionDay: boolean) => void;
+  onUpdateDayEsdDay: (isEsdDay: boolean) => void;
   onUpdateDayEffort: (bodyPart: 'upper' | 'lower', effort: EffortType) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
@@ -52,6 +53,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
+  onUpdateDayEsdDay,
   onUpdateDayEffort,
   onAddExercise,
   onRemoveBlock,
@@ -139,6 +141,10 @@ export const DayCard: React.FC<DayCardProps> = ({
     onUpdateDayCompetitionDay(newIsCompetitionDay);
   };
 
+  const handleToggleEsdDay = () => {
+    onUpdateDayEsdDay(!day.is_esd_day);
+  };
+
   // Cycle effort: none -> DE -> ME -> none
   const handleToggleEffort = (bodyPart: 'upper' | 'lower') => {
     const currentEffort = bodyPart === 'upper' ? day.upper_effort : day.lower_effort;
@@ -180,6 +186,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           dayName={day.name}
           isTestDay={day.is_test_day || false}
           isCompetitionDay={day.is_competition_day || false}
+          isEsdDay={day.is_esd_day || false}
           upperEffort={day.upper_effort || 'none'}
           lowerEffort={day.lower_effort || 'none'}
           isOpen={isOpen}
@@ -194,6 +201,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           onRemoveDay={onRemoveDay}
           onToggleTestDay={handleToggleTestDay}
           onToggleCompetitionDay={handleToggleCompetitionDay}
+          onToggleEsdDay={handleToggleEsdDay}
           onToggleEffort={handleToggleEffort}
           onPasteDay={onPasteDay ? handlePasteDay : undefined}
         />

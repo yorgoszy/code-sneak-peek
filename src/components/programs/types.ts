@@ -60,6 +60,8 @@ export interface Day {
   is_test_day?: boolean;
   test_types?: string[];
   is_competition_day?: boolean;
+  /** Energy System Development day */
+  is_esd_day?: boolean;
   /** Upper body effort type: DE (Dynamic Effort) or ME (Max Effort) */
   upper_effort?: EffortType;
   /** Lower body effort type: DE (Dynamic Effort) or ME (Max Effort) */
