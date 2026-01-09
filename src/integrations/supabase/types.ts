@@ -2568,6 +2568,48 @@ export type Database = {
           },
         ]
       }
+      fms_exercise_alternatives: {
+        Row: {
+          alternative_exercise_id: string
+          created_at: string
+          fms_exercise: string
+          id: string
+          red_exercise_id: string
+          updated_at: string
+        }
+        Insert: {
+          alternative_exercise_id: string
+          created_at?: string
+          fms_exercise: string
+          id?: string
+          red_exercise_id: string
+          updated_at?: string
+        }
+        Update: {
+          alternative_exercise_id?: string
+          created_at?: string
+          fms_exercise?: string
+          id?: string
+          red_exercise_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fms_exercise_alternatives_alternative_exercise_id_fkey"
+            columns: ["alternative_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fms_exercise_alternatives_red_exercise_id_fkey"
+            columns: ["red_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fms_exercise_mappings: {
         Row: {
           created_at: string
