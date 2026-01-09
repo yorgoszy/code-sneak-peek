@@ -23,7 +23,6 @@ interface MuscleExerciseLinkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   muscleName: string;
-  issueName: string;
   exerciseType: 'stretching' | 'strengthening';
 }
 
@@ -31,7 +30,6 @@ export const MuscleExerciseLinkDialog: React.FC<MuscleExerciseLinkDialogProps> =
   open,
   onOpenChange,
   muscleName,
-  issueName,
   exerciseType,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -72,7 +70,6 @@ export const MuscleExerciseLinkDialog: React.FC<MuscleExerciseLinkDialogProps> =
         .from('functional_muscle_exercises')
         .select('exercise_id')
         .eq('muscle_name', muscleName)
-        .eq('issue_name', issueName)
         .eq('exercise_type', exerciseType)
         .maybeSingle();
 
@@ -91,17 +88,21 @@ export const MuscleExerciseLinkDialog: React.FC<MuscleExerciseLinkDialogProps> =
 
     setSaving(true);
     try {
-      // Upsert the link
+      // Delete existing link first, then insert new one
+      await supabase
+        .from('functional_muscle_exercises')
+        .delete()
+        .eq('muscle_name', muscleName)
+        .eq('exercise_type', exerciseType);
+
       const { error } = await supabase
         .from('functional_muscle_exercises')
-        .upsert({
+        .insert({
           muscle_name: muscleName,
-          issue_name: issueName,
+          issue_name: '', // Empty string for global muscle-exercise link
           exercise_id: selectedExerciseId,
           exercise_type: exerciseType,
-        }, {
-          onConflict: 'muscle_name,issue_name,exercise_type'
-        });
+        } as any);
 
       if (error) throw error;
       
@@ -122,7 +123,6 @@ export const MuscleExerciseLinkDialog: React.FC<MuscleExerciseLinkDialogProps> =
         .from('functional_muscle_exercises')
         .delete()
         .eq('muscle_name', muscleName)
-        .eq('issue_name', issueName)
         .eq('exercise_type', exerciseType);
 
       if (error) throw error;
@@ -149,7 +149,7 @@ export const MuscleExerciseLinkDialog: React.FC<MuscleExerciseLinkDialogProps> =
             Σύνδεση Άσκησης: {muscleName}
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
-            {issueName} - {exerciseType === 'stretching' ? 'Διάταση' : 'Ενδυνάμωση'}
+            {exerciseType === 'stretching' ? 'Διάταση' : 'Ενδυνάμωση'}
           </p>
         </DialogHeader>
 

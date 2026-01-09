@@ -713,7 +713,6 @@ export const AllTestsPanel = () => {
           open={linkDialogOpen}
           onOpenChange={setLinkDialogOpen}
           muscleName={selectedMuscleForLink.muscleName}
-          issueName={selectedIssue}
           exerciseType={selectedMuscleForLink.exerciseType}
         />
       )}
