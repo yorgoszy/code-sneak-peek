@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Plus, Trash2, ChevronDown, ChevronRight, Copy, Files, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
-import type { Day } from '../types';
+import type { Day, EffortType } from '../types';
 
 interface DayCardHeaderProps {
   day: Day;
   dayName: string;
   isTestDay: boolean;
   isCompetitionDay: boolean;
-  bodyFocus?: 'upper' | 'lower';
+  upperEffort?: EffortType;
+  lowerEffort?: EffortType;
   isOpen: boolean;
   isEditing: boolean;
   editingName: string;
@@ -26,7 +27,7 @@ interface DayCardHeaderProps {
   onRemoveDay: () => void;
   onToggleTestDay: () => void;
   onToggleCompetitionDay: () => void;
-  onToggleBodyFocus: (focus: 'upper' | 'lower') => void;
+  onToggleEffort: (bodyPart: 'upper' | 'lower') => void;
   onPasteDay?: () => void;
 }
 
@@ -35,7 +36,8 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   dayName,
   isTestDay,
   isCompetitionDay,
-  bodyFocus,
+  upperEffort = 'none',
+  lowerEffort = 'none',
   isOpen,
   isEditing,
   editingName,
@@ -49,7 +51,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onRemoveDay,
   onToggleTestDay,
   onToggleCompetitionDay,
-  onToggleBodyFocus,
+  onToggleEffort,
   onPasteDay
 }) => {
   const { copyDay, hasDay, clipboard } = useProgramClipboard();
@@ -61,6 +63,30 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   const handleCopyDay = (e: React.MouseEvent) => {
     e.stopPropagation();
     copyDay(day);
+  };
+
+  // Get effort display and colors
+  const getEffortStyle = (effort: EffortType) => {
+    switch (effort) {
+      case 'DE':
+        return 'text-blue-500 bg-blue-100';
+      case 'ME':
+        return 'text-red-500 bg-red-100';
+      default:
+        return 'text-gray-300 hover:text-[#00ffba] hover:bg-[#00ffba]/5';
+    }
+  };
+
+  const getEffortLabel = (bodyPart: 'upper' | 'lower', effort: EffortType) => {
+    const bodyLabel = bodyPart === 'upper' ? 'Άνω Κορμός' : 'Κάτω Κορμός';
+    switch (effort) {
+      case 'DE':
+        return `${bodyLabel} - DE (Dynamic Effort)`;
+      case 'ME':
+        return `${bodyLabel} - ME (Max Effort)`;
+      default:
+        return `${bodyLabel} - Κλικ για DE, διπλό κλικ για ME`;
+    }
   };
 
   return (
@@ -97,36 +123,38 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
         </CollapsibleTrigger>
         
         <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
-          {/* Upper Body Icon */}
+          {/* Upper Body Icon - cycles: none -> DE -> ME -> none */}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onToggleBodyFocus('upper');
+              onToggleEffort('upper');
             }}
-            className={`p-1.5 rounded transition-colors ${
-              bodyFocus === 'upper'
-                ? 'text-[#00ffba] bg-[#00ffba]/10' 
-                : 'text-gray-300 hover:text-[#00ffba] hover:bg-[#00ffba]/5'
-            }`}
-            title="Άνω Κορμός - Upper Body"
+            className={`p-1.5 rounded transition-colors relative ${getEffortStyle(upperEffort)}`}
+            title={getEffortLabel('upper', upperEffort)}
           >
             <ArrowUp className="w-4 h-4" />
+            {upperEffort !== 'none' && (
+              <span className="absolute -bottom-0.5 -right-0.5 text-[8px] font-bold">
+                {upperEffort}
+              </span>
+            )}
           </button>
           
-          {/* Lower Body Icon */}
+          {/* Lower Body Icon - cycles: none -> DE -> ME -> none */}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onToggleBodyFocus('lower');
+              onToggleEffort('lower');
             }}
-            className={`p-1.5 rounded transition-colors ${
-              bodyFocus === 'lower'
-                ? 'text-[#00ffba] bg-[#00ffba]/10' 
-                : 'text-gray-300 hover:text-[#00ffba] hover:bg-[#00ffba]/5'
-            }`}
-            title="Κάτω Κορμός - Lower Body"
+            className={`p-1.5 rounded transition-colors relative ${getEffortStyle(lowerEffort)}`}
+            title={getEffortLabel('lower', lowerEffort)}
           >
             <ArrowDown className="w-4 h-4" />
+            {lowerEffort !== 'none' && (
+              <span className="absolute -bottom-0.5 -right-0.5 text-[8px] font-bold">
+                {lowerEffort}
+              </span>
+            )}
           </button>
           
           {/* Test Day Icon - Yellow */}

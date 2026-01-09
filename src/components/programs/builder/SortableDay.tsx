@@ -4,9 +4,9 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from "lucide-react";
 import { DayCard } from './DayCard';
-import type { Day, Exercise } from '../types';
+import type { Day, Exercise, EffortType } from '../types';
 
-interface SortableDayProps {
+export interface SortableDayProps {
   day: Day;
   exercises: Exercise[];
   selectedUserId?: string;
@@ -16,7 +16,7 @@ interface SortableDayProps {
   onUpdateDayName: (name: string) => void;
   onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (isCompetitionDay: boolean) => void;
-  onUpdateDayBodyFocus: (bodyFocus: 'upper' | 'lower' | undefined) => void;
+  onUpdateDayEffort: (bodyPart: 'upper' | 'lower', effort: EffortType) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
   onDuplicateBlock: (blockId: string) => void;
