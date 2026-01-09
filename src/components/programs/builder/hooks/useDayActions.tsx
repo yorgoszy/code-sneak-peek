@@ -11,13 +11,21 @@ export const useDayActions = (
   exercises?: any[]
 ) => {
   // Helper function to create warm up exercises from athlete's functional test data
-  const createWarmUpExercisesFromAthleteData = async (userId: string): Promise<ProgramExercise[]> => {
+  const createWarmUpExercisesFromAthleteData = async (
+    userId: string, 
+    bodyFocus?: 'upper' | 'lower'
+  ): Promise<ProgramExercise[]> => {
     if (!userId) return [];
     
     try {
       const warmUpExercises = await fetchAthleteWarmUpExercises(userId);
       
-      return warmUpExercises.map((warmUp, index) => ({
+      // Filter by body region if specified
+      const filteredExercises = bodyFocus 
+        ? warmUpExercises.filter(ex => ex.body_region === bodyFocus)
+        : warmUpExercises;
+      
+      return filteredExercises.map((warmUp, index) => ({
         id: generateId(),
         exercise_id: warmUp.exercise_id,
         sets: 1,
@@ -231,6 +239,54 @@ export const useDayActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
+  // Update day body focus and refresh warm up exercises
+  const updateDayBodyFocus = async (weekId: string, dayId: string, bodyFocus: 'upper' | 'lower' | undefined) => {
+    const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : '');
+    
+    // Fetch new warm up exercises based on body focus
+    let warmUpExercises: ProgramExercise[] = [];
+    if (selectedUserId && bodyFocus) {
+      console.log('🏋️ Fetching warm up exercises for body focus:', bodyFocus);
+      warmUpExercises = await createWarmUpExercisesFromAthleteData(selectedUserId, bodyFocus);
+      console.log('🏋️ Found filtered warm up exercises:', warmUpExercises.length);
+    }
+    
+    const updatedWeeks = (program.weeks || []).map(week => {
+      if (week.id === weekId) {
+        return {
+          ...week,
+          program_days: (week.program_days || []).map(day => {
+            if (day.id !== dayId) return day;
+            
+            // Update body_focus and warm up block exercises
+            const updatedBlocks = day.program_blocks.map(block => {
+              if (block.training_type === 'warm up' || block.name === 'warm up') {
+                return {
+                  ...block,
+                  program_exercises: warmUpExercises
+                };
+              }
+              return block;
+            });
+            
+            return {
+              ...day,
+              body_focus: bodyFocus,
+              program_blocks: updatedBlocks
+            };
+          })
+        };
+      }
+      return week;
+    });
+    
+    updateProgram({ weeks: updatedWeeks });
+    
+    if (bodyFocus) {
+      toast.success(`Ενημερώθηκε το warm up για ${bodyFocus === 'upper' ? 'άνω κορμό' : 'κάτω κορμό'}`);
+    }
+  };
+
   // Paste day - αντικαθιστά την υπάρχουσα ημέρα
   const pasteDay = (weekId: string, dayId: string, clipboardDay: any) => {
     const updatedWeeks = (program.weeks || []).map(week => {
@@ -245,6 +301,7 @@ export const useDayActions = (
                 is_test_day: clipboardDay.is_test_day,
                 test_types: clipboardDay.test_types,
                 is_competition_day: clipboardDay.is_competition_day,
+                body_focus: clipboardDay.body_focus,
                 program_blocks: (clipboardDay.program_blocks || []).map((block: any, blockIdx: number) => ({
                   id: generateId(),
                   name: block.name,
@@ -278,6 +335,7 @@ export const useDayActions = (
     updateDayName,
     updateDayTestDay,
     updateDayCompetitionDay,
+    updateDayBodyFocus,
     pasteDay
   };
 };
