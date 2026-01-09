@@ -362,6 +362,7 @@ export const FmsExerciseSelectionDialog: React.FC<FmsExerciseSelectionDialogProp
         fmsExercise={fmsExercise}
         redExercises={redExercises}
         allExercises={exercises}
+        exerciseStatuses={exerciseStatuses}
       />
     </>
   );
