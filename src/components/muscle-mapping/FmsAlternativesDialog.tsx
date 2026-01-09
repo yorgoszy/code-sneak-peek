@@ -16,12 +16,15 @@ interface Exercise {
   video_url?: string;
 }
 
+type ExerciseStatus = 'red' | 'yellow' | 'green' | null;
+
 interface FmsAlternativesDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   fmsExercise: string;
   redExercises: Exercise[];
   allExercises: Exercise[];
+  exerciseStatuses: Record<string, ExerciseStatus>;
 }
 
 export const FmsAlternativesDialog: React.FC<FmsAlternativesDialogProps> = ({
@@ -29,7 +32,8 @@ export const FmsAlternativesDialog: React.FC<FmsAlternativesDialogProps> = ({
   onOpenChange,
   fmsExercise,
   redExercises,
-  allExercises
+  allExercises,
+  exerciseStatuses
 }) => {
   const [selectedRedExercise, setSelectedRedExercise] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -249,6 +253,8 @@ export const FmsAlternativesDialog: React.FC<FmsAlternativesDialogProps> = ({
                         const videoUrl = (exercise as any).video_url;
                         const hasVideo = videoUrl && isValidVideoUrl(videoUrl);
                         const thumbnail = hasVideo ? getVideoThumbnail(videoUrl) : null;
+                        const exerciseStatus = exerciseStatuses[exercise.id];
+                        const hasWarningStatus = exerciseStatus === 'red' || exerciseStatus === 'yellow';
 
                         return (
                           <button
@@ -265,6 +271,15 @@ export const FmsAlternativesDialog: React.FC<FmsAlternativesDialogProps> = ({
                               <div className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center">
                                 <Check className="w-3 h-3 text-green-600" />
                               </div>
+                            )}
+                            {/* Status indicator badge */}
+                            {hasWarningStatus && (
+                              <div className={cn(
+                                "absolute top-1 left-1 w-3 h-3 rounded-full border",
+                                exerciseStatus === 'red' 
+                                  ? 'bg-red-500 border-red-600' 
+                                  : 'bg-yellow-400 border-yellow-500'
+                              )} title={exerciseStatus === 'red' ? 'Απαγορευμένη' : 'Με προσοχή'} />
                             )}
                             {/* Thumbnail */}
                             {thumbnail && (
