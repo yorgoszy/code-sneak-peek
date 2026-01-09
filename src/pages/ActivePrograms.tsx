@@ -55,8 +55,9 @@ const ActivePrograms = () => {
 
   const { data: allPrograms = [], isLoading, error, refetch } = useActivePrograms();
   
-  // Admin βλέπει μόνο assignments χρηστών χωρίς coach_id (δημιουργήθηκαν από admin)
-  const activePrograms = allPrograms.filter(p => !p.app_users?.coach_id);
+  // Admin βλέπει μόνο assignments χρηστών που δημιουργήθηκαν από admin (coach_id = admin ID)
+  const ADMIN_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
+  const activePrograms = allPrograms.filter(p => p.app_users?.coach_id === ADMIN_ID);
   const { getWorkoutCompletions } = useWorkoutCompletions();
   const completionsCache = useWorkoutCompletionsCache();
   
