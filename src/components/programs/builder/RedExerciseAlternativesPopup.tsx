@@ -78,11 +78,10 @@ export const RedExerciseAlternativesPopup: React.FC<RedExerciseAlternativesPopup
         {children || <span />}
       </PopoverTrigger>
       <PopoverContent 
-        className="p-1 rounded-none" 
+        className="w-fit p-1 rounded-none"
         side="top" 
         align="start"
         sideOffset={4}
-        style={{ width: 'fit-content', maxWidth: '220px' }}
       >
         {loading ? (
           <div className="px-2 py-1 text-xs text-gray-500">Φόρτωση...</div>
@@ -116,7 +115,7 @@ export const RedExerciseAlternativesPopup: React.FC<RedExerciseAlternativesPopup
                         <Play className="w-2 h-2" />
                       </div>
                     ) : null}
-                    <span className="text-xs truncate">{exercise.name}</span>
+                    <span className="text-xs whitespace-nowrap">{exercise.name}</span>
                   </div>
                 </Button>
               );
