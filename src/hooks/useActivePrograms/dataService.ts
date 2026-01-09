@@ -292,7 +292,8 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
           id: user.id,
           name: user.name,
           email: user.email,
-          photo_url: user.photo_url
+          photo_url: user.photo_url,
+          coach_id: user.coach_id
         } : null
       };
     });
