@@ -3,11 +3,13 @@ import { Sidebar } from "@/components/Sidebar";
 import { RidAiCoach } from "@/components/rid-ai/RidAiCoach";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Camera } from "lucide-react";
+import { AICoachDialog } from "@/components/ai-coach";
 
 export default function RidAiCoachPage() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [showAICoach, setShowAICoach] = useState(false);
   const isMobile = useIsMobile();
 
   return (
@@ -46,16 +48,37 @@ export default function RidAiCoachPage() {
               <Menu className="h-5 w-5" />
             </Button>
             <h1 className="text-lg font-semibold">RID AI Coach</h1>
-            <div className="w-9" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAICoach(true)}
+              className="p-2"
+            >
+              <Camera className="h-5 w-5 text-[#00ffba]" />
+            </Button>
           </div>
         )}
 
         <div className="p-4 md:p-6">
           <div className="max-w-4xl mx-auto">
+            {/* Desktop AI Coach button */}
+            {!isMobile && (
+              <div className="flex justify-end mb-4">
+                <Button
+                  onClick={() => setShowAICoach(true)}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  AI Coach με Κάμερα
+                </Button>
+              </div>
+            )}
             <RidAiCoach />
           </div>
         </div>
       </div>
+
+      <AICoachDialog isOpen={showAICoach} onClose={() => setShowAICoach(false)} />
     </div>
   );
 }
