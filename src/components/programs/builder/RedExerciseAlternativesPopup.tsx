@@ -78,10 +78,11 @@ export const RedExerciseAlternativesPopup: React.FC<RedExerciseAlternativesPopup
         {children || <span />}
       </PopoverTrigger>
       <PopoverContent 
-        className="w-auto p-1 rounded-none" 
+        className="p-1 rounded-none" 
         side="top" 
         align="start"
         sideOffset={4}
+        style={{ width: 'fit-content', maxWidth: '220px' }}
       >
         {loading ? (
           <div className="px-2 py-1 text-xs text-gray-500">Φόρτωση...</div>
@@ -95,15 +96,15 @@ export const RedExerciseAlternativesPopup: React.FC<RedExerciseAlternativesPopup
                 <Button
                   key={exercise.id}
                   variant="ghost"
-                  className="w-full h-auto py-1.5 px-2 rounded-none justify-start text-left hover:bg-green-100"
+                  className="w-full h-auto py-1 px-2 rounded-none justify-start text-left hover:bg-green-100"
                   onClick={() => {
                     onSelectAlternative(exercise.id);
                     onOpenChange(false);
                   }}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {hasValidVideo && thumbnailUrl ? (
-                      <div className="w-6 h-4 rounded-none overflow-hidden bg-muted flex-shrink-0">
+                      <div className="w-5 h-4 rounded-none overflow-hidden bg-muted flex-shrink-0">
                         <img
                           src={thumbnailUrl}
                           alt={`${exercise.name} thumbnail`}
@@ -111,11 +112,11 @@ export const RedExerciseAlternativesPopup: React.FC<RedExerciseAlternativesPopup
                         />
                       </div>
                     ) : hasValidVideo ? (
-                      <div className="w-6 h-4 rounded-none bg-muted flex items-center justify-center flex-shrink-0">
+                      <div className="w-5 h-4 rounded-none bg-muted flex items-center justify-center flex-shrink-0">
                         <Play className="w-2 h-2" />
                       </div>
                     ) : null}
-                    <span className="text-xs">{exercise.name}</span>
+                    <span className="text-xs truncate">{exercise.name}</span>
                   </div>
                 </Button>
               );
