@@ -106,17 +106,24 @@ export const ExerciseSelectionButton: React.FC<ExerciseSelectionButtonProps> = (
   );
 
   return (
-    <>
-      <div className="px-2 py-0 border-b bg-gray-100 flex items-center w-full" style={{ minHeight: '28px' }}>
-        {/* Exercise button - takes remaining space with overflow hidden */}
-        <div className="flex-1 min-w-0 overflow-hidden">
-          {buttonContent}
-        </div>
-        
-        {/* Icons - fixed position on the right */}
-        <div className="flex gap-1 flex-shrink-0 ml-1">
-          {/* Replace button - only show for red exercises */}
-          {fmsStatus === 'red' && (
+    <div className="px-2 py-0 border-b bg-gray-100 flex items-center w-full" style={{ minHeight: '28px' }}>
+      {/* Exercise button - takes remaining space with overflow hidden */}
+      <div className="flex-1 min-w-0 overflow-hidden">
+        {buttonContent}
+      </div>
+      
+      {/* Icons - fixed position on the right */}
+      <div className="flex gap-1 flex-shrink-0 ml-1">
+        {/* Replace button - only show for red exercises */}
+        {fmsStatus === 'red' && (
+          <RedExerciseAlternativesPopup
+            open={showAlternativesPopup}
+            onOpenChange={setShowAlternativesPopup}
+            redExercise={selectedExercise || null}
+            allExercises={allExercises}
+            onSelectAlternative={handleAlternativeSelected}
+            onUseAnyway={() => setShowAlternativesPopup(false)}
+          >
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -135,37 +142,27 @@ export const ExerciseSelectionButton: React.FC<ExerciseSelectionButtonProps> = (
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDuplicate}
-            className="p-1 h-6 w-6"
-            style={{ borderRadius: '0px' }}
-          >
-            <Copy className="w-3 h-3" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onRemove}
-            className="p-1 h-6 w-6"
-            style={{ borderRadius: '0px' }}
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
-        </div>
+          </RedExerciseAlternativesPopup>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onDuplicate}
+          className="p-1 h-6 w-6"
+          style={{ borderRadius: '0px' }}
+        >
+          <Copy className="w-3 h-3" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRemove}
+          className="p-1 h-6 w-6"
+          style={{ borderRadius: '0px' }}
+        >
+          <Trash2 className="w-3 h-3" />
+        </Button>
       </div>
-
-      {/* Alternatives Popup */}
-      <RedExerciseAlternativesPopup
-        open={showAlternativesPopup}
-        onOpenChange={setShowAlternativesPopup}
-        redExercise={selectedExercise || null}
-        allExercises={allExercises}
-        onSelectAlternative={handleAlternativeSelected}
-        onUseAnyway={() => setShowAlternativesPopup(false)}
-      />
-    </>
+    </div>
   );
 };
