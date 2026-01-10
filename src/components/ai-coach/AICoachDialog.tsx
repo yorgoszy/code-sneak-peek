@@ -3,9 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Square, Play, RotateCcw, Dumbbell, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
+import { Camera, Square, Play, RotateCcw, Dumbbell, ClipboardCheck, AlertCircle, Loader2, Save } from "lucide-react";
 import Webcam from 'react-webcam';
 import { usePoseDetection, PoseResult } from '@/hooks/usePoseDetection';
+import { useAICoachResults } from '@/hooks/useAICoachResults';
 import { 
   analyzeSquat, 
   analyzePushUp, 
@@ -15,10 +16,12 @@ import {
   FMSTestType
 } from '@/services/exerciseAnalyzer';
 import { FeedbackPanel } from './FeedbackPanel';
+import { toast } from 'sonner';
 
 interface AICoachDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  userId?: string; // Optional user ID to save results for
 }
 
 type ExerciseType = 'squat' | 'pushup' | 'lunge';
@@ -39,7 +42,7 @@ const TESTS: Record<FMSTestType, { name: string; description: string }> = {
   'rotary-stability': { name: 'Rotary Stability', description: 'Στροφική σταθερότητα (0-3)' },
 };
 
-export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose }) => {
+export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, userId }) => {
   const [mode, setMode] = useState<'exercise' | 'test'>('exercise');
   const [selectedExercise, setSelectedExercise] = useState<ExerciseType>('squat');
   const [selectedTest, setSelectedTest] = useState<FMSTestType>('deep-squat');
@@ -48,9 +51,12 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose })
   const [fmsScore, setFmsScore] = useState<{ score: 0 | 1 | 2 | 3; feedback: string[] } | null>(null);
   const [repCount, setRepCount] = useState(0);
   const [lastPhase, setLastPhase] = useState<string>('unknown');
+  const [canSave, setCanSave] = useState(false);
   
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const { saveTestResult, saving } = useAICoachResults();
 
   const { 
     initialize, 
@@ -121,7 +127,11 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose })
   const handleStop = useCallback(() => {
     stop();
     setIsSessionActive(false);
-  }, [stop]);
+    // Enable save button after session ends if we have a score and user ID
+    if (mode === 'test' && fmsScore !== null && userId) {
+      setCanSave(true);
+    }
+  }, [stop, mode, fmsScore, userId]);
 
   // Reset session
   const handleReset = useCallback(() => {
@@ -129,7 +139,27 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose })
     setAnalysis(null);
     setFmsScore(null);
     setLastPhase('unknown');
+    setCanSave(false);
   }, []);
+
+  // Save FMS test result
+  const handleSaveResult = useCallback(async () => {
+    if (!userId || !fmsScore) {
+      toast.error('Δεν υπάρχει χρήστης ή αποτέλεσμα για αποθήκευση');
+      return;
+    }
+
+    const success = await saveTestResult({
+      userId,
+      testType: selectedTest,
+      score: fmsScore.score,
+      feedback: fmsScore.feedback.join('; ')
+    });
+
+    if (success) {
+      setCanSave(false);
+    }
+  }, [userId, fmsScore, selectedTest, saveTestResult]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -275,14 +305,27 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose })
                 {/* Controls */}
                 <div className="flex gap-2 mt-4">
                   {!isSessionActive ? (
-                    <Button 
-                      onClick={handleStart} 
-                      className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                      disabled={isLoading}
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Έναρξη
-                    </Button>
+                    <>
+                      <Button 
+                        onClick={handleStart} 
+                        className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                        disabled={isLoading}
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Έναρξη
+                      </Button>
+                      {/* Save button - only show for FMS tests with userId */}
+                      {mode === 'test' && canSave && userId && (
+                        <Button 
+                          onClick={handleSaveResult}
+                          className="bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
+                          disabled={saving}
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
+                        </Button>
+                      )}
+                    </>
                   ) : (
                     <>
                       <Button 
