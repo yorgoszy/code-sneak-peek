@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, User, Lock } from "lucide-react";
+import { Search, Lock } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { cn } from '@/lib/utils';
@@ -41,29 +41,35 @@ export const AICoachUserSelector: React.FC<AICoachUserSelectorProps> = ({
   selectedUserId,
   onUserSelect
 }) => {
-  const { isAdmin, isCoach, userProfile, loading: roleLoading } = useRoleCheck();
+  const { isAdmin, isCoach, userProfile, loading: roleLoading, userRoles } = useRoleCheck();
   const [users, setUsers] = useState<AppUser[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const hasFetched = useRef(false);
+  const hasAutoSelected = useRef(false);
 
-  // Determine if user can change selection
-  const canChangeUser = isAdmin() || isCoach();
+  // Determine if user can change selection - compute once based on roles
+  const isUserAdmin = userRoles.includes('admin');
+  const isUserCoach = userRoles.includes('coach');
+  const canChangeUser = isUserAdmin || isUserCoach;
 
   useEffect(() => {
     const fetchUsers = async () => {
-      if (roleLoading || !userProfile) return;
+      // Only fetch once when we have userProfile and roles are loaded
+      if (roleLoading || !userProfile || hasFetched.current) return;
 
+      hasFetched.current = true;
       setLoading(true);
+      
       try {
         let query = supabase
           .from('app_users')
           .select('id, name, email, avatar_url, photo_url, coach_id')
           .order('name');
 
-        if (isAdmin()) {
-          // Admin sees all users
-          // No additional filter
-        } else if (isCoach()) {
+        if (isUserAdmin) {
+          // Admin sees all users - no additional filter
+        } else if (isUserCoach) {
           // Coach sees only their users
           query = query.eq('coach_id', userProfile.id);
         } else {
@@ -78,11 +84,6 @@ export const AICoachUserSelector: React.FC<AICoachUserSelectorProps> = ({
           setUsers([]);
         } else {
           setUsers(data || []);
-          
-          // Auto-select current user if no selection and not admin/coach
-          if (!selectedUserId && !canChangeUser && userProfile) {
-            onUserSelect(userProfile.id, userProfile.name);
-          }
         }
       } catch (error) {
         console.error('Error:', error);
@@ -93,7 +94,22 @@ export const AICoachUserSelector: React.FC<AICoachUserSelectorProps> = ({
     };
 
     fetchUsers();
-  }, [userProfile, roleLoading, isAdmin, isCoach]);
+  }, [userProfile?.id, roleLoading, isUserAdmin, isUserCoach]);
+
+  // Auto-select current user if no selection and not admin/coach (separate effect)
+  useEffect(() => {
+    if (
+      !loading && 
+      !roleLoading && 
+      !selectedUserId && 
+      !canChangeUser && 
+      userProfile && 
+      !hasAutoSelected.current
+    ) {
+      hasAutoSelected.current = true;
+      onUserSelect(userProfile.id, userProfile.name);
+    }
+  }, [loading, roleLoading, selectedUserId, canChangeUser, userProfile, onUserSelect]);
 
   // Filter users based on search query
   const filteredUsers = useMemo(() => {
@@ -135,19 +151,19 @@ export const AICoachUserSelector: React.FC<AICoachUserSelectorProps> = ({
   }
 
   // If user can't change, show locked state
-  if (!canChangeUser) {
+  if (!canChangeUser && userProfile) {
     return (
       <div className="p-3 border border-gray-200 bg-gray-50">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={userProfile?.avatar_url || userProfile?.photo_url} />
-            <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] font-semibold">
-              {getInitials(userProfile?.name || 'U')}
+          <Avatar className="h-10 w-10 rounded-full">
+            <AvatarImage src={userProfile.avatar_url || userProfile.photo_url} />
+            <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] font-semibold rounded-full">
+              {getInitials(userProfile.name || 'U')}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <p className="font-medium text-sm">{userProfile?.name}</p>
-            <p className="text-xs text-gray-500">{userProfile?.email}</p>
+            <p className="font-medium text-sm">{userProfile.name}</p>
+            <p className="text-xs text-gray-500">{userProfile.email}</p>
           </div>
           <Lock className="w-4 h-4 text-gray-400" />
         </div>
@@ -162,9 +178,9 @@ export const AICoachUserSelector: React.FC<AICoachUserSelectorProps> = ({
         <div className="p-3 bg-[#00ffba]/10 border-b border-gray-200">
           <Label className="text-xs text-gray-600 mb-1 block">Επιλεγμένος χρήστης</Label>
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-10 w-10 rounded-full">
               <AvatarImage src={selectedUser.avatar_url || selectedUser.photo_url || ''} />
-              <AvatarFallback className="bg-[#00ffba] text-black font-semibold">
+              <AvatarFallback className="bg-[#00ffba] text-black font-semibold rounded-full">
                 {getInitials(selectedUser.name)}
               </AvatarFallback>
             </Avatar>
@@ -208,9 +224,9 @@ export const AICoachUserSelector: React.FC<AICoachUserSelectorProps> = ({
                     : "hover:bg-gray-100"
                 )}
               >
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-8 w-8 rounded-full">
                   <AvatarImage src={user.avatar_url || user.photo_url || ''} />
-                  <AvatarFallback className="bg-gray-200 text-gray-600 text-xs">
+                  <AvatarFallback className="bg-gray-200 text-gray-600 text-xs rounded-full">
                     {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
