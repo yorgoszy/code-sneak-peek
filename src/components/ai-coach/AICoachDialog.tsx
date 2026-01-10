@@ -6,7 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Camera, Square, Play, RotateCcw, Dumbbell, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
 import Webcam from 'react-webcam';
 import { usePoseDetection, PoseResult } from '@/hooks/usePoseDetection';
-import { analyzeSquat, analyzePushUp, analyzeLunge, scoreFMSDeepSquat, ExerciseAnalysis } from '@/services/exerciseAnalyzer';
+import { 
+  analyzeSquat, 
+  analyzePushUp, 
+  analyzeLunge, 
+  getFMSTestScorer,
+  ExerciseAnalysis,
+  FMSTestType
+} from '@/services/exerciseAnalyzer';
 import { FeedbackPanel } from './FeedbackPanel';
 
 interface AICoachDialogProps {
@@ -15,7 +22,6 @@ interface AICoachDialogProps {
 }
 
 type ExerciseType = 'squat' | 'pushup' | 'lunge';
-type TestType = 'deep-squat';
 
 const EXERCISES: Record<ExerciseType, { name: string; description: string }> = {
   squat: { name: 'Squat', description: 'Ανάλυση βαθέος καθίσματος' },
@@ -23,14 +29,20 @@ const EXERCISES: Record<ExerciseType, { name: string; description: string }> = {
   lunge: { name: 'Lunge', description: 'Ανάλυση προβολών' },
 };
 
-const TESTS: Record<TestType, { name: string; description: string }> = {
-  'deep-squat': { name: 'FMS Deep Squat', description: 'Αξιολόγηση βαθέος καθίσματος (0-3)' },
+const TESTS: Record<FMSTestType, { name: string; description: string }> = {
+  'deep-squat': { name: 'Deep Squat', description: 'Βαθύ κάθισμα (0-3)' },
+  'hurdle-step': { name: 'Hurdle Step', description: 'Βήμα πάνω από εμπόδιο (0-3)' },
+  'inline-lunge': { name: 'Inline Lunge', description: 'Προβολή σε ευθεία (0-3)' },
+  'shoulder-mobility': { name: 'Shoulder Mobility', description: 'Κινητικότητα ώμων (0-3)' },
+  'active-straight-leg-raise': { name: 'ASLR', description: 'Ενεργή ανύψωση ποδιού (0-3)' },
+  'trunk-stability-pushup': { name: 'Trunk Push-Up', description: 'Σταθερότητα κορμού (0-3)' },
+  'rotary-stability': { name: 'Rotary Stability', description: 'Στροφική σταθερότητα (0-3)' },
 };
 
 export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose }) => {
   const [mode, setMode] = useState<'exercise' | 'test'>('exercise');
   const [selectedExercise, setSelectedExercise] = useState<ExerciseType>('squat');
-  const [selectedTest, setSelectedTest] = useState<TestType>('deep-squat');
+  const [selectedTest, setSelectedTest] = useState<FMSTestType>('deep-squat');
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [analysis, setAnalysis] = useState<ExerciseAnalysis | null>(null);
   const [fmsScore, setFmsScore] = useState<{ score: 0 | 1 | 2 | 3; feedback: string[] } | null>(null);
@@ -88,10 +100,9 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose })
         setLastPhase(analysisResult.phase || 'unknown');
       }
     } else if (mode === 'test') {
-      if (selectedTest === 'deep-squat') {
-        const fmsResult = scoreFMSDeepSquat(result.landmarks);
-        setFmsScore(fmsResult);
-      }
+      const scorer = getFMSTestScorer(selectedTest);
+      const fmsResult = scorer(result.landmarks);
+      setFmsScore(fmsResult);
     }
   }
 
@@ -160,8 +171,8 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose })
             </TabsContent>
 
             <TabsContent value="test" className="mt-4">
-              <div className="flex gap-2 mb-4">
-                {(Object.keys(TESTS) as TestType[]).map((test) => (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {(Object.keys(TESTS) as FMSTestType[]).map((test) => (
                   <Button
                     key={test}
                     variant={selectedTest === test ? "default" : "outline"}
