@@ -24,6 +24,7 @@ import {
 } from '@/services/exerciseAnalyzer';
 import { FeedbackPanel } from './FeedbackPanel';
 import { FMSProgressChart } from './FMSProgressChart';
+import { AICoachUserSelector } from './AICoachUserSelector';
 import { toast } from 'sonner';
 
 interface AICoachDialogProps {
@@ -50,7 +51,7 @@ const TESTS: Record<FMSTestType, { name: string; description: string }> = {
   'deep-squat': { name: 'Deep Squat', description: 'Βαθύ κάθισμα (0-3)' },
 };
 
-export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, userId }) => {
+export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, userId: initialUserId }) => {
   const [mode, setMode] = useState<'exercise' | 'test' | 'progress'>('exercise');
   const [selectedExercise, setSelectedExercise] = useState<ExerciseType>('squat');
   const [selectedTest, setSelectedTest] = useState<FMSTestType>('shoulder-mobility');
@@ -62,7 +63,8 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
   const [canSave, setCanSave] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoRecordingEnabled, setVideoRecordingEnabled] = useState(false);
-  
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(initialUserId || null);
+  const [selectedUserName, setSelectedUserName] = useState<string>('');
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lastFeedbackRef = useRef<string>('');
@@ -180,10 +182,10 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
     }
 
     // Enable save button after session ends if we have a score and user ID
-    if (mode === 'test' && fmsScore !== null && userId) {
+    if (mode === 'test' && fmsScore !== null && selectedUserId) {
       setCanSave(true);
     }
-  }, [stop, mode, fmsScore, userId, audio, videoRecording]);
+  }, [stop, mode, fmsScore, selectedUserId, audio, videoRecording]);
 
   // Reset session
   const handleReset = useCallback(() => {
@@ -198,13 +200,13 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
 
   // Save FMS test result
   const handleSaveResult = useCallback(async () => {
-    if (!userId || !fmsScore) {
+    if (!selectedUserId || !fmsScore) {
       toast.error('Δεν υπάρχει χρήστης ή αποτέλεσμα για αποθήκευση');
       return;
     }
 
     const success = await saveTestResult({
-      userId,
+      userId: selectedUserId,
       testType: selectedTest,
       score: fmsScore.score,
       feedback: fmsScore.feedback.join('; ')
@@ -214,7 +216,13 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
       setCanSave(false);
       audio.playSuccessSound();
     }
-  }, [userId, fmsScore, selectedTest, saveTestResult, audio]);
+  }, [selectedUserId, fmsScore, selectedTest, saveTestResult, audio]);
+
+  // Handle user selection
+  const handleUserSelect = useCallback((userId: string, userName: string) => {
+    setSelectedUserId(userId);
+    setSelectedUserName(userName);
+  }, []);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -263,7 +271,15 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
           </DialogTitle>
         </DialogHeader>
 
-        <div className="p-4">
+        <div className="p-4 space-y-4">
+          {/* User Selector */}
+          <div className="mb-4">
+            <AICoachUserSelector
+              selectedUserId={selectedUserId}
+              onUserSelect={handleUserSelect}
+            />
+          </div>
+
           <Tabs value={mode} onValueChange={(v) => setMode(v as 'exercise' | 'test' | 'progress')} className="w-full">
             <TabsList className="grid w-full grid-cols-3 rounded-none">
               <TabsTrigger value="exercise" className="rounded-none flex items-center gap-2">
@@ -274,7 +290,7 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
                 <ClipboardCheck className="w-4 h-4" />
                 Τεστ FMS
               </TabsTrigger>
-              <TabsTrigger value="progress" className="rounded-none flex items-center gap-2" disabled={!userId}>
+              <TabsTrigger value="progress" className="rounded-none flex items-center gap-2" disabled={!selectedUserId}>
                 <BarChart3 className="w-4 h-4" />
                 Πρόοδος
               </TabsTrigger>
@@ -313,8 +329,8 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
             </TabsContent>
 
             <TabsContent value="progress" className="mt-4">
-              {userId ? (
-                <FMSProgressChart userId={userId} />
+              {selectedUserId ? (
+                <FMSProgressChart userId={selectedUserId} />
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   Επιλέξτε χρήστη για να δείτε την πρόοδο FMS.
@@ -426,7 +442,7 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
                         Έναρξη
                       </Button>
                       {/* Save button - only show for FMS tests with userId */}
-                      {mode === 'test' && canSave && userId && (
+                      {mode === 'test' && canSave && selectedUserId && (
                         <Button 
                           onClick={handleSaveResult}
                           className="bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
