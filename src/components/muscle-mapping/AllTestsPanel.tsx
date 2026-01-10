@@ -67,6 +67,7 @@ type RiskLevel = 'forbidden' | 'caution' | 'safe';
 export const AllTestsPanel = () => {
   const [muscles, setMuscles] = useState<Muscle[]>([]);
   const [mappings, setMappings] = useState<Mapping[]>([]);
+  const [muscleExerciseLinks, setMuscleExerciseLinks] = useState<{muscle_name: string; exercise_type: string; exercise_id: string; exercises?: {id: string; name: string; video_url?: string}}[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<string>('');
@@ -103,13 +104,15 @@ export const AllTestsPanel = () => {
   const fetchData = async () => {
     setLoading(true);
     
-    const [musclesRes, mappingsRes] = await Promise.all([
+    const [musclesRes, mappingsRes, muscleExerciseRes] = await Promise.all([
       supabase.from('muscles').select('*').order('name'),
-      supabase.from('functional_issue_muscle_mappings').select('*, muscles(*)')
+      supabase.from('functional_issue_muscle_mappings').select('*, muscles(*)'),
+      supabase.from('functional_muscle_exercises').select('muscle_name, exercise_type, exercise_id, exercises(id, name, video_url)')
     ]);
 
     if (musclesRes.data) setMuscles(musclesRes.data);
     if (mappingsRes.data) setMappings(mappingsRes.data as Mapping[]);
+    if (muscleExerciseRes.data) setMuscleExerciseLinks(muscleExerciseRes.data as any);
     
     setLoading(false);
   };
@@ -277,6 +280,13 @@ export const AllTestsPanel = () => {
 
   const getDialogMappings = () => {
     return mappings.filter(m => m.issue_name === selectedIssue && m.issue_category === selectedCategory);
+  };
+
+  // Get linked exercise for a muscle
+  const getLinkedExercise = (muscleName: string, exerciseType: 'stretching' | 'strengthening') => {
+    return muscleExerciseLinks.find(link => 
+      link.muscle_name === muscleName && link.exercise_type === exerciseType
+    );
   };
 
   const dialogMappings = getDialogMappings();
@@ -533,29 +543,40 @@ export const AllTestsPanel = () => {
                 {dialogStretch.length === 0 ? (
                   <p className="text-xs text-gray-400">Δεν υπάρχουν μύες</p>
                 ) : (
-                  dialogStretch.map(m => (
-                    <div 
-                      key={m.id} 
-                      className="flex items-center justify-between bg-blue-50 border border-blue-200 px-3 py-2 text-sm"
-                    >
-                      <span>{m.muscles?.name}</span>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleOpenLinkDialog(m.muscles?.name || '', 'stretching')}
-                          className="text-blue-600 hover:text-blue-800"
-                          title="Σύνδεση με άσκηση"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMapping(m.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                  dialogStretch.map(m => {
+                    const linkedExercise = getLinkedExercise(m.muscles?.name || '', 'stretching');
+                    return (
+                      <div 
+                        key={m.id} 
+                        className="bg-blue-50 border border-blue-200 px-3 py-2 text-sm"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{m.muscles?.name}</span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleOpenLinkDialog(m.muscles?.name || '', 'stretching')}
+                              className="text-blue-600 hover:text-blue-800"
+                              title="Σύνδεση με άσκηση"
+                            >
+                              <Link className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteMapping(m.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                        {linkedExercise?.exercises && (
+                          <div className="mt-1 text-xs text-blue-600 flex items-center gap-1">
+                            <Check className="w-3 h-3" />
+                            <span>{linkedExercise.exercises.name}</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
@@ -617,29 +638,40 @@ export const AllTestsPanel = () => {
                 {dialogStrengthen.length === 0 ? (
                   <p className="text-xs text-gray-400">Δεν υπάρχουν μύες</p>
                 ) : (
-                  dialogStrengthen.map(m => (
-                    <div 
-                      key={m.id} 
-                      className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 text-sm"
-                    >
-                      <span>{m.muscles?.name}</span>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleOpenLinkDialog(m.muscles?.name || '', 'strengthening')}
-                          className="text-green-600 hover:text-green-800"
-                          title="Σύνδεση με άσκηση"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMapping(m.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                  dialogStrengthen.map(m => {
+                    const linkedExercise = getLinkedExercise(m.muscles?.name || '', 'strengthening');
+                    return (
+                      <div 
+                        key={m.id} 
+                        className="bg-green-50 border border-green-200 px-3 py-2 text-sm"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{m.muscles?.name}</span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleOpenLinkDialog(m.muscles?.name || '', 'strengthening')}
+                              className="text-green-600 hover:text-green-800"
+                              title="Σύνδεση με άσκηση"
+                            >
+                              <Link className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteMapping(m.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                        {linkedExercise?.exercises && (
+                          <div className="mt-1 text-xs text-green-600 flex items-center gap-1">
+                            <Check className="w-3 h-3" />
+                            <span>{linkedExercise.exercises.name}</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
@@ -711,7 +743,12 @@ export const AllTestsPanel = () => {
       {selectedMuscleForLink && (
         <MuscleExerciseLinkDialog
           open={linkDialogOpen}
-          onOpenChange={setLinkDialogOpen}
+          onOpenChange={(open) => {
+            setLinkDialogOpen(open);
+            if (!open) {
+              fetchData(); // Refresh to show linked exercises
+            }
+          }}
           muscleName={selectedMuscleForLink.muscleName}
           exerciseType={selectedMuscleForLink.exerciseType}
         />
