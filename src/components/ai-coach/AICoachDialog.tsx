@@ -41,19 +41,19 @@ const EXERCISES: Record<ExerciseType, { name: string; description: string }> = {
 };
 
 const TESTS: Record<FMSTestType, { name: string; description: string }> = {
-  'deep-squat': { name: 'Deep Squat', description: 'Βαθύ κάθισμα (0-3)' },
-  'hurdle-step': { name: 'Hurdle Step', description: 'Βήμα πάνω από εμπόδιο (0-3)' },
-  'inline-lunge': { name: 'Inline Lunge', description: 'Προβολή σε ευθεία (0-3)' },
   'shoulder-mobility': { name: 'Shoulder Mobility', description: 'Κινητικότητα ώμων (0-3)' },
   'active-straight-leg-raise': { name: 'ASLR', description: 'Ενεργή ανύψωση ποδιού (0-3)' },
   'trunk-stability-pushup': { name: 'Trunk Push-Up', description: 'Σταθερότητα κορμού (0-3)' },
   'rotary-stability': { name: 'Rotary Stability', description: 'Στροφική σταθερότητα (0-3)' },
+  'inline-lunge': { name: 'Inline Lunge', description: 'Προβολή σε ευθεία (0-3)' },
+  'hurdle-step': { name: 'Hurdle Step', description: 'Βήμα πάνω από εμπόδιο (0-3)' },
+  'deep-squat': { name: 'Deep Squat', description: 'Βαθύ κάθισμα (0-3)' },
 };
 
 export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, userId }) => {
   const [mode, setMode] = useState<'exercise' | 'test' | 'progress'>('exercise');
   const [selectedExercise, setSelectedExercise] = useState<ExerciseType>('squat');
-  const [selectedTest, setSelectedTest] = useState<FMSTestType>('deep-squat');
+  const [selectedTest, setSelectedTest] = useState<FMSTestType>('shoulder-mobility');
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [analysis, setAnalysis] = useState<ExerciseAnalysis | null>(null);
   const [fmsScore, setFmsScore] = useState<{ score: 0 | 1 | 2 | 3; feedback: string[] } | null>(null);
