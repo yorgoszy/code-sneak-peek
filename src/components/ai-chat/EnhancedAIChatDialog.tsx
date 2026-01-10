@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, Brain, Crown, Sparkles, Loader2, Wand2, Utensils } from "lucide-react";
+import { Send, Brain, Crown, Sparkles, Loader2, Wand2, Utensils, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAIProgramBuilder } from "@/contexts/AIProgramBuilderContext";
 import { Badge } from "@/components/ui/badge";
 import { QuickAssignProgramDialog, AIProgramData } from "@/components/ai-chat/QuickAssignProgramDialog";
 import { QuickAssignNutritionDialog, AINutritionData } from "@/components/ai-chat/QuickAssignNutritionDialog";
+import { AICoachDialog } from "@/components/ai-coach";
 
 interface Message {
   id: string;
@@ -47,6 +48,9 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   // Nutrition states
   const [nutritionAssignOpen, setNutritionAssignOpen] = useState(false);
   const [lastAINutritionData, setLastAINutritionData] = useState<AINutritionData | null>(null);
+  
+  // AI Coach Camera state
+  const [showAICoach, setShowAICoach] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { openDialog: openProgramBuilder, queueAction, executeAction } = useAIProgramBuilder();
@@ -1093,6 +1097,17 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
               )}
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+              {/* Camera AI Coach button */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowAICoach(true)}
+                className="rounded-none text-[10px] sm:text-xs h-7 px-2 sm:px-3"
+                title="AI Coach με Κάμερα"
+              >
+                <Camera className="w-3 h-3 text-[#00ffba]" />
+              </Button>
+              
               {isAdmin && (
                 <>
                   <Button
@@ -1268,6 +1283,8 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       nutritionData={lastAINutritionData}
       defaultUserId={athleteId}
     />
+    
+    <AICoachDialog isOpen={showAICoach} onClose={() => setShowAICoach(false)} />
     </>
   );
 };
