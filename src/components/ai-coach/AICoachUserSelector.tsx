@@ -67,10 +67,8 @@ export const AICoachUserSelector: React.FC<AICoachUserSelectorProps> = ({
           .select('id, name, email, avatar_url, photo_url, coach_id')
           .order('name');
 
-        if (isUserAdmin) {
-          // Admin sees all users - no additional filter
-        } else if (isUserCoach) {
-          // Coach sees only their users
+        if (isUserAdmin || isUserCoach) {
+          // Admin and Coach see only their assigned users
           query = query.eq('coach_id', userProfile.id);
         } else {
           // Regular user sees only themselves
