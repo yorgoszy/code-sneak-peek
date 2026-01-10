@@ -25,6 +25,7 @@ import {
 import { FeedbackPanel } from './FeedbackPanel';
 import { FMSProgressChart } from './FMSProgressChart';
 import { AICoachUserSelector } from './AICoachUserSelector';
+import { FMSTestFlow } from './FMSTestFlow';
 import { toast } from 'sonner';
 
 interface AICoachDialogProps {
@@ -313,19 +314,65 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
             </TabsContent>
 
             <TabsContent value="test" className="mt-4">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {(Object.keys(TESTS) as FMSTestType[]).map((test) => (
-                  <Button
-                    key={test}
-                    variant={selectedTest === test ? "default" : "outline"}
-                    onClick={() => setSelectedTest(test)}
-                    className="rounded-none"
-                    disabled={isSessionActive}
-                  >
-                    {TESTS[test].name}
-                  </Button>
-                ))}
+              {/* FMS Test Flow Component */}
+              <div className="mb-4">
+                <FMSTestFlow
+                  currentTest={selectedTest}
+                  currentScore={fmsScore?.score ?? null}
+                  isSessionActive={isSessionActive}
+                  onTestChange={setSelectedTest}
+                  onRecordAttempt={() => {
+                    // Η καταχώρηση γίνεται μέσα στο FMSTestFlow
+                  }}
+                  onComplete={async (results, isNonFunctional, failedTests) => {
+                    // Αποθήκευση όλων των αποτελεσμάτων
+                    if (selectedUserId) {
+                      for (const result of results) {
+                        if (!result.skipped && result.attempts.length > 0) {
+                          await saveTestResult({
+                            userId: selectedUserId,
+                            testType: result.test,
+                            score: result.bestScore,
+                            feedback: isNonFunctional && failedTests.includes(result.test)
+                              ? `Μη λειτουργικός - Score ${result.bestScore}. Απαιτείται διορθωτικό πρόγραμμα.`
+                              : `Best score: ${result.bestScore}/3 σε ${result.attempts.length} προσπάθειες`
+                          });
+                        }
+                      }
+                      
+                      if (isNonFunctional) {
+                        toast.warning(
+                          `Μη λειτουργικός χρήστης - Score 1 σε ${failedTests.map(t => TESTS[t].name).join(' & ')}. Χρειάζεται διορθωτικό πρόγραμμα.`,
+                          { duration: 8000 }
+                        );
+                      } else {
+                        toast.success('Όλα τα FMS tests αποθηκεύτηκαν επιτυχώς!');
+                      }
+                    }
+                  }}
+                />
               </div>
+              
+              {/* Manual Test Selection (fallback) */}
+              <details className="text-sm">
+                <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                  Μεμονωμένη επιλογή τεστ
+                </summary>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {(Object.keys(TESTS) as FMSTestType[]).map((test) => (
+                    <Button
+                      key={test}
+                      variant={selectedTest === test ? "default" : "outline"}
+                      onClick={() => setSelectedTest(test)}
+                      className="rounded-none"
+                      size="sm"
+                      disabled={isSessionActive}
+                    >
+                      {TESTS[test].name}
+                    </Button>
+                  ))}
+                </div>
+              </details>
             </TabsContent>
 
             <TabsContent value="progress" className="mt-4">
