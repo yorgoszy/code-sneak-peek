@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { WorkoutStats } from "./workoutStatsTypes";
 import { format } from "date-fns";
 
@@ -34,8 +34,6 @@ export const useWorkoutStats = (userId: string) => {
   const fetchWorkoutStats = async () => {
     try {
       setLoading(true);
-      
-      const { supabase } = await import("@/integrations/supabase/client");
 
       console.log('📊 Fetching workout stats for user:', userId);
 
