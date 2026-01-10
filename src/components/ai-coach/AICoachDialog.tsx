@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Square, Play, RotateCcw, Dumbbell, ClipboardCheck, AlertCircle, Loader2, Save } from "lucide-react";
+import { Camera, Square, Play, RotateCcw, Dumbbell, ClipboardCheck, AlertCircle, Loader2, Save, BarChart3 } from "lucide-react";
 import Webcam from 'react-webcam';
 import { usePoseDetection, PoseResult } from '@/hooks/usePoseDetection';
 import { useAICoachResults } from '@/hooks/useAICoachResults';
@@ -16,6 +16,7 @@ import {
   FMSTestType
 } from '@/services/exerciseAnalyzer';
 import { FeedbackPanel } from './FeedbackPanel';
+import { FMSProgressChart } from './FMSProgressChart';
 import { toast } from 'sonner';
 
 interface AICoachDialogProps {
@@ -43,7 +44,7 @@ const TESTS: Record<FMSTestType, { name: string; description: string }> = {
 };
 
 export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, userId }) => {
-  const [mode, setMode] = useState<'exercise' | 'test'>('exercise');
+  const [mode, setMode] = useState<'exercise' | 'test' | 'progress'>('exercise');
   const [selectedExercise, setSelectedExercise] = useState<ExerciseType>('squat');
   const [selectedTest, setSelectedTest] = useState<FMSTestType>('deep-squat');
   const [isSessionActive, setIsSessionActive] = useState(false);
@@ -172,8 +173,8 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
         </DialogHeader>
 
         <div className="p-4">
-          <Tabs value={mode} onValueChange={(v) => setMode(v as 'exercise' | 'test')} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-none">
+          <Tabs value={mode} onValueChange={(v) => setMode(v as 'exercise' | 'test' | 'progress')} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 rounded-none">
               <TabsTrigger value="exercise" className="rounded-none flex items-center gap-2">
                 <Dumbbell className="w-4 h-4" />
                 Άσκηση
@@ -181,6 +182,10 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
               <TabsTrigger value="test" className="rounded-none flex items-center gap-2">
                 <ClipboardCheck className="w-4 h-4" />
                 Τεστ FMS
+              </TabsTrigger>
+              <TabsTrigger value="progress" className="rounded-none flex items-center gap-2" disabled={!userId}>
+                <BarChart3 className="w-4 h-4" />
+                Πρόοδος
               </TabsTrigger>
             </TabsList>
 
@@ -214,6 +219,16 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
                   </Button>
                 ))}
               </div>
+            </TabsContent>
+
+            <TabsContent value="progress" className="mt-4">
+              {userId ? (
+                <FMSProgressChart userId={userId} />
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  Επιλέξτε χρήστη για να δείτε την πρόοδο FMS.
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
@@ -351,7 +366,7 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
               {/* Feedback Panel */}
               <div className="lg:col-span-1">
                 <FeedbackPanel
-                  mode={mode}
+                  mode={mode === 'progress' ? 'test' : mode}
                   exercise={mode === 'exercise' ? EXERCISES[selectedExercise] : undefined}
                   test={mode === 'test' ? TESTS[selectedTest] : undefined}
                   analysis={analysis}
