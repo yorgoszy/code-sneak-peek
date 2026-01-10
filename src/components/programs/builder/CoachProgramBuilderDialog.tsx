@@ -5,6 +5,7 @@ import { ProgramBuilderDialogContent } from './ProgramBuilderDialogContent';
 import { useProgramBuilderState } from './hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from './hooks/useProgramBuilderActions';
 import { useCoachProgramBuilderDialogLogic } from './hooks/useCoachProgramBuilderDialogLogic';
+import { prefetchAthleteWarmUpExercises } from './hooks/useAthleteWarmUpExercises';
 
 interface CoachProgramBuilderDialogProps {
   users: User[]; // coach_users
@@ -68,10 +69,9 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
     updateProgram({ training_dates: dates });
   };
 
-  const handleAthleteChange = async (userId: string) => {
+  const handleAthleteChange = (userId: string) => {
     // Prefetch warm-up exercises immediately for instant effort updates
     if (userId) {
-      const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
       prefetchAthleteWarmUpExercises(userId);
     }
     updateProgram({ 
@@ -81,11 +81,10 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
     });
   };
 
-  const handleMultipleAthleteChange = async (userIds: string[]) => {
+  const handleMultipleAthleteChange = (userIds: string[]) => {
     console.log('🔄 CoachProgramBuilderDialog - handleMultipleAthleteChange called with:', userIds);
     // Prefetch warm-up exercises for first user
     if (userIds.length > 0) {
-      const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
       prefetchAthleteWarmUpExercises(userIds[0]);
     }
     updateProgram({ 

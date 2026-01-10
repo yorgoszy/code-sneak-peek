@@ -7,6 +7,7 @@ import { ProgramBuilderDialogContent } from './ProgramBuilderDialogContent';
 import { useProgramsData } from '@/hooks/useProgramsData';
 import { usePrograms } from '@/hooks/usePrograms';
 import { toast } from 'sonner';
+import { prefetchAthleteWarmUpExercises } from './hooks/useAthleteWarmUpExercises';
 
 export const AIControlledProgramBuilderDialog: React.FC = () => {
   const { 
@@ -137,16 +138,14 @@ export const AIControlledProgramBuilderDialog: React.FC = () => {
         exercises={exercises}
         onNameChange={(name) => updateProgram({ name })}
         onDescriptionChange={(description) => updateProgram({ description })}
-        onAthleteChange={async (user_id) => {
+        onAthleteChange={(user_id) => {
           if (user_id) {
-            const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
             prefetchAthleteWarmUpExercises(user_id);
           }
           updateProgram({ user_id, user_ids: [user_id] });
         }}
-        onMultipleAthleteChange={async (user_ids) => {
+        onMultipleAthleteChange={(user_ids) => {
           if (user_ids.length > 0) {
-            const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
             prefetchAthleteWarmUpExercises(user_ids[0]);
           }
           updateProgram({ user_ids });
