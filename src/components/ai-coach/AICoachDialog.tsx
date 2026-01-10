@@ -3,10 +3,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Square, Play, RotateCcw, Dumbbell, ClipboardCheck, AlertCircle, Loader2, Save, BarChart3 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { 
+  Camera, Square, Play, RotateCcw, Dumbbell, ClipboardCheck, AlertCircle, 
+  Loader2, Save, BarChart3, Volume2, VolumeX, Video, Download, Trash2 
+} from "lucide-react";
 import Webcam from 'react-webcam';
 import { usePoseDetection, PoseResult } from '@/hooks/usePoseDetection';
 import { useAICoachResults } from '@/hooks/useAICoachResults';
+import { useAudioFeedback } from '@/hooks/useAudioFeedback';
+import { useVideoRecording } from '@/hooks/useVideoRecording';
 import { 
   analyzeSquat, 
   analyzePushUp, 
@@ -22,7 +29,7 @@ import { toast } from 'sonner';
 interface AICoachDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  userId?: string; // Optional user ID to save results for
+  userId?: string;
 }
 
 type ExerciseType = 'squat' | 'pushup' | 'lunge';
@@ -53,11 +60,20 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
   const [repCount, setRepCount] = useState(0);
   const [lastPhase, setLastPhase] = useState<string>('unknown');
   const [canSave, setCanSave] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [videoRecordingEnabled, setVideoRecordingEnabled] = useState(false);
   
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const lastFeedbackRef = useRef<string>('');
 
   const { saveTestResult, saving } = useAICoachResults();
+
+  // Audio feedback hook
+  const audio = useAudioFeedback({ enabled: audioEnabled });
+
+  // Video recording hook
+  const videoRecording = useVideoRecording();
 
   const { 
     initialize, 
@@ -103,12 +119,32 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
         // Count reps (up -> down -> up = 1 rep)
         if (analysisResult.phase === 'up' && lastPhase === 'down') {
           setRepCount(prev => prev + 1);
+          audio.playRepCompleteSound();
         }
         setLastPhase(analysisResult.phase || 'unknown');
+
+        // Audio feedback for form corrections
+        if (analysisResult.feedback.length > 0) {
+          const mainFeedback = analysisResult.feedback[0];
+          if (mainFeedback !== lastFeedbackRef.current) {
+            lastFeedbackRef.current = mainFeedback;
+            
+            // Only speak correction feedback
+            if (!mainFeedback.includes('✓') && !mainFeedback.includes('💪') && !mainFeedback.includes('Τέλεια')) {
+              audio.speakFeedback([mainFeedback], analysisResult.score);
+            }
+          }
+        }
       }
     } else if (mode === 'test') {
       const scorer = getFMSTestScorer(selectedTest);
       const fmsResult = scorer(result.landmarks);
+      
+      // Announce score changes
+      if (fmsScore === null || fmsResult.score !== fmsScore.score) {
+        audio.announceFMSScore(fmsResult.score);
+      }
+      
       setFmsScore(fmsResult);
     }
   }
@@ -121,18 +157,33 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
       setRepCount(0);
       setAnalysis(null);
       setFmsScore(null);
+      lastFeedbackRef.current = '';
+      audio.playStartSound();
+
+      // Start video recording if enabled
+      if (videoRecordingEnabled && canvasRef.current) {
+        videoRecording.startRecording(canvasRef.current);
+      }
     }
-  }, [start]);
+  }, [start, audio, videoRecordingEnabled, videoRecording]);
 
   // Stop detection
   const handleStop = useCallback(() => {
     stop();
     setIsSessionActive(false);
+    audio.playStopSound();
+    audio.stop();
+
+    // Stop video recording
+    if (videoRecording.isRecording) {
+      videoRecording.stopRecording();
+    }
+
     // Enable save button after session ends if we have a score and user ID
     if (mode === 'test' && fmsScore !== null && userId) {
       setCanSave(true);
     }
-  }, [stop, mode, fmsScore, userId]);
+  }, [stop, mode, fmsScore, userId, audio, videoRecording]);
 
   // Reset session
   const handleReset = useCallback(() => {
@@ -141,7 +192,9 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
     setFmsScore(null);
     setLastPhase('unknown');
     setCanSave(false);
-  }, []);
+    lastFeedbackRef.current = '';
+    videoRecording.clearRecording();
+  }, [videoRecording]);
 
   // Save FMS test result
   const handleSaveResult = useCallback(async () => {
@@ -159,16 +212,54 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
 
     if (success) {
       setCanSave(false);
+      audio.playSuccessSound();
     }
-  }, [userId, fmsScore, selectedTest, saveTestResult]);
+  }, [userId, fmsScore, selectedTest, saveTestResult, audio]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto rounded-none p-0">
         <DialogHeader className="p-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            <Camera className="w-5 h-5 text-[#00ffba]" />
-            AI Coach - Ανάλυση Κίνησης
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Camera className="w-5 h-5 text-[#00ffba]" />
+              AI Coach - Ανάλυση Κίνησης
+            </div>
+            
+            {/* Audio & Recording Controls */}
+            <div className="flex items-center gap-4">
+              {/* Audio Toggle */}
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="audio-toggle"
+                  checked={audioEnabled}
+                  onCheckedChange={setAudioEnabled}
+                  disabled={isSessionActive}
+                />
+                <Label htmlFor="audio-toggle" className="flex items-center gap-1 cursor-pointer">
+                  {audioEnabled ? (
+                    <Volume2 className="w-4 h-4 text-[#00ffba]" />
+                  ) : (
+                    <VolumeX className="w-4 h-4 text-gray-400" />
+                  )}
+                  <span className="text-xs hidden sm:inline">Ήχος</span>
+                </Label>
+              </div>
+
+              {/* Video Recording Toggle */}
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="recording-toggle"
+                  checked={videoRecordingEnabled}
+                  onCheckedChange={setVideoRecordingEnabled}
+                  disabled={isSessionActive}
+                />
+                <Label htmlFor="recording-toggle" className="flex items-center gap-1 cursor-pointer">
+                  <Video className={`w-4 h-4 ${videoRecordingEnabled ? 'text-red-500' : 'text-gray-400'}`} />
+                  <span className="text-xs hidden sm:inline">Εγγραφή</span>
+                </Label>
+              </div>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
@@ -277,6 +368,11 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
                       <Badge className="bg-red-500 text-white rounded-none animate-pulse">
                         ● REC
                       </Badge>
+                      {videoRecording.isRecording && (
+                        <Badge className="bg-red-600 text-white rounded-none">
+                          🎥 {videoRecording.formatDuration(videoRecording.recordingDuration)}
+                        </Badge>
+                      )}
                       {mode === 'exercise' && (
                         <Badge className="bg-[#00ffba] text-black rounded-none text-lg px-3 py-1">
                           Reps: {repCount}
@@ -361,6 +457,41 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
                     </>
                   )}
                 </div>
+
+                {/* Video Recording Controls */}
+                {videoRecording.previewUrl && !isSessionActive && (
+                  <div className="mt-4 p-3 bg-gray-50 border rounded-none">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">
+                        Εγγραφή: {videoRecording.formatDuration(videoRecording.recordingDuration)} | {videoRecording.getRecordingSize()} MB
+                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => videoRecording.downloadRecording(`${mode}-${selectedTest || selectedExercise}`)}
+                          className="rounded-none"
+                        >
+                          <Download className="w-4 h-4 mr-1" />
+                          Λήψη
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={videoRecording.clearRecording}
+                          className="rounded-none text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <video 
+                      src={videoRecording.previewUrl} 
+                      controls 
+                      className="w-full max-h-40 rounded-none bg-black"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Feedback Panel */}
