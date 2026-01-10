@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const fmsRows = [
   ['Shoulder Mobility', 'Straight Leg Raise'],
   ['Trunk Stability Push-Up', 'Rotary Stability'],
-  ['Inline Lunge', 'Deep Squat', 'Hurdle Step']
+  ['Inline Lunge', 'Hurdle Step', 'Deep Squat']
 ];
 
 const allFmsExercises = fmsRows.flat();
