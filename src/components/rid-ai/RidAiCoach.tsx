@@ -331,12 +331,12 @@ export const RidAiCoach = () => {
             {isAdmin && (
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-gray-600" />
-                <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                <Select value={selectedUserId || "__self__"} onValueChange={(val) => setSelectedUserId(val === "__self__" ? "" : val)}>
                   <SelectTrigger className="w-[250px] rounded-none">
                     <SelectValue placeholder="Επίλεξε χρήστη..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Ο δικός μου λογαριασμός</SelectItem>
+                    <SelectItem value="__self__">Ο δικός μου λογαριασμός</SelectItem>
                     {allUsers.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name} ({user.email})
