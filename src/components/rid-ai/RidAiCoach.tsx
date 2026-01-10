@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send, Bot, User, Loader2, Users } from "lucide-react";
+import { Send, Bot, User, Loader2, Users, Camera } from "lucide-react";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useUserUpcomingEvents } from "@/hooks/useUserUpcomingEvents";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
+import { AICoachDialog } from "@/components/ai-coach";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -22,6 +23,7 @@ export const RidAiCoach = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [showAICoach, setShowAICoach] = useState(false);
   const { userProfile } = useRoleCheck();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isProcessingRef = useRef(false);
@@ -314,24 +316,37 @@ export const RidAiCoach = () => {
             </p>
           </div>
           
-          {isAdmin && (
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-gray-600" />
-              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                <SelectTrigger className="w-[250px] rounded-none">
-                  <SelectValue placeholder="Επίλεξε χρήστη..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Ο δικός μου λογαριασμός</SelectItem>
-                  {allUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {/* Camera AI Coach button */}
+            <Button
+              onClick={() => setShowAICoach(true)}
+              variant="outline"
+              className="rounded-none flex items-center gap-2"
+              title="AI Coach με Κάμερα"
+            >
+              <Camera className="w-4 h-4 text-[#00ffba]" />
+              <span className="hidden md:inline">Κάμερα</span>
+            </Button>
+            
+            {isAdmin && (
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-gray-600" />
+                <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                  <SelectTrigger className="w-[250px] rounded-none">
+                    <SelectValue placeholder="Επίλεξε χρήστη..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Ο δικός μου λογαριασμός</SelectItem>
+                    {allUsers.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </div>
       </CardHeader>
 
@@ -423,6 +438,8 @@ export const RidAiCoach = () => {
           </div>
         </div>
       </CardContent>
+
+      <AICoachDialog isOpen={showAICoach} onClose={() => setShowAICoach(false)} />
     </Card>
   );
 };
