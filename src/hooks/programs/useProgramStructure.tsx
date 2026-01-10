@@ -89,14 +89,31 @@ export const useProgramStructure = () => {
               block_order: index + 1
             }));
 
+          // Valid training types in database
+          const VALID_TRAINING_TYPES = [
+            'warm up', 'str', 'str/spd', 'pwr', 'spd/str', 'spd', 
+            'str/end', 'pwr/end', 'spd/end', 'end', 'hpr', 
+            'recovery', 'accessory', 'rotational'
+          ];
+          
           for (const block of sortedBlocks) {
             console.log('🧱 [useProgramStructure] Creating block:', block.name, 'with', block.program_exercises?.length || 0, 'exercises');
+            
+            // Validate training_type against database constraint
+            let validTrainingType = null;
+            if (block.training_type && block.training_type !== '') {
+              if (VALID_TRAINING_TYPES.includes(block.training_type)) {
+                validTrainingType = block.training_type;
+              } else {
+                console.warn(`⚠️ [useProgramStructure] Invalid training_type "${block.training_type}" - setting to null`);
+              }
+            }
             
             const blockInsertData = {
               day_id: dayData.id,
               name: block.name || `Block ${block.block_order}`,
               block_order: block.block_order || 1,
-              training_type: block.training_type && block.training_type !== '' ? block.training_type : null,
+              training_type: validTrainingType,
               workout_format: block.workout_format && block.workout_format !== '' && block.workout_format !== 'none' ? block.workout_format : null,
               workout_duration: block.workout_duration && block.workout_duration !== '' ? block.workout_duration : null,
               block_sets: block.block_sets || 1
