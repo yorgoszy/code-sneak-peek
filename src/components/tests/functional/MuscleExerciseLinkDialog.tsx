@@ -49,13 +49,29 @@ export const MuscleExerciseLinkDialog: React.FC<MuscleExerciseLinkDialogProps> =
   const fetchExercises = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('exercises')
-        .select('id, name, video_url')
-        .order('name');
+      // Fetch all exercises with pagination to avoid Supabase 1000 row limit
+      let allExercises: Exercise[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      
+      while (true) {
+        const { data, error } = await supabase
+          .from('exercises')
+          .select('id, name, video_url')
+          .order('name')
+          .range(from, from + pageSize - 1);
 
-      if (error) throw error;
-      setExercises(data || []);
+        if (error) throw error;
+        
+        const batch = data || [];
+        allExercises = [...allExercises, ...batch];
+        
+        if (batch.length < pageSize) break;
+        from += pageSize;
+      }
+      
+      console.log(`Fetched ${allExercises.length} exercises`);
+      setExercises(allExercises);
     } catch (error) {
       console.error('Error fetching exercises:', error);
       toast.error('Σφάλμα φόρτωσης ασκήσεων');
