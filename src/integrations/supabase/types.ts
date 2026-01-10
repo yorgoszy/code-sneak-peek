@@ -137,6 +137,53 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_coach_test_results: {
+        Row: {
+          created_at: string
+          feedback: string | null
+          id: string
+          score: number
+          test_date: string
+          test_side: string | null
+          test_type: string
+          updated_at: string
+          user_id: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          score: number
+          test_date?: string
+          test_side?: string | null
+          test_type: string
+          updated_at?: string
+          user_id: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          score?: number
+          test_date?: string
+          test_side?: string | null
+          test_type?: string
+          updated_at?: string
+          user_id?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_coach_test_results_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_conversations: {
         Row: {
           content: string
