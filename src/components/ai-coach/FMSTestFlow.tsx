@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -10,7 +10,8 @@ import {
   RotateCcw,
   Play,
   Square,
-  ArrowRight
+  ArrowRight,
+  Circle
 } from "lucide-react";
 import { FMSTestType } from '@/services/exerciseAnalyzer';
 import { cn } from '@/lib/utils';
@@ -74,9 +75,23 @@ export const FMSTestFlow: React.FC<FMSTestFlowProps> = ({
   const [flowComplete, setFlowComplete] = useState(false);
   const [isNonFunctional, setIsNonFunctional] = useState(false);
   const [failedCriticalTests, setFailedCriticalTests] = useState<FMSTestType[]>([]);
+  
+  // ✅ NEW: Track best score during current attempt
+  const [attemptInProgress, setAttemptInProgress] = useState(false);
+  const [bestScoreInAttempt, setBestScoreInAttempt] = useState<0 | 1 | 2 | 3>(0);
+  const [attemptRecorded, setAttemptRecorded] = useState(false);
 
   // Βρες το τρέχον index του τεστ
   const currentTestIndex = FMS_TEST_ORDER.indexOf(currentTest);
+
+  // ✅ Track best score while attempt is in progress
+  useEffect(() => {
+    if (attemptInProgress && currentScore !== null) {
+      if (currentScore > bestScoreInAttempt) {
+        setBestScoreInAttempt(currentScore);
+      }
+    }
+  }, [currentScore, attemptInProgress, bestScoreInAttempt]);
 
   // Υπολόγισε τα completed tests
   const completedTests = useMemo(() => {
@@ -86,7 +101,6 @@ export const FMSTestFlow: React.FC<FMSTestFlowProps> = ({
   // Υπολόγισε την πρόοδο
   const progress = useMemo(() => {
     if (isNonFunctional) {
-      // Αν είναι non-functional, έχουμε τελειώσει με τα critical tests
       const criticalIndex = Math.max(
         ...failedCriticalTests.map(t => FMS_TEST_ORDER.indexOf(t))
       ) + 1;
@@ -95,51 +109,73 @@ export const FMSTestFlow: React.FC<FMSTestFlowProps> = ({
     return (results.length / FMS_TEST_ORDER.length) * 100;
   }, [results, isNonFunctional, failedCriticalTests]);
 
-  // Καταχώρησε προσπάθεια
-  const recordAttempt = useCallback(() => {
-    if (currentScore === null) return;
+  // ✅ Start an attempt
+  const startAttempt = useCallback(() => {
+    setAttemptInProgress(true);
+    setBestScoreInAttempt(0);
+    setAttemptRecorded(false);
+  }, []);
 
-    const existingResult = results.find(r => r.test === currentTest);
+  // ✅ End attempt and record the best score
+  const endAttempt = useCallback(() => {
+    if (!attemptInProgress) return;
     
-    if (existingResult) {
-      // Ενημέρωσε υπάρχον αποτέλεσμα
-      const updatedResults = results.map(r => {
-        if (r.test === currentTest) {
-          const newAttempts = [...r.attempts, { attempt: currentAttempt, score: currentScore }];
-          return {
-            ...r,
-            bestScore: Math.max(r.bestScore, currentScore) as 0 | 1 | 2 | 3,
-            attempts: newAttempts
-          };
-        }
-        return r;
-      });
-      setResults(updatedResults);
-    } else {
-      // Νέο αποτέλεσμα
-      const newResult: TestResult = {
-        test: currentTest,
-        bestScore: currentScore,
-        attempts: [{ attempt: 1, score: currentScore }]
-      };
-      setResults([...results, newResult]);
-    }
+    setAttemptInProgress(false);
+    setAttemptRecorded(true);
 
-    // Έλεγχος αν score=3 ή τελείωσαν οι 3 προσπάθειες
-    const shouldMoveNext = currentScore === 3 || currentAttempt >= 3;
+    const scoreToRecord = bestScoreInAttempt;
     
+    // Update results
+    setResults(prevResults => {
+      const existingResult = prevResults.find(r => r.test === currentTest);
+      
+      if (existingResult) {
+        return prevResults.map(r => {
+          if (r.test === currentTest) {
+            const newAttempts = [...r.attempts, { attempt: currentAttempt, score: scoreToRecord }];
+            return {
+              ...r,
+              bestScore: Math.max(r.bestScore, scoreToRecord) as 0 | 1 | 2 | 3,
+              attempts: newAttempts
+            };
+          }
+          return r;
+        });
+      } else {
+        return [...prevResults, {
+          test: currentTest,
+          bestScore: scoreToRecord,
+          attempts: [{ attempt: currentAttempt, score: scoreToRecord }]
+        }];
+      }
+    });
+
+    onRecordAttempt();
+  }, [attemptInProgress, bestScoreInAttempt, currentTest, currentAttempt, onRecordAttempt]);
+
+  // ✅ Move to next attempt or next test
+  const proceedNext = useCallback(() => {
+    if (!attemptRecorded) return;
+
+    const currentResult = results.find(r => r.test === currentTest);
+    const lastAttemptScore = currentResult?.attempts[currentResult.attempts.length - 1]?.score ?? 0;
+    const bestOverall = currentResult?.bestScore ?? 0;
+
+    // Check if should move to next test
+    const shouldMoveNext = bestOverall === 3 || currentAttempt >= 3;
+
     if (shouldMoveNext) {
-      // Έλεγχος αν είναι critical test με score=1
-      if (CRITICAL_TESTS.includes(currentTest) && currentScore === 1) {
+      // Check critical test failure
+      if (CRITICAL_TESTS.includes(currentTest) && bestOverall === 1) {
         const newFailedTests = [...failedCriticalTests, currentTest];
         setFailedCriticalTests(newFailedTests);
 
-        // Αν και τα δύο critical tests έχουν αποτύχει ή είμαστε στο ASLR
-        if (currentTest === 'active-straight-leg-raise' && newFailedTests.includes('shoulder-mobility')) {
+        // Check if both critical tests failed
+        if (currentTest === 'active-straight-leg-raise' && 
+            (newFailedTests.includes('shoulder-mobility') || bestOverall === 1)) {
           setIsNonFunctional(true);
           setFlowComplete(true);
-          
-          // Σημείωσε τα υπόλοιπα tests ως skipped
+
           const remainingTests = FMS_TEST_ORDER.slice(currentTestIndex + 1);
           const skippedResults: TestResult[] = remainingTests.map(test => ({
             test,
@@ -147,43 +183,33 @@ export const FMSTestFlow: React.FC<FMSTestFlowProps> = ({
             attempts: [],
             skipped: true
           }));
-          
-          const finalResults = [...results, {
-            test: currentTest,
-            bestScore: currentScore,
-            attempts: [{ attempt: currentAttempt, score: currentScore }]
-          }, ...skippedResults];
-          
-          onComplete(finalResults, true, newFailedTests);
+
+          onComplete([...results, ...skippedResults], true, newFailedTests);
           return;
         }
       }
 
-      // Πήγαινε στο επόμενο τεστ
-      moveToNextTest();
+      // Move to next test
+      const nextIndex = currentTestIndex + 1;
+      
+      if (nextIndex >= FMS_TEST_ORDER.length) {
+        setFlowComplete(true);
+        onComplete(results, false, []);
+        return;
+      }
+
+      const nextTest = FMS_TEST_ORDER[nextIndex];
+      setCurrentAttempt(1);
+      setAttemptRecorded(false);
+      setBestScoreInAttempt(0);
+      onTestChange(nextTest);
     } else {
-      // Επόμενη προσπάθεια
+      // Next attempt
       setCurrentAttempt(prev => prev + 1);
+      setAttemptRecorded(false);
+      setBestScoreInAttempt(0);
     }
-
-    onRecordAttempt();
-  }, [currentScore, currentTest, currentAttempt, results, failedCriticalTests, currentTestIndex, onRecordAttempt, onComplete]);
-
-  // Μετάβαση στο επόμενο τεστ
-  const moveToNextTest = useCallback(() => {
-    const nextIndex = currentTestIndex + 1;
-    
-    if (nextIndex >= FMS_TEST_ORDER.length) {
-      // Τελείωσαν όλα τα τεστ
-      setFlowComplete(true);
-      onComplete(results, isNonFunctional, failedCriticalTests);
-      return;
-    }
-
-    const nextTest = FMS_TEST_ORDER[nextIndex];
-    setCurrentAttempt(1);
-    onTestChange(nextTest);
-  }, [currentTestIndex, results, isNonFunctional, failedCriticalTests, onTestChange, onComplete]);
+  }, [attemptRecorded, results, currentTest, currentAttempt, failedCriticalTests, currentTestIndex, onTestChange, onComplete]);
 
   // Ξεκίνα τη ροή
   const startFlow = useCallback(() => {
@@ -193,6 +219,9 @@ export const FMSTestFlow: React.FC<FMSTestFlowProps> = ({
     setFlowComplete(false);
     setIsNonFunctional(false);
     setFailedCriticalTests([]);
+    setAttemptInProgress(false);
+    setBestScoreInAttempt(0);
+    setAttemptRecorded(false);
     onTestChange(FMS_TEST_ORDER[0]);
   }, [onTestChange]);
 
@@ -204,7 +233,14 @@ export const FMSTestFlow: React.FC<FMSTestFlowProps> = ({
     setFlowComplete(false);
     setIsNonFunctional(false);
     setFailedCriticalTests([]);
+    setAttemptInProgress(false);
+    setBestScoreInAttempt(0);
+    setAttemptRecorded(false);
   }, []);
+
+  // Get current test best score from results
+  const currentTestResult = results.find(r => r.test === currentTest);
+  const currentTestBestScore = currentTestResult?.bestScore ?? 0;
 
   // Αν δεν έχει ξεκινήσει η ροή
   if (!flowStarted) {
@@ -217,8 +253,9 @@ export const FMSTestFlow: React.FC<FMSTestFlowProps> = ({
             Κάθε άσκηση επιτρέπει έως 3 προσπάθειες.
           </p>
           <div className="text-xs text-muted-foreground space-y-1">
-            <p>• Αν πάρεις <Badge className="bg-green-500 text-white rounded-none text-xs">3</Badge> στην πρώτη προσπάθεια → επόμενο τεστ</p>
-            <p>• Αν πάρεις <Badge className="bg-red-500 text-white rounded-none text-xs">1</Badge> σε Shoulder Mobility ή ASLR → μη λειτουργικός</p>
+            <p>• Ξεκινάς προσπάθεια → εκτελείς → καταγράφεται το BEST score</p>
+            <p>• Αν πάρεις <Badge className="bg-green-500 text-white rounded-none text-xs">3</Badge> → επόμενο τεστ</p>
+            <p>• Αν πάρεις <Badge className="bg-red-500 text-white rounded-none text-xs">1</Badge> σε Shoulder/ASLR → μη λειτουργικός</p>
           </div>
           <Button 
             onClick={startFlow} 
@@ -277,6 +314,7 @@ export const FMSTestFlow: React.FC<FMSTestFlowProps> = ({
                   <p className="font-medium text-sm">{TEST_LABELS[result.test].name}</p>
                   <p className="text-xs text-muted-foreground">
                     {result.attempts.length} προσπάθει{result.attempts.length > 1 ? 'ες' : 'α'}
+                    {result.attempts.length > 0 && ` (${result.attempts.map(a => a.score).join(', ')})`}
                   </p>
                 </div>
                 <Badge 
@@ -339,49 +377,120 @@ export const FMSTestFlow: React.FC<FMSTestFlowProps> = ({
           )}
         </div>
 
-        {/* Current Score Display */}
-        {currentScore !== null && (
-          <div className="flex items-center justify-between p-3 bg-gray-50 border">
-            <span className="font-medium">Τρέχον Score:</span>
-            <Badge 
-              className={cn(
-                "rounded-none text-white text-lg px-4 py-1",
-                currentScore === 3 ? "bg-green-500" :
-                currentScore === 2 ? "bg-yellow-500" :
+        {/* ✅ Attempt Status */}
+        <div className={cn(
+          "p-3 border rounded-none",
+          attemptInProgress ? "bg-red-50 border-red-300" : 
+          attemptRecorded ? "bg-green-50 border-green-300" : 
+          "bg-gray-50 border-gray-200"
+        )}>
+          {attemptInProgress ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Circle className="w-3 h-3 text-red-500 fill-red-500 animate-pulse" />
+                <span className="font-medium text-red-700">Εκτέλεση σε εξέλιξη...</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Real-time score:</span>
+                <Badge className={cn(
+                  "rounded-none text-white",
+                  (currentScore ?? 0) === 3 ? "bg-green-500" :
+                  (currentScore ?? 0) === 2 ? "bg-yellow-500" :
+                  "bg-red-500"
+                )}>
+                  {currentScore ?? 0}/3
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold">Best score (κρατάμε):</span>
+                <Badge className={cn(
+                  "rounded-none text-white text-lg px-3",
+                  bestScoreInAttempt === 3 ? "bg-green-500" :
+                  bestScoreInAttempt === 2 ? "bg-yellow-500" :
+                  "bg-red-500"
+                )}>
+                  {bestScoreInAttempt}/3
+                </Badge>
+              </div>
+            </div>
+          ) : attemptRecorded ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="font-medium text-green-700">
+                  Προσπάθεια {currentAttempt} καταγράφηκε!
+                </span>
+              </div>
+              <Badge className={cn(
+                "rounded-none text-white text-lg px-3",
+                bestScoreInAttempt === 3 ? "bg-green-500" :
+                bestScoreInAttempt === 2 ? "bg-yellow-500" :
                 "bg-red-500"
-              )}
-            >
-              {currentScore}/3
-            </Badge>
-          </div>
-        )}
+              )}>
+                {bestScoreInAttempt}/3
+              </Badge>
+            </div>
+          ) : (
+            <div className="text-center text-sm text-muted-foreground">
+              Πάτα "Έναρξη Προσπάθειας" για να ξεκινήσεις
+            </div>
+          )}
+        </div>
 
-        {/* Actions */}
+        {/* ✅ Actions */}
         <div className="flex gap-2">
-          {!isSessionActive ? (
+          {!attemptInProgress && !attemptRecorded && (
             <Button 
-              onClick={recordAttempt}
-              disabled={currentScore === null}
+              onClick={startAttempt}
+              disabled={!isSessionActive}
               className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
             >
-              {currentScore === 3 || currentAttempt >= 3 ? (
+              <Play className="w-4 h-4 mr-2" />
+              Έναρξη Προσπάθειας {currentAttempt}
+            </Button>
+          )}
+          
+          {attemptInProgress && (
+            <Button 
+              onClick={endAttempt}
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-none"
+            >
+              <Square className="w-4 h-4 mr-2" />
+              Τέλος Προσπάθειας (Best: {bestScoreInAttempt})
+            </Button>
+          )}
+
+          {attemptRecorded && (
+            <Button 
+              onClick={proceedNext}
+              className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            >
+              {currentTestBestScore === 3 || currentAttempt >= 3 ? (
                 <>
                   <ArrowRight className="w-4 h-4 mr-2" />
                   Επόμενο Τεστ
                 </>
               ) : (
                 <>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Καταχώρηση & Επόμενη Προσπάθεια
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Προσπάθεια {currentAttempt + 1}
                 </>
               )}
             </Button>
-          ) : (
-            <div className="flex-1 text-center text-sm text-muted-foreground py-2">
-              Σταμάτησε την εγγραφή για να καταχωρήσεις
-            </div>
           )}
         </div>
+
+        {/* Attempts History for Current Test */}
+        {currentTestResult && currentTestResult.attempts.length > 0 && (
+          <div className="text-xs text-muted-foreground">
+            Προσπάθειες: {currentTestResult.attempts.map((a, i) => (
+              <Badge key={i} variant="outline" className="rounded-none mx-1 text-xs">
+                #{a.attempt}: {a.score}
+              </Badge>
+            ))}
+            <span className="ml-2 font-semibold">Best: {currentTestResult.bestScore}</span>
+          </div>
+        )}
 
         {/* Test Queue */}
         <div className="space-y-1">
