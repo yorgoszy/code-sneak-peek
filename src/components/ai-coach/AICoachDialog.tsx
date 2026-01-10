@@ -227,229 +227,131 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto rounded-none p-0">
-        <DialogHeader className="p-4 border-b">
-          <DialogTitle className="flex items-center justify-between">
+      <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden rounded-none p-0">
+        {/* Compact Header */}
+        <DialogHeader className="p-2 border-b">
+          <DialogTitle className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
-              <Camera className="w-5 h-5 text-[#00ffba]" />
-              AI Coach - Ανάλυση Κίνησης
+              <Camera className="w-4 h-4 text-[#00ffba]" />
+              <span>AI Coach</span>
             </div>
-            
-            {/* Audio & Recording Controls */}
-            <div className="flex items-center gap-4">
-              {/* Audio Toggle */}
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="audio-toggle"
-                  checked={audioEnabled}
-                  onCheckedChange={setAudioEnabled}
-                  disabled={isSessionActive}
-                />
-                <Label htmlFor="audio-toggle" className="flex items-center gap-1 cursor-pointer">
-                  {audioEnabled ? (
-                    <Volume2 className="w-4 h-4 text-[#00ffba]" />
-                  ) : (
-                    <VolumeX className="w-4 h-4 text-gray-400" />
-                  )}
-                  <span className="text-xs hidden sm:inline">Ήχος</span>
-                </Label>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <Switch id="audio-toggle" checked={audioEnabled} onCheckedChange={setAudioEnabled} disabled={isSessionActive} className="scale-75" />
+                {audioEnabled ? <Volume2 className="w-3 h-3 text-[#00ffba]" /> : <VolumeX className="w-3 h-3 text-gray-400" />}
               </div>
-
-              {/* Video Recording Toggle */}
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="recording-toggle"
-                  checked={videoRecordingEnabled}
-                  onCheckedChange={setVideoRecordingEnabled}
-                  disabled={isSessionActive}
-                />
-                <Label htmlFor="recording-toggle" className="flex items-center gap-1 cursor-pointer">
-                  <Video className={`w-4 h-4 ${videoRecordingEnabled ? 'text-red-500' : 'text-gray-400'}`} />
-                  <span className="text-xs hidden sm:inline">Εγγραφή</span>
-                </Label>
+              <div className="flex items-center gap-1">
+                <Switch id="recording-toggle" checked={videoRecordingEnabled} onCheckedChange={setVideoRecordingEnabled} disabled={isSessionActive} className="scale-75" />
+                <Video className={`w-3 h-3 ${videoRecordingEnabled ? 'text-red-500' : 'text-gray-400'}`} />
               </div>
             </div>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="p-4 space-y-4">
-          {/* User Selector */}
-          <div className="mb-4">
-            <AICoachUserSelector
-              selectedUserId={selectedUserId}
-              onUserSelect={handleUserSelect}
-            />
-          </div>
+        <div className="p-2 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(95vh - 50px)' }}>
+          {/* User Selector - compact */}
+          <AICoachUserSelector selectedUserId={selectedUserId} onUserSelect={handleUserSelect} />
 
+          {/* Tabs - compact */}
           <Tabs value={mode} onValueChange={(v) => setMode(v as 'exercise' | 'test' | 'progress')} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 rounded-none">
-              <TabsTrigger value="exercise" className="rounded-none flex items-center gap-2">
-                <Dumbbell className="w-4 h-4" />
-                Άσκηση
+            <TabsList className="grid w-full grid-cols-3 rounded-none h-8">
+              <TabsTrigger value="exercise" className="rounded-none text-xs h-7 gap-1">
+                <Dumbbell className="w-3 h-3" />Άσκηση
               </TabsTrigger>
-              <TabsTrigger value="test" className="rounded-none flex items-center gap-2">
-                <ClipboardCheck className="w-4 h-4" />
-                Τεστ FMS
+              <TabsTrigger value="test" className="rounded-none text-xs h-7 gap-1">
+                <ClipboardCheck className="w-3 h-3" />Τεστ FMS
               </TabsTrigger>
-              <TabsTrigger value="progress" className="rounded-none flex items-center gap-2" disabled={!selectedUserId}>
-                <BarChart3 className="w-4 h-4" />
-                Πρόοδος
+              <TabsTrigger value="progress" className="rounded-none text-xs h-7 gap-1" disabled={!selectedUserId}>
+                <BarChart3 className="w-3 h-3" />Πρόοδος
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="exercise" className="mt-4">
-              <div className="flex gap-2 mb-4">
+            <TabsContent value="exercise" className="mt-2">
+              <div className="flex gap-1 mb-2">
                 {(Object.keys(EXERCISES) as ExerciseType[]).map((ex) => (
-                  <Button
-                    key={ex}
-                    variant={selectedExercise === ex ? "default" : "outline"}
-                    onClick={() => setSelectedExercise(ex)}
-                    className="rounded-none"
-                    disabled={isSessionActive}
-                  >
+                  <Button key={ex} variant={selectedExercise === ex ? "default" : "outline"} onClick={() => setSelectedExercise(ex)} className="rounded-none h-7 text-xs px-2" disabled={isSessionActive}>
                     {EXERCISES[ex].name}
                   </Button>
                 ))}
               </div>
             </TabsContent>
 
-            <TabsContent value="test" className="mt-4">
-              {/* FMS Test Flow Component */}
-              <div className="mb-4">
-                <FMSTestFlow
-                  currentTest={selectedTest}
-                  currentScore={fmsScore?.score ?? null}
-                  isSessionActive={isSessionActive}
-                  onTestChange={setSelectedTest}
-                  onRecordAttempt={() => {
-                    // Η καταχώρηση γίνεται μέσα στο FMSTestFlow
-                  }}
-                  onComplete={async (results, isNonFunctional, failedTests) => {
-                    // Αποθήκευση όλων των αποτελεσμάτων
-                    if (selectedUserId) {
-                      for (const result of results) {
-                        if (!result.skipped && result.attempts.length > 0) {
-                          await saveTestResult({
-                            userId: selectedUserId,
-                            testType: result.test,
-                            score: result.bestScore,
-                            feedback: isNonFunctional && failedTests.includes(result.test)
-                              ? `Μη λειτουργικός - Score ${result.bestScore}. Απαιτείται διορθωτικό πρόγραμμα.`
-                              : `Best score: ${result.bestScore}/3 σε ${result.attempts.length} προσπάθειες`
-                          });
-                        }
-                      }
-                      
-                      if (isNonFunctional) {
-                        toast.warning(
-                          `Μη λειτουργικός χρήστης - Score 1 σε ${failedTests.map(t => TESTS[t].name).join(' & ')}. Χρειάζεται διορθωτικό πρόγραμμα.`,
-                          { duration: 8000 }
-                        );
-                      } else {
-                        toast.success('Όλα τα FMS tests αποθηκεύτηκαν επιτυχώς!');
+            <TabsContent value="test" className="mt-2">
+              <FMSTestFlow
+                currentTest={selectedTest}
+                currentScore={fmsScore?.score ?? null}
+                isSessionActive={isSessionActive}
+                onTestChange={setSelectedTest}
+                onRecordAttempt={() => {}}
+                onComplete={async (results, isNonFunctional, failedTests) => {
+                  if (selectedUserId) {
+                    for (const result of results) {
+                      if (!result.skipped && result.attempts.length > 0) {
+                        await saveTestResult({
+                          userId: selectedUserId,
+                          testType: result.test,
+                          score: result.bestScore,
+                          feedback: isNonFunctional && failedTests.includes(result.test)
+                            ? `Μη λειτουργικός - Score ${result.bestScore}`
+                            : `Best: ${result.bestScore}/3`
+                        });
                       }
                     }
-                  }}
-                />
-              </div>
-              
-              {/* Manual Test Selection (fallback) */}
-              <details className="text-sm">
-                <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                  Μεμονωμένη επιλογή τεστ
-                </summary>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {(Object.keys(TESTS) as FMSTestType[]).map((test) => (
-                    <Button
-                      key={test}
-                      variant={selectedTest === test ? "default" : "outline"}
-                      onClick={() => setSelectedTest(test)}
-                      className="rounded-none"
-                      size="sm"
-                      disabled={isSessionActive}
-                    >
-                      {TESTS[test].name}
-                    </Button>
-                  ))}
-                </div>
-              </details>
+                    if (isNonFunctional) {
+                      toast.warning(`Μη λειτουργικός - Score 1 σε ${failedTests.map(t => TESTS[t].name).join(' & ')}`, { duration: 5000 });
+                    } else {
+                      toast.success('FMS tests αποθηκεύτηκαν!');
+                    }
+                  }
+                }}
+              />
             </TabsContent>
 
-            <TabsContent value="progress" className="mt-4">
+            <TabsContent value="progress" className="mt-2">
               {selectedUserId ? (
                 <FMSProgressChart userId={selectedUserId} />
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  Επιλέξτε χρήστη για να δείτε την πρόοδο FMS.
-                </div>
+                <div className="text-center py-4 text-muted-foreground text-sm">Επιλέξτε χρήστη</div>
               )}
             </TabsContent>
           </Tabs>
 
           {/* Error display */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-none mb-4 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
-              <span>{error}</span>
+            <div className="bg-red-50 border border-red-200 text-red-700 p-2 rounded-none text-xs flex items-center gap-1">
+              <AlertCircle className="w-3 h-3" />{error}
             </div>
           )}
 
           {/* Loading state */}
           {isLoading && (
-            <div className="flex items-center justify-center py-8 gap-2">
-              <Loader2 className="w-6 h-6 animate-spin text-[#00ffba]" />
-              <span>Φόρτωση AI μοντέλου...</span>
+            <div className="flex items-center justify-center py-4 gap-2 text-sm">
+              <Loader2 className="w-4 h-4 animate-spin text-[#00ffba]" />Φόρτωση AI...
             </div>
           )}
 
           {/* Camera and Canvas */}
           {!isLoading && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
               {/* Video/Canvas area */}
               <div className="lg:col-span-2 relative">
                 <div className="relative aspect-video bg-black rounded-none overflow-hidden">
-                  <Webcam
-                    ref={webcamRef}
-                    audio={false}
-                    mirrored={true}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    videoConstraints={{
-                      facingMode: "user",
-                      width: 1280,
-                      height: 720,
-                    }}
-                  />
-                  <canvas
-                    ref={canvasRef}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ transform: 'scaleX(-1)' }}
-                  />
+                  <Webcam ref={webcamRef} audio={false} mirrored={true} className="absolute inset-0 w-full h-full object-cover" videoConstraints={{ facingMode: "user", width: 1280, height: 720 }} />
+                  <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover" style={{ transform: 'scaleX(-1)' }} />
                   
                   {/* Overlay badges */}
                   {isSessionActive && (
-                    <div className="absolute top-4 left-4 flex flex-col gap-2">
-                      <Badge className="bg-red-500 text-white rounded-none animate-pulse">
-                        ● REC
-                      </Badge>
+                    <div className="absolute top-2 left-2 flex flex-col gap-1">
+                      <Badge className="bg-red-500 text-white rounded-none text-xs animate-pulse">● REC</Badge>
                       {videoRecording.isRecording && (
-                        <Badge className="bg-red-600 text-white rounded-none">
-                          🎥 {videoRecording.formatDuration(videoRecording.recordingDuration)}
-                        </Badge>
+                        <Badge className="bg-red-600 text-white rounded-none text-xs">🎥 {videoRecording.formatDuration(videoRecording.recordingDuration)}</Badge>
                       )}
                       {mode === 'exercise' && (
-                        <Badge className="bg-[#00ffba] text-black rounded-none text-lg px-3 py-1">
-                          Reps: {repCount}
-                        </Badge>
+                        <Badge className="bg-[#00ffba] text-black rounded-none px-2">Reps: {repCount}</Badge>
                       )}
                       {mode === 'test' && fmsScore !== null && (
-                        <Badge 
-                          className={`text-lg px-3 py-1 rounded-none ${
-                            fmsScore.score === 3 ? 'bg-green-500' :
-                            fmsScore.score === 2 ? 'bg-yellow-500' :
-                            'bg-red-500'
-                          } text-white`}
-                        >
-                          Score: {fmsScore.score}/3
+                        <Badge className={`px-2 rounded-none ${fmsScore.score === 3 ? 'bg-green-500' : fmsScore.score === 2 ? 'bg-yellow-500' : 'bg-red-500'} text-white`}>
+                          {fmsScore.score}/3
                         </Badge>
                       )}
                     </div>
@@ -457,65 +359,35 @@ export const AICoachDialog: React.FC<AICoachDialogProps> = ({ isOpen, onClose, u
 
                   {/* Score overlay */}
                   {isSessionActive && analysis && (
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div 
-                        className={`p-3 rounded-none ${
-                          analysis.isCorrect 
-                            ? 'bg-green-500/80' 
-                            : 'bg-red-500/80'
-                        } text-white`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">
-                            {analysis.isCorrect ? '✓ Σωστή φόρμα' : '⚠ Διόρθωσε'}
-                          </span>
-                          <span className="text-lg font-bold">{analysis.score}%</span>
-                        </div>
+                    <div className="absolute bottom-2 left-2 right-2">
+                      <div className={`p-2 rounded-none text-sm ${analysis.isCorrect ? 'bg-green-500/80' : 'bg-red-500/80'} text-white flex items-center justify-between`}>
+                        <span>{analysis.isCorrect ? '✓' : '⚠'}</span>
+                        <span className="font-bold">{analysis.score}%</span>
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Controls */}
-                <div className="flex gap-2 mt-4">
+                <div className="flex gap-1 mt-2">
                   {!isSessionActive ? (
                     <>
-                      <Button 
-                        onClick={handleStart} 
-                        className="flex-1 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                        disabled={isLoading}
-                      >
-                        <Play className="w-4 h-4 mr-2" />
-                        Έναρξη
+                      <Button onClick={handleStart} className="flex-1 h-8 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-sm" disabled={isLoading}>
+                        <Play className="w-3 h-3 mr-1" />Έναρξη
                       </Button>
-                      {/* Save button - only show for FMS tests with userId */}
                       {mode === 'test' && canSave && selectedUserId && (
-                        <Button 
-                          onClick={handleSaveResult}
-                          className="bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
-                          disabled={saving}
-                        >
-                          <Save className="w-4 h-4 mr-2" />
-                          {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
+                        <Button onClick={handleSaveResult} className="h-8 bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none text-sm" disabled={saving}>
+                          <Save className="w-3 h-3 mr-1" />{saving ? '...' : 'Save'}
                         </Button>
                       )}
                     </>
                   ) : (
                     <>
-                      <Button 
-                        onClick={handleStop} 
-                        variant="destructive"
-                        className="flex-1 rounded-none"
-                      >
-                        <Square className="w-4 h-4 mr-2" />
-                        Διακοπή
+                      <Button onClick={handleStop} variant="destructive" className="flex-1 h-8 rounded-none text-sm">
+                        <Square className="w-3 h-3 mr-1" />Stop
                       </Button>
-                      <Button 
-                        onClick={handleReset} 
-                        variant="outline"
-                        className="rounded-none"
-                      >
-                        <RotateCcw className="w-4 h-4" />
+                      <Button onClick={handleReset} variant="outline" className="h-8 rounded-none">
+                        <RotateCcw className="w-3 h-3" />
                       </Button>
                     </>
                   )}
