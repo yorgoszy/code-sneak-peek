@@ -52,31 +52,21 @@ export const useDayActions = (
     }
   };
 
-  const addDay = async (weekId: string) => {
+  const addDay = (weekId: string) => {
     console.log('🔵 addDay called with weekId:', weekId);
     
-    // Get selected user ID for warm up exercises
-    const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : '');
-    
-    // Fetch athlete warm up exercises
-    let warmUpExercises: ProgramExercise[] = [];
-    if (selectedUserId) {
-      console.log('🏋️ Fetching warm up exercises for athlete:', selectedUserId);
-      warmUpExercises = await createWarmUpExercisesFromAthleteData(selectedUserId);
-      console.log('🏋️ Found warm up exercises:', warmUpExercises.length);
-    }
-    
+    // Create day immediately without waiting for warm-up exercises
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         // Δημιουργούμε τα 7 προκαθορισμένα blocks με τη σωστή σειρά
-        const defaultBlocks = [
-          { id: generateId(), name: 'warm up', training_type: 'warm up' as Block['training_type'], block_order: 1, block_sets: 1, program_exercises: warmUpExercises },
-          { id: generateId(), name: 'power', training_type: 'power' as Block['training_type'], block_order: 2, block_sets: 1, program_exercises: [] },
-          { id: generateId(), name: 'str', training_type: 'str' as Block['training_type'], block_order: 3, block_sets: 1, program_exercises: [] },
-          { id: generateId(), name: 'end', training_type: 'end' as Block['training_type'], block_order: 4, block_sets: 1, program_exercises: [] },
-          { id: generateId(), name: 'rotational', training_type: 'rotational' as Block['training_type'], block_order: 5, block_sets: 1, program_exercises: [] },
-          { id: generateId(), name: 'accessory', training_type: 'accessory' as Block['training_type'], block_order: 6, block_sets: 1, program_exercises: [] },
-          { id: generateId(), name: 'recovery', training_type: 'recovery' as Block['training_type'], block_order: 7, block_sets: 1, program_exercises: [] }
+        const defaultBlocks: Block[] = [
+          { id: generateId(), name: 'warm up', training_type: 'warm up', block_order: 1, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'pwr', training_type: 'pwr', block_order: 2, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'str', training_type: 'str', block_order: 3, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'end', training_type: 'end', block_order: 4, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'rot', training_type: 'rotational', block_order: 5, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'acc', training_type: 'accessory', block_order: 6, block_sets: 1, program_exercises: [] },
+          { id: generateId(), name: 'rec', training_type: 'recovery', block_order: 7, block_sets: 1, program_exercises: [] }
         ];
 
         const newDay = {
@@ -86,7 +76,7 @@ export const useDayActions = (
           program_blocks: defaultBlocks
         };
         
-        console.log('✅ Created new day with default blocks, warm up exercises:', warmUpExercises.length);
+        console.log('✅ Created new day with default blocks');
         
         return {
           ...week,
