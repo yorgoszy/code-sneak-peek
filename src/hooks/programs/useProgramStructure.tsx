@@ -90,11 +90,7 @@ export const useProgramStructure = () => {
             }));
 
           // Valid training types in database
-          const VALID_TRAINING_TYPES = [
-            'warm up', 'str', 'str/spd', 'pwr', 'spd/str', 'spd', 
-            'str/end', 'pwr/end', 'spd/end', 'end', 'hpr', 
-            'recovery', 'accessory', 'rotational'
-          ];
+          const VALID_TRAINING_TYPES = ['warm up', 'pwr'];
           
           for (const block of sortedBlocks) {
             console.log('🧱 [useProgramStructure] Creating block:', block.name, 'with', block.program_exercises?.length || 0, 'exercises');
