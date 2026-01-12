@@ -129,10 +129,11 @@ serve(async (req) => {
     const classificationCategory = receipt.classificationCategory || 'category1_3'
 
     // Μετατροπή σε XML format σύμφωνα με MyData API Documentation v1.0.8
+    // ΣΗΜΑΝΤΙΚΟ: Το incomeClassification χρειάζεται το namespace icls
     const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <InvoicesDoc xmlns="http://www.aade.gr/myDATA/invoice/v1.0" 
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-             xsi:schemaLocation="http://www.aade.gr/myDATA/invoice/v1.0">
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:icls="https://www.aade.gr/myDATA/incomeClassificaton/v1.0">
   <invoice>
     <issuer>
       <vatNumber>${receipt.issuer.vatNumber}</vatNumber>
@@ -160,9 +161,9 @@ serve(async (req) => {
       <vatCategory>${detail.vatCategory}</vatCategory>
       <vatAmount>${roundToTwoDecimals(detail.vatAmount)}</vatAmount>
       <incomeClassification>
-        <classificationType>${classificationType}</classificationType>
-        <classificationCategory>${classificationCategory}</classificationCategory>
-        <amount>${roundToTwoDecimals(detail.netValue)}</amount>
+        <icls:classificationType>${classificationType}</icls:classificationType>
+        <icls:classificationCategory>${classificationCategory}</icls:classificationCategory>
+        <icls:amount>${roundToTwoDecimals(detail.netValue)}</icls:amount>
       </incomeClassification>
     </invoiceDetails>`).join('')}
 
@@ -176,9 +177,9 @@ serve(async (req) => {
       <totalDeductionsAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalDeductionsAmount || 0)}</totalDeductionsAmount>
       <totalGrossValue>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue || 0)}</totalGrossValue>
       <incomeClassification>
-        <classificationType>${classificationType}</classificationType>
-        <classificationCategory>${classificationCategory}</classificationCategory>
-        <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue || 0)}</amount>
+        <icls:classificationType>${classificationType}</icls:classificationType>
+        <icls:classificationCategory>${classificationCategory}</icls:classificationCategory>
+        <icls:amount>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue || 0)}</icls:amount>
       </incomeClassification>
     </invoiceSummary>
   </invoice>
