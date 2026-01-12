@@ -81,6 +81,7 @@ import CoachProgramCardsPage from "@/pages/Dashboard/CoachProgramCardsPage";
 import CoachGroupsPage from "@/pages/Dashboard/CoachGroupsPage";
 import CoachExercisesPage from "@/pages/Dashboard/CoachExercisesPage";
 import CoachShop from "@/pages/CoachShop";
+import CoachGoalsAwardsPage from "@/pages/Dashboard/CoachGoalsAwardsPage";
 
 const queryClient = new QueryClient();
 
@@ -143,6 +144,7 @@ function App() {
                         }
                       />
                       <Route path="/dashboard/coach-shop" element={<ProtectedRoute><CoachShop /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-goals-awards" element={<ProtectedRoute><CoachGoalsAwardsPage /></ProtectedRoute>} />
 
                       {/* Admin-only routes */}
                       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
