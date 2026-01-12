@@ -16,8 +16,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sidebar } from "@/components/Sidebar";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu } from "lucide-react";
+import { Menu, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function Subscriptions() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -87,6 +88,19 @@ export default function Subscriptions() {
             <TabsTrigger value="offers" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ενεργές Προσφορές</TabsTrigger>
             <TabsTrigger value="magic-boxes" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Μαγικά Κουτιά</TabsTrigger>
             <TabsTrigger value="history" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ιστορικό</TabsTrigger>
+            <Button
+              onClick={() => {
+                navigator.clipboard.writeText('6a1bc2b0ad328f1971a203175834caa4');
+                toast.success('Αντιγράφηκε στο clipboard');
+                window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank');
+              }}
+              variant="outline"
+              size="sm"
+              className="rounded-none whitespace-nowrap text-xs sm:text-sm"
+            >
+              <ExternalLink className="w-3 h-3 mr-1" />
+              E-timologio
+            </Button>
           </TabsList>
           
           <TabsContent value="management">
