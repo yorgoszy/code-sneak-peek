@@ -1,8 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useExerciseInputHandlers } from '@/components/programs/builder/hooks/useExerciseInputHandlers';
+import { DebouncedInput } from '@/components/programs/builder/DebouncedInput';
 import { Trash2, GripVertical } from "lucide-react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -14,7 +13,7 @@ interface EditableExerciseItemProps {
   isDragging?: boolean;
 }
 
-export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
+export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = React.memo(({
   exercise,
   onUpdate,
   onRemove,
@@ -33,10 +32,46 @@ export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
     transition,
   };
 
-  const { handleVelocityChange } = useExerciseInputHandlers({ onUpdate });
   const velocityDisplay = typeof exercise.velocity_ms === 'number'
     ? exercise.velocity_ms.toString().replace('.', ',')
     : (exercise.velocity_ms || '');
+
+  // Memoized handlers
+  const handleSetsChange = useCallback((value: string) => {
+    onUpdate('sets', parseInt(value) || 0);
+  }, [onUpdate]);
+
+  const handleRepsChange = useCallback((value: string) => {
+    onUpdate('reps', value);
+  }, [onUpdate]);
+
+  const handleKgChange = useCallback((value: string) => {
+    onUpdate('kg', value);
+  }, [onUpdate]);
+
+  const handleVelocityChange = useCallback((value: string) => {
+    const cleaned = value.replace('.', ',');
+    onUpdate('velocity_ms', cleaned);
+  }, [onUpdate]);
+
+  const handlePercentageChange = useCallback((value: string) => {
+    onUpdate('percentage_1rm', parseInt(value) || 0);
+  }, [onUpdate]);
+
+  const handleTempoChange = useCallback((value: string) => {
+    onUpdate('tempo', value);
+  }, [onUpdate]);
+
+  const handleRestChange = useCallback((value: string) => {
+    onUpdate('rest', value);
+  }, [onUpdate]);
+
+  const handleNotesChange = useCallback((value: string) => {
+    onUpdate('notes', value);
+  }, [onUpdate]);
+
+  const inputClassName = "h-5 sm:h-6 rounded-none px-1 sm:px-2 text-[9px] sm:text-[10px]";
+  const inputStyle = { appearance: 'textfield' as const };
 
   return (
     <div
@@ -69,65 +104,65 @@ export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
       <div className="grid grid-cols-4 sm:grid-cols-7 gap-0.5 sm:gap-0" style={{ fontSize: '10px' }}>
         <div className="flex-1">
           <label className="block text-gray-600 mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">Sets</label>
-          <Input
+          <DebouncedInput
             value={exercise.sets || ''}
-            onChange={(e) => onUpdate('sets', parseInt(e.target.value) || 0)}
-            className="h-5 sm:h-6 rounded-none border-r-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none px-1 sm:px-2 text-[9px] sm:text-[10px]"
-            style={{ appearance: 'textfield' }}
+            onChange={handleSetsChange}
+            className={`${inputClassName} border-r-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+            style={inputStyle}
             type="number"
-            min="0"
+            min={0}
           />
         </div>
         <div className="flex-1">
           <label className="block text-gray-600 mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">Reps</label>
-          <Input
+          <DebouncedInput
             value={exercise.reps || ''}
-            onChange={(e) => onUpdate('reps', e.target.value)}
-            className="h-5 sm:h-6 rounded-none border-r-0 px-1 sm:px-2 text-[9px] sm:text-[10px]"
+            onChange={handleRepsChange}
+            className={`${inputClassName} border-r-0`}
           />
         </div>
         <div className="flex-1">
           <label className="block text-gray-600 mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">Kg</label>
-          <Input
+          <DebouncedInput
             value={exercise.kg || ''}
-            onChange={(e) => onUpdate('kg', e.target.value)}
-            className="h-5 sm:h-6 rounded-none border-r-0 px-1 sm:px-2 text-[9px] sm:text-[10px]"
+            onChange={handleKgChange}
+            className={`${inputClassName} border-r-0`}
           />
         </div>
         <div className="flex-1">
           <label className="block text-gray-600 mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">m/s</label>
-          <Input
+          <DebouncedInput
             value={velocityDisplay}
             onChange={handleVelocityChange}
-            className="h-5 sm:h-6 rounded-none sm:border-r-0 px-1 sm:px-2 text-[9px] sm:text-[10px]"
+            className={`${inputClassName} sm:border-r-0`}
           />
         </div>
         <div className="flex-1">
           <label className="block text-gray-600 mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">%1RM</label>
-          <Input
+          <DebouncedInput
             value={exercise.percentage_1rm || ''}
-            onChange={(e) => onUpdate('percentage_1rm', parseInt(e.target.value) || 0)}
-            className="h-5 sm:h-6 rounded-none border-r-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none px-1 sm:px-2 text-[9px] sm:text-[10px]"
-            style={{ appearance: 'textfield' }}
+            onChange={handlePercentageChange}
+            className={`${inputClassName} border-r-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+            style={inputStyle}
             type="number"
-            min="0"
-            max="100"
+            min={0}
+            max={100}
           />
         </div>
         <div className="flex-1">
           <label className="block text-gray-600 mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">Tempo</label>
-          <Input
+          <DebouncedInput
             value={exercise.tempo || ''}
-            onChange={(e) => onUpdate('tempo', e.target.value)}
-            className="h-5 sm:h-6 rounded-none border-r-0 px-1 sm:px-2 text-[9px] sm:text-[10px]"
+            onChange={handleTempoChange}
+            className={`${inputClassName} border-r-0`}
           />
         </div>
         <div className="flex-1">
           <label className="block text-gray-600 mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">Rest</label>
-          <Input
+          <DebouncedInput
             value={exercise.rest || ''}
-            onChange={(e) => onUpdate('rest', e.target.value)}
-            className="h-5 sm:h-6 rounded-none px-1 sm:px-2 text-[9px] sm:text-[10px]"
+            onChange={handleRestChange}
+            className={inputClassName}
           />
         </div>
       </div>
@@ -135,13 +170,15 @@ export const EditableExerciseItem: React.FC<EditableExerciseItemProps> = ({
       {exercise.notes && (
         <div className="mt-1.5 sm:mt-2">
           <label className="block text-gray-600 mb-0.5 sm:mb-1 text-[8px] sm:text-[9px]">Notes</label>
-          <Input
+          <DebouncedInput
             value={exercise.notes || ''}
-            onChange={(e) => onUpdate('notes', e.target.value)}
-            className="h-5 sm:h-6 rounded-none px-1 sm:px-2 text-[9px] sm:text-[10px]"
+            onChange={handleNotesChange}
+            className={inputClassName}
           />
         </div>
       )}
     </div>
   );
-};
+});
+
+EditableExerciseItem.displayName = 'EditableExerciseItem';
