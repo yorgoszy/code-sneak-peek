@@ -4,7 +4,7 @@ import { SubscriptionTypeManager } from "@/components/subscriptions/Subscription
 import { SubscriptionHistory } from "@/components/subscriptions/SubscriptionHistory";
 import { MyDataSettings } from "@/components/admin/MyDataSettings";
 import { ReceiptManagement } from "@/components/analytics/ReceiptManagement";
-import { CertificateManager } from "@/components/analytics/CertificateManager";
+
 import { VisitManagement } from "@/components/visits/VisitManagement";
 import { FinancialOverview } from "@/components/analytics/FinancialOverview";
 import { ExpenseManagement } from "@/components/expenses/ExpenseManagement";
@@ -87,7 +87,6 @@ export default function Subscriptions() {
             <TabsTrigger value="offers" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ενεργές Προσφορές</TabsTrigger>
             <TabsTrigger value="magic-boxes" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Μαγικά Κουτιά</TabsTrigger>
             <TabsTrigger value="history" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ιστορικό</TabsTrigger>
-            <TabsTrigger value="certificates" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Certificates</TabsTrigger>
             <div className="flex items-center gap-2">
               <TabsTrigger value="mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">MyData AADE</TabsTrigger>
               <Button
@@ -146,9 +145,6 @@ export default function Subscriptions() {
             <ExpenseManagement />
           </TabsContent>
           
-          <TabsContent value="certificates">
-            <CertificateManager />
-          </TabsContent>
           
           <TabsContent value="mydata">
             <MyDataSettings />
