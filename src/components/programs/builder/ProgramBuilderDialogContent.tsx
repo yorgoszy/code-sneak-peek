@@ -28,7 +28,7 @@ interface ProgramBuilderDialogContentProps {
   onUpdateDayName: (weekId: string, dayId: string, name: string) => void;
   onUpdateDayTestDay: (weekId: string, dayId: string, isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (weekId: string, dayId: string, isCompetitionDay: boolean) => void;
-  onUpdateDayEsdDay: (weekId: string, dayId: string, isEsdDay: boolean) => void;
+  onUpdateDayEsdRecovery: (weekId: string, dayId: string, isEsdDay: boolean, isRecoveryDay: boolean) => void;
   onUpdateDayEffort: (weekId: string, dayId: string, bodyPart: 'upper' | 'lower', effort: EffortType) => void;
   onAddBlock: (weekId: string, dayId: string) => void;
   onRemoveBlock: (weekId: string, dayId: string, blockId: string) => void;
@@ -78,7 +78,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
-  onUpdateDayEsdDay,
+  onUpdateDayEsdRecovery,
   onUpdateDayEffort,
   onAddBlock,
   onRemoveBlock,
@@ -135,7 +135,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
               onUpdateDayName={onUpdateDayName}
               onUpdateDayTestDay={onUpdateDayTestDay}
               onUpdateDayCompetitionDay={onUpdateDayCompetitionDay}
-              onUpdateDayEsdDay={onUpdateDayEsdDay}
+              onUpdateDayEsdRecovery={onUpdateDayEsdRecovery}
               onUpdateDayEffort={onUpdateDayEffort}
               onAddBlock={onAddBlock}
               onRemoveBlock={onRemoveBlock}

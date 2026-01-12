@@ -15,7 +15,7 @@ export interface SortableDayProps {
   onUpdateDayName: (name: string) => void;
   onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (isCompetitionDay: boolean) => void;
-  onUpdateDayEsdDay: (isEsdDay: boolean) => void;
+  onUpdateDayEsdRecovery: (isEsdDay: boolean, isRecoveryDay: boolean) => void;
   onUpdateDayEffort: (bodyPart: 'upper' | 'lower', effort: EffortType) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
