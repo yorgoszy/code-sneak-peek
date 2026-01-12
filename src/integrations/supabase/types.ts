@@ -3521,6 +3521,42 @@ export type Database = {
         }
         Relationships: []
       }
+      mydata_settings: {
+        Row: {
+          aade_user_id: string
+          auto_send: boolean
+          created_at: string
+          enabled: boolean
+          environment: string
+          id: string
+          subscription_key: string
+          updated_at: string
+          vat_number: string
+        }
+        Insert: {
+          aade_user_id: string
+          auto_send?: boolean
+          created_at?: string
+          enabled?: boolean
+          environment?: string
+          id?: string
+          subscription_key: string
+          updated_at?: string
+          vat_number: string
+        }
+        Update: {
+          aade_user_id?: string
+          auto_send?: boolean
+          created_at?: string
+          enabled?: boolean
+          environment?: string
+          id?: string
+          subscription_key?: string
+          updated_at?: string
+          vat_number?: string
+        }
+        Relationships: []
+      }
       nutrition_assignments: {
         Row: {
           assigned_by: string | null
