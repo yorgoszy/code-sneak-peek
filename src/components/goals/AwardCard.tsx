@@ -42,36 +42,35 @@ export const AwardCard: React.FC<AwardCardProps> = ({
 
   return (
     <Card className="rounded-none hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div 
-            className="w-12 h-12 rounded-none flex items-center justify-center flex-shrink-0"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-none flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: `${color}20` }}
           >
             <IconComponent 
-              className="w-6 h-6" 
+              className="w-5 h-5 sm:w-6 sm:h-6" 
               style={{ color }}
             />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm truncate">{award.title}</h3>
+            <h3 className="font-semibold text-xs sm:text-sm truncate">{award.title}</h3>
             {award.description && (
-              <p className="text-xs text-muted-foreground truncate">{award.description}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{award.description}</p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">
-              {format(new Date(award.awarded_at), "dd MMM yyyy, HH:mm", { locale: el })}
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+              {format(new Date(award.awarded_at), "dd MMM yyyy", { locale: el })}
             </p>
           </div>
           
           {showControls && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               {onToggleDisplay && (
-                <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">Εμφάνιση</span>
                   <Switch
                     checked={award.is_displayed ?? true}
                     onCheckedChange={(checked) => onToggleDisplay(award.id, checked)}
-                    className="rounded-none"
                   />
                 </div>
               )}
@@ -79,10 +78,10 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 rounded-none text-destructive"
+                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-none text-destructive"
                   onClick={() => onDelete(award.id)}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               )}
             </div>

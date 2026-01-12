@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -17,22 +18,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { 
+  TrendingDown, 
+  Dumbbell, 
+  Calendar, 
+  Zap, 
+  ArrowUp,
+  Timer,
+  Activity,
+  Scale
+} from 'lucide-react';
 import type { UserGoal } from '@/hooks/useUserGoals';
 
 interface CreateGoalDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (goal: Omit<UserGoal, 'id' | 'created_at' | 'updated_at' | 'current_value' | 'status' | 'completed_at'>) => void;
+  onSubmit: (goal: Omit<UserGoal, 'id' | 'created_at' | 'updated_at' | 'current_value' | 'status' | 'completed_at'> & { attendance_source?: string }) => void;
   userId: string;
   editingGoal?: UserGoal | null;
 }
 
 const goalTypes = [
-  { value: 'workout_count', label: 'Αριθμός Προπονήσεων', unit: 'προπονήσεις' },
-  { value: 'weight_loss', label: 'Απώλεια Βάρους', unit: 'kg' },
-  { value: 'strength_gain', label: 'Αύξηση Δύναμης', unit: 'kg' },
-  { value: 'attendance', label: 'Παρουσίες', unit: 'ημέρες' },
-  { value: 'custom', label: 'Προσαρμοσμένο', unit: '' },
+  { value: 'weight_loss', label: 'Απώλεια Βάρους', unit: 'kg', icon: TrendingDown, description: 'Παρακολούθηση από σωματομετρικά τεστ' },
+  { value: 'strength_gain', label: 'Αύξηση Δύναμης', unit: 'kg', icon: Dumbbell, description: 'Παρακολούθηση από Force/Velocity profile' },
+  { value: 'endurance_gain', label: 'Αύξηση Αντοχής', unit: 'km/h', icon: Zap, description: 'Παρακολούθηση από MAS test' },
+  { value: 'jump_gain', label: 'Αύξηση Άλματος', unit: 'cm', icon: ArrowUp, description: 'Παρακολούθηση από αλτικό προφίλ' },
+  { value: 'sprint_gain', label: 'Αύξηση Sprint', unit: 'sec', icon: Timer, description: 'Παρακολούθηση από τεστ σπριντ' },
+  { value: 'functional_gain', label: 'Αύξηση Λειτουργικότητας', unit: 'points', icon: Activity, description: 'Παρακολούθηση από FMS test' },
+  { value: 'body_composition', label: 'Αλλαγή Σύστασης Σώματος', unit: '', icon: Scale, description: 'Λίπος↓ Μυς↑ Οστά↑ Σπλαχνικό↓' },
+  { value: 'attendance', label: 'Παρουσίες', unit: 'ημέρες', icon: Calendar, description: 'Παρακολούθηση προπονήσεων' },
+  { value: 'custom', label: 'Προσαρμοσμένο', unit: '', icon: null, description: 'Δικός σας στόχος' },
 ];
 
 export const CreateGoalDialog: React.FC<CreateGoalDialogProps> = ({
@@ -44,10 +59,11 @@ export const CreateGoalDialog: React.FC<CreateGoalDialogProps> = ({
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [goalType, setGoalType] = useState('custom');
+  const [goalType, setGoalType] = useState('weight_loss');
   const [targetValue, setTargetValue] = useState('');
   const [unit, setUnit] = useState('');
   const [targetDate, setTargetDate] = useState('');
+  const [attendanceSource, setAttendanceSource] = useState<'programs' | 'bookings'>('programs');
 
   useEffect(() => {
     if (editingGoal) {
@@ -65,10 +81,11 @@ export const CreateGoalDialog: React.FC<CreateGoalDialogProps> = ({
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setGoalType('custom');
+    setGoalType('weight_loss');
     setTargetValue('');
     setUnit('');
     setTargetDate('');
+    setAttendanceSource('programs');
   };
 
   const handleGoalTypeChange = (value: string) => {
@@ -76,6 +93,10 @@ export const CreateGoalDialog: React.FC<CreateGoalDialogProps> = ({
     const type = goalTypes.find(t => t.value === value);
     if (type) {
       setUnit(type.unit);
+      // Auto-set title based on goal type
+      if (!editingGoal) {
+        setTitle(type.label);
+      }
     }
   };
 
@@ -91,102 +112,144 @@ export const CreateGoalDialog: React.FC<CreateGoalDialogProps> = ({
       unit: unit || null,
       start_date: new Date().toISOString().split('T')[0],
       target_date: targetDate || null,
+      attendance_source: goalType === 'attendance' ? attendanceSource : undefined,
     });
 
     resetForm();
     onClose();
   };
 
+  const selectedGoalType = goalTypes.find(t => t.value === goalType);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="rounded-none max-w-md">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="rounded-none max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base">
             {editingGoal ? 'Επεξεργασία Στόχου' : 'Νέος Στόχος'}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Τίτλος *</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="π.χ. 10 προπονήσεις τον μήνα"
-              className="rounded-none"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="goalType">Τύπος Στόχου</Label>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Goal Type Selection */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Τύπος Στόχου</Label>
             <Select value={goalType} onValueChange={handleGoalTypeChange}>
-              <SelectTrigger className="rounded-none">
+              <SelectTrigger className="rounded-none h-9">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="rounded-none">
+              <SelectContent className="rounded-none max-h-60">
                 {goalTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
+                  <SelectItem key={type.value} value={type.value} className="py-2">
+                    <div className="flex items-center gap-2">
+                      {type.icon && <type.icon className="w-4 h-4 text-[#00ffba]" />}
+                      <div>
+                        <div className="text-sm font-medium">{type.label}</div>
+                        <div className="text-xs text-muted-foreground">{type.description}</div>
+                      </div>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="targetValue">Στόχος</Label>
-              <Input
-                id="targetValue"
-                type="number"
-                value={targetValue}
-                onChange={(e) => setTargetValue(e.target.value)}
-                placeholder="π.χ. 10"
-                className="rounded-none"
-              />
+          {/* Attendance Source Selection */}
+          {goalType === 'attendance' && (
+            <div className="space-y-1.5 p-3 bg-muted/50 border">
+              <Label className="text-xs font-medium">Πηγή Μέτρησης Παρουσιών</Label>
+              <RadioGroup 
+                value={attendanceSource} 
+                onValueChange={(v) => setAttendanceSource(v as 'programs' | 'bookings')}
+                className="space-y-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="programs" id="programs" />
+                  <Label htmlFor="programs" className="text-sm cursor-pointer">
+                    Από Ημερολόγιο Προπονήσεων
+                    <span className="block text-xs text-muted-foreground">
+                      Μετράει τις προπονήσεις που ολοκληρώθηκαν/χάθηκαν
+                    </span>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="bookings" id="bookings" />
+                  <Label htmlFor="bookings" className="text-sm cursor-pointer">
+                    Από Επισκέψεις (Bookings)
+                    <span className="block text-xs text-muted-foreground">
+                      Μετράει τις κρατήσεις στο γυμναστήριο
+                    </span>
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="unit">Μονάδα</Label>
-              <Input
-                id="unit"
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                placeholder="π.χ. kg"
-                className="rounded-none"
-              />
-            </div>
+          )}
+
+          {/* Title */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Τίτλος</Label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="π.χ. Απώλεια 5kg"
+              className="rounded-none h-9 text-sm"
+              required
+            />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="targetDate">Ημερομηνία Λήξης</Label>
+          {/* Target Value & Unit - Only for certain goal types */}
+          {(goalType === 'custom' || goalType === 'attendance') && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Στόχος</Label>
+                <Input
+                  type="number"
+                  value={targetValue}
+                  onChange={(e) => setTargetValue(e.target.value)}
+                  placeholder="π.χ. 10"
+                  className="rounded-none h-9 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Μονάδα</Label>
+                <Input
+                  value={unit}
+                  onChange={(e) => setUnit(e.target.value)}
+                  placeholder="π.χ. kg"
+                  className="rounded-none h-9 text-sm"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Target Date */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Ημερομηνία Λήξης</Label>
             <Input
-              id="targetDate"
               type="date"
               value={targetDate}
               onChange={(e) => setTargetDate(e.target.value)}
-              className="rounded-none"
+              className="rounded-none h-9 text-sm"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Περιγραφή</Label>
+          {/* Description */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Σημειώσεις (προαιρετικά)</Label>
             <Textarea
-              id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Προαιρετική περιγραφή του στόχου..."
-              className="rounded-none"
-              rows={3}
+              placeholder="Προαιρετική περιγραφή..."
+              className="rounded-none text-sm min-h-[60px]"
+              rows={2}
             />
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} className="rounded-none">
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={onClose} className="rounded-none h-9 text-sm">
               Ακύρωση
             </Button>
-            <Button type="submit" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black">
+            <Button type="submit" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-9 text-sm">
               {editingGoal ? 'Αποθήκευση' : 'Δημιουργία'}
             </Button>
           </DialogFooter>

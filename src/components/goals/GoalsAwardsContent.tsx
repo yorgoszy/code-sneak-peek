@@ -85,10 +85,10 @@ export const GoalsAwardsContent: React.FC<GoalsAwardsContentProps> = ({ coachId 
   const completedGoals = filteredGoals.filter(g => g.status === 'completed');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* User Selection */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 max-w-md">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+        <div className="flex-1 sm:max-w-md">
           <UserSearchCombobox
             value={selectedUserId || ''}
             onValueChange={setSelectedUserId}
@@ -99,7 +99,7 @@ export const GoalsAwardsContent: React.FC<GoalsAwardsContentProps> = ({ coachId 
         {selectedUserId && (
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
-            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+            className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 mr-2" />
             Νέος Στόχος
@@ -108,56 +108,57 @@ export const GoalsAwardsContent: React.FC<GoalsAwardsContentProps> = ({ coachId 
       </div>
 
       {!selectedUserId ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>Επιλέξτε έναν αθλητή για να δείτε τους στόχους και τα βραβεία του</p>
+        <div className="text-center py-8 sm:py-12 text-muted-foreground">
+          <Target className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 opacity-50" />
+          <p className="text-sm sm:text-base">Επιλέξτε έναν αθλητή για να δείτε τους στόχους και τα βραβεία του</p>
         </div>
       ) : isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-[#00ffba]" />
+        <div className="flex items-center justify-center py-8 sm:py-12">
+          <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-[#00ffba]" />
         </div>
       ) : (
         <>
           {/* Search */}
-          <div className="relative max-w-sm">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Αναζήτηση..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 rounded-none"
+              className="pl-9 rounded-none w-full sm:max-w-sm"
             />
           </div>
 
           <Tabs defaultValue="goals" className="w-full">
-            <TabsList className="rounded-none">
-              <TabsTrigger value="goals" className="rounded-none">
-                <Target className="w-4 h-4 mr-2" />
+            <TabsList className="rounded-none w-full sm:w-auto grid grid-cols-2 sm:flex">
+              <TabsTrigger value="goals" className="rounded-none text-xs sm:text-sm">
+                <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Στόχοι ({goals.length})
               </TabsTrigger>
-              <TabsTrigger value="awards" className="rounded-none">
-                <Award className="w-4 h-4 mr-2" />
+              <TabsTrigger value="awards" className="rounded-none text-xs sm:text-sm">
+                <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Βραβεία ({awards.length})
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="goals" className="space-y-6 mt-6">
+            <TabsContent value="goals" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
               {/* Active Goals */}
               <div>
-                <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
+                <h3 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-muted-foreground">
                   Ενεργοί Στόχοι ({activeGoals.length})
                 </h3>
                 {activeGoals.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground border border-dashed rounded-none">
-                    <Target className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Δεν υπάρχουν ενεργοί στόχοι</p>
+                  <div className="text-center py-6 sm:py-8 text-muted-foreground border border-dashed rounded-none">
+                    <Target className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-xs sm:text-sm">Δεν υπάρχουν ενεργοί στόχοι</p>
                   </div>
                 ) : (
-                  <div className="grid gap-3">
+                  <div className="grid gap-2 sm:gap-3">
                     {activeGoals.map((goal) => (
                       <GoalCard
                         key={goal.id}
                         goal={goal}
+                        coachId={coachId}
                         onEdit={(g) => {
                           setEditingGoal(g);
                           setIsCreateDialogOpen(true);
@@ -177,14 +178,15 @@ export const GoalsAwardsContent: React.FC<GoalsAwardsContentProps> = ({ coachId 
               {/* Completed Goals */}
               {completedGoals.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
+                  <h3 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-muted-foreground">
                     Ολοκληρωμένοι Στόχοι ({completedGoals.length})
                   </h3>
-                  <div className="grid gap-3">
+                  <div className="grid gap-2 sm:gap-3">
                     {completedGoals.map((goal) => (
                       <GoalCard
                         key={goal.id}
                         goal={goal}
+                        coachId={coachId}
                         onDelete={(id) => {
                           setDeletingGoalId(id);
                           setDeleteDialogOpen(true);
@@ -196,15 +198,15 @@ export const GoalsAwardsContent: React.FC<GoalsAwardsContentProps> = ({ coachId 
               )}
             </TabsContent>
 
-            <TabsContent value="awards" className="mt-6">
+            <TabsContent value="awards" className="mt-4 sm:mt-6">
               {filteredAwards.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground border border-dashed rounded-none">
-                  <Award className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Δεν υπάρχουν βραβεία ακόμα</p>
-                  <p className="text-xs mt-1">Τα βραβεία δημιουργούνται όταν ολοκληρώνονται στόχοι</p>
+                <div className="text-center py-6 sm:py-8 text-muted-foreground border border-dashed rounded-none">
+                  <Award className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-xs sm:text-sm">Δεν υπάρχουν βραβεία ακόμα</p>
+                  <p className="text-[10px] sm:text-xs mt-1">Τα βραβεία δημιουργούνται όταν ολοκληρώνονται στόχοι</p>
                 </div>
               ) : (
-                <div className="grid gap-3">
+                <div className="grid gap-2 sm:gap-3">
                   {filteredAwards.map((award) => (
                     <AwardCard
                       key={award.id}
@@ -239,11 +241,11 @@ export const GoalsAwardsContent: React.FC<GoalsAwardsContentProps> = ({ coachId 
 
       {/* Delete Goal Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-none">
+        <AlertDialogContent className="rounded-none max-w-sm">
           <AlertDialogHeader>
-            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
-            <AlertDialogDescription>
-              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Ο στόχος θα διαγραφεί οριστικά.
+            <AlertDialogTitle className="text-base">Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              Ο στόχος θα διαγραφεί οριστικά.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -260,11 +262,11 @@ export const GoalsAwardsContent: React.FC<GoalsAwardsContentProps> = ({ coachId 
 
       {/* Delete Award Confirmation */}
       <AlertDialog open={deleteAwardDialogOpen} onOpenChange={setDeleteAwardDialogOpen}>
-        <AlertDialogContent className="rounded-none">
+        <AlertDialogContent className="rounded-none max-w-sm">
           <AlertDialogHeader>
-            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
-            <AlertDialogDescription>
-              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Το βραβείο θα διαγραφεί οριστικά.
+            <AlertDialogTitle className="text-base">Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              Το βραβείο θα διαγραφεί οριστικά.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
