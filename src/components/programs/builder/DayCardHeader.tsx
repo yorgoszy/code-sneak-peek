@@ -3,7 +3,7 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown, Zap, BedDouble } from "lucide-react";
+import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown, Activity, BatteryCharging } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Day, EffortType } from '../types';
 
@@ -181,9 +181,9 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             title={isRecoveryDay ? "Recovery Day (κλικ για κατάργηση)" : isEsdDay ? "ESD (κλικ για Recovery)" : "Κλικ για ESD"}
           >
             {isRecoveryDay ? (
-              <BedDouble className="w-4 h-4" />
+              <BatteryCharging className="w-4 h-4" />
             ) : (
-              <Zap className="w-4 h-4" />
+              <Activity className="w-4 h-4" />
             )}
           </button>
           
