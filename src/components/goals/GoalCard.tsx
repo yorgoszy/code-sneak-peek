@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Target, 
   CheckCircle, 
@@ -21,12 +22,14 @@ import {
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import type { UserGoal } from '@/hooks/useUserGoals';
+import type { UserGoalWithUser } from '@/hooks/useAllActiveGoals';
 import { useGoalProgress } from '@/hooks/useGoalProgress';
 
 interface GoalCardProps {
-  goal: UserGoal;
+  goal: UserGoal | UserGoalWithUser;
   coachId?: string;
-  onEdit?: (goal: UserGoal) => void;
+  showUserInfo?: boolean;
+  onEdit?: (goal: UserGoal | UserGoalWithUser) => void;
   onDelete?: (goalId: string) => void;
   onComplete?: (goalId: string) => void;
   onUpdateProgress?: (goalId: string, newValue: number) => void;
@@ -66,6 +69,7 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 export const GoalCard: React.FC<GoalCardProps> = ({
   goal,
   coachId,
+  showUserInfo = false,
   onEdit,
   onDelete,
   onComplete,
@@ -73,6 +77,10 @@ export const GoalCard: React.FC<GoalCardProps> = ({
 }) => {
   const Icon = goalTypeIcons[goal.goal_type] || Target;
   const status = statusConfig[goal.status] || statusConfig.in_progress;
+  
+  // Check if goal has user info
+  const goalWithUser = goal as UserGoalWithUser;
+  const hasUserInfo = showUserInfo && 'user_name' in goal;
   
   const { progress, startTest, currentTest, isLoading } = useGoalProgress(
     goal.user_id,
@@ -103,6 +111,22 @@ export const GoalCard: React.FC<GoalCardProps> = ({
   return (
     <Card className="rounded-none hover:shadow-md transition-shadow">
       <CardContent className="p-3 sm:p-4">
+        {/* User Info Header */}
+        {hasUserInfo && (
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={goalWithUser.user_avatar || undefined} />
+              <AvatarFallback className="text-xs bg-[#00ffba]/20">
+                {goalWithUser.user_name?.charAt(0)?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">{goalWithUser.user_name}</p>
+              <p className="text-xs text-muted-foreground truncate">{goalWithUser.user_email}</p>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-none bg-[#00ffba]/10 flex items-center justify-center flex-shrink-0">

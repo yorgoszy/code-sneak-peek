@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Check, ExternalLink, Lock } from "lucide-react";
+import { Check, ExternalLink, Lock, Edit2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MyDataSettings {
@@ -18,8 +18,9 @@ interface MyDataSettings {
 }
 
 export const MyDataSettings: React.FC = () => {
+  const [isEditing, setIsEditing] = useState(false);
   // Μόνιμα κλειδωμένες και ενεργές ρυθμίσεις
-  const [settings] = useState<MyDataSettings>({
+  const [settings, setSettings] = useState<MyDataSettings>({
     aadeUserId: 'gym_production_user',
     subscriptionKey: '********',
     vatNumber: '********',
@@ -28,7 +29,6 @@ export const MyDataSettings: React.FC = () => {
     autoSend: true
   });
   const [connectionStatus] = useState<'unknown' | 'success' | 'error'>('success');
-  const isEditing = false; // Μόνιμα κλειδωμένο
 
   // Mask sensitive data when locked
   const getMaskedValue = (value: string) => {
@@ -74,10 +74,11 @@ export const MyDataSettings: React.FC = () => {
               <Label htmlFor="aadeUserId">AADE User ID</Label>
               <Input
                 id="aadeUserId"
-                value={getMaskedValue(settings.aadeUserId)}
+                value={isEditing ? settings.aadeUserId : getMaskedValue(settings.aadeUserId)}
+                onChange={(e) => setSettings(prev => ({ ...prev, aadeUserId: e.target.value }))}
                 placeholder="π.χ. gym_app_user"
                 className="rounded-none"
-                disabled={true}
+                disabled={!isEditing}
               />
             </div>
 
@@ -85,11 +86,12 @@ export const MyDataSettings: React.FC = () => {
               <Label htmlFor="subscriptionKey">Subscription Key</Label>
               <Input
                 id="subscriptionKey"
-                type="text"
-                value={getMaskedValue(settings.subscriptionKey)}
+                type={isEditing ? "password" : "text"}
+                value={isEditing ? settings.subscriptionKey : getMaskedValue(settings.subscriptionKey)}
+                onChange={(e) => setSettings(prev => ({ ...prev, subscriptionKey: e.target.value }))}
                 placeholder="Κλειδί συνδρομής από ΑΑΔΕ"
                 className="rounded-none"
-                disabled={true}
+                disabled={!isEditing}
               />
             </div>
 
@@ -97,16 +99,17 @@ export const MyDataSettings: React.FC = () => {
               <Label htmlFor="vatNumber">ΑΦΜ Γυμναστηρίου</Label>
               <Input
                 id="vatNumber"
-                value={getMaskedValue(settings.vatNumber)}
+                value={isEditing ? settings.vatNumber : getMaskedValue(settings.vatNumber)}
+                onChange={(e) => setSettings(prev => ({ ...prev, vatNumber: e.target.value }))}
                 placeholder="π.χ. 123456789"
                 className="rounded-none"
-                disabled={true}
+                disabled={!isEditing}
               />
             </div>
 
           </div>
 
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-none bg-gray-50">
+          <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>
             <div>
               <Label htmlFor="enabled">Ενεργοποίηση MyData</Label>
               <p className="text-sm text-gray-600">Ενεργοποιεί τη σύνδεση με το MyData API</p>
@@ -114,11 +117,12 @@ export const MyDataSettings: React.FC = () => {
             <Switch
               id="enabled"
               checked={settings.enabled}
-              disabled={true}
+              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, enabled: checked }))}
+              disabled={!isEditing}
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-none bg-gray-50">
+          <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>
             <div>
               <Label htmlFor="autoSend">Αυτόματη Αποστολή</Label>
               <p className="text-sm text-gray-600">Αυτόματη αποστολή αποδείξεων στο MyData κατά τη δημιουργία</p>
@@ -126,7 +130,8 @@ export const MyDataSettings: React.FC = () => {
             <Switch
               id="autoSend"
               checked={settings.autoSend}
-              disabled={true}
+              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, autoSend: checked }))}
+              disabled={!isEditing || !settings.enabled}
             />
           </div>
 
@@ -140,11 +145,39 @@ export const MyDataSettings: React.FC = () => {
           )}
 
 
-          <div className="flex gap-3">
-            <Badge variant="default" className="rounded-none px-4 py-2 bg-[#00ffba] text-black">
-              <Lock className="w-4 h-4 mr-2" />
-              Οι ρυθμίσεις είναι κλειδωμένες και ενεργές
-            </Badge>
+          <div className="flex gap-3 flex-wrap">
+            {!isEditing ? (
+              <>
+                <Badge variant="default" className="rounded-none px-4 py-2 bg-[#00ffba] text-black">
+                  <Lock className="w-4 h-4 mr-2" />
+                  Οι ρυθμίσεις είναι κλειδωμένες και ενεργές
+                </Badge>
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  variant="outline"
+                  className="rounded-none"
+                >
+                  <Edit2 className="w-4 h-4 mr-2" />
+                  Αλλαγή
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => setIsEditing(false)}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                >
+                  Αποθήκευση
+                </Button>
+                <Button
+                  onClick={() => setIsEditing(false)}
+                  variant="outline"
+                  className="rounded-none"
+                >
+                  Ακύρωση
+                </Button>
+              </>
+            )}
 
             <Button
               onClick={() => window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank')}
