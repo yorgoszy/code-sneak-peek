@@ -232,12 +232,8 @@ export const ReceiptManagement: React.FC = () => {
               <TabsTrigger value="mydata" className="rounded-none">Ρυθμίσεις MyData</TabsTrigger>
               <Button
                 onClick={() => {
-                  // Find the most recent receipt with invoice_uid
-                  const receiptWithUid = receipts.find(r => r.invoiceUid);
-                  if (receiptWithUid?.invoiceUid) {
-                    navigator.clipboard.writeText(receiptWithUid.invoiceUid);
-                    toast.success('UID αντιγράφηκε στο clipboard');
-                  }
+                  navigator.clipboard.writeText('6a1bc2b0ad328f1971a203175834caa4');
+                  toast.success('Αντιγράφηκε στο clipboard');
                   window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank');
                 }}
                 variant="outline"
