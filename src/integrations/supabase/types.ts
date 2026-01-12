@@ -5897,6 +5897,63 @@ export type Database = {
           },
         ]
       }
+      user_awards: {
+        Row: {
+          award_type: string
+          awarded_at: string
+          color: string | null
+          created_at: string
+          description: string | null
+          goal_id: string | null
+          icon_name: string | null
+          id: string
+          is_displayed: boolean | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          award_type: string
+          awarded_at?: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          goal_id?: string | null
+          icon_name?: string | null
+          id?: string
+          is_displayed?: boolean | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          award_type?: string
+          awarded_at?: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          goal_id?: string | null
+          icon_name?: string | null
+          id?: string
+          is_displayed?: boolean | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_awards_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "user_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_awards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_campaign_participations: {
         Row: {
           campaign_id: string
@@ -6137,6 +6194,65 @@ export type Database = {
           },
           {
             foreignKeyName: "user_exercise_actuals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_goals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_value: number | null
+          description: string | null
+          goal_type: string
+          id: string
+          start_date: string
+          status: string
+          target_date: string | null
+          target_value: number | null
+          title: string
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number | null
+          description?: string | null
+          goal_type: string
+          id?: string
+          start_date?: string
+          status?: string
+          target_date?: string | null
+          target_value?: number | null
+          title: string
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number | null
+          description?: string | null
+          goal_type?: string
+          id?: string
+          start_date?: string
+          status?: string
+          target_date?: string | null
+          target_value?: number | null
+          title?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_goals_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "app_users"
