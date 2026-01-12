@@ -115,7 +115,11 @@ serve(async (req) => {
          </counterpart>`
       : ''
 
-    const invoiceType = receipt.invoiceHeader.invoiceType || '11.1'
+    // Για την πλατφόρμα: ΑΠΥ (11.2) και σειρά ANEY (σύμφωνα με απαίτηση)
+    // Σημείωση: Το UI μπορεί να στέλνει διαφορετικές τιμές, αλλά για να είναι συνεπές στο myDATA
+    // επιβάλλουμε εδώ τις τιμές που θες.
+    const invoiceType = '11.2'
+    const series = 'ANEY'
     const classificationType = receipt.classificationType || 'E3_561_003'
     const classificationCategory = receipt.classificationCategory || 'category1_3'
 
@@ -132,7 +136,7 @@ serve(async (req) => {
     </issuer>
     ${counterpartXml}
     <invoiceHeader>
-      <series>${receipt.invoiceHeader.series}</series>
+      <series>${series}</series>
       <aa>${receipt.invoiceHeader.aa}</aa>
       <issueDate>${receipt.invoiceHeader.issueDate}</issueDate>
       <invoiceType>${invoiceType}</invoiceType>
@@ -177,8 +181,9 @@ serve(async (req) => {
 
     console.log('📡 Sending to MyData:', {
       url: myDataUrl,
+      issuerVat: vatNumber,
       invoiceType,
-      series: receipt.invoiceHeader.series,
+      series,
       aa: receipt.invoiceHeader.aa,
       totalGrossValue: receipt.invoiceSummary.totalGrossValue
     })
@@ -218,7 +223,7 @@ serve(async (req) => {
         authenticationCode: authCodeMatch ? authCodeMatch[1] : null,
         qrUrl: qrUrlMatch ? qrUrlMatch[1] : null,
         message: 'Απόδειξη στάλθηκε επιτυχώς στο MyData',
-        receiptNumber: receipt.invoiceHeader.series + receipt.invoiceHeader.aa,
+        receiptNumber: `${series}${receipt.invoiceHeader.aa}`,
         timestamp: new Date().toISOString()
       }
 
