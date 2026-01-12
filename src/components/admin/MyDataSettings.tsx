@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Check, TestTube, Settings, ExternalLink, Edit2, Lock } from "lucide-react";
+import { AlertCircle, Check, TestTube, ExternalLink, Edit2, Lock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -220,250 +219,157 @@ export const MyDataSettings: React.FC = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="settings" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 rounded-none">
-          <TabsTrigger value="settings" className="rounded-none">
-            <Settings className="w-4 h-4 mr-2" />
-            Ρυθμίσεις
-          </TabsTrigger>
-          <TabsTrigger value="guide" className="rounded-none">
-            <ExternalLink className="w-4 h-4 mr-2" />
-            Οδηγός Εγκατάστασης
-          </TabsTrigger>
-        </TabsList>
+      <Card className="rounded-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            Στοιχεία Σύνδεσης MyData
+            {!isEditing && (
+              <Badge variant="secondary" className="text-xs rounded-none">
+                Αποθηκευμένα
+              </Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="aadeUserId">AADE User ID</Label>
+              <Input
+                id="aadeUserId"
+                value={isEditing ? settings.aadeUserId : getMaskedValue(settings.aadeUserId)}
+                onChange={(e) => setSettings(prev => ({ ...prev, aadeUserId: e.target.value }))}
+                placeholder="π.χ. gym_app_user"
+                className="rounded-none"
+                disabled={!isEditing}
+              />
+            </div>
 
-        <TabsContent value="settings">
-          <Card className="rounded-none">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Στοιχεία Σύνδεσης MyData
-                {!isEditing && (
-                  <Badge variant="secondary" className="text-xs rounded-none">
-                    Αποθηκευμένα
-                  </Badge>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="aadeUserId">AADE User ID</Label>
-                  <Input
-                    id="aadeUserId"
-                    value={isEditing ? settings.aadeUserId : getMaskedValue(settings.aadeUserId)}
-                    onChange={(e) => setSettings(prev => ({ ...prev, aadeUserId: e.target.value }))}
-                    placeholder="π.χ. gym_app_user"
-                    className="rounded-none"
-                    disabled={!isEditing}
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="subscriptionKey">Subscription Key</Label>
+              <Input
+                id="subscriptionKey"
+                type={isEditing ? "password" : "text"}
+                value={isEditing ? settings.subscriptionKey : getMaskedValue(settings.subscriptionKey)}
+                onChange={(e) => setSettings(prev => ({ ...prev, subscriptionKey: e.target.value }))}
+                placeholder="Κλειδί συνδρομής από ΑΑΔΕ"
+                className="rounded-none"
+                disabled={!isEditing}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="subscriptionKey">Subscription Key</Label>
-                  <Input
-                    id="subscriptionKey"
-                    type={isEditing ? "password" : "text"}
-                    value={isEditing ? settings.subscriptionKey : getMaskedValue(settings.subscriptionKey)}
-                    onChange={(e) => setSettings(prev => ({ ...prev, subscriptionKey: e.target.value }))}
-                    placeholder="Κλειδί συνδρομής από ΑΑΔΕ"
-                    className="rounded-none"
-                    disabled={!isEditing}
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="vatNumber">ΑΦΜ Γυμναστηρίου</Label>
+              <Input
+                id="vatNumber"
+                value={isEditing ? settings.vatNumber : getMaskedValue(settings.vatNumber)}
+                onChange={(e) => setSettings(prev => ({ ...prev, vatNumber: e.target.value }))}
+                placeholder="π.χ. 123456789"
+                className="rounded-none"
+                disabled={!isEditing}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="vatNumber">ΑΦΜ Γυμναστηρίου</Label>
-                  <Input
-                    id="vatNumber"
-                    value={isEditing ? settings.vatNumber : getMaskedValue(settings.vatNumber)}
-                    onChange={(e) => setSettings(prev => ({ ...prev, vatNumber: e.target.value }))}
-                    placeholder="π.χ. 123456789"
-                    className="rounded-none"
-                    disabled={!isEditing}
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="environment">Περιβάλλον</Label>
+              <select
+                id="environment"
+                value={settings.environment}
+                onChange={(e) => setSettings(prev => ({ ...prev, environment: e.target.value as 'development' | 'production' }))}
+                className="w-full p-2 border border-gray-300 rounded-none focus:ring-2 focus:ring-[#00ffba] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                disabled={!isEditing}
+              >
+                <option value="development">Development (δοκιμαστικό)</option>
+                <option value="production">Production (παραγωγικό)</option>
+              </select>
+            </div>
+          </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="environment">Περιβάλλον</Label>
-                  <select
-                    id="environment"
-                    value={settings.environment}
-                    onChange={(e) => setSettings(prev => ({ ...prev, environment: e.target.value as 'development' | 'production' }))}
-                    className="w-full p-2 border border-gray-300 rounded-none focus:ring-2 focus:ring-[#00ffba] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    disabled={!isEditing}
-                  >
-                    <option value="development">Development (δοκιμαστικό)</option>
-                    <option value="production">Production (παραγωγικό)</option>
-                  </select>
-                </div>
-              </div>
+          <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>
+            <div>
+              <Label htmlFor="enabled">Ενεργοποίηση MyData</Label>
+              <p className="text-sm text-gray-600">Ενεργοποιεί τη σύνδεση με το MyData API</p>
+            </div>
+            <Switch
+              id="enabled"
+              checked={settings.enabled}
+              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, enabled: checked }))}
+              disabled={!isEditing}
+            />
+          </div>
 
-              <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>
-                <div>
-                  <Label htmlFor="enabled">Ενεργοποίηση MyData</Label>
-                  <p className="text-sm text-gray-600">Ενεργοποιεί τη σύνδεση με το MyData API</p>
-                </div>
-                <Switch
-                  id="enabled"
-                  checked={settings.enabled}
-                  onCheckedChange={(checked) => setSettings(prev => ({ ...prev, enabled: checked }))}
-                  disabled={!isEditing}
-                />
-              </div>
+          <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>
+            <div>
+              <Label htmlFor="autoSend">Αυτόματη Αποστολή</Label>
+              <p className="text-sm text-gray-600">Αυτόματη αποστολή αποδείξεων στο MyData κατά τη δημιουργία</p>
+            </div>
+            <Switch
+              id="autoSend"
+              checked={settings.autoSend}
+              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, autoSend: checked }))}
+              disabled={!isEditing || !settings.enabled}
+            />
+          </div>
 
-              <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>
-                <div>
-                  <Label htmlFor="autoSend">Αυτόματη Αποστολή</Label>
-                  <p className="text-sm text-gray-600">Αυτόματη αποστολή αποδείξεων στο MyData κατά τη δημιουργία</p>
-                </div>
-                <Switch
-                  id="autoSend"
-                  checked={settings.autoSend}
-                  onCheckedChange={(checked) => setSettings(prev => ({ ...prev, autoSend: checked }))}
-                  disabled={!isEditing || !settings.enabled}
-                />
-              </div>
+          {connectionStatus === 'success' && (
+            <Alert>
+              <Check className="h-4 w-4" />
+              <AlertDescription>
+                Η σύνδεση με το MyData API λειτουργεί σωστά
+              </AlertDescription>
+            </Alert>
+          )}
 
-              {connectionStatus === 'success' && (
-                <Alert>
-                  <Check className="h-4 w-4" />
-                  <AlertDescription>
-                    Η σύνδεση με το MyData API λειτουργεί σωστά
-                  </AlertDescription>
-                </Alert>
+          {connectionStatus === 'error' && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Σφάλμα σύνδεσης με το MyData API. Ελέγξτε τα στοιχεία σύνδεσης.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="flex gap-3">
+            <Button
+              onClick={handleEditClick}
+              disabled={loading}
+              className={isEditing 
+                ? "bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none" 
+                : "bg-gray-600 hover:bg-gray-700 text-white rounded-none"
+              }
+            >
+              {isEditing ? (
+                <>
+                  {loading ? "Αποθήκευση..." : "Αποθήκευση Ρυθμίσεων"}
+                </>
+              ) : (
+                <>
+                  <Edit2 className="w-4 h-4 mr-2" />
+                  Αλλαγή
+                </>
               )}
+            </Button>
 
-              {connectionStatus === 'error' && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Σφάλμα σύνδεσης με το MyData API. Ελέγξτε τα στοιχεία σύνδεσης.
-                  </AlertDescription>
-                </Alert>
-              )}
+            <Button
+              onClick={testConnection}
+              disabled={testLoading || !settings.aadeUserId || !settings.subscriptionKey || isEditing}
+              variant="outline"
+              className="rounded-none"
+            >
+              <TestTube className="w-4 h-4 mr-2" />
+              {testLoading ? "Έλεγχος..." : "Test Σύνδεσης"}
+            </Button>
 
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleEditClick}
-                  disabled={loading}
-                  className={isEditing 
-                    ? "bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none" 
-                    : "bg-gray-600 hover:bg-gray-700 text-white rounded-none"
-                  }
-                >
-                  {isEditing ? (
-                    <>
-                      {loading ? "Αποθήκευση..." : "Αποθήκευση Ρυθμίσεων"}
-                    </>
-                  ) : (
-                    <>
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      Αλλαγή
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={testConnection}
-                  disabled={testLoading || !settings.aadeUserId || !settings.subscriptionKey || isEditing}
-                  variant="outline"
-                  className="rounded-none"
-                >
-                  <TestTube className="w-4 h-4 mr-2" />
-                  {testLoading ? "Έλεγχος..." : "Test Σύνδεσης"}
-                </Button>
-
-                <Button
-                  onClick={() => window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank')}
-                  variant="outline"
-                  className="rounded-none"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  E-timologio
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="guide">
-          <Card className="rounded-none">
-            <CardHeader>
-              <CardTitle>Οδηγός Εγκατάστασης MyData</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="p-4 border-l-4 border-[#00ffba] bg-gray-50">
-                  <h3 className="font-semibold mb-2">Βήμα 1: Εγγραφή στο MyData Portal</h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Συνδεθείτε στην πλατφόρμα MyData της ΑΑΔΕ και δημιουργήστε λογαριασμό API:
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-sm">
-                      • <strong>Παραγωγικό:</strong> https://www1.aade.gr/saadeapps2/bookkeeper-web
-                    </p>
-                    <p className="text-sm">
-                      • <strong>Δοκιμαστικό:</strong> https://mydata-dev-register.azurewebsites.net
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-4 border-l-4 border-[#00ffba] bg-gray-50">
-                  <h3 className="font-semibold mb-2">Βήμα 2: Δημιουργία API User</h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Στην πλατφόρμα MyData:
-                  </p>
-                  <ul className="text-sm space-y-1">
-                    <li>• Επιλέξτε "Εγγραφή στο myDATA REST API"</li>
-                    <li>• Δημιουργήστε νέο χρήστη API (π.χ. "gym_app_user")</li>
-                    <li>• Κρατήστε το User ID και το Subscription Key</li>
-                  </ul>
-                </div>
-
-                <div className="p-4 border-l-4 border-[#00ffba] bg-gray-50">
-                  <h3 className="font-semibold mb-2">Βήμα 3: Εισαγωγή Στοιχείων</h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Εισάγετε τα στοιχεία που λάβατε από την ΑΑΔΕ στην καρτέλα "Ρυθμίσεις":
-                  </p>
-                  <ul className="text-sm space-y-1">
-                    <li>• AADE User ID</li>
-                    <li>• Subscription Key</li>
-                    <li>• ΑΦΜ Γυμναστηρίου</li>
-                    <li>• Επιλογή περιβάλλοντος (development/production)</li>
-                  </ul>
-                </div>
-
-                <div className="p-4 border-l-4 border-[#00ffba] bg-gray-50">
-                  <h3 className="font-semibold mb-2">Βήμα 4: Έλεγχος Σύνδεσης</h3>
-                  <p className="text-sm text-gray-600">
-                    Χρησιμοποιήστε το κουμπί "Test Σύνδεσης" για να επιβεβαιώσετε ότι η σύνδεση λειτουργεί σωστά.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button
-                  onClick={() => window.open('https://www1.aade.gr/saadeapps2/bookkeeper-web', '_blank')}
-                  variant="outline"
-                  className="rounded-none"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  MyData Portal (Production)
-                </Button>
-
-                <Button
-                  onClick={() => window.open('https://mydata-dev-register.azurewebsites.net', '_blank')}
-                  variant="outline"
-                  className="rounded-none"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  MyData Portal (Development)
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            <Button
+              onClick={() => window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank')}
+              variant="outline"
+              className="rounded-none"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              E-timologio
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
