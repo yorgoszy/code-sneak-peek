@@ -148,13 +148,9 @@ export const MyDataSettings: React.FC = () => {
           <div className="flex gap-3 flex-wrap">
             {!isEditing ? (
               <>
-                <Badge variant="default" className="rounded-none px-4 py-2 bg-[#00ffba] text-black">
-                  <Lock className="w-4 h-4 mr-2" />
-                  Οι ρυθμίσεις είναι κλειδωμένες και ενεργές
-                </Badge>
                 <Button
                   onClick={() => setIsEditing(true)}
-                  variant="outline"
+                  variant="secondary"
                   className="rounded-none"
                 >
                   <Edit2 className="w-4 h-4 mr-2" />
