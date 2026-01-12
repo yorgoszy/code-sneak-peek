@@ -82,7 +82,7 @@ import CoachGroupsPage from "@/pages/Dashboard/CoachGroupsPage";
 import CoachExercisesPage from "@/pages/Dashboard/CoachExercisesPage";
 import CoachShop from "@/pages/CoachShop";
 import CoachGoalsAwardsPage from "@/pages/Dashboard/CoachGoalsAwardsPage";
-
+import AdminGoalsAwardsPage from "@/pages/Dashboard/AdminGoalsAwardsPage";
 const queryClient = new QueryClient();
 
 function App() {
@@ -174,6 +174,7 @@ function App() {
                       <Route path="/dashboard/one-rm" element={<ProtectedRoute requireAdmin><OneRMManagementWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/rid-ai-coach" element={<ProtectedRoute><RidAiCoachPage /></ProtectedRoute>} />
                       <Route path="/dashboard/ai-knowledge" element={<ProtectedRoute requireAdmin><AdminAIKnowledgeWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/goals-awards" element={<ProtectedRoute requireAdmin><AdminGoalsAwardsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/nutrition" element={<ProtectedRoute><NutritionWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/annual-planning" element={<ProtectedRoute><AnnualPlanningWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />

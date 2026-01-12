@@ -23,7 +23,8 @@ import {
   ChevronDown,
   ChevronUp,
   Timer,
-  Utensils
+  Utensils,
+  Award
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -573,6 +574,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: BookOpen, 
       label: "Άρθρα", 
       path: "/dashboard/articles",
+      badge: null
+    },
+    {
+      icon: Award,
+      label: "Στόχοι & Βραβεία",
+      path: "/dashboard/goals-awards",
       badge: null
     },
     { 
