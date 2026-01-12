@@ -4,10 +4,9 @@ import { CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Copy, Files, ClipboardPaste } from "lucide-react";
-import { formatTimeInput } from '@/utils/timeFormatting';
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
+import { RollingTimeInput } from './RollingTimeInput';
 import type { Block } from '../types';
 
 interface BlockCardHeaderProps {
@@ -206,14 +205,9 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
         </Select>
 
         {workoutFormat && workoutFormat !== 'none' && (
-          <Input
-            type="text"
+          <RollingTimeInput
             value={workoutDuration || ''}
-            onChange={(e) => {
-              const formatted = formatTimeInput(e.target.value);
-              onWorkoutDurationChange(formatted);
-            }}
-            placeholder="00:00"
+            onChange={onWorkoutDurationChange}
             className="h-6 w-[70px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
             onClick={(e) => e.stopPropagation()}
           />

@@ -9,6 +9,7 @@ interface RollingTimeInputProps {
   className?: string;
   style?: React.CSSProperties;
   placeholder?: string;
+  onClick?: (e: React.MouseEvent<HTMLInputElement>) => void;
 }
 
 /**
@@ -22,7 +23,8 @@ export const RollingTimeInput: React.FC<RollingTimeInputProps> = React.memo(({
   debounceMs = 300,
   className,
   style,
-  placeholder = '00:00'
+  placeholder = '00:00',
+  onClick
 }) => {
   // Extract 4 digits from current value
   const getDigitsFromValue = (val: string | number): string => {
@@ -152,6 +154,7 @@ export const RollingTimeInput: React.FC<RollingTimeInputProps> = React.memo(({
       onKeyDown={handleKeyDown}
       onPaste={handlePaste}
       onBlur={handleBlur}
+      onClick={onClick}
       className={className}
       style={style}
       placeholder={placeholder}
