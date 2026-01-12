@@ -53,7 +53,14 @@ export const ReceiptMyDataIntegration: React.FC<ReceiptMyDataIntegrationProps> =
       return;
     }
 
-    if (!settings.aadeUserId || !settings.subscriptionKey || !settings.vatNumber) {
+    // Ελέγχουμε αν υπάρχουν local settings ή θα χρησιμοποιήσουμε τα Supabase secrets
+    const useStoredCredentials = !settings.aadeUserId || !settings.subscriptionKey;
+
+    if (useStoredCredentials) {
+      console.log('🔑 Will use stored Supabase secrets for MyData credentials');
+    }
+
+    if (!useStoredCredentials && !settings.vatNumber) {
       toast({
         title: "Μη ολοκληρωμένες ρυθμίσεις",
         description: "Παρακαλώ ολοκληρώστε τις ρυθμίσεις MyData πρώτα",
@@ -68,7 +75,7 @@ export const ReceiptMyDataIntegration: React.FC<ReceiptMyDataIntegrationProps> =
       // Δημιουργία MyData receipt format
       const myDataReceipt = {
         issuer: {
-          vatNumber: settings.vatNumber,
+          vatNumber: settings.vatNumber || '', // Θα ληφθεί από secrets αν είναι κενό
           country: "GR",
           branch: 0
         },
@@ -105,16 +112,18 @@ export const ReceiptMyDataIntegration: React.FC<ReceiptMyDataIntegrationProps> =
       console.log('🚀 Sending receipt to MyData:', {
         receiptId: receipt.id,
         receiptNumber: receipt.receipt_number,
-        environment: settings.environment
+        environment: settings.environment,
+        useStoredCredentials
       });
 
-      // Κλήση του edge function
+      // Κλήση του edge function - μπορεί να χρησιμοποιήσει stored secrets
       const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
         body: {
-          aadeUserId: settings.aadeUserId,
-          subscriptionKey: settings.subscriptionKey,
+          aadeUserId: useStoredCredentials ? undefined : settings.aadeUserId,
+          subscriptionKey: useStoredCredentials ? undefined : settings.subscriptionKey,
           environment: settings.environment,
-          receipt: myDataReceipt
+          receipt: myDataReceipt,
+          useStoredCredentials
         }
       });
 

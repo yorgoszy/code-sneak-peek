@@ -357,6 +357,106 @@ export const SubscriptionManagement: React.FC = () => {
     return `ΑΠΥ-${String(numberPart + 1).padStart(4, '0')}`;
   };
 
+  const getMyDataSettings = () => {
+    return {
+      aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
+      subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
+      vatNumber: localStorage.getItem('mydata_vat_number') || '',
+      environment: (localStorage.getItem('mydata_environment') as 'development' | 'production') || 'development',
+      enabled: localStorage.getItem('mydata_enabled') === 'true',
+      autoSend: localStorage.getItem('mydata_auto_send') === 'true'
+    };
+  };
+
+  const sendReceiptToMyData = async (receiptNumber: string, receiptId: string, netPrice: number, vatAmount: number, totalPrice: number) => {
+    const settings = getMyDataSettings();
+    
+    if (!settings.enabled || !settings.autoSend) {
+      console.log('⏭️ MyData auto-send is disabled');
+      return;
+    }
+
+    const useStoredCredentials = !settings.aadeUserId || !settings.subscriptionKey;
+
+    try {
+      const myDataReceipt = {
+        issuer: {
+          vatNumber: settings.vatNumber,
+          country: "GR",
+          branch: 0
+        },
+        invoiceHeader: {
+          series: "A",
+          aa: parseInt(receiptNumber) || Math.floor(Math.random() * 100000),
+          issueDate: new Date().toISOString().split('T')[0],
+          invoiceType: "11.1",
+          currency: "EUR"
+        },
+        invoiceDetails: [{
+          lineNumber: 1,
+          netValue: netPrice,
+          vatCategory: 3, // ΦΠΑ 13%
+          vatAmount: vatAmount
+        }],
+        invoiceSummary: {
+          totalNetValue: netPrice,
+          totalVatAmount: vatAmount,
+          totalWithheldAmount: 0,
+          totalFeesAmount: 0,
+          totalStampDutyAmount: 0,
+          totalOtherTaxesAmount: 0,
+          totalDeductionsAmount: 0,
+          totalGrossValue: totalPrice
+        }
+      };
+
+      console.log('🚀 Auto-sending receipt to MyData:', receiptNumber);
+
+      const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
+        body: {
+          aadeUserId: useStoredCredentials ? undefined : settings.aadeUserId,
+          subscriptionKey: useStoredCredentials ? undefined : settings.subscriptionKey,
+          environment: settings.environment,
+          receipt: myDataReceipt,
+          useStoredCredentials
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        // Ενημέρωση της απόδειξης με το MARK
+        await supabase
+          .from('receipts')
+          .update({
+            mydata_status: 'sent',
+            mydata_id: data.myDataId,
+            invoice_mark: data.invoiceMark,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', receiptId);
+
+        console.log('✅ Receipt auto-sent to MyData. MARK:', data.invoiceMark);
+        
+        toast({
+          title: "MyData Επιτυχία",
+          description: `Απόδειξη στάλθηκε στο MyData. ΜΑΡΚ: ${data.invoiceMark}`,
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ MyData auto-send error:', error);
+      
+      // Ενημέρωση κατάστασης σε error
+      await supabase
+        .from('receipts')
+        .update({
+          mydata_status: 'error',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', receiptId);
+    }
+  };
+
   const createReceiptForSubscription = async (userData: any, subscriptionType: SubscriptionType, startDate: string, endDate: Date) => {
     try {
       const receiptNumber = await generateReceiptNumber();
@@ -384,9 +484,11 @@ export const SubscriptionManagement: React.FC = () => {
         mydata_status: 'pending'
       };
 
-      const { error: receiptError } = await supabase
+      const { data: insertedReceipt, error: receiptError } = await supabase
         .from('receipts')
-        .insert([receiptData]);
+        .insert([receiptData])
+        .select()
+        .single();
 
       if (receiptError) throw receiptError;
 
@@ -396,6 +498,11 @@ export const SubscriptionManagement: React.FC = () => {
         title: "Επιτυχία",
         description: `Η απόδειξη ${receiptNumber} δημιουργήθηκε επιτυχώς`,
       });
+
+      // Auto-send στο MyData αν είναι ενεργοποιημένο
+      if (insertedReceipt) {
+        await sendReceiptToMyData(receiptNumber, insertedReceipt.id, netPrice, vatAmount, totalPrice);
+      }
 
     } catch (error) {
       console.error('❌ Σφάλμα δημιουργίας απόδειξης:', error);
