@@ -26,6 +26,7 @@ import { useAllPrograms } from "@/hooks/useAllPrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface UserProfileSidebarProps {
   isCollapsed: boolean;
@@ -49,6 +50,7 @@ export const UserProfileSidebar = forwardRef<
 }, ref) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { isAdmin } = useRoleCheck();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
   const [activePrograms, setActivePrograms] = useState(0);
@@ -201,7 +203,9 @@ export const UserProfileSidebar = forwardRef<
   
   // Έλεγχος αν ο χρήστης δημιουργήθηκε από coach (έχει coach_id)
   // Αυτοί οι χρήστες δεν έχουν πρόσβαση σε shop, online coaching, online booking
+  // ΕΚΤΟΣ αν ο τρέχων χρήστης είναι admin - τότε βλέπει τα πάντα
   const isCoachCreatedUser = !!userProfile?.coach_id;
+  const showAdminMenus = isAdmin || !isCoachCreatedUser;
 
   const menuItems = [
     { 
@@ -258,28 +262,28 @@ export const UserProfileSidebar = forwardRef<
       label: t('sidebar.shop'),
       key: "shop",
       badge: null,
-      visible: !isCoachCreatedUser
+      visible: showAdminMenus
     },
     {
       icon: Tag,
       label: t('sidebar.offers'),
       key: "offers",
       badge: availableOffers > 0 ? availableOffers : null,
-      visible: !isCoachCreatedUser
+      visible: showAdminMenus
     },
     {
       icon: Video,
       label: t('sidebar.onlineCoaching'),
       key: "online-coaching",
       badge: null,
-      visible: !isCoachCreatedUser
+      visible: showAdminMenus
     },
     {
       icon: CalendarDays,
       label: t('sidebar.onlineBooking'),
       key: "online-booking",
       badge: null,
-      visible: !isCoachCreatedUser
+      visible: showAdminMenus
     },
     {
       icon: User,
