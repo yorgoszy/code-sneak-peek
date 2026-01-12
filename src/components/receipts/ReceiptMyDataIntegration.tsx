@@ -133,13 +133,15 @@ export const ReceiptMyDataIntegration: React.FC<ReceiptMyDataIntegrationProps> =
       }
 
       if (data.success) {
-        // Ενημέρωση της απόδειξης στη βάση δεδομένων
+        // Ενημέρωση της απόδειξης στη βάση δεδομένων με όλα τα MyData στοιχεία
         const { error: updateError } = await supabase
           .from('receipts')
           .update({
             mydata_status: 'sent',
             mydata_id: data.myDataId,
             invoice_mark: data.invoiceMark,
+            invoice_uid: data.invoiceUid,
+            qr_url: data.qrUrl,
             updated_at: new Date().toISOString()
           })
           .eq('id', receipt.id);

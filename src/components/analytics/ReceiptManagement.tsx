@@ -98,6 +98,8 @@ interface ReceiptData {
   myDataStatus: 'pending' | 'sent' | 'error';
   myDataId?: string;
   invoiceMark?: string;
+  invoiceUid?: string;
+  qrUrl?: string;
 }
 
 interface ReceiptItem {
@@ -161,7 +163,9 @@ export const ReceiptManagement: React.FC = () => {
         date: receipt.issue_date,
         myDataStatus: receipt.mydata_status as 'pending' | 'sent' | 'error',
         myDataId: receipt.mydata_id || undefined,
-        invoiceMark: receipt.invoice_mark || undefined
+        invoiceMark: receipt.invoice_mark || undefined,
+        invoiceUid: (receipt as any).invoice_uid || undefined,
+        qrUrl: (receipt as any).qr_url || undefined
       }));
 
       setReceipts(receiptData);
@@ -477,7 +481,9 @@ export const ReceiptManagement: React.FC = () => {
           endDate: selectedReceipt.endDate,
           myDataStatus: selectedReceipt.myDataStatus,
           myDataId: selectedReceipt.myDataId,
-          invoiceMark: selectedReceipt.invoiceMark
+          invoiceMark: selectedReceipt.invoiceMark,
+          invoiceUid: selectedReceipt.invoiceUid,
+          qrUrl: selectedReceipt.qrUrl
         } : null}
       />
 

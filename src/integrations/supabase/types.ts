@@ -4696,11 +4696,13 @@ export type Database = {
           customer_vat: string | null
           id: string
           invoice_mark: string | null
+          invoice_uid: string | null
           issue_date: string
           items: Json
           mydata_id: string | null
           mydata_status: string
           payment_id: string | null
+          qr_url: string | null
           receipt_number: string
           subtotal: number
           total: number
@@ -4717,11 +4719,13 @@ export type Database = {
           customer_vat?: string | null
           id?: string
           invoice_mark?: string | null
+          invoice_uid?: string | null
           issue_date?: string
           items?: Json
           mydata_id?: string | null
           mydata_status?: string
           payment_id?: string | null
+          qr_url?: string | null
           receipt_number: string
           subtotal?: number
           total?: number
@@ -4738,11 +4742,13 @@ export type Database = {
           customer_vat?: string | null
           id?: string
           invoice_mark?: string | null
+          invoice_uid?: string | null
           issue_date?: string
           items?: Json
           mydata_id?: string | null
           mydata_status?: string
           payment_id?: string | null
+          qr_url?: string | null
           receipt_number?: string
           subtotal?: number
           total?: number
