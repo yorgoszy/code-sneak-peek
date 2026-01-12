@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from "lucide-react";
@@ -16,7 +16,7 @@ interface SortableExerciseProps {
   onDuplicate: () => void;
 }
 
-export const SortableExercise: React.FC<SortableExerciseProps> = (props) => {
+export const SortableExercise: React.FC<SortableExerciseProps> = React.memo((props) => {
   const {
     attributes,
     listeners,
@@ -44,4 +44,6 @@ export const SortableExercise: React.FC<SortableExerciseProps> = (props) => {
       <ExerciseRow {...props} />
     </div>
   );
-};
+});
+
+SortableExercise.displayName = 'SortableExercise';

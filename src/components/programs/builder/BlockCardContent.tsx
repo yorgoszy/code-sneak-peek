@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { CardContent } from "@/components/ui/card";
 import { CollapsibleContent } from "@/components/ui/collapsible";
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -17,7 +17,7 @@ interface BlockCardContentProps {
   onReorderExercises: (oldIndex: number, newIndex: number) => void;
 }
 
-export const BlockCardContent: React.FC<BlockCardContentProps> = ({
+export const BlockCardContent: React.FC<BlockCardContentProps> = React.memo(({
   exercises,
   availableExercises,
   selectedUserId,
@@ -26,7 +26,7 @@ export const BlockCardContent: React.FC<BlockCardContentProps> = ({
   onDuplicateExercise,
   onReorderExercises
 }) => {
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = useCallback((event: any) => {
     const { active, over } = event;
 
     if (active.id !== over.id) {
@@ -34,13 +34,16 @@ export const BlockCardContent: React.FC<BlockCardContentProps> = ({
       const newIndex = exercises.findIndex(exercise => exercise.id === over.id);
       onReorderExercises(oldIndex, newIndex);
     }
-  };
+  }, [exercises, onReorderExercises]);
+
+  // Memoize exercise item ids for SortableContext
+  const exerciseIds = React.useMemo(() => exercises.map(e => e.id), [exercises]);
 
   return (
     <CollapsibleContent>
       <CardContent className="p-0 m-0">
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={exercises.map(e => e.id)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={exerciseIds} strategy={verticalListSortingStrategy}>
             <div className="w-full h-full">
               {exercises.map((exercise) => (
                 <SortableExercise
@@ -60,4 +63,6 @@ export const BlockCardContent: React.FC<BlockCardContentProps> = ({
       </CardContent>
     </CollapsibleContent>
   );
-};
+});
+
+BlockCardContent.displayName = 'BlockCardContent';

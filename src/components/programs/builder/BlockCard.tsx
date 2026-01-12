@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card } from "@/components/ui/card";
 import { Collapsible } from "@/components/ui/collapsible";
 import { BlockCardHeader } from './BlockCardHeader';
@@ -56,7 +56,7 @@ interface BlockCardProps {
   coachId?: string;
 }
 
-export const BlockCard: React.FC<BlockCardProps> = ({
+export const BlockCard: React.FC<BlockCardProps> = React.memo(({
   block,
   exercises,
   selectedUserId,
@@ -185,4 +185,6 @@ export const BlockCard: React.FC<BlockCardProps> = ({
       />
     </>
   );
-};
+});
+
+BlockCard.displayName = 'BlockCard';
