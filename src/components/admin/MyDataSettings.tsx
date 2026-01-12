@@ -14,7 +14,7 @@ interface MyDataSettings {
   aadeUserId: string;
   subscriptionKey: string;
   vatNumber: string;
-  environment: 'development' | 'production';
+  environment: 'production';
   enabled: boolean;
   autoSend: boolean;
 }
@@ -25,7 +25,7 @@ export const MyDataSettings: React.FC = () => {
     aadeUserId: '',
     subscriptionKey: '',
     vatNumber: '',
-    environment: 'development',
+    environment: 'production',
     enabled: false,
     autoSend: false
   });
@@ -43,7 +43,7 @@ export const MyDataSettings: React.FC = () => {
       aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
       subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
       vatNumber: localStorage.getItem('mydata_vat_number') || '',
-      environment: (localStorage.getItem('mydata_environment') as 'development' | 'production') || 'development',
+      environment: 'production' as const,
       enabled: localStorage.getItem('mydata_enabled') === 'true',
       autoSend: localStorage.getItem('mydata_auto_send') === 'true'
     };
@@ -269,19 +269,6 @@ export const MyDataSettings: React.FC = () => {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="environment">Περιβάλλον</Label>
-              <select
-                id="environment"
-                value={settings.environment}
-                onChange={(e) => setSettings(prev => ({ ...prev, environment: e.target.value as 'development' | 'production' }))}
-                className="w-full p-2 border border-gray-300 rounded-none focus:ring-2 focus:ring-[#00ffba] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                disabled={!isEditing}
-              >
-                <option value="development">Development (δοκιμαστικό)</option>
-                <option value="production">Production (παραγωγικό)</option>
-              </select>
-            </div>
           </div>
 
           <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>

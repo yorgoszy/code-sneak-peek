@@ -365,7 +365,7 @@ export const SubscriptionManagement: React.FC = () => {
       aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
       subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
       vatNumber: localStorage.getItem('mydata_vat_number') || '',
-      environment: (localStorage.getItem('mydata_environment') as 'development' | 'production') || 'development',
+      environment: 'production' as const,
       enabled,
       // Αν δεν έχει αποθηκευτεί ακόμα ρύθμιση auto-send, το θεωρούμε true όταν το MyData είναι ενεργό
       autoSend: autoSendRaw === null ? enabled : autoSendRaw === 'true'
