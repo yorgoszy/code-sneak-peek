@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,129 +8,105 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { 
-      aadeUserId, 
-      subscriptionKey, 
-      environment, 
-      receipt, 
-      paymentMethod = 'cash',
-      useStoredCredentials = false // Χρήση των αποθηκευμένων secrets
-    } = await req.json()
+    const { receipt, paymentMethod = 'cash' } = await req.json()
 
-    // Λήψη credentials - είτε από request είτε από Supabase secrets
-    let finalAadeUserId = aadeUserId
-    let finalSubscriptionKey = subscriptionKey
+    console.log('🚀 MyData Send Receipt called')
 
-    if (useStoredCredentials || (!aadeUserId && !subscriptionKey)) {
-      // Χρήση των Supabase secrets
-      finalAadeUserId = Deno.env.get('MYDATA_USER_ID') || aadeUserId
-      finalSubscriptionKey = Deno.env.get('MYDATA_SUBSCRIPTION_KEY') || subscriptionKey
-      console.log('🔑 Using stored Supabase secrets for MyData credentials')
-    }
+    // Δημιουργία Supabase client για να διαβάσουμε τα credentials από τη βάση
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    console.log('🚀 MyData Send Receipt called with:', { 
-      aadeUserId: finalAadeUserId ? '***' : 'missing', 
-      environment,
-      hasSubscriptionKey: !!finalSubscriptionKey,
-      receiptId: receipt?.invoiceHeader?.aa,
-      useStoredCredentials
-    })
+    // Λήψη credentials από τον πίνακα mydata_settings
+    const { data: settings, error: settingsError } = await supabase
+      .from('mydata_settings')
+      .select('*')
+      .limit(1)
+      .single()
 
-    // Validation - Ελέγχουμε τα myDATA credentials
-    if (!finalAadeUserId || !finalSubscriptionKey) {
-      const errorResponse = {
-        success: false,
-        error: 'Missing required parameters: aadeUserId or subscriptionKey. Configure them in Supabase secrets or pass them in the request.',
-        timestamp: new Date().toISOString()
-      }
-      console.error('❌ Validation error:', errorResponse.error)
+    if (settingsError || !settings) {
+      console.error('❌ Failed to get MyData settings:', settingsError)
       return new Response(
-        JSON.stringify(errorResponse),
-        { 
-          status: 400,
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json' 
-          } 
-        }
+        JSON.stringify({
+          success: false,
+          error: 'Δεν βρέθηκαν ρυθμίσεις MyData. Παρακαλώ διαμορφώστε τις ρυθμίσεις.',
+          timestamp: new Date().toISOString()
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    if (!receipt) {
-      const errorResponse = {
-        success: false,
-        error: 'Invalid receipt data',
-        timestamp: new Date().toISOString()
-      }
-      console.error('❌ Validation error:', errorResponse.error)
+    if (!settings.enabled) {
       return new Response(
-        JSON.stringify(errorResponse),
-        { 
-          status: 400,
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json' 
-          } 
-        }
+        JSON.stringify({
+          success: false,
+          error: 'Το MyData είναι απενεργοποιημένο. Ενεργοποιήστε το από τις ρυθμίσεις.',
+          timestamp: new Date().toISOString()
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const aadeUserId = settings.aade_user_id
+    const subscriptionKey = settings.subscription_key
+    const environment = settings.environment || 'production'
+
+    console.log('🔑 Using MyData credentials from database:', { 
+      aadeUserId: aadeUserId ? aadeUserId.substring(0, 4) + '***' : 'missing',
+      environment,
+      hasSubscriptionKey: !!subscriptionKey
+    })
+
+    if (!receipt) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Invalid receipt data',
+          timestamp: new Date().toISOString()
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     // MyData API URLs σύμφωνα με την τεκμηρίωση ΑΑΔΕ v1.0.8
-    // Production: https://mydatapi.aade.gr/myDATA/SendInvoices
-    // Development: https://mydataapidev.aade.gr/SendInvoices
-    console.log('🚀 Κλήση MyData API...')
-    
     const myDataUrl = environment === 'development' 
       ? 'https://mydataapidev.aade.gr/SendInvoices'
       : 'https://mydatapi.aade.gr/myDATA/SendInvoices'
     
-    // Helper function για στρογγύλευση τιμών σε 2 δεκαδικά ψηφία
-    const roundToTwoDecimals = (value: number): number => {
-      return Math.round(value * 100) / 100
-    }
+    // Helper functions
+    const roundToTwoDecimals = (value: number): number => Math.round(value * 100) / 100
 
-    // Helper function για payment type codes σύμφωνα με MyData API
-    // Πίνακας 8.12 - Τρόποι Πληρωμής
     const getPaymentTypeCode = (method: string): string => {
       const paymentCodes: Record<string, string> = {
-        'cash': '3',              // Μετρητά
-        'card': '7',              // POS/e-POS
-        'pos': '7',               // POS/e-POS
-        'bank_transfer': '1',     // Επιταγή / Τραπεζική κατάθεση
-        'domestic_transfer': '5', // Εγχώριες Πληρωμές Λογαριασμού
-        'foreign_transfer': '6',  // Web Banking
-        'iris': '8'               // Άμεσες Πληρωμές IRIS
+        'cash': '3',
+        'card': '7',
+        'pos': '7',
+        'bank_transfer': '1',
+        'domestic_transfer': '5',
+        'foreign_transfer': '6',
+        'iris': '8'
       }
-      return paymentCodes[method] || '3' // Default μετρητά
+      return paymentCodes[method] || '3'
     }
 
-    // Δημιουργούμε το τμήμα του counterpart δυναμικά (για τιμολόγια)
-    const counterpartXml = receipt.counterpart && receipt.counterpart.vatNumber && receipt.counterpart.vatNumber !== "000000000"
+    // Counterpart XML (για τιμολόγια)
+    const counterpartXml = receipt.counterpart?.vatNumber && receipt.counterpart.vatNumber !== "000000000"
       ? `<counterpart>
            <vatNumber>${receipt.counterpart.vatNumber}</vatNumber>
            <country>${receipt.counterpart.country || 'GR'}</country>
            <branch>${receipt.counterpart.branch || 0}</branch>
          </counterpart>`
-      : '';
+      : ''
 
-    // Προσδιορισμός τύπου παραστατικού
-    // 11.1 = Απόδειξη Λιανικής Πώλησης
-    // 11.2 = Απόδειξη Παροχής Υπηρεσιών
-    // 11.4 = Απλοποιημένο Τιμολόγιο
     const invoiceType = receipt.invoiceHeader.invoiceType || '11.1'
-    
-    // Χαρακτηρισμός εσόδων ανάλογα με τον τύπο
-    // E3_561_003 = Λοιπές πωλήσεις αγαθών (για γυμναστήριο = υπηρεσίες)
-    // category1_3 = Έσοδα από παροχή υπηρεσιών
     const classificationType = receipt.classificationType || 'E3_561_003'
     const classificationCategory = receipt.classificationCategory || 'category1_3'
 
-    // Μετατροπή σε XML format σύμφωνα με MyData API Documentation v1.0.8
-    // ΣΗΜΑΝΤΙΚΟ: Το incomeClassification χρειάζεται το namespace icls
+    // XML Body
     const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <InvoicesDoc xmlns="http://www.aade.gr/myDATA/invoice/v1.0" 
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -184,163 +161,78 @@ serve(async (req) => {
     </invoiceSummary>
   </invoice>
 </InvoicesDoc>`
-    
-    const myDataRequest = {
+
+    console.log('📡 Sending to MyData:', {
+      url: myDataUrl,
+      invoiceType,
+      series: receipt.invoiceHeader.series,
+      aa: receipt.invoiceHeader.aa,
+      totalGrossValue: receipt.invoiceSummary.totalGrossValue
+    })
+
+    const myDataResponse = await fetch(myDataUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/xml',
-        'aade-user-id': finalAadeUserId,
-        'ocp-apim-subscription-key': finalSubscriptionKey
+        'aade-user-id': aadeUserId,
+        'ocp-apim-subscription-key': subscriptionKey
       },
       body: xmlBody
-    }
-
-    console.log('📡 MyData Request:', {
-      url: myDataUrl,
-      headers: {
-        'Content-Type': 'application/xml',
-        'aade-user-id': '***',
-        'ocp-apim-subscription-key': '***'
-      },
-      bodySize: myDataRequest.body.length,
-      invoiceType,
-      series: receipt.invoiceHeader.series,
-      aa: receipt.invoiceHeader.aa
     })
 
-    try {
-      const myDataResponse = await fetch(myDataUrl, myDataRequest)
-      const responseText = await myDataResponse.text()
-      
-      console.log('📨 MyData Response Status:', myDataResponse.status)
-      console.log('📨 MyData Response Body:', responseText)
+    const responseText = await myDataResponse.text()
+    console.log('📨 MyData Response Status:', myDataResponse.status)
+    console.log('📨 MyData Response Body:', responseText)
 
-      if (!myDataResponse.ok) {
-        throw new Error(`MyData API Error: ${myDataResponse.status} - ${responseText}`)
-      }
+    if (!myDataResponse.ok) {
+      throw new Error(`MyData API Error: ${myDataResponse.status} - ${responseText}`)
+    }
 
-      // Parse XML response
-      let responseData: {
-        uid: string | null
-        invoiceMark: string | null
-        authenticationCode: string | null
-        statusCode: string | null
-        qrUrl: string | null
-        errors: string[]
-      } = {
-        uid: null,
-        invoiceMark: null,
-        authenticationCode: null,
-        statusCode: null,
-        qrUrl: null,
-        errors: []
-      }
+    // Parse XML response
+    const statusCodeMatch = responseText.match(/<statusCode>(.*?)<\/statusCode>/)
+    const statusCode = statusCodeMatch ? statusCodeMatch[1] : null
 
-      try {
-        // Εξαγωγή statusCode
-        const statusCodeMatch = responseText.match(/<statusCode>(.*?)<\/statusCode>/)
-        responseData.statusCode = statusCodeMatch ? statusCodeMatch[1] : null
-        
-        // Έλεγχος αν υπάρχει success response στο XML
-        if (responseText.includes('<statusCode>Success</statusCode>')) {
-          // Εξαγωγή uid, invoiceMark, authenticationCode και qrUrl από XML
-          const uidMatch = responseText.match(/<invoiceUid>(.*?)<\/invoiceUid>/)
-          const invoiceMarkMatch = responseText.match(/<invoiceMark>(.*?)<\/invoiceMark>/)
-          const authenticationCodeMatch = responseText.match(/<authenticationCode>(.*?)<\/authenticationCode>/)
-          const qrUrlMatch = responseText.match(/<qrUrl>(.*?)<\/qrUrl>/)
-          
-          responseData.uid = uidMatch ? uidMatch[1] : null
-          responseData.invoiceMark = invoiceMarkMatch ? invoiceMarkMatch[1] : null
-          responseData.authenticationCode = authenticationCodeMatch ? authenticationCodeMatch[1] : null
-          responseData.qrUrl = qrUrlMatch ? qrUrlMatch[1] : null
-          
-          console.log('✅ MyData API Success:', responseData)
-        } else {
-          // Εξαγωγή σφαλμάτων από XML
-          const errorMatches = responseText.matchAll(/<message>(.*?)<\/message>/g)
-          for (const match of errorMatches) {
-            responseData.errors.push(match[1])
-          }
-          
-          console.error('❌ MyData API returned non-success response:', responseData)
-          throw new Error(`MyData API Error: ${responseData.errors.join(', ') || 'Unknown error'}`)
-        }
-      } catch (parseError: any) {
-        if (parseError.message.includes('MyData API Error')) {
-          throw parseError
-        }
-        console.error('❌ Failed to parse MyData response:', responseText)
-        throw new Error('Invalid response format from MyData API')
-      }
+    if (responseText.includes('<statusCode>Success</statusCode>')) {
+      const uidMatch = responseText.match(/<invoiceUid>(.*?)<\/invoiceUid>/)
+      const markMatch = responseText.match(/<invoiceMark>(.*?)<\/invoiceMark>/)
+      const authCodeMatch = responseText.match(/<authenticationCode>(.*?)<\/authenticationCode>/)
+      const qrUrlMatch = responseText.match(/<qrUrl>(.*?)<\/qrUrl>/)
 
-      const response = {
+      const result = {
         success: true,
-        myDataId: responseData.uid || `MYDATA_${Date.now()}`,
-        invoiceUid: responseData.uid,
-        invoiceMark: responseData.invoiceMark,
-        authenticationCode: responseData.authenticationCode,
-        qrUrl: responseData.qrUrl,
+        invoiceUid: uidMatch ? uidMatch[1] : null,
+        invoiceMark: markMatch ? markMatch[1] : null,
+        authenticationCode: authCodeMatch ? authCodeMatch[1] : null,
+        qrUrl: qrUrlMatch ? qrUrlMatch[1] : null,
         message: 'Απόδειξη στάλθηκε επιτυχώς στο MyData',
         receiptNumber: receipt.invoiceHeader.series + receipt.invoiceHeader.aa,
-        invoiceType: invoiceType,
-        environment: environment,
-        rawResponse: responseData,
         timestamp: new Date().toISOString()
       }
 
-      console.log('✅ Success response:', response)
+      console.log('✅ MyData Success:', result)
 
       return new Response(
-        JSON.stringify(response),
-        { 
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json' 
-          } 
-        }
+        JSON.stringify(result),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
-
-    } catch (apiError: any) {
-      console.error('❌ MyData API error:', apiError.message)
+    } else {
+      // Extract errors
+      const errorMatches = [...responseText.matchAll(/<message>(.*?)<\/message>/g)]
+      const errors = errorMatches.map(m => m[1])
       
-      const errorResponse = {
-        success: false,
-        error: apiError.message,
-        message: 'Σφάλμα στην αποστολή στο MyData API',
-        timestamp: new Date().toISOString()
-      }
-      
-      return new Response(
-        JSON.stringify(errorResponse),
-        { 
-          status: 500,
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json' 
-          } 
-        }
-      )
+      throw new Error(`MyData API Error: ${errors.join(', ') || 'Unknown error'}`)
     }
 
   } catch (error: any) {
-    console.error('❌ MyData error:', error.message, error.stack)
-    
-    const errorResponse = {
-      success: false,
-      error: error.message,
-      details: error.stack,
-      timestamp: new Date().toISOString()
-    }
+    console.error('❌ MyData error:', error.message)
     
     return new Response(
-      JSON.stringify(errorResponse),
-      { 
-        status: 500,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json' 
-        } 
-      }
+      JSON.stringify({
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
