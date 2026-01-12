@@ -9,7 +9,8 @@ import {
   AlertCircle, 
   Clock, 
   Plus, 
-  Trash2 
+  Trash2,
+  ExternalLink 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -222,9 +223,18 @@ export const ReceiptManagement: React.FC = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="history" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-none">
+            <TabsList className="grid w-full grid-cols-3 rounded-none">
               <TabsTrigger value="history" className="rounded-none">Ιστορικό Αποδείξεων</TabsTrigger>
               <TabsTrigger value="mydata" className="rounded-none">Ρυθμίσεις MyData</TabsTrigger>
+              <Button
+                onClick={() => window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank')}
+                variant="outline"
+                size="sm"
+                className="rounded-none whitespace-nowrap text-xs sm:text-sm"
+              >
+                <ExternalLink className="w-3 h-3 mr-1" />
+                E-timologio
+              </Button>
             </TabsList>
             
             <TabsContent value="history" className="mt-4 sm:mt-6">
