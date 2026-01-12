@@ -529,6 +529,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: Award,
+      label: "Στόχοι & Βραβεία",
+      path: "/dashboard/goals-awards",
+      badge: null
+    },
+    {
       icon: Timer,
       label: "Sprint Timer",
       path: "/sprint-timing",
@@ -574,12 +580,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: BookOpen, 
       label: "Άρθρα", 
       path: "/dashboard/articles",
-      badge: null
-    },
-    {
-      icon: Award,
-      label: "Στόχοι & Βραβεία",
-      path: "/dashboard/goals-awards",
       badge: null
     },
     { 
