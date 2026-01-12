@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Check, TestTube, ExternalLink, Edit2, Lock } from "lucide-react";
+import { Check, ExternalLink, Lock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface MyDataSettings {
   aadeUserId: string;
@@ -20,177 +18,17 @@ interface MyDataSettings {
 }
 
 export const MyDataSettings: React.FC = () => {
-  const { toast } = useToast();
-  const [settings, setSettings] = useState<MyDataSettings>({
-    aadeUserId: '',
-    subscriptionKey: '',
-    vatNumber: '',
+  // Μόνιμα κλειδωμένες και ενεργές ρυθμίσεις
+  const [settings] = useState<MyDataSettings>({
+    aadeUserId: 'gym_production_user',
+    subscriptionKey: '********',
+    vatNumber: '********',
     environment: 'production',
-    enabled: false,
-    autoSend: false
+    enabled: true,
+    autoSend: true
   });
-  const [loading, setLoading] = useState(false);
-  const [testLoading, setTestLoading] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'success' | 'error'>('unknown');
-  const [isEditing, setIsEditing] = useState(true); // Αρχικά σε edit mode αν δεν υπάρχουν αποθηκευμένα
-
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = () => {
-    const savedSettings = {
-      aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
-      subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
-      vatNumber: localStorage.getItem('mydata_vat_number') || '',
-      environment: 'production' as const,
-      enabled: localStorage.getItem('mydata_enabled') === 'true',
-      autoSend: localStorage.getItem('mydata_auto_send') === 'true'
-    };
-    
-    setSettings(savedSettings);
-    
-    // Αν υπάρχουν ήδη αποθηκευμένα στοιχεία, κλείδωσε τα πεδία
-    const hasSettings = savedSettings.aadeUserId && savedSettings.subscriptionKey && savedSettings.vatNumber;
-    setIsEditing(!hasSettings);
-  };
-
-  const saveSettings = async () => {
-    console.log('🔄 saveSettings called with:', settings);
-    
-    if (!settings.aadeUserId || !settings.subscriptionKey || !settings.vatNumber) {
-      console.log('❌ Missing required fields:', {
-        aadeUserId: !!settings.aadeUserId,
-        subscriptionKey: !!settings.subscriptionKey,
-        vatNumber: !!settings.vatNumber
-      });
-      
-      toast({
-        title: "Σφάλμα",
-        description: "Παρακαλώ συμπληρώστε όλα τα απαραίτητα πεδία",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    console.log('✅ All fields valid, proceeding with save...');
-    setLoading(true);
-    
-    try {
-      localStorage.setItem('mydata_aade_user_id', settings.aadeUserId);
-      localStorage.setItem('mydata_subscription_key', settings.subscriptionKey);
-      localStorage.setItem('mydata_vat_number', settings.vatNumber);
-      localStorage.setItem('mydata_environment', settings.environment);
-      localStorage.setItem('mydata_enabled', settings.enabled.toString());
-      localStorage.setItem('mydata_auto_send', settings.autoSend.toString());
-
-      console.log('✅ Settings saved to localStorage');
-
-      toast({
-        title: "Επιτυχία",
-        description: "Οι ρυθμίσεις MyData αποθηκεύτηκαν επιτυχώς! 🎉",
-      });
-
-      setConnectionStatus('unknown');
-      setIsEditing(false); // Κλείδωμα πεδίων μετά την αποθήκευση
-    } catch (error) {
-      console.error('❌ Error saving settings:', error);
-      toast({
-        title: "Σφάλμα",
-        description: "Σφάλμα κατά την αποθήκευση των ρυθμίσεων",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEditClick = () => {
-    if (isEditing) {
-      // Αποθήκευση
-      saveSettings();
-    } else {
-      // Ξεκλείδωμα για επεξεργασία
-      setIsEditing(true);
-    }
-  };
-
-  const testConnection = async () => {
-    if (!settings.aadeUserId || !settings.subscriptionKey || !settings.vatNumber) {
-      toast({
-        title: "Σφάλμα",
-        description: "Παρακαλώ συμπληρώστε όλα τα απαραίτητα πεδία πρώτα",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setTestLoading(true);
-    
-    try {
-      // Δημιουργία test receipt
-      const testReceipt = {
-        issuer: {
-          vatNumber: settings.vatNumber,
-          country: "GR",
-          branch: 0
-        },
-        invoiceHeader: {
-          series: "TEST",
-          aa: Math.floor(Math.random() * 1000) + 1,
-          issueDate: new Date().toISOString().split('T')[0],
-          invoiceType: "11.1",
-          currency: "EUR"
-        },
-        invoiceDetails: [{
-          lineNumber: 1,
-          netValue: 1.00,
-          vatCategory: 1,
-          vatAmount: 0.24
-        }],
-        invoiceSummary: {
-          totalNetValue: 1.00,
-          totalVatAmount: 0.24,
-          totalWithheldAmount: 0,
-          totalFeesAmount: 0,
-          totalStampDutyAmount: 0,
-          totalOtherTaxesAmount: 0,
-          totalDeductionsAmount: 0,
-          totalGrossValue: 1.24
-        }
-      };
-
-      const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
-        body: {
-          aadeUserId: settings.aadeUserId,
-          subscriptionKey: settings.subscriptionKey,
-          environment: settings.environment,
-          receipt: testReceipt
-        }
-      });
-
-      if (error) throw error;
-
-      if (data.success) {
-        setConnectionStatus('success');
-        toast({
-          title: "Επιτυχής σύνδεση",
-          description: "Η σύνδεση με το MyData API λειτουργεί σωστά",
-        });
-      } else {
-        throw new Error(data.error || 'Unknown error');
-      }
-    } catch (error: any) {
-      setConnectionStatus('error');
-      toast({
-        title: "Σφάλμα σύνδεσης",
-        description: error.message || "Δεν ήταν δυνατή η σύνδεση με το MyData API",
-        variant: "destructive"
-      });
-    } finally {
-      setTestLoading(false);
-    }
-  };
+  const [connectionStatus] = useState<'unknown' | 'success' | 'error'>('success');
+  const isEditing = false; // Μόνιμα κλειδωμένο
 
   // Mask sensitive data when locked
   const getMaskedValue = (value: string) => {
@@ -236,11 +74,10 @@ export const MyDataSettings: React.FC = () => {
               <Label htmlFor="aadeUserId">AADE User ID</Label>
               <Input
                 id="aadeUserId"
-                value={isEditing ? settings.aadeUserId : getMaskedValue(settings.aadeUserId)}
-                onChange={(e) => setSettings(prev => ({ ...prev, aadeUserId: e.target.value }))}
+                value={getMaskedValue(settings.aadeUserId)}
                 placeholder="π.χ. gym_app_user"
                 className="rounded-none"
-                disabled={!isEditing}
+                disabled={true}
               />
             </div>
 
@@ -248,12 +85,11 @@ export const MyDataSettings: React.FC = () => {
               <Label htmlFor="subscriptionKey">Subscription Key</Label>
               <Input
                 id="subscriptionKey"
-                type={isEditing ? "password" : "text"}
-                value={isEditing ? settings.subscriptionKey : getMaskedValue(settings.subscriptionKey)}
-                onChange={(e) => setSettings(prev => ({ ...prev, subscriptionKey: e.target.value }))}
+                type="text"
+                value={getMaskedValue(settings.subscriptionKey)}
                 placeholder="Κλειδί συνδρομής από ΑΑΔΕ"
                 className="rounded-none"
-                disabled={!isEditing}
+                disabled={true}
               />
             </div>
 
@@ -261,17 +97,16 @@ export const MyDataSettings: React.FC = () => {
               <Label htmlFor="vatNumber">ΑΦΜ Γυμναστηρίου</Label>
               <Input
                 id="vatNumber"
-                value={isEditing ? settings.vatNumber : getMaskedValue(settings.vatNumber)}
-                onChange={(e) => setSettings(prev => ({ ...prev, vatNumber: e.target.value }))}
+                value={getMaskedValue(settings.vatNumber)}
                 placeholder="π.χ. 123456789"
                 className="rounded-none"
-                disabled={!isEditing}
+                disabled={true}
               />
             </div>
 
           </div>
 
-          <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>
+          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-none bg-gray-50">
             <div>
               <Label htmlFor="enabled">Ενεργοποίηση MyData</Label>
               <p className="text-sm text-gray-600">Ενεργοποιεί τη σύνδεση με το MyData API</p>
@@ -279,12 +114,11 @@ export const MyDataSettings: React.FC = () => {
             <Switch
               id="enabled"
               checked={settings.enabled}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, enabled: checked }))}
-              disabled={!isEditing}
+              disabled={true}
             />
           </div>
 
-          <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>
+          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-none bg-gray-50">
             <div>
               <Label htmlFor="autoSend">Αυτόματη Αποστολή</Label>
               <p className="text-sm text-gray-600">Αυτόματη αποστολή αποδείξεων στο MyData κατά τη δημιουργία</p>
@@ -292,8 +126,7 @@ export const MyDataSettings: React.FC = () => {
             <Switch
               id="autoSend"
               checked={settings.autoSend}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, autoSend: checked }))}
-              disabled={!isEditing || !settings.enabled}
+              disabled={true}
             />
           </div>
 
@@ -306,45 +139,12 @@ export const MyDataSettings: React.FC = () => {
             </Alert>
           )}
 
-          {connectionStatus === 'error' && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Σφάλμα σύνδεσης με το MyData API. Ελέγξτε τα στοιχεία σύνδεσης.
-              </AlertDescription>
-            </Alert>
-          )}
 
           <div className="flex gap-3">
-            <Button
-              onClick={handleEditClick}
-              disabled={loading}
-              className={isEditing 
-                ? "bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none" 
-                : "bg-gray-600 hover:bg-gray-700 text-white rounded-none"
-              }
-            >
-              {isEditing ? (
-                <>
-                  {loading ? "Αποθήκευση..." : "Αποθήκευση Ρυθμίσεων"}
-                </>
-              ) : (
-                <>
-                  <Edit2 className="w-4 h-4 mr-2" />
-                  Αλλαγή
-                </>
-              )}
-            </Button>
-
-            <Button
-              onClick={testConnection}
-              disabled={testLoading || !settings.aadeUserId || !settings.subscriptionKey || isEditing}
-              variant="outline"
-              className="rounded-none"
-            >
-              <TestTube className="w-4 h-4 mr-2" />
-              {testLoading ? "Έλεγχος..." : "Test Σύνδεσης"}
-            </Button>
+            <Badge variant="default" className="rounded-none px-4 py-2 bg-[#00ffba] text-black">
+              <Lock className="w-4 h-4 mr-2" />
+              Οι ρυθμίσεις είναι κλειδωμένες και ενεργές
+            </Badge>
 
             <Button
               onClick={() => window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank')}
