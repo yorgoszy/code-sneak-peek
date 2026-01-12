@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReceiptPreviewDialog } from "./ReceiptPreviewDialog";
 import { ReceiptMyDataIntegration } from "@/components/receipts/ReceiptMyDataIntegration";
+import { MyDataSettings } from "@/components/admin/MyDataSettings";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 // MarkInput component
@@ -441,15 +442,7 @@ export const ReceiptManagement: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="mydata" className="mt-4 sm:mt-6">
-              <div className="space-y-4">
-                <h4 className="font-semibold text-sm sm:text-base">Ρυθμίσεις MyData AADE</h4>
-                <p className="text-sm text-gray-600">
-                  Συνδέστε το σύστημά σας με το MyData για αυτόματη αποστολή αποδείξεων στην ΑΑΔΕ.
-                </p>
-                <div className="bg-gray-50 p-4 rounded border">
-                  <p className="text-sm text-gray-600">Η λειτουργία MyData θα είναι διαθέσιμη σύντομα.</p>
-                </div>
-              </div>
+              <MyDataSettings />
             </TabsContent>
           </Tabs>
         </CardContent>
