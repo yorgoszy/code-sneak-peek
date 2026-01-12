@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Download, X } from "lucide-react";
 import { format } from "date-fns";
 import { generateReceiptPDF, downloadPDFFromBase64 } from "@/utils/pdfGenerator";
+import { QRCodeSVG } from 'qrcode.react';
 
 interface ReceiptData {
   id: string;
@@ -22,6 +23,8 @@ interface ReceiptData {
   myDataStatus: 'pending' | 'sent' | 'error';
   myDataId?: string;
   invoiceMark?: string;
+  invoiceUid?: string;
+  qrUrl?: string;
 }
 
 interface ReceiptItem {
@@ -200,6 +203,30 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
               </div>
             </div>
           </div>
+
+          {/* MyData QR Code - ΥΠΟΧΡΕΩΤΙΚΟ για αποδείξεις που έχουν σταλεί στο MyData */}
+          {receipt.qrUrl && receipt.myDataStatus === 'sent' && (
+            <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-300">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-xs font-semibold text-gray-900 mb-1">MyData ΑΑΔΕ</p>
+                  <p className="text-xs text-gray-600">ΜΑΡΚ: {receipt.invoiceMark}</p>
+                  {receipt.invoiceUid && (
+                    <p className="text-xs text-gray-500">UID: {receipt.invoiceUid}</p>
+                  )}
+                </div>
+                <div className="flex flex-col items-center">
+                  <QRCodeSVG 
+                    value={receipt.qrUrl} 
+                    size={64} 
+                    level="M"
+                    className="border border-gray-200 p-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Σάρωση για επαλήθευση</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Logo στο κέντρο κάτω */}
           <div className="flex justify-center items-center mt-2 sm:mt-3 pt-1 sm:pt-2 border-t border-gray-200">

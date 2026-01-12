@@ -225,12 +225,14 @@ serve(async (req) => {
         invoiceMark: string | null
         authenticationCode: string | null
         statusCode: string | null
+        qrUrl: string | null
         errors: string[]
       } = {
         uid: null,
         invoiceMark: null,
         authenticationCode: null,
         statusCode: null,
+        qrUrl: null,
         errors: []
       }
 
@@ -241,14 +243,16 @@ serve(async (req) => {
         
         // Έλεγχος αν υπάρχει success response στο XML
         if (responseText.includes('<statusCode>Success</statusCode>')) {
-          // Εξαγωγή uid και invoiceMark από XML
-          const uidMatch = responseText.match(/<uid>(.*?)<\/uid>/)
+          // Εξαγωγή uid, invoiceMark, authenticationCode και qrUrl από XML
+          const uidMatch = responseText.match(/<invoiceUid>(.*?)<\/invoiceUid>/)
           const invoiceMarkMatch = responseText.match(/<invoiceMark>(.*?)<\/invoiceMark>/)
           const authenticationCodeMatch = responseText.match(/<authenticationCode>(.*?)<\/authenticationCode>/)
+          const qrUrlMatch = responseText.match(/<qrUrl>(.*?)<\/qrUrl>/)
           
           responseData.uid = uidMatch ? uidMatch[1] : null
           responseData.invoiceMark = invoiceMarkMatch ? invoiceMarkMatch[1] : null
           responseData.authenticationCode = authenticationCodeMatch ? authenticationCodeMatch[1] : null
+          responseData.qrUrl = qrUrlMatch ? qrUrlMatch[1] : null
           
           console.log('✅ MyData API Success:', responseData)
         } else {
@@ -272,8 +276,10 @@ serve(async (req) => {
       const response = {
         success: true,
         myDataId: responseData.uid || `MYDATA_${Date.now()}`,
+        invoiceUid: responseData.uid,
         invoiceMark: responseData.invoiceMark,
         authenticationCode: responseData.authenticationCode,
+        qrUrl: responseData.qrUrl,
         message: 'Απόδειξη στάλθηκε επιτυχώς στο MyData',
         receiptNumber: receipt.invoiceHeader.series + receipt.invoiceHeader.aa,
         invoiceType: invoiceType,
