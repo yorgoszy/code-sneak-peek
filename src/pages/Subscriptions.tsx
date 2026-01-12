@@ -2,7 +2,7 @@
 import { SubscriptionManagement } from "@/components/subscriptions/SubscriptionManagement";
 import { SubscriptionTypeManager } from "@/components/subscriptions/SubscriptionTypeManager";
 import { SubscriptionHistory } from "@/components/subscriptions/SubscriptionHistory";
-import { MyDataSettings } from "@/components/admin/MyDataSettings";
+
 import { ReceiptManagement } from "@/components/analytics/ReceiptManagement";
 
 import { VisitManagement } from "@/components/visits/VisitManagement";
@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sidebar } from "@/components/Sidebar";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu, ExternalLink } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Subscriptions() {
@@ -87,22 +87,6 @@ export default function Subscriptions() {
             <TabsTrigger value="offers" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ενεργές Προσφορές</TabsTrigger>
             <TabsTrigger value="magic-boxes" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Μαγικά Κουτιά</TabsTrigger>
             <TabsTrigger value="history" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ιστορικό</TabsTrigger>
-            <div className="flex items-center gap-2">
-              <TabsTrigger value="mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">MyData AADE</TabsTrigger>
-              <Button
-                onClick={() => {
-                  const subscriptionKey = '6a1bc2b0ad328f1971a203175834caa4';
-                  navigator.clipboard.writeText(subscriptionKey);
-                  window.open('https://mydata.aade.gr/timologio/Account/Login?culture=el-GR', '_blank');
-                }}
-                variant="outline"
-                size="sm"
-                className="rounded-none whitespace-nowrap text-xs sm:text-sm"
-              >
-                <ExternalLink className="w-3 h-3 mr-1" />
-                E-timologio
-              </Button>
-            </div>
           </TabsList>
           
           <TabsContent value="management">
@@ -146,9 +130,6 @@ export default function Subscriptions() {
           </TabsContent>
           
           
-          <TabsContent value="mydata">
-            <MyDataSettings />
-          </TabsContent>
 
           <TabsContent value="financial">
             <FinancialOverview />
