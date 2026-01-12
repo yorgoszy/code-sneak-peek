@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Check, TestTube, Settings, ExternalLink } from "lucide-react";
+import { AlertCircle, Check, TestTube, Settings, ExternalLink, Edit2, Lock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,20 +33,27 @@ export const MyDataSettings: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [testLoading, setTestLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'success' | 'error'>('unknown');
+  const [isEditing, setIsEditing] = useState(true); // Αρχικά σε edit mode αν δεν υπάρχουν αποθηκευμένα
 
   useEffect(() => {
     loadSettings();
   }, []);
 
   const loadSettings = () => {
-    setSettings({
+    const savedSettings = {
       aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
       subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
       vatNumber: localStorage.getItem('mydata_vat_number') || '',
       environment: (localStorage.getItem('mydata_environment') as 'development' | 'production') || 'development',
       enabled: localStorage.getItem('mydata_enabled') === 'true',
       autoSend: localStorage.getItem('mydata_auto_send') === 'true'
-    });
+    };
+    
+    setSettings(savedSettings);
+    
+    // Αν υπάρχουν ήδη αποθηκευμένα στοιχεία, κλείδωσε τα πεδία
+    const hasSettings = savedSettings.aadeUserId && savedSettings.subscriptionKey && savedSettings.vatNumber;
+    setIsEditing(!hasSettings);
   };
 
   const saveSettings = async () => {
@@ -86,6 +93,7 @@ export const MyDataSettings: React.FC = () => {
       });
 
       setConnectionStatus('unknown');
+      setIsEditing(false); // Κλείδωμα πεδίων μετά την αποθήκευση
     } catch (error) {
       console.error('❌ Error saving settings:', error);
       toast({
@@ -95,6 +103,16 @@ export const MyDataSettings: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditClick = () => {
+    if (isEditing) {
+      // Αποθήκευση
+      saveSettings();
+    } else {
+      // Ξεκλείδωμα για επεξεργασία
+      setIsEditing(true);
     }
   };
 
@@ -175,6 +193,13 @@ export const MyDataSettings: React.FC = () => {
     }
   };
 
+  // Mask sensitive data when locked
+  const getMaskedValue = (value: string) => {
+    if (!value) return '';
+    if (value.length <= 4) return '****';
+    return value.substring(0, 2) + '****' + value.substring(value.length - 2);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -182,9 +207,17 @@ export const MyDataSettings: React.FC = () => {
           <h2 className="text-2xl font-bold">MyData AADE Integration</h2>
           <p className="text-gray-600">Διαχείριση σύνδεσης με την πλατφόρμα MyData της ΑΑΔΕ</p>
         </div>
-        <Badge variant={settings.enabled ? "default" : "secondary"}>
-          {settings.enabled ? "Ενεργό" : "Ανενεργό"}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {!isEditing && (
+            <Badge variant="outline" className="rounded-none">
+              <Lock className="w-3 h-3 mr-1" />
+              Κλειδωμένο
+            </Badge>
+          )}
+          <Badge variant={settings.enabled ? "default" : "secondary"}>
+            {settings.enabled ? "Ενεργό" : "Ανενεργό"}
+          </Badge>
+        </div>
       </div>
 
       <Tabs defaultValue="settings" className="w-full">
@@ -202,7 +235,14 @@ export const MyDataSettings: React.FC = () => {
         <TabsContent value="settings">
           <Card className="rounded-none">
             <CardHeader>
-              <CardTitle>Στοιχεία Σύνδεσης MyData</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Στοιχεία Σύνδεσης MyData
+                {!isEditing && (
+                  <Badge variant="secondary" className="text-xs rounded-none">
+                    Αποθηκευμένα
+                  </Badge>
+                )}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -210,10 +250,11 @@ export const MyDataSettings: React.FC = () => {
                   <Label htmlFor="aadeUserId">AADE User ID</Label>
                   <Input
                     id="aadeUserId"
-                    value={settings.aadeUserId}
+                    value={isEditing ? settings.aadeUserId : getMaskedValue(settings.aadeUserId)}
                     onChange={(e) => setSettings(prev => ({ ...prev, aadeUserId: e.target.value }))}
                     placeholder="π.χ. gym_app_user"
                     className="rounded-none"
+                    disabled={!isEditing}
                   />
                 </div>
 
@@ -221,11 +262,12 @@ export const MyDataSettings: React.FC = () => {
                   <Label htmlFor="subscriptionKey">Subscription Key</Label>
                   <Input
                     id="subscriptionKey"
-                    type="password"
-                    value={settings.subscriptionKey}
+                    type={isEditing ? "password" : "text"}
+                    value={isEditing ? settings.subscriptionKey : getMaskedValue(settings.subscriptionKey)}
                     onChange={(e) => setSettings(prev => ({ ...prev, subscriptionKey: e.target.value }))}
                     placeholder="Κλειδί συνδρομής από ΑΑΔΕ"
                     className="rounded-none"
+                    disabled={!isEditing}
                   />
                 </div>
 
@@ -233,10 +275,11 @@ export const MyDataSettings: React.FC = () => {
                   <Label htmlFor="vatNumber">ΑΦΜ Γυμναστηρίου</Label>
                   <Input
                     id="vatNumber"
-                    value={settings.vatNumber}
+                    value={isEditing ? settings.vatNumber : getMaskedValue(settings.vatNumber)}
                     onChange={(e) => setSettings(prev => ({ ...prev, vatNumber: e.target.value }))}
                     placeholder="π.χ. 123456789"
                     className="rounded-none"
+                    disabled={!isEditing}
                   />
                 </div>
 
@@ -246,7 +289,8 @@ export const MyDataSettings: React.FC = () => {
                     id="environment"
                     value={settings.environment}
                     onChange={(e) => setSettings(prev => ({ ...prev, environment: e.target.value as 'development' | 'production' }))}
-                    className="w-full p-2 border border-gray-300 rounded-none focus:ring-2 focus:ring-[#00ffba] focus:border-transparent"
+                    className="w-full p-2 border border-gray-300 rounded-none focus:ring-2 focus:ring-[#00ffba] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    disabled={!isEditing}
                   >
                     <option value="development">Development (δοκιμαστικό)</option>
                     <option value="production">Production (παραγωγικό)</option>
@@ -254,7 +298,7 @@ export const MyDataSettings: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-none">
+              <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>
                 <div>
                   <Label htmlFor="enabled">Ενεργοποίηση MyData</Label>
                   <p className="text-sm text-gray-600">Ενεργοποιεί τη σύνδεση με το MyData API</p>
@@ -263,10 +307,11 @@ export const MyDataSettings: React.FC = () => {
                   id="enabled"
                   checked={settings.enabled}
                   onCheckedChange={(checked) => setSettings(prev => ({ ...prev, enabled: checked }))}
+                  disabled={!isEditing}
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-none">
+              <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-none ${!isEditing ? 'bg-gray-50' : ''}`}>
                 <div>
                   <Label htmlFor="autoSend">Αυτόματη Αποστολή</Label>
                   <p className="text-sm text-gray-600">Αυτόματη αποστολή αποδείξεων στο MyData κατά τη δημιουργία</p>
@@ -275,7 +320,7 @@ export const MyDataSettings: React.FC = () => {
                   id="autoSend"
                   checked={settings.autoSend}
                   onCheckedChange={(checked) => setSettings(prev => ({ ...prev, autoSend: checked }))}
-                  disabled={!settings.enabled}
+                  disabled={!isEditing || !settings.enabled}
                 />
               </div>
 
@@ -299,19 +344,28 @@ export const MyDataSettings: React.FC = () => {
 
               <div className="flex gap-3">
                 <Button
-                  onClick={() => {
-                    console.log('🖱️ Button clicked!');
-                    saveSettings();
-                  }}
+                  onClick={handleEditClick}
                   disabled={loading}
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                  className={isEditing 
+                    ? "bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none" 
+                    : "bg-gray-600 hover:bg-gray-700 text-white rounded-none"
+                  }
                 >
-                  {loading ? "Αποθήκευση..." : "Αποθήκευση Ρυθμίσεων"}
+                  {isEditing ? (
+                    <>
+                      {loading ? "Αποθήκευση..." : "Αποθήκευση Ρυθμίσεων"}
+                    </>
+                  ) : (
+                    <>
+                      <Edit2 className="w-4 h-4 mr-2" />
+                      Αλλαγή
+                    </>
+                  )}
                 </Button>
 
                 <Button
                   onClick={testConnection}
-                  disabled={testLoading || !settings.aadeUserId || !settings.subscriptionKey}
+                  disabled={testLoading || !settings.aadeUserId || !settings.subscriptionKey || isEditing}
                   variant="outline"
                   className="rounded-none"
                 >
