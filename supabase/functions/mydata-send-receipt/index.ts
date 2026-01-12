@@ -11,21 +11,39 @@ serve(async (req) => {
   }
 
   try {
-    const { aadeUserId, subscriptionKey, environment, receipt, paymentMethod = 'cash' } = await req.json()
+    const { 
+      aadeUserId, 
+      subscriptionKey, 
+      environment, 
+      receipt, 
+      paymentMethod = 'cash',
+      useStoredCredentials = false // Χρήση των αποθηκευμένων secrets
+    } = await req.json()
+
+    // Λήψη credentials - είτε από request είτε από Supabase secrets
+    let finalAadeUserId = aadeUserId
+    let finalSubscriptionKey = subscriptionKey
+
+    if (useStoredCredentials || (!aadeUserId && !subscriptionKey)) {
+      // Χρήση των Supabase secrets
+      finalAadeUserId = Deno.env.get('MYDATA_USER_ID') || aadeUserId
+      finalSubscriptionKey = Deno.env.get('MYDATA_SUBSCRIPTION_KEY') || subscriptionKey
+      console.log('🔑 Using stored Supabase secrets for MyData credentials')
+    }
 
     console.log('🚀 MyData Send Receipt called with:', { 
-      aadeUserId, 
+      aadeUserId: finalAadeUserId ? '***' : 'missing', 
       environment,
-      hasSubscriptionKey: !!subscriptionKey,
-      receiptId: receipt?.invoiceHeader?.aa
+      hasSubscriptionKey: !!finalSubscriptionKey,
+      receiptId: receipt?.invoiceHeader?.aa,
+      useStoredCredentials
     })
-    console.log('📄 Receipt data:', JSON.stringify(receipt, null, 2))
 
     // Validation - Ελέγχουμε τα myDATA credentials
-    if (!aadeUserId || !subscriptionKey) {
+    if (!finalAadeUserId || !finalSubscriptionKey) {
       const errorResponse = {
         success: false,
-        error: 'Missing required parameters: aadeUserId or subscriptionKey',
+        error: 'Missing required parameters: aadeUserId or subscriptionKey. Configure them in Supabase secrets or pass them in the request.',
         timestamp: new Date().toISOString()
       }
       console.error('❌ Validation error:', errorResponse.error)
@@ -60,31 +78,36 @@ serve(async (req) => {
       )
     }
 
-    // Production MyData API - Σωστά URLs σύμφωνα με την τεκμηρίωση ΑΑΔΕ
+    // MyData API URLs σύμφωνα με την τεκμηρίωση ΑΑΔΕ v1.0.8
+    // Production: https://mydatapi.aade.gr/myDATA/SendInvoices
+    // Development: https://mydataapidev.aade.gr/SendInvoices
     console.log('🚀 Κλήση MyData API...')
     
-    // MyData API URL - Σωστά URLs από την τεκμηρίωση
     const myDataUrl = environment === 'development' 
-      ? 'https://mydataapidevs.azure-api.net/SendInvoices'
+      ? 'https://mydataapidev.aade.gr/SendInvoices'
       : 'https://mydatapi.aade.gr/myDATA/SendInvoices'
     
     // Helper function για στρογγύλευση τιμών σε 2 δεκαδικά ψηφία
-    const roundToTwoDecimals = (value) => {
+    const roundToTwoDecimals = (value: number): number => {
       return Math.round(value * 100) / 100
     }
 
-    // Helper function για payment type codes
-    const getPaymentTypeCode = (method) => {
-      const paymentCodes = {
-        'cash': '3',          // Μετρητά
-        'card': '7',          // POS/e-POS
-        'bank_transfer': '6', // Web Banking
-        'iris': '8'           // Άμεσες Πληρωμές IRIS
+    // Helper function για payment type codes σύμφωνα με MyData API
+    // Πίνακας 8.12 - Τρόποι Πληρωμής
+    const getPaymentTypeCode = (method: string): string => {
+      const paymentCodes: Record<string, string> = {
+        'cash': '3',              // Μετρητά
+        'card': '7',              // POS/e-POS
+        'pos': '7',               // POS/e-POS
+        'bank_transfer': '1',     // Επιταγή / Τραπεζική κατάθεση
+        'domestic_transfer': '5', // Εγχώριες Πληρωμές Λογαριασμού
+        'foreign_transfer': '6',  // Web Banking
+        'iris': '8'               // Άμεσες Πληρωμές IRIS
       }
       return paymentCodes[method] || '3' // Default μετρητά
     }
 
-    // Δημιουργούμε το τμήμα του counterpart δυναμικά
+    // Δημιουργούμε το τμήμα του counterpart δυναμικά (για τιμολόγια)
     const counterpartXml = receipt.counterpart && receipt.counterpart.vatNumber && receipt.counterpart.vatNumber !== "000000000"
       ? `<counterpart>
            <vatNumber>${receipt.counterpart.vatNumber}</vatNumber>
@@ -93,24 +116,36 @@ serve(async (req) => {
          </counterpart>`
       : '';
 
-    // Μετατροπή σε σωστό XML format για αποδείξεις λιανικής (11.1)
+    // Προσδιορισμός τύπου παραστατικού
+    // 11.1 = Απόδειξη Λιανικής Πώλησης
+    // 11.2 = Απόδειξη Παροχής Υπηρεσιών
+    // 11.4 = Απλοποιημένο Τιμολόγιο
+    const invoiceType = receipt.invoiceHeader.invoiceType || '11.1'
+    
+    // Χαρακτηρισμός εσόδων ανάλογα με τον τύπο
+    // E3_561_003 = Λοιπές πωλήσεις αγαθών (για γυμναστήριο = υπηρεσίες)
+    // category1_3 = Έσοδα από παροχή υπηρεσιών
+    const classificationType = receipt.classificationType || 'E3_561_003'
+    const classificationCategory = receipt.classificationCategory || 'category1_3'
+
+    // Μετατροπή σε XML format σύμφωνα με MyData API Documentation v1.0.8
     const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <InvoicesDoc xmlns="http://www.aade.gr/myDATA/invoice/v1.0" 
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-             xsi:schemaLocation="http://www.aade.gr/myDATA/invoice/v1.0 http://www.aade.gr/myDATA/invoice/v1.0/InvoicesDoc-v1.0.xsd">
+             xsi:schemaLocation="http://www.aade.gr/myDATA/invoice/v1.0">
   <invoice>
     <issuer>
       <vatNumber>${receipt.issuer.vatNumber}</vatNumber>
-      <country>${receipt.issuer.country}</country>
-      <branch>${receipt.issuer.branch}</branch>
+      <country>${receipt.issuer.country || 'GR'}</country>
+      <branch>${receipt.issuer.branch || 0}</branch>
     </issuer>
     ${counterpartXml}
     <invoiceHeader>
       <series>${receipt.invoiceHeader.series}</series>
       <aa>${receipt.invoiceHeader.aa}</aa>
       <issueDate>${receipt.invoiceHeader.issueDate}</issueDate>
-      <invoiceType>${receipt.invoiceHeader.invoiceType}</invoiceType>
-      <currency>${receipt.invoiceHeader.currency}</currency>
+      <invoiceType>${invoiceType}</invoiceType>
+      <currency>${receipt.invoiceHeader.currency || 'EUR'}</currency>
     </invoiceHeader>
     <paymentMethods>
       <paymentMethodDetails>
@@ -118,15 +153,15 @@ serve(async (req) => {
         <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue)}</amount>
       </paymentMethodDetails>
     </paymentMethods>
-    ${receipt.invoiceDetails.map(detail => `
+    ${receipt.invoiceDetails.map((detail: any) => `
     <invoiceDetails>
       <lineNumber>${detail.lineNumber}</lineNumber>
       <netValue>${roundToTwoDecimals(detail.netValue)}</netValue>
       <vatCategory>${detail.vatCategory}</vatCategory>
       <vatAmount>${roundToTwoDecimals(detail.vatAmount)}</vatAmount>
       <incomeClassification>
-        <classificationType>E3_561_003</classificationType>
-        <classificationCategory>category1_3</classificationCategory>
+        <classificationType>${classificationType}</classificationType>
+        <classificationCategory>${classificationCategory}</classificationCategory>
         <amount>${roundToTwoDecimals(detail.netValue)}</amount>
       </incomeClassification>
     </invoiceDetails>`).join('')}
@@ -141,8 +176,8 @@ serve(async (req) => {
       <totalDeductionsAmount>${roundToTwoDecimals(receipt.invoiceSummary.totalDeductionsAmount || 0)}</totalDeductionsAmount>
       <totalGrossValue>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue || 0)}</totalGrossValue>
       <incomeClassification>
-        <classificationType>E3_561_003</classificationType>
-        <classificationCategory>category1_3</classificationCategory>
+        <classificationType>${classificationType}</classificationType>
+        <classificationCategory>${classificationCategory}</classificationCategory>
         <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalNetValue || 0)}</amount>
       </incomeClassification>
     </invoiceSummary>
@@ -153,16 +188,23 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/xml',
-        'aade-user-id': aadeUserId,
-        'ocp-apim-subscription-key': subscriptionKey
+        'aade-user-id': finalAadeUserId,
+        'ocp-apim-subscription-key': finalSubscriptionKey
       },
       body: xmlBody
     }
 
     console.log('📡 MyData Request:', {
       url: myDataUrl,
-      headers: myDataRequest.headers,
-      bodySize: myDataRequest.body.length
+      headers: {
+        'Content-Type': 'application/xml',
+        'aade-user-id': '***',
+        'ocp-apim-subscription-key': '***'
+      },
+      bodySize: myDataRequest.body.length,
+      invoiceType,
+      series: receipt.invoiceHeader.series,
+      aa: receipt.invoiceHeader.aa
     })
 
     try {
@@ -177,8 +219,25 @@ serve(async (req) => {
       }
 
       // Parse XML response
-      let responseData
+      let responseData: {
+        uid: string | null
+        invoiceMark: string | null
+        authenticationCode: string | null
+        statusCode: string | null
+        errors: string[]
+      } = {
+        uid: null,
+        invoiceMark: null,
+        authenticationCode: null,
+        statusCode: null,
+        errors: []
+      }
+
       try {
+        // Εξαγωγή statusCode
+        const statusCodeMatch = responseText.match(/<statusCode>(.*?)<\/statusCode>/)
+        responseData.statusCode = statusCodeMatch ? statusCodeMatch[1] : null
+        
         // Έλεγχος αν υπάρχει success response στο XML
         if (responseText.includes('<statusCode>Success</statusCode>')) {
           // Εξαγωγή uid και invoiceMark από XML
@@ -186,19 +245,25 @@ serve(async (req) => {
           const invoiceMarkMatch = responseText.match(/<invoiceMark>(.*?)<\/invoiceMark>/)
           const authenticationCodeMatch = responseText.match(/<authenticationCode>(.*?)<\/authenticationCode>/)
           
-          responseData = {
-            uid: uidMatch ? uidMatch[1] : null,
-            invoiceMark: invoiceMarkMatch ? invoiceMarkMatch[1] : null,
-            authenticationCode: authenticationCodeMatch ? authenticationCodeMatch[1] : null
-          }
+          responseData.uid = uidMatch ? uidMatch[1] : null
+          responseData.invoiceMark = invoiceMarkMatch ? invoiceMarkMatch[1] : null
+          responseData.authenticationCode = authenticationCodeMatch ? authenticationCodeMatch[1] : null
           
           console.log('✅ MyData API Success:', responseData)
         } else {
-          // Αν δεν είναι success, throw error
-          console.error('❌ MyData API returned non-success response:', responseText)
-          throw new Error('MyData API returned error response')
+          // Εξαγωγή σφαλμάτων από XML
+          const errorMatches = responseText.matchAll(/<message>(.*?)<\/message>/g)
+          for (const match of errorMatches) {
+            responseData.errors.push(match[1])
+          }
+          
+          console.error('❌ MyData API returned non-success response:', responseData)
+          throw new Error(`MyData API Error: ${responseData.errors.join(', ') || 'Unknown error'}`)
         }
-      } catch (parseError) {
+      } catch (parseError: any) {
+        if (parseError.message.includes('MyData API Error')) {
+          throw parseError
+        }
         console.error('❌ Failed to parse MyData response:', responseText)
         throw new Error('Invalid response format from MyData API')
       }
@@ -206,10 +271,11 @@ serve(async (req) => {
       const response = {
         success: true,
         myDataId: responseData.uid || `MYDATA_${Date.now()}`,
-        invoiceMark: responseData.invoiceMark || Math.floor(Math.random() * 1000000000),
-        authenticationCode: responseData.authenticationCode || `AUTH_${Date.now()}`,
+        invoiceMark: responseData.invoiceMark,
+        authenticationCode: responseData.authenticationCode,
         message: 'Απόδειξη στάλθηκε επιτυχώς στο MyData',
-        receiptNumber: receipt.receiptNumber || 'N/A',
+        receiptNumber: receipt.invoiceHeader.series + receipt.invoiceHeader.aa,
+        invoiceType: invoiceType,
         environment: environment,
         rawResponse: responseData,
         timestamp: new Date().toISOString()
@@ -227,7 +293,7 @@ serve(async (req) => {
         }
       )
 
-    } catch (apiError) {
+    } catch (apiError: any) {
       console.error('❌ MyData API error:', apiError.message)
       
       const errorResponse = {
@@ -249,7 +315,7 @@ serve(async (req) => {
       )
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ MyData error:', error.message, error.stack)
     
     const errorResponse = {
