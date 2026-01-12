@@ -8,10 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Receipt, FileText, Eye, Package, User, Calendar, CreditCard, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
+import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
 
 interface UserProfilePaymentsProps {
   payments: any[];
@@ -296,6 +296,35 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
       case 'renewal': return 'Ανανέωση';
       default: return type;
     }
+  };
+
+  // Μετατροπή ReceiptData στο format του ReceiptPreviewDialog
+  const convertToPreviewFormat = (receipt: ReceiptData | null) => {
+    if (!receipt) return null;
+    return {
+      id: receipt.id,
+      receiptNumber: receipt.receipt_number,
+      customerName: receipt.customer_name,
+      customerVat: receipt.customer_vat,
+      customerEmail: receipt.customer_email,
+      items: receipt.items.map((item: any, index: number) => ({
+        id: item.id || `item-${index}`,
+        description: item.description || receipt.subscription_type_name || '-',
+        quantity: item.quantity || 1,
+        unitPrice: item.unitPrice || item.unit_price || receipt.subtotal,
+        vatRate: item.vatRate || item.vat_rate || 13,
+        total: item.total || receipt.total
+      })),
+      subtotal: receipt.subtotal,
+      vat: receipt.vat,
+      total: receipt.total,
+      date: receipt.issue_date,
+      myDataStatus: receipt.mydata_status,
+      myDataId: receipt.mydata_id,
+      invoiceMark: receipt.invoice_mark,
+      invoiceUid: (receipt as any).invoice_uid,
+      qrUrl: (receipt as any).qr_url
+    };
   };
 
   const formatDate = (dateString: string) => {
@@ -662,93 +691,12 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
         </Tabs>
       )}
 
-      {/* Receipt Preview Dialog - Ίδιο με Coach */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="rounded-none max-w-md">
-          <DialogHeader>
-            <DialogTitle>Απόδειξη {selectedReceipt?.receipt_number}</DialogTitle>
-          </DialogHeader>
-          {selectedReceipt && (
-            <div className="space-y-4 text-sm">
-              {/* Athlete Info */}
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={userProfile?.avatar_url || undefined} />
-                  <AvatarFallback>
-                    {userProfile?.name?.charAt(0) || 'Α'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{userProfile?.name || '-'}</p>
-                  <p className="text-xs text-gray-500">{userProfile?.email || '-'}</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-gray-500">Ημερομηνία:</span>
-                  <p>{format(new Date(selectedReceipt.issue_date), 'dd/MM/yyyy', { locale: el })}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Τύπος:</span>
-                  <p>{selectedReceipt.subscription_type_name || selectedReceipt.items?.[0]?.description || '-'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Είδος:</span>
-                  <p>{getReceiptTypeLabel(selectedReceipt.receipt_type)}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">ΜΑΡΚ ΑΑΔΕ:</span>
-                  <p>{selectedReceipt.invoice_mark || '-'}</p>
-                </div>
-              </div>
-              
-              <div className="pt-2 border-t">
-                <span className="text-gray-500 text-xs">Ποσό:</span>
-                <p className="text-xl font-bold text-[#00ffba]">€{selectedReceipt.total.toFixed(2)}</p>
-              </div>
-
-              {/* Coach Business Info */}
-              {coachProfile && (coachProfile.business_name || coachProfile.logo_url) && (
-                <div className="pt-3 border-t space-y-2">
-                  <div className="flex items-center gap-3">
-                    {coachProfile.logo_url && (
-                      <img 
-                        src={coachProfile.logo_url} 
-                        alt="Logo" 
-                        className="w-12 h-12 object-contain"
-                      />
-                    )}
-                    <div className="flex-1">
-                      {coachProfile.business_name && (
-                        <p className="font-medium text-xs">{coachProfile.business_name}</p>
-                      )}
-                      <div className="text-[10px] text-gray-500">
-                        {coachProfile.address && <span>{coachProfile.address}</span>}
-                        {coachProfile.city && <span>, {coachProfile.city}</span>}
-                      </div>
-                      <div className="text-[10px] text-gray-500">
-                        {coachProfile.vat_number && <span>ΑΦΜ: {coachProfile.vat_number}</span>}
-                        {coachProfile.phone && <span> | Τηλ: {coachProfile.phone}</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex gap-2 pt-2">
-                <Button
-                  onClick={() => window.print()}
-                  className="rounded-none flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700"
-                >
-                  <Printer className="h-4 w-4 mr-2" />
-                  Εκτύπωση
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Receipt Preview Dialog - Χρησιμοποιούμε το ίδιο ReceiptPreviewDialog με το /dashboard/subscriptions/Αποδείξεις */}
+      <ReceiptPreviewDialog
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        receipt={convertToPreviewFormat(selectedReceipt)}
+      />
     </>
   );
 };
