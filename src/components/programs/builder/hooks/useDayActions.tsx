@@ -230,7 +230,7 @@ export const useDayActions = (
     updateProgram({ weeks: updatedWeeks });
   };
 
-  const updateDayEsdDay = (weekId: string, dayId: string, isEsdDay: boolean) => {
+  const updateDayEsdRecovery = (weekId: string, dayId: string, isEsdDay: boolean, isRecoveryDay: boolean) => {
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
@@ -239,7 +239,8 @@ export const useDayActions = (
             if (day.id !== dayId) return day;
             return {
               ...day,
-              is_esd_day: isEsdDay
+              is_esd_day: isEsdDay,
+              is_recovery_day: isRecoveryDay
             };
           })
         };
@@ -393,7 +394,7 @@ export const useDayActions = (
     updateDayName,
     updateDayTestDay,
     updateDayCompetitionDay,
-    updateDayEsdDay,
+    updateDayEsdRecovery,
     updateDayEffort,
     pasteDay
   };

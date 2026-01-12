@@ -4376,6 +4376,7 @@ export type Database = {
           id: string
           is_competition_day: boolean | null
           is_esd_day: boolean | null
+          is_recovery_day: boolean | null
           is_test_day: boolean | null
           lower_effort: string | null
           name: string
@@ -4391,6 +4392,7 @@ export type Database = {
           id?: string
           is_competition_day?: boolean | null
           is_esd_day?: boolean | null
+          is_recovery_day?: boolean | null
           is_test_day?: boolean | null
           lower_effort?: string | null
           name: string
@@ -4406,6 +4408,7 @@ export type Database = {
           id?: string
           is_competition_day?: boolean | null
           is_esd_day?: boolean | null
+          is_recovery_day?: boolean | null
           is_test_day?: boolean | null
           lower_effort?: string | null
           name?: string

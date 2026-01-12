@@ -18,7 +18,7 @@ interface DayCardProps {
   onUpdateDayName: (name: string) => void;
   onUpdateDayTestDay: (isTestDay: boolean, testTypes: string[]) => void;
   onUpdateDayCompetitionDay: (isCompetitionDay: boolean) => void;
-  onUpdateDayEsdDay: (isEsdDay: boolean) => void;
+  onUpdateDayEsdRecovery: (isEsdDay: boolean, isRecoveryDay: boolean) => void;
   onUpdateDayEffort: (bodyPart: 'upper' | 'lower', effort: EffortType) => void;
   onAddExercise: (blockId: string, exerciseId: string) => void;
   onRemoveBlock: (blockId: string) => void;
@@ -53,7 +53,7 @@ export const DayCard: React.FC<DayCardProps> = ({
   onUpdateDayName,
   onUpdateDayTestDay,
   onUpdateDayCompetitionDay,
-  onUpdateDayEsdDay,
+  onUpdateDayEsdRecovery,
   onUpdateDayEffort,
   onAddExercise,
   onRemoveBlock,
@@ -141,8 +141,18 @@ export const DayCard: React.FC<DayCardProps> = ({
     onUpdateDayCompetitionDay(newIsCompetitionDay);
   };
 
-  const handleToggleEsdDay = () => {
-    onUpdateDayEsdDay(!day.is_esd_day);
+  // Cycle: none -> ESD -> Recovery -> none
+  const handleCycleEsdRecovery = () => {
+    if (!day.is_esd_day && !day.is_recovery_day) {
+      // none -> ESD
+      onUpdateDayEsdRecovery(true, false);
+    } else if (day.is_esd_day && !day.is_recovery_day) {
+      // ESD -> Recovery
+      onUpdateDayEsdRecovery(false, true);
+    } else {
+      // Recovery -> none
+      onUpdateDayEsdRecovery(false, false);
+    }
   };
 
   // Cycle effort: none -> DE -> ME -> none
@@ -187,6 +197,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           isTestDay={day.is_test_day || false}
           isCompetitionDay={day.is_competition_day || false}
           isEsdDay={day.is_esd_day || false}
+          isRecoveryDay={day.is_recovery_day || false}
           upperEffort={day.upper_effort || 'none'}
           lowerEffort={day.lower_effort || 'none'}
           isOpen={isOpen}
@@ -201,7 +212,7 @@ export const DayCard: React.FC<DayCardProps> = ({
           onRemoveDay={onRemoveDay}
           onToggleTestDay={handleToggleTestDay}
           onToggleCompetitionDay={handleToggleCompetitionDay}
-          onToggleEsdDay={handleToggleEsdDay}
+          onCycleEsdRecovery={handleCycleEsdRecovery}
           onToggleEffort={handleToggleEffort}
           onPasteDay={onPasteDay ? handlePasteDay : undefined}
         />

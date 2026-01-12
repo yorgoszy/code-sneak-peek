@@ -127,7 +127,7 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
         onUpdateDayName={actions.updateDayName}
         onUpdateDayTestDay={actions.updateDayTestDay}
         onUpdateDayCompetitionDay={actions.updateDayCompetitionDay}
-        onUpdateDayEsdDay={actions.updateDayEsdDay}
+        onUpdateDayEsdRecovery={actions.updateDayEsdRecovery}
         onUpdateDayEffort={actions.updateDayEffort}
         onAddBlock={actions.addBlock}
         onRemoveBlock={actions.removeBlock}

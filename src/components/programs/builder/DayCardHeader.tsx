@@ -3,7 +3,7 @@ import React from 'react';
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Copy, Dumbbell, Trophy, ClipboardPaste, ArrowUp, ArrowDown, Zap, BedDouble } from "lucide-react";
 import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 import type { Day, EffortType } from '../types';
 
@@ -13,6 +13,7 @@ interface DayCardHeaderProps {
   isTestDay: boolean;
   isCompetitionDay: boolean;
   isEsdDay: boolean;
+  isRecoveryDay: boolean;
   upperEffort?: EffortType;
   lowerEffort?: EffortType;
   isOpen: boolean;
@@ -27,7 +28,7 @@ interface DayCardHeaderProps {
   onRemoveDay: () => void;
   onToggleTestDay: () => void;
   onToggleCompetitionDay: () => void;
-  onToggleEsdDay: () => void;
+  onCycleEsdRecovery: () => void;
   onToggleEffort: (bodyPart: 'upper' | 'lower') => void;
   onPasteDay?: () => void;
 }
@@ -38,6 +39,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   isTestDay,
   isCompetitionDay,
   isEsdDay,
+  isRecoveryDay,
   upperEffort = 'none',
   lowerEffort = 'none',
   isOpen,
@@ -52,7 +54,7 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
   onRemoveDay,
   onToggleTestDay,
   onToggleCompetitionDay,
-  onToggleEsdDay,
+  onCycleEsdRecovery,
   onToggleEffort,
   onPasteDay
 }) => {
@@ -163,20 +165,26 @@ export const DayCardHeader: React.FC<DayCardHeaderProps> = ({
             )}
           </button>
 
-          {/* ESD Button - Energy System Development */}
+          {/* ESD / Recovery Button - cycles: none -> ESD -> Recovery -> none */}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onToggleEsdDay();
+              onCycleEsdRecovery();
             }}
             className={`p-1.5 rounded transition-colors flex items-center justify-center w-7 h-7 ${
-              isEsdDay 
-                ? 'text-orange-600 bg-orange-100' 
-                : 'text-gray-300 hover:text-orange-500 hover:bg-orange-50'
+              isRecoveryDay 
+                ? 'text-green-600 bg-green-100' 
+                : isEsdDay 
+                  ? 'text-orange-600 bg-orange-100' 
+                  : 'text-gray-300 hover:text-orange-500 hover:bg-orange-50'
             }`}
-            title="ESD (Energy System Development)"
+            title={isRecoveryDay ? "Recovery Day (κλικ για κατάργηση)" : isEsdDay ? "ESD (κλικ για Recovery)" : "Κλικ για ESD"}
           >
-            <span className="text-[8px] font-bold leading-none">esd</span>
+            {isRecoveryDay ? (
+              <BedDouble className="w-4 h-4" />
+            ) : (
+              <Zap className="w-4 h-4" />
+            )}
           </button>
           
           {/* Test Day Icon - Yellow */}
