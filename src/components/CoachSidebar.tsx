@@ -16,6 +16,7 @@ import {
   LogOut,
   Dumbbell,
   ShoppingBag,
+  Award,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -137,6 +138,12 @@ export const CoachSidebar = ({
       icon: BarChart3,
       label: "Πρόοδος Αθλητών",
       path: effectiveCoachId ? `/dashboard/coach-athletes-progress?coachId=${effectiveCoachId}` : "/dashboard/coach-athletes-progress",
+      badge: null,
+    },
+    {
+      icon: Award,
+      label: "Στόχοι & Βραβεία",
+      path: effectiveCoachId ? `/dashboard/coach-goals-awards?coachId=${effectiveCoachId}` : "/dashboard/coach-goals-awards",
       badge: null,
     },
     {
