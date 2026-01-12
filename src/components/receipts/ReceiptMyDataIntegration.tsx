@@ -31,6 +31,18 @@ export const ReceiptMyDataIntegration: React.FC<ReceiptMyDataIntegrationProps> =
   const { toast } = useToast();
   const [sending, setSending] = useState(false);
 
+  // Extract series (e.g., "ΑΠΥ" from "ΑΠΥ-0060")
+  const extractSeriesFromReceiptNumber = (receiptNumber: string): string => {
+    const match = receiptNumber.match(/^([A-ZΑ-Ω]+)/i);
+    return match ? match[1] : 'A';
+  };
+
+  // Extract number (e.g., 60 from "ΑΠΥ-0060")
+  const extractNumberFromReceiptNumber = (receiptNumber: string): number => {
+    const match = receiptNumber.match(/(\d+)$/);
+    return match ? parseInt(match[1], 10) : Math.floor(Math.random() * 100000);
+  };
+
   const getMyDataSettings = () => {
     return {
       aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
@@ -85,8 +97,8 @@ export const ReceiptMyDataIntegration: React.FC<ReceiptMyDataIntegrationProps> =
           branch: 0
         },
         invoiceHeader: {
-          series: "A",
-          aa: parseInt(receipt.receipt_number) || Math.floor(Math.random() * 100000),
+          series: extractSeriesFromReceiptNumber(receipt.receipt_number),
+          aa: extractNumberFromReceiptNumber(receipt.receipt_number),
           issueDate: receipt.issue_date,
           invoiceType: "11.1", // Απόδειξη Λιανικής Πώλησης
           currency: "EUR"
