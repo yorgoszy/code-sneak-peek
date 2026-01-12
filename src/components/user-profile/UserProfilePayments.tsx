@@ -32,6 +32,8 @@ interface ReceiptData {
   mydata_status: 'pending' | 'sent' | 'error';
   mydata_id?: string;
   invoice_mark?: string;
+  invoice_uid?: string;
+  qr_url?: string;
   // Coach receipt specific fields
   subscription_type_name?: string;
   receipt_type?: string;
@@ -187,10 +189,10 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
 
         setReceipts(transformedReceipts);
       } else {
-        // Για κανονικούς χρήστες, φέρνουμε από receipts
+      // Για κανονικούς χρήστες, φέρνουμε από receipts
         const { data, error } = await supabase
           .from('receipts')
-          .select('*')
+          .select('id, receipt_number, customer_name, customer_vat, customer_email, items, subtotal, vat, total, issue_date, mydata_status, mydata_id, invoice_mark, invoice_uid, qr_url, created_at')
           .eq('user_id', userProfile.id)
           .order('created_at', { ascending: false });
 
@@ -201,7 +203,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
         }
 
         // Transform data to match ReceiptData interface
-        const transformedReceipts: ReceiptData[] = (data || []).map((receipt) => ({
+        const transformedReceipts: ReceiptData[] = (data || []).map((receipt: any) => ({
           id: receipt.id,
           receipt_number: receipt.receipt_number,
           customer_name: receipt.customer_name,
@@ -214,7 +216,9 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
           issue_date: receipt.issue_date,
           mydata_status: receipt.mydata_status as 'pending' | 'sent' | 'error',
           mydata_id: receipt.mydata_id,
-          invoice_mark: receipt.invoice_mark
+          invoice_mark: receipt.invoice_mark,
+          invoice_uid: receipt.invoice_uid,
+          qr_url: receipt.qr_url
         }));
 
         setReceipts(transformedReceipts);
@@ -322,8 +326,8 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
       myDataStatus: receipt.mydata_status,
       myDataId: receipt.mydata_id,
       invoiceMark: receipt.invoice_mark,
-      invoiceUid: (receipt as any).invoice_uid,
-      qrUrl: (receipt as any).qr_url
+      invoiceUid: receipt.invoice_uid,
+      qrUrl: receipt.qr_url
     };
   };
 
