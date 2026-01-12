@@ -1,8 +1,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { ProgramExercise } from '../types';
-import { formatTimeInput } from '@/utils/timeFormatting';
 import { DebouncedInput } from './DebouncedInput';
+import { RollingTimeInput } from './RollingTimeInput';
 
 interface ExerciseDetailsFormOptimizedProps {
   exercise: ProgramExercise;
@@ -57,22 +57,20 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
 
   // Memoized handlers for each field
   const handleSetsChange = useCallback((value: string) => {
-    if (isTimeMode) {
-      const formatted = formatTimeInput(value);
-      onUpdate('sets', formatted);
-    } else {
-      onUpdate('sets', parseInt(value) || '');
-    }
-  }, [isTimeMode, onUpdate]);
+    onUpdate('sets', value);
+  }, [onUpdate]);
+
+  const handleSetsNumberChange = useCallback((value: string) => {
+    onUpdate('sets', parseInt(value) || '');
+  }, [onUpdate]);
 
   const handleRepsChange = useCallback((value: string) => {
-    if (repsMode === 'time') {
-      const formatted = formatTimeInput(value);
-      onUpdate('reps', formatted);
-    } else {
-      onUpdate('reps', value);
-    }
-  }, [repsMode, onUpdate]);
+    onUpdate('reps', value);
+  }, [onUpdate]);
+
+  const handleRepsTextChange = useCallback((value: string) => {
+    onUpdate('reps', value);
+  }, [onUpdate]);
 
   const handlePercentageChange = useCallback((value: string) => {
     const cleaned = value.replace('.', ',');
@@ -94,8 +92,7 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
   }, [onUpdate]);
 
   const handleRestChange = useCallback((value: string) => {
-    const formatted = formatTimeInput(value);
-    onUpdate('rest', formatted);
+    onUpdate('rest', value);
   }, [onUpdate]);
 
   const inputStyle: React.CSSProperties = { 
@@ -115,13 +112,21 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
         >
           {isTimeMode ? 'Time' : 'Sets'}
         </label>
-        <DebouncedInput
-          value={isTimeMode ? formatTimeInput(String(exercise.sets || '')) : (exercise.sets || '')}
-          onChange={handleSetsChange}
-          className="text-center w-full"
-          style={inputStyle}
-          placeholder={isTimeMode ? '00:00' : ''}
-        />
+        {isTimeMode ? (
+          <RollingTimeInput
+            value={exercise.sets || ''}
+            onChange={handleSetsChange}
+            className="text-center w-full"
+            style={inputStyle}
+          />
+        ) : (
+          <DebouncedInput
+            value={exercise.sets || ''}
+            onChange={handleSetsNumberChange}
+            className="text-center w-full"
+            style={inputStyle}
+          />
+        )}
       </div>
       
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
@@ -132,13 +137,21 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
         >
           {repsMode === 'reps' ? 'Reps' : repsMode === 'time' ? 'Time' : 'Meter'}
         </label>
-        <DebouncedInput
-          value={repsMode === 'time' ? formatTimeInput(String(exercise.reps || '')) : (exercise.reps || '')}
-          onChange={handleRepsChange}
-          className="text-center w-full"
-          style={inputStyle}
-          placeholder={repsMode === 'time' ? '00:00' : ''}
-        />
+        {repsMode === 'time' ? (
+          <RollingTimeInput
+            value={exercise.reps || ''}
+            onChange={handleRepsChange}
+            className="text-center w-full"
+            style={inputStyle}
+          />
+        ) : (
+          <DebouncedInput
+            value={exercise.reps || ''}
+            onChange={handleRepsTextChange}
+            className="text-center w-full"
+            style={inputStyle}
+          />
+        )}
       </div>
       
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
@@ -193,12 +206,11 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
       
       <div className="flex flex-col items-center" style={{ width: '52px' }}>
         <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
-        <DebouncedInput
-          value={formatTimeInput(String(exercise.rest || ''))}
+        <RollingTimeInput
+          value={exercise.rest || ''}
           onChange={handleRestChange}
           className="text-center w-full"
           style={inputStyle}
-          placeholder="00:00"
         />
       </div>
     </div>
