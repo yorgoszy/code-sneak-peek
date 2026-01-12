@@ -11,7 +11,6 @@ import {
   Plus, 
   Trash2,
   ExternalLink,
-  Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -255,17 +254,16 @@ export const ReceiptManagement: React.FC = () => {
                     {/* Desktop Table View */}
                     <div className="hidden lg:block">
                       <div className="border border-gray-200 rounded-none overflow-hidden">
-                        <div className="grid grid-cols-7 gap-4 p-3 sm:p-4 bg-gray-50 border-b font-medium text-xs sm:text-sm">
+                        <div className="grid grid-cols-6 gap-4 p-3 sm:p-4 bg-gray-50 border-b font-medium text-xs sm:text-sm">
                           <div>Αριθμός</div>
                           <div>Πελάτης</div>
                           <div>Ημερομηνία</div>
                           <div>Ποσό</div>
                           <div>ΜΑΡΚ</div>
-                          <div>E-timologio</div>
                           <div>Ενέργειες</div>
                         </div>
                         {receipts.map((receipt) => (
-                          <div key={receipt.id} className="grid grid-cols-7 gap-4 p-3 sm:p-4 border-b border-gray-100 items-center">
+                          <div key={receipt.id} className="grid grid-cols-6 gap-4 p-3 sm:p-4 border-b border-gray-100 items-center">
                             <div>
                               <p className="font-medium text-xs sm:text-sm">{receipt.receiptNumber}</p>
                             </div>
@@ -287,25 +285,6 @@ export const ReceiptManagement: React.FC = () => {
                                 currentMark={receipt.invoiceMark || ''}
                                 onUpdate={loadReceipts}
                               />
-                            </div>
-                            <div>
-                              {receipt.invoiceUid ? (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="rounded-none text-xs px-2"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(receipt.invoiceUid || '');
-                                    toast.success('UID αντιγράφηκε στο clipboard');
-                                  }}
-                                  title={`Αντιγραφή UID: ${receipt.invoiceUid}`}
-                                >
-                                  <Copy className="h-3 w-3 mr-1" />
-                                  UID
-                                </Button>
-                              ) : (
-                                <span className="text-xs text-gray-400">-</span>
-                              )}
                             </div>
                             <div className="flex gap-1 sm:gap-2 items-center">
                               {receipt.invoiceMark && (
