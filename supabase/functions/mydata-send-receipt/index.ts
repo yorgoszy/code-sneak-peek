@@ -53,13 +53,26 @@ serve(async (req) => {
 
     const aadeUserId = settings.aade_user_id
     const subscriptionKey = settings.subscription_key
+    const vatNumber = settings.vat_number
     const environment = settings.environment || 'production'
 
     console.log('🔑 Using MyData credentials from database:', { 
       aadeUserId: aadeUserId ? aadeUserId.substring(0, 4) + '***' : 'missing',
+      vatNumber: vatNumber ? vatNumber.substring(0, 4) + '***' : 'missing',
       environment,
       hasSubscriptionKey: !!subscriptionKey
     })
+
+    if (!vatNumber) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Δεν έχει οριστεί ΑΦΜ στις ρυθμίσεις MyData.',
+          timestamp: new Date().toISOString()
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     if (!receipt) {
       return new Response(
@@ -106,16 +119,16 @@ serve(async (req) => {
     const classificationType = receipt.classificationType || 'E3_561_003'
     const classificationCategory = receipt.classificationCategory || 'category1_3'
 
-    // XML Body
+    // XML Body - Χρησιμοποιούμε ΠΑΝΤΑ το VAT number από τη βάση (settings)
     const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <InvoicesDoc xmlns="http://www.aade.gr/myDATA/invoice/v1.0" 
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xmlns:icls="https://www.aade.gr/myDATA/incomeClassificaton/v1.0">
   <invoice>
     <issuer>
-      <vatNumber>${receipt.issuer.vatNumber}</vatNumber>
-      <country>${receipt.issuer.country || 'GR'}</country>
-      <branch>${receipt.issuer.branch || 0}</branch>
+      <vatNumber>${vatNumber}</vatNumber>
+      <country>GR</country>
+      <branch>0</branch>
     </issuer>
     ${counterpartXml}
     <invoiceHeader>
