@@ -9,12 +9,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 
 interface SubscriptionDeleteDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onDelete: () => void;
-  onMoveToHistory: () => void;
+  onMoveToHistory?: () => void;
 }
 
 export const SubscriptionDeleteDialog: React.FC<SubscriptionDeleteDialogProps> = ({
@@ -25,34 +26,31 @@ export const SubscriptionDeleteDialog: React.FC<SubscriptionDeleteDialogProps> =
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="max-w-md rounded-none fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <AlertDialogHeader>
-          <AlertDialogDescription className="text-center text-base font-medium">
-            Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή τη συνδρομή;
+      <AlertDialogContent className="max-w-sm rounded-none">
+        <AlertDialogHeader className="text-center">
+          <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+            <Trash2 className="w-6 h-6 text-red-600" />
+          </div>
+          <AlertDialogTitle className="text-center text-lg font-semibold">
+            Διαγραφή Συνδρομής
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-center text-sm text-gray-600">
+            Είστε σίγουροι ότι θέλετε να διαγράψετε οριστικά αυτή τη συνδρομή; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="flex justify-center gap-3 mt-6">
+        <AlertDialogFooter className="flex justify-center gap-3 mt-4 sm:justify-center">
           <AlertDialogCancel 
             onClick={onClose}
-            className="rounded-none px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800"
+            className="rounded-none px-6"
           >
             Ακύρωση
           </AlertDialogCancel>
           <AlertDialogAction 
             onClick={() => {
-              onMoveToHistory();
-              onClose();
-            }}
-            className="rounded-none px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            Μεταφορά στο Ιστορικό
-          </AlertDialogAction>
-          <AlertDialogAction 
-            onClick={() => {
               onDelete();
               onClose();
             }}
-            className="rounded-none px-4 py-2 bg-red-600 hover:bg-red-700 text-white"
+            className="rounded-none px-6 bg-destructive hover:bg-destructive/90 text-white"
           >
             Διαγραφή
           </AlertDialogAction>
