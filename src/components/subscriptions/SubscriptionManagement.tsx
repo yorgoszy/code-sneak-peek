@@ -379,6 +379,16 @@ export const SubscriptionManagement: React.FC = () => {
     const useStoredCredentials = !settings.aadeUserId || !settings.subscriptionKey;
 
     try {
+      // Extract series and number from receipt number (e.g., "ΑΠΥ-0060" -> series="ΑΠΥ", aa=60)
+      const extractSeriesFromReceiptNumber = (rn: string): string => {
+        const match = rn.match(/^([A-ZΑ-Ω]+)/i);
+        return match ? match[1] : 'A';
+      };
+      const extractNumberFromReceiptNumber = (rn: string): number => {
+        const match = rn.match(/(\d+)$/);
+        return match ? parseInt(match[1], 10) : Math.floor(Math.random() * 100000);
+      };
+
       const myDataReceipt = {
         issuer: {
           vatNumber: settings.vatNumber,
@@ -386,8 +396,8 @@ export const SubscriptionManagement: React.FC = () => {
           branch: 0
         },
         invoiceHeader: {
-          series: "A",
-          aa: parseInt(receiptNumber) || Math.floor(Math.random() * 100000),
+          series: extractSeriesFromReceiptNumber(receiptNumber),
+          aa: extractNumberFromReceiptNumber(receiptNumber),
           issueDate: new Date().toISOString().split('T')[0],
           invoiceType: "11.1",
           currency: "EUR"
@@ -425,13 +435,15 @@ export const SubscriptionManagement: React.FC = () => {
       if (error) throw error;
 
       if (data.success) {
-        // Ενημέρωση της απόδειξης με το MARK
+        // Ενημέρωση της απόδειξης με το MARK, UID και QR URL
         await supabase
           .from('receipts')
           .update({
             mydata_status: 'sent',
             mydata_id: data.myDataId,
             invoice_mark: data.invoiceMark,
+            invoice_uid: data.invoiceUid,
+            qr_url: data.qrUrl,
             updated_at: new Date().toISOString()
           })
           .eq('id', receiptId);
