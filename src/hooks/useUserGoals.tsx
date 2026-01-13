@@ -15,6 +15,7 @@ export interface UserGoal {
   target_date: string | null;
   status: string;
   completed_at: string | null;
+  metadata?: any | null;
   created_at: string;
   updated_at: string;
 }

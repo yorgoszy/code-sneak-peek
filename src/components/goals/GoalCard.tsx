@@ -87,6 +87,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
     goal.goal_type,
     goal.start_date,
     goal.target_date,
+    (goal as any).metadata,
     coachId
   );
 

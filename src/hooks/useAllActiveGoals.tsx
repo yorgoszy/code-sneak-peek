@@ -17,6 +17,7 @@ export interface UserGoalWithUser {
   completed_at: string | null;
   created_at: string;
   updated_at: string;
+  metadata?: any | null;
   // User info
   user_name: string;
   user_email: string;

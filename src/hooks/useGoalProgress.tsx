@@ -21,6 +21,7 @@ export const useGoalProgress = (
   goalType: string,
   startDate: string,
   targetDate: string | null,
+  metadata?: any,
   coachId?: string
 ) => {
   const [progress, setProgress] = useState<GoalProgressData | null>(null);
@@ -68,7 +69,9 @@ export const useGoalProgress = (
     if (!userId) return null;
 
     const sessionsTable = useCoachTables ? 'coach_strength_test_sessions' : 'strength_test_sessions';
-    const dataTable = useCoachTables ? 'coach_strength_test_data' : 'strength_test_data';
+    const dataTable = useCoachTables ? 'coach_strength_test_data' : 'strength_test_attempts';
+
+    const strengthExerciseId = metadata?.exercise_id as string | undefined;
 
     const { data: sessions } = await supabase
       .from(sessionsTable)
@@ -80,14 +83,20 @@ export const useGoalProgress = (
 
     const testData: TestData[] = [];
     for (const session of sessions) {
-      const { data } = await supabase
+      let query = supabase
         .from(dataTable)
-        .select('weight_kg, velocity_ms, is_1rm')
+        .select(useCoachTables ? 'weight_kg, velocity_ms, is_1rm' : 'weight_kg, is_1rm, exercise_id')
         .eq('test_session_id', session.id)
         .eq('is_1rm', true);
 
+      if (!useCoachTables && strengthExerciseId) {
+        query = query.eq('exercise_id', strengthExerciseId);
+      }
+
+      const { data } = await query;
+
       if (data && data.length > 0) {
-        const maxWeight = Math.max(...data.map(d => d.weight_kg || 0));
+        const maxWeight = Math.max(...data.map((d: any) => d.weight_kg || 0));
         testData.push({
           date: session.test_date,
           value: maxWeight,
@@ -97,7 +106,7 @@ export const useGoalProgress = (
     }
 
     return testData;
-  }, [userId, useCoachTables]);
+  }, [userId, useCoachTables, metadata]);
 
   const fetchEnduranceData = useCallback(async () => {
     if (!userId) return null;
@@ -271,7 +280,9 @@ export const useGoalProgress = (
         case 'strength_gain':
           testData = await fetchStrengthData();
           if (testData && testData.length > 0) {
-            const startData = testData.find(t => t.date >= startDate) || testData[0];
+            // Start value = the most recent test ON or BEFORE the goal start_date
+            const candidates = testData.filter(t => t.date <= startDate);
+            const startData = candidates.length > 0 ? candidates[candidates.length - 1] : testData[0];
             const currentData = testData[testData.length - 1];
             
             setStartTest(startData);
