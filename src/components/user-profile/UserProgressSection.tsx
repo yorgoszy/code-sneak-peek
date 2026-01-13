@@ -212,23 +212,24 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
       }
     });
 
-    // Ταξινόμηση sessions ανά ημερομηνία και sessionId (από νεότερο σε παλαιότερο)
+    // Ταξινόμηση sessions ανά ημερομηνία (από παλαιότερη σε νεότερη: 1η = παλαιά, 2η = νέα)
     Object.keys(sessions).forEach(exerciseId => {
       sessions[exerciseId].sort((a, b) => {
-        const dateCompare = new Date(b.date).getTime() - new Date(a.date).getTime();
+        const dateCompare = new Date(a.date).getTime() - new Date(b.date).getTime();
         if (dateCompare !== 0) return dateCompare;
-        // If same date, sort by sessionId (more recent session IDs are larger)
-        return (b.sessionId || '').localeCompare(a.sessionId || '');
+        // If same date, sort by sessionId (older session IDs are smaller)
+        return (a.sessionId || '').localeCompare(b.sessionId || '');
       });
     });
 
     setExerciseSessions(sessions);
 
-    // Αρχικά επιλέγω το πιο πρόσφατο session για κάθε άσκηση
+    // Αρχικά επιλέγω το πιο πρόσφατο session για κάθε άσκηση (τελευταίο στη λίστα)
     const initialSelectedSessions: Record<string, string[]> = {};
     Object.keys(sessions).forEach(exerciseId => {
       if (sessions[exerciseId].length > 0) {
-        initialSelectedSessions[exerciseId] = [sessions[exerciseId][0].sessionId];
+        // Τελευταία session = πιο πρόσφατη
+        initialSelectedSessions[exerciseId] = [sessions[exerciseId][sessions[exerciseId].length - 1].sessionId];
       }
     });
     setSelectedSessions(initialSelectedSessions);
@@ -294,12 +295,12 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
       if (prev.includes(exerciseId)) {
         return prev.filter(id => id !== exerciseId);
       } else {
-        // Όταν προσθέτουμε άσκηση, επιλέγουμε αυτόματα την πιο πρόσφατη session
+        // Όταν προσθέτουμε άσκηση, επιλέγουμε αυτόματα την πιο πρόσφατη session (τελευταία στη λίστα)
         const sessions = exerciseSessions[exerciseId] || [];
         if (sessions.length > 0) {
           setSelectedSessions(prevSessions => ({
             ...prevSessions,
-            [exerciseId]: [sessions[0].sessionId]
+            [exerciseId]: [sessions[sessions.length - 1].sessionId]
           }));
         }
         return [...prev, exerciseId];
