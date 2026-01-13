@@ -41,7 +41,8 @@ export const useAllGoalsHistory = () => {
             id,
             name,
             email,
-            avatar_url
+            avatar_url,
+            photo_url
           )
         `)
         .eq('status', 'completed')
@@ -59,7 +60,8 @@ export const useAllGoalsHistory = () => {
             id,
             name,
             email,
-            avatar_url
+            avatar_url,
+            photo_url
           )
         `)
         .eq('status', 'in_progress')
@@ -73,7 +75,7 @@ export const useAllGoalsHistory = () => {
           ...goal,
           user_name: goal.app_users?.name || 'Άγνωστος',
           user_email: goal.app_users?.email || '',
-          user_avatar: goal.app_users?.avatar_url || null,
+          user_avatar: goal.app_users?.photo_url || goal.app_users?.avatar_url || null,
         }));
       
       setCompletedGoals(mapGoals(completedData));
