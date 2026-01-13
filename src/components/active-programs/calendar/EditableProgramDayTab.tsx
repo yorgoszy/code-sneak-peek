@@ -74,7 +74,7 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
   return (
     <TabsContent key={day.id} value={dayIndex.toString()} className="mt-0 flex-1 overflow-y-auto">
       <div className="bg-white rounded-none p-1.5">
-        {editMode && isEditing && (
+        {isEditing && (
           <div className="flex items-center justify-end mb-1">
             <Button
               onClick={() => onAddNewBlock(day.id)}
@@ -89,7 +89,7 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
         )}
 
         <div className="space-y-1">
-          {editMode && isEditing ? (
+          {isEditing ? (
             <DndContext collisionDetection={closestCenter} onDragEnd={handleBlockDragEnd}>
               <SortableContext 
                 items={(day.program_blocks || []).map((block: any) => block.id)} 
@@ -112,11 +112,11 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
           ) : (
             <ExerciseBlock 
               blocks={day.program_blocks} 
-              viewOnly={!isEditing}
+              viewOnly={true}
             />
           )}
           
-          {(day.program_blocks || []).length === 0 && editMode && isEditing && (
+          {(day.program_blocks || []).length === 0 && isEditing && (
             <div className="text-center py-4 text-gray-500">
               <p className="mb-2 text-xs">Δεν υπάρχουν blocks σε αυτή την ημέρα</p>
               <Button
