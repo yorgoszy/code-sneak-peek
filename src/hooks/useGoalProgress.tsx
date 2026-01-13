@@ -281,21 +281,30 @@ export const useGoalProgress = (
           testData = await fetchStrengthData();
           if (testData && testData.length > 0) {
             // Start value = the most recent test ON or BEFORE the goal start_date
-            const candidates = testData.filter(t => t.date <= startDate);
-            const startData = candidates.length > 0 ? candidates[candidates.length - 1] : testData[0];
+            // If no test before start_date, use the first test as baseline
+            const candidatesBeforeStart = testData.filter(t => t.date <= startDate);
+            const startData = candidatesBeforeStart.length > 0 
+              ? candidatesBeforeStart[candidatesBeforeStart.length - 1] 
+              : testData[0];
+            
+            // Current value = the most recent test (could be the same as start if only 1 test)
             const currentData = testData[testData.length - 1];
             
             setStartTest(startData);
             setCurrentTest(currentData);
             
             const strengthGain = currentData.value - startData.value;
+            const percentageChange = startData.value > 0 
+              ? ((strengthGain / startData.value) * 100).toFixed(1) 
+              : '0';
+            
             setProgress({
               currentValue: currentData.value,
               targetValue: 0,
               startValue: startData.value,
               unit: 'kg',
               isPositive: strengthGain > 0,
-              details: `Αρχικό: ${startData.value}kg → Τρέχον: ${currentData.value}kg`
+              details: `Αρχικό: ${startData.value}kg → Τρέχον: ${currentData.value}kg (${strengthGain >= 0 ? '+' : ''}${percentageChange}%)`
             });
           }
           break;
