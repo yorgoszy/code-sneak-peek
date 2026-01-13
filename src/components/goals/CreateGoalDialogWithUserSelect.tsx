@@ -26,10 +26,20 @@ import {
   ArrowUp,
   Timer,
   Activity,
-  Scale
+  Scale,
+  Loader2
 } from 'lucide-react';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
+import { supabase } from '@/integrations/supabase/client';
 import type { UserGoalWithUser } from '@/hooks/useAllActiveGoals';
+
+interface User1RM {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  weight: number;
+  test_date: string;
+}
 
 interface CreateGoalDialogWithUserSelectProps {
   isOpen: boolean;
@@ -66,6 +76,54 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
   const [unit, setUnit] = useState('');
   const [targetDate, setTargetDate] = useState('');
   const [attendanceSource, setAttendanceSource] = useState<'programs' | 'bookings'>('programs');
+  
+  // For strength_gain goals
+  const [user1RMs, setUser1RMs] = useState<User1RM[]>([]);
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
+  const [loading1RMs, setLoading1RMs] = useState(false);
+
+  // Fetch user 1RMs when user is selected and goal type is strength_gain
+  useEffect(() => {
+    const fetch1RMs = async () => {
+      if (!selectedUserId || goalType !== 'strength_gain') {
+        setUser1RMs([]);
+        return;
+      }
+      
+      setLoading1RMs(true);
+      try {
+        const { data, error } = await supabase
+          .from('user_exercise_1rm' as any)
+          .select(`
+            id,
+            exercise_id,
+            weight,
+            test_date,
+            exercises(name)
+          `)
+          .eq('user_id', selectedUserId)
+          .order('test_date', { ascending: false });
+        
+        if (error) throw error;
+        
+        const mapped = (data || []).map((item: any) => ({
+          id: item.id,
+          exercise_id: item.exercise_id,
+          exercise_name: item.exercises?.name || 'Άγνωστη άσκηση',
+          weight: item.weight,
+          test_date: item.test_date
+        }));
+        
+        setUser1RMs(mapped);
+      } catch (err) {
+        console.error('Error fetching 1RMs:', err);
+      } finally {
+        setLoading1RMs(false);
+      }
+    };
+    
+    fetch1RMs();
+  }, [selectedUserId, goalType]);
 
   useEffect(() => {
     if (editingGoal) {
@@ -76,6 +134,10 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
       setTargetValue(editingGoal.target_value?.toString() || '');
       setUnit(editingGoal.unit || '');
       setTargetDate(editingGoal.target_date || '');
+      // Check if there's exercise_id in metadata
+      if ((editingGoal as any).metadata?.exercise_id) {
+        setSelectedExerciseId((editingGoal as any).metadata.exercise_id);
+      }
     } else {
       resetForm();
     }
@@ -90,6 +152,8 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
     setUnit('');
     setTargetDate('');
     setAttendanceSource('programs');
+    setSelectedExerciseId('');
+    setUser1RMs([]);
   };
 
   const handleGoalTypeChange = (value: string) => {
@@ -97,9 +161,10 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
     const type = goalTypes.find(t => t.value === value);
     if (type) {
       setUnit(type.unit);
-      if (!editingGoal) {
-        setTitle(type.label);
-      }
+    }
+    // Reset exercise selection when changing goal type
+    if (value !== 'strength_gain') {
+      setSelectedExerciseId('');
     }
   };
 
@@ -110,9 +175,20 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
       return;
     }
     
+    // For strength_gain, require exercise selection
+    if (goalType === 'strength_gain' && !selectedExerciseId) {
+      return;
+    }
+    
+    // Find exercise name for title
+    const selectedExercise = user1RMs.find(rm => rm.exercise_id === selectedExerciseId);
+    const finalTitle = goalType === 'strength_gain' && selectedExercise 
+      ? `Αύξηση 1RM - ${selectedExercise.exercise_name}`
+      : title;
+    
     onSubmit({
       user_id: selectedUserId || editingGoal?.user_id,
-      title,
+      title: finalTitle,
       description: description || null,
       goal_type: goalType,
       target_value: targetValue ? parseFloat(targetValue) : null,
@@ -120,6 +196,11 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
       start_date: new Date().toISOString().split('T')[0],
       target_date: targetDate || null,
       attendance_source: goalType === 'attendance' ? attendanceSource : undefined,
+      metadata: goalType === 'strength_gain' ? { 
+        exercise_id: selectedExerciseId,
+        exercise_name: selectedExercise?.exercise_name,
+        start_weight: selectedExercise?.weight
+      } : undefined,
     });
 
     resetForm();
@@ -203,17 +284,54 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
             </div>
           )}
 
-          {/* Title */}
-          <div className="space-y-1.5">
-            <Label className="text-xs">Τίτλος</Label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="π.χ. Απώλεια 5kg"
-              className="rounded-none h-9 text-sm"
-              required
-            />
-          </div>
+          {/* Strength Gain - Exercise Selection */}
+          {goalType === 'strength_gain' && selectedUserId && (
+            <div className="space-y-1.5 p-3 bg-muted/50 border">
+              <Label className="text-xs font-medium">Επιλογή Άσκησης 1RM *</Label>
+              {loading1RMs ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Φόρτωση 1RM...
+                </div>
+              ) : user1RMs.length === 0 ? (
+                <div className="text-sm text-muted-foreground py-2">
+                  Δεν υπάρχουν καταγεγραμμένα 1RM για αυτόν τον αθλητή
+                </div>
+              ) : (
+                <RadioGroup 
+                  value={selectedExerciseId} 
+                  onValueChange={setSelectedExerciseId}
+                  className="space-y-2 max-h-40 overflow-y-auto"
+                >
+                  {user1RMs.map((rm) => (
+                    <div key={rm.id} className="flex items-center space-x-2">
+                      <RadioGroupItem value={rm.exercise_id} id={`ex-${rm.id}`} />
+                      <Label htmlFor={`ex-${rm.id}`} className="text-sm cursor-pointer flex-1">
+                        <span className="font-medium">{rm.exercise_name}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          Τρέχον 1RM: {rm.weight}kg
+                        </span>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
+            </div>
+          )}
+
+          {/* Title - Hide for strength_gain since we auto-generate it */}
+          {goalType !== 'strength_gain' && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Τίτλος</Label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="π.χ. Απώλεια 5kg"
+                className="rounded-none h-9 text-sm"
+                required
+              />
+            </div>
+          )}
 
           {/* Target Value & Unit - Only for certain goal types */}
           {(goalType === 'custom' || goalType === 'attendance') && (
@@ -270,7 +388,7 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
             <Button 
               type="submit" 
               className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-9 text-sm"
-              disabled={!editingGoal && !selectedUserId}
+              disabled={(!editingGoal && !selectedUserId) || (goalType === 'strength_gain' && !selectedExerciseId)}
             >
               {editingGoal ? 'Αποθήκευση' : 'Δημιουργία'}
             </Button>
