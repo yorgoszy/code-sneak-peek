@@ -98,11 +98,11 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
             id,
             exercise_id,
             weight,
-            test_date,
+            recorded_date,
             exercises(name)
           `)
           .eq('user_id', selectedUserId)
-          .order('test_date', { ascending: false });
+          .order('recorded_date', { ascending: false });
         
         if (error) throw error;
         
@@ -111,7 +111,7 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
           exercise_id: item.exercise_id,
           exercise_name: item.exercises?.name || 'Άγνωστη άσκηση',
           weight: item.weight,
-          test_date: item.test_date
+          test_date: item.recorded_date
         }));
         
         setUser1RMs(mapped);
