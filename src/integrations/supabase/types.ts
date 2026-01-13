@@ -6251,6 +6251,7 @@ export type Database = {
           description: string | null
           goal_type: string
           id: string
+          metadata: Json | null
           start_date: string
           status: string
           target_date: string | null
@@ -6267,6 +6268,7 @@ export type Database = {
           description?: string | null
           goal_type: string
           id?: string
+          metadata?: Json | null
           start_date?: string
           status?: string
           target_date?: string | null
@@ -6283,6 +6285,7 @@ export type Database = {
           description?: string | null
           goal_type?: string
           id?: string
+          metadata?: Json | null
           start_date?: string
           status?: string
           target_date?: string | null
