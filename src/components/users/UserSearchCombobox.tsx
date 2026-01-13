@@ -30,6 +30,7 @@ interface UserSearchComboboxProps {
   onValueChange: (value: string | null) => void;
   placeholder?: string;
   coachId?: string;
+  filterByCoach?: boolean;
 }
 
 // Normalize text for search (remove accents, lowercase)
@@ -52,6 +53,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
   onValueChange,
   placeholder = 'Αναζήτηση χρήστη...',
   coachId,
+  filterByCoach = true,
 }) => {
   const [open, setOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);

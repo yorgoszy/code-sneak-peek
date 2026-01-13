@@ -220,11 +220,11 @@ export const CreateGoalDialogWithUserSelect: React.FC<CreateGoalDialogWithUserSe
           {/* User Selection - Only for new goals */}
           {!editingGoal && (
             <div className="space-y-1.5">
-              <Label className="text-xs">Αθλητής *</Label>
+              <Label className="text-xs">Χρήστης *</Label>
               <UserSearchCombobox
                 value={selectedUserId}
                 onValueChange={setSelectedUserId}
-                placeholder="Επιλέξτε αθλητή..."
+                placeholder="Επιλέξτε χρήστη..."
                 coachId={coachId}
               />
             </div>
