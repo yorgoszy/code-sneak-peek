@@ -23,6 +23,7 @@ interface User {
   name: string;
   email: string;
   avatar_url: string | null;
+  photo_url: string | null;
 }
 
 interface UserSearchComboboxProps {
@@ -66,7 +67,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
       try {
         let query = supabase
           .from('app_users')
-          .select('id, name, email, avatar_url')
+          .select('id, name, email, avatar_url, photo_url')
           .order('name');
 
         if (coachId) {
@@ -109,8 +110,8 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
           {selectedUser ? (
             <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
-                {selectedUser.avatar_url ? (
-                  <AvatarImage src={selectedUser.avatar_url} alt={selectedUser.name} />
+                {(selectedUser.photo_url || selectedUser.avatar_url) ? (
+                  <AvatarImage src={selectedUser.photo_url || selectedUser.avatar_url || ''} alt={selectedUser.name} />
                 ) : null}
                 <AvatarFallback className="text-xs bg-muted">
                   {selectedUser.name.charAt(0).toUpperCase()}
@@ -154,8 +155,8 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
                     )}
                   />
                   <Avatar className="h-6 w-6 mr-2">
-                    {user.avatar_url ? (
-                      <AvatarImage src={user.avatar_url} alt={user.name} />
+                    {(user.photo_url || user.avatar_url) ? (
+                      <AvatarImage src={user.photo_url || user.avatar_url || ''} alt={user.name} />
                     ) : null}
                     <AvatarFallback className="text-xs bg-muted">
                       {user.name.charAt(0).toUpperCase()}
