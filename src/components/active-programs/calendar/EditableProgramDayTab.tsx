@@ -2,11 +2,8 @@
 import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Clock, Dumbbell, CheckCircle, Plus, FlaskConical, Trophy } from "lucide-react";
-import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { Plus, FlaskConical, Trophy } from "lucide-react";
 import { ExerciseBlock } from "@/components/user-profile/daily-program/ExerciseBlock";
-import { EditableBlock } from './EditableBlock';
 
 interface EditableProgramDayTabProps {
   day: any;
@@ -37,15 +34,6 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
   onUpdateExercise,
   displayName
 }) => {
-  const handleBlockDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (!over || active.id === over.id) return;
-    
-    // Handle block reordering logic here if needed
-    console.log('Block reorder:', active.id, 'to', over.id);
-  };
-
   const isTestDay = day.is_test_day === true;
   const isCompetitionDay = day.is_competition_day === true;
 
@@ -89,32 +77,12 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
         )}
 
         <div className="space-y-1">
-          {isEditing ? (
-            <DndContext collisionDetection={closestCenter} onDragEnd={handleBlockDragEnd}>
-              <SortableContext 
-                items={(day.program_blocks || []).map((block: any) => block.id)} 
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-1">
-                  {(day.program_blocks || []).map((block: any) => (
-                    <EditableBlock
-                      key={block.id}
-                      block={block}
-                      onAddExercise={onAddExercise}
-                      onRemoveBlock={onRemoveBlock}
-                      onRemoveExercise={onRemoveExercise}
-                      onUpdateExercise={onUpdateExercise}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          ) : (
-            <ExerciseBlock 
-              blocks={day.program_blocks} 
-              viewOnly={true}
-            />
-          )}
+          {/* Χρήση του ίδιου ExerciseBlock UI για view και edit mode */}
+          <ExerciseBlock 
+            blocks={day.program_blocks} 
+            viewOnly={true}
+            editMode={isEditing}
+          />
           
           {(day.program_blocks || []).length === 0 && isEditing && (
             <div className="text-center py-4 text-gray-500">
