@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
-import { Trash2, Play } from "lucide-react";
+import { Copy, Trash2, Play } from "lucide-react";
 import { DebouncedInput } from '@/components/programs/builder/DebouncedInput';
 import { RollingTimeInput } from '@/components/programs/builder/RollingTimeInput';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
@@ -32,6 +32,7 @@ interface EditableExerciseRowProps {
   exercise: Exercise;
   onUpdate?: (field: string, value: any) => void;
   onRemove?: () => void;
+  onDuplicate?: () => void;
   onVideoClick?: () => void;
 }
 
@@ -39,6 +40,7 @@ export const EditableExerciseRow: React.FC<EditableExerciseRowProps> = ({
   exercise,
   onUpdate,
   onRemove,
+  onDuplicate,
   onVideoClick
 }) => {
   const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>(exercise.reps_mode as any || 'reps');
@@ -117,8 +119,9 @@ export const EditableExerciseRow: React.FC<EditableExerciseRowProps> = ({
 
   return (
     <div className="bg-white border-0 border-b w-full" style={{ fontSize: '12px' }}>
-      {/* Header - Exercise name with thumbnail and delete button */}
+      {/* Header - Same as ExerciseSelectionButton from ProgramBuilder */}
       <div className="px-2 py-0 border-b bg-gray-100 flex items-center w-full" style={{ minHeight: '28px' }}>
+        {/* Exercise button - takes remaining space with overflow hidden */}
         <div className="flex-1 min-w-0 overflow-hidden">
           <Button
             variant="outline"
@@ -128,15 +131,7 @@ export const EditableExerciseRow: React.FC<EditableExerciseRowProps> = ({
             onClick={onVideoClick}
           >
             <div className="flex items-center gap-2 w-full">
-              <div className="flex items-center gap-1 flex-1">
-                {/* Play icon */}
-                {hasValidVideo && (
-                  <Play className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
-                )}
-                <span className="truncate">{exercise.exercises?.name || 'Άγνωστη Άσκηση'}</span>
-              </div>
-              
-              {/* Video Thumbnail */}
+              {/* Video Thumbnail - LEFT side (before name) */}
               {hasValidVideo && thumbnailUrl ? (
                 <div className="w-8 h-5 rounded-none overflow-hidden bg-gray-100 flex-shrink-0">
                   <img
@@ -146,20 +141,44 @@ export const EditableExerciseRow: React.FC<EditableExerciseRowProps> = ({
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement;
                       target.style.display = 'none';
+                      target.nextElementSibling?.classList.remove('hidden');
                     }}
                   />
+                  <div className="hidden w-full h-full bg-gray-200 flex items-center justify-center">
+                    <Play className="w-2 h-2 text-gray-400" />
+                  </div>
+                </div>
+              ) : hasValidVideo ? (
+                <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <Play className="w-2 h-2 text-gray-400" />
                 </div>
               ) : (
                 <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
                   <span className="text-xs text-gray-400">-</span>
                 </div>
               )}
+              
+              {/* Exercise Name */}
+              <div className="flex items-center gap-1 flex-1">
+                <span className="truncate">{exercise.exercises?.name || 'Άγνωστη Άσκηση'}</span>
+              </div>
             </div>
           </Button>
         </div>
         
-        {/* Delete button */}
+        {/* Icons - fixed position on the right */}
         <div className="flex gap-1 flex-shrink-0 ml-1">
+          {onDuplicate && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDuplicate}
+              className="p-1 h-6 w-6"
+              style={{ borderRadius: '0px' }}
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
+          )}
           {onRemove && (
             <Button
               variant="ghost"
@@ -168,7 +187,7 @@ export const EditableExerciseRow: React.FC<EditableExerciseRowProps> = ({
               className="p-1 h-6 w-6"
               style={{ borderRadius: '0px' }}
             >
-              <Trash2 className="w-3 h-3 text-red-500" />
+              <Trash2 className="w-3 h-3" />
             </Button>
           )}
         </div>

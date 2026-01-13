@@ -1,11 +1,14 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Copy, Files } from "lucide-react";
 import { ExerciseItem } from './ExerciseItem';
 import { EditableExerciseRow } from './EditableExerciseRow';
 import { ExerciseSelector } from '@/components/active-programs/calendar/ExerciseSelector';
+import { RollingTimeInput } from '@/components/programs/builder/RollingTimeInput';
 import { getTrainingTypeLabel } from '@/utils/trainingTypeLabels';
 
 interface Exercise {
@@ -56,26 +59,32 @@ interface MultipleBlocksProps {
   onUpdateBlockFormat?: (blockId: string, format: string) => void;
   onUpdateBlockDuration?: (blockId: string, duration: string) => void;
   onUpdateBlockSets?: (blockId: string, sets: number) => void;
+  onUpdateBlockTrainingType?: (blockId: string, trainingType: string) => void;
 }
 
-// Training type colors for tabs
-const TRAINING_TYPE_COLORS: Record<string, string> = {
-  'pwr': 'bg-orange-200 data-[state=active]:bg-orange-400',
-  'power': 'bg-orange-200 data-[state=active]:bg-orange-400',
-  'str': 'bg-green-200 data-[state=active]:bg-green-400',
-  'end': 'bg-blue-200 data-[state=active]:bg-blue-400',
-  'str/end': 'bg-teal-200 data-[state=active]:bg-teal-400',
-  'pwr/end': 'bg-cyan-200 data-[state=active]:bg-cyan-400',
-  'spd': 'bg-yellow-200 data-[state=active]:bg-yellow-400',
-  'spd/str': 'bg-lime-200 data-[state=active]:bg-lime-400',
-  'warm up': 'bg-pink-200 data-[state=active]:bg-pink-400',
-  'default': 'bg-gray-200 data-[state=active]:bg-gray-400',
+// Training types for dropdown - same as BlockCardHeader
+const TRAINING_TYPE_LABELS: Record<string, string> = {
+  'warm up': 'warm up',
+  str: 'str',
+  'str/spd': 'str/spd',
+  pwr: 'pwr',
+  'spd/str': 'spd/str',
+  spd: 'spd',
+  'str/end': 'str/end',
+  'pwr/end': 'pwr/end',
+  'spd/end': 'spd/end',
+  end: 'end',
+  hpr: 'hpr',
+  recovery: 'rec',
+  accessory: 'acc',
+  rotational: 'rot',
 };
 
-const getTabColor = (trainingType?: string) => {
-  if (!trainingType) return TRAINING_TYPE_COLORS['default'];
-  const key = trainingType.toLowerCase();
-  return TRAINING_TYPE_COLORS[key] || TRAINING_TYPE_COLORS['default'];
+const WORKOUT_FORMAT_LABELS: Record<string, string> = {
+  non_stop: 'Non Stop',
+  emom: 'EMOM',
+  for_time: 'For Time',
+  amrap: 'AMRAP',
 };
 
 export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
@@ -92,9 +101,16 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
   onUpdateExercise,
   onUpdateBlockFormat,
   onUpdateBlockDuration,
-  onUpdateBlockSets
+  onUpdateBlockSets,
+  onUpdateBlockTrainingType
 }) => {
   const [exerciseSelectorOpen, setExerciseSelectorOpen] = useState<string | null>(null);
+  const [openBlocks, setOpenBlocks] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    blocks.forEach(block => { initial[block.id] = true; });
+    return initial;
+  });
+  
   const sortedBlocks = [...blocks].sort((a, b) => a.block_order - b.block_order);
 
   const handleSelectExercise = (blockId: string, exerciseId: string) => {
@@ -104,54 +120,21 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
     setExerciseSelectorOpen(null);
   };
 
-  return (
-    <Tabs defaultValue={sortedBlocks[0]?.id} className="w-full">
-      <TabsList className="grid w-full rounded-none h-auto p-0 bg-transparent" style={{ gridTemplateColumns: `repeat(${sortedBlocks.length}, 1fr)` }}>
+  const toggleBlock = (blockId: string) => {
+    setOpenBlocks(prev => ({ ...prev, [blockId]: !prev[blockId] }));
+  };
+
+  // View mode - simple display without edit controls
+  if (!editMode) {
+    return (
+      <div className="space-y-2">
         {sortedBlocks.map((block) => (
-          <TabsTrigger 
-            key={block.id} 
-            value={block.id} 
-            className={`rounded-none text-xs h-7 ${getTabColor(block.training_type)}`}
-          >
-            {getTrainingTypeLabel(block.training_type, block.name)}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-
-      {sortedBlocks.map((block) => (
-        <TabsContent key={block.id} value={block.id} className="mt-0">
-          {/* Edit Mode Header - Add exercise and delete block buttons */}
-          {editMode && (
-            <div className="flex items-center justify-between p-1 bg-gray-100 border border-gray-200">
-              <span className="text-xs font-medium text-gray-700">{block.name}</span>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setExerciseSelectorOpen(block.id)}
-                  className="h-6 text-xs rounded-none px-2"
-                >
-                  <Plus className="w-3 h-3 mr-1" />
-                  Άσκηση
-                </Button>
-                {onRemoveBlock && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemoveBlock(block.id)}
-                    className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                    style={{ borderRadius: '0px' }}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Block Info Header - Format, Duration, Sets */}
-          {(block.workout_format || block.workout_duration || (block.block_sets && block.block_sets > 1)) && (
-            <div className="flex items-center gap-2 p-1 border-b border-gray-200">
+          <div key={block.id} className="border border-gray-200 rounded-none">
+            {/* Block Header */}
+            <div className="flex items-center gap-2 p-2 bg-gray-50 border-b border-gray-200">
+              <span className="text-sm font-medium text-gray-700">
+                {getTrainingTypeLabel(block.training_type, block.name)}
+              </span>
               {(block.workout_format || block.workout_duration) && (
                 <div className="inline-flex items-center gap-2 text-xs border border-[#cb8954] px-2 py-0.5">
                   {block.workout_format && <span className="text-[#cb8954]">{block.workout_format}</span>}
@@ -160,31 +143,20 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
                 </div>
               )}
               {block.block_sets && block.block_sets > 1 && (
-                <div className="inline-flex items-center text-xs border border-[#cb8954] px-2 py-0.5">
-                  <span className="text-[#cb8954] font-semibold">x{block.block_sets}</span>
-                </div>
+                <span className="text-xs text-[#00ffba]">x{block.block_sets}</span>
               )}
             </div>
-          )}
+            
+            {/* Exercises */}
+            <div className="space-y-0">
+              {block.program_exercises
+                ?.sort((a, b) => a.exercise_order - b.exercise_order)
+                .map((exercise) => {
+                  const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
+                  const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
 
-          {/* Exercises */}
-          <div className="space-y-0">
-            {block.program_exercises
-              ?.sort((a, b) => a.exercise_order - b.exercise_order)
-              .map((exercise) => {
-                const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
-                const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
-
-                return (
-                  <div key={exercise.id} className="border border-gray-200 border-t-0 first:border-t">
-                    {editMode ? (
-                      <EditableExerciseRow
-                        exercise={exercise}
-                        onUpdate={onUpdateExercise ? (field, value) => onUpdateExercise(exercise.id, field, value) : undefined}
-                        onRemove={onRemoveExercise ? () => onRemoveExercise(exercise.id) : undefined}
-                        onVideoClick={() => onVideoClick(exercise)}
-                      />
-                    ) : (
+                  return (
+                    <div key={exercise.id} className="border-b border-gray-200 last:border-b-0">
                       <ExerciseItem
                         exercise={exercise}
                         isComplete={isComplete}
@@ -193,20 +165,170 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
                         onVideoClick={onVideoClick}
                         viewOnly={viewOnly}
                       />
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Edit mode - ProgramBuilder BlockCard style
+  return (
+    <div className="space-y-2">
+      {sortedBlocks.map((block) => {
+        const isOpen = openBlocks[block.id] !== false;
+        const exercisesCount = block.program_exercises?.length || 0;
+        
+        return (
+          <Card 
+            key={block.id} 
+            className={`rounded-none w-full transition-all duration-200 ${isOpen ? 'min-h-[120px]' : 'min-h-[40px]'}`} 
+            style={{ backgroundColor: '#31365d' }}
+          >
+            <Collapsible open={isOpen} onOpenChange={() => toggleBlock(block.id)}>
+              {/* Block Header - Same as BlockCardHeader */}
+              <CardHeader className="p-1 space-y-0">
+                <div className="flex justify-between items-center">
+                  <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-600 p-1 rounded flex-1 min-w-0">
+                    {isOpen ? (
+                      <ChevronDown className="w-3 h-3 text-white flex-shrink-0" />
+                    ) : (
+                      <ChevronRight className="w-3 h-3 text-white flex-shrink-0" />
+                    )}
+                    <div className="flex items-center gap-2 min-w-0" onClick={(e) => e.stopPropagation()}>
+                      <Select 
+                        value={block.training_type || ''} 
+                        onValueChange={(value) => onUpdateBlockTrainingType?.(block.id, value)}
+                      >
+                        <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[100px] flex-shrink-0">
+                          <SelectValue placeholder="Τύπος" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-none bg-white z-50">
+                          {Object.entries(TRAINING_TYPE_LABELS).map(([value, label]) => (
+                            <SelectItem key={value} value={value} className="text-xs">
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {!isOpen && exercisesCount > 0 && (
+                        <span className="text-xs bg-gray-500 px-2 py-1 rounded-full text-white">
+                          {exercisesCount}
+                        </span>
+                      )}
+                    </div>
+                  </CollapsibleTrigger>
+                  <div className="flex gap-0 flex-shrink-0">
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExerciseSelectorOpen(block.id);
+                      }}
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-none hover:bg-gray-600 h-6 w-6 p-0"
+                    >
+                      <Plus className="w-3 h-3 text-white" />
+                    </Button>
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveBlock?.(block.id);
+                      }}
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-none hover:bg-gray-600 h-6 w-6 p-0"
+                    >
+                      <Trash2 className="w-3 h-3 text-white" />
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Training Type, Workout Format and Sets - inline compact */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Select 
+                    value={block.workout_format || 'none'} 
+                    onValueChange={(value) => onUpdateBlockFormat?.(block.id, value === 'none' ? '' : value)}
+                  >
+                    <SelectTrigger 
+                      className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[110px]" 
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SelectValue placeholder="Format" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-none bg-white z-50">
+                      <SelectItem value="none" className="text-xs">Κανένα</SelectItem>
+                      {Object.entries(WORKOUT_FORMAT_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value} className="text-xs">
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {block.workout_format && block.workout_format !== 'none' && (
+                    <RollingTimeInput
+                      value={block.workout_duration || ''}
+                      onChange={(value) => onUpdateBlockDuration?.(block.id, value)}
+                      className="h-6 w-[70px] text-xs rounded-none bg-gray-700 border-gray-600 text-white text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
+
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <span className="text-xs text-gray-400">Set</span>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateBlockSets?.(block.id, Math.max(1, (block.block_sets || 1) - 1))}
+                      className="p-0.5 text-gray-400 hover:text-white transition-colors"
+                    >
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+                    <span className="text-xs text-white min-w-[16px] text-center">{block.block_sets || 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateBlockSets?.(block.id, (block.block_sets || 1) + 1)}
+                      className="p-0.5 text-gray-400 hover:text-white transition-colors"
+                    >
+                      <ChevronUp className="h-3 w-3" />
+                    </button>
+                    {(block.block_sets || 1) > 1 && (
+                      <span className="text-xs text-[#00ffba]">x{block.block_sets}</span>
                     )}
                   </div>
-                );
-              })}
-          </div>
+                </div>
+              </CardHeader>
 
-          {/* Exercise Selector Dialog */}
-          <ExerciseSelector
-            isOpen={exerciseSelectorOpen === block.id}
-            onClose={() => setExerciseSelectorOpen(null)}
-            onSelectExercise={(exerciseId) => handleSelectExercise(block.id, exerciseId)}
-          />
-        </TabsContent>
-      ))}
-    </Tabs>
+              {/* Block Content - Exercises */}
+              {isOpen && (
+                <div className="bg-white">
+                  {block.program_exercises
+                    ?.sort((a, b) => a.exercise_order - b.exercise_order)
+                    .map((exercise) => (
+                      <EditableExerciseRow
+                        key={exercise.id}
+                        exercise={exercise}
+                        onUpdate={onUpdateExercise ? (field, value) => onUpdateExercise(exercise.id, field, value) : undefined}
+                        onRemove={onRemoveExercise ? () => onRemoveExercise(exercise.id) : undefined}
+                        onVideoClick={() => onVideoClick(exercise)}
+                      />
+                    ))}
+                </div>
+              )}
+            </Collapsible>
+
+            {/* Exercise Selector Dialog */}
+            <ExerciseSelector
+              isOpen={exerciseSelectorOpen === block.id}
+              onClose={() => setExerciseSelectorOpen(null)}
+              onSelectExercise={(exerciseId) => handleSelectExercise(block.id, exerciseId)}
+            />
+          </Card>
+        );
+      })}
+    </div>
   );
 };
