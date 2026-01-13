@@ -58,7 +58,11 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     addExercise, 
     removeExercise, 
     updateExercise,
-    reorderDays 
+    reorderDays,
+    updateBlockTrainingType,
+    updateBlockFormat,
+    updateBlockDuration,
+    updateBlockSets
   } = useEditableProgramActions(
     programData,
     assignment,
@@ -138,6 +142,26 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
   const handleReorderDays = (weekId: string, oldIndex: number, newIndex: number) => {
     if (!isEditing) return;
     reorderDays(weekId, oldIndex, newIndex, setProgramData);
+  };
+
+  const handleUpdateBlockTrainingType = (blockId: string, trainingType: string) => {
+    if (!isEditing) return;
+    updateBlockTrainingType(blockId, trainingType, setProgramData);
+  };
+
+  const handleUpdateBlockFormat = (blockId: string, format: string) => {
+    if (!isEditing) return;
+    updateBlockFormat(blockId, format, setProgramData);
+  };
+
+  const handleUpdateBlockDuration = (blockId: string, duration: string) => {
+    if (!isEditing) return;
+    updateBlockDuration(blockId, duration, setProgramData);
+  };
+
+  const handleUpdateBlockSets = (blockId: string, sets: number) => {
+    if (!isEditing) return;
+    updateBlockSets(blockId, sets, setProgramData);
   };
 
   if (!assignment || !programData) return null;
@@ -228,6 +252,10 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                     onRemoveExercise={handleRemoveExercise}
                     onUpdateExercise={handleUpdateExercise}
                     onReorderDays={handleReorderDays}
+                    onUpdateBlockTrainingType={handleUpdateBlockTrainingType}
+                    onUpdateBlockFormat={handleUpdateBlockFormat}
+                    onUpdateBlockDuration={handleUpdateBlockDuration}
+                    onUpdateBlockSets={handleUpdateBlockSets}
                     getDayLabel={(w, d) => {
                       const date = getDateForDay(w, d);
                       try {

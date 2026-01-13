@@ -46,6 +46,10 @@ export const useEditableProgramActions = (
             blockUpdates.push({
               id: block.id,
               name: block.name,
+              training_type: block.training_type,
+              workout_format: block.workout_format,
+              workout_duration: block.workout_duration,
+              block_sets: block.block_sets,
               updated_at: new Date().toISOString()
             });
 
@@ -106,7 +110,14 @@ export const useEditableProgramActions = (
         ...blockUpdates.map(block =>
           supabase
             .from('program_blocks')
-            .update({ name: block.name, updated_at: block.updated_at })
+            .update({ 
+              name: block.name,
+              training_type: block.training_type,
+              workout_format: block.workout_format,
+              workout_duration: block.workout_duration,
+              block_sets: block.block_sets,
+              updated_at: block.updated_at 
+            })
             .eq('id', block.id)
         ),
 
@@ -483,6 +494,128 @@ export const useEditableProgramActions = (
     }
   };
 
+  const updateBlockTrainingType = async (blockId: string, trainingType: string, setProgramData: (data: any) => void) => {
+    try {
+      const { error } = await supabase
+        .from('program_blocks')
+        .update({
+          training_type: trainingType,
+          name: trainingType,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', blockId);
+
+      if (error) throw error;
+
+      // Ενημέρωση του local state
+      const updatedProgram = { ...programData };
+      for (const week of updatedProgram.program_weeks || []) {
+        for (const day of week.program_days || []) {
+          const block = day.program_blocks?.find((b: any) => b.id === blockId);
+          if (block) {
+            block.training_type = trainingType;
+            block.name = trainingType;
+          }
+        }
+      }
+      setProgramData(updatedProgram);
+
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά την ενημέρωση training type:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση training type');
+    }
+  };
+
+  const updateBlockFormat = async (blockId: string, format: string, setProgramData: (data: any) => void) => {
+    try {
+      const { error } = await supabase
+        .from('program_blocks')
+        .update({
+          workout_format: format,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', blockId);
+
+      if (error) throw error;
+
+      // Ενημέρωση του local state
+      const updatedProgram = { ...programData };
+      for (const week of updatedProgram.program_weeks || []) {
+        for (const day of week.program_days || []) {
+          const block = day.program_blocks?.find((b: any) => b.id === blockId);
+          if (block) {
+            block.workout_format = format;
+          }
+        }
+      }
+      setProgramData(updatedProgram);
+
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά την ενημέρωση format:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση format');
+    }
+  };
+
+  const updateBlockDuration = async (blockId: string, duration: string, setProgramData: (data: any) => void) => {
+    try {
+      const { error } = await supabase
+        .from('program_blocks')
+        .update({
+          workout_duration: duration,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', blockId);
+
+      if (error) throw error;
+
+      // Ενημέρωση του local state
+      const updatedProgram = { ...programData };
+      for (const week of updatedProgram.program_weeks || []) {
+        for (const day of week.program_days || []) {
+          const block = day.program_blocks?.find((b: any) => b.id === blockId);
+          if (block) {
+            block.workout_duration = duration;
+          }
+        }
+      }
+      setProgramData(updatedProgram);
+
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά την ενημέρωση duration:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση duration');
+    }
+  };
+
+  const updateBlockSets = async (blockId: string, sets: number, setProgramData: (data: any) => void) => {
+    try {
+      const { error } = await supabase
+        .from('program_blocks')
+        .update({
+          block_sets: sets,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', blockId);
+
+      if (error) throw error;
+
+      // Ενημέρωση του local state
+      const updatedProgram = { ...programData };
+      for (const week of updatedProgram.program_weeks || []) {
+        for (const day of week.program_days || []) {
+          const block = day.program_blocks?.find((b: any) => b.id === blockId);
+          if (block) {
+            block.block_sets = sets;
+          }
+        }
+      }
+      setProgramData(updatedProgram);
+
+    } catch (error) {
+      console.error('❌ Σφάλμα κατά την ενημέρωση sets:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση sets');
+    }
+  };
+
   return {
     saveChanges,
     addNewBlock,
@@ -490,6 +623,10 @@ export const useEditableProgramActions = (
     addExercise,
     removeExercise,
     updateExercise,
-    reorderDays
+    reorderDays,
+    updateBlockTrainingType,
+    updateBlockFormat,
+    updateBlockDuration,
+    updateBlockSets
   };
 };
