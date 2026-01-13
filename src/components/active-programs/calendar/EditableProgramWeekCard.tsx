@@ -22,6 +22,10 @@ interface EditableProgramWeekCardProps {
   onRemoveExercise: (exerciseId: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   onReorderDays?: (weekId: string, oldIndex: number, newIndex: number) => void;
+  onUpdateBlockTrainingType?: (blockId: string, trainingType: string) => void;
+  onUpdateBlockFormat?: (blockId: string, format: string) => void;
+  onUpdateBlockDuration?: (blockId: string, duration: string) => void;
+  onUpdateBlockSets?: (blockId: string, sets: number) => void;
   getDayLabel?: (week: any, day: any) => string;
 }
 
@@ -40,6 +44,10 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
   onRemoveExercise,
   onUpdateExercise,
   onReorderDays,
+  onUpdateBlockTrainingType,
+  onUpdateBlockFormat,
+  onUpdateBlockDuration,
+  onUpdateBlockSets,
   getDayLabel
 }) => {
   const [activeTab, setActiveTab] = useState("0");
@@ -146,6 +154,10 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
               onRemoveBlock={onRemoveBlock}
               onRemoveExercise={onRemoveExercise}
               onUpdateExercise={onUpdateExercise}
+              onUpdateBlockTrainingType={onUpdateBlockTrainingType}
+              onUpdateBlockFormat={onUpdateBlockFormat}
+              onUpdateBlockDuration={onUpdateBlockDuration}
+              onUpdateBlockSets={onUpdateBlockSets}
               displayName={getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`)}
             />
           ))}
