@@ -11,7 +11,7 @@ import AboutSection from "@/components/landing/AboutSection";
 import EliteTrainingSection from "@/components/landing/EliteTrainingSection";
 import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
-import CertificatesSection from "@/components/landing/CertificatesSection";
+
 import Footer from "@/components/landing/Footer";
 
 const Index = () => {
@@ -146,9 +146,6 @@ const Index = () => {
         onSetActiveAboutSection={setActiveAboutSection}
       />
 
-      <CertificatesSection 
-        translations={correctedTranslations}
-      />
 
       <EliteTrainingSection 
         translations={correctedTranslations}
