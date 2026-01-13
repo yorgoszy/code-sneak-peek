@@ -255,14 +255,29 @@ export const useEditableProgramActions = (
     }
   };
 
-  const addNewBlock = async (dayId: string, setProgramData: (data: any) => void) => {
+  const addNewBlock = async (dayId: string, setProgramData: (data: any) => void, trainingType?: string) => {
     try {
+      // Βρες το μέγιστο block_order για αυτή την ημέρα
+      const updatedProgram = { ...programData };
+      const week = updatedProgram.program_weeks?.find((w: any) => 
+        w.program_days?.some((d: any) => d.id === dayId)
+      );
+      const day = week?.program_days?.find((d: any) => d.id === dayId);
+      const existingBlocks = day?.program_blocks || [];
+      const maxOrder = existingBlocks.length > 0 
+        ? Math.max(...existingBlocks.map((b: any) => b.block_order || 0)) 
+        : 0;
+
+      // Χρήση του training type για το όνομα
+      const blockName = trainingType || 'str';
+      
       const { data, error } = await supabase
         .from('program_blocks')
         .insert({
           day_id: dayId,
-          name: 'Νέο Block',
-          block_order: 1
+          name: blockName,
+          training_type: blockName,
+          block_order: maxOrder + 1
         })
         .select()
         .single();
@@ -270,12 +285,6 @@ export const useEditableProgramActions = (
       if (error) throw error;
 
       // Ενημέρωση του local state
-      const updatedProgram = { ...programData };
-      const week = updatedProgram.program_weeks?.find((w: any) => 
-        w.program_days?.some((d: any) => d.id === dayId)
-      );
-      const day = week?.program_days?.find((d: any) => d.id === dayId);
-      
       if (day) {
         if (!day.program_blocks) day.program_blocks = [];
         day.program_blocks.push({

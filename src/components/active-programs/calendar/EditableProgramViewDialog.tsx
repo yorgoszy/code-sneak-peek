@@ -110,33 +110,33 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     setIsEditing(false);
   };
 
-  const handleAddNewBlock = (dayId: string) => {
-    if (!editMode) return;
-    addNewBlock(dayId, setProgramData);
+  const handleAddNewBlock = (dayId: string, trainingType?: string) => {
+    if (!isEditing) return;
+    addNewBlock(dayId, setProgramData, trainingType);
   };
 
   const handleRemoveBlock = (blockId: string) => {
-    if (!editMode) return;
+    if (!isEditing) return;
     removeBlock(blockId, setProgramData);
   };
 
   const handleAddExercise = (blockId: string, exerciseId: string) => {
-    if (!editMode) return;
+    if (!isEditing) return;
     addExercise(blockId, exerciseId, setProgramData);
   };
 
   const handleRemoveExercise = (exerciseId: string) => {
-    if (!editMode) return;
+    if (!isEditing) return;
     removeExercise(exerciseId, setProgramData);
   };
 
   const handleUpdateExercise = (exerciseId: string, field: string, value: any) => {
-    if (!editMode) return;
+    if (!isEditing) return;
     updateExercise(exerciseId, field, value, setProgramData);
   };
 
   const handleReorderDays = (weekId: string, oldIndex: number, newIndex: number) => {
-    if (!editMode || !isEditing) return;
+    if (!isEditing) return;
     reorderDays(weekId, oldIndex, newIndex, setProgramData);
   };
 
