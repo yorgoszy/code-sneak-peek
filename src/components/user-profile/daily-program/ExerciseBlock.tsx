@@ -46,6 +46,10 @@ interface ExerciseBlockProps {
   onRemoveBlock?: (blockId: string) => void;
   onRemoveExercise?: (exerciseId: string) => void;
   onUpdateExercise?: (exerciseId: string, field: string, value: any) => void;
+  onUpdateBlockTrainingType?: (blockId: string, trainingType: string) => void;
+  onUpdateBlockFormat?: (blockId: string, format: string) => void;
+  onUpdateBlockDuration?: (blockId: string, duration: string) => void;
+  onUpdateBlockSets?: (blockId: string, sets: number) => void;
 }
 
 export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ 
@@ -55,7 +59,11 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({
   onAddExercise,
   onRemoveBlock,
   onRemoveExercise,
-  onUpdateExercise
+  onUpdateExercise,
+  onUpdateBlockTrainingType,
+  onUpdateBlockFormat,
+  onUpdateBlockDuration,
+  onUpdateBlockSets
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
@@ -124,6 +132,10 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({
         onRemoveBlock={onRemoveBlock}
         onRemoveExercise={onRemoveExercise}
         onUpdateExercise={onUpdateExercise}
+        onUpdateBlockTrainingType={onUpdateBlockTrainingType}
+        onUpdateBlockFormat={onUpdateBlockFormat}
+        onUpdateBlockDuration={onUpdateBlockDuration}
+        onUpdateBlockSets={onUpdateBlockSets}
       />
 
       <ExerciseVideoDialog

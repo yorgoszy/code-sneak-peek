@@ -17,14 +17,12 @@ interface EditableProgramDayTabProps {
   onRemoveBlock: (blockId: string) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
+  onUpdateBlockTrainingType?: (blockId: string, trainingType: string) => void;
+  onUpdateBlockFormat?: (blockId: string, format: string) => void;
+  onUpdateBlockDuration?: (blockId: string, duration: string) => void;
+  onUpdateBlockSets?: (blockId: string, sets: number) => void;
   displayName?: string;
 }
-
-const TRAINING_TYPES = [
-  { value: 'pwr', label: 'pwr', color: 'bg-orange-200 hover:bg-orange-300' },
-  { value: 'str', label: 'str', color: 'bg-green-200 hover:bg-green-300' },
-  { value: 'end', label: 'end', color: 'bg-blue-200 hover:bg-blue-300' },
-];
 
 export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
   day,
@@ -38,6 +36,10 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
   onRemoveBlock,
   onRemoveExercise,
   onUpdateExercise,
+  onUpdateBlockTrainingType,
+  onUpdateBlockFormat,
+  onUpdateBlockDuration,
+  onUpdateBlockSets,
   displayName
 }) => {
   const isTestDay = day.is_test_day === true;
@@ -68,21 +70,9 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
   return (
     <TabsContent key={day.id} value={dayIndex.toString()} className="mt-0 flex-1 overflow-y-auto">
       <div className="bg-white rounded-none p-1.5">
+        {/* Κουμπί προσθήκης block (μόνο σε edit mode) */}
         {isEditing && (
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-0.5">
-              {TRAINING_TYPES.map((type) => (
-                <Button
-                  key={type.value}
-                  onClick={() => onAddNewBlock(day.id, type.value)}
-                  size="sm"
-                  variant="outline"
-                  className={`h-5 text-[10px] rounded-none py-0 px-2 ${type.color}`}
-                >
-                  {type.label}
-                </Button>
-              ))}
-            </div>
+          <div className="flex items-center justify-end mb-1">
             <Button
               onClick={() => onAddNewBlock(day.id)}
               size="sm"
@@ -105,6 +95,10 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
             onRemoveBlock={isEditing ? onRemoveBlock : undefined}
             onRemoveExercise={isEditing ? onRemoveExercise : undefined}
             onUpdateExercise={isEditing ? onUpdateExercise : undefined}
+            onUpdateBlockTrainingType={isEditing ? onUpdateBlockTrainingType : undefined}
+            onUpdateBlockFormat={isEditing ? onUpdateBlockFormat : undefined}
+            onUpdateBlockDuration={isEditing ? onUpdateBlockDuration : undefined}
+            onUpdateBlockSets={isEditing ? onUpdateBlockSets : undefined}
           />
           
           {(day.program_blocks || []).length === 0 && isEditing && (
