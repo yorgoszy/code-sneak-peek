@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp, Copy, Files } from "lucide-react";
-import { ExerciseItem } from './ExerciseItem';
+import { Plus, Trash2, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import { EditableExerciseRow } from './EditableExerciseRow';
+import { ViewOnlyExerciseRow } from './ViewOnlyExerciseRow';
 import { ExerciseSelector } from '@/components/active-programs/calendar/ExerciseSelector';
 import { RollingTimeInput } from '@/components/programs/builder/RollingTimeInput';
 import { getTrainingTypeLabel } from '@/utils/trainingTypeLabels';
@@ -124,53 +124,88 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
     setOpenBlocks(prev => ({ ...prev, [blockId]: !prev[blockId] }));
   };
 
-  // View mode - simple display without edit controls
+  // View mode - BlockCard style with collapsible, read-only fields, same UI as DayCard
   if (!editMode) {
     return (
       <div className="space-y-2">
-        {sortedBlocks.map((block) => (
-          <div key={block.id} className="border border-gray-200 rounded-none">
-            {/* Block Header */}
-            <div className="flex items-center gap-2 p-2 bg-gray-50 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                {getTrainingTypeLabel(block.training_type, block.name)}
-              </span>
-              {(block.workout_format || block.workout_duration) && (
-                <div className="inline-flex items-center gap-2 text-xs border border-[#cb8954] px-2 py-0.5">
-                  {block.workout_format && <span className="text-[#cb8954]">{block.workout_format}</span>}
-                  {block.workout_format && block.workout_duration && <span className="text-[#cb8954]">-</span>}
-                  {block.workout_duration && <span className="text-[#cb8954]">{block.workout_duration}</span>}
-                </div>
-              )}
-              {block.block_sets && block.block_sets > 1 && (
-                <span className="text-xs text-[#00ffba]">x{block.block_sets}</span>
-              )}
-            </div>
-            
-            {/* Exercises */}
-            <div className="space-y-0">
-              {block.program_exercises
-                ?.sort((a, b) => a.exercise_order - b.exercise_order)
-                .map((exercise) => {
-                  const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
-                  const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
+        {sortedBlocks.map((block) => {
+          const isOpen = openBlocks[block.id] !== false;
+          const exercisesCount = block.program_exercises?.length || 0;
+          
+          return (
+            <Card 
+              key={block.id} 
+              className={`rounded-none w-full transition-all duration-200 ${isOpen ? 'min-h-[80px]' : 'min-h-[32px]'}`} 
+              style={{ backgroundColor: '#31365d' }}
+            >
+              <Collapsible open={isOpen} onOpenChange={() => toggleBlock(block.id)}>
+                {/* Block Header - Same as BlockCardHeader but read-only */}
+                <CardHeader className="p-1 space-y-0">
+                  <div className="flex justify-between items-center">
+                    <CollapsibleTrigger className="flex items-center gap-2 hover:bg-gray-600 p-1 rounded flex-1 min-w-0">
+                      {isOpen ? (
+                        <ChevronDown className="w-3 h-3 text-white flex-shrink-0" />
+                      ) : (
+                        <ChevronRight className="w-3 h-3 text-white flex-shrink-0" />
+                      )}
+                      <div className="flex items-center gap-2 min-w-0">
+                        {/* Training Type - Read only text */}
+                        <span className="text-xs text-white font-medium">
+                          {getTrainingTypeLabel(block.training_type, block.name)}
+                        </span>
+                        
+                        {/* Workout Format and Duration - Read only badge */}
+                        {(block.workout_format || block.workout_duration) && (
+                          <div className="inline-flex items-center gap-1 text-xs border border-[#cb8954] px-1.5 py-0.5">
+                            {block.workout_format && (
+                              <span className="text-[#cb8954]">
+                                {WORKOUT_FORMAT_LABELS[block.workout_format] || block.workout_format}
+                              </span>
+                            )}
+                            {block.workout_format && block.workout_duration && (
+                              <span className="text-[#cb8954]">-</span>
+                            )}
+                            {block.workout_duration && (
+                              <span className="text-[#cb8954]">{block.workout_duration}</span>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* Block Sets */}
+                        {block.block_sets && block.block_sets > 1 && (
+                          <span className="text-xs text-[#00ffba]">x{block.block_sets}</span>
+                        )}
+                        
+                        {/* Exercise count when collapsed */}
+                        {!isOpen && exercisesCount > 0 && (
+                          <span className="text-xs bg-gray-500 px-2 py-0.5 rounded-full text-white">
+                            {exercisesCount}
+                          </span>
+                        )}
+                      </div>
+                    </CollapsibleTrigger>
+                  </div>
+                </CardHeader>
 
-                  return (
-                    <div key={exercise.id} className="border-b border-gray-200 last:border-b-0">
-                      <ExerciseItem
-                        exercise={exercise}
-                        isComplete={isComplete}
-                        remainingText={remainingText}
-                        onExerciseClick={onExerciseClick}
-                        onVideoClick={onVideoClick}
-                        viewOnly={viewOnly}
-                      />
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        ))}
+                {/* Block Content - Exercises */}
+                <CollapsibleContent>
+                  <CardContent className="p-0 m-0 bg-white">
+                    {block.program_exercises
+                      ?.sort((a, b) => a.exercise_order - b.exercise_order)
+                      .map((exercise, idx) => (
+                        <ViewOnlyExerciseRow
+                          key={exercise.id}
+                          exercise={exercise}
+                          exerciseNumber={idx + 1}
+                          onVideoClick={onVideoClick}
+                        />
+                      ))}
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </Card>
+          );
+        })}
       </div>
     );
   }
