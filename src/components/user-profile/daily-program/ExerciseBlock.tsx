@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { ExerciseVideoDialog } from './ExerciseVideoDialog';
 import { useExerciseCompletion } from '@/hooks/useExerciseCompletion';
-import { SingleBlock } from './SingleBlock';
 import { MultipleBlocks } from './MultipleBlocks';
 import { isValidVideoUrl } from '@/utils/videoUtils';
 
@@ -43,9 +42,21 @@ interface ExerciseBlockProps {
   blocks: Block[];
   viewOnly?: boolean;
   editMode?: boolean;
+  onAddExercise?: (blockId: string, exerciseId: string) => void;
+  onRemoveBlock?: (blockId: string) => void;
+  onRemoveExercise?: (exerciseId: string) => void;
+  onUpdateExercise?: (exerciseId: string, field: string, value: any) => void;
 }
 
-export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly = false, editMode = false }) => {
+export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ 
+  blocks, 
+  viewOnly = false, 
+  editMode = false,
+  onAddExercise,
+  onRemoveBlock,
+  onRemoveExercise,
+  onUpdateExercise
+}) => {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
   const { completeSet, getRemainingText, isExerciseComplete } = useExerciseCompletion();
@@ -104,10 +115,15 @@ export const ExerciseBlock: React.FC<ExerciseBlockProps> = ({ blocks, viewOnly =
       <MultipleBlocks
         blocks={blocks}
         viewOnly={viewOnly}
+        editMode={editMode}
         getRemainingText={getRemainingText}
         isExerciseComplete={isExerciseComplete}
         onExerciseClick={handleExerciseClick}
         onVideoClick={handleVideoClick}
+        onAddExercise={onAddExercise}
+        onRemoveBlock={onRemoveBlock}
+        onRemoveExercise={onRemoveExercise}
+        onUpdateExercise={onUpdateExercise}
       />
 
       <ExerciseVideoDialog

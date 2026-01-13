@@ -82,6 +82,10 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
             blocks={day.program_blocks} 
             viewOnly={true}
             editMode={isEditing}
+            onAddExercise={isEditing ? onAddExercise : undefined}
+            onRemoveBlock={isEditing ? onRemoveBlock : undefined}
+            onRemoveExercise={isEditing ? onRemoveExercise : undefined}
+            onUpdateExercise={isEditing ? onUpdateExercise : undefined}
           />
           
           {(day.program_blocks || []).length === 0 && isEditing && (
