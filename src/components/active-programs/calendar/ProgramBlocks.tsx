@@ -1,8 +1,10 @@
 
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExerciseItem } from './ExerciseItem';
-import { InteractiveBlockInfo } from './InteractiveBlockInfo';
+import React, { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { ViewOnlyExerciseRow } from '@/components/user-profile/daily-program/ViewOnlyExerciseRow';
 import { getTrainingTypeLabel } from '@/utils/trainingTypeLabels';
 
 interface ProgramBlocksProps {
@@ -33,27 +35,17 @@ interface ProgramBlocksProps {
 export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   blocks,
   workoutInProgress,
-  getRemainingText,
-  isExerciseComplete,
-  getCompletedSets,
-  onExerciseClick,
-  onSetClick,
-  onVideoClick,
-  getNotes,
-  updateNotes,
-  clearNotes,
-  updateKg,
-  clearKg,
-  updateVelocity,
-  clearVelocity,
-  updateReps,
-  clearReps,
-  getKg,
-  getReps,
-  getVelocity,
-  selectedDate,
-  program
+  onVideoClick
 }) => {
+  const [openBlocks, setOpenBlocks] = useState<Record<string, boolean>>(() => {
+    // Initialize all blocks as open by default
+    const initial: Record<string, boolean> = {};
+    blocks?.forEach(block => {
+      initial[block.id] = true;
+    });
+    return initial;
+  });
+
   if (!blocks || blocks.length === 0) {
     return (
       <div className="text-center py-4 text-gray-500">
@@ -68,118 +60,85 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
     const orderB = Number(b.block_order) || 0;
     return orderA - orderB;
   });
-  // Αν έχουμε μόνο ένα block, εμφανίζουμε χωρίς tabs
-  if (sortedBlocks.length === 1) {
-    const block = sortedBlocks[0];
 
-    // Ταξινόμηση ασκήσεων με βάση exercise_order
-    const sortedExercises = [...(block.program_exercises || [])].sort((a, b) => {
-      const orderA = Number(a.exercise_order) || 0;
-      const orderB = Number(b.exercise_order) || 0;
-      return orderA - orderB;
-    });
+  const toggleBlock = (blockId: string) => {
+    setOpenBlocks(prev => ({
+      ...prev,
+      [blockId]: !prev[blockId]
+    }));
+  };
 
-    return (
-      <div className="space-y-3">
-        <InteractiveBlockInfo
-          blockId={block.id}
-          workoutFormat={block.workout_format}
-          workoutDuration={block.workout_duration}
-          blockSets={block.block_sets}
-          workoutInProgress={workoutInProgress}
-        />
-        {sortedExercises.map((exercise, exerciseIndex) => (
-          <ExerciseItem
-            key={exercise.id}
-            exercise={exercise}
-            exerciseNumber={exerciseIndex + 1}
-            workoutInProgress={workoutInProgress}
-            getRemainingText={getRemainingText}
-            isExerciseComplete={isExerciseComplete}
-            getCompletedSets={getCompletedSets}
-            onExerciseClick={onExerciseClick}
-            onSetClick={onSetClick}
-            onVideoClick={onVideoClick}
-            getNotes={getNotes}
-            updateNotes={updateNotes}
-            clearNotes={clearNotes}
-            updateKg={updateKg}
-            clearKg={clearKg}
-            updateVelocity={updateVelocity}
-            clearVelocity={clearVelocity}
-            updateReps={updateReps}
-            clearReps={clearReps}
-            getKg={getKg}
-            getReps={getReps}
-            getVelocity={getVelocity}
-            selectedDate={selectedDate}
-            program={program}
-          />
-        ))}
-      </div>
-    );
-  }
+  // Format workout info for badge
+  const getBlockInfoText = (block: any) => {
+    const parts = [];
+    if (block.workout_format) parts.push(block.workout_format);
+    if (block.workout_duration) parts.push(block.workout_duration);
+    if (block.block_sets) parts.push(`${block.block_sets} sets`);
+    return parts.join(' · ');
+  };
 
-  // Αν έχουμε πολλαπλά blocks, εμφανίζουμε με tabs
   return (
-    <Tabs defaultValue={sortedBlocks[0]?.id} className="w-full">
-      <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${sortedBlocks.length}, 1fr)` }}>
-        {sortedBlocks.map((block) => (
-          <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
-            {getTrainingTypeLabel(block.training_type, block.name)}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-
-      {sortedBlocks.map((block) => {
-        // Ταξινόμηση ασκήσεων με βάση exercise_order για κάθε block
+    <div className="space-y-2">
+      {sortedBlocks.map((block, blockIndex) => {
+        // Ταξινόμηση ασκήσεων με βάση exercise_order
         const sortedExercises = [...(block.program_exercises || [])].sort((a, b) => {
           const orderA = Number(a.exercise_order) || 0;
           const orderB = Number(b.exercise_order) || 0;
           return orderA - orderB;
         });
+
+        const isOpen = openBlocks[block.id] ?? true;
+        const blockInfoText = getBlockInfoText(block);
+
         return (
-          <TabsContent key={block.id} value={block.id} className="mt-2">
-            <div className="space-y-3">
-              <InteractiveBlockInfo
-                blockId={block.id}
-                workoutFormat={block.workout_format}
-                workoutDuration={block.workout_duration}
-                blockSets={block.block_sets}
-                workoutInProgress={workoutInProgress}
-              />
-              {sortedExercises.map((exercise, exerciseIndex) => (
-                <ExerciseItem
-                  key={exercise.id}
-                  exercise={exercise}
-                  exerciseNumber={exerciseIndex + 1}
-                  workoutInProgress={workoutInProgress}
-                  getRemainingText={getRemainingText}
-                  isExerciseComplete={isExerciseComplete}
-                  getCompletedSets={getCompletedSets}
-                  onExerciseClick={onExerciseClick}
-                  onSetClick={onSetClick}
-                  onVideoClick={onVideoClick}
-                  getNotes={getNotes}
-                  updateNotes={updateNotes}
-                  clearNotes={clearNotes}
-                  updateKg={updateKg}
-                  clearKg={clearKg}
-                  updateVelocity={updateVelocity}
-                  clearVelocity={clearVelocity}
-                  updateReps={updateReps}
-                  clearReps={clearReps}
-                  getKg={getKg}
-                  getReps={getReps}
-                  getVelocity={getVelocity}
-                  selectedDate={selectedDate}
-                  program={program}
-                />
-              ))}
-            </div>
-          </TabsContent>
+          <Card key={block.id} className="rounded-none overflow-hidden">
+            <Collapsible open={isOpen} onOpenChange={() => toggleBlock(block.id)}>
+              <CollapsibleTrigger asChild>
+                <div 
+                  className="flex items-center justify-between px-3 py-2 cursor-pointer hover:opacity-90"
+                  style={{ backgroundColor: '#31365d' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-medium text-sm">
+                      {getTrainingTypeLabel(block.training_type, block.name || `Block ${blockIndex + 1}`)}
+                    </span>
+                    {blockInfoText && (
+                      <Badge variant="secondary" className="rounded-none text-xs bg-white/20 text-white border-0">
+                        {blockInfoText}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/70 text-xs">
+                      {sortedExercises.length} ασκ.
+                    </span>
+                    {isOpen ? (
+                      <ChevronUp className="h-4 w-4 text-white" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-white" />
+                    )}
+                  </div>
+                </div>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent>
+                <CardContent className="p-0">
+                  <div className="divide-y divide-gray-200">
+                    {sortedExercises.map((exercise, exerciseIndex) => (
+                      <ViewOnlyExerciseRow
+                        key={exercise.id}
+                        exercise={exercise}
+                        exerciseNumber={exerciseIndex + 1}
+                        onVideoClick={onVideoClick}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
         );
       })}
-    </Tabs>
+    </div>
   );
 };
