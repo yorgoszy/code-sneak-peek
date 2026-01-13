@@ -105,20 +105,9 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({
     return null;
   }
 
+  // Αν δεν υπάρχουν δεδομένα, δεν εμφανίζουμε τίποτα
   if (sessions.length === 0) {
-    return (
-      <Card className="rounded-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-1">
-            <Activity className="w-3 h-3" />
-            {t('progress.cardiacData')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-2 text-gray-400 text-xs">{t('progress.noData')}</div>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   const latestMaxHr = getLatestValue('max_hr');
