@@ -107,8 +107,10 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
           {selectedUser ? (
             <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
-                <AvatarImage src={selectedUser.avatar_url || ''} />
-                <AvatarFallback className="text-xs">
+                {selectedUser.avatar_url ? (
+                  <AvatarImage src={selectedUser.avatar_url} alt={selectedUser.name} />
+                ) : null}
+                <AvatarFallback className="text-xs bg-muted">
                   {selectedUser.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -150,8 +152,10 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
                     )}
                   />
                   <Avatar className="h-6 w-6 mr-2">
-                    <AvatarImage src={user.avatar_url || ''} />
-                    <AvatarFallback className="text-xs">
+                    {user.avatar_url ? (
+                      <AvatarImage src={user.avatar_url} alt={user.name} />
+                    ) : null}
+                    <AvatarFallback className="text-xs bg-muted">
                       {user.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
