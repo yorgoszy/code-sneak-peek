@@ -1,7 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2 } from "lucide-react";
 import { ExerciseItem } from './ExerciseItem';
+import { EditableExerciseRow } from './EditableExerciseRow';
+import { ExerciseSelector } from '@/components/active-programs/calendar/ExerciseSelector';
 import { getTrainingTypeLabel } from '@/utils/trainingTypeLabels';
 
 interface Exercise {
@@ -40,28 +44,47 @@ interface Block {
 interface MultipleBlocksProps {
   blocks: Block[];
   viewOnly: boolean;
+  editMode?: boolean;
   getRemainingText: (exerciseId: string, totalSets: number) => string;
   isExerciseComplete: (exerciseId: string, totalSets: number) => boolean;
   onExerciseClick: (exercise: Exercise, event: React.MouseEvent) => void;
   onVideoClick: (exercise: Exercise) => void;
+  onAddExercise?: (blockId: string, exerciseId: string) => void;
+  onRemoveBlock?: (blockId: string) => void;
+  onRemoveExercise?: (exerciseId: string) => void;
+  onUpdateExercise?: (exerciseId: string, field: string, value: any) => void;
 }
 
 export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
   blocks,
   viewOnly,
+  editMode = false,
   getRemainingText,
   isExerciseComplete,
   onExerciseClick,
-  onVideoClick
+  onVideoClick,
+  onAddExercise,
+  onRemoveBlock,
+  onRemoveExercise,
+  onUpdateExercise
 }) => {
+  const [exerciseSelectorOpen, setExerciseSelectorOpen] = useState<string | null>(null);
   const sortedBlocks = [...blocks].sort((a, b) => a.block_order - b.block_order);
 
   console.log('📑 MultipleBlocks render:', {
     blockCount: sortedBlocks.length,
     viewOnly: viewOnly,
+    editMode: editMode,
     blockNames: sortedBlocks.map(b => b.name),
     blockTypes: sortedBlocks.map(b => b.training_type)
   });
+
+  const handleSelectExercise = (blockId: string, exerciseId: string) => {
+    if (onAddExercise) {
+      onAddExercise(blockId, exerciseId);
+    }
+    setExerciseSelectorOpen(null);
+  };
 
   return (
     <Tabs defaultValue={sortedBlocks[0]?.id} className="w-full">
@@ -75,6 +98,34 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
 
       {sortedBlocks.map((block) => (
         <TabsContent key={block.id} value={block.id} className="mt-2">
+          {/* Edit Mode Header - Κουμπιά για προσθήκη άσκησης και διαγραφή block */}
+          {editMode && (
+            <div className="flex items-center justify-between mb-2 p-1 bg-gray-100 border border-gray-200">
+              <span className="text-xs font-medium text-gray-700">{block.name}</span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setExerciseSelectorOpen(block.id)}
+                  className="h-6 text-xs rounded-none px-2"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Άσκηση
+                </Button>
+                {onRemoveBlock && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRemoveBlock(block.id)}
+                    className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Block Info Header */}
           {(block.workout_format || block.workout_duration || (block.block_sets && block.block_sets > 1)) && (
             <div className="mb-2 flex items-center gap-2">
@@ -103,23 +154,40 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
                 console.log('🏋️ MultipleBlocks rendering exercise:', {
                   exerciseName: exercise.exercises?.name,
                   hasVideo: !!exercise.exercises?.video_url,
-                  videoUrl: exercise.exercises?.video_url
+                  videoUrl: exercise.exercises?.video_url,
+                  editMode: editMode
                 });
 
                 return (
                   <div key={exercise.id} className="border border-gray-200">
-                    <ExerciseItem
-                      exercise={exercise}
-                      isComplete={isComplete}
-                      remainingText={remainingText}
-                      onExerciseClick={onExerciseClick}
-                      onVideoClick={onVideoClick}
-                      viewOnly={viewOnly}
-                    />
+                    {editMode ? (
+                      <EditableExerciseRow
+                        exercise={exercise}
+                        onUpdate={onUpdateExercise ? (field, value) => onUpdateExercise(exercise.id, field, value) : undefined}
+                        onRemove={onRemoveExercise ? () => onRemoveExercise(exercise.id) : undefined}
+                        onVideoClick={() => onVideoClick(exercise)}
+                      />
+                    ) : (
+                      <ExerciseItem
+                        exercise={exercise}
+                        isComplete={isComplete}
+                        remainingText={remainingText}
+                        onExerciseClick={onExerciseClick}
+                        onVideoClick={onVideoClick}
+                        viewOnly={viewOnly}
+                      />
+                    )}
                   </div>
                 );
               })}
           </div>
+
+          {/* Exercise Selector για αυτό το block */}
+          <ExerciseSelector
+            isOpen={exerciseSelectorOpen === block.id}
+            onClose={() => setExerciseSelectorOpen(null)}
+            onSelectExercise={(exerciseId) => handleSelectExercise(block.id, exerciseId)}
+          />
         </TabsContent>
       ))}
     </Tabs>
