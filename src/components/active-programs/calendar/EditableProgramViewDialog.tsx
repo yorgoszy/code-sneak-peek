@@ -201,27 +201,19 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
             onClose={onClose}
           />
 
-          {/* Scrollable Content */}
+          {/* Scrollable Content - Horizontal layout for weeks */}
           <div className="overflow-y-auto overflow-x-auto max-h-[calc(95vh-6rem)] sm:max-h-[calc(90vh-5rem)] -mx-2 sm:mx-0 px-2 sm:px-0">
-            {/* Εβδομάδες - Responsive Layout */}
-            <div className={`
-              grid gap-2 sm:gap-3 md:gap-4
-              ${weeks.length === 1 
-                ? 'grid-cols-1' 
-                : weeks.length === 2 
-                  ? 'grid-cols-1 sm:grid-cols-2' 
-                  : weeks.length === 3
-                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-                    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-              }
-              ${editMode && isEditing ? 'lg:min-w-max' : ''}
-            `}
-            style={editMode && isEditing && weeks.length > 3 ? { 
-              gridTemplateColumns: `repeat(${Math.min(weeks.length, 4)}, minmax(240px, 1fr))` 
-            } : undefined}>
-                {weeks.map((week: any, weekIndex: number) => (
+            {/* Εβδομάδες - Side by Side Layout */}
+            <div 
+              className="flex gap-3 md:gap-4 min-w-max pb-2"
+              style={{ 
+                display: 'flex',
+                flexDirection: 'row'
+              }}
+            >
+              {weeks.map((week: any, weekIndex: number) => (
+                <div key={week.id} className="flex-shrink-0 w-[280px] sm:w-[300px] md:w-[320px]">
                   <EditableProgramWeekCard
-                    key={week.id}
                     week={week}
                     weekIndex={weekIndex}
                     editMode={editMode}
@@ -245,9 +237,10 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                       }
                     }}
                   />
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
+          </div>
           </DialogContent>
         </Dialog>
 
