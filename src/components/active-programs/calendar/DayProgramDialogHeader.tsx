@@ -116,14 +116,6 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
           </div>
         </div>
         
-        {/* Timer */}
-        <div className="flex-shrink-0">
-          <WorkoutTimer 
-            workoutInProgress={workoutInProgress}
-            elapsedTime={elapsedTime} 
-          />
-        </div>
-
         {/* Κουμπιά ελέγχου */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {isCompleted ? (
