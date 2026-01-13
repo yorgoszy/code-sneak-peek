@@ -378,7 +378,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
         }
       }
       
-      // Ιστορικό (μέχρι 3 προηγούμενες sessions)
+      // Ιστορικό (μέχρι 3 προηγούμενες sessions) - από παλαιότερη σε νεότερη
       const history: Array<{ weight: number; velocity: number; date: string }> = [];
       for (let i = 1; i < Math.min(uniqueSessions.length, 4); i++) {
         const sessionId = uniqueSessions[i].sessionId;
@@ -392,6 +392,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
           date: sessionOneRM.date
         });
       }
+      // Αντιστρέφουμε για να είναι από παλαιότερη (1η) σε νεότερη (2η)
+      history.reverse();
       
       oneRMs[exerciseId] = {
         weight: latestOneRM.weight,
