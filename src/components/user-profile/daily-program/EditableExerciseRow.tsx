@@ -1,10 +1,10 @@
 
-import React, { useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Trash2, Play } from "lucide-react";
 import { DebouncedInput } from '@/components/programs/builder/DebouncedInput';
-import { isValidVideoUrl } from '@/utils/videoUtils';
+import { RollingTimeInput } from '@/components/programs/builder/RollingTimeInput';
+import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 
 interface Exercise {
   id: string;
@@ -35,31 +35,22 @@ interface EditableExerciseRowProps {
   onVideoClick?: () => void;
 }
 
-const REPS_MODE_LABELS: Record<string, string> = {
-  'reps': 'Reps',
-  'time': 'Time',
-  'meter': 'Meter'
-};
-
-const KG_MODE_LABELS: Record<string, string> = {
-  'kg': 'Kg',
-  'rpm': 'RPM',
-  'meter': 'Meter',
-  's/m': 's/m',
-  'km/h': 'km/h'
-};
-
 export const EditableExerciseRow: React.FC<EditableExerciseRowProps> = ({
   exercise,
   onUpdate,
   onRemove,
   onVideoClick
 }) => {
-  const hasVideo = exercise.exercises?.video_url && isValidVideoUrl(exercise.exercises.video_url);
+  const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>(exercise.reps_mode as any || 'reps');
+  const [kgMode, setKgMode] = useState<'kg' | 'rpm' | 'meter' | 's/m' | 'km/h'>(exercise.kg_mode as any || 'kg');
+
+  const videoUrl = exercise.exercises?.video_url;
+  const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
+  const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
 
   // Memoized handlers
   const handleSetsChange = useCallback((value: string) => {
-    onUpdate?.('sets', parseInt(value) || 0);
+    onUpdate?.('sets', parseInt(value) || '');
   }, [onUpdate]);
 
   const handleRepsChange = useCallback((value: string) => {
@@ -67,17 +58,18 @@ export const EditableExerciseRow: React.FC<EditableExerciseRowProps> = ({
   }, [onUpdate]);
 
   const handleKgChange = useCallback((value: string) => {
-    onUpdate?.('kg', value);
+    const cleaned = value.replace('.', ',');
+    onUpdate?.('kg', cleaned);
   }, [onUpdate]);
 
   const handleVelocityChange = useCallback((value: string) => {
     const cleaned = value.replace('.', ',');
-    const numValue = parseFloat(cleaned.replace(',', '.')) || 0;
-    onUpdate?.('velocity_ms', numValue);
+    onUpdate?.('velocity_ms', cleaned);
   }, [onUpdate]);
 
   const handlePercentageChange = useCallback((value: string) => {
-    onUpdate?.('percentage_1rm', parseInt(value) || 0);
+    const cleaned = value.replace('.', ',');
+    onUpdate?.('percentage_1rm', cleaned);
   }, [onUpdate]);
 
   const handleTempoChange = useCallback((value: string) => {
@@ -92,134 +84,213 @@ export const EditableExerciseRow: React.FC<EditableExerciseRowProps> = ({
     onUpdate?.('notes', value);
   }, [onUpdate]);
 
-  const velocityDisplay = typeof exercise.velocity_ms === 'number'
-    ? exercise.velocity_ms.toString().replace('.', ',')
-    : (exercise.velocity_ms || '');
+  const handleRepsLabelClick = useCallback(() => {
+    setRepsMode((prev) => {
+      let newMode: 'reps' | 'time' | 'meter';
+      if (prev === 'reps') newMode = 'time';
+      else if (prev === 'time') newMode = 'meter';
+      else newMode = 'reps';
+      onUpdate?.('reps_mode', newMode);
+      return newMode;
+    });
+  }, [onUpdate]);
 
-  const inputClassName = "h-6 rounded-none px-1 text-xs text-center bg-white border-0 focus:ring-1 focus:ring-[#00ffba]";
+  const handleKgLabelClick = useCallback(() => {
+    setKgMode((prev) => {
+      let newMode: 'kg' | 'rpm' | 'meter' | 's/m' | 'km/h';
+      if (prev === 'kg') newMode = 'rpm';
+      else if (prev === 'rpm') newMode = 'meter';
+      else if (prev === 'meter') newMode = 's/m';
+      else if (prev === 's/m') newMode = 'km/h';
+      else newMode = 'kg';
+      onUpdate?.('kg_mode', newMode);
+      return newMode;
+    });
+  }, [onUpdate]);
+
+  const inputStyle: React.CSSProperties = { 
+    borderRadius: '0px', 
+    fontSize: '12px', 
+    height: '22px', 
+    padding: '0 4px'
+  };
 
   return (
-    <div className="bg-white rounded-none">
-      {/* Header - Same as ExerciseHeader but with edit controls */}
-      <div className="flex items-center justify-between p-1.5 bg-white border-b border-gray-100">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          {hasVideo && (
-            <button
-              onClick={onVideoClick}
-              className="video-thumbnail flex-shrink-0 p-1 hover:bg-gray-100 rounded"
-            >
-              <Play className="w-4 h-4 text-[#00ffba]" />
-            </button>
-          )}
-          <span className="font-medium text-sm truncate">
-            {exercise.exercises?.name || 'Άγνωστη Άσκηση'}
-          </span>
-        </div>
-        {onRemove && (
+    <div className="bg-white border-0 border-b w-full" style={{ fontSize: '12px' }}>
+      {/* Header - Exercise name with thumbnail and delete button */}
+      <div className="px-2 py-0 border-b bg-gray-100 flex items-center w-full" style={{ minHeight: '28px' }}>
+        <div className="flex-1 min-w-0 overflow-hidden">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={onRemove}
-            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 flex-shrink-0"
+            className="flex-1 text-sm h-6 justify-start px-2 bg-gray-200 hover:bg-gray-300 w-full"
+            style={{ borderRadius: '0px', fontSize: '12px' }}
+            onClick={onVideoClick}
           >
-            <Trash2 className="w-3 h-3" />
+            <div className="flex items-center gap-2 w-full">
+              <div className="flex items-center gap-1 flex-1">
+                {/* Play icon */}
+                {hasValidVideo && (
+                  <Play className="w-3 h-3 text-[#00ffba] flex-shrink-0" />
+                )}
+                <span className="truncate">{exercise.exercises?.name || 'Άγνωστη Άσκηση'}</span>
+              </div>
+              
+              {/* Video Thumbnail */}
+              {hasValidVideo && thumbnailUrl ? (
+                <div className="w-8 h-5 rounded-none overflow-hidden bg-gray-100 flex-shrink-0">
+                  <img
+                    src={thumbnailUrl}
+                    alt={`${exercise.exercises?.name} video thumbnail`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs text-gray-400">-</span>
+                </div>
+              )}
+            </div>
           </Button>
-        )}
+        </div>
+        
+        {/* Delete button */}
+        <div className="flex gap-1 flex-shrink-0 ml-1">
+          {onRemove && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onRemove}
+              className="p-1 h-6 w-6"
+              style={{ borderRadius: '0px' }}
+            >
+              <Trash2 className="w-3 h-3 text-red-500" />
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Details Grid - Same layout as ExerciseDetailsGrid but editable */}
-      <div className="p-1 bg-gray-50">
-        <div className="flex text-xs" style={{ width: '70%' }}>
-          <div className="flex-1 text-center">
-            <div className="font-medium text-gray-600 mb-1">Sets</div>
-            <DebouncedInput
-              value={exercise.sets?.toString() || ''}
-              onChange={handleSetsChange}
-              className={inputClassName}
-              type="number"
-              min={0}
+      {/* Exercise Details - Same layout as ExerciseDetailsFormOptimized */}
+      <div className="flex px-2 py-0 gap-0 w-full" style={{ minHeight: '28px' }}>
+        <div className="flex flex-col items-center" style={{ width: '60px' }}>
+          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
+            Sets
+          </label>
+          <DebouncedInput
+            value={exercise.sets?.toString() || ''}
+            onChange={handleSetsChange}
+            className="text-center w-full"
+            style={inputStyle}
+          />
+        </div>
+        
+        <div className="flex flex-col items-center" style={{ width: '60px' }}>
+          <label 
+            className="block mb-1 text-center w-full cursor-pointer hover:text-[#00ffba]" 
+            style={{ fontSize: '10px', color: '#666' }}
+            onClick={handleRepsLabelClick}
+          >
+            {repsMode === 'reps' ? 'Reps' : repsMode === 'time' ? 'Time' : 'Meter'}
+          </label>
+          {repsMode === 'time' ? (
+            <RollingTimeInput
+              value={exercise.reps || ''}
+              onChange={handleRepsChange}
+              className="text-center w-full"
+              style={inputStyle}
             />
-          </div>
-          
-          <Separator orientation="vertical" className="h-10 mx-1" />
-          
-          <div className="flex-1 text-center">
-            <div className="font-medium text-gray-600 mb-1">{REPS_MODE_LABELS[exercise.reps_mode || 'reps']}</div>
+          ) : (
             <DebouncedInput
               value={exercise.reps || ''}
               onChange={handleRepsChange}
-              className={inputClassName}
+              className="text-center w-full"
+              style={inputStyle}
             />
-          </div>
-          
-          <Separator orientation="vertical" className="h-10 mx-1" />
-          
-          <div className="flex-1 text-center">
-            <div className="font-medium text-gray-600 mb-1">%1RM</div>
-            <DebouncedInput
-              value={exercise.percentage_1rm?.toString() || ''}
-              onChange={handlePercentageChange}
-              className={inputClassName}
-              type="number"
-              min={0}
-              max={100}
-            />
-          </div>
-          
-          <Separator orientation="vertical" className="h-10 mx-1" />
-          
-          <div className="flex-1 text-center">
-            <div className="font-medium text-gray-600 mb-1">{KG_MODE_LABELS[exercise.kg_mode || 'kg']}</div>
-            <DebouncedInput
-              value={exercise.kg || ''}
-              onChange={handleKgChange}
-              className={inputClassName}
-            />
-          </div>
-          
-          <Separator orientation="vertical" className="h-10 mx-1" />
-          
-          <div className="flex-1 text-center">
-            <div className="font-medium text-gray-600 mb-1">m/s</div>
-            <DebouncedInput
-              value={velocityDisplay}
-              onChange={handleVelocityChange}
-              className={inputClassName}
-            />
-          </div>
-          
-          <Separator orientation="vertical" className="h-10 mx-1" />
-          
-          <div className="flex-1 text-center">
-            <div className="font-medium text-gray-600 mb-1">Tempo</div>
-            <DebouncedInput
-              value={exercise.tempo || ''}
-              onChange={handleTempoChange}
-              className={inputClassName}
-            />
-          </div>
-          
-          <Separator orientation="vertical" className="h-10 mx-1" />
-          
-          <div className="flex-1 text-center">
-            <div className="font-medium text-gray-600 mb-1">Rest</div>
-            <DebouncedInput
-              value={exercise.rest || ''}
-              onChange={handleRestChange}
-              className={inputClassName}
-            />
-          </div>
+          )}
         </div>
         
-        {/* Notes - Editable */}
-        <div className="mt-1">
+        <div className="flex flex-col items-center" style={{ width: '60px' }}>
+          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
+            %1RM
+          </label>
           <DebouncedInput
-            value={exercise.notes || ''}
-            onChange={handleNotesChange}
-            className="h-5 rounded-none px-1 text-xs italic text-gray-600 bg-white w-full"
-            placeholder="Σημειώσεις..."
+            inputMode="decimal"
+            value={exercise.percentage_1rm?.toString() || ''}
+            onChange={handlePercentageChange}
+            className="text-center w-full"
+            style={inputStyle}
           />
         </div>
+        
+        <div className="flex flex-col items-center" style={{ width: '60px' }}>
+          <label 
+            className="block mb-1 text-center w-full cursor-pointer hover:text-[#00ffba]" 
+            style={{ fontSize: '10px', color: '#666' }}
+            onClick={handleKgLabelClick}
+          >
+            {kgMode === 'kg' ? 'Kg' : kgMode === 'rpm' ? 'rpm' : kgMode === 'meter' ? 'meter' : kgMode === 's/m' ? 's/m' : 'km/h'}
+          </label>
+          <DebouncedInput
+            inputMode="decimal"
+            value={exercise.kg || ''}
+            onChange={handleKgChange}
+            className="text-center w-full"
+            style={inputStyle}
+          />
+        </div>
+        
+        <div className="flex flex-col items-center" style={{ width: '60px' }}>
+          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
+            m/s
+          </label>
+          <DebouncedInput
+            inputMode="decimal"
+            value={exercise.velocity_ms?.toString() || ''}
+            onChange={handleVelocityChange}
+            className="text-center w-full"
+            style={inputStyle}
+          />
+        </div>
+        
+        <div className="flex flex-col items-center" style={{ width: '60px' }}>
+          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
+            Tempo
+          </label>
+          <DebouncedInput
+            value={exercise.tempo || ''}
+            onChange={handleTempoChange}
+            className="text-center w-full"
+            style={inputStyle}
+            placeholder="1.1.1"
+          />
+        </div>
+        
+        <div className="flex flex-col items-center" style={{ width: '52px' }}>
+          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
+            Rest
+          </label>
+          <RollingTimeInput
+            value={exercise.rest || ''}
+            onChange={handleRestChange}
+            className="text-center w-full"
+            style={inputStyle}
+          />
+        </div>
+      </div>
+      
+      {/* Notes */}
+      <div className="px-2 pb-1">
+        <DebouncedInput
+          value={exercise.notes || ''}
+          onChange={handleNotesChange}
+          className="h-5 rounded-none px-1 text-xs italic text-gray-600 bg-white w-full"
+          style={{ borderRadius: '0px', fontSize: '11px', height: '20px' }}
+          placeholder="Σημειώσεις..."
+        />
       </div>
     </div>
   );

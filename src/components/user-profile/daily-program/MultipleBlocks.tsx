@@ -53,7 +53,30 @@ interface MultipleBlocksProps {
   onRemoveBlock?: (blockId: string) => void;
   onRemoveExercise?: (exerciseId: string) => void;
   onUpdateExercise?: (exerciseId: string, field: string, value: any) => void;
+  onUpdateBlockFormat?: (blockId: string, format: string) => void;
+  onUpdateBlockDuration?: (blockId: string, duration: string) => void;
+  onUpdateBlockSets?: (blockId: string, sets: number) => void;
 }
+
+// Training type colors for tabs
+const TRAINING_TYPE_COLORS: Record<string, string> = {
+  'pwr': 'bg-orange-200 data-[state=active]:bg-orange-400',
+  'power': 'bg-orange-200 data-[state=active]:bg-orange-400',
+  'str': 'bg-green-200 data-[state=active]:bg-green-400',
+  'end': 'bg-blue-200 data-[state=active]:bg-blue-400',
+  'str/end': 'bg-teal-200 data-[state=active]:bg-teal-400',
+  'pwr/end': 'bg-cyan-200 data-[state=active]:bg-cyan-400',
+  'spd': 'bg-yellow-200 data-[state=active]:bg-yellow-400',
+  'spd/str': 'bg-lime-200 data-[state=active]:bg-lime-400',
+  'warm up': 'bg-pink-200 data-[state=active]:bg-pink-400',
+  'default': 'bg-gray-200 data-[state=active]:bg-gray-400',
+};
+
+const getTabColor = (trainingType?: string) => {
+  if (!trainingType) return TRAINING_TYPE_COLORS['default'];
+  const key = trainingType.toLowerCase();
+  return TRAINING_TYPE_COLORS[key] || TRAINING_TYPE_COLORS['default'];
+};
 
 export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
   blocks,
@@ -66,18 +89,13 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
   onAddExercise,
   onRemoveBlock,
   onRemoveExercise,
-  onUpdateExercise
+  onUpdateExercise,
+  onUpdateBlockFormat,
+  onUpdateBlockDuration,
+  onUpdateBlockSets
 }) => {
   const [exerciseSelectorOpen, setExerciseSelectorOpen] = useState<string | null>(null);
   const sortedBlocks = [...blocks].sort((a, b) => a.block_order - b.block_order);
-
-  console.log('📑 MultipleBlocks render:', {
-    blockCount: sortedBlocks.length,
-    viewOnly: viewOnly,
-    editMode: editMode,
-    blockNames: sortedBlocks.map(b => b.name),
-    blockTypes: sortedBlocks.map(b => b.training_type)
-  });
 
   const handleSelectExercise = (blockId: string, exerciseId: string) => {
     if (onAddExercise) {
@@ -88,19 +106,23 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
 
   return (
     <Tabs defaultValue={sortedBlocks[0]?.id} className="w-full">
-      <TabsList className="grid w-full rounded-none" style={{ gridTemplateColumns: `repeat(${sortedBlocks.length}, 1fr)` }}>
+      <TabsList className="grid w-full rounded-none h-auto p-0 bg-transparent" style={{ gridTemplateColumns: `repeat(${sortedBlocks.length}, 1fr)` }}>
         {sortedBlocks.map((block) => (
-          <TabsTrigger key={block.id} value={block.id} className="rounded-none text-xs">
+          <TabsTrigger 
+            key={block.id} 
+            value={block.id} 
+            className={`rounded-none text-xs h-7 ${getTabColor(block.training_type)}`}
+          >
             {getTrainingTypeLabel(block.training_type, block.name)}
           </TabsTrigger>
         ))}
       </TabsList>
 
       {sortedBlocks.map((block) => (
-        <TabsContent key={block.id} value={block.id} className="mt-2">
-          {/* Edit Mode Header - Κουμπιά για προσθήκη άσκησης και διαγραφή block */}
+        <TabsContent key={block.id} value={block.id} className="mt-0">
+          {/* Edit Mode Header - Add exercise and delete block buttons */}
           {editMode && (
-            <div className="flex items-center justify-between mb-2 p-1 bg-gray-100 border border-gray-200">
+            <div className="flex items-center justify-between p-1 bg-gray-100 border border-gray-200">
               <span className="text-xs font-medium text-gray-700">{block.name}</span>
               <div className="flex items-center gap-1">
                 <Button
@@ -118,6 +140,7 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
                     size="sm"
                     onClick={() => onRemoveBlock(block.id)}
                     className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                    style={{ borderRadius: '0px' }}
                   >
                     <Trash2 className="w-3 h-3" />
                   </Button>
@@ -126,24 +149,25 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
             </div>
           )}
 
-          {/* Block Info Header */}
+          {/* Block Info Header - Format, Duration, Sets */}
           {(block.workout_format || block.workout_duration || (block.block_sets && block.block_sets > 1)) && (
-            <div className="mb-2 flex items-center gap-2">
+            <div className="flex items-center gap-2 p-1 border-b border-gray-200">
               {(block.workout_format || block.workout_duration) && (
-                <div className="inline-flex items-center gap-2 text-xs border border-[#cb8954] px-2 py-1">
+                <div className="inline-flex items-center gap-2 text-xs border border-[#cb8954] px-2 py-0.5">
                   {block.workout_format && <span className="text-[#cb8954]">{block.workout_format}</span>}
                   {block.workout_format && block.workout_duration && <span className="text-[#cb8954]">-</span>}
                   {block.workout_duration && <span className="text-[#cb8954]">{block.workout_duration}</span>}
                 </div>
               )}
               {block.block_sets && block.block_sets > 1 && (
-                <div className="inline-flex items-center text-xs border border-[#cb8954] px-2 py-1">
+                <div className="inline-flex items-center text-xs border border-[#cb8954] px-2 py-0.5">
                   <span className="text-[#cb8954] font-semibold">x{block.block_sets}</span>
                 </div>
               )}
             </div>
           )}
 
+          {/* Exercises */}
           <div className="space-y-0">
             {block.program_exercises
               ?.sort((a, b) => a.exercise_order - b.exercise_order)
@@ -151,15 +175,8 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
                 const remainingText = viewOnly ? '' : getRemainingText(exercise.id, exercise.sets);
                 const isComplete = viewOnly ? false : isExerciseComplete(exercise.id, exercise.sets);
 
-                console.log('🏋️ MultipleBlocks rendering exercise:', {
-                  exerciseName: exercise.exercises?.name,
-                  hasVideo: !!exercise.exercises?.video_url,
-                  videoUrl: exercise.exercises?.video_url,
-                  editMode: editMode
-                });
-
                 return (
-                  <div key={exercise.id} className="border border-gray-200">
+                  <div key={exercise.id} className="border border-gray-200 border-t-0 first:border-t">
                     {editMode ? (
                       <EditableExerciseRow
                         exercise={exercise}
@@ -182,7 +199,7 @@ export const MultipleBlocks: React.FC<MultipleBlocksProps> = ({
               })}
           </div>
 
-          {/* Exercise Selector για αυτό το block */}
+          {/* Exercise Selector Dialog */}
           <ExerciseSelector
             isOpen={exerciseSelectorOpen === block.id}
             onClose={() => setExerciseSelectorOpen(null)}
