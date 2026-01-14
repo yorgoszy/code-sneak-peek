@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
@@ -8,7 +8,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { EditableExerciseItem } from './EditableExerciseItem';
 import { ExerciseSelectionDialog } from '@/components/programs/builder/ExerciseSelectionDialog';
-import { supabase } from '@/integrations/supabase/client';
+import { useExercises } from '@/hooks/useExercises';
 
 interface EditableBlockProps {
   block: any;
@@ -28,15 +28,7 @@ export const EditableBlock: React.FC<EditableBlockProps> = ({
   isDragging = false
 }) => {
   const [showExerciseSelector, setShowExerciseSelector] = useState(false);
-  const [exercises, setExercises] = useState<any[]>([]);
-  
-  useEffect(() => {
-    const fetchExercises = async () => {
-      const { data } = await supabase.from('exercises').select('*').order('name');
-      setExercises(data || []);
-    };
-    fetchExercises();
-  }, []);
+  const { exercises } = useExercises();
   
   const {
     attributes,
