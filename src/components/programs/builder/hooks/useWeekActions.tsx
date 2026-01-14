@@ -62,9 +62,7 @@ export const useWeekActions = (
     // Fetch athlete warm up exercises
     let warmUpExercises: ProgramExercise[] = [];
     if (selectedUserId) {
-      console.log('🏋️ Fetching warm up exercises for athlete (addWeek):', selectedUserId);
       warmUpExercises = await createWarmUpExercisesFromAthleteData(selectedUserId);
-      console.log('🏋️ Found warm up exercises:', warmUpExercises.length);
     }
     
     // Δημιουργούμε 3 ημέρες με τα default blocks (κάθε μία με fresh warm up exercises)
