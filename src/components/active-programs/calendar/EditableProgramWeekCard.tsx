@@ -75,8 +75,8 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
       className="border border-gray-200 rounded-none flex flex-col h-full min-w-0"
     >
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-        {/* Sticky header + tabs container */}
-        <div className="sticky top-0 z-20 bg-white">
+        {/* Header + tabs container */}
+        <div className="z-20 bg-white">
           {/* Week Header */}
           <div className="bg-gray-50 px-2 sm:px-3 py-1.5 sm:py-2 border-b border-gray-200">
             <h3 className="font-semibold text-gray-900 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
