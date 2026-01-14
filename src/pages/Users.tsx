@@ -648,7 +648,7 @@ const Users = () => {
                             {/* User Info */}
                             <div className="flex items-center space-x-3 mb-3">
                               <Avatar className="w-10 h-10 flex-shrink-0">
-                                <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
+                                <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
                                 <AvatarFallback>
                                   {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                 </AvatarFallback>
@@ -804,7 +804,7 @@ const Users = () => {
                                   <TableCell className="font-medium">
                                     <div className="flex items-center space-x-3">
                                       <Avatar className="w-8 h-8">
-                                        <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
+                                        <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
                                         <AvatarFallback>
                                           {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                         </AvatarFallback>
@@ -878,7 +878,7 @@ const Users = () => {
                               {/* User Info */}
                               <div className="flex items-center space-x-3 mb-3">
                                 <Avatar className="w-10 h-10 flex-shrink-0">
-                                  <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
+                                  <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
                                   <AvatarFallback>
                                     {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                   </AvatarFallback>
@@ -987,7 +987,7 @@ const Users = () => {
                             <SelectItem key={coach.id} value={coach.id}>
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-5 h-5">
-                                  <AvatarImage src={coach.avatar_url || coach.photo_url} alt={coach.name} />
+                                  <AvatarImage src={coach.photo_url || coach.avatar_url} alt={coach.name} />
                                   <AvatarFallback className="text-[8px]">
                                     {coach.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                   </AvatarFallback>
@@ -1060,7 +1060,7 @@ const Users = () => {
                                   <TableCell className="font-medium">
                                     <div className="flex items-center space-x-3">
                                       <Avatar className="w-8 h-8">
-                                        <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
+                                        <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
                                         <AvatarFallback>
                                           {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                         </AvatarFallback>
@@ -1081,7 +1081,7 @@ const Users = () => {
                                         return (
                                           <div className="flex items-center gap-2">
                                             <Avatar className="w-6 h-6">
-                                              <AvatarImage src={coach.avatar_url || coach.photo_url} alt={coach.name} />
+                                              <AvatarImage src={coach.photo_url || coach.avatar_url} alt={coach.name} />
                                               <AvatarFallback className="text-[8px]">
                                                 {coach.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                               </AvatarFallback>
@@ -1141,7 +1141,7 @@ const Users = () => {
                               {/* User Info */}
                               <div className="flex items-center space-x-3 mb-3">
                                 <Avatar className="w-10 h-10 flex-shrink-0">
-                                  <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
+                                  <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
                                   <AvatarFallback>
                                     {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                   </AvatarFallback>
@@ -1159,7 +1159,7 @@ const Users = () => {
                                         return (
                                           <div className="flex items-center gap-1 px-2 py-1 text-xs rounded bg-[#00ffba]/10">
                                             <Avatar className="w-4 h-4">
-                                              <AvatarImage src={coach.avatar_url || coach.photo_url} alt={coach.name} />
+                                              <AvatarImage src={coach.photo_url || coach.avatar_url} alt={coach.name} />
                                               <AvatarFallback className="text-[6px]">
                                                 {coach.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                               </AvatarFallback>
@@ -1298,7 +1298,7 @@ const Users = () => {
                               <TableCell className="font-medium">
                                 <div className="flex items-center space-x-3">
                                   <Avatar className="w-8 h-8">
-                                    <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
+                                    <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
                                     <AvatarFallback>
                                       {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                     </AvatarFallback>
@@ -1358,7 +1358,7 @@ const Users = () => {
                           {/* User Info */}
                           <div className="flex items-center space-x-3 mb-3">
                             <Avatar className="w-10 h-10 flex-shrink-0">
-                              <AvatarImage src={user.avatar_url || user.photo_url} alt={user.name} />
+                              <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
                               <AvatarFallback>
                                 {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                               </AvatarFallback>
