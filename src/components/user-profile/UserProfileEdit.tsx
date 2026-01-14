@@ -250,7 +250,7 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
       <Card className="rounded-none">
         <CardContent className="pt-6">
           <div className="text-center text-gray-500">
-            Δεν έχετε δικαίωμα επεξεργασίας αυτού του προφίλ
+            {t('profile.noEditPermission')}
           </div>
         </CardContent>
       </Card>
@@ -285,7 +285,7 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
           </div>
           {uploading && (
             <div className="text-sm text-gray-500">
-              Ανέβασμα φωτογραφίας...
+              {t('profile.uploadingPhoto')}
             </div>
           )}
         </div>
@@ -293,57 +293,57 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
         {/* Form Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">Όνομα *</Label>
+            <Label htmlFor="firstName">{t('profile.firstName')} *</Label>
             <Input
               id="firstName"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Εισάγετε το όνομα"
+              placeholder={t('profile.enterFirstName')}
               className="rounded-none"
               disabled={loading}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="lastName">Επώνυμο</Label>
+            <Label htmlFor="lastName">{t('profile.lastName')}</Label>
             <Input
               id="lastName"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              placeholder="Εισάγετε το επώνυμο"
+              placeholder={t('profile.enterLastName')}
               className="rounded-none"
               disabled={loading}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{t('profile.email')} *</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Εισάγετε το email"
+              placeholder={t('profile.enterEmail')}
               className="rounded-none"
               disabled={loading}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Τηλέφωνο</Label>
+            <Label htmlFor="phone">{t('profile.phone')}</Label>
             <Input
               id="phone"
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="Εισάγετε το τηλέφωνο"
+              placeholder={t('profile.enterPhone')}
               className="rounded-none"
               disabled={loading}
             />
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="birthDate">Ημερομηνία Γέννησης</Label>
+            <Label htmlFor="birthDate">{t('profile.birthDate')}</Label>
             <Input
               id="birthDate"
               type="date"
@@ -362,44 +362,44 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <Lock className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Αλλαγή Κωδικού</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('profile.changePassword')}</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="currentPassword">Τρέχων Κωδικός *</Label>
+              <Label htmlFor="currentPassword">{t('profile.currentPassword')} *</Label>
               <Input
                 id="currentPassword"
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Εισάγετε τον τρέχοντα κωδικό"
+                placeholder={t('profile.enterCurrentPassword')}
                 className="rounded-none"
                 disabled={passwordLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="newPassword">Νέος Κωδικός *</Label>
+              <Label htmlFor="newPassword">{t('profile.newPassword')} *</Label>
               <Input
                 id="newPassword"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Εισάγετε νέο κωδικό"
+                placeholder={t('profile.enterNewPassword')}
                 className="rounded-none"
                 disabled={passwordLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Επιβεβαίωση Κωδικού *</Label>
+              <Label htmlFor="confirmPassword">{t('profile.confirmPassword')} *</Label>
               <Input
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Επιβεβαιώστε τον νέο κωδικό"
+                placeholder={t('profile.confirmNewPassword')}
                 className="rounded-none"
                 disabled={passwordLoading}
               />
@@ -413,7 +413,7 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
               className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
             >
               <Lock className="w-4 h-4 mr-2" />
-              {passwordLoading ? 'Αλλαγή...' : 'Αλλαγή Κωδικού'}
+              {passwordLoading ? t('profile.changing') : t('profile.changePassword')}
             </Button>
           </div>
         </div>
@@ -430,7 +430,7 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
             className="rounded-none"
           >
             <X className="w-4 h-4 mr-2" />
-            Επαναφορά
+            {t('profile.reset')}
           </Button>
           <Button
             onClick={handleSave}
@@ -438,7 +438,7 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
             className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
           >
             <Save className="w-4 h-4 mr-2" />
-            {loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
+            {loading ? t('profile.saving') : t('profile.save')}
           </Button>
         </div>
       </CardContent>

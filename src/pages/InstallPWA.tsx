@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Download, Smartphone, CheckCircle } from 'lucide-react';
 import { useIsPWA } from '@/hooks/useIsPWA';
+import { useTranslation } from 'react-i18next';
 
 export default function InstallPWA() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const isPWA = useIsPWA();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
@@ -40,15 +42,15 @@ export default function InstallPWA() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full p-8 text-center rounded-none">
           <CheckCircle className="w-16 h-16 mx-auto mb-4 text-[#00ffba]" />
-          <h1 className="text-2xl font-bold mb-2">Ήδη Εγκατεστημένο!</h1>
+          <h1 className="text-2xl font-bold mb-2">{t('install.alreadyInstalled')}</h1>
           <p className="text-gray-600 mb-6">
-            Η εφαρμογή HYPERKIDS είναι ήδη εγκατεστημένη στη συσκευή σου.
+            {t('install.alreadyInstalledDesc')}
           </p>
           <Button
             onClick={() => navigate('/dashboard')}
             className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
           >
-            Μετάβαση στο Dashboard
+            {t('install.goToDashboard')}
           </Button>
         </Card>
       </div>
@@ -60,9 +62,9 @@ export default function InstallPWA() {
       <Card className="max-w-md w-full p-8 rounded-none">
         <div className="text-center mb-6">
           <Smartphone className="w-16 h-16 mx-auto mb-4 text-[#00ffba]" />
-          <h1 className="text-2xl font-bold mb-2">Εγκατάσταση HYPERKIDS</h1>
+          <h1 className="text-2xl font-bold mb-2">{t('install.title')}</h1>
           <p className="text-gray-600">
-            Εγκατέστησε την εφαρμογή στη συσκευή σου για καλύτερη εμπειρία!
+            {t('install.subtitle')}
           </p>
         </div>
 
@@ -72,37 +74,37 @@ export default function InstallPWA() {
             className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none mb-4"
           >
             <Download className="w-4 h-4 mr-2" />
-            Εγκατάσταση Τώρα
+            {t('install.installNow')}
           </Button>
         ) : (
           <div className="space-y-4">
             <div className="bg-blue-50 border border-blue-200 rounded-none p-4">
-              <h3 className="font-semibold mb-2">📱 iOS (iPhone/iPad)</h3>
+              <h3 className="font-semibold mb-2">📱 {t('install.ios')}</h3>
               <ol className="text-sm space-y-1 text-gray-700">
-                <li>1. Άνοιξε το Safari</li>
-                <li>2. Πάτησε το κουμπί "Share" (μοιράζω)</li>
-                <li>3. Επίλεξε "Add to Home Screen"</li>
+                <li>{t('install.iosStep1')}</li>
+                <li>{t('install.iosStep2')}</li>
+                <li>{t('install.iosStep3')}</li>
               </ol>
             </div>
 
             <div className="bg-green-50 border border-green-200 rounded-none p-4">
-              <h3 className="font-semibold mb-2">📱 Android</h3>
+              <h3 className="font-semibold mb-2">📱 {t('install.android')}</h3>
               <ol className="text-sm space-y-1 text-gray-700">
-                <li>1. Άνοιξε το Chrome</li>
-                <li>2. Πάτησε το menu (3 τελείες)</li>
-                <li>3. Επίλεξε "Install app" ή "Add to Home Screen"</li>
+                <li>{t('install.androidStep1')}</li>
+                <li>{t('install.androidStep2')}</li>
+                <li>{t('install.androidStep3')}</li>
               </ol>
             </div>
           </div>
         )}
 
         <div className="mt-6 pt-6 border-t">
-          <h3 className="font-semibold mb-2">✨ Οφέλη της εγκατάστασης:</h3>
+          <h3 className="font-semibold mb-2">✨ {t('install.benefits')}</h3>
           <ul className="text-sm space-y-2 text-gray-700">
-            <li>✓ Πρόσβαση με ένα άγγιγμα από την αρχική οθόνη</li>
-            <li>✓ Πλήρης οθόνη χωρίς browser UI</li>
-            <li>✓ Offline λειτουργία</li>
-            <li>✓ Ταχύτερη φόρτωση</li>
+            <li>✓ {t('install.benefit1')}</li>
+            <li>✓ {t('install.benefit2')}</li>
+            <li>✓ {t('install.benefit3')}</li>
+            <li>✓ {t('install.benefit4')}</li>
           </ul>
         </div>
 
@@ -111,7 +113,7 @@ export default function InstallPWA() {
           variant="outline"
           className="w-full mt-6 rounded-none"
         >
-          Επιστροφή στην Αρχική
+          {t('install.backToHome')}
         </Button>
       </Card>
     </div>
