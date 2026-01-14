@@ -84,6 +84,9 @@ const Auth = () => {
     
     // Only redirect if not a recovery and user is authenticated
     if (!isRecovery && !loading && !roleLoading && isAuthenticated && userProfile) {
+      // Save language preference to localStorage before redirect
+      localStorage.setItem('preferredLanguage', language);
+      
       // Redirect based on role
       if (isCoach() && !isAdmin()) {
         console.log('🔐 Auth: Coach detected, redirecting to coach-overview');
@@ -93,7 +96,7 @@ const Auth = () => {
         navigate("/dashboard", { replace: true });
       }
     }
-  }, [isAuthenticated, loading, roleLoading, userProfile, isCoach, isAdmin, navigate]);
+  }, [isAuthenticated, loading, roleLoading, userProfile, isCoach, isAdmin, navigate, language]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
