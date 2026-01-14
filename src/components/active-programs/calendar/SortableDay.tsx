@@ -74,7 +74,7 @@ export const SortableDay: React.FC<SortableDayProps> = ({
           </div>
         )}
         <div className={`flex items-center gap-0.5 ${isEditing ? 'ml-3 text-xs' : ''} truncate`}>
-          {isDayCompleted && <CheckCircle className="w-2 h-2 text-[#00ffba] flex-shrink-0" />}
+          {isDayCompleted && !rpe && <CheckCircle className="w-2 h-2 text-[#00ffba] flex-shrink-0" />}
           {isDayCompleted && rpe && (
             <span className={`text-[9px] text-white px-1 py-0.5 rounded-none font-bold ${getRpeColor(rpe)} flex-shrink-0`}>
               RPE {rpe}
