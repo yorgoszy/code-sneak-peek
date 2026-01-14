@@ -61,7 +61,7 @@ export const SortableDay: React.FC<SortableDayProps> = ({
           ${isEditing ? 'h-6 text-xs px-1' : 'text-xs'}
           ${isTestDay ? 'bg-yellow-50 border-b-2 border-yellow-500' : ''}
           ${isCompetitionDay ? 'bg-purple-50 border-b-2 border-purple-500' : ''}
-          hover:bg-[#00ffba]/20 data-[state=active]:bg-[#00ffba]/30 data-[state=active]:border-b-2 data-[state=active]:border-[#00ffba]
+          hover:bg-gray-100 data-[state=active]:bg-gray-200 data-[state=active]:border-b-2 data-[state=active]:border-gray-400
         `}
         onDoubleClick={onDoubleClick}
       >
