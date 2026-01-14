@@ -229,7 +229,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
   // Ομαδοποίηση δεδομένων ανά περίοδο - χρησιμοποιούμε raw training types
   const groupedData = useMemo(() => {
-    const groups: Record<string, { trainingTypes: Record<string, number>; total: number }> = {};
+    const groups: Record<string, { trainingTypes: Record<string, number>; total: number; sortDate: Date }> = {};
 
     filteredStats.forEach(stat => {
       const date = parseISO(stat.scheduled_date);
@@ -247,7 +247,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       }
 
       if (!groups[periodKey]) {
-        groups[periodKey] = { trainingTypes: {}, total: 0 };
+        groups[periodKey] = { trainingTypes: {}, total: 0, sortDate: date };
+      }
+
+      // Keep track of the earliest date for this period (for sorting)
+      if (date < groups[periodKey].sortDate) {
+        groups[periodKey].sortDate = date;
       }
 
       // Merge training_type_breakdown and calculate total from breakdown
@@ -273,7 +278,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     const result = Object.entries(groups).map(([period, data]) => ({
       period,
       trainingTypes: data.trainingTypes,
-      total: data.total
+      total: data.total,
+      sortDate: data.sortDate
     }));
 
     // Sort by day order for day view
@@ -283,6 +289,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
         const indexB = dayOrder.indexOf(b.period);
         return indexA - indexB;
       });
+    } else if (timeFilter === 'week' && !activeTab) {
+      // Sort weeks chronologically: oldest on the left, newest on the right
+      result.sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime());
+    } else if (timeFilter === 'month' && !activeTab) {
+      // Sort months chronologically: oldest on the left, newest on the right
+      result.sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime());
     }
 
     return result;
