@@ -140,9 +140,11 @@ export const SubscriptionTypeManager: React.FC = () => {
     setLoading(true);
     try {
       console.log('🔄 Loading subscription types...');
+      // Only load subscription types without coach_id (admin/global types)
       const { data, error } = await supabase
         .from('subscription_types')
         .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase, allowed_sections, coach_shop_only')
+        .is('coach_id', null)
         .order('price');
 
       if (error) {
