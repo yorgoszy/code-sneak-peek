@@ -621,7 +621,8 @@ export const useWorkoutState = (
       // Clear block timer states
       clearBlockTimerStates();
       
-      toast.success(`Προπόνηση ολοκληρώθηκε για ${program.app_users?.name}! Διάρκεια: ${actualDurationMinutes} λεπτά`);
+      const durationText = actualDurationMinutes > 0 ? ` Διάρκεια: ${actualDurationMinutes} λεπτά` : '';
+      toast.success(`Προπόνηση ολοκληρώθηκε για ${program.app_users?.name}!${durationText}`);
       
       // Send RPE notification email if RPE was submitted
       if (rpeScore) {

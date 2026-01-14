@@ -151,20 +151,36 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
     // realtime updates (insert/update) so the chart updates immediately after workout completion
     const channel = supabase
-      .channel(`workout-stats-${userId}`)
+      .channel(`workout-stats-realtime-${userId}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'workout_stats',
           filter: `user_id=eq.${userId}`,
         },
-        () => {
+        (payload) => {
+          console.log('🔄 Realtime INSERT workout_stats:', payload);
           fetchWorkoutStats({ silent: true });
         }
       )
-      .subscribe();
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'workout_stats',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('🔄 Realtime UPDATE workout_stats:', payload);
+          fetchWorkoutStats({ silent: true });
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Realtime subscription status:', status);
+      });
 
     return () => {
       isMounted = false;
