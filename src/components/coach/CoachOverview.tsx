@@ -125,14 +125,10 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
         <CoachSubscriptionDaysCard coachId={coachId} />
       </div>
 
-      {/* Row 2: Today's Programs + Upcoming Tests */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Row 2: Today's Programs + Upcoming Tests + Upcoming Competitions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <TodaysProgramsCard coachId={coachId} />
         <AllUpcomingTestsCard coachId={coachId} />
-      </div>
-
-      {/* Row 3: Upcoming Competitions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <AllUpcomingCompetitionsCard coachId={coachId} />
       </div>
     </div>
