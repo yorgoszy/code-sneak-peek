@@ -237,10 +237,10 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
           />
 
           {/* Scrollable Content - Horizontal layout for weeks */}
-          <div className="flex-1 overflow-y-auto overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+          <div className="flex-1 overflow-y-auto overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0 pt-1">
             {/* Εβδομάδες - Side by Side Layout */}
             <div 
-              className="flex gap-3 md:gap-4 min-w-max pb-2"
+              className="flex gap-3 md:gap-4 min-w-max"
               style={{ 
                 display: 'flex',
                 flexDirection: 'row'

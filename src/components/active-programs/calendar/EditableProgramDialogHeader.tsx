@@ -27,7 +27,7 @@ export const EditableProgramDialogHeader: React.FC<EditableProgramDialogHeaderPr
   onClose
 }) => {
   return (
-    <div className="sticky top-0 bg-white z-10 border-b border-gray-200 pb-2 sm:pb-4">
+    <div className="sticky top-0 bg-white z-10 border-b border-gray-200 pb-2">
       <DialogHeader>
         <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <span className="text-base sm:text-lg truncate">{programData?.name}</span>
