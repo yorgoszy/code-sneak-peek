@@ -8,6 +8,7 @@ import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 import { BlockTimerProvider } from "@/contexts/BlockTimerContext";
 import { AIProgramBuilderProvider } from "@/contexts/AIProgramBuilderContext";
 import { ProgramClipboardProvider } from "@/contexts/ProgramClipboardContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { AIControlledProgramBuilderDialog } from "@/components/programs/builder/AIControlledProgramBuilderDialog";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RootRedirect } from "@/components/RootRedirect";
@@ -88,16 +89,17 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <Router>
-      <AnalyticsProvider>
-        <QueryClientProvider client={queryClient}>
-          <AIProgramBuilderProvider>
-            <ProgramClipboardProvider>
-              <BlockTimerProvider>
-                <div className="min-h-screen bg-gray-50">
-                  <Toaster />
-                  <AIControlledProgramBuilderDialog />
-                  <Suspense fallback={<CustomLoadingScreen />}>
-                    <Routes>
+      <AuthProvider>
+        <AnalyticsProvider>
+          <QueryClientProvider client={queryClient}>
+            <AIProgramBuilderProvider>
+              <ProgramClipboardProvider>
+                <BlockTimerProvider>
+                  <div className="min-h-screen bg-gray-50">
+                    <Toaster />
+                    <AIControlledProgramBuilderDialog />
+                    <Suspense fallback={<CustomLoadingScreen />}>
+                      <Routes>
                       {/* Public routes */}
                       <Route path="/" element={<RootRedirect />} />
                       <Route path="/auth" element={<Auth />} />
@@ -197,7 +199,8 @@ function App() {
           </AIProgramBuilderProvider>
         </QueryClientProvider>
       </AnalyticsProvider>
-    </Router>
+    </AuthProvider>
+  </Router>
   );
 }
 
