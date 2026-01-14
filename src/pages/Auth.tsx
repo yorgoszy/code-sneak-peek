@@ -127,17 +127,47 @@ const Auth = () => {
       console.log('📝 Supabase auth response:', { data, error });
 
       if (error) {
-        // Έλεγχος για ήδη εγγεγραμμένο email
-        if (error.message.includes('User already registered')) {
-          toast({
-            title: "Το email υπάρχει ήδη",
-            description: "Υπάρχει ήδη εγγεγραμμένος χρήστης με αυτό το email. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
+        console.error('📝 Signup error:', error.message, error.status);
+        
+        // Αναλυτικά μηνύματα σφάλματος
+        let errorTitle = "Σφάλμα εγγραφής";
+        let errorDescription = "Παρουσιάστηκε σφάλμα κατά την εγγραφή.";
+        
+        if (error.message.includes('User already registered') || 
+            error.message.includes('already been registered') ||
+            error.message.includes('already exists')) {
+          errorTitle = "Το email υπάρχει ήδη";
+          errorDescription = "Υπάρχει ήδη εγγεγραμμένος χρήστης με αυτό το email. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.";
+        } else if (error.message.includes('Password should be at least') || 
+                   error.message.includes('password') ||
+                   error.message.includes('weak')) {
+          errorTitle = "Αδύναμος κωδικός";
+          errorDescription = "Ο κωδικός πρόσβασης είναι πολύ αδύναμος. Χρησιμοποιήστε τουλάχιστον 8 χαρακτήρες με κεφαλαία, πεζά, αριθμούς και ειδικούς χαρακτήρες.";
+        } else if (error.message.includes('Invalid email') || 
+                   error.message.includes('valid email')) {
+          errorTitle = "Μη έγκυρο email";
+          errorDescription = "Παρακαλώ εισάγετε μια έγκυρη διεύθυνση email.";
+        } else if (error.message.includes('rate limit') || 
+                   error.message.includes('too many requests') ||
+                   error.message.includes('Too many')) {
+          errorTitle = "Πολλές προσπάθειες";
+          errorDescription = "Έχετε κάνει πολλές προσπάθειες εγγραφής. Δοκιμάστε ξανά σε λίγα λεπτά.";
+        } else if (error.message.includes('network') || 
+                   error.message.includes('connection')) {
+          errorTitle = "Πρόβλημα σύνδεσης";
+          errorDescription = "Δεν ήταν δυνατή η σύνδεση με τον server. Ελέγξτε τη σύνδεσή σας στο διαδίκτυο.";
+        } else {
+          // Γενικό σφάλμα με το πραγματικό μήνυμα
+          errorDescription = error.message || "Παρουσιάστηκε σφάλμα κατά την εγγραφή. Δοκιμάστε ξανά.";
         }
-        throw error;
+        
+        toast({
+          title: errorTitle,
+          description: errorDescription,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
       }
 
       if (data.user) {
