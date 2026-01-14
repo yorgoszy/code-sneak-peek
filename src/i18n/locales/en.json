@@ -124,7 +124,14 @@
     "editProgram": "Edit Program",
     "viewProgram": "View Program",
     "startWorkout": "Start Workout",
-    "delete": "Delete"
+    "delete": "Delete",
+    "trainingCalendar": "Training Calendar",
+    "trainingTypesAnalysis": "Training Types Analysis",
+    "total": "Total",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "noCompletedWorkouts": "No completed workouts"
   },
   "progress": {
     "selectExercises": "Select Exercises",

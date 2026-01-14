@@ -260,7 +260,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
           <CardTitle className="flex items-center justify-between text-sm md:text-base">
             <div className="flex items-center gap-2 whitespace-nowrap">
               <CalendarDays className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-              <span>Ημερολόγιο Προπονήσεων</span>
+              <span>{t('programs.trainingCalendar')}</span>
             </div>
             {(() => {
               const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
