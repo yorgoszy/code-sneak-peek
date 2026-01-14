@@ -224,7 +224,7 @@ export const UserProfileSidebar = forwardRef<
     },
     {
       icon: Utensils,
-      label: "Διατροφή",
+      label: t('sidebar.nutrition'),
       key: "nutrition",
       badge: null,
       visible: true
