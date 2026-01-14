@@ -211,6 +211,69 @@ export const useWorkoutState = (
     return null;
   };
 
+  // Helper function to parse time-based reps (e.g., "0:20" = 20 seconds, "1:30" = 90 seconds)
+  const parseTimeReps = (reps: string): { isTime: boolean; seconds: number; count: number } => {
+    if (!reps) return { isTime: false, seconds: 0, count: 0 };
+    
+    const repsStr = String(reps).trim();
+    
+    // Check if it's a time format (contains ":")
+    if (repsStr.includes(':')) {
+      const parts = repsStr.split(':');
+      if (parts.length === 2) {
+        const minutes = parseInt(parts[0]) || 0;
+        const seconds = parseInt(parts[1]) || 0;
+        return { isTime: true, seconds: minutes * 60 + seconds, count: 0 };
+      }
+    }
+    
+    // Regular number reps
+    return { isTime: false, seconds: 0, count: parseInt(repsStr) || 1 };
+  };
+
+  // Helper function to parse rest time (e.g., "0:40" = 40 seconds, "1:00" = 60 seconds)
+  const parseRestTime = (rest: string): number => {
+    if (!rest) return 0;
+    
+    const restStr = String(rest).trim();
+    
+    // Check if it's a time format (contains ":")
+    if (restStr.includes(':')) {
+      const parts = restStr.split(':');
+      if (parts.length === 2) {
+        const minutes = parseInt(parts[0]) || 0;
+        const seconds = parseInt(parts[1]) || 0;
+        return minutes * 60 + seconds;
+      }
+    }
+    
+    // Check for "s" suffix (e.g., "60s")
+    if (restStr.toLowerCase().endsWith('s')) {
+      return parseInt(restStr) || 0;
+    }
+    
+    // Just a number - assume seconds
+    return parseInt(restStr) || 0;
+  };
+
+  // Helper function to parse workout_duration (e.g., "15:00" = 15 minutes)
+  const parseWorkoutDuration = (duration: string): number => {
+    if (!duration) return 0;
+    
+    const durationStr = String(duration).trim();
+    
+    if (durationStr.includes(':')) {
+      const parts = durationStr.split(':');
+      if (parts.length === 2) {
+        const minutes = parseInt(parts[0]) || 0;
+        const seconds = parseInt(parts[1]) || 0;
+        return minutes + seconds / 60;
+      }
+    }
+    
+    return parseFloat(durationStr) || 0;
+  };
+
   // Helper function to calculate exercise duration in minutes
   const calculateExerciseDurationMinutes = (exercise: any): number => {
     const sets = parseInt(exercise.sets) || 1;
@@ -249,18 +312,46 @@ export const useWorkoutState = (
   }, [program, selectedDate]);
 
   // Helper function to calculate exercise duration using actual values if available
-  const calculateExerciseDurationWithActuals = (exercise: any, actualData: any): number => {
+  const calculateExerciseDurationWithActuals = (exercise: any, actualData: any, block: any): number => {
     const sets = parseInt(exercise.sets) || 1;
-    // Use actual reps if available, otherwise use planned reps
-    const reps = actualData?.reps ? parseInt(actualData.reps) : (parseInt(exercise.reps) || 1);
-    const tempo = exercise.tempo || '2.1.2';
-
-    const tempoPhases = tempo.split('.').map((phase: string) => parseInt(phase) || 2);
-    const tempoSeconds = tempoPhases.reduce((sum: number, phase: number) => sum + phase, 0);
+    const blockSets = parseInt(block?.block_sets) || 1;
     
-    // (sets * reps * tempo) - χωρίς διάλειμμα
-    const totalSeconds = sets * reps * tempoSeconds;
-    return totalSeconds / 60; // minutes
+    // Check for workout_format: non_stop with workout_duration
+    const workoutFormat = block?.workout_format?.toLowerCase();
+    if (workoutFormat === 'non_stop' || workoutFormat === 'non-stop') {
+      const workoutDurationMinutes = parseWorkoutDuration(block?.workout_duration);
+      if (workoutDurationMinutes > 0) {
+        return workoutDurationMinutes * blockSets;
+      }
+    }
+    
+    // Use actual reps if available, otherwise use planned reps
+    const repsValue = actualData?.reps || exercise.reps || '1';
+    const parsedReps = parseTimeReps(repsValue);
+    const restSeconds = parseRestTime(exercise.rest);
+    
+    let exerciseDurationSeconds: number;
+    
+    if (parsedReps.isTime) {
+      // Time-based exercise: sets * time + (sets-1) * rest
+      exerciseDurationSeconds = (sets * parsedReps.seconds) + ((sets - 1) * restSeconds);
+    } else {
+      // Rep-based exercise: sets * reps * tempo
+      const tempo = exercise.tempo || '';
+      let tempoSeconds = 3; // default
+      
+      if (tempo && tempo.includes('.')) {
+        const tempoPhases = tempo.split('.').map((phase: string) => parseInt(phase) || 0);
+        tempoSeconds = tempoPhases.reduce((sum: number, phase: number) => sum + phase, 0);
+      }
+      
+      if (tempoSeconds === 0) tempoSeconds = 3; // fallback
+      
+      exerciseDurationSeconds = (sets * parsedReps.count * tempoSeconds) + ((sets - 1) * restSeconds);
+    }
+    
+    // Multiply by block_sets
+    return (exerciseDurationSeconds / 60) * blockSets;
   };
 
   // Helper function to calculate workout stats for the CURRENT DAY ONLY
@@ -281,17 +372,57 @@ export const useWorkoutState = (
     dayProgram.program_blocks?.forEach((block: any) => {
       const trainingType = block.training_type?.toLowerCase().trim() || null;
       const weights = mapTrainingType(trainingType);
+      const blockSets = parseInt(block.block_sets) || 1;
       
-      console.log(`  Block: ${block.name}, training_type: ${trainingType}, weights:`, weights);
+      console.log(`  Block: ${block.name}, training_type: ${trainingType}, block_sets: ${blockSets}, workout_format: ${block.workout_format}, workout_duration: ${block.workout_duration}, weights:`, weights);
       
+      // Check for non_stop format with workout_duration
+      const workoutFormat = block.workout_format?.toLowerCase();
+      if ((workoutFormat === 'non_stop' || workoutFormat === 'non-stop') && block.workout_duration) {
+        const workoutDurationMinutes = parseWorkoutDuration(block.workout_duration);
+        const totalBlockDuration = workoutDurationMinutes * blockSets;
+        
+        console.log(`    Non-stop block duration: ${workoutDurationMinutes} min × ${blockSets} = ${totalBlockDuration} min`);
+        
+        // Add to stats if it's a tracked category
+        if (weights) {
+          stats.strength += totalBlockDuration * weights.strength;
+          stats.endurance += totalBlockDuration * weights.endurance;
+          stats.power += totalBlockDuration * weights.power;
+          stats.speed += totalBlockDuration * weights.speed;
+          stats.hypertrophy += totalBlockDuration * weights.hypertrophy;
+          stats.accessory += totalBlockDuration * weights.accessory;
+        }
+        
+        // Add to training type breakdown
+        if (trainingType) {
+          trainingTypeBreakdown[trainingType] = (trainingTypeBreakdown[trainingType] || 0) + totalBlockDuration;
+        }
+        
+        // Still calculate volume for exercises in the block
+        block.program_exercises?.forEach((exercise: any) => {
+          const actualData = exerciseData[exercise.id];
+          const sets = parseInt(exercise.sets) || 0;
+          const repsValue = actualData?.reps || exercise.reps || '0';
+          const parsedReps = parseTimeReps(repsValue);
+          const reps = parsedReps.isTime ? 0 : parsedReps.count; // Don't count volume for time-based
+          const kg = actualData?.kg ? parseFloat(actualData.kg) : (parseFloat(exercise.kg) || 0);
+          const volume = sets * reps * kg * blockSets;
+          stats.totalVolume += volume;
+        });
+        
+        return; // Skip per-exercise duration calculation for this block
+      }
+      
+      // Regular block - calculate duration per exercise
       let blockDuration = 0;
       
       block.program_exercises?.forEach((exercise: any) => {
         // Get actual values for this exercise if available
         const actualData = exerciseData[exercise.id];
         
-        // Calculate duration using actual reps if available
-        const duration = calculateExerciseDurationWithActuals(exercise, actualData);
+        // Calculate duration using actual reps if available, passing block for block_sets
+        const duration = calculateExerciseDurationWithActuals(exercise, actualData, block);
         blockDuration += duration;
         
         // Only add to stats if it's a tracked category
@@ -307,12 +438,14 @@ export const useWorkoutState = (
 
         // Calculate volume: sets * reps * kg - using actual values if available
         const sets = parseInt(exercise.sets) || 0;
-        const reps = actualData?.reps ? parseInt(actualData.reps) : (parseInt(exercise.reps) || 0);
+        const repsValue = actualData?.reps || exercise.reps || '0';
+        const parsedReps = parseTimeReps(repsValue);
+        const reps = parsedReps.isTime ? 0 : parsedReps.count; // Don't count volume for time-based
         const kg = actualData?.kg ? parseFloat(actualData.kg) : (parseFloat(exercise.kg) || 0);
-        const volume = sets * reps * kg;
+        const volume = sets * reps * kg * blockSets;
         stats.totalVolume += volume;
         
-        console.log(`    Volume calc: ${sets} sets × ${reps} reps × ${kg} kg = ${volume} kg`);
+        console.log(`    Volume calc: ${sets} sets × ${reps} reps × ${kg} kg × ${blockSets} block_sets = ${volume} kg`);
       });
       
       // Add ALL training types to breakdown (not just tracked ones)
