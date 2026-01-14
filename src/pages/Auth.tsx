@@ -25,6 +25,7 @@ const Auth = () => {
     | { variant: "default" | "destructive"; title: string; description?: string }
     | null
   >(null);
+  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
@@ -478,28 +479,19 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-[hsl(var(--auth-black))] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8 flex items-center justify-center gap-4">
+        <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center justify-center">
             <img src="/assets/hyperkids-auth-logo.png" alt="HYPERKIDS" className="h-16" />
           </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleLanguage}
-            className="text-[hsl(var(--auth-gray))] hover:bg-[hsl(var(--auth-gray)/0.1)]"
-            title={language === 'el' ? 'Switch to English' : 'Αλλαγή σε Ελληνικά'}
-          >
-            <Globe className="h-5 w-5" />
-          </Button>
         </div>
 
         <Card className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))]">
           <CardHeader>
             <CardTitle className="text-center text-[hsl(var(--auth-gray))]">
-              {showForgotPassword ? t.authResetPassword : t.authLoginTitle}
+              {showForgotPassword ? t.authResetPassword : (activeTab === 'signup' ? t.authSignupTitle : t.authLoginTitle)}
             </CardTitle>
             <CardDescription className="text-center text-[hsl(var(--auth-gray))]">
-              {showForgotPassword ? t.authResetPasswordSubtitle : t.authLoginSubtitle}
+              {showForgotPassword ? t.authResetPasswordSubtitle : (activeTab === 'signup' ? t.authSignupSubtitle : t.authLoginSubtitle)}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -533,7 +525,7 @@ const Auth = () => {
                 </Button>
               </form>
             ) : (
-              <Tabs defaultValue="login" className="w-full">
+              <Tabs defaultValue="login" value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 bg-[hsl(var(--auth-black))] border border-[hsl(var(--auth-gray))]">
                   <TabsTrigger value="login" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black">{t.authLogin}</TabsTrigger>
                   <TabsTrigger value="signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black">{t.authSignup}</TabsTrigger>
