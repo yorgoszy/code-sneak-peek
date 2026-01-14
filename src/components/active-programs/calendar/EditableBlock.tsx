@@ -17,6 +17,7 @@ interface EditableBlockProps {
   onRemoveExercise: (exerciseId: string) => void;
   onUpdateExercise: (exerciseId: string, field: string, value: any) => void;
   isDragging?: boolean;
+  coachId?: string;
 }
 
 export const EditableBlock: React.FC<EditableBlockProps> = ({
@@ -25,7 +26,8 @@ export const EditableBlock: React.FC<EditableBlockProps> = ({
   onRemoveBlock,
   onRemoveExercise,
   onUpdateExercise,
-  isDragging = false
+  isDragging = false,
+  coachId
 }) => {
   const [showExerciseSelector, setShowExerciseSelector] = useState(false);
   const { exercises } = useExercises();
@@ -142,6 +144,7 @@ export const EditableBlock: React.FC<EditableBlockProps> = ({
         onOpenChange={setShowExerciseSelector}
         exercises={exercises}
         onSelectExercise={handleAddExercise}
+        coachId={coachId}
       />
     </div>
   );
