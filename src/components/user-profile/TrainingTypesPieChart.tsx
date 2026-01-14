@@ -3,11 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Button } from "@/components/ui/button";
 import { format, startOfWeek, startOfMonth, parseISO, endOfWeek, addWeeks, subWeeks, addMonths, subMonths, endOfMonth, startOfYear, endOfYear, isWithinInterval } from "date-fns";
-import { el } from "date-fns/locale";
+import { el, enUS, ar } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useTranslation } from 'react-i18next';
+
+const getDateLocale = (lang: string) => {
+  switch (lang) {
+    case 'el': return el;
+    case 'ar': return ar;
+    default: return enUS;
+  }
+};
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -85,7 +93,8 @@ const parseBreakdown = (data: any): Record<string, number> | null => {
 };
 
 export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId, hideTimeTabs = false, activeTab }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const [workoutStats, setWorkoutStats] = useState<WorkoutStat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
@@ -141,8 +150,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     if (workoutStats.length === 0) return [];
 
     const today = new Date();
-    const weekStart = startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 });
-    const weekEnd = endOfWeek(currentWeek, { locale: el, weekStartsOn: 1 });
+    const weekStart = startOfWeek(currentWeek, { locale: dateLocale, weekStartsOn: 1 });
+    const weekEnd = endOfWeek(currentWeek, { locale: dateLocale, weekStartsOn: 1 });
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
 
@@ -153,8 +162,8 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       filterStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       filterEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
     } else if (activeTab === 'week') {
-      filterStart = startOfWeek(today, { locale: el, weekStartsOn: 1 });
-      filterEnd = endOfWeek(today, { locale: el, weekStartsOn: 1 });
+      filterStart = startOfWeek(today, { locale: dateLocale, weekStartsOn: 1 });
+      filterEnd = endOfWeek(today, { locale: dateLocale, weekStartsOn: 1 });
     } else if (activeTab === 'month') {
       filterStart = startOfMonth(today);
       filterEnd = endOfMonth(today);
@@ -173,7 +182,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       const date = parseISO(stat.scheduled_date);
       return isWithinInterval(date, { start: filterStart, end: filterEnd });
     });
-  }, [workoutStats, timeFilter, currentWeek, currentMonth, currentYear, activeTab]);
+  }, [workoutStats, timeFilter, currentWeek, currentMonth, currentYear, activeTab, dateLocale]);
 
   // Ομαδοποίηση δεδομένων ανά περίοδο - χρησιμοποιούμε raw training types
   const groupedData = useMemo(() => {
@@ -186,12 +195,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       if (activeTab) {
         periodKey = 'all';
       } else if (timeFilter === 'day') {
-        periodKey = format(date, 'EEEE', { locale: el });
+        periodKey = format(date, 'EEEE', { locale: dateLocale });
       } else if (timeFilter === 'week') {
-        const weekStart = startOfWeek(date, { locale: el, weekStartsOn: 1 });
-        periodKey = `Εβδ ${format(weekStart, 'dd/MM', { locale: el })}`;
+        const weekStart = startOfWeek(date, { locale: dateLocale, weekStartsOn: 1 });
+        periodKey = `${t('programs.weekShort', 'Wk')} ${format(weekStart, 'dd/MM', { locale: dateLocale })}`;
       } else {
-        periodKey = format(date, 'MMM yyyy', { locale: el });
+        periodKey = format(date, 'MMM yyyy', { locale: dateLocale });
       }
 
       if (!groups[periodKey]) {
@@ -210,7 +219,13 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
       }
     });
 
-    const dayOrder = ['Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο', 'Κυριακή'];
+    // Create day order dynamically based on locale
+    const mondayDate = new Date(2024, 0, 1); // A known Monday
+    const dayOrder = Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(mondayDate);
+      day.setDate(mondayDate.getDate() + i);
+      return format(day, 'EEEE', { locale: dateLocale });
+    });
     
     const result = Object.entries(groups).map(([period, data]) => ({
       period,
@@ -228,7 +243,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     }
 
     return result;
-  }, [filteredStats, timeFilter, activeTab]);
+  }, [filteredStats, timeFilter, activeTab, dateLocale, t]);
 
   // Αρχικοποίηση επιλεγμένης ημέρας
   useEffect(() => {
@@ -357,12 +372,12 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                 <ChevronLeft className="h-3 w-3" />
               </Button>
               <div className={`text-[10px] md:text-sm font-medium ${
-                format(startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'yyyy-MM-dd') === 
-                format(startOfWeek(new Date(), { locale: el, weekStartsOn: 1 }), 'yyyy-MM-dd')
+                format(startOfWeek(currentWeek, { locale: dateLocale, weekStartsOn: 1 }), 'yyyy-MM-dd') === 
+                format(startOfWeek(new Date(), { locale: dateLocale, weekStartsOn: 1 }), 'yyyy-MM-dd')
                   ? 'text-[#cb8954]' 
                   : ''
               }`}>
-                {format(startOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'dd MMM', { locale: el })} - {format(endOfWeek(currentWeek, { locale: el, weekStartsOn: 1 }), 'dd MMM yyyy', { locale: el })}
+                {format(startOfWeek(currentWeek, { locale: dateLocale, weekStartsOn: 1 }), 'dd MMM', { locale: dateLocale })} - {format(endOfWeek(currentWeek, { locale: dateLocale, weekStartsOn: 1 }), 'dd MMM yyyy', { locale: dateLocale })}
               </div>
               <Button
                 variant="outline"
@@ -390,7 +405,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
               <div className={`text-[10px] md:text-sm font-medium ${
                 format(currentMonth, 'yyyy-MM') === format(new Date(), 'yyyy-MM') ? 'text-[#cb8954]' : ''
               }`}>
-                {format(currentMonth, 'MMMM yyyy', { locale: el })}
+                {format(currentMonth, 'MMMM yyyy', { locale: dateLocale })}
               </div>
               <Button
                 variant="outline"
