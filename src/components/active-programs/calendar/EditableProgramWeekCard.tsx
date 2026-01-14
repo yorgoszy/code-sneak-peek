@@ -6,6 +6,7 @@ import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { EditableProgramDayTab } from './EditableProgramDayTab';
 import { SortableDay } from './SortableDay';
+import { useTranslation } from 'react-i18next';
 
 interface EditableProgramWeekCardProps {
   week: any;
@@ -50,6 +51,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
   onUpdateBlockSets,
   getDayLabel
 }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("0");
   const isCompleted = isWeekCompleted(week.week_number, week.program_days?.length || 0);
 
@@ -79,7 +81,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
           <div className="bg-gray-50 px-2 sm:px-3 py-1.5 sm:py-2 border-b border-gray-200">
             <h3 className="font-semibold text-gray-900 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
               {isCompleted && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ffba] flex-shrink-0" />}
-              <span className="truncate">{week.name || `Εβδομάδα ${week.week_number}`}</span>
+              <span className="truncate">{week.name || `${t('programs.weekShort', 'Wk')} ${week.week_number}`}</span>
             </h3>
           </div>
           
@@ -94,7 +96,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
                   {week.program_days?.map((day: any, dayIndex: number) => {
                     const isDayCompleted = isWorkoutCompleted(week.week_number, day.day_number);
                     const rpe = getDayRpe ? getDayRpe(week.week_number, day.day_number) : null;
-                    const label = getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`);
+                    const label = getDayLabel ? getDayLabel(week, day) : (day.name || `${t('programs.dayShort', 'Day')} ${day.day_number}`);
                     
                     return (
                       <SortableDay
@@ -118,7 +120,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
               {week.program_days?.map((day: any, dayIndex: number) => {
                 const isDayCompleted = isWorkoutCompleted(week.week_number, day.day_number);
                 const rpe = getDayRpe ? getDayRpe(week.week_number, day.day_number) : null;
-                const label = getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`);
+                const label = getDayLabel ? getDayLabel(week, day) : (day.name || `${t('programs.dayShort', 'Day')} ${day.day_number}`);
                 
                 return (
                   <SortableDay
@@ -158,7 +160,7 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
               onUpdateBlockFormat={onUpdateBlockFormat}
               onUpdateBlockDuration={onUpdateBlockDuration}
               onUpdateBlockSets={onUpdateBlockSets}
-              displayName={getDayLabel ? getDayLabel(week, day) : (day.name || `Ημέρα ${day.day_number}`)}
+              displayName={getDayLabel ? getDayLabel(week, day) : (day.name || `${t('programs.dayShort', 'Day')} ${day.day_number}`)}
             />
           ))}
         </div>

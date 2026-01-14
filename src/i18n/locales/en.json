@@ -132,7 +132,8 @@
     "monthly": "Monthly",
     "yearly": "Yearly",
     "noCompletedWorkouts": "No completed workouts",
-    "weekShort": "Wk"
+    "weekShort": "Wk",
+    "dayShort": "Day"
   },
   "progress": {
     "selectExercises": "Select Exercises",

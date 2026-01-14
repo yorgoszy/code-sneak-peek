@@ -132,7 +132,8 @@
     "monthly": "شهري",
     "yearly": "سنوي",
     "noCompletedWorkouts": "لا توجد تمارين مكتملة",
-    "weekShort": "أسب"
+    "weekShort": "أسب",
+    "dayShort": "يوم"
   },
   "progress": {
     "selectExercises": "اختر التمارين",
