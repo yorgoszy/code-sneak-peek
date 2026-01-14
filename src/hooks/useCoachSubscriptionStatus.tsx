@@ -7,16 +7,41 @@ interface CoachSubscriptionStatus {
   isLoading: boolean;
 }
 
+type CachedStatus = {
+  isActive: boolean;
+  subscriptionEndDate: string | null;
+  updatedAt: number;
+};
+
+// Simple in-memory cache to avoid sidebar "lock/unlock" flicker on navigation.
+// (Persists for the lifetime of the tab.)
+const coachStatusCache = new Map<string, CachedStatus>();
+
+const computeIsActive = (isActiveFlag?: boolean | null, endDate?: string | null) => {
+  const isSubscriptionActive = isActiveFlag === true;
+  if (!endDate) return isSubscriptionActive;
+  return isSubscriptionActive && new Date(endDate) > new Date();
+};
+
 export const useCoachSubscriptionStatus = (coachId?: string): CoachSubscriptionStatus => {
-  const [isActive, setIsActive] = useState(false);
-  const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const cached = coachId ? coachStatusCache.get(coachId) : undefined;
+
+  // Start from cache (if available) so the sidebar doesn't disable items while we refetch.
+  const [isActive, setIsActive] = useState<boolean>(cached?.isActive ?? false);
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(
+    cached?.subscriptionEndDate ?? null
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(coachId ? !cached : false);
 
   const fetchStatus = useCallback(async () => {
     if (!coachId) {
       setIsLoading(false);
       return;
     }
+
+    // If we already have cached data, keep isLoading false to prevent UI flicker.
+    const hasCache = coachStatusCache.has(coachId);
+    if (!hasCache) setIsLoading(true);
 
     try {
       const { data, error } = await supabase
@@ -27,27 +52,46 @@ export const useCoachSubscriptionStatus = (coachId?: string): CoachSubscriptionS
 
       if (error) {
         console.error('Error fetching coach subscription status:', error);
-        setIsActive(false);
-        setSubscriptionEndDate(null);
-      } else {
-        // Check if subscription is still active (not expired)
-        const isSubscriptionActive = data?.is_active === true;
-        const endDate = data?.subscription_end_date;
-        
-        // If there's an end date, check if it's in the future
-        if (endDate) {
-          const isNotExpired = new Date(endDate) > new Date();
-          setIsActive(isSubscriptionActive && isNotExpired);
-        } else {
-          setIsActive(isSubscriptionActive);
-        }
-        
-        setSubscriptionEndDate(endDate);
+        const next: CachedStatus = { isActive: false, subscriptionEndDate: null, updatedAt: Date.now() };
+        coachStatusCache.set(coachId, next);
+        setIsActive(next.isActive);
+        setSubscriptionEndDate(next.subscriptionEndDate);
+        return;
       }
+
+      const endDate = data?.subscription_end_date ?? null;
+      const nextIsActive = computeIsActive(data?.is_active, endDate);
+
+      const next: CachedStatus = {
+        isActive: nextIsActive,
+        subscriptionEndDate: endDate,
+        updatedAt: Date.now(),
+      };
+
+      coachStatusCache.set(coachId, next);
+      setIsActive(next.isActive);
+      setSubscriptionEndDate(next.subscriptionEndDate);
     } catch (error) {
       console.error('Error in fetchStatus:', error);
-      setIsActive(false);
+      if (coachId) {
+        const next: CachedStatus = { isActive: false, subscriptionEndDate: null, updatedAt: Date.now() };
+        coachStatusCache.set(coachId, next);
+        setIsActive(next.isActive);
+        setSubscriptionEndDate(next.subscriptionEndDate);
+      }
     } finally {
+      setIsLoading(false);
+    }
+  }, [coachId]);
+
+  // When coachId changes, hydrate immediately from cache (if present)
+  useEffect(() => {
+    if (!coachId) return;
+
+    const nextCached = coachStatusCache.get(coachId);
+    if (nextCached) {
+      setIsActive(nextCached.isActive);
+      setSubscriptionEndDate(nextCached.subscriptionEndDate);
       setIsLoading(false);
     }
   }, [coachId]);
@@ -58,3 +102,4 @@ export const useCoachSubscriptionStatus = (coachId?: string): CoachSubscriptionS
 
   return { isActive, subscriptionEndDate, isLoading };
 };
+
