@@ -386,7 +386,39 @@ serve(async (req) => {
         // Δεν σταματάμε τη διαδικασία αν το videocall package αποτύχει
         logStep("Warning: Failed to create videocall package", videocallPackageError);
       } else {
-        logStep("Videocall package created successfully", savedVideocallPackage);
+      logStep("Videocall package created successfully", savedVideocallPackage);
+      }
+    }
+
+    // Check if this is a coach_shop_only subscription (like HYPERsync) and activate coach profile
+    if (subscriptionType.coach_shop_only) {
+      logStep("Processing coach subscription activation for coach_shop_only product");
+      
+      // Check if user is a coach
+      if (appUser.role === 'coach') {
+        const subscriptionEndDate = savedSubscription?.end_date 
+          ? new Date(savedSubscription.end_date) 
+          : new Date(new Date().setMonth(new Date().getMonth() + (subscriptionType.duration_months || 12)));
+        
+        // Update coach_profiles to set is_active = true
+        const { error: coachProfileError } = await supabaseClient
+          .from('coach_profiles')
+          .update({
+            is_active: true,
+            subscription_end_date: subscriptionEndDate.toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('coach_id', appUser.id);
+
+        if (coachProfileError) {
+          logStep("Coach profile activation error", coachProfileError);
+          // Don't throw, just log - the payment was still successful
+        } else {
+          logStep("Coach profile activated successfully", { 
+            coach_id: appUser.id,
+            subscription_end_date: subscriptionEndDate.toISOString()
+          });
+        }
       }
     }
 

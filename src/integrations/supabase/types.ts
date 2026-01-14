@@ -1535,11 +1535,13 @@ export type Database = {
           coach_id: string
           created_at: string | null
           id: string
+          is_active: boolean | null
           logo_url: string | null
           notes: string | null
           phone: string | null
           postal_code: string | null
           services: string | null
+          subscription_end_date: string | null
           tax_office: string | null
           updated_at: string | null
           vat_number: string | null
@@ -1554,11 +1556,13 @@ export type Database = {
           coach_id: string
           created_at?: string | null
           id?: string
+          is_active?: boolean | null
           logo_url?: string | null
           notes?: string | null
           phone?: string | null
           postal_code?: string | null
           services?: string | null
+          subscription_end_date?: string | null
           tax_office?: string | null
           updated_at?: string | null
           vat_number?: string | null
@@ -1573,11 +1577,13 @@ export type Database = {
           coach_id?: string
           created_at?: string | null
           id?: string
+          is_active?: boolean | null
           logo_url?: string | null
           notes?: string | null
           phone?: string | null
           postal_code?: string | null
           services?: string | null
+          subscription_end_date?: string | null
           tax_office?: string | null
           updated_at?: string | null
           vat_number?: string | null
