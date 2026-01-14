@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { EnhancedProgressBar } from './EnhancedProgressBar';
+import { Trophy, FileSearch } from "lucide-react";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCardProgressProps {
@@ -60,12 +61,16 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
 
   return (
     <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
-      {/* Test/Competition Day Indicators - Κίτρινη γραμμή για ΤΕΣΤ, Μοβ για ΑΓΩΝΕΣ */}
+      {/* Test/Competition Day Indicators - Icons instead of lines */}
       {hasTestDays && (
-        <div className="w-4 h-2 bg-yellow-500" title="Περιέχει τεστ" />
+        <span title="Περιέχει τεστ">
+          <FileSearch className="w-4 h-4 text-yellow-500" />
+        </span>
       )}
       {hasCompetitionDays && (
-        <div className="w-4 h-2 bg-purple-600" title="Περιέχει αγώνα" />
+        <span title="Περιέχει αγώνα">
+          <Trophy className="w-4 h-4 text-purple-600" />
+        </span>
       )}
       
       {/* Training Days with Duration */}

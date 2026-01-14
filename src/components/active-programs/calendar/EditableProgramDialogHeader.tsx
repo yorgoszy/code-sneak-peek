@@ -68,7 +68,7 @@ export const EditableProgramDialogHeader: React.FC<EditableProgramDialogHeaderPr
                 )}
               </>
             )}
-            <Badge variant="outline" className="rounded-none text-xs h-6 sm:h-7">
+            <Badge variant="outline" className="rounded-none text-xs h-6 sm:h-7 order-first">
               {assignment?.status}
             </Badge>
             {onClose && (
