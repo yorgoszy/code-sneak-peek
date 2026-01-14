@@ -39,7 +39,7 @@ export const GoalsAwardsContent: React.FC<GoalsAwardsContentProps> = ({ coachId 
     completeGoal,
     updateProgress,
     refetch: refetchActive,
-  } = useAllActiveGoals();
+  } = useAllActiveGoals(coachId);
 
   const {
     completedGoals,
@@ -47,7 +47,7 @@ export const GoalsAwardsContent: React.FC<GoalsAwardsContentProps> = ({ coachId 
     isLoading: isLoadingHistory,
     deleteGoal: deleteHistoryGoal,
     refetch: refetchHistory,
-  } = useAllGoalsHistory();
+  } = useAllGoalsHistory(coachId);
 
   const isLoading = isLoadingActive || isLoadingHistory;
 
@@ -69,7 +69,8 @@ export const GoalsAwardsContent: React.FC<GoalsAwardsContentProps> = ({ coachId 
     if (editingGoal) {
       await updateGoal(editingGoal.id, goalData);
     } else {
-      await createGoal(goalData);
+      // Add coach_id when creating a new goal
+      await createGoal({ ...goalData, coach_id: coachId });
     }
     setEditingGoal(null);
   };

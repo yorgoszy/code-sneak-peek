@@ -24,7 +24,7 @@ export interface UserGoalWithUser {
   user_avatar: string | null;
 }
 
-export const useAllActiveGoals = () => {
+export const useAllActiveGoals = (coachId?: string) => {
   const [goals, setGoals] = useState<UserGoalWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,8 +32,8 @@ export const useAllActiveGoals = () => {
     try {
       setIsLoading(true);
       
-      // Fetch all active goals with user info
-      const { data, error } = await supabase
+      // Fetch active goals with user info - filtered by coach_id if provided
+      let query = supabase
         .from('user_goals')
         .select(`
           *,
@@ -45,8 +45,14 @@ export const useAllActiveGoals = () => {
             photo_url
           )
         `)
-        .eq('status', 'in_progress')
-        .order('created_at', { ascending: false });
+        .eq('status', 'in_progress');
+      
+      // Filter by coach_id if provided
+      if (coachId) {
+        query = query.eq('coach_id', coachId);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       
@@ -68,7 +74,7 @@ export const useAllActiveGoals = () => {
 
   useEffect(() => {
     fetchGoals();
-  }, [fetchGoals]);
+  }, [fetchGoals, coachId]);
 
   const updateGoal = async (goalId: string, updates: Partial<UserGoalWithUser>) => {
     try {

@@ -23,7 +23,7 @@ export interface GoalWithUser {
   user_avatar: string | null;
 }
 
-export const useAllGoalsHistory = () => {
+export const useAllGoalsHistory = (coachId?: string) => {
   const [completedGoals, setCompletedGoals] = useState<GoalWithUser[]>([]);
   const [failedGoals, setFailedGoals] = useState<GoalWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,7 +33,7 @@ export const useAllGoalsHistory = () => {
       setIsLoading(true);
       
       // Fetch completed goals
-      const { data: completedData, error: completedError } = await supabase
+      let completedQuery = supabase
         .from('user_goals')
         .select(`
           *,
@@ -45,14 +45,19 @@ export const useAllGoalsHistory = () => {
             photo_url
           )
         `)
-        .eq('status', 'completed')
-        .order('completed_at', { ascending: false });
+        .eq('status', 'completed');
+      
+      if (coachId) {
+        completedQuery = completedQuery.eq('coach_id', coachId);
+      }
+      
+      const { data: completedData, error: completedError } = await completedQuery.order('completed_at', { ascending: false });
 
       if (completedError) throw completedError;
       
       // Fetch failed goals (expired - target_date passed and not completed)
       const today = new Date().toISOString().split('T')[0];
-      const { data: failedData, error: failedError } = await supabase
+      let failedQuery = supabase
         .from('user_goals')
         .select(`
           *,
@@ -65,8 +70,13 @@ export const useAllGoalsHistory = () => {
           )
         `)
         .eq('status', 'in_progress')
-        .lt('target_date', today)
-        .order('target_date', { ascending: false });
+        .lt('target_date', today);
+      
+      if (coachId) {
+        failedQuery = failedQuery.eq('coach_id', coachId);
+      }
+      
+      const { data: failedData, error: failedError } = await failedQuery.order('target_date', { ascending: false });
 
       if (failedError) throw failedError;
 
@@ -90,7 +100,7 @@ export const useAllGoalsHistory = () => {
 
   useEffect(() => {
     fetchGoalsHistory();
-  }, [fetchGoalsHistory]);
+  }, [fetchGoalsHistory, coachId]);
 
   const markAsFailed = async (goalId: string) => {
     try {
