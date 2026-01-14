@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video, Dumbbell } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video, Dumbbell, UserCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { matchesSearchTerm } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -29,6 +29,7 @@ interface SubscriptionType {
   single_purchase?: boolean;
   allowed_sections?: string[];
   program_id?: string;
+  coach_shop_only?: boolean;
 }
 
 interface BookingSection {
@@ -141,7 +142,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       console.log('🔄 Loading subscription types...');
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase, allowed_sections')
+        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase, allowed_sections, coach_shop_only')
         .order('price');
 
       if (error) {
@@ -154,7 +155,8 @@ export const SubscriptionTypeManager: React.FC = () => {
         ...item,
         subscription_mode: (item.subscription_mode || 'time_based') as 'time_based' | 'visit_based' | 'videocall' | 'program',
         available_in_shop: item.available_in_shop || false,
-        single_purchase: item.single_purchase || false
+        single_purchase: item.single_purchase || false,
+        coach_shop_only: item.coach_shop_only || false
       })) as SubscriptionType[];
       setSubscriptionTypes(typedData);
       setFilteredSubscriptionTypes(typedData);
@@ -549,6 +551,34 @@ export const SubscriptionTypeManager: React.FC = () => {
     }
   };
 
+  const toggleCoachShopOnly = async (type: SubscriptionType) => {
+    if (!isAdmin) {
+      toast.error('Δεν έχετε δικαιώματα διαχειριστή');
+      return;
+    }
+
+    try {
+      console.log('🔄 Toggling coach shop only for:', type.name, 'Current:', type.coach_shop_only);
+      
+      const { error } = await supabase
+        .from('subscription_types')
+        .update({ coach_shop_only: !type.coach_shop_only } as any)
+        .eq('id', type.id);
+
+      if (error) {
+        console.error('❌ Error toggling coach shop only:', error);
+        throw error;
+      }
+      
+      console.log('✅ Coach shop only toggled successfully');
+      toast.success(`Ο τύπος συνδρομής ${!type.coach_shop_only ? 'ορίστηκε μόνο για Coach Shop' : 'διαθέσιμος σε όλα τα shops'}!`);
+      await loadSubscriptionTypes();
+    } catch (error) {
+      console.error('💥 Error toggling coach shop only:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση: ' + (error as Error).message);
+    }
+  };
+
   const handleDeleteClick = (type: SubscriptionType) => {
     console.log('🗑️ Opening delete confirmation for:', type.name);
     setTypeToDelete(type);
@@ -774,8 +804,22 @@ export const SubscriptionTypeManager: React.FC = () => {
                                   ? 'bg-[#00ffba] text-white border-white hover:bg-[#00ffba]/90' 
                                   : 'text-gray-400 hover:text-gray-600 border-gray-300'
                               }`}
+                              title="Διαθέσιμο στο Shop"
                             >
                               <ShoppingCart className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toggleCoachShopOnly(type)}
+                              className={`rounded-none p-2 ${
+                                type.coach_shop_only 
+                                  ? 'bg-[#cb8954] text-white border-white hover:bg-[#cb8954]/90' 
+                                  : 'text-gray-400 hover:text-gray-600 border-gray-300'
+                              }`}
+                              title="Μόνο για Coach Shop"
+                            >
+                              <UserCircle className="w-3 h-3" />
                             </Button>
                           </div>
                         </td>
@@ -880,8 +924,22 @@ export const SubscriptionTypeManager: React.FC = () => {
                               ? 'bg-[#00ffba] text-white border-white hover:bg-[#00ffba]/90' 
                               : 'text-gray-400 hover:text-gray-600 border-gray-300'
                           }`}
+                          title="Διαθέσιμο στο Shop"
                         >
                           <ShoppingCart className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toggleCoachShopOnly(type)}
+                          className={`rounded-none px-3 ${
+                            type.coach_shop_only 
+                              ? 'bg-[#cb8954] text-white border-white hover:bg-[#cb8954]/90' 
+                              : 'text-gray-400 hover:text-gray-600 border-gray-300'
+                          }`}
+                          title="Μόνο για Coach Shop"
+                        >
+                          <UserCircle className="w-3 h-3" />
                         </Button>
                       </div>
                       

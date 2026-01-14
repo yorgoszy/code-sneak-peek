@@ -40,9 +40,10 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
     try {
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('id, name, description, price, duration_months, subscription_mode, visit_count, visit_expiry_months, is_active, available_in_shop')
+        .select('id, name, description, price, duration_months, subscription_mode, visit_count, visit_expiry_months, is_active, available_in_shop, coach_shop_only')
         .eq('is_active', true)
         .eq('available_in_shop', true)
+        .or('coach_shop_only.is.null,coach_shop_only.eq.false')
         .order('price');
 
       if (error) throw error;
