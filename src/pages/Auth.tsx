@@ -88,14 +88,22 @@ const Auth = () => {
     const password = signupPassword; // use controlled value
     const name = formData.get("name") as string;
 
-    // Detailed password validation with specific messages
+    // Detailed password validation with specific messages (no Unicode property escapes for wider browser support)
     const validatePassword = (pwd: string) => {
       const errors: string[] = [];
       if (pwd.length < 8) errors.push("τουλάχιστον 8 χαρακτήρες");
-      const hasLower = /\p{Ll}/u.test(pwd); // Unicode lowercase (π.χ. α)
-      const hasUpper = /\p{Lu}/u.test(pwd); // Unicode uppercase (π.χ. Α)
-      const hasNumber = /\p{Nd}/u.test(pwd); // Unicode digits
-      const hasSpecial = /[^\p{L}\p{N}]/u.test(pwd); // Anything that's not letter/number
+
+      // Support Greek + Latin letters without using \p{...} (some browsers don't support it)
+      const lowerRe = /[a-zα-ωάέήίόύώϊϋΐΰ]/;
+      const upperRe = /[A-ZΑ-ΩΆΈΉΊΌΎΏΪΫ]/;
+      const numberRe = /[0-9]/;
+      const specialRe = /[^A-Za-z0-9Α-ΩΆΈΉΊΌΎΏΪΫα-ωάέήίόύώϊϋΐΰ]/;
+
+      const hasLower = lowerRe.test(pwd);
+      const hasUpper = upperRe.test(pwd);
+      const hasNumber = numberRe.test(pwd);
+      const hasSpecial = specialRe.test(pwd);
+
       if (!hasLower) errors.push("μικρά γράμματα");
       if (!hasUpper) errors.push("κεφαλαία γράμματα");
       if (!hasNumber) errors.push("αριθμούς (0-9)");
@@ -558,17 +566,20 @@ const Auth = () => {
                         onChange={(e) => {
                           const val = e.target.value;
                           setSignupPassword(val);
-                          // Unicode-aware validation (Greek, Latin, etc.)
-                          const hasLower = /\p{Ll}/u.test(val);
-                          const hasUpper = /\p{Lu}/u.test(val);
-                          const hasNumber = /\p{Nd}/u.test(val);
-                          const hasSpecial = /[^\p{L}\p{N}]/u.test(val);
+
+                          // Live validation (Greek + Latin) without Unicode property escapes
+                          const lowerRe = /[a-zα-ωάέήίόύώϊϋΐΰ]/;
+                          const upperRe = /[A-ZΑ-ΩΆΈΉΊΌΎΏΪΫ]/;
+                          const numberRe = /[0-9]/;
+                          const specialRe = /[^A-Za-z0-9Α-ΩΆΈΉΊΌΎΏΪΫα-ωάέήίόύώϊϋΐΰ]/;
+
                           const errors: string[] = [];
                           if (val.length < 8) errors.push("τουλάχιστον 8 χαρακτήρες");
-                          if (!hasLower) errors.push("μικρά γράμματα");
-                          if (!hasUpper) errors.push("κεφαλαία γράμματα");
-                          if (!hasNumber) errors.push("αριθμούς");
-                          if (!hasSpecial) errors.push("ειδικούς χαρακτήρες");
+                          if (!lowerRe.test(val)) errors.push("μικρά γράμματα");
+                          if (!upperRe.test(val)) errors.push("κεφαλαία γράμματα");
+                          if (!numberRe.test(val)) errors.push("αριθμούς");
+                          if (!specialRe.test(val)) errors.push("ειδικούς χαρακτήρες");
+
                           setPasswordError(errors.length ? `Ο κωδικός πρέπει να περιέχει: ${errors.join(', ')}.` : null);
                         }}
                         aria-invalid={!!passwordError}
