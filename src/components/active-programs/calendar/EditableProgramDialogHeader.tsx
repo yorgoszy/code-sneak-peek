@@ -60,11 +60,10 @@ export const EditableProgramDialogHeader: React.FC<EditableProgramDialogHeaderPr
                     onClick={onToggleEditing}
                     size="sm"
                     variant="outline"
-                    className="rounded-none text-xs sm:text-sm h-7 sm:h-8 px-2 sm:px-3"
+                    className="rounded-none h-7 sm:h-8 w-7 sm:w-8 p-0"
+                    title="Επεξεργασία"
                   >
-                    <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Επεξεργασία</span>
-                    <span className="sm:hidden">Edit</span>
+                    <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 )}
               </>
