@@ -110,11 +110,14 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     }
   }, [activeTab]);
 
-  // Φόρτωση δεδομένων από workout_stats
+  // Φόρτωση δεδομένων από workout_stats (με realtime refresh όταν ολοκληρώνεται προπόνηση)
   useEffect(() => {
-    const fetchWorkoutStats = async () => {
+    let isMounted = true;
+
+    const fetchWorkoutStats = async (opts?: { silent?: boolean }) => {
       try {
-        setIsLoading(true);
+        if (!opts?.silent) setIsLoading(true);
+
         const { data, error } = await supabase
           .from('workout_stats')
           .select('*')
@@ -123,26 +126,50 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
         if (error) {
           console.error('Error fetching workout stats:', error);
-          setWorkoutStats([]);
-        } else {
-          // Transform data to match our WorkoutStat interface
-          const transformed = (data || []).map(stat => ({
-            ...stat,
-            training_type_breakdown: parseBreakdown(stat.training_type_breakdown)
-          })) as WorkoutStat[];
-          setWorkoutStats(transformed);
+          if (isMounted) setWorkoutStats([]);
+          return;
         }
+
+        const transformed = (data || []).map(stat => ({
+          ...stat,
+          training_type_breakdown: parseBreakdown(stat.training_type_breakdown)
+        })) as WorkoutStat[];
+
+        if (isMounted) setWorkoutStats(transformed);
       } catch (error) {
         console.error('Error:', error);
-        setWorkoutStats([]);
+        if (isMounted) setWorkoutStats([]);
       } finally {
-        setIsLoading(false);
+        if (!opts?.silent && isMounted) setIsLoading(false);
       }
     };
 
-    if (userId) {
-      fetchWorkoutStats();
-    }
+    if (!userId) return;
+
+    // initial load
+    fetchWorkoutStats();
+
+    // realtime updates (insert/update) so the chart updates immediately after workout completion
+    const channel = supabase
+      .channel(`workout-stats-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_stats',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          fetchWorkoutStats({ silent: true });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   // Φιλτράρισμα δεδομένων με βάση το time filter
