@@ -169,6 +169,16 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
                 totalDays={getTotalTrainingDays()}
                 onTrainingDatesChange={onTrainingDatesChange}
                 isCoach={!!coachId}
+                onAssign={onAssignments}
+                canAssign={
+                  !!(
+                    program.user_ids &&
+                    program.user_ids.length > 0 &&
+                    program.training_dates &&
+                    program.training_dates.length > 0 &&
+                    program.name?.trim()
+                  )
+                }
               />
             )}
           </div>
