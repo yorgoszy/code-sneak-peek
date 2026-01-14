@@ -287,7 +287,7 @@ export const UserProfileSidebar = forwardRef<
     },
     {
       icon: User,
-      label: "Επεξεργασία Προφίλ",
+      label: t('sidebar.editProfile'),
       key: "edit-profile",
       badge: null,
       visible: true
@@ -354,7 +354,7 @@ export const UserProfileSidebar = forwardRef<
       >
         <Download className="h-5 w-5 flex-shrink-0 text-white" />
         {(!isCollapsed || isMobile) && (
-          <span className="text-sm font-medium text-white truncate">Κατέβασε την Εφαρμογή</span>
+          <span className="text-sm font-medium text-white truncate">{t('sidebar.downloadApp')}</span>
         )}
       </button>
       

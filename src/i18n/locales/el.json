@@ -75,7 +75,9 @@
     "aiCoach": "RidAI Προπονητής",
     "poweredBy": "powered by hyperteam",
     "quickOverview": "Γρήγορη Επισκόπηση",
-    "nutrition": "Διατροφή"
+    "nutrition": "Διατροφή",
+    "editProfile": "Επεξεργασία Προφίλ",
+    "downloadApp": "Κατέβασε την Εφαρμογή"
   },
   "overview": {
     "title": "Επισκόπηση Προφίλ",
