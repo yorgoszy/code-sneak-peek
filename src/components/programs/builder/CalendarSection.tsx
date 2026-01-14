@@ -175,7 +175,6 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
           </div>
 
           <div className="w-full lg:w-64 space-y-3">
-            <WeekProgressDisplay weekProgress={weekProgress} />
             <SelectionProgress
               selectedCount={selectedDatesAsStrings.length}
               totalDays={computedTotalDays}
@@ -183,6 +182,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
               canAssign={canAssign}
               loading={assignLoading}
             />
+            <WeekProgressDisplay weekProgress={weekProgress} />
           </div>
         </div>
       </div>
