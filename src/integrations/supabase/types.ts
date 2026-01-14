@@ -6245,6 +6245,7 @@ export type Database = {
       }
       user_goals: {
         Row: {
+          coach_id: string | null
           completed_at: string | null
           created_at: string
           current_value: number | null
@@ -6262,6 +6263,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          coach_id?: string | null
           completed_at?: string | null
           created_at?: string
           current_value?: number | null
@@ -6279,6 +6281,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          coach_id?: string | null
           completed_at?: string | null
           created_at?: string
           current_value?: number | null
@@ -6296,6 +6299,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_goals_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_goals_user_id_fkey"
             columns: ["user_id"]
