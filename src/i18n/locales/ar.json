@@ -124,7 +124,14 @@
     "editProgram": "تعديل البرنامج",
     "viewProgram": "عرض البرنامج",
     "startWorkout": "بدء التمرين",
-    "delete": "حذف"
+    "delete": "حذف",
+    "trainingCalendar": "تقويم التدريب",
+    "trainingTypesAnalysis": "تحليل أنواع التدريب",
+    "total": "المجموع",
+    "weekly": "أسبوعي",
+    "monthly": "شهري",
+    "yearly": "سنوي",
+    "noCompletedWorkouts": "لا توجد تمارين مكتملة"
   },
   "progress": {
     "selectExercises": "اختر التمارين",

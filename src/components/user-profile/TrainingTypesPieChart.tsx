@@ -7,6 +7,7 @@ import { el } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useTranslation } from 'react-i18next';
 
 interface TrainingTypesPieChartProps {
   userId: string;
@@ -84,6 +85,7 @@ const parseBreakdown = (data: any): Record<string, number> | null => {
 };
 
 export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ userId, hideTimeTabs = false, activeTab }) => {
+  const { t } = useTranslation();
   const [workoutStats, setWorkoutStats] = useState<WorkoutStat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState<'day' | 'week' | 'month'>('week');
@@ -295,10 +297,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
     return (
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle className="text-sm md:text-base">Ανάλυση Τύπων Προπόνησης</CardTitle>
+          <CardTitle className="text-sm md:text-base">{t('programs.trainingTypesAnalysis')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-500">Φόρτωση...</div>
+          <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
         </CardContent>
       </Card>
     );
@@ -307,10 +309,10 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
   return (
     <Card className="rounded-none">
       <CardHeader className="p-3 pb-2">
-        <CardTitle className="text-xs font-semibold">Ανάλυση Τύπων Προπόνησης</CardTitle>
+        <CardTitle className="text-xs font-semibold">{t('programs.trainingTypesAnalysis')}</CardTitle>
         <div className="flex items-center justify-between mt-1">
           <div className="text-xs text-gray-600">
-            Σύνολο: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
+            {t('programs.total')}: <span className="font-semibold">{formatMinutes(totalMinutes)}</span>
           </div>
           {!hideTimeTabs && (
             <div className="flex items-center gap-1">
@@ -320,7 +322,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   timeFilter === 'day' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                Εβδομαδιαία
+                {t('programs.weekly')}
               </button>
               <button
                 onClick={() => setTimeFilter('week')}
@@ -328,7 +330,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   timeFilter === 'week' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                Μηνιαία
+                {t('programs.monthly')}
               </button>
               <button
                 onClick={() => setTimeFilter('month')}
@@ -336,7 +338,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
                   timeFilter === 'month' ? 'bg-[#aca097] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                Ετήσια
+                {t('programs.yearly')}
               </button>
             </div>
           )}
@@ -404,7 +406,7 @@ export const TrainingTypesPieChart: React.FC<TrainingTypesPieChartProps> = ({ us
 
         {(groupedData.length === 0 || pieData.length === 0) && timeFilter !== 'month' ? (
           <div className="text-center py-8 text-gray-500 text-sm">
-            Δεν υπάρχουν ολοκληρωμένες προπονήσεις
+            {t('programs.noCompletedWorkouts')}
           </div>
         ) : (
           <>

@@ -124,7 +124,14 @@
     "editProgram": "Επεξεργασία Προγράμματος",
     "viewProgram": "Προβολή Προγράμματος",
     "startWorkout": "Έναρξη Προπόνησης",
-    "delete": "Διαγραφή"
+    "delete": "Διαγραφή",
+    "trainingCalendar": "Ημερολόγιο Προπονήσεων",
+    "trainingTypesAnalysis": "Ανάλυση Τύπων Προπόνησης",
+    "total": "Σύνολο",
+    "weekly": "Εβδομαδιαία",
+    "monthly": "Μηνιαία",
+    "yearly": "Ετήσια",
+    "noCompletedWorkouts": "Δεν υπάρχουν ολοκληρωμένες προπονήσεις"
   },
   "progress": {
     "selectExercises": "Επιλογή Ασκήσεων",
