@@ -89,14 +89,14 @@ export const CoachSidebar = ({
       label: "Οι Αθλητές μου",
       path: effectiveCoachId ? `/dashboard/my-athletes?coachId=${effectiveCoachId}` : "/dashboard/my-athletes",
       badge: null,
-      requiresSubscription: false,
+      requiresSubscription: true,
     },
     {
       icon: UsersRound,
       label: "Ομάδες",
       path: effectiveCoachId ? `/dashboard/coach-groups?coachId=${effectiveCoachId}` : "/dashboard/coach-groups",
       badge: null,
-      requiresSubscription: false,
+      requiresSubscription: true,
     },
     {
       icon: CreditCard,
@@ -301,10 +301,27 @@ export const CoachSidebar = ({
 
       {/* RidAI Προπονητής Button */}
       <button
-        onClick={handleAIChatClick}
-        className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent rounded-none border-t border-border mt-2 pt-4"
+        onClick={() => {
+          if (!hasFullAccess) {
+            toast.error('Απαιτείται ενεργή συνδρομή HYPERsync για πρόσβαση σε αυτή τη λειτουργία');
+            navigate(effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop");
+            return;
+          }
+          handleAIChatClick();
+        }}
+        disabled={!hasFullAccess}
+        className={
+          "w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium transition-colors rounded-none border-t border-border mt-2 pt-4 " +
+          (!hasFullAccess
+            ? "text-muted-foreground/50 cursor-not-allowed opacity-50"
+            : "text-sidebar-foreground hover:bg-sidebar-accent")
+        }
       >
-        <Brain className="h-5 w-5 flex-shrink-0 text-[hsl(var(--auth-gold))]" />
+        {!hasFullAccess ? (
+          <Lock className="h-5 w-5 flex-shrink-0 text-muted-foreground/50" />
+        ) : (
+          <Brain className="h-5 w-5 flex-shrink-0 text-[hsl(var(--auth-gold))]" />
+        )}
         {(!isCollapsed || isMobile) && (
           <div className="flex flex-col items-start min-w-0">
             <span className="text-sm font-medium truncate">RidAI Προπονητής</span>
