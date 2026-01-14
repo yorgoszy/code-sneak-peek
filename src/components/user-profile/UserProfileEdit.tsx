@@ -9,6 +9,7 @@ import { Camera, Save, X, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from 'react-i18next';
 
 interface UserProfileEditProps {
   userProfile: any;
@@ -16,6 +17,7 @@ interface UserProfileEditProps {
 }
 
 export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEditProps) => {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -258,7 +260,7 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
   return (
     <Card className="rounded-none">
       <CardHeader>
-        <CardTitle className="text-xl font-semibold">Επεξεργασία Προφίλ</CardTitle>
+        <CardTitle className="text-xl font-semibold">{t('sidebar.editProfile')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Avatar Section */}

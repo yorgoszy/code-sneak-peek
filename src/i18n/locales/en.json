@@ -75,7 +75,9 @@
     "aiCoach": "RidAI Coach",
     "poweredBy": "powered by hyperteam",
     "quickOverview": "Quick Overview",
-    "nutrition": "Nutrition"
+    "nutrition": "Nutrition",
+    "editProfile": "Edit Profile",
+    "downloadApp": "Download the App"
   },
   "overview": {
     "title": "Profile Overview",

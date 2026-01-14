@@ -75,7 +75,9 @@
     "aiCoach": "مدرب RidAI",
     "poweredBy": "مدعوم من hyperteam",
     "quickOverview": "نظرة سريعة",
-    "nutrition": "التغذية"
+    "nutrition": "التغذية",
+    "editProfile": "تعديل الملف الشخصي",
+    "downloadApp": "تحميل التطبيق"
   },
   "overview": {
     "title": "نظرة عامة على الملف الشخصي",
