@@ -26,6 +26,7 @@ import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog"
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
+import { useTranslation } from 'react-i18next';
 
 interface CoachSidebarProps {
   isCollapsed: boolean;
@@ -46,6 +47,7 @@ export const CoachSidebar = ({
   const location = useLocation();
   const { userProfile, isAdmin } = useRoleCheck();
   const { signOut } = useAuth();
+  const { t } = useTranslation();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -123,7 +125,7 @@ export const CoachSidebar = ({
     },
     {
       icon: Utensils,
-      label: "Διατροφή",
+      label: t('sidebar.nutrition'),
       path: effectiveCoachId ? `/dashboard/nutrition?coachId=${effectiveCoachId}` : "/dashboard/nutrition",
       badge: null,
     },
