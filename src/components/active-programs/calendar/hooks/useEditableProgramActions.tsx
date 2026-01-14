@@ -64,6 +64,8 @@ export const useEditableProgramActions = (
                 rest: exercise.rest,
                 notes: exercise.notes,
                 velocity_ms: exercise.velocity_ms,
+                kg_mode: exercise.kg_mode,
+                reps_mode: exercise.reps_mode,
                 updated_at: new Date().toISOString()
               });
             }
@@ -134,6 +136,8 @@ export const useEditableProgramActions = (
               rest: exercise.rest,
               notes: exercise.notes,
               velocity_ms: exercise.velocity_ms,
+              kg_mode: exercise.kg_mode,
+              reps_mode: exercise.reps_mode,
               updated_at: exercise.updated_at
             })
             .eq('id', exercise.id)
