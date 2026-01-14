@@ -5364,6 +5364,7 @@ export type Database = {
           allowed_sections: string[] | null
           available_in_shop: boolean
           coach_id: string | null
+          coach_shop_only: boolean | null
           created_at: string
           description: string | null
           duration_months: number
@@ -5382,6 +5383,7 @@ export type Database = {
           allowed_sections?: string[] | null
           available_in_shop?: boolean
           coach_id?: string | null
+          coach_shop_only?: boolean | null
           created_at?: string
           description?: string | null
           duration_months?: number
@@ -5400,6 +5402,7 @@ export type Database = {
           allowed_sections?: string[] | null
           available_in_shop?: boolean
           coach_id?: string | null
+          coach_shop_only?: boolean | null
           created_at?: string
           description?: string | null
           duration_months?: number
