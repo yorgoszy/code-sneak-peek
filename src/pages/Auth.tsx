@@ -5,14 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useTranslations } from "@/hooks/useTranslations";
 import { useEffect } from "react";
+import { Globe } from "lucide-react";
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isResettingPasswords, setIsResettingPasswords] = useState(false);
@@ -26,6 +29,19 @@ const Auth = () => {
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
   const { userProfile, isCoach, isAdmin, loading: roleLoading } = useRoleCheck();
+  
+  // Get language from URL or use translations hook
+  const { language, translations: t, toggleLanguage } = useTranslations();
+  
+  // Sync language from URL param (from landing page)
+  useEffect(() => {
+    const langParam = searchParams.get('lang');
+    if (langParam === 'en' && language === 'el') {
+      toggleLanguage();
+    } else if (langParam === 'el' && language === 'en') {
+      toggleLanguage();
+    }
+  }, [searchParams]);
 
   // Check for password recovery tokens and redirect to reset password page
   useEffect(() => {
@@ -91,7 +107,7 @@ const Auth = () => {
     // Detailed password validation with specific messages (no Unicode property escapes for wider browser support)
     const validatePassword = (pwd: string) => {
       const errors: string[] = [];
-      if (pwd.length < 8) errors.push("τουλάχιστον 8 χαρακτήρες");
+      if (pwd.length < 8) errors.push(t.authPasswordMinChars);
 
       // Support Greek + Latin letters without using \p{...} (some browsers don't support it)
       const lowerRe = /[a-zα-ωάέήίόύώϊϋΐΰ]/;
@@ -104,20 +120,20 @@ const Auth = () => {
       const hasNumber = numberRe.test(pwd);
       const hasSpecial = specialRe.test(pwd);
 
-      if (!hasLower) errors.push("μικρά γράμματα");
-      if (!hasUpper) errors.push("κεφαλαία γράμματα");
-      if (!hasNumber) errors.push("αριθμούς (0-9)");
-      if (!hasSpecial) errors.push("ειδικούς χαρακτήρες (!@#$%^&*)");
+      if (!hasLower) errors.push(t.authPasswordLowercase);
+      if (!hasUpper) errors.push(t.authPasswordUppercase);
+      if (!hasNumber) errors.push(t.authPasswordNumbers);
+      if (!hasSpecial) errors.push(t.authPasswordSpecial);
       return errors;
     };
 
     const passwordErrors = validatePassword(password);
     if (passwordErrors.length > 0) {
-      const msg = `Ο κωδικός πρέπει να περιέχει: ${passwordErrors.join(', ')}.`;
+      const msg = `${t.authPasswordRequirements} ${passwordErrors.join(', ')}.`;
       setPasswordError(msg);
-      setSignupFeedback({ variant: "destructive", title: "Μη έγκυρος κωδικός", description: msg });
+      setSignupFeedback({ variant: "destructive", title: t.authErrorInvalidPassword, description: msg });
       toast({
-        title: "Μη έγκυρος κωδικός",
+        title: t.authErrorInvalidPassword,
         description: msg,
         variant: "destructive",
       });
@@ -145,35 +161,35 @@ const Auth = () => {
         console.error('📝 Signup error:', error.message, error.status);
         
         // Αναλυτικά μηνύματα σφάλματος
-        let errorTitle = "Σφάλμα εγγραφής";
-        let errorDescription = "Παρουσιάστηκε σφάλμα κατά την εγγραφή.";
+        let errorTitle = t.authErrorGeneric;
+        let errorDescription = t.authErrorGenericDesc;
         
         if (error.message.includes('User already registered') || 
             error.message.includes('already been registered') ||
             error.message.includes('already exists')) {
-          errorTitle = "Το email υπάρχει ήδη";
-          errorDescription = "Υπάρχει ήδη εγγεγραμμένος χρήστης με αυτό το email. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.";
+          errorTitle = t.authErrorEmailExists;
+          errorDescription = t.authErrorEmailExistsDesc;
         } else if (error.message.includes('Password should be at least') || 
                    error.message.includes('password') ||
                    error.message.includes('weak')) {
-          errorTitle = "Αδύναμος κωδικός";
-          errorDescription = "Ο κωδικός πρόσβασης είναι πολύ αδύναμος. Χρησιμοποιήστε τουλάχιστον 8 χαρακτήρες με κεφαλαία, πεζά, αριθμούς και ειδικούς χαρακτήρες.";
+          errorTitle = t.authErrorWeakPassword;
+          errorDescription = t.authErrorWeakPasswordDesc;
         } else if (error.message.includes('Invalid email') || 
                    error.message.includes('valid email')) {
-          errorTitle = "Μη έγκυρο email";
-          errorDescription = "Παρακαλώ εισάγετε μια έγκυρη διεύθυνση email.";
+          errorTitle = t.authErrorInvalidEmail;
+          errorDescription = t.authErrorInvalidEmailDesc;
         } else if (error.message.includes('rate limit') || 
                    error.message.includes('too many requests') ||
                    error.message.includes('Too many')) {
-          errorTitle = "Πολλές προσπάθειες";
-          errorDescription = "Έχετε κάνει πολλές προσπάθειες εγγραφής. Δοκιμάστε ξανά σε λίγα λεπτά.";
+          errorTitle = t.authErrorTooManyRequests;
+          errorDescription = t.authErrorTooManyRequestsDesc;
         } else if (error.message.includes('network') || 
                    error.message.includes('connection')) {
-          errorTitle = "Πρόβλημα σύνδεσης";
-          errorDescription = "Δεν ήταν δυνατή η σύνδεση με τον server. Ελέγξτε τη σύνδεσή σας στο διαδίκτυο.";
+          errorTitle = t.authErrorConnection;
+          errorDescription = t.authErrorConnectionDesc;
         } else {
           // Γενικό σφάλμα με το πραγματικό μήνυμα
-          errorDescription = error.message || "Παρουσιάστηκε σφάλμα κατά την εγγραφή. Δοκιμάστε ξανά.";
+          errorDescription = error.message || t.authErrorGenericDesc;
         }
         
         setSignupFeedback({
@@ -201,9 +217,8 @@ const Auth = () => {
           console.log('📝 User already exists (fake success):', email);
           const feedback = {
             variant: "destructive" as const,
-            title: "Το email υπάρχει ήδη",
-            description:
-              "Υπάρχει ήδη εγγεγραμμένος χρήστης με αυτό το email. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.",
+            title: t.authErrorEmailExists,
+            description: t.authErrorEmailExistsDesc,
           };
           setSignupFeedback(feedback);
           toast({
@@ -218,8 +233,8 @@ const Auth = () => {
         console.log('📝 New user created, profile will be created by trigger:', data.user.id);
         const okFeedback = {
           variant: "default" as const,
-          title: "Εγγραφή ολοκληρώθηκε!",
-          description: "Ελέγξτε το email σας για επιβεβαίωση. Μπορείτε να συνδεθείτε αμέσως.",
+          title: t.authSuccessSignup,
+          description: t.authSuccessSignupDesc,
         };
         setSignupFeedback(okFeedback);
         toast({
@@ -231,8 +246,8 @@ const Auth = () => {
         console.log('📝 No user returned, likely already exists');
         const failFeedback = {
           variant: "destructive" as const,
-          title: "Πρόβλημα εγγραφής",
-          description: "Δεν ήταν δυνατή η εγγραφή. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.",
+          title: t.authErrorSignupProblem,
+          description: t.authErrorSignupProblemDesc,
         };
         setSignupFeedback(failFeedback);
         toast({
@@ -245,12 +260,12 @@ const Auth = () => {
       console.error('Signup error:', error);
       setSignupFeedback({
         variant: "destructive",
-        title: "Σφάλμα",
-        description: error.message || "Παρουσιάστηκε σφάλμα κατά την εγγραφή.",
+        title: t.authError,
+        description: error.message || t.authErrorGenericDesc,
       });
       toast({
-        title: "Σφάλμα",
-        description: error.message || "Παρουσιάστηκε σφάλμα κατά την εγγραφή.",
+        title: t.authError,
+        description: error.message || t.authErrorGenericDesc,
         variant: "destructive",
       });
     } finally {
@@ -278,7 +293,7 @@ const Auth = () => {
         console.error('🔐 Auth error:', error);
         
         // Βελτιωμένα μηνύματα σφάλματος
-        let errorMessage = "Παρουσιάστηκε πρόβλημα κατά τη σύνδεση.";
+        let errorMessage = t.authLoginErrorGeneric;
         
         if (error.message.includes('Invalid login credentials')) {
           // Ελέγχουμε αν ο χρήστης υπάρχει στη βάση
@@ -289,14 +304,14 @@ const Auth = () => {
             .single();
           
           if (userExists) {
-            errorMessage = "Πιθανώς δεν έχετε επιβεβαιώσει το email σας. Ελέγξτε τα εισερχόμενά σας για το email επιβεβαίωσης. Αν δεν το βρίσκετε, επικοινωνήστε με τη διαχείριση.";
+            errorMessage = t.authCheckEmailConfirmation;
           } else {
-            errorMessage = "Λάθος email ή κωδικός πρόσβασης.";
+            errorMessage = t.authWrongCredentials;
           }
         } else if (error.message.includes('Email not confirmed')) {
-          errorMessage = "Πρέπει να επιβεβαιώσετε το email σας πρώτα. Ελέγξτε τα εισερχόμενά σας.";
+          errorMessage = t.authEmailNotConfirmed;
         } else if (error.message.includes('Too many requests')) {
-          errorMessage = "Πολλές προσπάθειες σύνδεσης. Δοκιμάστε ξανά σε λίγα λεπτά.";
+          errorMessage = t.authErrorTooManyRequestsDesc;
         }
         
         throw new Error(errorMessage);
@@ -305,7 +320,7 @@ const Auth = () => {
       console.log('🔐 Auth successful, checking user profile for:', data.user.id);
 
       // Check if user has an app_users profile
-      const { data: userProfile, error: profileError } = await supabase
+      const { data: userProfileData, error: profileError } = await supabase
         .from('app_users')
         .select('*')
         .eq('auth_user_id', data.user.id)
@@ -316,14 +331,14 @@ const Auth = () => {
         
         if (profileError.code === 'PGRST116') {
           toast({
-            title: "Πρόβλημα με το προφίλ",
-            description: "Δεν βρέθηκε το προφίλ χρήστη. Επικοινωνήστε με έναν διαχειριστή.",
+            title: t.authProfileProblem,
+            description: t.authProfileNotFound,
             variant: "destructive",
           });
         } else {
           toast({
-            title: "Σφάλμα βάσης δεδομένων",
-            description: "Πρόβλημα κατά την ανάκτηση του προφίλ. Δοκιμάστε ξανά.",
+            title: t.authDatabaseError,
+            description: t.authDatabaseErrorDesc,
             variant: "destructive",
           });
         }
@@ -331,27 +346,27 @@ const Auth = () => {
         return;
       }
 
-      if (!userProfile) {
+      if (!userProfileData) {
         console.error('🔐 No user profile found for:', data.user.id);
         toast({
-          title: "Λογαριασμός μη ενεργοποιημένος",
-          description: "Ο λογαριασμός σας δεν έχει ενεργοποιηθεί ακόμη. Επικοινωνήστε με έναν διαχειριστή.",
+          title: t.authAccountNotActive,
+          description: `${t.authAccountInactive} ${t.authContactAdmin}`,
           variant: "destructive",
         });
         await supabase.auth.signOut();
         return;
       }
 
-      console.log('🔐 User profile found:', userProfile.user_status, 'role:', userProfile.role);
+      console.log('🔐 User profile found:', userProfileData.user_status, 'role:', userProfileData.role);
 
-      if (userProfile.user_status !== 'active') {
-        const statusMessage = userProfile.user_status === 'pending' 
-          ? "Ο λογαριασμός σας εκκρεμεί έγκριση από έναν διαχειριστή." 
-          : "Ο λογαριασμός σας δεν είναι ενεργός.";
+      if (userProfileData.user_status !== 'active') {
+        const statusMessage = userProfileData.user_status === 'pending' 
+          ? t.authAccountPending 
+          : t.authAccountInactive;
           
         toast({
-          title: "Λογαριασμός μη ενεργοποιημένος",
-          description: statusMessage + " Επικοινωνήστε με έναν διαχειριστή.",
+          title: t.authAccountNotActive,
+          description: `${statusMessage} ${t.authContactAdmin}`,
           variant: "destructive",
         });
         await supabase.auth.signOut();
@@ -359,22 +374,22 @@ const Auth = () => {
       }
 
       // Determine redirect based on role
-      const isCoach = userProfile.role === 'coach';
-      const redirectPath = isCoach ? "/dashboard/coach-overview" : "/dashboard";
+      const isCoachUser = userProfileData.role === 'coach';
+      const redirectPath = isCoachUser ? "/dashboard/coach-overview" : "/dashboard";
       
       console.log('🔐 Login successful, redirecting to:', redirectPath);
       
       toast({
-        title: "Επιτυχία!",
-        description: "Συνδεθήκατε επιτυχώς.",
+        title: t.authSuccess,
+        description: t.authLoginSuccess,
       });
 
       navigate(redirectPath);
     } catch (error: any) {
       console.error('🔐 Login process error:', error);
       toast({
-        title: "Σφάλμα σύνδεσης",
-        description: error.message || "Υπήρξε πρόβλημα κατά τη σύνδεση. Δοκιμάστε ξανά.",
+        title: t.authLoginError,
+        description: error.message || t.authLoginErrorGeneric,
         variant: "destructive",
       });
     } finally {
@@ -404,16 +419,16 @@ const Auth = () => {
       if (error) throw error;
 
       toast({
-        title: "Email στάλθηκε!",
-        description: "Ελέγξτε το email σας για οδηγίες επαναφοράς κωδικού.",
+        title: t.authEmailSent,
+        description: t.authCheckEmailForReset,
       });
 
       setShowForgotPassword(false);
     } catch (error: any) {
       console.error('Password reset error:', error);
       toast({
-        title: "Σφάλμα",
-        description: error.message || "Παρουσιάστηκε σφάλμα κατά την επαναφορά κωδικού.",
+        title: t.authError,
+        description: error.message || t.authResetError,
         variant: "destructive",
       });
     } finally {
@@ -454,7 +469,7 @@ const Auth = () => {
       <div className="min-h-screen bg-[hsl(var(--auth-black))] flex items-center justify-center">
         <div className="text-center">
           <img src="/assets/hyperkids-auth-logo.png" alt="HYPERKIDS" className="h-12 mx-auto mb-4 animate-pulse" />
-          <p className="text-[hsl(var(--auth-gray))]">Φόρτωση...</p>
+          <p className="text-[hsl(var(--auth-gray))]">{t.authLoading}</p>
         </div>
       </div>
     );
@@ -463,19 +478,28 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-[hsl(var(--auth-black))] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 flex items-center justify-center gap-4">
           <Link to="/" className="inline-flex items-center justify-center">
             <img src="/assets/hyperkids-auth-logo.png" alt="HYPERKIDS" className="h-16" />
           </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleLanguage}
+            className="text-[hsl(var(--auth-gray))] hover:bg-[hsl(var(--auth-gray)/0.1)]"
+            title={language === 'el' ? 'Switch to English' : 'Αλλαγή σε Ελληνικά'}
+          >
+            <Globe className="h-5 w-5" />
+          </Button>
         </div>
 
         <Card className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))]">
           <CardHeader>
             <CardTitle className="text-center text-[hsl(var(--auth-gray))]">
-              {showForgotPassword ? "Επαναφορά Κωδικού" : "Είσοδος στο λογαριασμό σας"}
+              {showForgotPassword ? t.authResetPassword : t.authLoginTitle}
             </CardTitle>
             <CardDescription className="text-center text-[hsl(var(--auth-gray))]">
-              {showForgotPassword ? "Εισάγετε το email σας για επαναφορά κωδικού" : "Συνδεθείτε για να συνεχίσετε"}
+              {showForgotPassword ? t.authResetPasswordSubtitle : t.authLoginSubtitle}
             </CardDescription>
           </CardHeader>
           <CardContent>
