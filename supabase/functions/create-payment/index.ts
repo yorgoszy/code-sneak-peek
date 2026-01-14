@@ -14,11 +14,13 @@ serve(async (req) => {
   }
 
   try {
-    const { amount, currency = "eur", productName } = await req.json();
+    const { amount, currency = "eur", productName, subscriptionTypeId, isCoachShop } = await req.json();
 
     if (!amount || amount <= 0) {
       throw new Error("Valid amount is required");
     }
+
+    console.log("📦 Create payment request:", { amount, productName, subscriptionTypeId, isCoachShop });
 
     // Create Supabase client using the anon key for user authentication
     const supabaseClient = createClient(
@@ -48,6 +50,10 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
+    // Determine success/cancel URLs based on shop type
+    const successPath = isCoachShop ? '/dashboard/coach-shop' : '/dashboard/shop';
+    const cancelPath = isCoachShop ? '/dashboard/coach-shop' : '/dashboard/shop';
+
     // Create a one-time payment session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -63,12 +69,14 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/dashboard/shop?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/dashboard/shop?payment=cancelled`,
+      success_url: `${req.headers.get("origin")}${successPath}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get("origin")}${cancelPath}?payment=cancelled`,
       metadata: {
         user_id: user.id,
         amount: amount.toString(),
-        product_name: productName || "Αγορά Πακέτου"
+        product_name: productName || "Αγορά Πακέτου",
+        subscription_type_id: subscriptionTypeId || "",
+        is_coach_shop: isCoachShop ? "true" : "false"
       }
     });
 
