@@ -36,12 +36,11 @@ const CoachShopContent = () => {
 
   const fetchProducts = async () => {
     try {
-      // Fetch products that are active, available in shop, and coach_shop_only = true
+      // Fetch products that are active and coach_shop_only = true
       const { data, error } = await supabase
         .from('subscription_types')
         .select('id, name, description, price, duration_months, subscription_mode, visit_count, visit_expiry_months, is_active, available_in_shop, coach_shop_only')
         .eq('is_active', true)
-        .eq('available_in_shop', true)
         .eq('coach_shop_only', true)
         .order('price');
 
