@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CoachLayout } from "@/components/layouts/CoachLayout";
 import { useCoachContext } from "@/contexts/CoachContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ShoppingCart, Clock, MapPin, Calendar, Dumbbell, Video } from "lucide-react";
+import { ShoppingCart, Clock, MapPin, Calendar, Dumbbell, Video, CheckCircle } from "lucide-react";
 
 interface SubscriptionType {
   id: string;
@@ -24,15 +25,61 @@ interface SubscriptionType {
 
 const CoachShopContent = () => {
   const { coachId } = useCoachContext();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<SubscriptionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   
   useEffect(() => {
     if (coachId) {
       fetchProducts();
     }
   }, [coachId]);
+
+  // Handle payment success callback
+  useEffect(() => {
+    const payment = searchParams.get('payment');
+    const sessionId = searchParams.get('session_id');
+    
+    if (payment === 'success' && sessionId) {
+      console.log('🎉 Payment successful, processing...', sessionId);
+      handlePaymentSuccess(sessionId);
+    } else if (payment === 'cancelled') {
+      toast.error('Η πληρωμή ακυρώθηκε');
+      // Clean up URL params
+      searchParams.delete('payment');
+      setSearchParams(searchParams);
+    }
+  }, [searchParams]);
+
+  const handlePaymentSuccess = async (sessionId: string) => {
+    try {
+      // Call the process-payment-success function to complete the payment
+      const { data, error } = await supabase.functions.invoke('process-payment-success', {
+        body: { session_id: sessionId }
+      });
+
+      if (error) throw error;
+
+      console.log('✅ Payment processed:', data);
+      setPaymentSuccess(true);
+      toast.success('Η πληρωμή ολοκληρώθηκε επιτυχώς! Το προφίλ σας έχει ενεργοποιηθεί.');
+      
+      // Clean up URL params
+      searchParams.delete('payment');
+      searchParams.delete('session_id');
+      setSearchParams(searchParams);
+
+      // Reload the page to refresh subscription status
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      toast.error('Σφάλμα ολοκλήρωσης πληρωμής');
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -70,7 +117,9 @@ const CoachShopContent = () => {
         body: {
           amount: product.price,
           currency: "eur",
-          productName: product.name
+          productName: product.name,
+          subscriptionTypeId: product.id,
+          isCoachShop: true
         }
       });
 
