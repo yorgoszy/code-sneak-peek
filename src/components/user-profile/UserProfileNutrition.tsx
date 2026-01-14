@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { NutritionPlanViewDialog } from "@/components/nutrition/NutritionPlanViewDialog";
+import { useTranslation } from 'react-i18next';
 
 interface NutritionAssignment {
   id: string;
@@ -83,6 +84,7 @@ const useIsCoachManagedUser = (userProfile: any) => {
 };
 
 export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ userId, userProfile }) => {
+  const { t } = useTranslation();
   const isCoachManagedUser = useIsCoachManagedUser(userProfile);
   const [activeTab, setActiveTab] = useState('active');
   const [assignments, setAssignments] = useState<NutritionAssignment[]>([]);
@@ -201,7 +203,7 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
         <div className="flex flex-col">
           <div className="flex items-center gap-2 mb-2">
             <Utensils className="w-5 h-5 text-[#00ffba]" />
-            <h3 className="font-medium">{assignment.nutrition_plans?.name || 'Πρόγραμμα Διατροφής'}</h3>
+            <h3 className="font-medium">{assignment.nutrition_plans?.name || t('nutrition.nutritionPlan')}</h3>
             {getStatusBadge(assignment)}
           </div>
           
@@ -242,8 +244,8 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
               size="icon"
               onClick={() => setSelectedPlanId(assignment.plan_id)}
               className="rounded-none"
-              aria-label="Προβολή πλάνου διατροφής"
-              title="Προβολή"
+              aria-label={t('nutrition.viewPlan')}
+              title={t('nutrition.viewPlan')}
             >
               <Eye className="w-4 h-4" />
             </Button>
@@ -290,8 +292,8 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
               size="icon"
               onClick={() => setSelectedPlanId(plan.id)}
               className="rounded-none"
-              aria-label="Προβολή πλάνου διατροφής"
-              title="Προβολή"
+              aria-label={t('nutrition.viewPlan')}
+              title={t('nutrition.viewPlan')}
             >
               <Eye className="w-4 h-4" />
             </Button>
@@ -308,8 +310,8 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Διατροφή</h2>
-          <p className="text-sm text-gray-500">Τα προγράμματα διατροφής σου</p>
+          <h2 className="text-xl font-semibold">{t('nutrition.title')}</h2>
+          <p className="text-sm text-gray-500">{t('nutrition.subtitle')}</p>
         </div>
       </div>
 
@@ -317,11 +319,11 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
         <TabsList className="rounded-none">
           <TabsTrigger value="active" className="rounded-none">
             <Utensils className="w-4 h-4 mr-2" />
-            Ενεργά ({totalActive})
+            {t('nutrition.active')} ({totalActive})
           </TabsTrigger>
           <TabsTrigger value="history" className="rounded-none">
             <History className="w-4 h-4 mr-2" />
-            Ιστορικό ({historyAssignments.length})
+            {t('nutrition.history')} ({historyAssignments.length})
           </TabsTrigger>
         </TabsList>
 
@@ -331,10 +333,10 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
               <CardContent className="p-8 text-center">
                 <Utensils className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Δεν υπάρχει ενεργό πρόγραμμα
+                  {t('nutrition.noActiveProgram')}
                 </h3>
                 <p className="text-gray-500">
-                  Επικοινωνήστε με τον προπονητή σας για να σας αναθέσει ένα πρόγραμμα διατροφής.
+                  {t('nutrition.contactTrainer')}
                 </p>
               </CardContent>
             </Card>
@@ -352,10 +354,10 @@ export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ user
               <CardContent className="p-8 text-center">
                 <History className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Δεν υπάρχει ιστορικό
+                  {t('nutrition.noHistory')}
                 </h3>
                 <p className="text-gray-500">
-                  Τα ολοκληρωμένα προγράμματα διατροφής θα εμφανίζονται εδώ.
+                  {t('nutrition.completedProgramsWillAppear')}
                 </p>
               </CardContent>
             </Card>

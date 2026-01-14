@@ -102,7 +102,8 @@
     "calendar": "التقويم",
     "testsEvaluations": "الاختبارات والتقييمات",
     "paymentsSubscriptions": "المدفوعات والاشتراكات",
-    "unknownTab": "علامة تبويب غير معروفة"
+    "unknownTab": "علامة تبويب غير معروفة",
+    "nutrition": "التغذية"
   },
   "auth": {
     "signOut": "تسجيل الخروج"
@@ -241,6 +242,18 @@
     "date": "التاريخ",
     "errorLoadingReceipts": "خطأ في تحميل الإيصالات",
     "errorLoadingPurchases": "خطأ في تحميل المشتريات"
+  },
+  "nutrition": {
+    "title": "التغذية",
+    "subtitle": "برامج التغذية الخاصة بك",
+    "active": "نشط",
+    "history": "السجل",
+    "noActiveProgram": "لا يوجد برنامج نشط",
+    "contactTrainer": "تواصل مع مدربك لتعيين برنامج تغذية لك.",
+    "noHistory": "لا يوجد سجل",
+    "completedProgramsWillAppear": "ستظهر برامج التغذية المكتملة هنا.",
+    "nutritionPlan": "برنامج التغذية",
+    "viewPlan": "عرض خطة التغذية"
   },
   "shop": {
     "shop": "المتجر",

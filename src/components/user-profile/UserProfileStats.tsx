@@ -889,7 +889,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               <span className="text-[#00ffba]"> </span>
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              Διατροφή
+              {t('overview.nutrition')}
             </div>
           </button>
 
