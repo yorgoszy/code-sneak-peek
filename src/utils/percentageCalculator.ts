@@ -165,29 +165,134 @@ export { isCardioExercise };
 /**
  * Επεξεργάζεται όλες τις ασκήσεις ενός προγράμματος και υπολογίζει %1RM ή %MAS
  */
+/**
+ * Υπολογίζει kg από percentage_1rm (αριθμητικό πεδίο) για έναν χρήστη
+ */
+export const calculateKgFromPercentage1RM = async (
+  percentage1rm: number | string | null | undefined,
+  exerciseId: string,
+  userId: string
+): Promise<string> => {
+  if (!percentage1rm) return '';
+  
+  const percentage = parseFloat(String(percentage1rm).replace(',', '.'));
+  if (isNaN(percentage) || percentage <= 0) return '';
+  
+  try {
+    // Πρώτα ψάχνουμε στο user_exercise_1rm
+    const { data: oneRMRecords, error } = await supabase
+      .from('user_exercise_1rm' as any)
+      .select('weight')
+      .eq('user_id', userId)
+      .eq('exercise_id', exerciseId)
+      .order('recorded_date', { ascending: false })
+      .limit(1);
+    
+    let oneRM: number | null = null;
+    
+    if (!error && oneRMRecords && oneRMRecords.length > 0) {
+      oneRM = (oneRMRecords[0] as any).weight;
+    } else {
+      // Αν δεν βρέθηκε, ψάχνουμε στις συνδεδεμένες ασκήσεις (strength_variant)
+      const { data: relationships } = await supabase
+        .from('exercise_relationships')
+        .select('exercise_id, related_exercise_id')
+        .eq('relationship_type', 'strength_variant')
+        .or(`exercise_id.eq.${exerciseId},related_exercise_id.eq.${exerciseId}`);
+      
+      if (relationships && relationships.length > 0) {
+        const linkedExerciseIds = relationships.map(rel => 
+          rel.exercise_id === exerciseId ? rel.related_exercise_id : rel.exercise_id
+        );
+        
+        const { data: linkedData } = await supabase
+          .from('user_exercise_1rm' as any)
+          .select('weight')
+          .eq('user_id', userId)
+          .in('exercise_id', linkedExerciseIds)
+          .order('recorded_date', { ascending: false })
+          .limit(1);
+        
+        if (linkedData && linkedData.length > 0) {
+          oneRM = (linkedData[0] as any).weight;
+        }
+      }
+    }
+    
+    if (!oneRM) {
+      console.warn(`Δεν βρέθηκε 1RM για χρήστη ${userId} και άσκηση ${exerciseId}`);
+      return '';
+    }
+    
+    const calculatedWeight = (oneRM * percentage) / 100;
+    let roundedWeight = Math.round(calculatedWeight);
+    
+    // Διασφάλιση ότι είναι άρτιος αριθμός
+    if (roundedWeight % 2 !== 0) {
+      const lowerEven = roundedWeight - 1;
+      const upperEven = roundedWeight + 1;
+      if (Math.abs(calculatedWeight - lowerEven) < Math.abs(calculatedWeight - upperEven)) {
+        roundedWeight = lowerEven;
+      } else {
+        roundedWeight = upperEven;
+      }
+    }
+    
+    console.log(`✅ Calculated kg for user ${userId}: ${percentage}% of ${oneRM} = ${roundedWeight}kg`);
+    return roundedWeight.toString();
+  } catch (error) {
+    console.error('Σφάλμα υπολογισμού kg από %1RM:', error);
+    return '';
+  }
+};
+
+/**
+ * Επεξεργάζεται όλες τις ασκήσεις ενός προγράμματος και υπολογίζει %1RM ή %MAS
+ */
 export const processTemplateForUser = async (
   programData: any,
   userId: string
 ): Promise<any> => {
-  if (!programData.program_weeks) return programData;
+  // Υποστηρίζουμε και weeks και program_weeks
+  const weeks = programData.program_weeks || programData.weeks;
+  if (!weeks) return programData;
   
   const processedWeeks = await Promise.all(
-    programData.program_weeks.map(async (week: any) => {
-      if (!week.program_days) return week;
+    weeks.map(async (week: any) => {
+      const days = week.program_days || [];
+      if (!days.length) return week;
       
       const processedDays = await Promise.all(
-        week.program_days.map(async (day: any) => {
-          if (!day.program_blocks) return day;
+        days.map(async (day: any) => {
+          const blocks = day.program_blocks || [];
+          if (!blocks.length) return day;
           
           const processedBlocks = await Promise.all(
-            day.program_blocks.map(async (block: any) => {
-              if (!block.program_exercises) return block;
+            blocks.map(async (block: any) => {
+              const exercises = block.program_exercises || [];
+              if (!exercises.length) return block;
               
               const processedExercises = await Promise.all(
-                block.program_exercises.map(async (exercise: any) => {
-                  // Παίρνουμε το όνομα της άσκησης για να ξέρουμε αν είναι cardio
+                exercises.map(async (exercise: any) => {
                   const exerciseName = exercise.exercises?.name || '';
                   
+                  // 🔧 ΔΙΟΡΘΩΣΗ: Ελέγχουμε πρώτα το percentage_1rm πεδίο
+                  if (exercise.percentage_1rm && parseFloat(String(exercise.percentage_1rm).replace(',', '.')) > 0) {
+                    const calculatedKg = await calculateKgFromPercentage1RM(
+                      exercise.percentage_1rm,
+                      exercise.exercise_id,
+                      userId
+                    );
+                    
+                    if (calculatedKg) {
+                      return {
+                        ...exercise,
+                        kg: calculatedKg
+                      };
+                    }
+                  }
+                  
+                  // Fallback: Έλεγχος για kg string format (π.χ. "85%1rm")
                   const calculatedKg = await calculate1RMPercentage(
                     exercise.kg,
                     exercise.exercise_id,
@@ -223,8 +328,16 @@ export const processTemplateForUser = async (
     })
   );
   
-  return {
-    ...programData,
-    program_weeks: processedWeeks
-  };
+  // Επιστρέφουμε με το ίδιο key που είχε
+  if (programData.program_weeks) {
+    return {
+      ...programData,
+      program_weeks: processedWeeks
+    };
+  } else {
+    return {
+      ...programData,
+      weeks: processedWeeks
+    };
+  }
 };
