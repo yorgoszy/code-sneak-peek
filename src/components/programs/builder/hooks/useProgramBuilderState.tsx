@@ -22,6 +22,7 @@ export interface Day {
   test_types?: string[];
   is_competition_day?: boolean;
   is_esd_day?: boolean;
+  is_recovery_day?: boolean;
   /** Upper body effort type: DE (Dynamic Effort) or ME (Max Effort) */
   upper_effort?: EffortType;
   /** Lower body effort type: DE (Dynamic Effort) or ME (Max Effort) */
