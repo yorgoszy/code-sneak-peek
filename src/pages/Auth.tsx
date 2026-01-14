@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +18,10 @@ const Auth = () => {
   const [isResettingPasswords, setIsResettingPasswords] = useState(false);
   const [signupPassword, setSignupPassword] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [signupFeedback, setSignupFeedback] = useState<
+    | { variant: "default" | "destructive"; title: string; description?: string }
+    | null
+  >(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
@@ -76,6 +81,7 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setSignupFeedback(null);
 
     const formData = new FormData(e.currentTarget);
     const email = formData.get("signup-email") as string;
@@ -101,6 +107,7 @@ const Auth = () => {
     if (passwordErrors.length > 0) {
       const msg = `Ο κωδικός πρέπει να περιέχει: ${passwordErrors.join(', ')}.`;
       setPasswordError(msg);
+      setSignupFeedback({ variant: "destructive", title: "Μη έγκυρος κωδικός", description: msg });
       toast({
         title: "Μη έγκυρος κωδικός",
         description: msg,
@@ -161,6 +168,11 @@ const Auth = () => {
           errorDescription = error.message || "Παρουσιάστηκε σφάλμα κατά την εγγραφή. Δοκιμάστε ξανά.";
         }
         
+        setSignupFeedback({
+          variant: "destructive",
+          title: errorTitle,
+          description: errorDescription,
+        });
         toast({
           title: errorTitle,
           description: errorDescription,
@@ -179,31 +191,55 @@ const Auth = () => {
         
         if (isExistingUser) {
           console.log('📝 User already exists (fake success):', email);
-          toast({
+          const feedback = {
+            variant: "destructive" as const,
             title: "Το email υπάρχει ήδη",
-            description: "Υπάρχει ήδη εγγεγραμμένος χρήστης με αυτό το email. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.",
-            variant: "destructive",
+            description:
+              "Υπάρχει ήδη εγγεγραμμένος χρήστης με αυτό το email. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.",
+          };
+          setSignupFeedback(feedback);
+          toast({
+            title: feedback.title,
+            description: feedback.description,
+            variant: feedback.variant,
           });
           setIsLoading(false);
           return;
         }
 
         console.log('📝 New user created, profile will be created by trigger:', data.user.id);
-        toast({
+        const okFeedback = {
+          variant: "default" as const,
           title: "Εγγραφή ολοκληρώθηκε!",
           description: "Ελέγξτε το email σας για επιβεβαίωση. Μπορείτε να συνδεθείτε αμέσως.",
+        };
+        setSignupFeedback(okFeedback);
+        toast({
+          title: okFeedback.title,
+          description: okFeedback.description,
         });
       } else {
         // Δεν δημιουργήθηκε χρήστης χωρίς error - πιθανώς υπάρχει ήδη
         console.log('📝 No user returned, likely already exists');
-        toast({
+        const failFeedback = {
+          variant: "destructive" as const,
           title: "Πρόβλημα εγγραφής",
           description: "Δεν ήταν δυνατή η εγγραφή. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.",
+        };
+        setSignupFeedback(failFeedback);
+        toast({
+          title: failFeedback.title,
+          description: failFeedback.description,
           variant: "destructive",
         });
       }
     } catch (error: any) {
       console.error('Signup error:', error);
+      setSignupFeedback({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: error.message || "Παρουσιάστηκε σφάλμα κατά την εγγραφή.",
+      });
       toast({
         title: "Σφάλμα",
         description: error.message || "Παρουσιάστηκε σφάλμα κατά την εγγραφή.",
@@ -542,12 +578,27 @@ const Auth = () => {
                       <p id="password-help" className={`text-xs ${passwordError ? 'text-red-600' : 'text-[hsl(var(--auth-gray))]'}`}>
                         Τουλάχιστον 8 χαρακτήρες με κεφαλαία/μικρά (οποιασδήποτε γλώσσας), αριθμούς και σύμβολα.
                       </p>
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
-                      disabled={isLoading || !!passwordError || signupPassword.length === 0}
-                    >
+                     </div>
+
+                     {signupFeedback && (
+                       <Alert
+                         variant={signupFeedback.variant}
+                         className="rounded-none bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))]"
+                       >
+                         <AlertTitle className="text-[hsl(var(--auth-gray))]">{signupFeedback.title}</AlertTitle>
+                         {signupFeedback.description && (
+                           <AlertDescription className="text-[hsl(var(--auth-gray))]">
+                             {signupFeedback.description}
+                           </AlertDescription>
+                         )}
+                       </Alert>
+                     )}
+
+                     <Button 
+                       type="submit" 
+                       className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
+                       disabled={isLoading || !!passwordError || signupPassword.length === 0}
+                     >
                       {isLoading ? "Εγγραφή..." : "Εγγραφή"}
                     </Button>
                     <div className="text-xs text-[hsl(var(--auth-gray))] text-center">
