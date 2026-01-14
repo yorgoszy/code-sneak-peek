@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
@@ -7,7 +7,8 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { EditableExerciseItem } from './EditableExerciseItem';
-import { ExerciseSelector } from './ExerciseSelector';
+import { ExerciseSelectionDialog } from '@/components/programs/builder/ExerciseSelectionDialog';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EditableBlockProps {
   block: any;
@@ -27,6 +28,15 @@ export const EditableBlock: React.FC<EditableBlockProps> = ({
   isDragging = false
 }) => {
   const [showExerciseSelector, setShowExerciseSelector] = useState(false);
+  const [exercises, setExercises] = useState<any[]>([]);
+  
+  useEffect(() => {
+    const fetchExercises = async () => {
+      const { data } = await supabase.from('exercises').select('*').order('name');
+      setExercises(data || []);
+    };
+    fetchExercises();
+  }, []);
   
   const {
     attributes,
@@ -46,12 +56,12 @@ export const EditableBlock: React.FC<EditableBlockProps> = ({
     
     if (!over || active.id === over.id) return;
     
-    // Handle exercise reordering logic here if needed
     console.log('Exercise reorder:', active.id, 'to', over.id);
   };
 
   const handleAddExercise = (exerciseId: string) => {
     onAddExercise(block.id, exerciseId);
+    setShowExerciseSelector(false);
   };
 
   return (
@@ -135,9 +145,10 @@ export const EditableBlock: React.FC<EditableBlockProps> = ({
         </div>
       )}
 
-      <ExerciseSelector
-        isOpen={showExerciseSelector}
-        onClose={() => setShowExerciseSelector(false)}
+      <ExerciseSelectionDialog
+        open={showExerciseSelector}
+        onOpenChange={setShowExerciseSelector}
+        exercises={exercises}
         onSelectExercise={handleAddExercise}
       />
     </div>
