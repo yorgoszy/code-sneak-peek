@@ -54,15 +54,15 @@ const CoachProgramCardsContent = () => {
           end_date,
           created_at,
           coach_id,
-          programs:program_id (
+          programs!fk_program_assignments_program_id (
             id,
             name,
             description,
-            program_weeks (
+            program_weeks!fk_program_weeks_program_id (
               id,
               name,
               week_number,
-              program_days (
+              program_days!fk_program_days_week_id (
                 id,
                 name,
                 day_number,
@@ -71,7 +71,7 @@ const CoachProgramCardsContent = () => {
                 is_competition_day,
                 is_esd_day,
                 is_recovery_day,
-                program_blocks (
+                program_blocks!fk_program_blocks_day_id (
                   id,
                   name,
                   block_order,
@@ -79,7 +79,7 @@ const CoachProgramCardsContent = () => {
                   workout_format,
                   workout_duration,
                   block_sets,
-                  program_exercises (
+                  program_exercises!fk_program_exercises_block_id (
                     id,
                     exercise_id,
                     sets,
@@ -99,7 +99,7 @@ const CoachProgramCardsContent = () => {
               )
             )
           ),
-          app_users:user_id (
+          app_users!fk_program_assignments_user_id (
             id,
             name,
             email,
