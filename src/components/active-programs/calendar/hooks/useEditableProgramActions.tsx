@@ -347,11 +347,11 @@ export const useEditableProgramActions = (
           block_id: blockId,
           exercise_id: exerciseId,
           sets: 1,
-          reps: '8-12',
+          reps: '',
           kg: '',
-          percentage_1rm: 0,
+          percentage_1rm: null,
           tempo: '',
-          rest: '60',
+          rest: '',
           notes: '',
           exercise_order: 1
         })
