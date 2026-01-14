@@ -131,7 +131,8 @@
     "weekly": "Εβδομαδιαία",
     "monthly": "Μηνιαία",
     "yearly": "Ετήσια",
-    "noCompletedWorkouts": "Δεν υπάρχουν ολοκληρωμένες προπονήσεις"
+    "noCompletedWorkouts": "Δεν υπάρχουν ολοκληρωμένες προπονήσεις",
+    "weekShort": "Εβδ"
   },
   "progress": {
     "selectExercises": "Επιλογή Ασκήσεων",

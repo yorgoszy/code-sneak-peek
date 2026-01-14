@@ -11,14 +11,23 @@ import { ProgramCard } from "@/components/active-programs/ProgramCard";
 import { TrainingTypesPieChart } from "./TrainingTypesPieChart";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { format } from "date-fns";
-import { el } from "date-fns/locale";
+import { el, enUS, ar } from "date-fns/locale";
+
+const getDateLocale = (lang: string) => {
+  switch (lang) {
+    case 'el': return el;
+    case 'ar': return ar;
+    default: return enUS;
+  }
+};
 
 interface UserProfileProgramCardsProps {
   userProfile: any;
 }
 
 export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = ({ userProfile }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const { data: allActivePrograms = [], isLoading, error, refetch } = useAllPrograms();
   const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
@@ -301,7 +310,7 @@ export const UserProfileProgramCards: React.FC<UserProfileProgramCardsProps> = (
             month={currentMonth}
             onMonthChange={setCurrentMonth}
             onDayClick={handleDayClick}
-            locale={el}
+            locale={dateLocale}
             className="rounded-none border"
             modifiers={{
               scheduled: (date) => getDateStatus(date) === 'scheduled',
