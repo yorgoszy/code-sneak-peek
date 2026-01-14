@@ -212,12 +212,13 @@ export const useWorkoutState = (
   };
 
   // Helper function to parse time-based reps (e.g., "0:20" = 20 seconds, "1:30" = 90 seconds)
+  // Also handles split reps like "8/8" = 8+8 = 16 reps
   const parseTimeReps = (reps: string): { isTime: boolean; seconds: number; count: number } => {
     if (!reps) return { isTime: false, seconds: 0, count: 0 };
     
     const repsStr = String(reps).trim();
     
-    // Check if it's a time format (contains ":")
+    // Check if it's a time format (contains ":" - like "0:20" or "1:30")
     if (repsStr.includes(':')) {
       const parts = repsStr.split(':');
       if (parts.length === 2) {
@@ -225,6 +226,13 @@ export const useWorkoutState = (
         const seconds = parseInt(parts[1]) || 0;
         return { isTime: true, seconds: minutes * 60 + seconds, count: 0 };
       }
+    }
+    
+    // Check for split reps format (e.g., "8/8" = 8+8 = 16 reps)
+    if (repsStr.includes('/')) {
+      const parts = repsStr.split('/');
+      const totalReps = parts.reduce((sum, part) => sum + (parseInt(part) || 0), 0);
+      return { isTime: false, seconds: 0, count: totalReps };
     }
     
     // Regular number reps
