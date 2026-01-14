@@ -224,7 +224,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[95vw] max-w-7xl h-[90vh] overflow-hidden rounded-none p-2 sm:p-4 md:p-6 flex flex-col">
+        <DialogContent className="w-[95vw] max-w-7xl h-[90vh] overflow-hidden rounded-none p-2 sm:p-4 md:p-6 flex flex-col gap-0">
           <EditableProgramDialogHeader
             programData={programData}
             assignment={assignment}
@@ -237,7 +237,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
           />
 
           {/* Scrollable Content - Horizontal layout for weeks */}
-          <div className="flex-1 overflow-y-auto overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0 pt-1">
+          <div className="flex-1 overflow-y-auto overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
             {/* Εβδομάδες - Side by Side Layout */}
             <div 
               className="flex gap-3 md:gap-4 min-w-max"
