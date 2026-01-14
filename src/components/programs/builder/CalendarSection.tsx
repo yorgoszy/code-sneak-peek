@@ -17,6 +17,10 @@ interface CalendarSectionProps {
   totalDays: number;
   onTrainingDatesChange: (dates: Date[]) => void;
   isCoach?: boolean;
+  /** όταν ολοκληρωθεί η επιλογή ημερών, εμφανίζεται κουμπί ανάθεσης */
+  onAssign?: () => void;
+  canAssign?: boolean;
+  assignLoading?: boolean;
 }
 
 const WEEKDAY_OPTIONS = [
@@ -33,7 +37,10 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   program,
   totalDays,
   onTrainingDatesChange,
-  isCoach = false
+  isCoach = false,
+  onAssign,
+  canAssign = false,
+  assignLoading = false
 }) => {
   const [startDate, setStartDate] = useState<string>('');
   const [weekdays, setWeekdays] = useState<number[]>([]);
@@ -169,7 +176,13 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
 
           <div className="w-full lg:w-64 space-y-3">
             <WeekProgressDisplay weekProgress={weekProgress} />
-            <SelectionProgress selectedCount={selectedDatesAsStrings.length} totalDays={computedTotalDays} />
+            <SelectionProgress
+              selectedCount={selectedDatesAsStrings.length}
+              totalDays={computedTotalDays}
+              onAssign={onAssign}
+              canAssign={canAssign}
+              loading={assignLoading}
+            />
           </div>
         </div>
       </div>
