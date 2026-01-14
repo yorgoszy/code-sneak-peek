@@ -31,6 +31,7 @@ interface CoachUser {
   phone?: string;
   birth_date?: string;
   avatar_url?: string;
+  photo_url?: string;
   notes?: string;
   user_status: string;
   created_at: string;
@@ -293,9 +294,9 @@ const MyAthletesContent = () => {
                       <TableRow key={athlete.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={athlete.avatar_url || ''} />
-                              <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
+                            <Avatar className="h-8 w-8 rounded-full">
+                              <AvatarImage src={(athlete as any).photo_url || athlete.avatar_url || ''} />
+                              <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
                                 {athlete.name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
@@ -360,9 +361,9 @@ const MyAthletesContent = () => {
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center space-x-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={athlete.avatar_url || ''} />
-                            <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
+                          <Avatar className="h-10 w-10 rounded-full">
+                            <AvatarImage src={(athlete as any).photo_url || athlete.avatar_url || ''} />
+                            <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
                               {athlete.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>

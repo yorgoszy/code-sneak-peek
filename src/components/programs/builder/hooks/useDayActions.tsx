@@ -359,6 +359,8 @@ export const useDayActions = (
                 is_test_day: clipboardDay.is_test_day,
                 test_types: clipboardDay.test_types,
                 is_competition_day: clipboardDay.is_competition_day,
+                is_esd_day: clipboardDay.is_esd_day,
+                is_recovery_day: clipboardDay.is_recovery_day,
                 upper_effort: clipboardDay.upper_effort,
                 lower_effort: clipboardDay.lower_effort,
                 program_blocks: (clipboardDay.program_blocks || []).map((block: any, blockIdx: number) => ({

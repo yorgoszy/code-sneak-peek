@@ -58,6 +58,7 @@ interface CoachSubscription {
     name: string;
     email: string;
     avatar_url: string | null;
+    photo_url: string | null;
   } | null;
 }
 
@@ -91,7 +92,7 @@ const CoachSubscriptionsContent = () => {
         .select(`
           *,
           subscription_types (id, name, price, duration_months),
-          app_users!coach_subscriptions_user_id_fkey (name, email, avatar_url)
+          app_users!coach_subscriptions_user_id_fkey (name, email, avatar_url, photo_url)
         `)
         .eq("coach_id", coachId)
         .order("created_at", { ascending: false });
@@ -401,17 +402,17 @@ const CoachSubscriptionsContent = () => {
           <TabsTrigger value="subscriptions" className="rounded-none text-xs sm:text-sm">
             Συνδρομές
           </TabsTrigger>
-          <TabsTrigger value="types" className="rounded-none text-xs sm:text-sm">
-            Τύποι
-          </TabsTrigger>
-          <TabsTrigger value="overview" className="rounded-none text-xs sm:text-sm">
-            Επισκόπηση
-          </TabsTrigger>
           <TabsTrigger value="receipts" className="rounded-none text-xs sm:text-sm">
             Αποδείξεις
           </TabsTrigger>
           <TabsTrigger value="expenses" className="rounded-none text-xs sm:text-sm">
             Έξοδα
+          </TabsTrigger>
+          <TabsTrigger value="overview" className="rounded-none text-xs sm:text-sm">
+            Επισκόπηση
+          </TabsTrigger>
+          <TabsTrigger value="types" className="rounded-none text-xs sm:text-sm">
+            Τύποι
           </TabsTrigger>
         </TabsList>
 
@@ -475,9 +476,9 @@ const CoachSubscriptionsContent = () => {
                           <TableRow key={sub.id}>
                             <TableCell>
                               <div className="flex items-center space-x-3">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={sub.app_users?.avatar_url || ''} />
-                                  <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
+                                <Avatar className="h-8 w-8 rounded-full">
+                                  <AvatarImage src={sub.app_users?.photo_url || sub.app_users?.avatar_url || ''} />
+                                  <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
                                     {sub.app_users?.name?.charAt(0).toUpperCase() || '?'}
                                   </AvatarFallback>
                                 </Avatar>
@@ -531,9 +532,9 @@ const CoachSubscriptionsContent = () => {
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center space-x-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarImage src={sub.app_users?.avatar_url || ''} />
-                                <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba]">
+                              <Avatar className="h-10 w-10 rounded-full">
+                                <AvatarImage src={sub.app_users?.photo_url || sub.app_users?.avatar_url || ''} />
+                                <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
                                   {sub.app_users?.name?.charAt(0).toUpperCase() || '?'}
                                 </AvatarFallback>
                               </Avatar>
