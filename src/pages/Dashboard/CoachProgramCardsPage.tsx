@@ -54,7 +54,7 @@ const CoachProgramCardsContent = () => {
           end_date,
           created_at,
           coach_id,
-          programs!fk_program_assignments_program_id (
+          programs:program_id (
             id,
             name,
             description,
@@ -99,7 +99,7 @@ const CoachProgramCardsContent = () => {
               )
             )
           ),
-          app_users!fk_program_assignments_user_id (
+          app_users:user_id (
             id,
             name,
             email,
