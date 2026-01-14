@@ -170,15 +170,15 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
           {/* Items */}
           <div className="mb-2 sm:mb-3">
             <h3 className="font-semibold text-gray-900 mb-1 text-xs">Στοιχεία Συνδρομής</h3>
-            {receipt.items.map((item, index) => (
-              <div key={item.id} className="border border-gray-200 p-1 sm:p-2 mb-0.5 sm:mb-1">
+            {receipt.items?.map((item, index) => (
+              <div key={item.id || index} className="border border-gray-200 p-1 sm:p-2 mb-0.5 sm:mb-1">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-0.5 sm:mb-1">
-                  <span className="font-medium text-gray-900 text-xs mb-1 sm:mb-0">{item.description}</span>
-                  <span className="text-gray-600 text-xs">Ποσότητα: {item.quantity}</span>
+                  <span className="font-medium text-gray-900 text-xs mb-1 sm:mb-0">{item.description || '-'}</span>
+                  <span className="text-gray-600 text-xs">Ποσότητα: {item.quantity ?? 1}</span>
                 </div>
                 <div className="flex justify-between text-xs text-gray-600">
-                  <span>Τιμή μονάδας: €{item.unitPrice.toFixed(2)}</span>
-                  <span>ΦΠΑ: {item.vatRate}%</span>
+                  <span>Τιμή μονάδας: €{(item.unitPrice ?? 0).toFixed(2)}</span>
+                  <span>ΦΠΑ: {item.vatRate ?? 0}%</span>
                 </div>
               </div>
             ))}
@@ -189,16 +189,16 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
             <div className="space-y-0.5 sm:space-y-1">
               <div className="flex justify-between py-0.5 sm:py-1">
                 <span className="font-semibold text-gray-900 text-xs">Αξία Συνδρομής:</span>
-                <span className="text-gray-600 text-xs">€{receipt.subtotal.toFixed(2)}</span>
+                <span className="text-gray-600 text-xs">€{(receipt.subtotal ?? 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between py-0.5 sm:py-1">
                 <span className="font-semibold text-gray-900 text-xs">ΦΠΑ (13%):</span>
-                <span className="text-gray-600 text-xs">€{receipt.vat.toFixed(2)}</span>
+                <span className="text-gray-600 text-xs">€{(receipt.vat ?? 0).toFixed(2)}</span>
               </div>
               <div className="border-t border-[#00ffba] pt-0.5 sm:pt-1 mt-1 sm:mt-2">
                 <div className="flex justify-between">
                   <span className="text-sm sm:text-lg font-bold text-[#00ffba]">Σύνολο:</span>
-                  <span className="text-sm sm:text-lg font-bold text-[#00ffba]">€{receipt.total.toFixed(2)}</span>
+                  <span className="text-sm sm:text-lg font-bold text-[#00ffba]">€{(receipt.total ?? 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>
