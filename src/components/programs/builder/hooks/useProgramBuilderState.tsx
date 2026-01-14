@@ -107,12 +107,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   }, []);
 
   const updateProgram = useCallback((updates: Partial<ProgramStructure>) => {
-    console.log('🔄 [useProgramBuilderState] Updating program with:', updates);
-    setProgram(prev => {
-      const newProgram = { ...prev, ...updates };
-      console.log('🔄 [useProgramBuilderState] New program state:', newProgram);
-      return newProgram;
-    });
+    setProgram(prev => ({ ...prev, ...updates }));
   }, []);
 
   const resetProgram = useCallback(() => {
@@ -129,17 +124,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   }, []);
 
   const loadProgramFromData = useCallback((programData: any) => {
-    console.log('🔄 Loading program data:', programData);
-    console.log('🔄 [loadProgramFromData] Sources check:', {
-      hasWeeks: !!programData.weeks,
-      weeksLength: programData.weeks?.length || 0,
-      hasProgramWeeks: !!programData.program_weeks,
-      programWeeksLength: programData.program_weeks?.length || 0
-    });
-    
     // ΚΡΙΤΙΚΟ: Χρησιμοποιούμε program_weeks (από DB) ή weeks (αν υπάρχει ήδη στο format του builder)
     const sourceWeeks = programData.program_weeks || programData.weeks || [];
-    console.log('🔄 [loadProgramFromData] Using source with', sourceWeeks.length, 'weeks');
     
     const loadedProgram: ProgramStructure = {
       id: programData.id,
@@ -202,17 +188,6 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
         }))
       }))
     };
-
-    console.log('🔄 [loadProgramFromData] Loaded program structure:', {
-      id: loadedProgram.id,
-      weeksCount: loadedProgram.weeks.length,
-      totalDays: loadedProgram.weeks.reduce((t, w) => t + (w.program_days?.length || 0), 0),
-      totalBlocks: loadedProgram.weeks.reduce((t, w) => 
-        t + w.program_days.reduce((dt, d) => dt + (d.program_blocks?.length || 0), 0), 0),
-      totalExercises: loadedProgram.weeks.reduce((t, w) => 
-        t + w.program_days.reduce((dt, d) => 
-          dt + d.program_blocks.reduce((bt, b) => bt + (b.program_exercises?.length || 0), 0), 0), 0)
-    });
     
     setProgram(loadedProgram);
   }, [exercises]);

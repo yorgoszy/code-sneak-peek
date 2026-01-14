@@ -53,8 +53,6 @@ export const useDayActions = (
   };
 
   const addDay = (weekId: string) => {
-    console.log('🔵 addDay called with weekId:', weekId);
-    
     // Create day immediately without waiting for warm-up exercises
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
@@ -76,8 +74,6 @@ export const useDayActions = (
           program_blocks: defaultBlocks
         };
         
-        console.log('✅ Created new day with default blocks');
-        
         return {
           ...week,
           program_days: [...(week.program_days || []), newDay]
@@ -85,7 +81,6 @@ export const useDayActions = (
       }
       return week;
     });
-    console.log('🔵 Calling updateProgram with updated weeks');
     updateProgram({ weeks: updatedWeeks });
   };
 
