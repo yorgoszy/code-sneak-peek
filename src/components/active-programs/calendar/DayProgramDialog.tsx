@@ -150,7 +150,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl h-[85vh] overflow-hidden rounded-none p-3 flex flex-col">
+        <DialogContent className="max-w-lg h-[85vh] overflow-hidden rounded-none p-3 flex flex-col">
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
