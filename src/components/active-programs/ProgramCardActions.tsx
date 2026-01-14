@@ -79,17 +79,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
     <>
       <div className="flex items-center gap-1 flex-shrink-0">
         <div className="flex gap-0.5">
-          {!userMode && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 hover:bg-gray-100"
-              onClick={() => setIsProgramViewOpen(true)}
-              title={t('programs.editProgram')}
-            >
-              <Edit className="h-3 w-3" />
-            </Button>
-          )}
+          {/* Edit button hidden - exists in ProgramViewDialog */}
 
           <Button
             variant="ghost"
