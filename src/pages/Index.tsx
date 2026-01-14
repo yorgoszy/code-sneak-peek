@@ -59,7 +59,7 @@ const Index = () => {
     if (isAuthenticated) {
       navigate("/dashboard");
     } else {
-      navigate("/auth");
+      navigate(`/auth?lang=${language}`);
     }
   };
 

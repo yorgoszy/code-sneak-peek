@@ -521,7 +521,7 @@ const Auth = () => {
                   className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
                   disabled={isLoading}
                 >
-                  {isLoading ? "Αποστολή..." : "Αποστολή Email Επαναφοράς"}
+                  {isLoading ? t.authSending : t.authSendResetEmail}
                 </Button>
                 <Button 
                   type="button" 
@@ -529,24 +529,24 @@ const Auth = () => {
                   className="w-full rounded-none border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] hover:bg-[hsl(var(--auth-gray)/0.1)]"
                   onClick={() => setShowForgotPassword(false)}
                 >
-                  Επιστροφή στη Σύνδεση
+                  {t.authBackToLogin}
                 </Button>
               </form>
             ) : (
               <Tabs defaultValue="login" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 bg-[hsl(var(--auth-black))] border border-[hsl(var(--auth-gray))]">
-                  <TabsTrigger value="login" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black">Σύνδεση</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black">Εγγραφή</TabsTrigger>
+                  <TabsTrigger value="login" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black">{t.authLogin}</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black">{t.authSignup}</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-[hsl(var(--auth-gray))]">Email</Label>
+                      <Label htmlFor="email" className="text-[hsl(var(--auth-gray))]">{t.authEmail}</Label>
                       <Input id="email" name="email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password" className="text-[hsl(var(--auth-gray))]">Κωδικός</Label>
+                      <Label htmlFor="password" className="text-[hsl(var(--auth-gray))]">{t.authPassword}</Label>
                       <Input id="password" name="password" type="password" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
                     </div>
                     <Button 
@@ -554,7 +554,7 @@ const Auth = () => {
                       className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
                       disabled={isLoading}
                     >
-                      {isLoading ? "Σύνδεση..." : "Σύνδεση"}
+                      {isLoading ? t.authLoggingIn : t.authLogin}
                     </Button>
                     <div className="text-center">
                       <button
@@ -562,7 +562,7 @@ const Auth = () => {
                         onClick={() => setShowForgotPassword(true)}
                         className="text-sm text-[#cb8954] hover:underline"
                       >
-                        Ξέχασα τον κωδικό μου
+                        {t.authForgotPassword}
                       </button>
                     </div>
                   </form>
@@ -571,15 +571,15 @@ const Auth = () => {
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-[hsl(var(--auth-gray))]">Πλήρες Όνομα</Label>
-                      <Input id="name" name="name" type="text" placeholder="Το όνομά σας" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
+                      <Label htmlFor="name" className="text-[hsl(var(--auth-gray))]">{t.authFullName}</Label>
+                      <Input id="name" name="name" type="text" placeholder={t.authFullNamePlaceholder} required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-email" className="text-[hsl(var(--auth-gray))]">Email</Label>
+                      <Label htmlFor="signup-email" className="text-[hsl(var(--auth-gray))]">{t.authEmail}</Label>
                       <Input id="signup-email" name="signup-email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password" className="text-[hsl(var(--auth-gray))]">Κωδικός</Label>
+                      <Label htmlFor="signup-password" className="text-[hsl(var(--auth-gray))]">{t.authPassword}</Label>
                       <Input
                         id="signup-password"
                         name="signup-password"
@@ -598,20 +598,20 @@ const Auth = () => {
                           const specialRe = /[^A-Za-z0-9Α-ΩΆΈΉΊΌΎΏΪΫα-ωάέήίόύώϊϋΐΰ]/;
 
                           const errors: string[] = [];
-                          if (val.length < 8) errors.push("τουλάχιστον 8 χαρακτήρες");
-                          if (!lowerRe.test(val)) errors.push("μικρά γράμματα");
-                          if (!upperRe.test(val)) errors.push("κεφαλαία γράμματα");
-                          if (!numberRe.test(val)) errors.push("αριθμούς");
-                          if (!specialRe.test(val)) errors.push("ειδικούς χαρακτήρες");
+                          if (val.length < 8) errors.push(t.authPasswordMinChars);
+                          if (!lowerRe.test(val)) errors.push(t.authPasswordLowercase);
+                          if (!upperRe.test(val)) errors.push(t.authPasswordUppercase);
+                          if (!numberRe.test(val)) errors.push(language === 'el' ? "αριθμούς" : "numbers");
+                          if (!specialRe.test(val)) errors.push(language === 'el' ? "ειδικούς χαρακτήρες" : "special characters");
 
-                          setPasswordError(errors.length ? `Ο κωδικός πρέπει να περιέχει: ${errors.join(', ')}.` : null);
+                          setPasswordError(errors.length ? `${t.authPasswordRequirements} ${errors.join(', ')}.` : null);
                         }}
                         aria-invalid={!!passwordError}
                         aria-describedby="password-help"
                         className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]"
                       />
                       <p id="password-help" className={`text-xs ${passwordError ? 'text-red-600' : 'text-[hsl(var(--auth-gray))]'}`}>
-                        Τουλάχιστον 8 χαρακτήρες με κεφαλαία/μικρά (οποιασδήποτε γλώσσας), αριθμούς και σύμβολα.
+                        {t.authPasswordHint}
                       </p>
                      </div>
 
@@ -634,10 +634,10 @@ const Auth = () => {
                        className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
                        disabled={isLoading || !!passwordError || signupPassword.length === 0}
                      >
-                      {isLoading ? "Εγγραφή..." : "Εγγραφή"}
+                      {isLoading ? t.authSigningUp : t.authSignup}
                     </Button>
                     <div className="text-xs text-[hsl(var(--auth-gray))] text-center">
-                      Μετά την εγγραφή, μπορείτε να συνδεθείτε αμέσως.
+                      {t.authAfterSignup}
                     </div>
                   </form>
                 </TabsContent>
@@ -646,8 +646,8 @@ const Auth = () => {
 
 
             <div className="mt-6 text-center">
-              <Link to="/" className="text-sm text-[#cb8954] hover:underline">
-                ← Επιστροφή στην αρχική
+              <Link to={`/?lang=${language}`} className="text-sm text-[#cb8954] hover:underline">
+                {t.authBackToHome}
               </Link>
             </div>
           </CardContent>
