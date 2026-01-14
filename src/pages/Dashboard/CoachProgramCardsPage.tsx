@@ -89,7 +89,7 @@ const CoachProgramCardsContent = () => {
                     rest,
                     notes,
                     exercise_order,
-                    exercises (
+                    exercises!fk_program_exercises_exercise_id (
                       id,
                       name,
                       video_url
