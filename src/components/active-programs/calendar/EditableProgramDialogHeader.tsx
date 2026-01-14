@@ -80,7 +80,6 @@ export const EditableProgramDialogHeader: React.FC<EditableProgramDialogHeaderPr
                 className="rounded-none h-7 sm:h-8 px-2"
               >
                 <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline ml-1">Κλείσιμο</span>
               </Button>
             )}
           </div>

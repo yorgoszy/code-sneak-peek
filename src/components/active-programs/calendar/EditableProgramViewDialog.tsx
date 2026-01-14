@@ -3,13 +3,22 @@ import React from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DayProgramDialog } from './DayProgramDialog';
 import { format } from "date-fns";
-import { el } from "date-fns/locale";
+import { el, enUS, ar } from "date-fns/locale";
 import { EditableProgramDialogHeader } from './EditableProgramDialogHeader';
 import { EditableProgramWeekCard } from './EditableProgramWeekCard';
 import { useEditableProgramState } from './hooks/useEditableProgramState';
 import { useEditableProgramActions } from './hooks/useEditableProgramActions';
 import { buildDisplayWeeks } from "@/utils/programDisplayWeeks";
+import { useTranslation } from 'react-i18next';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+
+const getDateLocale = (lang: string) => {
+  switch (lang) {
+    case 'el': return el;
+    case 'ar': return ar;
+    default: return enUS;
+  }
+};
 
 interface EditableProgramViewDialogProps {
   isOpen: boolean;
@@ -28,6 +37,8 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
   editMode = false,
   onRefresh
 }) => {
+  const { i18n } = useTranslation();
+  const dateLocale = getDateLocale(i18n.language);
   const {
     selectedWeekIndex,
     setSelectedWeekIndex,
@@ -259,9 +270,10 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                     getDayLabel={(w, d) => {
                       const date = getDateForDay(w, d);
                       try {
-                        return format(date, 'EEEE', { locale: el });
+                        // Short day format: Δε, Τρ, Τε, Πε, Πα, Σα, Κυ (Greek) or Mo, Tu, We... (English)
+                        return format(date, 'EEEEEE', { locale: dateLocale });
                       } catch {
-                        return d.name || `Ημέρα ${d.day_number}`;
+                        return d.name || `Day ${d.day_number}`;
                       }
                     }}
                   />
