@@ -170,33 +170,37 @@ const Auth = () => {
         return;
       }
 
+      // ΣΗΜΑΝΤΙΚΟ: Η Supabase επιστρέφει επιτυχία (status 200) ακόμα και αν ο χρήστης υπάρχει ήδη!
+      // Πρέπει να ελέγξουμε αν ο χρήστης δημιουργήθηκε πραγματικά
       if (data.user) {
-        console.log('📝 Creating app_users profile for:', data.user.id);
-        // Create user profile in app_users table - now automatically active and general
-        const { error: profileError } = await supabase
-          .from('app_users')
-          .insert({
-            auth_user_id: data.user.id,
-            name: name,
-            email: email,
-            role: 'general', // Always general by default
-            user_status: 'active' // Always active by default
-          });
-
-        if (profileError) {
-          console.error('📝 Profile creation error:', profileError);
+        // Έλεγχος αν είναι fake success (user_repeated_signup)
+        // Αν δεν υπάρχει identities ή είναι άδειο, ο χρήστης υπάρχει ήδη
+        const isExistingUser = !data.user.identities || data.user.identities.length === 0;
+        
+        if (isExistingUser) {
+          console.log('📝 User already exists (fake success):', email);
           toast({
-            title: "Σφάλμα",
-            description: `Προέκυψε σφάλμα κατά τη δημιουργία του προφίλ: ${profileError.message}`,
+            title: "Το email υπάρχει ήδη",
+            description: "Υπάρχει ήδη εγγεγραμμένος χρήστης με αυτό το email. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.",
             variant: "destructive",
           });
-        } else {
-          console.log('📝 Profile created successfully');
-          toast({
-            title: "Εγγραφή ολοκληρώθηκε!",
-            description: "Ελέγξτε το email σας για επιβεβαίωση. Μπορείτε να συνδεθείτε αμέσως.",
-          });
+          setIsLoading(false);
+          return;
         }
+
+        console.log('📝 New user created, profile will be created by trigger:', data.user.id);
+        toast({
+          title: "Εγγραφή ολοκληρώθηκε!",
+          description: "Ελέγξτε το email σας για επιβεβαίωση. Μπορείτε να συνδεθείτε αμέσως.",
+        });
+      } else {
+        // Δεν δημιουργήθηκε χρήστης χωρίς error - πιθανώς υπάρχει ήδη
+        console.log('📝 No user returned, likely already exists');
+        toast({
+          title: "Πρόβλημα εγγραφής",
+          description: "Δεν ήταν δυνατή η εγγραφή. Δοκιμάστε να συνδεθείτε ή χρησιμοποιήστε άλλο email.",
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
       console.error('Signup error:', error);
