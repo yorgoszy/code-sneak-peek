@@ -131,7 +131,7 @@ const Navigation: React.FC<NavigationProps> = ({
                   >
                     <Globe className="h-4 w-4" />
                   </Button>
-                  <Link to="/auth">
+                  <Link to={`/auth?lang=${language}`}>
                     <Button className="login-btn rounded-none transition-colors duration-200">
                       {translations.login}
                     </Button>
