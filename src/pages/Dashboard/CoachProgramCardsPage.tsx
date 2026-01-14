@@ -41,7 +41,7 @@ const CoachProgramCardsContent = () => {
 
     setIsLoading(true);
     try {
-      // Lightweight query - μόνο τα απαραίτητα για το card (χωρίς τα exercises)
+      // Fetch assignments with full program structure for viewing
       const { data: assignments, error: assignError } = await supabase
         .from('program_assignments')
         .select(`
@@ -57,7 +57,47 @@ const CoachProgramCardsContent = () => {
           programs!fk_program_assignments_program_id (
             id,
             name,
-            description
+            description,
+            program_weeks (
+              id,
+              name,
+              week_number,
+              program_days (
+                id,
+                name,
+                day_number,
+                estimated_duration_minutes,
+                is_test_day,
+                is_competition_day,
+                is_esd_day,
+                is_recovery_day,
+                program_blocks (
+                  id,
+                  name,
+                  block_order,
+                  training_type,
+                  workout_format,
+                  workout_duration,
+                  block_sets,
+                  program_exercises (
+                    id,
+                    exercise_id,
+                    sets,
+                    reps,
+                    kg,
+                    tempo,
+                    rest,
+                    notes,
+                    exercise_order,
+                    exercises (
+                      id,
+                      name,
+                      video_url
+                    )
+                  )
+                )
+              )
+            )
           ),
           app_users!fk_program_assignments_user_id (
             id,
