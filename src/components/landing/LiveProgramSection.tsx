@@ -124,7 +124,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
   const getLoadingBarColor = (bookingsCount: number, capacity: number) => {
     const percentage = (bookingsCount / capacity) * 100;
     if (percentage === 0) return 'bg-gray-300';
-    if (percentage <= 50) return 'bg-[#00ffba]';
+    if (percentage <= 50) return 'bg-[#cb8954]';
     if (percentage <= 80) return 'bg-yellow-400';
     return 'bg-red-400';
   };
@@ -165,7 +165,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
               Live Program
             </h2>
-            <div className="w-16 h-1 bg-[#00ffba] mx-auto mb-4"></div>
+            <div className="w-16 h-1 bg-[#cb8954] mx-auto mb-4"></div>
             <p className="text-gray-400 text-sm">
               {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM/yyyy')}
             </p>
@@ -188,16 +188,16 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                     className={cn(
                       "flex-shrink-0 w-12 py-2 px-1 border rounded-none transition-all",
                       isSelected 
-                        ? "border-[#00ffba] bg-[#00ffba]/20" 
+                        ? "border-[#cb8954] bg-[#cb8954]/20" 
                         : hasBookings 
                           ? "border-gray-600 bg-gray-900"
                           : "border-gray-700 bg-gray-800",
-                      isToday && !isSelected && "ring-1 ring-[#00ffba]"
+                      isToday && !isSelected && "ring-1 ring-[#cb8954]"
                     )}
                   >
                     <div className={cn(
                       "text-[10px] font-medium",
-                      isSelected ? "text-[#00ffba]" : "text-gray-400"
+                      isSelected ? "text-[#cb8954]" : "text-gray-400"
                     )}>
                       {dayNames[index]}
                     </div>
@@ -208,7 +208,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                       {format(day, 'dd')}
                     </div>
                     {hasBookings && (
-                      <div className="w-1.5 h-1.5 bg-[#00ffba] rounded-full mx-auto mt-1" />
+                      <div className="w-1.5 h-1.5 bg-[#cb8954] rounded-full mx-auto mt-1" />
                     )}
                   </button>
                 );
@@ -232,7 +232,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
               return (
                 <div key={time} className="border border-gray-700 rounded-none bg-gray-900">
                   <div className="bg-gray-800 px-3 py-1.5 border-b border-gray-700">
-                    <span className="text-xs font-semibold text-[#00ffba]">{time}</span>
+                    <span className="text-xs font-semibold text-[#cb8954]">{time}</span>
                   </div>
 
                   <div className="p-2 grid grid-cols-2 gap-2">
@@ -288,7 +288,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
           <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
             Live Program
           </h2>
-          <div className="w-16 h-1 bg-[#00ffba] mx-auto mb-4"></div>
+          <div className="w-16 h-1 bg-[#cb8954] mx-auto mb-4"></div>
           <p className="text-gray-400">
             {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM/yyyy')}
           </p>
@@ -310,8 +310,8 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   key={dateStr} 
                   className={cn(
                     "text-center p-2 border rounded-none",
-                    hasBookings ? 'bg-[#00ffba]/10 border-[#00ffba]/30' : 'bg-gray-900 border-gray-700',
-                    isToday && 'ring-1 ring-[#00ffba]'
+                    hasBookings ? 'bg-[#cb8954]/10 border-[#cb8954]/30' : 'bg-gray-900 border-gray-700',
+                    isToday && 'ring-1 ring-[#cb8954]'
                   )}
                 >
                   <div className="font-medium text-xs text-gray-300">
@@ -329,7 +329,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
           {sortedTimes.map((time) => (
             <div key={time} className="grid grid-cols-8 gap-1 min-w-[800px]">
               <div className="bg-gray-900 border border-gray-700 rounded-none p-2 flex items-center justify-center">
-                <span className="text-xs font-medium text-[#00ffba]">{time}</span>
+                <span className="text-xs font-medium text-[#cb8954]">{time}</span>
               </div>
 
               {weekDays.map((day) => {
