@@ -44,6 +44,7 @@ const AVAILABLE_HOURS = [
 export const GymBookingsCalendarView = () => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
+  const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const [sections, setSections] = useState<BookingSection[]>([]);
   const [weekBookings, setWeekBookings] = useState<{ [key: string]: GymBooking[] }>({});
   const [sectionBookingCounts, setSectionBookingCounts] = useState<{ [sectionId: string]: number }>({});
@@ -240,6 +241,8 @@ export const GymBookingsCalendarView = () => {
                       : 'border-gray-200 hover:border-gray-300 text-gray-600'
                   }`}
                   onClick={() => toggleSection(section.id)}
+                  onMouseEnter={() => setHoveredSection(section.id)}
+                  onMouseLeave={() => setHoveredSection(null)}
                 >
                   {isSelected && <Check className="w-3 h-3 text-[#00ffba]" />}
                   <span className="text-xs font-medium">{section.name}</span>
@@ -360,18 +363,22 @@ export const GymBookingsCalendarView = () => {
                           const currentBookings = slotBookings.length;
                           const capacity = section.max_capacity;
 
+                          const isHovered = hoveredSection === section.id;
+
                           return (
                             <div 
                               key={section.id} 
                               className={`space-y-0.5 p-1 rounded-none transition-all ${
                                 isSelected 
                                   ? 'bg-[#00ffba]/20 border border-[#00ffba]' 
-                                  : 'bg-white border border-gray-200'
+                                  : isHovered
+                                    ? 'bg-[#cb8954]/20 border border-[#cb8954]'
+                                    : 'bg-white border border-gray-200'
                               }`}
                             >
                               {/* Section Name */}
                               <div className={`text-[9px] font-medium truncate ${
-                                isSelected ? 'text-gray-900' : 'text-gray-700'
+                                isSelected || isHovered ? 'text-gray-900' : 'text-gray-700'
                               }`}>
                                 {section.name}
                               </div>
