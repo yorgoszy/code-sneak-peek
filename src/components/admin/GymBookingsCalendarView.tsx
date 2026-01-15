@@ -46,6 +46,7 @@ export const GymBookingsCalendarView = () => {
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [sections, setSections] = useState<BookingSection[]>([]);
   const [weekBookings, setWeekBookings] = useState<{ [key: string]: GymBooking[] }>({});
+  const [sectionBookingCounts, setSectionBookingCounts] = useState<{ [sectionId: string]: number }>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -116,14 +117,21 @@ export const GymBookingsCalendarView = () => {
 
       // Group bookings by date
       const groupedBookings: { [key: string]: GymBooking[] } = {};
+      // Count bookings per section
+      const sectionCounts: { [sectionId: string]: number } = {};
+      
       (existingBookings || []).forEach(booking => {
         if (!groupedBookings[booking.booking_date]) {
           groupedBookings[booking.booking_date] = [];
         }
         groupedBookings[booking.booking_date].push(booking);
+        
+        // Count per section
+        sectionCounts[booking.section_id] = (sectionCounts[booking.section_id] || 0) + 1;
       });
 
       setWeekBookings(groupedBookings);
+      setSectionBookingCounts(sectionCounts);
     } catch (error) {
       console.error('Error fetching bookings:', error);
     }
@@ -248,7 +256,7 @@ export const GymBookingsCalendarView = () => {
                 >
                   {isSelected && <Check className="w-3 h-3 text-[#00ffba]" />}
                   <span className="text-xs font-medium">{section.name}</span>
-                  <span className="text-xs text-gray-400">({section.max_capacity})</span>
+                  <span className="text-xs text-gray-400">({sectionBookingCounts[section.id] || 0})</span>
                 </div>
               );
             })}
