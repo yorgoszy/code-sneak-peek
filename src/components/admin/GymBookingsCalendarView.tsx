@@ -260,50 +260,6 @@ export const GymBookingsCalendarView = () => {
 
     return (
       <div className="space-y-3">
-        {/* Section Selection - Compact for Mobile */}
-        <Card className="rounded-none">
-          <CardHeader className="py-2 px-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xs">Τμήματα</CardTitle>
-              {hasMoreSections && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 text-xs px-2"
-                  onClick={() => setShowAllSections(!showAllSections)}
-                >
-                  {showAllSections ? (
-                    <>Λιγότερα <ChevronUp className="w-3 h-3 ml-1" /></>
-                  ) : (
-                    <>+{sections.length - 4} <ChevronDown className="w-3 h-3 ml-1" /></>
-                  )}
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 px-3 pb-2">
-            <div className="flex flex-wrap gap-1.5">
-              {visibleSections.map((section) => {
-                const isSelected = selectedSections.includes(section.id);
-                return (
-                  <div
-                    key={section.id}
-                    className={`px-2 py-1 border rounded-none cursor-pointer transition-colors flex items-center gap-1 ${
-                      isSelected 
-                        ? 'border-[#00ffba] bg-[#00ffba]/10 text-black' 
-                        : 'border-gray-200 text-gray-600'
-                    }`}
-                    onClick={() => toggleSection(section.id)}
-                  >
-                    {isSelected && <Check className="w-2.5 h-2.5 text-[#00ffba]" />}
-                    <span className="text-[10px] font-medium">{section.name}</span>
-                    <span className="text-[10px] text-gray-400">({sectionBookingCounts[section.id] || 0})</span>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Week Navigation - Compact */}
         <div className="flex items-center justify-between px-1">
@@ -451,36 +407,6 @@ export const GymBookingsCalendarView = () => {
   // Desktop/Tablet View
   return (
     <div className="max-w-full mx-auto space-y-4 overflow-x-auto">
-      {/* Section Selection */}
-      <Card className="rounded-none">
-        <CardHeader className="py-3">
-          <CardTitle className="text-sm">Επιλογή Τμημάτων</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex flex-wrap gap-2">
-            {sections.map((section) => {
-              const isSelected = selectedSections.includes(section.id);
-              return (
-                <div
-                  key={section.id}
-                  className={`px-3 py-1.5 border rounded-none cursor-pointer transition-colors flex items-center gap-1 ${
-                    isSelected 
-                      ? 'border-[#00ffba] bg-[#00ffba]/10 text-black' 
-                      : 'border-gray-200 hover:border-gray-300 text-gray-600'
-                  }`}
-                  onClick={() => toggleSection(section.id)}
-                  onMouseEnter={() => setHoveredSection(section.id)}
-                  onMouseLeave={() => setHoveredSection(null)}
-                >
-                  {isSelected && <Check className="w-3 h-3 text-[#00ffba]" />}
-                  <span className="text-xs font-medium">{section.name}</span>
-                  <span className="text-xs text-gray-400">({sectionBookingCounts[section.id] || 0})</span>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Week Navigation */}
       <div className="flex items-center justify-between">
@@ -583,13 +509,16 @@ export const GymBookingsCalendarView = () => {
                         return (
                           <div 
                             key={section.id} 
-                            className={`space-y-0.5 p-1 rounded-none transition-all ${
+                            className={`space-y-0.5 p-1 rounded-none transition-all cursor-pointer ${
                               isSelected 
                                 ? 'bg-[#00ffba]/20 border border-[#00ffba]' 
                                 : isHovered
                                   ? 'bg-[#cb8954]/20 border border-[#cb8954]'
-                                  : 'bg-white border border-gray-200'
+                                  : 'bg-white border border-gray-200 hover:bg-gray-50'
                             }`}
+                            onMouseEnter={() => setHoveredSection(section.id)}
+                            onMouseLeave={() => setHoveredSection(null)}
+                            onClick={() => toggleSection(section.id)}
                           >
                             {/* Section Name */}
                             <div className={`text-[9px] font-medium truncate ${
