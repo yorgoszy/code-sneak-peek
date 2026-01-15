@@ -318,126 +318,89 @@ export const GymBookingsCalendarView = () => {
             })}
           </div>
 
-          {/* Get all unique time slots across all selected sections */}
+          {/* Get all unique time slots */}
           {(() => {
-            // Collect all unique time-section combinations
-            const timeSlots = new Map<string, { time: string; sectionId: string; sectionName: string }[]>();
+            // Collect all unique times from selected sections
+            const allTimes = new Set<string>();
             
             sections.filter(s => selectedSections.includes(s.id)).forEach(section => {
-              Object.entries(section.available_hours || {}).forEach(([day, hours]) => {
-                (hours as string[]).forEach(hour => {
-                  const key = `${hour}-${section.id}`;
-                  if (!timeSlots.has(key)) {
-                    timeSlots.set(key, []);
-                  }
-                  timeSlots.get(key)!.push({ time: hour, sectionId: section.id, sectionName: section.name });
-                });
-              });
-            });
-
-            // Get unique time-section combinations and sort by time then section
-            const uniqueSlots: { time: string; sectionId: string; sectionName: string }[] = [];
-            const seenKeys = new Set<string>();
-            
-            sections.filter(s => selectedSections.includes(s.id)).forEach(section => {
-              const allHours = new Set<string>();
               Object.values(section.available_hours || {}).forEach((hours: any) => {
-                (hours as string[]).forEach(h => allHours.add(h));
-              });
-              
-              Array.from(allHours).sort().forEach(hour => {
-                const key = `${hour}-${section.id}`;
-                if (!seenKeys.has(key)) {
-                  seenKeys.add(key);
-                  uniqueSlots.push({ time: hour, sectionId: section.id, sectionName: section.name });
-                }
+                (hours as string[]).forEach(h => allTimes.add(h));
               });
             });
 
-            // Sort by time, then by section name
-            uniqueSlots.sort((a, b) => {
-              if (a.time !== b.time) return a.time.localeCompare(b.time);
-              return a.sectionName.localeCompare(b.sectionName);
-            });
+            // Sort times
+            const sortedTimes = Array.from(allTimes).sort();
 
-            return uniqueSlots.map(({ time, sectionId, sectionName }) => {
-              const section = sections.find(s => s.id === sectionId);
-              if (!section) return null;
-
+            return sortedTimes.map((time) => {
               return (
-                <div key={`${time}-${sectionId}`} className="grid grid-cols-8 gap-1">
-                  {/* Time & Section Label */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-none p-1 flex flex-col justify-center">
+                <div key={time} className="grid grid-cols-8 gap-1">
+                  {/* Time Label - Only once per time */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-none p-1 flex items-center justify-center">
                     <span className="text-xs font-medium">{time}</span>
-                    <span className="text-[10px] text-gray-500 truncate">{sectionName}</span>
                   </div>
 
                   {/* Day Cells */}
                   {weekDays.map((day) => {
                     const dateStr = format(day, 'yyyy-MM-dd');
                     const dayOfWeek = day.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-                    const sectionHours = section.available_hours?.[dayOfWeek] || [];
-                    const hasSlot = sectionHours.includes(time);
+                    
+                    // Get sections that have this time slot on this day
+                    const sectionsForSlot = sections.filter(s => {
+                      if (!selectedSections.includes(s.id)) return false;
+                      const sectionHours = s.available_hours?.[dayOfWeek] || [];
+                      return sectionHours.includes(time);
+                    });
 
-                    if (!hasSlot) {
+                    if (sectionsForSlot.length === 0) {
                       return (
                         <div key={dateStr} className="bg-gray-100 border border-gray-200 rounded-none p-1" />
                       );
                     }
 
                     const dayBookings = weekBookings[dateStr] || [];
-                    const slotBookings = dayBookings.filter(booking => {
-                      const bookingTime = booking.booking_time.length > 5 
-                        ? booking.booking_time.substring(0, 5) 
-                        : booking.booking_time;
-                      return bookingTime === time && booking.section_id === sectionId;
-                    });
-
-                    const currentBookings = slotBookings.length;
-                    const capacity = section.max_capacity;
 
                     return (
-                      <div key={dateStr} className="border border-gray-200 rounded-none bg-white p-1">
-                        {/* Capacity Bar */}
-                        <div className="flex items-center gap-1">
-                          <div className="flex gap-0.5 flex-1">
-                            {Array.from({ length: Math.min(capacity, 10) }).map((_, index) => (
-                              <div
-                                key={index}
-                                className={`h-1.5 flex-1 rounded-none ${
-                                  index < currentBookings
-                                    ? getLoadingBarColor(currentBookings, capacity)
-                                    : 'bg-gray-200'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-[10px] text-gray-500 flex-shrink-0">
-                            {currentBookings}/{capacity}
-                          </span>
-                        </div>
+                      <div key={dateStr} className="border border-gray-200 rounded-none bg-white p-1 space-y-1">
+                        {sectionsForSlot.map((section) => {
+                          const slotBookings = dayBookings.filter(booking => {
+                            const bookingTime = booking.booking_time.length > 5 
+                              ? booking.booking_time.substring(0, 5) 
+                              : booking.booking_time;
+                            return bookingTime === time && booking.section_id === section.id;
+                          });
 
-                        {/* Position Bubbles */}
-                        {slotBookings.length > 0 && (
-                          <div className="flex gap-0.5 mt-1 flex-wrap">
-                            {slotBookings.slice(0, 4).map((booking, index) => (
-                              <div
-                                key={index}
-                                className="w-3 h-3 rounded-full bg-[#00ffba] flex items-center justify-center"
-                                title={`${booking.app_users?.name}`}
-                              >
-                                <span className="text-[8px] font-bold text-black">
-                                  {booking.app_users?.name?.charAt(0) || 'Α'}
+                          const currentBookings = slotBookings.length;
+                          const capacity = section.max_capacity;
+
+                          return (
+                            <div key={section.id} className="space-y-0.5">
+                              {/* Section Name */}
+                              <div className="text-[9px] font-medium text-gray-700 truncate">
+                                {section.name}
+                              </div>
+                              
+                              {/* Capacity Bar */}
+                              <div className="flex items-center gap-1">
+                                <div className="flex gap-0.5 flex-1">
+                                  {Array.from({ length: Math.min(capacity, 8) }).map((_, index) => (
+                                    <div
+                                      key={index}
+                                      className={`h-1 flex-1 rounded-none ${
+                                        index < currentBookings
+                                          ? getLoadingBarColor(currentBookings, capacity)
+                                          : 'bg-gray-200'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="text-[9px] text-gray-500 flex-shrink-0">
+                                  {currentBookings}/{capacity}
                                 </span>
                               </div>
-                            ))}
-                            {slotBookings.length > 4 && (
-                              <div className="w-3 h-3 rounded-full bg-gray-300 flex items-center justify-center">
-                                <span className="text-[8px] font-bold text-gray-600">+{slotBookings.length - 4}</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   })}
