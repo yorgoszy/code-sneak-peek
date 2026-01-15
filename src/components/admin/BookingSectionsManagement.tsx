@@ -195,16 +195,8 @@ export const BookingSectionsManagement = () => {
   }
 
   return (
-    <div className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
-      <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-between'}`}>
-        <div>
-          <h2 className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900`}>
-            {isMobile ? 'Τμήματα' : 'Διαχείριση Τμημάτων'}
-          </h2>
-          {!isMobile && (
-            <p className="text-gray-600">Δημιουργήστε και διαχειριστείτε τα τμήματα του γυμναστηρίου</p>
-          )}
-        </div>
+    <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
+      <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-end'}`}>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button 
@@ -288,34 +280,28 @@ export const BookingSectionsManagement = () => {
         </Dialog>
       </div>
 
-      <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3'} ${isMobile ? 'gap-3' : 'gap-4 lg:gap-6'}`}>
+      <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'} ${isMobile ? 'gap-2' : 'gap-3'}`}>
         {sections.map((section) => (
           <Card key={section.id} className={`rounded-none ${!section.is_active ? 'opacity-50' : ''}`}>
-            <CardHeader className={isMobile ? 'p-3 pb-2' : ''}>
-              <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center justify-between'}`}>
-                <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>{section.name}</CardTitle>
-                <div className="flex items-center space-x-1">
-                  <Badge variant={section.is_active ? "default" : "secondary"} className="rounded-none text-xs">
-                    {section.is_active ? 'Ενεργό' : 'Ανενεργό'}
-                  </Badge>
-                </div>
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-medium text-sm truncate">{section.name}</span>
+                <Badge variant={section.is_active ? "default" : "secondary"} className="rounded-none text-xs ml-2 flex-shrink-0">
+                  {section.is_active ? 'Ενεργό' : 'Ανενεργό'}
+                </Badge>
               </div>
               {section.description && (
-                <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600`}>{section.description}</p>
+                <p className="text-xs text-gray-600 mb-2 truncate">{section.description}</p>
               )}
-            </CardHeader>
-            <CardContent className={isMobile ? 'p-3 pt-0' : ''}>
-              <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
-                <div className="flex items-center space-x-2">
-                  <Users className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-gray-500`} />
-                  <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
-                    {isMobile ? `Χωρητικότητα: ${section.max_capacity}` : `Μέγιστη χωρητικότητα: ${section.max_capacity} άτομα`}
-                  </span>
+              <div className="space-y-1 text-xs text-gray-600 mb-2">
+                <div className="flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  <span>Χωρητικότητα: {section.max_capacity}</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-gray-500`} />
-                  <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
-                    {isMobile ? 'Ώρες: ' : 'Διαθέσιμες ώρες: '}{
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span className="truncate">
+                    {
                       Object.entries(section.available_hours)
                         .filter(([day, hours]) => hours && hours.length > 0)
                         .map(([day, hours]) => `${day}: ${hours.length}h`)
@@ -323,70 +309,54 @@ export const BookingSectionsManagement = () => {
                     }
                   </span>
                 </div>
-                <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'space-x-2'} pt-2`}>
-                  <Button
-                    variant="outline"
-                    size={isMobile ? "sm" : "sm"}
-                    onClick={() => handleEdit(section)}
-                    className={`rounded-none ${isMobile ? 'flex-1' : 'flex-1'}`}
-                  >
-                    <Edit className={`${isMobile ? 'w-3 h-3 mr-1' : 'w-3 h-3 mr-1'}`} />
-                    {isMobile ? 'Επεξεργασία' : 'Επεξεργασία'}
-                  </Button>
-                  {!isMobile && (
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEdit(section)}
+                  className="rounded-none h-7 px-2"
+                >
+                  <Edit className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant={section.is_active ? "destructive" : "default"}
+                  size="sm"
+                  onClick={() => handleToggleActive(section)}
+                  className="rounded-none h-7 px-2 text-xs"
+                >
+                  {section.is_active ? 'Off' : 'On'}
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
                     <Button
-                      variant={section.is_active ? "destructive" : "default"}
+                      variant="ghost"
                       size="sm"
-                      onClick={() => handleToggleActive(section)}
-                      className="rounded-none"
+                      className="rounded-none h-7 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
                     >
-                      {section.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
+                      <Trash2 className="w-3 h-3" />
                     </Button>
-                  )}
-                  {isMobile && (
-                    <Button
-                      variant={section.is_active ? "destructive" : "default"}
-                      size="sm"
-                      onClick={() => handleToggleActive(section)}
-                      className="rounded-none flex-1"
-                    >
-                      {section.is_active ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
-                    </Button>
-                  )}
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className={`rounded-none ${isMobile ? 'px-3' : 'px-2'}`}
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-none">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Διαγραφή Τμήματος</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Είστε σίγουροι ότι θέλετε να διαγράψετε το τμήμα "{section.name}";
+                        <br />
+                        <strong>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.</strong>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => handleDelete(section)}
+                        className="bg-red-600 hover:bg-red-700 rounded-none"
                       >
-                        <Trash2 className="w-3 h-3" />
-                        {isMobile && <span className="ml-1 text-xs">Διαγραφή</span>}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="rounded-none">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Διαγραφή Τμήματος</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Είστε σίγουροι ότι θέλετε να διαγράψετε το τμήμα "{section.name}";
-                          <br />
-                          <strong>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.</strong>
-                          <br />
-                          Δεν μπορείτε να διαγράψετε τμήμα που έχει ενεργές κρατήσεις.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
-                        <AlertDialogAction 
-                          onClick={() => handleDelete(section)}
-                          className="bg-red-600 hover:bg-red-700 rounded-none"
-                        >
-                          Διαγραφή
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+                        Διαγραφή
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
