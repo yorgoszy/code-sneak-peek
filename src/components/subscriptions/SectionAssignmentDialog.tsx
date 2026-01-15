@@ -33,13 +33,13 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
 }) => {
   const { toast } = useToast();
   const [sections, setSections] = useState<BookingSection[]>([]);
-  const [selectedSection, setSelectedSection] = useState<string>(currentSectionId || '');
+  const [selectedSection, setSelectedSection] = useState<string>(currentSectionId || 'none');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       loadSections();
-      setSelectedSection(currentSectionId || '');
+      setSelectedSection(currentSectionId || 'none');
     }
   }, [isOpen, currentSectionId]);
 
@@ -68,14 +68,14 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
     try {
       const { error } = await supabase
         .from('app_users')
-        .update({ section_id: selectedSection || null })
+        .update({ section_id: selectedSection === 'none' ? null : selectedSection })
         .eq('id', userId);
 
       if (error) throw error;
 
       toast({
         title: "Επιτυχία",
-        description: selectedSection 
+        description: selectedSection !== 'none' 
           ? "Το τμήμα ανατέθηκε επιτυχώς" 
           : "Η ανάθεση τμήματος αφαιρέθηκε"
       });
@@ -117,7 +117,7 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
                 <SelectValue placeholder="Επιλέξτε τμήμα..." />
               </SelectTrigger>
               <SelectContent className="rounded-none">
-                <SelectItem value="" className="rounded-none">
+                <SelectItem value="none" className="rounded-none">
                   Χωρίς τμήμα
                 </SelectItem>
                 {sections.map(section => (
