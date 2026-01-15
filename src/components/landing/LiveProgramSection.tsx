@@ -159,14 +159,14 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
     const dayOfWeek = selectedDay.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
     return (
-      <section className="py-16 bg-black">
+      <section className="py-16 bg-[#cb8954]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+            <h2 className="text-3xl font-bold text-gray-700 mb-2" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
               Live Program
             </h2>
-            <div className="w-16 h-1 bg-[#cb8954] mx-auto mb-4"></div>
-            <p className="text-gray-400 text-sm">
+            <div className="w-16 h-1 bg-gray-700 mx-auto mb-4"></div>
+            <p className="text-gray-600 text-sm">
               {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}
             </p>
           </div>
@@ -269,14 +269,14 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
   // Desktop View
   return (
-    <section className="py-20 bg-black">
+    <section className="py-20 bg-[#cb8954]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+          <h2 className="text-4xl font-bold text-gray-700 mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
             Live Program
           </h2>
-          <div className="w-16 h-1 bg-[#cb8954] mx-auto mb-4"></div>
-          <p className="text-gray-400">
+          <div className="w-16 h-1 bg-gray-700 mx-auto mb-4"></div>
+          <p className="text-gray-600">
             {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}
           </p>
         </div>
@@ -297,7 +297,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                     key={dateStr} 
                     className={cn(
                       "text-center p-2 border rounded-none",
-                      hasBookings ? 'bg-[#cb8954]/10 border-[#cb8954]/30' : 'bg-gray-900 border-gray-700'
+                      hasBookings ? 'bg-black border-gray-700' : 'bg-black border-gray-700'
                     )}
                   >
                     <div className={cn(
@@ -320,7 +320,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
           {/* Time Rows */}
           {sortedTimes.map((time) => (
             <div key={time} className="grid grid-cols-8 gap-1 min-w-[800px]">
-              <div className="bg-gray-900 border border-gray-700 rounded-none p-2 flex items-center justify-center">
+              <div className="bg-black border border-gray-700 rounded-none p-2 flex items-center justify-center">
                 <span className="text-xs font-medium text-[#cb8954]">{time}</span>
               </div>
 
@@ -335,14 +335,14 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
                 if (sectionsForSlot.length === 0) {
                   return (
-                    <div key={dateStr} className="bg-gray-900/50 border border-gray-800 rounded-none p-1" />
+                    <div key={dateStr} className="bg-black/50 border border-gray-800 rounded-none p-1" />
                   );
                 }
 
                 const dayBookings = weekBookings[dateStr] || [];
 
                 return (
-                  <div key={dateStr} className="border border-gray-700 rounded-none bg-gray-900 p-1 space-y-1">
+                  <div key={dateStr} className="border border-gray-700 rounded-none bg-black p-1 space-y-1">
                     {sectionsForSlot.map((section) => {
                       const slotBookings = dayBookings.filter(booking => {
                         const bookingTime = booking.booking_time.length > 5 
@@ -362,7 +362,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                             "space-y-0.5 p-1 rounded-none transition-all cursor-pointer",
                             isHovered
                               ? 'bg-[#cb8954]/20 border border-[#cb8954]'
-                              : 'bg-gray-800 border border-gray-700 hover:bg-gray-700'
+                              : 'bg-gray-900 border border-gray-700 hover:bg-gray-800'
                           )}
                           onMouseEnter={() => setHoveredSection(section.id)}
                           onMouseLeave={() => setHoveredSection(null)}
