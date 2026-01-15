@@ -318,12 +318,12 @@ export const GymBookingsCalendarView = () => {
             })}
           </div>
 
-          {/* Get all unique time slots */}
+          {/* Get all unique time slots from ALL sections */}
           {(() => {
-            // Collect all unique times from selected sections
+            // Collect all unique times from ALL sections (not just selected)
             const allTimes = new Set<string>();
             
-            sections.filter(s => selectedSections.includes(s.id)).forEach(section => {
+            sections.forEach(section => {
               Object.values(section.available_hours || {}).forEach((hours: any) => {
                 (hours as string[]).forEach(h => allTimes.add(h));
               });
@@ -345,9 +345,8 @@ export const GymBookingsCalendarView = () => {
                     const dateStr = format(day, 'yyyy-MM-dd');
                     const dayOfWeek = day.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
                     
-                    // Get sections that have this time slot on this day
+                    // Get ALL sections that have this time slot on this day
                     const sectionsForSlot = sections.filter(s => {
-                      if (!selectedSections.includes(s.id)) return false;
                       const sectionHours = s.available_hours?.[dayOfWeek] || [];
                       return sectionHours.includes(time);
                     });
@@ -363,6 +362,7 @@ export const GymBookingsCalendarView = () => {
                     return (
                       <div key={dateStr} className="border border-gray-200 rounded-none bg-white p-1 space-y-1">
                         {sectionsForSlot.map((section) => {
+                          const isSelected = selectedSections.includes(section.id);
                           const slotBookings = dayBookings.filter(booking => {
                             const bookingTime = booking.booking_time.length > 5 
                               ? booking.booking_time.substring(0, 5) 
@@ -374,9 +374,18 @@ export const GymBookingsCalendarView = () => {
                           const capacity = section.max_capacity;
 
                           return (
-                            <div key={section.id} className="space-y-0.5">
+                            <div 
+                              key={section.id} 
+                              className={`space-y-0.5 p-1 rounded-none transition-all ${
+                                isSelected 
+                                  ? 'bg-[#00ffba]/20 border border-[#00ffba]' 
+                                  : 'bg-gray-50 opacity-50'
+                              }`}
+                            >
                               {/* Section Name */}
-                              <div className="text-[9px] font-medium text-gray-700 truncate">
+                              <div className={`text-[9px] font-medium truncate ${
+                                isSelected ? 'text-gray-900' : 'text-gray-500'
+                              }`}>
                                 {section.name}
                               </div>
                               
@@ -384,11 +393,11 @@ export const GymBookingsCalendarView = () => {
                               <div className="flex items-center gap-1">
                                 <div className="flex-1 h-1.5 bg-gray-200 rounded-none overflow-hidden">
                                   <div
-                                    className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
+                                    className={`h-full transition-all ${isSelected ? getLoadingBarColor(currentBookings, capacity) : 'bg-gray-400'}`}
                                     style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
                                   />
                                 </div>
-                                <span className="text-[9px] text-gray-500 flex-shrink-0">
+                                <span className={`text-[9px] flex-shrink-0 ${isSelected ? 'text-gray-600' : 'text-gray-400'}`}>
                                   {currentBookings}/{capacity}
                                 </span>
                               </div>
