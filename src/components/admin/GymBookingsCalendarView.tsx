@@ -56,10 +56,10 @@ export const GymBookingsCalendarView = () => {
   // Don't auto-select sections - start with none selected
 
   useEffect(() => {
-    if (selectedSections.length > 0) {
+    if (sections.length > 0) {
       fetchWeekBookings();
     }
-  }, [currentWeek, selectedSections]);
+  }, [currentWeek, sections]);
 
   const fetchSections = async () => {
     try {
@@ -88,11 +88,14 @@ export const GymBookingsCalendarView = () => {
   };
 
   const fetchWeekBookings = async () => {
-    if (selectedSections.length === 0) return;
+    if (sections.length === 0) return;
 
     try {
       const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
       const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
+      
+      // Fetch bookings for ALL sections, not just selected ones
+      const allSectionIds = sections.map(s => s.id);
       
       const { data: existingBookings, error } = await supabase
         .from('booking_sessions')
@@ -101,7 +104,7 @@ export const GymBookingsCalendarView = () => {
           section:booking_sections(name, description, max_capacity),
           app_users(name, email)
         `)
-        .in('section_id', selectedSections)
+        .in('section_id', allSectionIds)
         .gte('booking_date', format(weekStart, 'yyyy-MM-dd'))
         .lte('booking_date', format(weekEnd, 'yyyy-MM-dd'))
         .eq('booking_type', 'gym_visit')
