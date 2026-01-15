@@ -167,7 +167,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             </h2>
             <div className="w-16 h-1 bg-[#cb8954] mx-auto mb-4"></div>
             <p className="text-gray-400 text-sm">
-              {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM/yyyy')}
+              {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}
             </p>
           </div>
 
@@ -191,19 +191,18 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                         ? "border-[#cb8954] bg-[#cb8954]/20" 
                         : hasBookings 
                           ? "border-gray-600 bg-gray-900"
-                          : "border-gray-700 bg-gray-800",
-                      isToday && !isSelected && "ring-1 ring-[#cb8954]"
+                          : "border-gray-700 bg-gray-800"
                     )}
                   >
                     <div className={cn(
                       "text-[10px] font-medium",
-                      isSelected ? "text-[#cb8954]" : "text-gray-400"
+                      isToday ? "text-[#cb8954]" : isSelected ? "text-[#cb8954]" : "text-gray-400"
                     )}>
                       {dayNames[index]}
                     </div>
                     <div className={cn(
                       "text-xs font-bold",
-                      isSelected ? "text-white" : "text-gray-300"
+                      isToday ? "text-[#cb8954]" : isSelected ? "text-white" : "text-gray-300"
                     )}>
                       {format(day, 'dd')}
                     </div>
@@ -290,7 +289,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
           </h2>
           <div className="w-16 h-1 bg-[#cb8954] mx-auto mb-4"></div>
           <p className="text-gray-400">
-            {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM/yyyy')}
+            {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}
           </p>
         </div>
 
@@ -306,18 +305,23 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
               const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
               
               return (
-                <div 
-                  key={dateStr} 
-                  className={cn(
-                    "text-center p-2 border rounded-none",
-                    hasBookings ? 'bg-[#cb8954]/10 border-[#cb8954]/30' : 'bg-gray-900 border-gray-700',
-                    isToday && 'ring-1 ring-[#cb8954]'
-                  )}
-                >
-                  <div className="font-medium text-xs text-gray-300">
+                  <div 
+                    key={dateStr} 
+                    className={cn(
+                      "text-center p-2 border rounded-none",
+                      hasBookings ? 'bg-[#cb8954]/10 border-[#cb8954]/30' : 'bg-gray-900 border-gray-700'
+                    )}
+                  >
+                    <div className={cn(
+                      "font-medium text-xs",
+                      isToday ? "text-[#cb8954]" : "text-gray-300"
+                    )}>
                     {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                   </div>
-                  <div className="text-sm text-white font-bold">
+                  <div className={cn(
+                    "text-sm font-bold",
+                    isToday ? "text-[#cb8954]" : "text-white"
+                  )}>
                     {format(day, 'dd/MM')}
                   </div>
                 </div>
