@@ -195,13 +195,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                 >
                   <div className={cn(
                     "text-[9px] font-medium",
-                    isToday ? "text-[#cb8954]" : isSelected ? "text-[#cb8954]" : "text-gray-400"
+                    isToday ? "text-[#cb8954]" : "text-[#aca097]"
                   )}>
                     {dayNames[index]}
                   </div>
                   <div className={cn(
                     "text-[11px] font-bold",
-                    isToday ? "text-[#cb8954]" : isSelected ? "text-white" : "text-gray-300"
+                    isToday ? "text-[#cb8954]" : "text-[#aca097]"
                   )}>
                     {format(day, 'dd')}
                   </div>
@@ -221,6 +221,12 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
               if (sectionsForSlot.length === 0) return null;
 
               const dayBookings = weekBookings[selectedDateStr] || [];
+              
+              // Check if this time slot is currently active
+              const now = new Date();
+              const currentHour = now.getHours();
+              const slotHour = parseInt(time.split(':')[0], 10);
+              const isCurrentSlot = slotHour === currentHour;
 
               return (
                 <div key={time} className="space-y-1">
@@ -240,7 +246,10 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                         key={section.id} 
                         className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-gray-900 border border-gray-700"
                       >
-                        <span className="text-[10px] font-semibold text-[#cb8954] w-10 flex-shrink-0">{time}</span>
+                        <span className={cn(
+                          "text-[10px] font-semibold w-10 flex-shrink-0",
+                          isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]"
+                        )}>{time}</span>
                         <span className="text-[10px] font-medium text-gray-300 truncate flex-1 min-w-0">
                           {section.name}
                         </span>
@@ -302,13 +311,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   >
                     <div className={cn(
                       "font-medium text-xs",
-                      isToday ? "text-[#cb8954]" : "text-gray-300"
+                      isToday ? "text-[#cb8954]" : "text-[#aca097]"
                     )}>
                     {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                   </div>
                   <div className={cn(
                     "text-sm font-bold",
-                    isToday ? "text-[#cb8954]" : "text-white"
+                    isToday ? "text-[#cb8954]" : "text-[#aca097]"
                   )}>
                     {format(day, 'dd/MM')}
                   </div>
@@ -318,10 +327,20 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
           </div>
 
           {/* Time Rows */}
-          {sortedTimes.map((time) => (
+          {sortedTimes.map((time) => {
+            // Check if this time slot is currently active
+            const now = new Date();
+            const currentHour = now.getHours();
+            const slotHour = parseInt(time.split(':')[0], 10);
+            const isCurrentSlot = slotHour === currentHour;
+            
+            return (
             <div key={time} className="grid grid-cols-8 gap-1 min-w-[800px]">
               <div className="bg-black border border-gray-700 rounded-none p-2 flex items-center justify-center">
-                <span className="text-xs font-medium text-[#cb8954]">{time}</span>
+                <span className={cn(
+                  "text-xs font-medium",
+                  isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]"
+                )}>{time}</span>
               </div>
 
               {weekDays.map((day) => {
@@ -392,7 +411,8 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                 );
               })}
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
