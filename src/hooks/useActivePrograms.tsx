@@ -4,19 +4,35 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDateToLocalString } from '@/utils/dateUtils';
 import type { EnrichedAssignment } from './useActivePrograms/types';
 
-export const useActivePrograms = () => {
+/**
+ * Hook για fetch ενεργών προγραμμάτων
+ * @param coachId - ID του coach. Αν είναι null, φέρνει μόνο assignments χωρίς coach_id (για admin)
+ * @param isAdmin - Αν true και coachId null, φέρνει assignments με coach_id IS NULL
+ */
+export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = false) => {
   return useQuery({
-    queryKey: ['active-programs'],
+    queryKey: ['active-programs', coachId, isAdmin],
     queryFn: async (): Promise<EnrichedAssignment[]> => {
-      console.log('🔄 Fetching active programs from database...');
+      console.log('🔄 Fetching active programs from database...', { coachId, isAdmin });
       
       try {
         // Fetch program assignments first - include both active and completed programs for historical view
-        const { data: assignments, error: assignmentsError } = await supabase
+        let query = supabase
           .from('program_assignments')
           .select('*')
           .in('status', ['active', 'completed'])
           .gte('end_date', new Date().toISOString().split('T')[0]); // Only get assignments that haven't expired
+
+        // Φιλτράρισμα με βάση το coach_id
+        if (isAdmin && !coachId) {
+          // Admin χωρίς coachId: φέρνει μόνο assignments χωρίς coach_id
+          query = query.is('coach_id', null);
+        } else if (coachId) {
+          // Coach ή Admin με συγκεκριμένο coachId
+          query = query.eq('coach_id', coachId);
+        }
+        
+        const { data: assignments, error: assignmentsError } = await query;
 
         if (assignmentsError) {
           console.error('❌ Error fetching program assignments:', assignmentsError);

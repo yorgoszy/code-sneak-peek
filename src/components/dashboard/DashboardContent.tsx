@@ -24,7 +24,10 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
   
-  const { data: activePrograms = [], refetch } = useActivePrograms();
+  // Για Admin: περνάμε null ώστε να φέρει assignments χωρίς coach_id
+  // Για Coach: περνάμε το userProfile.id ώστε να φέρει μόνο τα δικά του
+  const coachIdFilter = isAdmin ? null : userProfile?.id;
+  const { data: activePrograms = [], refetch } = useActivePrograms(coachIdFilter, isAdmin);
   const { getWorkoutCompletions } = useWorkoutCompletions();
   
   // Σημερινή ημερομηνία
