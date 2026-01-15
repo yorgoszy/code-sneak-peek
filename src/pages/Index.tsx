@@ -10,6 +10,7 @@ import ProgramsSection from "@/components/landing/ProgramsSection";
 import AboutSection from "@/components/landing/AboutSection";
 import CertificatesSection from "@/components/landing/CertificatesSection";
 import EliteTrainingSection from "@/components/landing/EliteTrainingSection";
+import LiveProgramSection from "@/components/landing/LiveProgramSection";
 import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
 
@@ -150,6 +151,10 @@ const Index = () => {
       <CertificatesSection translations={correctedTranslations} />
 
       <EliteTrainingSection
+        translations={correctedTranslations}
+      />
+
+      <LiveProgramSection
         translations={correctedTranslations}
       />
 
