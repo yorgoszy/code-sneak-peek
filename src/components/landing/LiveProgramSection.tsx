@@ -122,7 +122,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
   };
 
   const getLoadingBarColor = (bookingsCount: number, capacity: number) => {
-    return 'bg-white';
+    return 'bg-[#aca097]';
   };
 
   const getAllTimes = () => {
