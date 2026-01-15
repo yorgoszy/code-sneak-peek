@@ -380,19 +380,13 @@ export const GymBookingsCalendarView = () => {
                                 {section.name}
                               </div>
                               
-                              {/* Capacity Bar */}
+                              {/* Progress Bar */}
                               <div className="flex items-center gap-1">
-                                <div className="flex gap-0.5 flex-1">
-                                  {Array.from({ length: Math.min(capacity, 8) }).map((_, index) => (
-                                    <div
-                                      key={index}
-                                      className={`h-1 flex-1 rounded-none ${
-                                        index < currentBookings
-                                          ? getLoadingBarColor(currentBookings, capacity)
-                                          : 'bg-gray-200'
-                                      }`}
-                                    />
-                                  ))}
+                                <div className="flex-1 h-1.5 bg-gray-200 rounded-none overflow-hidden">
+                                  <div
+                                    className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
+                                    style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
+                                  />
                                 </div>
                                 <span className="text-[9px] text-gray-500 flex-shrink-0">
                                   {currentBookings}/{capacity}
