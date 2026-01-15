@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, User, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { Clock, MapPin, User, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface GymBooking {
   id: string;
@@ -49,18 +51,29 @@ export const GymBookingsCalendarView = () => {
   const [weekBookings, setWeekBookings] = useState<{ [key: string]: GymBooking[] }>({});
   const [sectionBookingCounts, setSectionBookingCounts] = useState<{ [sectionId: string]: number }>({});
   const [loading, setLoading] = useState(true);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [showAllSections, setShowAllSections] = useState(false);
+  
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchSections();
   }, []);
-
-  // Don't auto-select sections - start with none selected
 
   useEffect(() => {
     if (sections.length > 0) {
       fetchWeekBookings();
     }
   }, [currentWeek, sections]);
+
+  // Set selected day to today's weekday on mount
+  useEffect(() => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    // Convert Sunday (0) to 6, and Monday (1) to 0, etc.
+    const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    setSelectedDayIndex(adjustedDay);
+  }, []);
 
   const fetchSections = async () => {
     try {
@@ -161,7 +174,6 @@ export const GymBookingsCalendarView = () => {
   const toggleSection = (sectionId: string) => {
     setSelectedSections(prev => {
       if (prev.includes(sectionId)) {
-        // Allow deselecting all sections
         return prev.filter(id => id !== sectionId);
       } else {
         return [...prev, sectionId];
@@ -190,6 +202,8 @@ export const GymBookingsCalendarView = () => {
     start: weekStart,
     end: endOfWeek(currentWeek, { weekStartsOn: 1 })
   });
+
+  const dayNames = ['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'];
 
   // Get combined capacity and available hours from all selected sections
   const getSelectedSectionsData = () => {
@@ -221,6 +235,220 @@ export const GymBookingsCalendarView = () => {
 
   const { totalCapacity, combinedHours } = getSelectedSectionsData();
 
+  // Get all unique time slots
+  const getAllTimes = () => {
+    const allTimes = new Set<string>();
+    sections.forEach(section => {
+      Object.values(section.available_hours || {}).forEach((hours: any) => {
+        (hours as string[]).forEach(h => allTimes.add(h));
+      });
+    });
+    return Array.from(allTimes).sort();
+  };
+
+  const sortedTimes = getAllTimes();
+
+  // Visible sections for mobile
+  const visibleSections = isMobile && !showAllSections ? sections.slice(0, 4) : sections;
+  const hasMoreSections = isMobile && sections.length > 4;
+
+  // Render Mobile View
+  if (isMobile) {
+    const selectedDay = weekDays[selectedDayIndex];
+    const selectedDateStr = format(selectedDay, 'yyyy-MM-dd');
+    const dayOfWeek = selectedDay.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+    return (
+      <div className="space-y-3">
+        {/* Section Selection - Compact for Mobile */}
+        <Card className="rounded-none">
+          <CardHeader className="py-2 px-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs">Τμήματα</CardTitle>
+              {hasMoreSections && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs px-2"
+                  onClick={() => setShowAllSections(!showAllSections)}
+                >
+                  {showAllSections ? (
+                    <>Λιγότερα <ChevronUp className="w-3 h-3 ml-1" /></>
+                  ) : (
+                    <>+{sections.length - 4} <ChevronDown className="w-3 h-3 ml-1" /></>
+                  )}
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0 px-3 pb-2">
+            <div className="flex flex-wrap gap-1.5">
+              {visibleSections.map((section) => {
+                const isSelected = selectedSections.includes(section.id);
+                return (
+                  <div
+                    key={section.id}
+                    className={`px-2 py-1 border rounded-none cursor-pointer transition-colors flex items-center gap-1 ${
+                      isSelected 
+                        ? 'border-[#00ffba] bg-[#00ffba]/10 text-black' 
+                        : 'border-gray-200 text-gray-600'
+                    }`}
+                    onClick={() => toggleSection(section.id)}
+                  >
+                    {isSelected && <Check className="w-2.5 h-2.5 text-[#00ffba]" />}
+                    <span className="text-[10px] font-medium">{section.name}</span>
+                    <span className="text-[10px] text-gray-400">({sectionBookingCounts[section.id] || 0})</span>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Week Navigation - Compact */}
+        <div className="flex items-center justify-between px-1">
+          <Button onClick={previousWeek} variant="ghost" size="sm" className="rounded-none h-8 px-2">
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <span className={cn(
+            "text-xs font-semibold",
+            {
+              "text-[#00ffba]": (() => {
+                const now = new Date();
+                const currentWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+                const displayWeekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
+                return format(currentWeekStart, 'yyyy-MM-dd') === format(displayWeekStart, 'yyyy-MM-dd');
+              })()
+            }
+          )}>
+            {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}
+          </span>
+          <Button onClick={nextWeek} variant="ghost" size="sm" className="rounded-none h-8 px-2">
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Day Selector - Horizontal Scroll */}
+        <ScrollArea className="w-full">
+          <div className="flex gap-1 pb-2">
+            {weekDays.map((day, index) => {
+              const dateStr = format(day, 'yyyy-MM-dd');
+              const dayBookings = weekBookings[dateStr] || [];
+              const hasBookings = dayBookings.length > 0;
+              const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+              const isSelected = index === selectedDayIndex;
+
+              return (
+                <button
+                  key={dateStr}
+                  onClick={() => setSelectedDayIndex(index)}
+                  className={cn(
+                    "flex-shrink-0 w-12 py-2 px-1 border rounded-none transition-all",
+                    isSelected 
+                      ? "border-[#00ffba] bg-[#00ffba]/20" 
+                      : hasBookings 
+                        ? "border-gray-300 bg-white"
+                        : "border-gray-200 bg-gray-50",
+                    isToday && !isSelected && "ring-1 ring-[#00ffba]"
+                  )}
+                >
+                  <div className={cn(
+                    "text-[10px] font-medium",
+                    isSelected ? "text-gray-900" : "text-gray-600"
+                  )}>
+                    {dayNames[index]}
+                  </div>
+                  <div className={cn(
+                    "text-xs font-bold",
+                    isSelected ? "text-gray-900" : "text-gray-700"
+                  )}>
+                    {format(day, 'dd')}
+                  </div>
+                  {hasBookings && (
+                    <div className="w-1.5 h-1.5 bg-[#00ffba] rounded-full mx-auto mt-1" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+
+        {/* Time Slots for Selected Day */}
+        <div className="space-y-2">
+          {sortedTimes.map((time) => {
+            // Get sections that have this time slot on this day
+            const sectionsForSlot = sections.filter(s => {
+              const sectionHours = s.available_hours?.[dayOfWeek] || [];
+              return sectionHours.includes(time);
+            });
+
+            if (sectionsForSlot.length === 0) return null;
+
+            const dayBookings = weekBookings[selectedDateStr] || [];
+
+            return (
+              <div key={time} className="border border-gray-200 rounded-none bg-white">
+                {/* Time Header */}
+                <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-200">
+                  <span className="text-xs font-semibold text-gray-700">{time}</span>
+                </div>
+
+                {/* Sections Grid */}
+                <div className="p-2 grid grid-cols-2 gap-2">
+                  {sectionsForSlot.map((section) => {
+                    const isSelected = selectedSections.includes(section.id);
+                    const slotBookings = dayBookings.filter(booking => {
+                      const bookingTime = booking.booking_time.length > 5 
+                        ? booking.booking_time.substring(0, 5) 
+                        : booking.booking_time;
+                      return bookingTime === time && booking.section_id === section.id;
+                    });
+
+                    const currentBookings = slotBookings.length;
+                    const capacity = section.max_capacity;
+
+                    return (
+                      <div 
+                        key={section.id} 
+                        className={cn(
+                          "p-2 rounded-none transition-all",
+                          isSelected 
+                            ? 'bg-[#00ffba]/20 border border-[#00ffba]' 
+                            : 'bg-gray-50 border border-gray-200'
+                        )}
+                      >
+                        <div className={cn(
+                          "text-[10px] font-medium truncate mb-1",
+                          isSelected ? 'text-gray-900' : 'text-gray-700'
+                        )}>
+                          {section.name}
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <div className="flex-1 h-2 bg-gray-200 rounded-none overflow-hidden">
+                            <div
+                              className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
+                              style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] flex-shrink-0 text-gray-600 font-medium">
+                            {currentBookings}/{capacity}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop/Tablet View
   return (
     <div className="max-w-full mx-auto space-y-4 overflow-x-auto">
       {/* Section Selection */}
@@ -298,7 +526,7 @@ export const GymBookingsCalendarView = () => {
                   }`}
                 >
                   <div className="font-medium text-xs">
-                    {['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'][day.getDay() === 0 ? 6 : day.getDay() - 1]}
+                    {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                   </div>
                   <div className="text-xs text-gray-500">
                     {format(day, 'dd/MM')}
@@ -308,103 +536,89 @@ export const GymBookingsCalendarView = () => {
             })}
           </div>
 
-          {/* Get all unique time slots from ALL sections */}
-          {(() => {
-            // Collect all unique times from ALL sections (not just selected)
-            const allTimes = new Set<string>();
-            
-            sections.forEach(section => {
-              Object.values(section.available_hours || {}).forEach((hours: any) => {
-                (hours as string[]).forEach(h => allTimes.add(h));
-              });
-            });
-
-            // Sort times
-            const sortedTimes = Array.from(allTimes).sort();
-
-            return sortedTimes.map((time) => {
-              return (
-                <div key={time} className="grid grid-cols-8 gap-1">
-                  {/* Time Label - Only once per time */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-none p-1 flex items-center justify-center">
-                    <span className="text-xs font-medium">{time}</span>
-                  </div>
-
-                  {/* Day Cells */}
-                  {weekDays.map((day) => {
-                    const dateStr = format(day, 'yyyy-MM-dd');
-                    const dayOfWeek = day.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-                    
-                    // Get ALL sections that have this time slot on this day
-                    const sectionsForSlot = sections.filter(s => {
-                      const sectionHours = s.available_hours?.[dayOfWeek] || [];
-                      return sectionHours.includes(time);
-                    });
-
-                    if (sectionsForSlot.length === 0) {
-                      return (
-                        <div key={dateStr} className="bg-gray-100 border border-gray-200 rounded-none p-1" />
-                      );
-                    }
-
-                    const dayBookings = weekBookings[dateStr] || [];
-
-                    return (
-                      <div key={dateStr} className="border border-gray-200 rounded-none bg-white p-1 space-y-1">
-                        {sectionsForSlot.map((section) => {
-                          const isSelected = selectedSections.includes(section.id);
-                          const slotBookings = dayBookings.filter(booking => {
-                            const bookingTime = booking.booking_time.length > 5 
-                              ? booking.booking_time.substring(0, 5) 
-                              : booking.booking_time;
-                            return bookingTime === time && booking.section_id === section.id;
-                          });
-
-                          const currentBookings = slotBookings.length;
-                          const capacity = section.max_capacity;
-
-                          const isHovered = hoveredSection === section.id;
-
-                          return (
-                            <div 
-                              key={section.id} 
-                              className={`space-y-0.5 p-1 rounded-none transition-all ${
-                                isSelected 
-                                  ? 'bg-[#00ffba]/20 border border-[#00ffba]' 
-                                  : isHovered
-                                    ? 'bg-[#cb8954]/20 border border-[#cb8954]'
-                                    : 'bg-white border border-gray-200'
-                              }`}
-                            >
-                              {/* Section Name */}
-                              <div className={`text-[9px] font-medium truncate ${
-                                isSelected || isHovered ? 'text-gray-900' : 'text-gray-700'
-                              }`}>
-                                {section.name}
-                              </div>
-                              
-                              {/* Progress Bar */}
-                              <div className="flex items-center gap-1">
-                                <div className="flex-1 h-1.5 bg-gray-200 rounded-none overflow-hidden">
-                                  <div
-                                    className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
-                                    style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
-                                  />
-                                </div>
-                                <span className="text-[9px] flex-shrink-0 text-gray-600">
-                                  {currentBookings}/{capacity}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
+          {/* Time Rows */}
+          {sortedTimes.map((time) => {
+            return (
+              <div key={time} className="grid grid-cols-8 gap-1">
+                {/* Time Label */}
+                <div className="bg-gray-50 border border-gray-200 rounded-none p-1 flex items-center justify-center">
+                  <span className="text-xs font-medium">{time}</span>
                 </div>
-              );
-            });
-          })()}
+
+                {/* Day Cells */}
+                {weekDays.map((day) => {
+                  const dateStr = format(day, 'yyyy-MM-dd');
+                  const dayOfWeek = day.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                  
+                  // Get ALL sections that have this time slot on this day
+                  const sectionsForSlot = sections.filter(s => {
+                    const sectionHours = s.available_hours?.[dayOfWeek] || [];
+                    return sectionHours.includes(time);
+                  });
+
+                  if (sectionsForSlot.length === 0) {
+                    return (
+                      <div key={dateStr} className="bg-gray-100 border border-gray-200 rounded-none p-1" />
+                    );
+                  }
+
+                  const dayBookings = weekBookings[dateStr] || [];
+
+                  return (
+                    <div key={dateStr} className="border border-gray-200 rounded-none bg-white p-1 space-y-1">
+                      {sectionsForSlot.map((section) => {
+                        const isSelected = selectedSections.includes(section.id);
+                        const slotBookings = dayBookings.filter(booking => {
+                          const bookingTime = booking.booking_time.length > 5 
+                            ? booking.booking_time.substring(0, 5) 
+                            : booking.booking_time;
+                          return bookingTime === time && booking.section_id === section.id;
+                        });
+
+                        const currentBookings = slotBookings.length;
+                        const capacity = section.max_capacity;
+
+                        const isHovered = hoveredSection === section.id;
+
+                        return (
+                          <div 
+                            key={section.id} 
+                            className={`space-y-0.5 p-1 rounded-none transition-all ${
+                              isSelected 
+                                ? 'bg-[#00ffba]/20 border border-[#00ffba]' 
+                                : isHovered
+                                  ? 'bg-[#cb8954]/20 border border-[#cb8954]'
+                                  : 'bg-white border border-gray-200'
+                            }`}
+                          >
+                            {/* Section Name */}
+                            <div className={`text-[9px] font-medium truncate ${
+                              isSelected || isHovered ? 'text-gray-900' : 'text-gray-700'
+                            }`}>
+                              {section.name}
+                            </div>
+                            
+                            {/* Progress Bar */}
+                            <div className="flex items-center gap-1">
+                              <div className="flex-1 h-1.5 bg-gray-200 rounded-none overflow-hidden">
+                                <div
+                                  className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
+                                  style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
+                                />
+                              </div>
+                              <span className="text-[9px] flex-shrink-0 text-gray-600">
+                                {currentBookings}/{capacity}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
