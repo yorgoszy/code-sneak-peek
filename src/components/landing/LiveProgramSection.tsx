@@ -184,9 +184,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                     "flex-1 min-w-0 py-1.5 px-0.5 border rounded-none transition-all",
                     isSelected 
                       ? "border-[#cb8954] bg-[#cb8954]/20" 
-                      : hasBookings 
-                        ? "border-gray-600 bg-gray-900"
-                        : "border-gray-700 bg-gray-800"
+                      : "border-[#aca097]/30 bg-[#aca097]/10"
                   )}
                 >
                   <div className={cn(
