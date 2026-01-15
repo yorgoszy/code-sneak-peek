@@ -325,7 +325,7 @@ export const GymBookingsOverview = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="history" className={`space-y-${isMobile ? '3' : '4'}`}>
+        <TabsContent value="history" className={`space-y-${isMobile ? '2' : '2'}`}>
           {pastBookings.length === 0 ? (
             <Card className="rounded-none">
               <CardContent className="text-center py-8">
@@ -340,6 +340,7 @@ export const GymBookingsOverview = () => {
                 booking={booking}
                 isAdmin={true}
                 onRefresh={fetchBookings}
+                isHistoryView={true}
               />
             ))
           )}
