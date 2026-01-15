@@ -320,34 +320,67 @@ export const GymBookingsCalendarView = () => {
                 
                 <div className="space-y-0.5 mt-1">
                   {availableHours.map((time: string) => {
-                    const capacity = totalCapacity;
-                    const currentBookings = getBookingCounts(dateStr, time);
                     const slotBookings = getBookingsForDateAndTime(dateStr, time);
+                    
+                    // Group bookings by section
+                    const bookingsBySection: { [sectionId: string]: GymBooking[] } = {};
+                    slotBookings.forEach(booking => {
+                      if (!bookingsBySection[booking.section_id]) {
+                        bookingsBySection[booking.section_id] = [];
+                      }
+                      bookingsBySection[booking.section_id].push(booking);
+                    });
+                    
+                    // Get only sections that have this time slot available
+                    const sectionsForThisSlot = sections.filter(s => {
+                      if (!selectedSections.includes(s.id)) return false;
+                      const sectionHours = s.available_hours?.[dayOfWeek] || [];
+                      return sectionHours.includes(time);
+                    });
+                    
+                    if (sectionsForThisSlot.length === 0) return null;
                     
                     return (
                       <div key={time} className="border border-gray-200 rounded-none bg-white">
                         <div className="p-1">
-                          <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center justify-between text-xs mb-1">
                             <span className="font-medium text-xs">{time}</span>
-                            <span className="text-xs">{currentBookings}/{capacity}</span>
                           </div>
                           
-                          {/* Loading Bar */}
-                          <div className="flex gap-0.5 my-0.5">
-                            {Array.from({ length: Math.min(capacity, 10) }).map((_, index) => (
-                              <div
-                                key={index}
-                                className={`h-1 flex-1 rounded-none ${
-                                  index < currentBookings
-                                    ? getLoadingBarColor(currentBookings, capacity)
-                                    : 'bg-gray-200'
-                                }`}
-                              />
-                            ))}
+                          {/* Show each section's capacity */}
+                          <div className="space-y-0.5">
+                            {sectionsForThisSlot.map(section => {
+                              const sectionBookings = bookingsBySection[section.id] || [];
+                              const currentBookings = sectionBookings.length;
+                              const capacity = section.max_capacity;
+                              
+                              return (
+                                <div key={section.id} className="flex items-center gap-1">
+                                  <span className="text-[9px] text-gray-500 truncate flex-shrink-0 w-12">
+                                    {section.name.substring(0, 8)}
+                                  </span>
+                                  <div className="flex gap-0.5 flex-1">
+                                    {Array.from({ length: Math.min(capacity, 10) }).map((_, index) => (
+                                      <div
+                                        key={index}
+                                        className={`h-1 flex-1 rounded-none ${
+                                          index < currentBookings
+                                            ? getLoadingBarColor(currentBookings, capacity)
+                                            : 'bg-gray-200'
+                                        }`}
+                                      />
+                                    ))}
+                                  </div>
+                                  <span className="text-[9px] text-gray-500 flex-shrink-0">
+                                    {currentBookings}/{capacity}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
                           
-                          {/* Position Bubbles - Show max 6 for space */}
-                          {currentBookings > 0 && (
+                          {/* Position Bubbles */}
+                          {slotBookings.length > 0 && (
                             <div className="flex gap-0.5 mt-0.5 flex-wrap">
                               {slotBookings.slice(0, 6).map((booking, index) => (
                                 <div
@@ -360,9 +393,9 @@ export const GymBookingsCalendarView = () => {
                                   </span>
                                 </div>
                               ))}
-                              {currentBookings > 6 && (
+                              {slotBookings.length > 6 && (
                                 <div className="w-3 h-3 rounded-full bg-gray-300 flex items-center justify-center">
-                                  <span className="text-[8px] font-bold text-gray-600">+{currentBookings - 6}</span>
+                                  <span className="text-[8px] font-bold text-gray-600">+{slotBookings.length - 6}</span>
                                 </div>
                               )}
                             </div>
