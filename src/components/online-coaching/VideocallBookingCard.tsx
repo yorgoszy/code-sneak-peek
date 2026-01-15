@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Video, User, ExternalLink, Check, X } from "lucide-react";
+import { Calendar, Clock, Video, User, ExternalLink, Check, X, Trash2 } from "lucide-react";
 import { format, isToday, isTomorrow, isPast, isWithinInterval, addMinutes, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import { el } from 'date-fns/locale';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface VideocallBooking {
   id: string;
@@ -31,18 +41,21 @@ interface VideocallBookingCardProps {
   booking: VideocallBooking;
   isAdmin?: boolean;
   onRefresh?: () => void;
+  isHistoryView?: boolean;
 }
 
 export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({ 
   booking, 
   isAdmin = false,
-  onRefresh 
+  onRefresh,
+  isHistoryView = false
 }) => {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const bookingDateTime = new Date(`${booking.booking_date} ${booking.booking_time}`);
   const now = new Date();
   const meetingWindow = {
-    start: addMinutes(bookingDateTime, -15), // 15 minutes before
-    end: addMinutes(bookingDateTime, 60)     // 60 minutes after
+    start: addMinutes(bookingDateTime, -15),
+    end: addMinutes(bookingDateTime, 60)
   };
   
   const canJoinMeeting = isWithinInterval(now, meetingWindow);
@@ -56,16 +69,16 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
   const getStatusBadge = () => {
     if (booking.status === 'pending') {
-      return <Badge variant="outline" className="rounded-none bg-yellow-50 text-yellow-700 border-yellow-200">Εκκρεμεί</Badge>;
+      return <Badge variant="outline" className="rounded-none bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">Εκκρεμεί</Badge>;
     }
     if (booking.status === 'rejected') {
-      return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200">Απορρίφθηκε</Badge>;
+      return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200 text-xs">Απορρίφθηκε</Badge>;
     }
     if (booking.status === 'completed') {
       return (
         <Badge 
           variant="secondary" 
-          className={`rounded-none ${isAdmin ? 'cursor-pointer hover:bg-gray-300' : ''}`}
+          className={`rounded-none text-xs ${isAdmin ? 'cursor-pointer hover:bg-gray-300' : ''}`}
           onClick={isAdmin ? handleToggleComplete : undefined}
         >
           Ολοκληρωμένη
@@ -73,28 +86,26 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
       );
     }
     if (canJoinMeeting && booking.status === 'confirmed') {
-      return <Badge className="rounded-none bg-[#00ffba] text-black">Ενεργή</Badge>;
+      return <Badge className="rounded-none bg-[#00ffba] text-black text-xs">Ενεργή</Badge>;
     }
     if (booking.status === 'confirmed') {
       return (
         <Badge 
           variant="outline" 
-          className={`rounded-none bg-green-50 text-green-700 border-green-200 ${isAdmin ? 'cursor-pointer hover:bg-green-100' : ''}`}
+          className={`rounded-none bg-green-50 text-green-700 border-green-200 text-xs ${isAdmin ? 'cursor-pointer hover:bg-green-100' : ''}`}
           onClick={isAdmin ? handleToggleComplete : undefined}
         >
           Εγκεκριμένη
         </Badge>
       );
     }
-    return <Badge variant="outline" className="rounded-none">Προγραμματισμένη</Badge>;
+    return <Badge variant="outline" className="rounded-none text-xs">Προγραμματισμένη</Badge>;
   };
 
   const getTimeRemaining = () => {
-    // For admin, show time remaining for pending and confirmed bookings
     if (isAdmin) {
       if (isPastMeeting || (booking.status !== 'confirmed' && booking.status !== 'pending')) return null;
     } else {
-      // For users, only show for confirmed bookings
       if (isPastMeeting || booking.status !== 'confirmed') return null;
     }
     
@@ -116,7 +127,6 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
   const handleJoinMeeting = () => {
     if (booking.meeting_link) {
-      // Get admin name or fallback to Admin
       const adminName = 'Admin';
       const meetingUrl = `${booking.meeting_link}#userInfo.displayName="${adminName}"&config.prejoinPageEnabled=false&config.startWithVideoMuted=false&config.startWithAudioMuted=false`;
       window.open(meetingUrl, '_blank');
@@ -125,7 +135,6 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
   const handleApprove = async () => {
     try {
-      // Generate unique meeting link
       const meetingId = `meeting-${booking.id}-${Date.now()}`;
       const meetingLink = `https://meet.jit.si/${meetingId}`;
 
@@ -139,7 +148,6 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
       if (error) throw error;
 
-      // Send approval notification
       try {
         await supabase.functions.invoke('send-videocall-notifications', {
           body: {
@@ -153,8 +161,6 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
       toast.success('Η βιντεοκλήση εγκρίθηκε και δημιουργήθηκε το meeting link!');
       onRefresh?.();
-      
-      // Ενημέρωση του Sidebar bubble
       window.dispatchEvent(new CustomEvent('videocall-status-changed'));
     } catch (error) {
       console.error('Error approving booking:', error);
@@ -171,7 +177,6 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
       if (error) throw error;
 
-      // Send rejection notification
       try {
         await supabase.functions.invoke('send-videocall-notifications', {
           body: {
@@ -183,7 +188,6 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
         console.error('Error sending rejection notification:', notificationError);
       }
 
-      // Return videocall to user's available packages
       try {
         const { data: activePackage } = await supabase
           .from('videocall_packages')
@@ -228,8 +232,6 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
 
       toast.success('Η βιντεοκλήση απορρίφθηκε και επιστράφηκε στα διαθέσιμα πακέτα');
       onRefresh?.();
-      
-      // Ενημέρωση του Sidebar bubble
       window.dispatchEvent(new CustomEvent('videocall-status-changed'));
     } catch (error) {
       console.error('Error rejecting booking:', error);
@@ -256,9 +258,7 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
           : 'Η βιντεοκλήση επαναφέρθηκε σε εγκεκριμένη!'
       );
       
-      // Ενημέρωση τοπικού state για άμεση αντίδραση
       booking.status = newStatus;
-      
       onRefresh?.();
     } catch (error) {
       console.error('Error toggling completion status:', error);
@@ -266,106 +266,149 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('booking_sessions')
+        .delete()
+        .eq('id', booking.id);
+
+      if (error) throw error;
+
+      toast.success('Η βιντεοκλήση διαγράφηκε!');
+      onRefresh?.();
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή της βιντεοκλήσης');
+    }
+  };
+
   return (
-    <Card className="rounded-none hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="flex items-center gap-2">
-                <Video className="w-5 h-5 text-[#00ffba]" />
-                <span className="font-medium">{booking.section?.name || 'Videocall Session'}</span>
+    <>
+      <Card className="rounded-none hover:shadow-md transition-shadow">
+        <CardContent className="p-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1">
+                  <Video className="w-4 h-4 text-[#00ffba] flex-shrink-0" />
+                  <span className="font-medium text-sm truncate">{booking.section?.name || 'Videocall Session'}</span>
+                </div>
+                {getStatusBadge()}
               </div>
-              {getStatusBadge()}
-            </div>
-            
-            <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>{getDateLabel()}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                <span>{booking.booking_time?.slice(0, 5)}</span>
-              </div>
-            </div>
-
-            {isAdmin && booking.user && (
-              <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
-                <User className="w-4 h-4" />
-                <span>{booking.user.name}</span>
-                <span className="text-gray-400">({booking.user.email})</span>
-              </div>
-            )}
-
-            {booking.notes && (
-              <p className="text-sm text-gray-500 mb-2">
-                {booking.notes}
-              </p>
-            )}
-
-            {booking.meeting_link && (
-              <div className="text-xs text-gray-400 bg-gray-50 p-2 rounded-none border">
-                <strong>Meeting Link:</strong> <br />
-                <a href={booking.meeting_link} target="_blank" rel="noopener noreferrer" className="text-[#00ffba] hover:underline break-all">
-                  {booking.meeting_link}
-                </a>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            {/* Admin approve/reject buttons for pending bookings */}
-            {isAdmin && booking.status === 'pending' && (
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleApprove}
-                  className="bg-green-600 hover:bg-green-700 text-white rounded-none"
-                  size="sm"
-                >
-                  <Check className="w-4 h-4 mr-1" />
-                  Έγκριση
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleReject}
-                  className="rounded-none"
-                  size="sm"
-                >
-                  <X className="w-4 h-4 mr-1" />
-                  Απόρριψη
-                </Button>
-              </div>
-            )}
-
-            {/* Meeting controls for confirmed bookings */}
-            {booking.status === 'confirmed' && booking.meeting_link && (
-              <div className="flex flex-col gap-2">
-                <Button
-                  onClick={handleJoinMeeting}
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                  size="sm"
-                >
-                  <Video className="w-4 h-4 mr-2" />
-                  Συμμετοχή
-                </Button>
-                {getTimeRemaining() && (
-                  <div className="text-xs text-gray-500 text-center">
-                    Απομένουν: {getTimeRemaining()}
+              
+              <div className="flex items-center gap-3 text-xs text-gray-600 mt-1">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{getDateLabel()}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>{booking.booking_time?.slice(0, 5)}</span>
+                </div>
+                {isAdmin && booking.user && (
+                  <div className="flex items-center gap-1">
+                    <User className="w-3 h-3" />
+                    <span className="truncate">{booking.user.name}</span>
                   </div>
                 )}
               </div>
-            )}
 
-            {/* Time remaining for admin panel (for all confirmed/pending bookings) */}
-            {isAdmin && booking.status !== 'rejected' && booking.status !== 'completed' && getTimeRemaining() && !booking.meeting_link && (
-              <div className="text-xs text-gray-500 text-center">
-                Απομένουν: {getTimeRemaining()}
-              </div>
-            )}
+              {booking.notes && (
+                <p className="text-xs text-gray-500 mt-1 truncate">
+                  {booking.notes}
+                </p>
+              )}
+
+              {booking.meeting_link && !isHistoryView && (
+                <div className="text-xs text-gray-400 bg-gray-50 p-1 mt-1 border">
+                  <a href={booking.meeting_link} target="_blank" rel="noopener noreferrer" className="text-[#00ffba] hover:underline break-all truncate block">
+                    {booking.meeting_link}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {/* Admin approve/reject buttons for pending bookings */}
+              {isAdmin && booking.status === 'pending' && (
+                <>
+                  <Button
+                    onClick={handleApprove}
+                    className="bg-green-600 hover:bg-green-700 text-white rounded-none h-7 px-2"
+                    size="sm"
+                  >
+                    <Check className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleReject}
+                    className="rounded-none h-7 px-2"
+                    size="sm"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </>
+              )}
+
+              {/* Meeting controls for confirmed bookings */}
+              {booking.status === 'confirmed' && booking.meeting_link && !isHistoryView && (
+                <div className="flex flex-col items-center gap-1">
+                  <Button
+                    onClick={handleJoinMeeting}
+                    className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-7 px-2"
+                    size="sm"
+                  >
+                    <Video className="w-3 h-3 mr-1" />
+                    <span className="text-xs">Συμμετοχή</span>
+                  </Button>
+                  {getTimeRemaining() && (
+                    <div className="text-xs text-gray-500">
+                      {getTimeRemaining()}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Time remaining for admin panel */}
+              {isAdmin && booking.status !== 'rejected' && booking.status !== 'completed' && getTimeRemaining() && !booking.meeting_link && !isHistoryView && (
+                <div className="text-xs text-gray-500">
+                  {getTimeRemaining()}
+                </div>
+              )}
+
+              {/* Delete button for history view */}
+              {isAdmin && isHistoryView && (
+                <Button
+                  variant="ghost"
+                  onClick={() => setDeleteDialogOpen(true)}
+                  className="rounded-none h-7 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                  size="sm"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogDescription>
+              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Η βιντεοκλήση θα διαγραφεί οριστικά.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 rounded-none">
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
