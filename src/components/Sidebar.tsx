@@ -236,9 +236,16 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
       if (error) throw error;
 
-      // Παίρνουμε τα acknowledged payment IDs από localStorage (ίδια λογική με AdminShop)
-      const acknowledgedIds = JSON.parse(localStorage.getItem('acknowledgedPayments') || '[]');
-      const acknowledgedPaymentIds = new Set(acknowledgedIds);
+      // Φέρνουμε τα acknowledged payments από τη βάση δεδομένων
+      const { data: acknowledgedPayments, error: ackError } = await supabase
+        .from('acknowledged_payments')
+        .select('payment_id');
+
+      if (ackError) throw ackError;
+
+      const acknowledgedPaymentIds = new Set(
+        acknowledgedPayments?.map(ack => ack.payment_id) || []
+      );
 
       // Υπολογίζουμε τις νέες αγορές (όσες δεν έχουν επισημανθεί ως "ενημερώθηκα")
       const newPurchasesData = allPayments?.filter(payment => 
