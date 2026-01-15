@@ -8,6 +8,7 @@ import Navigation from "@/components/landing/Navigation";
 import HeroSection from "@/components/landing/HeroSection";
 import ProgramsSection from "@/components/landing/ProgramsSection";
 import AboutSection from "@/components/landing/AboutSection";
+import CertificatesSection from "@/components/landing/CertificatesSection";
 import EliteTrainingSection from "@/components/landing/EliteTrainingSection";
 import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
@@ -146,8 +147,9 @@ const Index = () => {
         onSetActiveAboutSection={setActiveAboutSection}
       />
 
+      <CertificatesSection translations={correctedTranslations} />
 
-      <EliteTrainingSection 
+      <EliteTrainingSection
         translations={correctedTranslations}
       />
 
