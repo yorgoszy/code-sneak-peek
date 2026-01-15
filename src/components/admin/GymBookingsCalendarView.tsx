@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, User, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Clock, MapPin, User, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-
+import { AttendanceDetailsDialog } from "./AttendanceDetailsDialog";
+import { QRScannerAttendance } from "./QRScannerAttendance";
 interface GymBooking {
   id: string;
   booking_date: string;
@@ -53,6 +54,16 @@ export const GymBookingsCalendarView = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [showAllSections, setShowAllSections] = useState(false);
+  
+  // Dialog states
+  const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
+  const [selectedSlotInfo, setSelectedSlotInfo] = useState<{
+    sectionName: string;
+    date: string;
+    time: string;
+    attendees: GymBooking[];
+  } | null>(null);
+  const [qrScannerOpen, setQrScannerOpen] = useState(false);
   
   const isMobile = useIsMobile();
 
@@ -116,7 +127,7 @@ export const GymBookingsCalendarView = () => {
         .select(`
           *,
           section:booking_sections(name, description, max_capacity),
-          app_users(name, email)
+          app_users(name, email, avatar_url)
         `)
         .in('section_id', allSectionIds)
         .gte('booking_date', format(weekStart, 'yyyy-MM-dd'))
@@ -191,6 +202,16 @@ export const GymBookingsCalendarView = () => {
 
   const nextWeek = () => {
     setCurrentWeek(new Date(currentWeek.getTime() + 7 * 24 * 60 * 60 * 1000));
+  };
+
+  const openAttendanceDialog = (sectionName: string, date: string, time: string, bookings: GymBooking[]) => {
+    setSelectedSlotInfo({
+      sectionName,
+      date,
+      time,
+      attendees: bookings
+    });
+    setAttendanceDialogOpen(true);
   };
 
   if (loading) {
@@ -368,11 +389,18 @@ export const GymBookingsCalendarView = () => {
                       <div 
                         key={section.id} 
                         className={cn(
-                          "p-2 rounded-none transition-all",
+                          "p-2 rounded-none transition-all cursor-pointer",
                           isSelected 
                             ? 'bg-[#00ffba]/20 border border-[#00ffba]' 
-                            : 'bg-gray-50 border border-gray-200'
+                            : currentBookings > 0
+                              ? 'bg-gray-50 border border-gray-300'
+                              : 'bg-gray-50 border border-gray-200'
                         )}
+                        onClick={() => {
+                          if (currentBookings > 0) {
+                            openAttendanceDialog(section.name, selectedDateStr, time, slotBookings);
+                          }
+                        }}
                       >
                         <div className={cn(
                           "text-[10px] font-medium truncate mb-1",
@@ -406,14 +434,26 @@ export const GymBookingsCalendarView = () => {
 
   // Desktop/Tablet View
   return (
+    <>
     <div className="max-w-full mx-auto space-y-4 overflow-x-auto">
 
-      {/* Week Navigation */}
+      {/* Week Navigation with QR Scanner */}
       <div className="flex items-center justify-between">
-        <Button onClick={previousWeek} variant="outline" size="sm" className="rounded-none">
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Προηγ.
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={previousWeek} variant="outline" size="sm" className="rounded-none">
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Προηγ.
+          </Button>
+          <Button 
+            onClick={() => setQrScannerOpen(true)} 
+            variant="outline" 
+            size="sm" 
+            className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+          >
+            <Camera className="w-4 h-4 mr-1" />
+            QR Scan
+          </Button>
+        </div>
         <h3 className={cn(
           "text-sm font-semibold",
           {
@@ -514,11 +554,19 @@ export const GymBookingsCalendarView = () => {
                                 ? 'bg-[#00ffba]/20 border border-[#00ffba]' 
                                 : isHovered
                                   ? 'bg-[#cb8954]/20 border border-[#cb8954]'
-                                  : 'bg-white border border-gray-200 hover:bg-gray-50'
+                                  : currentBookings > 0 
+                                    ? 'bg-white border border-gray-300 hover:bg-gray-50'
+                                    : 'bg-white border border-gray-200 hover:bg-gray-50'
                             }`}
                             onMouseEnter={() => setHoveredSection(section.id)}
                             onMouseLeave={() => setHoveredSection(null)}
-                            onClick={() => toggleSection(section.id)}
+                            onClick={() => {
+                              if (currentBookings > 0) {
+                                openAttendanceDialog(section.name, dateStr, time, slotBookings);
+                              } else {
+                                toggleSection(section.id);
+                              }
+                            }}
                           >
                             {/* Section Name */}
                             <div className={`text-[9px] font-medium truncate ${
@@ -551,5 +599,23 @@ export const GymBookingsCalendarView = () => {
         </div>
       )}
     </div>
+
+    {/* Attendance Details Dialog */}
+    <AttendanceDetailsDialog
+      isOpen={attendanceDialogOpen}
+      onClose={() => setAttendanceDialogOpen(false)}
+      sectionName={selectedSlotInfo?.sectionName || ''}
+      date={selectedSlotInfo?.date || ''}
+      time={selectedSlotInfo?.time || ''}
+      attendees={selectedSlotInfo?.attendees || []}
+    />
+
+    {/* QR Scanner Dialog */}
+    <QRScannerAttendance
+      isOpen={qrScannerOpen}
+      onClose={() => setQrScannerOpen(false)}
+      onSuccess={fetchWeekBookings}
+    />
+    </>
   );
 };
