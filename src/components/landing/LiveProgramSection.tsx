@@ -171,53 +171,47 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             </p>
           </div>
 
-          {/* Day Selector */}
-          <ScrollArea className="w-full mb-4">
-            <div className="flex gap-2 pb-2 justify-center">
-              {weekDays.map((day, index) => {
-                const dateStr = format(day, 'yyyy-MM-dd');
-                const dayBookings = weekBookings[dateStr] || [];
-                const hasBookings = dayBookings.length > 0;
-                const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-                const isSelected = index === selectedDayIndex;
+          {/* Day Selector - Compact for mobile */}
+          <div className="flex gap-1 mb-4 justify-center">
+            {weekDays.map((day, index) => {
+              const dateStr = format(day, 'yyyy-MM-dd');
+              const dayBookings = weekBookings[dateStr] || [];
+              const hasBookings = dayBookings.length > 0;
+              const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+              const isSelected = index === selectedDayIndex;
 
-                return (
-                  <button
-                    key={dateStr}
-                    onClick={() => setSelectedDayIndex(index)}
-                    className={cn(
-                      "flex-shrink-0 w-12 py-2 px-1 border rounded-none transition-all",
-                      isSelected 
-                        ? "border-[#cb8954] bg-[#cb8954]/20" 
-                        : hasBookings 
-                          ? "border-gray-600 bg-gray-900"
-                          : "border-gray-700 bg-gray-800"
-                    )}
-                  >
-                    <div className={cn(
-                      "text-[10px] font-medium",
-                      isToday ? "text-[#cb8954]" : isSelected ? "text-[#cb8954]" : "text-gray-400"
-                    )}>
-                      {dayNames[index]}
-                    </div>
-                    <div className={cn(
-                      "text-xs font-bold",
-                      isToday ? "text-[#cb8954]" : isSelected ? "text-white" : "text-gray-300"
-                    )}>
-                      {format(day, 'dd')}
-                    </div>
-                    {hasBookings && (
-                      <div className="w-1.5 h-1.5 bg-[#cb8954] rounded-full mx-auto mt-1" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+              return (
+                <button
+                  key={dateStr}
+                  onClick={() => setSelectedDayIndex(index)}
+                  className={cn(
+                    "flex-1 min-w-0 py-1.5 px-0.5 border rounded-none transition-all",
+                    isSelected 
+                      ? "border-[#cb8954] bg-[#cb8954]/20" 
+                      : hasBookings 
+                        ? "border-gray-600 bg-gray-900"
+                        : "border-gray-700 bg-gray-800"
+                  )}
+                >
+                  <div className={cn(
+                    "text-[9px] font-medium",
+                    isToday ? "text-[#cb8954]" : isSelected ? "text-[#cb8954]" : "text-gray-400"
+                  )}>
+                    {dayNames[index]}
+                  </div>
+                  <div className={cn(
+                    "text-[11px] font-bold",
+                    isToday ? "text-[#cb8954]" : isSelected ? "text-white" : "text-gray-300"
+                  )}>
+                    {format(day, 'dd')}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
 
-          {/* Time Slots */}
-          <div className="space-y-2">
+          {/* Time Slots - Compact layout */}
+          <div className="space-y-1">
             {sortedTimes.map((time) => {
               const sectionsForSlot = sections.filter(s => {
                 const sectionHours = s.available_hours?.[dayOfWeek] || [];
@@ -229,47 +223,41 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
               const dayBookings = weekBookings[selectedDateStr] || [];
 
               return (
-                <div key={time} className="border border-gray-700 rounded-none bg-gray-900">
-                  <div className="bg-gray-800 px-3 py-1.5 border-b border-gray-700">
-                    <span className="text-xs font-semibold text-[#cb8954]">{time}</span>
-                  </div>
+                <div key={time} className="space-y-1">
+                  {sectionsForSlot.map((section) => {
+                    const slotBookings = dayBookings.filter(booking => {
+                      const bookingTime = booking.booking_time.length > 5 
+                        ? booking.booking_time.substring(0, 5) 
+                        : booking.booking_time;
+                      return bookingTime === time && booking.section_id === section.id;
+                    });
 
-                  <div className="p-2 grid grid-cols-2 gap-2">
-                    {sectionsForSlot.map((section) => {
-                      const slotBookings = dayBookings.filter(booking => {
-                        const bookingTime = booking.booking_time.length > 5 
-                          ? booking.booking_time.substring(0, 5) 
-                          : booking.booking_time;
-                        return bookingTime === time && booking.section_id === section.id;
-                      });
+                    const currentBookings = slotBookings.length;
+                    const capacity = section.max_capacity;
 
-                      const currentBookings = slotBookings.length;
-                      const capacity = section.max_capacity;
-
-                      return (
-                        <div 
-                          key={section.id} 
-                          className="p-2 rounded-none bg-gray-800 border border-gray-700"
-                        >
-                          <div className="text-[10px] font-medium truncate mb-1 text-gray-300">
-                            {section.name}
+                    return (
+                      <div 
+                        key={section.id} 
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-gray-900 border border-gray-700"
+                      >
+                        <span className="text-[10px] font-semibold text-[#cb8954] w-10 flex-shrink-0">{time}</span>
+                        <span className="text-[10px] font-medium text-gray-300 truncate flex-1 min-w-0">
+                          {section.name}
+                        </span>
+                        <div className="flex items-center gap-1 flex-shrink-0 w-20">
+                          <div className="flex-1 h-1.5 bg-gray-700 rounded-none overflow-hidden">
+                            <div
+                              className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
+                              style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
+                            />
                           </div>
-                          
-                          <div className="flex items-center gap-1">
-                            <div className="flex-1 h-2 bg-gray-700 rounded-none overflow-hidden">
-                              <div
-                                className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
-                                style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
-                              />
-                            </div>
-                            <span className="text-[10px] flex-shrink-0 text-gray-400 font-medium">
-                              {currentBookings}/{capacity}
-                            </span>
-                          </div>
+                          <span className="text-[9px] text-gray-400 font-medium">
+                            {currentBookings}/{capacity}
+                          </span>
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
