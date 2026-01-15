@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, User, Check, X } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Check, X, Trash2 } from "lucide-react";
 import { format, isToday, isTomorrow, isPast } from "date-fns";
 import { el } from 'date-fns/locale';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface GymBooking {
   id: string;
@@ -30,13 +40,16 @@ interface GymBookingCardProps {
   booking: GymBooking;
   isAdmin?: boolean;
   onRefresh?: () => void;
+  isHistoryView?: boolean;
 }
 
 export const GymBookingCard: React.FC<GymBookingCardProps> = ({ 
   booking, 
   isAdmin = false,
-  onRefresh 
+  onRefresh,
+  isHistoryView = false
 }) => {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const bookingDateTime = new Date(`${booking.booking_date} ${booking.booking_time}`);
   const isPastBooking = isPast(bookingDateTime);
 
@@ -49,28 +62,28 @@ export const GymBookingCard: React.FC<GymBookingCardProps> = ({
   const getStatusBadge = () => {
     // Check attendance status first
     if ((booking as any).attendance_status === 'completed') {
-      return <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">Ολοκληρωμένη</Badge>;
+      return <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200 text-xs">Ολοκληρωμένη</Badge>;
     }
     if ((booking as any).attendance_status === 'missed') {
-      return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200">Απουσία</Badge>;
+      return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200 text-xs">Απουσία</Badge>;
     }
     
     // Then check regular status
     if (booking.status === 'pending') {
-      return <Badge variant="outline" className="rounded-none bg-yellow-50 text-yellow-700 border-yellow-200">Εκκρεμεί</Badge>;
+      return <Badge variant="outline" className="rounded-none bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">Εκκρεμεί</Badge>;
     }
     if (booking.status === 'cancelled') {
-      return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200">Ακυρώθηκε</Badge>;
+      return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200 text-xs">Ακυρώθηκε</Badge>;
     }
     if (booking.status === 'confirmed') {
       // If past and no attendance status, mark as missed automatically
       if (isPastBooking && !(booking as any).attendance_status) {
         handleMarkMissed();
-        return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200">Απουσία</Badge>;
+        return <Badge variant="outline" className="rounded-none bg-red-50 text-red-700 border-red-200 text-xs">Απουσία</Badge>;
       }
-      return <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200">Εγκεκριμένη</Badge>;
+      return <Badge variant="outline" className="rounded-none bg-green-50 text-green-700 border-green-200 text-xs">Εγκεκριμένη</Badge>;
     }
-    return <Badge variant="outline" className="rounded-none">Προγραμματισμένη</Badge>;
+    return <Badge variant="outline" className="rounded-none text-xs">Προγραμματισμένη</Badge>;
   };
 
   const handleApprove = async () => {
@@ -181,83 +194,127 @@ export const GymBookingCard: React.FC<GymBookingCardProps> = ({
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('booking_sessions')
+        .delete()
+        .eq('id', booking.id);
+
+      if (error) throw error;
+
+      toast.success('Η κράτηση διαγράφηκε!');
+      onRefresh?.();
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή της κράτησης');
+    }
+  };
+
   return (
-    <Card className="rounded-none hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-[#00ffba]" />
-                <span className="font-medium">{booking.section?.name || 'Gym Visit'}</span>
+    <>
+      <Card className="rounded-none hover:shadow-md transition-shadow">
+        <CardContent className="p-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4 text-[#00ffba] flex-shrink-0" />
+                  <span className="font-medium text-sm truncate">{booking.section?.name || 'Gym Visit'}</span>
+                </div>
+                {getStatusBadge()}
               </div>
-              {getStatusBadge()}
+              
+              <div className="flex items-center gap-3 text-xs text-gray-600 mt-1">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{getDateLabel()}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>{booking.booking_time}</span>
+                </div>
+                {isAdmin && booking.app_users && (
+                  <div className="flex items-center gap-1">
+                    <User className="w-3 h-3" />
+                    <span className="truncate">{booking.app_users.name}</span>
+                  </div>
+                )}
+              </div>
+
+              {booking.notes && (
+                <p className="text-xs text-gray-500 mt-1 truncate">
+                  {booking.notes}
+                </p>
+              )}
             </div>
-            
-            <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>{getDateLabel()}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                <span>{booking.booking_time}</span>
-              </div>
-            </div>
 
-            {isAdmin && booking.app_users && (
-              <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
-                <User className="w-4 h-4" />
-                <span>{booking.app_users.name}</span>
-                <span className="text-gray-400">({booking.app_users.email})</span>
-              </div>
-            )}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {/* Admin approve/reject buttons for pending bookings */}
+              {isAdmin && booking.status === 'pending' && (
+                <>
+                  <Button
+                    onClick={handleApprove}
+                    className="bg-green-600 hover:bg-green-700 text-white rounded-none h-7 px-2"
+                    size="sm"
+                  >
+                    <Check className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleReject}
+                    className="rounded-none h-7 px-2"
+                    size="sm"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </>
+              )}
 
-            {booking.notes && (
-              <p className="text-sm text-gray-500 mb-2">
-                {booking.notes}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            {/* Admin approve/reject buttons for pending bookings */}
-            {isAdmin && booking.status === 'pending' && (
-              <div className="flex gap-2">
+              {/* Mark attendance button for confirmed bookings */}
+              {isAdmin && booking.status === 'confirmed' && !(booking as any).attendance_status && (
                 <Button
-                  onClick={handleApprove}
-                  className="bg-green-600 hover:bg-green-700 text-white rounded-none"
+                  onClick={handleMarkCompleted}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-7 px-2"
                   size="sm"
                 >
-                  <Check className="w-4 h-4 mr-1" />
-                  Έγκριση
+                  <Check className="w-3 h-3 mr-1" />
+                  <span className="text-xs">Παρουσία</span>
                 </Button>
+              )}
+
+              {/* Delete button for history view */}
+              {isAdmin && isHistoryView && (
                 <Button
-                  variant="destructive"
-                  onClick={handleReject}
-                  className="rounded-none"
+                  variant="ghost"
+                  onClick={() => setDeleteDialogOpen(true)}
+                  className="rounded-none h-7 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
                   size="sm"
                 >
-                  <X className="w-4 h-4 mr-1" />
-                  Ακύρωση
+                  <Trash2 className="w-3 h-3" />
                 </Button>
-              </div>
-            )}
-
-            {/* Mark attendance button for confirmed bookings */}
-            {isAdmin && booking.status === 'confirmed' && !(booking as any).attendance_status && (
-              <Button
-                onClick={handleMarkCompleted}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-                size="sm"
-              >
-                <Check className="w-4 h-4 mr-1" />
-                Παρουσία
-              </Button>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogDescription>
+              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Η κράτηση θα διαγραφεί οριστικά.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 rounded-none">
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
