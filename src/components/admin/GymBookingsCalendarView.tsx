@@ -121,8 +121,8 @@ export const GymBookingsCalendarView = () => {
         .in('section_id', allSectionIds)
         .gte('booking_date', format(weekStart, 'yyyy-MM-dd'))
         .lte('booking_date', format(weekEnd, 'yyyy-MM-dd'))
-        .eq('booking_type', 'gym_visit')
-        .eq('status', 'confirmed')
+        .in('booking_type', ['gym_visit', 'gym'])
+        .in('status', ['confirmed', 'completed'])
         .order('booking_time', { ascending: true });
 
       if (error) throw error;
