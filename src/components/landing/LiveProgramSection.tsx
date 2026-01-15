@@ -122,11 +122,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
   };
 
   const getLoadingBarColor = (bookingsCount: number, capacity: number) => {
-    const percentage = (bookingsCount / capacity) * 100;
-    if (percentage === 0) return 'bg-gray-300';
-    if (percentage <= 50) return 'bg-[#cb8954]';
-    if (percentage <= 80) return 'bg-yellow-400';
-    return 'bg-red-400';
+    return 'bg-white';
   };
 
   const getAllTimes = () => {
@@ -254,7 +250,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                           {section.name}
                         </span>
                         <div className="flex items-center gap-1 flex-shrink-0 w-20">
-                          <div className="flex-1 h-1.5 bg-gray-700 rounded-none overflow-hidden">
+                          <div className="flex-1 h-1.5 bg-black rounded-none overflow-hidden">
                             <div
                               className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
                               style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
@@ -394,7 +390,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                           </div>
                           
                           <div className="flex items-center gap-0.5">
-                            <div className="flex-1 h-1 bg-gray-700 rounded-none overflow-hidden">
+                            <div className="flex-1 h-1 bg-black rounded-none overflow-hidden">
                               <div
                                 className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
                                 style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
