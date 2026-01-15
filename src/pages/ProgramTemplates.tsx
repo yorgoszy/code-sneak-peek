@@ -51,15 +51,29 @@ const ProgramTemplates = () => {
   };
 
   useEffect(() => {
-    loadTemplates();
-  }, []);
+    if (dashboardUserProfile?.id) {
+      loadTemplates();
+    }
+  }, [dashboardUserProfile?.id, isAdmin]);
 
   const loadTemplates = async () => {
     try {
-      console.log('🔄 Loading template programs...');
+      console.log('🔄 Loading template programs...', { isAdmin, userProfile: dashboardUserProfile?.id });
       const data = await fetchProgramsWithAssignments();
-      // Filter to show only templates
-      const templatePrograms = data.filter(program => program.is_template === true);
+      
+      // Filter to show only templates AND filter by coach_id
+      const templatePrograms = data.filter(program => {
+        if (!program.is_template) return false;
+        
+        // Admin: βλέπει μόνο templates χωρίς coach_id (admin templates)
+        // Coach: βλέπει μόνο templates με το δικό του coach_id
+        if (isAdmin) {
+          return !program.coach_id && !program.created_by;
+        } else {
+          return program.coach_id === dashboardUserProfile?.id || program.created_by === dashboardUserProfile?.id;
+        }
+      });
+      
       console.log('✅ Template programs loaded:', templatePrograms.length);
       setTemplates(templatePrograms);
     } catch (error) {
