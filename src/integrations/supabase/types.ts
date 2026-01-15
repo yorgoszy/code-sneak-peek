@@ -514,6 +514,7 @@ export type Database = {
           photo_url: string | null
           qr_code: string | null
           role: string
+          section_id: string | null
           subscription_status: string | null
           updated_at: string | null
           user_status: string
@@ -536,6 +537,7 @@ export type Database = {
           photo_url?: string | null
           qr_code?: string | null
           role: string
+          section_id?: string | null
           subscription_status?: string | null
           updated_at?: string | null
           user_status?: string
@@ -558,6 +560,7 @@ export type Database = {
           photo_url?: string | null
           qr_code?: string | null
           role?: string
+          section_id?: string | null
           subscription_status?: string | null
           updated_at?: string | null
           user_status?: string
@@ -568,6 +571,13 @@ export type Database = {
             columns: ["coach_id"]
             isOneToOne: false
             referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "app_users_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sections"
             referencedColumns: ["id"]
           },
         ]

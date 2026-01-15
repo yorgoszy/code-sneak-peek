@@ -10,9 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { matchesSearchTerm } from "@/lib/utils";
-import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard } from "lucide-react";
+import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard, Users } from "lucide-react";
 import { ReceiptConfirmDialog } from './ReceiptConfirmDialog';
 import { SubscriptionDeleteDialog } from './SubscriptionDeleteDialog';
+import { SectionAssignmentDialog } from './SectionAssignmentDialog';
+import { format } from 'date-fns';
 
 interface SubscriptionType {
   id: string;
@@ -78,6 +80,8 @@ export const SubscriptionManagement: React.FC = () => {
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [subscriptionToDelete, setSubscriptionToDelete] = useState<string | null>(null);
+  const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
+  const [selectedUserForSection, setSelectedUserForSection] = useState<{id: string, name: string, sectionId: string | null} | null>(null);
 
   useEffect(() => {
     loadData();
@@ -218,7 +222,7 @@ export const SubscriptionManagement: React.FC = () => {
       // Φόρτωση όλων των χρηστών
       const { data: allUsers, error: usersError } = await supabase
         .from('app_users')
-        .select('id, name, email, subscription_status, role, user_status')
+        .select('id, name, email, subscription_status, role, user_status, section_id, booking_sections(id, name)')
         .order('name');
 
       if (usersError) {
@@ -795,17 +799,47 @@ export const SubscriptionManagement: React.FC = () => {
 
   const recordVisit = async (userId: string) => {
     try {
+      // Βρες τον χρήστη για να δούμε αν έχει ανατεθεί τμήμα
+      const user = users.find(u => u.id === userId);
+      
+      if (user?.section_id) {
+        // Αν έχει τμήμα, δημιούργησε booking για σήμερα
+        const today = format(new Date(), 'yyyy-MM-dd');
+        const currentTime = format(new Date(), 'HH:00:00');
+        
+        const { error: bookingError } = await supabase
+          .from('booking_sessions')
+          .insert({
+            user_id: userId,
+            section_id: user.section_id,
+            booking_date: today,
+            booking_time: currentTime,
+            booking_type: 'gym',
+            status: 'completed',
+            attendance_status: 'present',
+            completed_at: new Date().toISOString(),
+            notes: 'Manual attendance from subscription management'
+          });
+
+        if (bookingError) throw bookingError;
+      }
+
+      // Καταγραφή επίσκεψης (πάντα)
       const { error } = await supabase.rpc('record_visit', {
         p_user_id: userId,
         p_visit_type: 'manual',
-        p_notes: 'Manual visit from subscription management'
+        p_notes: user?.section_id 
+          ? `Manual visit from subscription management - Section: ${user.booking_sections?.name || 'Unknown'}`
+          : 'Manual visit from subscription management'
       });
 
       if (error) throw error;
 
       toast({
         title: "Επιτυχία",
-        description: "Η παρουσία καταγράφηκε επιτυχώς!"
+        description: user?.section_id 
+          ? `Η παρουσία καταγράφηκε στο τμήμα ${user.booking_sections?.name}`
+          : "Η παρουσία καταγράφηκε επιτυχώς!"
       });
       
     } catch (error) {
@@ -816,6 +850,15 @@ export const SubscriptionManagement: React.FC = () => {
         description: "Σφάλμα καταγραφής παρουσίας"
       });
     }
+  };
+
+  const openSectionDialog = (user: any) => {
+    setSelectedUserForSection({
+      id: user.id,
+      name: user.name,
+      sectionId: user.section_id
+    });
+    setSectionDialogOpen(true);
   };
 
   const renewSubscription = async (subscriptionId: string) => {
@@ -1908,13 +1951,28 @@ export const SubscriptionManagement: React.FC = () => {
                               <Edit2 className="w-3 h-3" />
                             </Button>
 
+                            {/* Section Assignment Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openSectionDialog(user)}
+                              className={`rounded-none ${user.section_id 
+                                ? 'border-[#cb8954] text-[#cb8954] hover:bg-[#cb8954]/10' 
+                                : 'border-gray-300 text-gray-500 hover:bg-gray-50'}`}
+                              title={user.section_id ? `Τμήμα: ${user.booking_sections?.name}` : "Ανάθεση τμήματος"}
+                            >
+                              <Users className="w-3 h-3" />
+                            </Button>
+
                             {/* Visit Recording Button */}
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => recordVisit(user.id)}
                               className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
-                              title="Καταγραφή παρουσίας"
+                              title={user.section_id 
+                                ? `Καταγραφή παρουσίας - ${user.booking_sections?.name}`
+                                : "Καταγραφή παρουσίας"}
                             >
                               <UserCheck className="w-3 h-3" />
                             </Button>
@@ -2026,9 +2084,23 @@ export const SubscriptionManagement: React.FC = () => {
                                 <Button
                                   size="sm"
                                   variant="outline"
+                                  onClick={() => openSectionDialog(user)}
+                                  className={`rounded-none ${user.section_id 
+                                    ? 'border-[#cb8954] text-[#cb8954] hover:bg-[#cb8954]/10' 
+                                    : 'border-gray-300 text-gray-500 hover:bg-gray-50'}`}
+                                  title={user.section_id ? `Τμήμα: ${user.booking_sections?.name}` : "Ανάθεση τμήματος"}
+                                >
+                                  <Users className="w-3 h-3" />
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
                                   onClick={() => recordVisit(user.id)}
                                   className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
-                                  title="Καταγραφή παρουσίας"
+                                  title={user.section_id 
+                                    ? `Καταγραφή παρουσίας - ${user.booking_sections?.name}`
+                                    : "Καταγραφή παρουσίας"}
                                 >
                                   <UserCheck className="w-3 h-3" />
                                 </Button>
@@ -2044,15 +2116,31 @@ export const SubscriptionManagement: React.FC = () => {
                                 </Button>
                               </>
                             ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => recordVisit(user.id)}
-                                className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
-                                title="Καταγραφή παρουσίας"
-                              >
-                                <UserCheck className="w-3 h-3" />
-                              </Button>
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openSectionDialog(user)}
+                                  className={`rounded-none ${user.section_id 
+                                    ? 'border-[#cb8954] text-[#cb8954] hover:bg-[#cb8954]/10' 
+                                    : 'border-gray-300 text-gray-500 hover:bg-gray-50'}`}
+                                  title={user.section_id ? `Τμήμα: ${user.booking_sections?.name}` : "Ανάθεση τμήματος"}
+                                >
+                                  <Users className="w-3 h-3" />
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => recordVisit(user.id)}
+                                  className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10"
+                                  title={user.section_id 
+                                    ? `Καταγραφή παρουσίας - ${user.booking_sections?.name}`
+                                    : "Καταγραφή παρουσίας"}
+                                >
+                                  <UserCheck className="w-3 h-3" />
+                                </Button>
+                              </>
                             )}
                           </div>
                         </td>
@@ -2070,6 +2158,21 @@ export const SubscriptionManagement: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Section Assignment Dialog */}
+      {selectedUserForSection && (
+        <SectionAssignmentDialog
+          isOpen={sectionDialogOpen}
+          onClose={() => {
+            setSectionDialogOpen(false);
+            setSelectedUserForSection(null);
+          }}
+          userId={selectedUserForSection.id}
+          userName={selectedUserForSection.name}
+          currentSectionId={selectedUserForSection.sectionId}
+          onSuccess={loadData}
+        />
+      )}
     </div>
   );
 };
