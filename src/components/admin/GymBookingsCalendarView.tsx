@@ -162,8 +162,7 @@ export const GymBookingsCalendarView = () => {
   const toggleSection = (sectionId: string) => {
     setSelectedSections(prev => {
       if (prev.includes(sectionId)) {
-        // Don't allow deselecting all
-        if (prev.length === 1) return prev;
+        // Allow deselecting all sections
         return prev.filter(id => id !== sectionId);
       } else {
         return [...prev, sectionId];
@@ -228,17 +227,7 @@ export const GymBookingsCalendarView = () => {
       {/* Section Selection */}
       <Card className="rounded-none">
         <CardHeader className="py-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm">Επιλογή Τμημάτων</CardTitle>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={selectAllSections}
-              className="rounded-none h-7 text-xs"
-            >
-              Όλα
-            </Button>
-          </div>
+          <CardTitle className="text-sm">Επιλογή Τμημάτων</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="flex flex-wrap gap-2">
@@ -379,7 +368,7 @@ export const GymBookingsCalendarView = () => {
                               className={`space-y-0.5 p-1 rounded-none transition-all ${
                                 isSelected 
                                   ? 'bg-[#00ffba]/20 border border-[#00ffba]' 
-                                  : 'bg-gray-50 opacity-50'
+                                  : 'bg-gray-100 border border-gray-200'
                               }`}
                             >
                               {/* Section Name */}
