@@ -277,7 +277,7 @@ export const GymBookingsCalendarView = () => {
       </div>
 
       {/* Weekly Grid - Organized by Time Rows */}
-      {selectedSections.length > 0 && (
+      {sections.length > 0 && (
         <div className="space-y-1">
           {/* Header Row with Days */}
           <div className="grid grid-cols-8 gap-1">
