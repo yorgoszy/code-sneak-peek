@@ -159,14 +159,14 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
     const dayOfWeek = selectedDay.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
     return (
-      <section className="py-16" style={{ backgroundColor: '#aca097' }}>
+      <section className="py-16 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-black mb-2" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+            <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Robert Pro, sans-serif', color: '#aca097' }}>
               Live Program
             </h2>
-            <div className="w-16 h-1 bg-black mx-auto mb-4"></div>
-            <p className="text-gray-700 text-sm">
+            <div className="w-16 h-1 mx-auto mb-4" style={{ backgroundColor: '#aca097' }}></div>
+            <p className="text-sm" style={{ color: '#aca097' }}>
               {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}
             </p>
           </div>
@@ -269,14 +269,14 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
   // Desktop View
   return (
-    <section className="py-20" style={{ backgroundColor: '#aca097' }}>
+    <section className="py-20 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-black mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+          <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Robert Pro, sans-serif', color: '#aca097' }}>
             Live Program
           </h2>
-          <div className="w-16 h-1 bg-black mx-auto mb-4"></div>
-          <p className="text-gray-700">
+          <div className="w-16 h-1 mx-auto mb-4" style={{ backgroundColor: '#aca097' }}></div>
+          <p style={{ color: '#aca097' }}>
             {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}
           </p>
         </div>
