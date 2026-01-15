@@ -306,7 +306,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                     key={dateStr} 
                     className={cn(
                       "text-center p-2 border rounded-none",
-                      hasBookings ? 'bg-black border-gray-700' : 'bg-black border-gray-700'
+                      hasBookings ? 'bg-black border-[#aca097]/30' : 'bg-black border-[#aca097]/30'
                     )}
                   >
                     <div className={cn(
@@ -336,7 +336,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             
             return (
             <div key={time} className="grid grid-cols-8 gap-1 min-w-[800px]">
-              <div className="bg-black border border-gray-700 rounded-none p-2 flex items-center justify-center">
+              <div className="bg-black border border-[#aca097]/30 rounded-none p-2 flex items-center justify-center">
                 <span className={cn(
                   "text-xs font-medium",
                   isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]"
@@ -354,14 +354,14 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
                 if (sectionsForSlot.length === 0) {
                   return (
-                    <div key={dateStr} className="bg-black/50 border border-gray-800 rounded-none p-1" />
+                    <div key={dateStr} className="bg-black/50 border border-[#aca097]/20 rounded-none p-1" />
                   );
                 }
 
                 const dayBookings = weekBookings[dateStr] || [];
 
                 return (
-                  <div key={dateStr} className="border border-gray-700 rounded-none bg-black p-1 space-y-1">
+                  <div key={dateStr} className="border border-[#aca097]/30 rounded-none bg-black p-1 space-y-1">
                     {sectionsForSlot.map((section) => {
                       const slotBookings = dayBookings.filter(booking => {
                         const bookingTime = booking.booking_time.length > 5 
@@ -381,7 +381,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                             "space-y-0.5 p-1 rounded-none transition-all cursor-pointer",
                             isHovered
                               ? 'bg-[#cb8954]/20 border border-[#cb8954]'
-                              : 'bg-gray-900 border border-gray-700 hover:bg-gray-800'
+                              : 'bg-gray-900 border border-[#aca097]/20 hover:bg-gray-800'
                           )}
                           onMouseEnter={() => setHoveredSection(section.id)}
                           onMouseLeave={() => setHoveredSection(null)}
