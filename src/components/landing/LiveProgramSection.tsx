@@ -348,7 +348,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
                 if (sectionsForSlot.length === 0) {
                   return (
-                    <div key={dateStr} className="bg-[#aca097]/10 border border-[#aca097]/20 rounded-none p-0.5" />
+                    <div key={dateStr} className="bg-[#aca097]/5 border border-[#aca097]/10 rounded-none p-0.5" />
                   );
                 }
 
