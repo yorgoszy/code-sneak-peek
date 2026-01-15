@@ -363,12 +363,12 @@ export const GymBookingsCalendarView = () => {
                               className={`space-y-0.5 p-1 rounded-none transition-all ${
                                 isSelected 
                                   ? 'bg-[#00ffba]/20 border border-[#00ffba]' 
-                                  : 'bg-gray-100 border border-gray-200'
+                                  : 'bg-white border border-gray-200'
                               }`}
                             >
                               {/* Section Name */}
                               <div className={`text-[9px] font-medium truncate ${
-                                isSelected ? 'text-gray-900' : 'text-gray-500'
+                                isSelected ? 'text-gray-900' : 'text-gray-700'
                               }`}>
                                 {section.name}
                               </div>
@@ -377,11 +377,11 @@ export const GymBookingsCalendarView = () => {
                               <div className="flex items-center gap-1">
                                 <div className="flex-1 h-1.5 bg-gray-200 rounded-none overflow-hidden">
                                   <div
-                                    className={`h-full transition-all ${isSelected ? getLoadingBarColor(currentBookings, capacity) : 'bg-gray-400'}`}
+                                    className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
                                     style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
                                   />
                                 </div>
-                                <span className={`text-[9px] flex-shrink-0 ${isSelected ? 'text-gray-600' : 'text-gray-400'}`}>
+                                <span className="text-[9px] flex-shrink-0 text-gray-600">
                                   {currentBookings}/{capacity}
                                 </span>
                               </div>
