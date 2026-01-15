@@ -53,12 +53,7 @@ export const GymBookingsCalendarView = () => {
     fetchSections();
   }, []);
 
-  useEffect(() => {
-    if (sections.length > 0 && selectedSections.length === 0) {
-      // Select all sections by default
-      setSelectedSections(sections.map(s => s.id));
-    }
-  }, [sections, selectedSections.length]);
+  // Don't auto-select sections - start with none selected
 
   useEffect(() => {
     if (selectedSections.length > 0) {
