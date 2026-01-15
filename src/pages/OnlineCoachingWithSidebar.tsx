@@ -368,13 +368,14 @@ const OnlineCoachingWithSidebar: React.FC = () => {
                         <h3 className="text-lg font-medium mb-2">Δεν υπάρχει ιστορικό κλήσεων</h3>
                       </div>
                     ) : (
-                      <div className={`space-y-${isMobile ? '3' : '4'}`}>
+                      <div className="space-y-2">
                         {pastBookings.map((booking) => (
                           <VideocallBookingCard 
                             key={booking.id} 
                             booking={booking} 
                             isAdmin={true} 
                             onRefresh={() => fetchBookings()}
+                            isHistoryView={true}
                           />
                         ))}
                       </div>
