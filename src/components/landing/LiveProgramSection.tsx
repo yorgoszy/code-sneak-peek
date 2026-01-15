@@ -159,7 +159,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
     const dayOfWeek = selectedDay.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
     return (
-      <section className="py-16 bg-[#cb8954]">
+      <section className="py-16 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-700 mb-2" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
@@ -269,7 +269,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
   // Desktop View
   return (
-    <section className="py-20 bg-[#cb8954]">
+    <section className="py-20 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-700 mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
