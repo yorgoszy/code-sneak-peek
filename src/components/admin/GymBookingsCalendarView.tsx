@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { Clock, MapPin, User, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
@@ -16,6 +16,7 @@ interface GymBooking {
   booking_type: string;
   notes?: string;
   user_id: string;
+  section_id: string;
   section?: {
     name: string;
     description?: string;
@@ -42,7 +43,7 @@ const AVAILABLE_HOURS = [
 
 export const GymBookingsCalendarView = () => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
-  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [sections, setSections] = useState<BookingSection[]>([]);
   const [weekBookings, setWeekBookings] = useState<{ [key: string]: GymBooking[] }>({});
   const [loading, setLoading] = useState(true);
@@ -52,16 +53,17 @@ export const GymBookingsCalendarView = () => {
   }, []);
 
   useEffect(() => {
-    if (sections.length > 0 && !selectedSection) {
-      setSelectedSection(sections[0].id);
+    if (sections.length > 0 && selectedSections.length === 0) {
+      // Select all sections by default
+      setSelectedSections(sections.map(s => s.id));
     }
-  }, [sections, selectedSection]);
+  }, [sections, selectedSections.length]);
 
   useEffect(() => {
-    if (selectedSection) {
+    if (selectedSections.length > 0) {
       fetchWeekBookings();
     }
-  }, [currentWeek, selectedSection]);
+  }, [currentWeek, selectedSections]);
 
   const fetchSections = async () => {
     try {
@@ -90,7 +92,7 @@ export const GymBookingsCalendarView = () => {
   };
 
   const fetchWeekBookings = async () => {
-    if (!selectedSection) return;
+    if (selectedSections.length === 0) return;
 
     try {
       const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -103,7 +105,7 @@ export const GymBookingsCalendarView = () => {
           section:booking_sections(name, description, max_capacity),
           app_users(name, email)
         `)
-        .eq('section_id', selectedSection)
+        .in('section_id', selectedSections)
         .gte('booking_date', format(weekStart, 'yyyy-MM-dd'))
         .lte('booking_date', format(weekEnd, 'yyyy-MM-dd'))
         .eq('booking_type', 'gym_visit')
@@ -149,6 +151,22 @@ export const GymBookingsCalendarView = () => {
     return getBookingsForDateAndTime(date, time).length;
   };
 
+  const toggleSection = (sectionId: string) => {
+    setSelectedSections(prev => {
+      if (prev.includes(sectionId)) {
+        // Don't allow deselecting all
+        if (prev.length === 1) return prev;
+        return prev.filter(id => id !== sectionId);
+      } else {
+        return [...prev, sectionId];
+      }
+    });
+  };
+
+  const selectAllSections = () => {
+    setSelectedSections(sections.map(s => s.id));
+  };
+
   const previousWeek = () => {
     setCurrentWeek(new Date(currentWeek.getTime() - 7 * 24 * 60 * 60 * 1000));
   };
@@ -167,48 +185,85 @@ export const GymBookingsCalendarView = () => {
     end: endOfWeek(currentWeek, { weekStartsOn: 1 })
   });
 
-  const selectedSectionObj = sections.find(s => s.id === selectedSection);
+  // Get combined capacity and available hours from all selected sections
+  const getSelectedSectionsData = () => {
+    const selectedSectionsObjs = sections.filter(s => selectedSections.includes(s.id));
+    const totalCapacity = selectedSectionsObjs.reduce((sum, s) => sum + s.max_capacity, 0);
+    
+    // Combine available hours from all selected sections
+    const combinedHours: { [day: string]: string[] } = {};
+    selectedSectionsObjs.forEach(section => {
+      Object.entries(section.available_hours || {}).forEach(([day, hours]) => {
+        if (!combinedHours[day]) {
+          combinedHours[day] = [];
+        }
+        (hours as string[]).forEach(hour => {
+          if (!combinedHours[day].includes(hour)) {
+            combinedHours[day].push(hour);
+          }
+        });
+      });
+    });
+    
+    // Sort hours
+    Object.keys(combinedHours).forEach(day => {
+      combinedHours[day].sort();
+    });
+    
+    return { totalCapacity, combinedHours };
+  };
+
+  const { totalCapacity, combinedHours } = getSelectedSectionsData();
 
   return (
-    <div className="max-w-full mx-auto space-y-6 overflow-x-auto">
+    <div className="max-w-full mx-auto space-y-4 overflow-x-auto">
       {/* Section Selection */}
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle>Χώρος Γυμναστηρίου</CardTitle>
+        <CardHeader className="py-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm">Επιλογή Τμημάτων</CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={selectAllSections}
+              className="rounded-none h-7 text-xs"
+            >
+              Όλα
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {sections.map((section) => (
-              <div
-                key={section.id}
-                className={`p-3 border rounded-none cursor-pointer transition-colors ${
-                  selectedSection === section.id 
-                    ? 'border-[#00ffba] bg-[#00ffba]/10' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                onClick={() => setSelectedSection(section.id)}
-              >
-                <div className="font-medium">{section.name}</div>
-                {section.description && (
-                  <div className="text-xs text-gray-500">{section.description}</div>
-                )}
-                <div className="text-xs text-gray-500 mt-1">
-                  Χωρητικότητα: {section.max_capacity} άτομα
+        <CardContent className="pt-0">
+          <div className="flex flex-wrap gap-2">
+            {sections.map((section) => {
+              const isSelected = selectedSections.includes(section.id);
+              return (
+                <div
+                  key={section.id}
+                  className={`px-3 py-1.5 border rounded-none cursor-pointer transition-colors flex items-center gap-1 ${
+                    isSelected 
+                      ? 'border-[#00ffba] bg-[#00ffba]/10 text-black' 
+                      : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                  }`}
+                  onClick={() => toggleSection(section.id)}
+                >
+                  {isSelected && <Check className="w-3 h-3 text-[#00ffba]" />}
+                  <span className="text-xs font-medium">{section.name}</span>
+                  <span className="text-xs text-gray-400">({section.max_capacity})</span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>
 
       {/* Week Navigation */}
       <div className="flex items-center justify-between">
-        <Button onClick={previousWeek} variant="outline" className="rounded-none">
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Προηγούμενη Εβδομάδα
+        <Button onClick={previousWeek} variant="outline" size="sm" className="rounded-none">
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Προηγ.
         </Button>
         <h3 className={cn(
-          "text-lg font-semibold",
+          "text-sm font-semibold",
           {
             "text-[#00ffba]": (() => {
               const now = new Date();
@@ -218,34 +273,34 @@ export const GymBookingsCalendarView = () => {
             })()
           }
         )}>
-          Εβδομάδα {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM/yyyy')}
+          {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM/yyyy')}
         </h3>
-        <Button onClick={nextWeek} variant="outline" className="rounded-none">
-          Επόμενη Εβδομάδα
-          <ChevronRight className="w-4 h-4 ml-2" />
+        <Button onClick={nextWeek} variant="outline" size="sm" className="rounded-none">
+          Επόμ.
+          <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </div>
 
       {/* Weekly Grid */}
-      {selectedSectionObj && (
-        <div className="grid grid-cols-7 gap-2 min-w-full">
+      {selectedSections.length > 0 && (
+        <div className="grid grid-cols-7 gap-1 min-w-full">
           {weekDays.map((day) => {
             const dateStr = format(day, 'yyyy-MM-dd');
             const dayOfWeek = day.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-            const availableHours = selectedSectionObj.available_hours[dayOfWeek] || [];
+            const availableHours = combinedHours[dayOfWeek] || [];
 
             return (
               <div key={dateStr} className="min-w-0">
-                {/* Check if day has any bookings */}
+                {/* Day Header */}
                 {(() => {
                   const dayBookings = weekBookings[dateStr] || [];
                   const hasBookings = dayBookings.length > 0;
                   
                   return (
-                    <div className={`text-center p-2 border border-gray-200 rounded-none ${
+                    <div className={`text-center p-1 border border-gray-200 rounded-none ${
                       hasBookings ? 'bg-[#00ffba]/20' : 'bg-gray-50'
                     }`}>
-                      <div className="font-medium text-sm">
+                      <div className="font-medium text-xs">
                         {['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'][day.getDay() === 0 ? 6 : day.getDay() - 1]}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -255,9 +310,9 @@ export const GymBookingsCalendarView = () => {
                   );
                 })()}
                 
-                <div className="space-y-1 mt-2">
+                <div className="space-y-0.5 mt-1">
                   {availableHours.map((time: string) => {
-                    const capacity = selectedSectionObj.max_capacity || 6;
+                    const capacity = totalCapacity;
                     const currentBookings = getBookingCounts(dateStr, time);
                     const slotBookings = getBookingsForDateAndTime(dateStr, time);
                     
@@ -265,13 +320,13 @@ export const GymBookingsCalendarView = () => {
                       <div key={time} className="border border-gray-200 rounded-none bg-white">
                         <div className="p-1">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="font-medium">{time}</span>
-                            <span>{currentBookings}/{capacity}</span>
+                            <span className="font-medium text-xs">{time}</span>
+                            <span className="text-xs">{currentBookings}/{capacity}</span>
                           </div>
                           
                           {/* Loading Bar */}
-                          <div className="flex gap-0.5 my-1">
-                            {Array.from({ length: capacity }).map((_, index) => (
+                          <div className="flex gap-0.5 my-0.5">
+                            {Array.from({ length: Math.min(capacity, 10) }).map((_, index) => (
                               <div
                                 key={index}
                                 className={`h-1 flex-1 rounded-none ${
@@ -283,28 +338,27 @@ export const GymBookingsCalendarView = () => {
                             ))}
                           </div>
                           
-                          {/* Position Bubbles */}
-                          <div className="flex gap-0.5 mt-1">
-                            {Array.from({ length: capacity }).map((_, index) => (
-                              <div
-                                key={index}
-                                className={`w-4 h-4 rounded-full border border-gray-200 flex items-center justify-center ${
-                                  index < currentBookings 
-                                    ? 'bg-[#00ffba]' 
-                                    : 'bg-gray-100'
-                                }`}
-                              >
-                                {index < slotBookings.length && (
-                                  <Avatar className="w-3 h-3">
-                                    <AvatarImage src="" />
-                                    <AvatarFallback className="text-xs bg-transparent text-black">
-                                      {slotBookings[index]?.app_users?.name?.charAt(0) || 'Α'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                )}
-                              </div>
-                            ))}
-                          </div>
+                          {/* Position Bubbles - Show max 6 for space */}
+                          {currentBookings > 0 && (
+                            <div className="flex gap-0.5 mt-0.5 flex-wrap">
+                              {slotBookings.slice(0, 6).map((booking, index) => (
+                                <div
+                                  key={index}
+                                  className="w-3 h-3 rounded-full bg-[#00ffba] flex items-center justify-center"
+                                  title={`${booking.app_users?.name} - ${booking.section?.name}`}
+                                >
+                                  <span className="text-[8px] font-bold text-black">
+                                    {booking.app_users?.name?.charAt(0) || 'Α'}
+                                  </span>
+                                </div>
+                              ))}
+                              {currentBookings > 6 && (
+                                <div className="w-3 h-3 rounded-full bg-gray-300 flex items-center justify-center">
+                                  <span className="text-[8px] font-bold text-gray-600">+{currentBookings - 6}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
