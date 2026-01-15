@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -14,6 +14,7 @@ import { ProgramPreviewDialog } from './ProgramPreviewDialog';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProgramsListProps {
   programs: Program[];
@@ -47,6 +48,55 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   const [programToDelete, setProgramToDelete] = useState<string | null>(null);
   const [selectedProgramForView, setSelectedProgramForView] = useState<EnrichedAssignment | null>(null);
   const [selectedProgramForPreview, setSelectedProgramForPreview] = useState<Program | null>(null);
+  
+  // State για workout completions - κρατάμε τα completed counts ανά assignment_id
+  const [completionsMap, setCompletionsMap] = useState<Record<string, { completed: number; missed: number }>>({});
+
+  // Fetch workout completions για όλα τα assignments
+  useEffect(() => {
+    const fetchCompletions = async () => {
+      // Συλλέγουμε όλα τα assignment IDs από τα programs
+      const assignmentIds: string[] = [];
+      programs.forEach(program => {
+        program.program_assignments?.forEach(assignment => {
+          if (assignment.id) {
+            assignmentIds.push(assignment.id);
+          }
+        });
+      });
+
+      if (assignmentIds.length === 0) return;
+
+      // Fetch completions για όλα τα assignments σε μία κλήση
+      const { data: completions, error } = await supabase
+        .from('workout_completions')
+        .select('assignment_id, status')
+        .in('assignment_id', assignmentIds);
+
+      if (error) {
+        console.error('Error fetching workout completions:', error);
+        return;
+      }
+
+      // Υπολογίζουμε τα completed/missed ανά assignment
+      const newMap: Record<string, { completed: number; missed: number }> = {};
+      
+      completions?.forEach(c => {
+        if (!newMap[c.assignment_id]) {
+          newMap[c.assignment_id] = { completed: 0, missed: 0 };
+        }
+        if (c.status === 'completed') {
+          newMap[c.assignment_id].completed++;
+        } else if (c.status === 'missed') {
+          newMap[c.assignment_id].missed++;
+        }
+      });
+
+      setCompletionsMap(newMap);
+    };
+
+    fetchCompletions();
+  }, [programs]);
 
   const getProgramStats = (program: Program) => {
     const weeksCount = program.program_weeks?.length || 0;
@@ -65,9 +115,12 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
     // Αν υπάρχει μόνο ένα assignment, δείχνουμε τα στοιχεία του χρήστη
     const firstAssignment = assignments[0];
     const totalSessions = firstAssignment.training_dates?.length || 0;
-    // Αφαιρέθηκε το mock 30% completed - τώρα ξεκινά από 0
-    const completedSessions = 0;
-    const remainingSessions = totalSessions - completedSessions;
+    
+    // Παίρνουμε τα πραγματικά completed sessions από το completionsMap
+    const completionData = completionsMap[firstAssignment.id] || { completed: 0, missed: 0 };
+    const completedSessions = completionData.completed;
+    
+    const remainingSessions = totalSessions - completedSessions - completionData.missed;
     const progressPercentage = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
     
     return {
