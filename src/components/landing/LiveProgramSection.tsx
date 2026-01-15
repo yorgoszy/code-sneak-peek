@@ -244,13 +244,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                     return (
                       <div 
                         key={section.id} 
-                        className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-gray-900 border border-gray-700"
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-[#aca097]/10 border border-[#aca097]/30"
                       >
                         <span className={cn(
                           "text-[10px] font-semibold w-10 flex-shrink-0",
                           isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]"
                         )}>{time}</span>
-                        <span className="text-[10px] font-medium text-gray-300 truncate flex-1 min-w-0">
+                        <span className="text-[10px] font-medium text-[#aca097] truncate flex-1 min-w-0">
                           {section.name}
                         </span>
                         <div className="flex items-center gap-1 flex-shrink-0 w-20">
@@ -260,7 +260,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                               style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
                             />
                           </div>
-                          <span className="text-[9px] text-gray-400 font-medium">
+                          <span className="text-[9px] text-[#aca097] font-medium">
                             {currentBookings}/{capacity}
                           </span>
                         </div>
