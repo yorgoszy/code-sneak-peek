@@ -44,6 +44,14 @@ const AVAILABLE_HOURS = [
   "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
 ];
 
+interface SectionUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url: string | null;
+  section_id: string;
+}
+
 export const GymBookingsCalendarView = () => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
@@ -51,6 +59,7 @@ export const GymBookingsCalendarView = () => {
   const [sections, setSections] = useState<BookingSection[]>([]);
   const [weekBookings, setWeekBookings] = useState<{ [key: string]: GymBooking[] }>({});
   const [sectionBookingCounts, setSectionBookingCounts] = useState<{ [sectionId: string]: number }>({});
+  const [sectionUsers, setSectionUsers] = useState<{ [sectionId: string]: SectionUser[] }>({});
   const [loading, setLoading] = useState(true);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [showAllSections, setShowAllSections] = useState(false);
@@ -62,6 +71,7 @@ export const GymBookingsCalendarView = () => {
     date: string;
     time: string;
     attendees: GymBooking[];
+    sectionId?: string;
   } | null>(null);
   const [qrScannerOpen, setQrScannerOpen] = useState(false);
   
@@ -69,6 +79,7 @@ export const GymBookingsCalendarView = () => {
 
   useEffect(() => {
     fetchSections();
+    fetchSectionUsers();
   }, []);
 
   useEffect(() => {
@@ -76,6 +87,34 @@ export const GymBookingsCalendarView = () => {
       fetchWeekBookings();
     }
   }, [currentWeek, sections]);
+
+  // Fetch users who are assigned to sections with active subscriptions
+  const fetchSectionUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, email, avatar_url, section_id')
+        .not('section_id', 'is', null)
+        .eq('subscription_status', 'active');
+
+      if (error) throw error;
+
+      // Group users by section_id
+      const grouped: { [sectionId: string]: SectionUser[] } = {};
+      (data || []).forEach(user => {
+        if (user.section_id) {
+          if (!grouped[user.section_id]) {
+            grouped[user.section_id] = [];
+          }
+          grouped[user.section_id].push(user as SectionUser);
+        }
+      });
+
+      setSectionUsers(grouped);
+    } catch (error) {
+      console.error('Error fetching section users:', error);
+    }
+  };
 
   // Set selected day to today's weekday on mount
   useEffect(() => {
@@ -204,12 +243,13 @@ export const GymBookingsCalendarView = () => {
     setCurrentWeek(new Date(currentWeek.getTime() + 7 * 24 * 60 * 60 * 1000));
   };
 
-  const openAttendanceDialog = (sectionName: string, date: string, time: string, bookings: GymBooking[]) => {
+  const openAttendanceDialog = (sectionName: string, date: string, time: string, bookings: GymBooking[], sectionId?: string) => {
     setSelectedSlotInfo({
       sectionName,
       date,
       time,
-      attendees: bookings
+      attendees: bookings,
+      sectionId
     });
     setAttendanceDialogOpen(true);
   };
@@ -375,14 +415,10 @@ export const GymBookingsCalendarView = () => {
                 <div className="p-2 grid grid-cols-2 gap-2">
                   {sectionsForSlot.map((section) => {
                     const isSelected = selectedSections.includes(section.id);
-                    const slotBookings = dayBookings.filter(booking => {
-                      const bookingTime = booking.booking_time.length > 5 
-                        ? booking.booking_time.substring(0, 5) 
-                        : booking.booking_time;
-                      return bookingTime === time && booking.section_id === section.id;
-                    });
-
-                    const currentBookings = slotBookings.length;
+                    
+                    // Get users assigned to this section
+                    const assignedUsers = sectionUsers[section.id] || [];
+                    const currentBookings = assignedUsers.length;
                     const capacity = section.max_capacity;
 
                     return (
@@ -398,7 +434,7 @@ export const GymBookingsCalendarView = () => {
                         )}
                         onClick={() => {
                           if (currentBookings > 0) {
-                            openAttendanceDialog(section.name, selectedDateStr, time, slotBookings);
+                            openAttendanceDialog(section.name, selectedDateStr, time, [], section.id);
                           }
                         }}
                       >
@@ -534,14 +570,10 @@ export const GymBookingsCalendarView = () => {
                     <div key={dateStr} className="border border-gray-200 rounded-none bg-white p-1 space-y-1">
                       {sectionsForSlot.map((section) => {
                         const isSelected = selectedSections.includes(section.id);
-                        const slotBookings = dayBookings.filter(booking => {
-                          const bookingTime = booking.booking_time.length > 5 
-                            ? booking.booking_time.substring(0, 5) 
-                            : booking.booking_time;
-                          return bookingTime === time && booking.section_id === section.id;
-                        });
-
-                        const currentBookings = slotBookings.length;
+                        
+                        // Get users assigned to this section
+                        const assignedUsers = sectionUsers[section.id] || [];
+                        const currentBookings = assignedUsers.length;
                         const capacity = section.max_capacity;
 
                         const isHovered = hoveredSection === section.id;
@@ -562,7 +594,7 @@ export const GymBookingsCalendarView = () => {
                             onMouseLeave={() => setHoveredSection(null)}
                             onClick={() => {
                               if (currentBookings > 0) {
-                                openAttendanceDialog(section.name, dateStr, time, slotBookings);
+                                openAttendanceDialog(section.name, dateStr, time, [], section.id);
                               } else {
                                 toggleSection(section.id);
                               }
@@ -607,7 +639,7 @@ export const GymBookingsCalendarView = () => {
       sectionName={selectedSlotInfo?.sectionName || ''}
       date={selectedSlotInfo?.date || ''}
       time={selectedSlotInfo?.time || ''}
-      attendees={selectedSlotInfo?.attendees || []}
+      sectionId={selectedSlotInfo?.sectionId}
     />
 
     {/* QR Scanner Dialog */}

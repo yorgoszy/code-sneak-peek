@@ -1,23 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User, Clock, Check } from "lucide-react";
+import { User, Clock } from "lucide-react";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
-interface AttendanceRecord {
+interface SectionUser {
   id: string;
-  booking_date: string;
-  booking_time: string;
-  status: string;
-  booking_type: string;
-  user_id: string;
-  section_id: string;
-  app_users?: {
-    name: string;
-    email: string;
-    avatar_url?: string;
-  };
+  name: string;
+  email: string;
+  avatar_url: string | null;
 }
 
 interface AttendanceDetailsDialogProps {
@@ -26,7 +19,7 @@ interface AttendanceDetailsDialogProps {
   sectionName: string;
   date: string;
   time: string;
-  attendees: AttendanceRecord[];
+  sectionId?: string;
 }
 
 export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = ({
@@ -35,9 +28,37 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
   sectionName,
   date,
   time,
-  attendees
+  sectionId
 }) => {
-  const formattedDate = format(new Date(date), 'dd/MM/yyyy');
+  const [users, setUsers] = useState<SectionUser[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && sectionId) {
+      fetchSectionUsers();
+    }
+  }, [isOpen, sectionId]);
+
+  const fetchSectionUsers = async () => {
+    if (!sectionId) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, email, avatar_url')
+        .eq('section_id', sectionId)
+        .eq('subscription_status', 'active');
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching section users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formattedDate = date ? format(new Date(date), 'dd/MM/yyyy') : '';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -45,7 +66,7 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="w-5 h-5 text-[#00ffba]" />
-            Παρουσίες
+            Μέλη Τμήματος
           </DialogTitle>
         </DialogHeader>
 
@@ -60,38 +81,39 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
                 {time}
               </span>
               <Badge variant="outline" className="rounded-none text-xs">
-                {attendees.length} άτομα
+                {users.length} μέλη
               </Badge>
             </div>
           </div>
 
-          {/* Attendees List */}
+          {/* Users List */}
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
-            {attendees.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-6 text-gray-500 text-sm">Φόρτωση...</div>
+            ) : users.length === 0 ? (
               <div className="text-center py-6 text-gray-500 text-sm">
-                Δεν υπάρχουν καταγεγραμμένες παρουσίες
+                Δεν υπάρχουν εγγεγραμμένα μέλη
               </div>
             ) : (
-              attendees.map((attendee) => (
+              users.map((user) => (
                 <div 
-                  key={attendee.id} 
+                  key={user.id} 
                   className="flex items-center gap-3 p-2 bg-white border border-gray-200 rounded-none hover:bg-gray-50 transition-colors"
                 >
                   <Avatar className="w-8 h-8">
-                    <AvatarImage src={attendee.app_users?.avatar_url} />
-                    <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] text-xs">
-                      {attendee.app_users?.name?.charAt(0) || 'U'}
+                    <AvatarImage src={user.avatar_url || undefined} alt={user.name} />
+                    <AvatarFallback className="text-xs">
+                      {user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900 truncate">
-                      {attendee.app_users?.name || 'Άγνωστος'}
+                      {user.name}
                     </div>
                     <div className="text-xs text-gray-500 truncate">
-                      {attendee.app_users?.email}
+                      {user.email}
                     </div>
                   </div>
-                  <Check className="w-4 h-4 text-[#00ffba] flex-shrink-0" />
                 </div>
               ))
             )}
