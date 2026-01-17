@@ -424,37 +424,61 @@ export const GymBookingsCalendarView = () => {
               const hasBookings = dayBookings.length > 0;
               const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
               const isSelected = index === selectedDayIndex;
+              const isClosed = isDateClosed(dateStr);
 
               return (
-                <button
-                  key={dateStr}
-                  onClick={() => setSelectedDayIndex(index)}
-                  className={cn(
-                    "flex-shrink-0 w-12 py-2 px-1 border rounded-none transition-all",
-                    isSelected 
-                      ? "border-[#00ffba] bg-[#00ffba]/20" 
-                      : hasBookings 
-                        ? "border-gray-300 bg-white"
-                        : "border-gray-200 bg-gray-50",
-                    isToday && !isSelected && "ring-1 ring-[#00ffba]"
-                  )}
-                >
-                  <div className={cn(
-                    "text-[10px] font-medium",
-                    isSelected ? "text-gray-900" : "text-gray-600"
-                  )}>
-                    {dayNames[index]}
-                  </div>
-                  <div className={cn(
-                    "text-xs font-bold",
-                    isSelected ? "text-gray-900" : "text-gray-700"
-                  )}>
-                    {format(day, 'dd')}
-                  </div>
-                  {hasBookings && (
-                    <div className="w-1.5 h-1.5 bg-[#00ffba] rounded-full mx-auto mt-1" />
-                  )}
-                </button>
+                <div key={dateStr} className="flex-shrink-0 flex flex-col items-center gap-1">
+                  {/* Closed Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleClosedDay(dateStr);
+                    }}
+                    className={cn(
+                      "w-8 h-6 flex items-center justify-center rounded-none transition-all border",
+                      isClosed 
+                        ? "bg-red-500 text-white border-red-500" 
+                        : "bg-gray-100 text-gray-500 border-gray-300 hover:bg-red-100 hover:text-red-500"
+                    )}
+                    title={isClosed ? "Άνοιγμα ημέρας" : "Κλείσιμο ημέρας"}
+                  >
+                    {isClosed ? <X className="w-3 h-3" /> : <Ban className="w-3 h-3" />}
+                  </button>
+
+                  {/* Day Button */}
+                  <button
+                    onClick={() => setSelectedDayIndex(index)}
+                    className={cn(
+                      "w-12 py-2 px-1 border rounded-none transition-all",
+                      isClosed 
+                        ? "border-red-300 bg-red-50 opacity-60"
+                        : isSelected 
+                          ? "border-[#00ffba] bg-[#00ffba]/20" 
+                          : hasBookings 
+                            ? "border-gray-300 bg-white"
+                            : "border-gray-200 bg-gray-50",
+                      isToday && !isSelected && !isClosed && "ring-1 ring-[#00ffba]"
+                    )}
+                  >
+                    <div className={cn(
+                      "text-[10px] font-medium",
+                      isClosed ? "text-red-500" : isSelected ? "text-gray-900" : "text-gray-600"
+                    )}>
+                      {dayNames[index]}
+                    </div>
+                    <div className={cn(
+                      "text-xs font-bold",
+                      isClosed ? "text-red-500" : isSelected ? "text-gray-900" : "text-gray-700"
+                    )}>
+                      {format(day, 'dd')}
+                    </div>
+                    {isClosed ? (
+                      <div className="text-[8px] text-red-500 font-medium">Κλειστά</div>
+                    ) : hasBookings ? (
+                      <div className="w-1.5 h-1.5 bg-[#00ffba] rounded-full mx-auto mt-1" />
+                    ) : null}
+                  </button>
+                </div>
               );
             })}
           </div>
