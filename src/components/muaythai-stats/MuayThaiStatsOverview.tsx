@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Target, Shield, Clock, Activity, TrendingUp, Users, Swords } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Target, Shield, Clock, Activity, TrendingUp, Users, Swords, Plus } from 'lucide-react';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useMuayThaiStats } from '@/hooks/useMuayThaiStats';
+import { FightRecordingDialog } from './FightRecordingDialog';
 
 export const MuayThaiStatsOverview = () => {
   const { userProfile } = useRoleCheck();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [isRecordingOpen, setIsRecordingOpen] = useState(false);
   const coachId = userProfile?.role === 'admin' ? undefined : userProfile?.id;
   
   const { stats, loading } = useMuayThaiStats(selectedUserId);
@@ -64,13 +67,24 @@ export const MuayThaiStatsOverview = () => {
           <h1 className="text-2xl font-bold text-gray-900">Στατιστικά Muay Thai</h1>
           <p className="text-gray-500 text-sm mt-1">Ανάλυση απόδοσης και στατιστικά αγώνων</p>
         </div>
-        <div className="w-full md:w-80">
-          <UserSearchCombobox
-            value={selectedUserId}
-            onValueChange={setSelectedUserId}
-            placeholder="Επιλέξτε χρήστη..."
-            coachId={coachId}
-          />
+        <div className="flex items-center gap-3">
+          <div className="w-full md:w-80">
+            <UserSearchCombobox
+              value={selectedUserId}
+              onValueChange={setSelectedUserId}
+              placeholder="Επιλέξτε χρήστη..."
+              coachId={coachId}
+            />
+          </div>
+          {selectedUserId && (
+            <Button
+              onClick={() => setIsRecordingOpen(true)}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Νέος Αγώνας
+            </Button>
+          )}
         </div>
       </div>
 
@@ -251,6 +265,19 @@ export const MuayThaiStatsOverview = () => {
           </Tabs>
         </>
       )}
+
+      {/* Fight Recording Dialog */}
+      <FightRecordingDialog
+        isOpen={isRecordingOpen}
+        onClose={() => setIsRecordingOpen(false)}
+        userId={selectedUserId}
+        coachId={coachId}
+        onSuccess={() => {
+          // Trigger refresh
+          setSelectedUserId('');
+          setTimeout(() => setSelectedUserId(selectedUserId), 100);
+        }}
+      />
     </div>
   );
 };
