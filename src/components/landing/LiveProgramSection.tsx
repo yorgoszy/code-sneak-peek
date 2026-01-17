@@ -4,17 +4,12 @@ import { format, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-interface SectionUser {
-  id: string;
-  name: string;
-  section_id: string;
-}
-
-interface BookingSection {
+interface PublicSection {
   id: string;
   name: string;
   max_capacity: number;
   available_hours: any;
+  active_users: number;
 }
 
 interface LiveProgramSectionProps {
@@ -24,8 +19,7 @@ interface LiveProgramSectionProps {
 }
 
 const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations }) => {
-  const [sections, setSections] = useState<BookingSection[]>([]);
-  const [sectionUsers, setSectionUsers] = useState<{ [sectionId: string]: SectionUser[] }>({});
+  const [sections, setSections] = useState<PublicSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
@@ -34,11 +28,9 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
   const currentWeek = new Date();
 
   useEffect(() => {
-    fetchSections();
-    fetchSectionUsers();
+    fetchPublicSections();
   }, []);
 
-  // Set selected day to today's weekday on mount
   useEffect(() => {
     const today = new Date();
     const dayOfWeek = today.getDay();
@@ -46,61 +38,24 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
     setSelectedDayIndex(adjustedDay);
   }, []);
 
-  const fetchSections = async () => {
+  const fetchPublicSections = async () => {
     try {
-      const { data, error } = await supabase
-        .from('booking_sections')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
+      const { data, error } = await supabase.functions.invoke('public-section-counts');
       if (error) throw error;
-      
-      const gymSections = (data || []).filter(section => 
-        !section.name.toLowerCase().includes('videocall') && 
-        !section.name.toLowerCase().includes('online') &&
-        !section.name.toLowerCase().includes('βιντεοκλήσεις') &&
-        !section.name.toLowerCase().includes('βιντεοκληση')
-      );
-      
-      setSections(gymSections);
+      setSections(data || []);
     } catch (error) {
-      console.error('Error fetching sections:', error);
+      console.error('Error fetching public sections:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch users who are assigned to sections with active subscriptions (same logic as GymBookingsCalendarView)
-  const fetchSectionUsers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('app_users')
-        .select('id, name, section_id')
-        .not('section_id', 'is', null)
-        .eq('subscription_status', 'active');
-
-      if (error) throw error;
-
-      // Group users by section_id
-      const grouped: { [sectionId: string]: SectionUser[] } = {};
-      (data || []).forEach(user => {
-        if (user.section_id) {
-          if (!grouped[user.section_id]) {
-            grouped[user.section_id] = [];
-          }
-          grouped[user.section_id].push(user as SectionUser);
-        }
-      });
-
-      setSectionUsers(grouped);
-    } catch (error) {
-      console.error('Error fetching section users:', error);
-    }
-  };
-
   const getLoadingBarColor = (bookingsCount: number, capacity: number) => {
-    return 'bg-[#aca097]';
+    const percentage = capacity > 0 ? (bookingsCount / capacity) * 100 : 0;
+    if (percentage === 0) return 'bg-[#aca097]';
+    if (percentage <= 50) return 'bg-[#00ffba]';
+    if (percentage <= 80) return 'bg-yellow-400';
+    return 'bg-red-400';
   };
 
   const getAllTimes = () => {
@@ -129,7 +84,6 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
   // Mobile View
   if (isMobile) {
     const selectedDay = weekDays[selectedDayIndex];
-    const selectedDateStr = format(selectedDay, 'yyyy-MM-dd');
     const dayOfWeek = selectedDay.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
     return (
@@ -145,9 +99,8 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             </p>
           </div>
 
-          {/* Day Selector - Compact for mobile */}
           <div className="flex gap-1 mb-4 justify-center">
-          {weekDays.map((day, index) => {
+            {weekDays.map((day, index) => {
               const dateStr = format(day, 'yyyy-MM-dd');
               const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
               const isSelected = index === selectedDayIndex;
@@ -158,21 +111,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   onClick={() => setSelectedDayIndex(index)}
                   className={cn(
                     "flex-1 min-w-0 py-1.5 px-0.5 border rounded-none transition-all",
-                    isSelected 
-                      ? "border-[#cb8954] bg-[#cb8954]/20" 
-                      : "border-[#aca097]/30 bg-[#aca097]/10"
+                    isSelected ? "border-[#cb8954] bg-[#cb8954]/20" : "border-[#aca097]/30 bg-[#aca097]/10"
                   )}
                 >
-                  <div className={cn(
-                    "text-[9px] font-medium",
-                    isToday ? "text-[#cb8954]" : "text-[#aca097]"
-                  )}>
+                  <div className={cn("text-[9px] font-medium", isToday ? "text-[#cb8954]" : "text-[#aca097]")}>
                     {dayNames[index]}
                   </div>
-                  <div className={cn(
-                    "text-[11px] font-bold",
-                    isToday ? "text-[#cb8954]" : "text-[#aca097]"
-                  )}>
+                  <div className={cn("text-[11px] font-bold", isToday ? "text-[#cb8954]" : "text-[#aca097]")}>
                     {format(day, 'dd')}
                   </div>
                 </button>
@@ -180,7 +125,6 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             })}
           </div>
 
-          {/* Time Slots - Compact layout */}
           <div className="space-y-1">
             {sortedTimes.map((time) => {
               const sectionsForSlot = sections.filter(s => {
@@ -189,43 +133,26 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
               });
 
               if (sectionsForSlot.length === 0) return null;
-              
-              // Check if this time slot is currently active
+
               const now = new Date();
-              const currentHour = now.getHours();
               const slotHour = parseInt(time.split(':')[0], 10);
-              const isCurrentSlot = slotHour === currentHour;
+              const isCurrentSlot = slotHour === now.getHours();
 
               return (
                 <div key={time} className="space-y-1">
                   {sectionsForSlot.map((section) => {
-                    // Use sectionUsers instead of bookings
-                    const assignedUsers = sectionUsers[section.id] || [];
-                    const currentBookings = assignedUsers.length;
+                    const currentBookings = section.active_users;
                     const capacity = section.max_capacity;
 
                     return (
-                      <div 
-                        key={section.id} 
-                        className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-[#aca097]/10 border border-[#aca097]/30"
-                      >
-                        <span className={cn(
-                          "text-[10px] font-semibold w-10 flex-shrink-0",
-                          isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]"
-                        )}>{time}</span>
-                        <span className="text-[10px] font-medium text-[#aca097] truncate flex-1 min-w-0">
-                          {section.name}
-                        </span>
+                      <div key={section.id} className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-[#aca097]/10 border border-[#aca097]/30">
+                        <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]")}>{time}</span>
+                        <span className="text-[10px] font-medium text-[#aca097] truncate flex-1 min-w-0">{section.name}</span>
                         <div className="flex items-center gap-1 flex-shrink-0 w-20">
                           <div className="flex-1 h-1.5 bg-black rounded-none overflow-hidden">
-                            <div
-                              className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
-                              style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
-                            />
+                            <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
                           </div>
-                          <span className="text-[9px] text-[#aca097] font-medium">
-                            {currentBookings}/{capacity}
-                          </span>
+                          <span className="text-[9px] text-[#aca097] font-medium">{currentBookings}/{capacity}</span>
                         </div>
                       </div>
                     );
@@ -244,126 +171,74 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
     <section className="py-20 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Robert Pro, sans-serif', color: '#aca097' }}>
-            Live Program
-          </h2>
+          <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Robert Pro, sans-serif', color: '#aca097' }}>Live Program</h2>
           <div className="w-16 h-1 mx-auto mb-4" style={{ backgroundColor: '#aca097' }}></div>
-          <p style={{ color: '#aca097' }}>
-            {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}
-          </p>
+          <p style={{ color: '#aca097' }}>{format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}</p>
         </div>
 
-        {/* Weekly Grid */}
         <div className="space-y-0.5 overflow-x-auto">
-          {/* Header Row */}
           <div className="grid grid-cols-8 gap-0.5 min-w-0">
             <div className="text-[10px] font-medium text-gray-500 p-1"></div>
             {weekDays.map((day) => {
               const dateStr = format(day, 'yyyy-MM-dd');
               const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-              
               return (
-                  <div 
-                    key={dateStr} 
-                    className={cn(
-                      "text-center p-1 border rounded-none bg-black border-[#aca097]/30"
-                    )}
-                  >
-                    <div className={cn(
-                      "font-medium text-[10px]",
-                      isToday ? "text-[#cb8954]" : "text-[#aca097]"
-                    )}>
-                    {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
-                  </div>
-                  <div className={cn(
-                    "text-xs font-bold",
-                    isToday ? "text-[#cb8954]" : "text-[#aca097]"
-                  )}>
-                    {format(day, 'dd/MM')}
-                  </div>
+                <div key={dateStr} className="text-center p-1 border rounded-none bg-black border-[#aca097]/30">
+                  <div className={cn("font-medium text-[10px]", isToday ? "text-[#cb8954]" : "text-[#aca097]")}>{dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}</div>
+                  <div className={cn("text-xs font-bold", isToday ? "text-[#cb8954]" : "text-[#aca097]")}>{format(day, 'dd/MM')}</div>
                 </div>
               );
             })}
           </div>
 
-          {/* Time Rows */}
           {sortedTimes.map((time) => {
-            // Check if this time slot is currently active
             const now = new Date();
-            const currentHour = now.getHours();
             const slotHour = parseInt(time.split(':')[0], 10);
-            const isCurrentSlot = slotHour === currentHour;
-            
+            const isCurrentSlot = slotHour === now.getHours();
+
             return (
-            <div key={time} className="grid grid-cols-8 gap-0.5 min-w-0">
-              <div className="bg-black border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
-                <span className={cn(
-                  "text-[10px] font-medium",
-                  isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]"
-                )}>{time}</span>
-              </div>
+              <div key={time} className="grid grid-cols-8 gap-0.5 min-w-0">
+                <div className="bg-black border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
+                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]")}>{time}</span>
+                </div>
 
-              {weekDays.map((day) => {
-                const dateStr = format(day, 'yyyy-MM-dd');
-                const dayOfWeek = day.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-                
-                const sectionsForSlot = sections.filter(s => {
-                  const sectionHours = s.available_hours?.[dayOfWeek] || [];
-                  return sectionHours.includes(time);
-                });
+                {weekDays.map((day) => {
+                  const dateStr = format(day, 'yyyy-MM-dd');
+                  const dayOfWeek = day.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                  const sectionsForSlot = sections.filter(s => (s.available_hours?.[dayOfWeek] || []).includes(time));
 
-                if (sectionsForSlot.length === 0) {
+                  if (sectionsForSlot.length === 0) {
+                    return <div key={dateStr} className="bg-[#aca097]/5 border border-[#aca097]/10 rounded-none p-0.5" />;
+                  }
+
                   return (
-                    <div key={dateStr} className="bg-[#aca097]/5 border border-[#aca097]/10 rounded-none p-0.5" />
-                  );
-                }
+                    <div key={dateStr} className="border border-[#aca097]/30 rounded-none bg-[#aca097]/10 p-0.5 space-y-0.5">
+                      {sectionsForSlot.map((section) => {
+                        const currentBookings = section.active_users;
+                        const capacity = section.max_capacity;
+                        const isHovered = hoveredSection === section.id;
 
-                return (
-                  <div key={dateStr} className="border border-[#aca097]/30 rounded-none bg-[#aca097]/10 p-0.5 space-y-0.5">
-                    {sectionsForSlot.map((section) => {
-                      // Use sectionUsers instead of bookings
-                      const assignedUsers = sectionUsers[section.id] || [];
-                      const currentBookings = assignedUsers.length;
-                      const capacity = section.max_capacity;
-                      const isHovered = hoveredSection === section.id;
-
-                      return (
-                        <div 
-                          key={section.id} 
-                          className={cn(
-                            "space-y-0.5 p-0.5 rounded-none transition-all cursor-pointer",
-                            isHovered
-                              ? 'bg-[#cb8954]/20 border border-[#cb8954]'
-                              : 'bg-[#aca097]/20 border border-[#aca097]/30 hover:bg-[#aca097]/30'
-                          )}
-                          onMouseEnter={() => setHoveredSection(section.id)}
-                          onMouseLeave={() => setHoveredSection(null)}
-                        >
-                          <div className={cn(
-                            "text-[8px] font-medium truncate",
-                            isHovered ? 'text-white' : 'text-[#aca097]'
-                          )}>
-                            {section.name}
-                          </div>
-                          
-                          <div className="flex items-center gap-0.5">
-                            <div className="flex-1 h-1 bg-black rounded-none overflow-hidden">
-                              <div
-                                className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`}
-                                style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }}
-                              />
+                        return (
+                          <div 
+                            key={section.id} 
+                            className={cn("space-y-0.5 p-0.5 rounded-none transition-all cursor-pointer", isHovered ? 'bg-[#cb8954]/20 border border-[#cb8954]' : 'bg-[#aca097]/20 border border-[#aca097]/30 hover:bg-[#aca097]/30')}
+                            onMouseEnter={() => setHoveredSection(section.id)}
+                            onMouseLeave={() => setHoveredSection(null)}
+                          >
+                            <div className={cn("text-[8px] font-medium truncate", isHovered ? 'text-white' : 'text-[#aca097]')}>{section.name}</div>
+                            <div className="flex items-center gap-0.5">
+                              <div className="flex-1 h-1 bg-black rounded-none overflow-hidden">
+                                <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
+                              </div>
+                              <span className="text-[8px] flex-shrink-0 text-[#aca097]">{currentBookings}/{capacity}</span>
                             </div>
-                            <span className="text-[8px] flex-shrink-0 text-[#aca097]">
-                              {currentBookings}/{capacity}
-                            </span>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
             );
           })}
         </div>
