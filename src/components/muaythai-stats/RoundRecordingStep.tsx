@@ -282,7 +282,7 @@ export const RoundRecordingStep: React.FC<RoundRecordingStepProps> = ({
             {['punch', 'kick', 'knee', 'elbow'].map((type) => (
               <div key={type} className="border-b pb-3 last:border-0">
                 <p className="text-sm font-medium mb-2">{strikeLabels[type]}</p>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {['left', 'right'].map((side) => {
                     const index = strikes.findIndex(s => s.type === type && s.side === side);
                     const strike = strikes[index];
@@ -322,7 +322,7 @@ export const RoundRecordingStep: React.FC<RoundRecordingStepProps> = ({
             <Shield className="w-4 h-4 text-purple-500" />
             Άμυνες
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {defenses.map((defense, index) => (
               <div key={defense.type} className="space-y-2">
                 <p className="text-sm font-medium">{defenseLabels[defense.type]}</p>
