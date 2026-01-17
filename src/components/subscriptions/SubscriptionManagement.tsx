@@ -1698,7 +1698,7 @@ export const SubscriptionManagement: React.FC = () => {
                               variant={subscription.is_paid ? "default" : "destructive"}
                               className="rounded-none text-xs"
                             >
-                              {subscription.is_paid ? 'Πληρωμένη' : 'Απλήρωτη'}
+                              {subscription.is_paid ? 'Paid' : 'Unpaid'}
                             </Badge>
                           </div>
                           <div className="flex gap-1 md:gap-2">
@@ -1740,11 +1740,28 @@ export const SubscriptionManagement: React.FC = () => {
                               <RotateCcw className="w-3 h-3 md:w-4 md:h-4" />
                             </Button>
 
+                            {/* Section Assignment Button */}
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => toggleUserStatus(user.id, user.user_status)}
-                              className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0"
+                              onClick={() => openSectionDialog(user)}
+                              className={`rounded-none h-7 w-7 md:h-8 md:w-8 p-0 ${user.section_id 
+                                ? 'border-[#cb8954] text-[#cb8954]' 
+                                : 'border-gray-300 text-gray-500'}`}
+                              title={user.section_id ? `Τμήμα: ${user.booking_sections?.name}` : "Ανάθεση τμήματος"}
+                            >
+                              <Users className="w-3 h-3 md:w-4 md:h-4" />
+                            </Button>
+
+                            {/* Visit Recording Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => recordVisit(user.id)}
+                              className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0 border-[#00ffba] text-[#00ffba]"
+                              title={user.section_id 
+                                ? `Καταγραφή παρουσίας - ${user.booking_sections?.name}`
+                                : "Καταγραφή παρουσίας"}
                             >
                               <UserCheck className="w-3 h-3 md:w-4 md:h-4" />
                             </Button>
