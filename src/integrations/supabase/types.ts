@@ -3533,6 +3533,339 @@ export type Database = {
         }
         Relationships: []
       }
+      muaythai_calculated_stats: {
+        Row: {
+          created_at: string
+          fight_id: string
+          id: string
+          metadata: Json | null
+          metric_name: string
+          metric_value: number | null
+          round_number: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fight_id: string
+          id?: string
+          metadata?: Json | null
+          metric_name: string
+          metric_value?: number | null
+          round_number?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fight_id?: string
+          id?: string
+          metadata?: Json | null
+          metric_name?: string
+          metric_value?: number | null
+          round_number?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muaythai_calculated_stats_fight_id_fkey"
+            columns: ["fight_id"]
+            isOneToOne: false
+            referencedRelation: "muaythai_fights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      muaythai_defenses: {
+        Row: {
+          created_at: string
+          defense_type: string
+          id: string
+          incoming_strike_type: string | null
+          round_id: string
+          successful: boolean
+          timestamp_in_round: number | null
+        }
+        Insert: {
+          created_at?: string
+          defense_type: string
+          id?: string
+          incoming_strike_type?: string | null
+          round_id: string
+          successful?: boolean
+          timestamp_in_round?: number | null
+        }
+        Update: {
+          created_at?: string
+          defense_type?: string
+          id?: string
+          incoming_strike_type?: string | null
+          round_id?: string
+          successful?: boolean
+          timestamp_in_round?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muaythai_defenses_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "muaythai_rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      muaythai_fighter_profiles: {
+        Row: {
+          avg_strikes_per_round: number | null
+          cluster_characteristics: Json | null
+          cluster_name: string | null
+          created_at: string
+          defense_success_rate: number | null
+          dominant_side: string | null
+          dominant_strike: string | null
+          fight_style: string | null
+          id: string
+          last_calculated: string | null
+          strike_accuracy: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_strikes_per_round?: number | null
+          cluster_characteristics?: Json | null
+          cluster_name?: string | null
+          created_at?: string
+          defense_success_rate?: number | null
+          dominant_side?: string | null
+          dominant_strike?: string | null
+          fight_style?: string | null
+          id?: string
+          last_calculated?: string | null
+          strike_accuracy?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_strikes_per_round?: number | null
+          cluster_characteristics?: Json | null
+          cluster_name?: string | null
+          created_at?: string
+          defense_success_rate?: number | null
+          dominant_side?: string | null
+          dominant_strike?: string | null
+          fight_style?: string | null
+          id?: string
+          last_calculated?: string | null
+          strike_accuracy?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muaythai_fighter_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      muaythai_fights: {
+        Row: {
+          coach_id: string | null
+          created_at: string
+          fight_date: string
+          fight_type: string
+          id: string
+          location: string | null
+          notes: string | null
+          opponent_name: string
+          result: string | null
+          round_duration_seconds: number
+          total_rounds: number
+          updated_at: string
+          user_id: string
+          video_duration_seconds: number | null
+          video_url: string | null
+          weight_class: string | null
+        }
+        Insert: {
+          coach_id?: string | null
+          created_at?: string
+          fight_date: string
+          fight_type: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          opponent_name: string
+          result?: string | null
+          round_duration_seconds?: number
+          total_rounds?: number
+          updated_at?: string
+          user_id: string
+          video_duration_seconds?: number | null
+          video_url?: string | null
+          weight_class?: string | null
+        }
+        Update: {
+          coach_id?: string | null
+          created_at?: string
+          fight_date?: string
+          fight_type?: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          opponent_name?: string
+          result?: string | null
+          round_duration_seconds?: number
+          total_rounds?: number
+          updated_at?: string
+          user_id?: string
+          video_duration_seconds?: number | null
+          video_url?: string | null
+          weight_class?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muaythai_fights_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "muaythai_fights_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      muaythai_rounds: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          fight_id: string
+          id: string
+          notes: string | null
+          round_number: number
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          fight_id: string
+          id?: string
+          notes?: string | null
+          round_number: number
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          fight_id?: string
+          id?: string
+          notes?: string | null
+          round_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muaythai_rounds_fight_id_fkey"
+            columns: ["fight_id"]
+            isOneToOne: false
+            referencedRelation: "muaythai_fights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      muaythai_strikes: {
+        Row: {
+          created_at: string
+          id: string
+          is_counter: boolean | null
+          landed: boolean
+          power_level: number | null
+          round_id: string
+          side: string
+          strike_type: string
+          target_area: string | null
+          timestamp_in_round: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_counter?: boolean | null
+          landed?: boolean
+          power_level?: number | null
+          round_id: string
+          side: string
+          strike_type: string
+          target_area?: string | null
+          timestamp_in_round?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_counter?: boolean | null
+          landed?: boolean
+          power_level?: number | null
+          round_id?: string
+          side?: string
+          strike_type?: string
+          target_area?: string | null
+          timestamp_in_round?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muaythai_strikes_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "muaythai_rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      muaythai_video_markers: {
+        Row: {
+          action_end_seconds: number
+          action_start_seconds: number
+          action_type: string
+          created_at: string
+          fight_id: string
+          id: string
+          interval_label: string | null
+          notes: string | null
+          round_number: number
+        }
+        Insert: {
+          action_end_seconds: number
+          action_start_seconds: number
+          action_type: string
+          created_at?: string
+          fight_id: string
+          id?: string
+          interval_label?: string | null
+          notes?: string | null
+          round_number: number
+        }
+        Update: {
+          action_end_seconds?: number
+          action_start_seconds?: number
+          action_type?: string
+          created_at?: string
+          fight_id?: string
+          id?: string
+          interval_label?: string | null
+          notes?: string | null
+          round_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muaythai_video_markers_fight_id_fkey"
+            columns: ["fight_id"]
+            isOneToOne: false
+            referencedRelation: "muaythai_fights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       muscles: {
         Row: {
           created_at: string
