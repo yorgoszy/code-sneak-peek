@@ -79,10 +79,11 @@ export const MuayThaiStatsOverview = () => {
           {selectedUserId && (
             <Button
               onClick={() => setIsRecordingOpen(true)}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 mr-1" />
-              Νέος Αγώνας
+              <span className="hidden sm:inline">Νέος Αγώνας</span>
+              <span className="sm:hidden">Νέος</span>
             </Button>
           )}
         </div>
@@ -150,11 +151,11 @@ export const MuayThaiStatsOverview = () => {
 
           {/* Tabs για λεπτομερή ανάλυση */}
           <Tabs defaultValue="strikes" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 rounded-none">
-              <TabsTrigger value="strikes" className="rounded-none">Χτυπήματα</TabsTrigger>
-              <TabsTrigger value="defense" className="rounded-none">Άμυνα</TabsTrigger>
-              <TabsTrigger value="timeline" className="rounded-none">Χρονική</TabsTrigger>
-              <TabsTrigger value="fights" className="rounded-none">Αγώνες</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 rounded-none h-auto">
+              <TabsTrigger value="strikes" className="rounded-none text-xs sm:text-sm py-2">Χτυπήματα</TabsTrigger>
+              <TabsTrigger value="defense" className="rounded-none text-xs sm:text-sm py-2">Άμυνα</TabsTrigger>
+              <TabsTrigger value="timeline" className="rounded-none text-xs sm:text-sm py-2">Χρονική</TabsTrigger>
+              <TabsTrigger value="fights" className="rounded-none text-xs sm:text-sm py-2">Αγώνες</TabsTrigger>
             </TabsList>
 
             <TabsContent value="strikes" className="mt-4">

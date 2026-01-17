@@ -136,7 +136,7 @@ export const FightRecordingDialog: React.FC<FightRecordingDialogProps> = ({
 
         {step === 'basic-info' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Αντίπαλος *</Label>
                 <Input
@@ -157,7 +157,7 @@ export const FightRecordingDialog: React.FC<FightRecordingDialogProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Τύπος</Label>
                 <Select value={fightType} onValueChange={(v: any) => setFightType(v)}>
@@ -250,21 +250,21 @@ export const FightRecordingDialog: React.FC<FightRecordingDialogProps> = ({
             {roundsData.map((rd, i) => (
               <div key={i} className="bg-white border p-3 rounded-none">
                 <h4 className="font-medium">Γύρος {rd.round}</h4>
-                <div className="grid grid-cols-4 gap-2 mt-2 text-sm">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2 text-sm">
                   <div>
-                    <span className="text-gray-500">Χτυπήματα:</span>{' '}
+                    <span className="text-gray-500 text-xs sm:text-sm">Χτυπήματα:</span>{' '}
                     <span className="font-medium">{rd.totalStrikes || 0}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Επιτυχημένα:</span>{' '}
+                    <span className="text-gray-500 text-xs sm:text-sm">Επιτυχημένα:</span>{' '}
                     <span className="font-medium text-green-600">{rd.landedStrikes || 0}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Άμυνες:</span>{' '}
+                    <span className="text-gray-500 text-xs sm:text-sm">Άμυνες:</span>{' '}
                     <span className="font-medium">{rd.totalDefenses || 0}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Επιτυχημένες:</span>{' '}
+                    <span className="text-gray-500 text-xs sm:text-sm">Επιτυχημένες:</span>{' '}
                     <span className="font-medium text-blue-600">{rd.successfulDefenses || 0}</span>
                   </div>
                 </div>
