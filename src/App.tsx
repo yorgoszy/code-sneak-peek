@@ -149,6 +149,7 @@ function App() {
                       <Route path="/dashboard/coach-shop" element={<ProtectedRoute><CoachShop /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-goals-awards" element={<ProtectedRoute><CoachGoalsAwardsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/muaythai-stats" element={<ProtectedRoute><MuayThaiStatsPage /></ProtectedRoute>} />
+                      
                       {/* Admin-only routes */}
                       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
                       <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
