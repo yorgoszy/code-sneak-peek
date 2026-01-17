@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, User, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp, Camera } from "lucide-react";
+import { Clock, MapPin, User, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp, Camera, Ban, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
@@ -11,6 +11,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { AttendanceDetailsDialog } from "./AttendanceDetailsDialog";
 import { QRScannerAttendance } from "./QRScannerAttendance";
+import { toast } from "sonner";
+
 interface GymBooking {
   id: string;
   booking_date: string;
@@ -52,6 +54,12 @@ interface SectionUser {
   section_id: string;
 }
 
+interface ClosedDay {
+  id: string;
+  closed_date: string;
+  reason: string | null;
+}
+
 export const GymBookingsCalendarView = () => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
@@ -60,6 +68,7 @@ export const GymBookingsCalendarView = () => {
   const [weekBookings, setWeekBookings] = useState<{ [key: string]: GymBooking[] }>({});
   const [sectionBookingCounts, setSectionBookingCounts] = useState<{ [sectionId: string]: number }>({});
   const [sectionUsers, setSectionUsers] = useState<{ [sectionId: string]: SectionUser[] }>({});
+  const [closedDays, setClosedDays] = useState<ClosedDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [showAllSections, setShowAllSections] = useState(false);
@@ -85,8 +94,69 @@ export const GymBookingsCalendarView = () => {
   useEffect(() => {
     if (sections.length > 0) {
       fetchWeekBookings();
+      fetchClosedDays();
     }
   }, [currentWeek, sections]);
+
+  // Fetch closed days for current week
+  const fetchClosedDays = async () => {
+    try {
+      const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
+      
+      const { data, error } = await supabase
+        .from('closed_days')
+        .select('*')
+        .gte('closed_date', format(weekStart, 'yyyy-MM-dd'))
+        .lte('closed_date', format(weekEnd, 'yyyy-MM-dd'));
+
+      if (error) throw error;
+      setClosedDays(data || []);
+    } catch (error) {
+      console.error('Error fetching closed days:', error);
+    }
+  };
+
+  // Check if a date is closed
+  const isDateClosed = (dateStr: string): boolean => {
+    return closedDays.some(cd => cd.closed_date === dateStr);
+  };
+
+  // Toggle closed day
+  const toggleClosedDay = async (dateStr: string) => {
+    const existingClosed = closedDays.find(cd => cd.closed_date === dateStr);
+    
+    try {
+      if (existingClosed) {
+        // Remove closed day
+        const { error } = await supabase
+          .from('closed_days')
+          .delete()
+          .eq('id', existingClosed.id);
+        
+        if (error) throw error;
+        setClosedDays(prev => prev.filter(cd => cd.id !== existingClosed.id));
+        toast.success('Η ημέρα επαναφέρθηκε');
+      } else {
+        // Add closed day
+        const { data, error } = await supabase
+          .from('closed_days')
+          .insert({
+            closed_date: dateStr,
+            reason: 'Κλειστά'
+          })
+          .select()
+          .single();
+        
+        if (error) throw error;
+        setClosedDays(prev => [...prev, data]);
+        toast.success('Η ημέρα σημειώθηκε ως κλειστή');
+      }
+    } catch (error) {
+      console.error('Error toggling closed day:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση');
+    }
+  };
 
   // Fetch users who are assigned to sections with active subscriptions
   const fetchSectionUsers = async () => {
@@ -512,25 +582,61 @@ export const GymBookingsCalendarView = () => {
       {/* Weekly Grid - Organized by Time Rows */}
       {sections.length > 0 && (
         <div className="space-y-1">
-          {/* Header Row with Days */}
+          {/* Header Row with Days and Close Buttons */}
           <div className="grid grid-cols-8 gap-1">
             <div className="text-xs font-medium text-gray-500 p-1"></div>
             {weekDays.map((day) => {
               const dateStr = format(day, 'yyyy-MM-dd');
               const dayBookings = weekBookings[dateStr] || [];
               const hasBookings = dayBookings.length > 0;
+              const isClosed = isDateClosed(dateStr);
               
               return (
                 <div 
                   key={dateStr} 
-                  className={`text-center p-1 border border-gray-200 rounded-none ${
-                    hasBookings ? 'bg-[#00ffba]/20' : 'bg-gray-50'
-                  }`}
+                  className={cn(
+                    "text-center p-1 border rounded-none",
+                    isClosed 
+                      ? "bg-red-100 border-red-300" 
+                      : hasBookings 
+                        ? "bg-[#00ffba]/20 border-gray-200"
+                        : "bg-gray-50 border-gray-200"
+                  )}
                 >
-                  <div className="font-medium text-xs">
+                  {/* Close Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleClosedDay(dateStr)}
+                    className={cn(
+                      "w-full h-5 px-1 rounded-none text-[9px] mb-0.5",
+                      isClosed 
+                        ? "bg-red-500 text-white hover:bg-red-600" 
+                        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    )}
+                  >
+                    {isClosed ? (
+                      <>
+                        <X className="w-3 h-3 mr-0.5" />
+                        Άνοιγμα
+                      </>
+                    ) : (
+                      <>
+                        <Ban className="w-3 h-3 mr-0.5" />
+                        Κλειστά
+                      </>
+                    )}
+                  </Button>
+                  <div className={cn(
+                    "font-medium text-xs",
+                    isClosed && "text-red-600"
+                  )}>
                     {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className={cn(
+                    "text-xs",
+                    isClosed ? "text-red-500" : "text-gray-500"
+                  )}>
                     {format(day, 'dd/MM')}
                   </div>
                 </div>

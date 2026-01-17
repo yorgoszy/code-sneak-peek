@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Ban } from "lucide-react";
 
 interface PublicSection {
   id: string;
@@ -10,6 +11,11 @@ interface PublicSection {
   max_capacity: number;
   available_hours: any;
   active_users: number;
+}
+
+interface ClosedDay {
+  closed_date: string;
+  reason: string | null;
 }
 
 interface LiveProgramSectionProps {
@@ -20,6 +26,7 @@ interface LiveProgramSectionProps {
 
 const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations }) => {
   const [sections, setSections] = useState<PublicSection[]>([]);
+  const [closedDays, setClosedDays] = useState<ClosedDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
@@ -42,12 +49,23 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
     try {
       const { data, error } = await supabase.functions.invoke('public-section-counts');
       if (error) throw error;
-      setSections(data || []);
+      
+      // Handle both old format (array) and new format (object with sections and closedDays)
+      if (Array.isArray(data)) {
+        setSections(data);
+      } else {
+        setSections(data.sections || []);
+        setClosedDays(data.closedDays || []);
+      }
     } catch (error) {
       console.error('Error fetching public sections:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const isDateClosed = (dateStr: string): boolean => {
+    return closedDays.some(cd => cd.closed_date === dateStr);
   };
 
   const getLoadingBarColor = (bookingsCount: number, capacity: number) => {
@@ -84,7 +102,9 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
   // Mobile View
   if (isMobile) {
     const selectedDay = weekDays[selectedDayIndex];
+    const selectedDateStr = format(selectedDay, 'yyyy-MM-dd');
     const dayOfWeek = selectedDay.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const isDayClosed = isDateClosed(selectedDateStr);
 
     return (
       <section className="py-16 bg-black">
@@ -104,20 +124,34 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
               const dateStr = format(day, 'yyyy-MM-dd');
               const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
               const isSelected = index === selectedDayIndex;
+              const isClosed = isDateClosed(dateStr);
 
               return (
                 <button
                   key={dateStr}
                   onClick={() => setSelectedDayIndex(index)}
                   className={cn(
-                    "flex-1 min-w-0 py-1.5 px-0.5 border rounded-none transition-all",
-                    isSelected ? "border-[#cb8954] bg-[#cb8954]/20" : "border-[#aca097]/30 bg-[#aca097]/10"
+                    "flex-1 min-w-0 py-1.5 px-0.5 border rounded-none transition-all relative",
+                    isClosed 
+                      ? "border-red-500/50 bg-red-500/20"
+                      : isSelected 
+                        ? "border-[#cb8954] bg-[#cb8954]/20" 
+                        : "border-[#aca097]/30 bg-[#aca097]/10"
                   )}
                 >
-                  <div className={cn("text-[9px] font-medium", isToday ? "text-[#cb8954]" : "text-[#aca097]")}>
+                  {isClosed && (
+                    <Ban className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-red-500" />
+                  )}
+                  <div className={cn(
+                    "text-[9px] font-medium", 
+                    isClosed ? "text-red-400" : isToday ? "text-[#cb8954]" : "text-[#aca097]"
+                  )}>
                     {dayNames[index]}
                   </div>
-                  <div className={cn("text-[11px] font-bold", isToday ? "text-[#cb8954]" : "text-[#aca097]")}>
+                  <div className={cn(
+                    "text-[11px] font-bold", 
+                    isClosed ? "text-red-400" : isToday ? "text-[#cb8954]" : "text-[#aca097]"
+                  )}>
                     {format(day, 'dd')}
                   </div>
                 </button>
@@ -125,42 +159,49 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             })}
           </div>
 
-          <div className="space-y-1">
-            {sortedTimes.map((time) => {
-              const sectionsForSlot = sections.filter(s => {
-                const sectionHours = s.available_hours?.[dayOfWeek] || [];
-                return sectionHours.includes(time);
-              });
+          {isDayClosed ? (
+            <div className="flex flex-col items-center justify-center py-8 border border-red-500/30 rounded-none bg-red-500/10">
+              <Ban className="w-8 h-8 text-red-500 mb-2" />
+              <span className="text-red-400 font-semibold">Κλειστά</span>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {sortedTimes.map((time) => {
+                const sectionsForSlot = sections.filter(s => {
+                  const sectionHours = s.available_hours?.[dayOfWeek] || [];
+                  return sectionHours.includes(time);
+                });
 
-              if (sectionsForSlot.length === 0) return null;
+                if (sectionsForSlot.length === 0) return null;
 
-              const now = new Date();
-              const slotHour = parseInt(time.split(':')[0], 10);
-              const isCurrentSlot = slotHour === now.getHours();
+                const now = new Date();
+                const slotHour = parseInt(time.split(':')[0], 10);
+                const isCurrentSlot = slotHour === now.getHours();
 
-              return (
-                <div key={time} className="space-y-1">
-                  {sectionsForSlot.map((section) => {
-                    const currentBookings = section.active_users;
-                    const capacity = section.max_capacity;
+                return (
+                  <div key={time} className="space-y-1">
+                    {sectionsForSlot.map((section) => {
+                      const currentBookings = section.active_users;
+                      const capacity = section.max_capacity;
 
-                    return (
-                      <div key={section.id} className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-[#aca097]/10 border border-[#aca097]/30">
-                        <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]")}>{time}</span>
-                        <span className="text-[10px] font-medium text-[#aca097] truncate flex-1 min-w-0">{section.name}</span>
-                        <div className="flex items-center gap-1 flex-shrink-0 w-20">
-                          <div className="flex-1 h-1.5 bg-black rounded-none overflow-hidden">
-                            <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
+                      return (
+                        <div key={section.id} className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-[#aca097]/10 border border-[#aca097]/30">
+                          <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]")}>{time}</span>
+                          <span className="text-[10px] font-medium text-[#aca097] truncate flex-1 min-w-0">{section.name}</span>
+                          <div className="flex items-center gap-1 flex-shrink-0 w-20">
+                            <div className="flex-1 h-1.5 bg-black rounded-none overflow-hidden">
+                              <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
+                            </div>
+                            <span className="text-[9px] text-[#aca097] font-medium">{currentBookings}/{capacity}</span>
                           </div>
-                          <span className="text-[9px] text-[#aca097] font-medium">{currentBookings}/{capacity}</span>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
     );
@@ -182,10 +223,36 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             {weekDays.map((day) => {
               const dateStr = format(day, 'yyyy-MM-dd');
               const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+              const isClosed = isDateClosed(dateStr);
+              
               return (
-                <div key={dateStr} className="text-center p-1 border rounded-none bg-black border-[#aca097]/30">
-                  <div className={cn("font-medium text-[10px]", isToday ? "text-[#cb8954]" : "text-[#aca097]")}>{dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}</div>
-                  <div className={cn("text-xs font-bold", isToday ? "text-[#cb8954]" : "text-[#aca097]")}>{format(day, 'dd/MM')}</div>
+                <div 
+                  key={dateStr} 
+                  className={cn(
+                    "text-center p-1 border rounded-none",
+                    isClosed 
+                      ? "bg-red-500/20 border-red-500/50"
+                      : "bg-black border-[#aca097]/30"
+                  )}
+                >
+                  {isClosed && (
+                    <div className="flex items-center justify-center gap-0.5 mb-0.5">
+                      <Ban className="w-3 h-3 text-red-500" />
+                      <span className="text-[8px] text-red-400">Κλειστά</span>
+                    </div>
+                  )}
+                  <div className={cn(
+                    "font-medium text-[10px]", 
+                    isClosed ? "text-red-400" : isToday ? "text-[#cb8954]" : "text-[#aca097]"
+                  )}>
+                    {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
+                  </div>
+                  <div className={cn(
+                    "text-xs font-bold", 
+                    isClosed ? "text-red-400" : isToday ? "text-[#cb8954]" : "text-[#aca097]"
+                  )}>
+                    {format(day, 'dd/MM')}
+                  </div>
                 </div>
               );
             })}
@@ -205,7 +272,16 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                 {weekDays.map((day) => {
                   const dateStr = format(day, 'yyyy-MM-dd');
                   const dayOfWeek = day.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                  const isClosed = isDateClosed(dateStr);
                   const sectionsForSlot = sections.filter(s => (s.available_hours?.[dayOfWeek] || []).includes(time));
+
+                  if (isClosed) {
+                    return (
+                      <div key={dateStr} className="bg-red-500/10 border border-red-500/30 rounded-none p-0.5 flex items-center justify-center">
+                        <Ban className="w-3 h-3 text-red-500/50" />
+                      </div>
+                    );
+                  }
 
                   if (sectionsForSlot.length === 0) {
                     return <div key={dateStr} className="bg-[#aca097]/5 border border-[#aca097]/10 rounded-none p-0.5" />;
