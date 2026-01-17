@@ -3,19 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-interface GymBooking {
+interface SectionUser {
   id: string;
-  booking_date: string;
-  booking_time: string;
-  status: string;
-  booking_type: string;
+  name: string;
   section_id: string;
-  section?: {
-    name: string;
-    max_capacity: number;
-  };
 }
 
 interface BookingSection {
@@ -33,7 +25,7 @@ interface LiveProgramSectionProps {
 
 const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations }) => {
   const [sections, setSections] = useState<BookingSection[]>([]);
-  const [weekBookings, setWeekBookings] = useState<{ [key: string]: GymBooking[] }>({});
+  const [sectionUsers, setSectionUsers] = useState<{ [sectionId: string]: SectionUser[] }>({});
   const [loading, setLoading] = useState(true);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
@@ -43,13 +35,8 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
   useEffect(() => {
     fetchSections();
+    fetchSectionUsers();
   }, []);
-
-  useEffect(() => {
-    if (sections.length > 0) {
-      fetchWeekBookings();
-    }
-  }, [sections]);
 
   // Set selected day to today's weekday on mount
   useEffect(() => {
@@ -84,40 +71,31 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
     }
   };
 
-  const fetchWeekBookings = async () => {
-    if (sections.length === 0) return;
-
+  // Fetch users who are assigned to sections with active subscriptions (same logic as GymBookingsCalendarView)
+  const fetchSectionUsers = async () => {
     try {
-      const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
-      const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
-      const allSectionIds = sections.map(s => s.id);
-      
-      const { data: existingBookings, error } = await supabase
-        .from('booking_sessions')
-        .select(`
-          *,
-          section:booking_sections(name, max_capacity)
-        `)
-        .in('section_id', allSectionIds)
-        .gte('booking_date', format(weekStart, 'yyyy-MM-dd'))
-        .lte('booking_date', format(weekEnd, 'yyyy-MM-dd'))
-        .eq('booking_type', 'gym_visit')
-        .eq('status', 'confirmed')
-        .order('booking_time', { ascending: true });
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('id, name, section_id')
+        .not('section_id', 'is', null)
+        .eq('subscription_status', 'active');
 
       if (error) throw error;
 
-      const groupedBookings: { [key: string]: GymBooking[] } = {};
-      (existingBookings || []).forEach(booking => {
-        if (!groupedBookings[booking.booking_date]) {
-          groupedBookings[booking.booking_date] = [];
+      // Group users by section_id
+      const grouped: { [sectionId: string]: SectionUser[] } = {};
+      (data || []).forEach(user => {
+        if (user.section_id) {
+          if (!grouped[user.section_id]) {
+            grouped[user.section_id] = [];
+          }
+          grouped[user.section_id].push(user as SectionUser);
         }
-        groupedBookings[booking.booking_date].push(booking);
       });
 
-      setWeekBookings(groupedBookings);
+      setSectionUsers(grouped);
     } catch (error) {
-      console.error('Error fetching bookings:', error);
+      console.error('Error fetching section users:', error);
     }
   };
 
@@ -169,10 +147,8 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
           {/* Day Selector - Compact for mobile */}
           <div className="flex gap-1 mb-4 justify-center">
-            {weekDays.map((day, index) => {
+          {weekDays.map((day, index) => {
               const dateStr = format(day, 'yyyy-MM-dd');
-              const dayBookings = weekBookings[dateStr] || [];
-              const hasBookings = dayBookings.length > 0;
               const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
               const isSelected = index === selectedDayIndex;
 
@@ -213,8 +189,6 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
               });
 
               if (sectionsForSlot.length === 0) return null;
-
-              const dayBookings = weekBookings[selectedDateStr] || [];
               
               // Check if this time slot is currently active
               const now = new Date();
@@ -225,14 +199,9 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
               return (
                 <div key={time} className="space-y-1">
                   {sectionsForSlot.map((section) => {
-                    const slotBookings = dayBookings.filter(booking => {
-                      const bookingTime = booking.booking_time.length > 5 
-                        ? booking.booking_time.substring(0, 5) 
-                        : booking.booking_time;
-                      return bookingTime === time && booking.section_id === section.id;
-                    });
-
-                    const currentBookings = slotBookings.length;
+                    // Use sectionUsers instead of bookings
+                    const assignedUsers = sectionUsers[section.id] || [];
+                    const currentBookings = assignedUsers.length;
                     const capacity = section.max_capacity;
 
                     return (
@@ -291,16 +260,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             <div className="text-[10px] font-medium text-gray-500 p-1"></div>
             {weekDays.map((day) => {
               const dateStr = format(day, 'yyyy-MM-dd');
-              const dayBookings = weekBookings[dateStr] || [];
-              const hasBookings = dayBookings.length > 0;
               const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
               
               return (
                   <div 
                     key={dateStr} 
                     className={cn(
-                      "text-center p-1 border rounded-none",
-                      hasBookings ? 'bg-black border-[#aca097]/30' : 'bg-black border-[#aca097]/30'
+                      "text-center p-1 border rounded-none bg-black border-[#aca097]/30"
                     )}
                   >
                     <div className={cn(
@@ -352,19 +318,12 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   );
                 }
 
-                const dayBookings = weekBookings[dateStr] || [];
-
                 return (
                   <div key={dateStr} className="border border-[#aca097]/30 rounded-none bg-[#aca097]/10 p-0.5 space-y-0.5">
                     {sectionsForSlot.map((section) => {
-                      const slotBookings = dayBookings.filter(booking => {
-                        const bookingTime = booking.booking_time.length > 5 
-                          ? booking.booking_time.substring(0, 5) 
-                          : booking.booking_time;
-                        return bookingTime === time && booking.section_id === section.id;
-                      });
-
-                      const currentBookings = slotBookings.length;
+                      // Use sectionUsers instead of bookings
+                      const assignedUsers = sectionUsers[section.id] || [];
+                      const currentBookings = assignedUsers.length;
                       const capacity = section.max_capacity;
                       const isHovered = hoveredSection === section.id;
 
