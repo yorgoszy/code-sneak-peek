@@ -23,11 +23,15 @@ export const CoachProvider: React.FC<CoachProviderProps> = ({ children }) => {
     if (isAdmin() && coachIdFromUrl) {
       return coachIdFromUrl;
     }
+    // Admin χωρίς coachId στο URL -> χρησιμοποιεί το δικό του id για πρόσβαση σε Coach pages
+    if (isAdmin()) {
+      return userProfile?.id ?? null;
+    }
     // Coach -> χρησιμοποιεί το δικό του id
     if (isCoach()) {
       return userProfile?.id ?? null;
     }
-    // Fallback για admin χωρίς coachId (δεν θα έπρεπε να συμβαίνει στο coach dashboard)
+    // Fallback
     return null;
   }, [isAdmin, isCoach, coachIdFromUrl, userProfile?.id]);
 
