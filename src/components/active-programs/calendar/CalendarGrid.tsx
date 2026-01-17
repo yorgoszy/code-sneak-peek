@@ -157,9 +157,16 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   const handleUserNameClick = (programData: any, event: React.MouseEvent) => {
     event.stopPropagation();
     console.log('👤 CalendarGrid: User name clicked:', programData);
+    console.log('👤 CalendarGrid: programData.date:', programData.date);
+    console.log('👤 CalendarGrid: programData.assignment:', programData.assignment);
+    
+    const dateObj = new Date(programData.date + 'T12:00:00');
+    console.log('👤 CalendarGrid: Created date object:', dateObj);
+    
     setSelectedProgramForDay(programData.assignment);
-    setSelectedDialogDate(new Date(programData.date));
+    setSelectedDialogDate(dateObj);
     setDayProgramDialogOpen(true);
+    console.log('👤 CalendarGrid: Dialog should open now, dayProgramDialogOpen set to true');
   };
 
   // ✨ Όταν γίνεται κλικ στον αριθμό ημέρας, αλλάζει σε ημερήσια καρτέλα και επιλέγεται η ημερομηνία!
