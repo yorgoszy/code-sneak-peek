@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Target, Shield, Clock, Activity, TrendingUp, Users, Swords } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useMuayThaiStats } from '@/hooks/useMuayThaiStats';
 
 export const MuayThaiStatsOverview = () => {
-  const { userProfile } = useAuth();
+  const { userProfile } = useRoleCheck();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const coachId = userProfile?.role === 'admin' ? undefined : userProfile?.id;
   
