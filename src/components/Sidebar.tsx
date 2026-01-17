@@ -544,7 +544,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     },
     {
       icon: Swords,
-      label: "Στατιστικά Muay Thai",
+      label: "Video Analysis",
       path: "/dashboard/muaythai-stats",
       badge: null
     },
