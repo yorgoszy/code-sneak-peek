@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   Award,
   Lock,
+  Swords,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -181,6 +182,13 @@ export const CoachSidebar = ({
       icon: Award,
       label: "Στόχοι & Βραβεία",
       path: effectiveCoachId ? `/dashboard/coach-goals-awards?coachId=${effectiveCoachId}` : "/dashboard/coach-goals-awards",
+      badge: null,
+      requiresSubscription: true,
+    },
+    {
+      icon: Swords,
+      label: "Στατιστικά Muay Thai",
+      path: effectiveCoachId ? `/dashboard/muaythai-stats?coachId=${effectiveCoachId}` : "/dashboard/muaythai-stats",
       badge: null,
       requiresSubscription: true,
     },

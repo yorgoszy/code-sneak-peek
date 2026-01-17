@@ -24,7 +24,8 @@ import {
   ChevronUp,
   Timer,
   Utensils,
-  Award
+  Award,
+  Swords
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -539,6 +540,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Award,
       label: "Στόχοι & Βραβεία",
       path: "/dashboard/goals-awards",
+      badge: null
+    },
+    {
+      icon: Swords,
+      label: "Στατιστικά Muay Thai",
+      path: "/dashboard/muaythai-stats",
       badge: null
     },
     {
