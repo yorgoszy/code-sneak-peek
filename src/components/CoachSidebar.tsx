@@ -190,7 +190,7 @@ export const CoachSidebar = ({
       label: "Στατιστικά Muay Thai",
       path: effectiveCoachId ? `/dashboard/muaythai-stats?coachId=${effectiveCoachId}` : "/dashboard/muaythai-stats",
       badge: null,
-      requiresSubscription: true,
+      requiresSubscription: false,
     },
     {
       icon: Settings,
