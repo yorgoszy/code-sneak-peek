@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
 import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
-import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
-import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
@@ -34,13 +32,6 @@ const CoachActiveProgramsContent = () => {
   const [selectedDialogDate, setSelectedDialogDate] = useState<Date>(new Date());
 
   const { getWorkoutCompletions } = useWorkoutCompletions();
-  const completionsCache = useWorkoutCompletionsCache();
-  
-  const { 
-    activeWorkouts, 
-    startWorkout,
-    updateElapsedTime,
-  } = useMultipleWorkouts();
 
   useEffect(() => {
     if (isAdmin() && !coachId) {
@@ -95,17 +86,6 @@ const CoachActiveProgramsContent = () => {
     workoutStatusService.markMissedWorkoutsForPastDates().catch(console.error);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      activeWorkouts.forEach(workout => {
-        if (workout.workoutInProgress) {
-          const newElapsedTime = Math.floor((new Date().getTime() - workout.startTime.getTime()) / 1000);
-          updateElapsedTime(workout.id, newElapsedTime);
-        }
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [activeWorkouts, updateElapsedTime]);
 
   const dayToShow = selectedDate || new Date();
   const dayToShowStr = format(dayToShow, 'yyyy-MM-dd');
@@ -138,7 +118,7 @@ const CoachActiveProgramsContent = () => {
   }, [loadCompletions]);
 
   const handleProgramClick = (assignment: EnrichedAssignment) => {
-    // Απλό άνοιγμα dialog - χωρίς περίπλοκη λογική
+    console.log('🎯 handleProgramClick called:', assignment.id, 'date:', selectedDate);
     setSelectedProgram(assignment);
     setSelectedDialogDate(selectedDate);
     setDialogOpen(true);
