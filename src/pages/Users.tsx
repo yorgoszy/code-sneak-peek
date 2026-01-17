@@ -1182,7 +1182,7 @@ const Users = () => {
                               </div>
 
                               {/* Actions */}
-                              <div className="flex space-x-2 justify-end">
+                              <div className="flex space-x-2 justify-end flex-wrap gap-1">
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
@@ -1200,6 +1200,24 @@ const Users = () => {
                                   title="Επεξεργασία χρήστη"
                                 >
                                   <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none text-blue-600 hover:text-blue-700 p-2"
+                                  onClick={() => handleTestPasswordReset(user)}
+                                  title="Αποστολή κωδικού"
+                                >
+                                  <Mail className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none text-red-600 hover:text-red-700 p-2"
+                                  onClick={() => handleDeleteUser(user)}
+                                  title="Διαγραφή χρήστη"
+                                >
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                               </div>
 
