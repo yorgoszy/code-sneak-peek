@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
 import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
+import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
@@ -25,13 +27,16 @@ const CoachActiveProgramsContent = () => {
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  
-  // Απλό dialog state - χωρίς περίπλοκη λογική
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedProgram, setSelectedProgram] = useState<EnrichedAssignment | null>(null);
-  const [selectedDialogDate, setSelectedDialogDate] = useState<Date>(new Date());
+  const [openDialogs, setOpenDialogs] = useState<Set<string>>(new Set());
 
   const { getWorkoutCompletions } = useWorkoutCompletions();
+  const completionsCache = useWorkoutCompletionsCache();
+  
+  const { 
+    activeWorkouts, 
+    startWorkout,
+    updateElapsedTime,
+  } = useMultipleWorkouts();
 
   useEffect(() => {
     if (isAdmin() && !coachId) {
@@ -86,6 +91,17 @@ const CoachActiveProgramsContent = () => {
     workoutStatusService.markMissedWorkoutsForPastDates().catch(console.error);
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      activeWorkouts.forEach(workout => {
+        if (workout.workoutInProgress) {
+          const newElapsedTime = Math.floor((new Date().getTime() - workout.startTime.getTime()) / 1000);
+          updateElapsedTime(workout.id, newElapsedTime);
+        }
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [activeWorkouts, updateElapsedTime]);
 
   const dayToShow = selectedDate || new Date();
   const dayToShowStr = format(dayToShow, 'yyyy-MM-dd');
@@ -118,14 +134,17 @@ const CoachActiveProgramsContent = () => {
   }, [loadCompletions]);
 
   const handleProgramClick = (assignment: EnrichedAssignment) => {
-    console.log('🎯 handleProgramClick called:', assignment.id, 'date:', selectedDate);
-    setSelectedProgram(assignment);
-    setSelectedDialogDate(selectedDate);
-    setDialogOpen(true);
+    const workoutId = `${assignment.id}-${dayToShow.toISOString().split('T')[0]}`;
+    startWorkout(assignment, dayToShow);
+    setOpenDialogs(prev => new Set(prev).add(workoutId));
   };
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
+  const handleDialogClose = (workoutId: string) => {
+    setOpenDialogs(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(workoutId);
+      return newSet;
+    });
   };
 
   const getWorkoutStatus = (assignment: any, dateStr: string) => {
@@ -167,15 +186,17 @@ const CoachActiveProgramsContent = () => {
         onProgramClick={handleProgramClick}
       />
 
-      {/* Απλό DayProgramDialog */}
-      <DayProgramDialog
-        isOpen={dialogOpen}
-        onClose={handleDialogClose}
-        program={selectedProgram}
-        selectedDate={selectedDialogDate}
-        workoutStatus={selectedProgram ? getWorkoutStatus(selectedProgram, format(selectedDialogDate, 'yyyy-MM-dd')) : 'scheduled'}
-        onRefresh={handleCalendarRefresh}
-      />
+      {activeWorkouts.map(workout => (
+        <DayProgramDialog
+          key={workout.id}
+          isOpen={openDialogs.has(workout.id)}
+          onClose={() => handleDialogClose(workout.id)}
+          program={workout.assignment}
+          selectedDate={workout.selectedDate}
+          workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
+          onRefresh={handleCalendarRefresh}
+        />
+      ))}
     </div>
   );
 };

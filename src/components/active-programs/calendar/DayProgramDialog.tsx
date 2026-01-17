@@ -208,16 +208,16 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                     )}
                   </div>
                 ) : dayProgram.is_competition_day ? (
-                  <div className="bg-purple-50 border border-purple-200 rounded-none p-6">
+                  <div className="bg-amber-50 border border-amber-200 rounded-none p-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                        <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                         </svg>
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-purple-900">Ημέρα Αγώνα</h3>
-                        <p className="text-sm text-purple-700">Σήμερα έχεις αγώνα - Καλή επιτυχία!</p>
+                        <h3 className="text-lg font-semibold text-amber-900">Ημέρα Αγώνα</h3>
+                        <p className="text-sm text-amber-700">Σήμερα έχεις αγώνα - Καλή επιτυχία!</p>
                       </div>
                     </div>
                   </div>
