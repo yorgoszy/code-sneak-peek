@@ -7,12 +7,13 @@ import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useMuayThaiStats } from '@/hooks/useMuayThaiStats';
 import { FightRecordingDialog } from './FightRecordingDialog';
+import { useCoachContext } from '@/contexts/CoachContext';
 
 export const MuayThaiStatsOverview = () => {
   const { userProfile } = useRoleCheck();
+  const { coachId } = useCoachContext();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [isRecordingOpen, setIsRecordingOpen] = useState(false);
-  const coachId = userProfile?.role === 'admin' ? undefined : userProfile?.id;
   
   const { stats, loading } = useMuayThaiStats(selectedUserId);
 
@@ -64,8 +65,8 @@ export const MuayThaiStatsOverview = () => {
       {/* Header με User Search */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Στατιστικά Muay Thai</h1>
-          <p className="text-gray-500 text-sm mt-1">Ανάλυση απόδοσης και στατιστικά αγώνων</p>
+          <h1 className="text-2xl font-bold text-gray-900">Video Analysis</h1>
+          <p className="text-gray-500 text-sm mt-1">Ανάλυση βίντεο και στατιστικά απόδοσης</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="w-full md:w-80">

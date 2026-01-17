@@ -187,7 +187,7 @@ export const CoachSidebar = ({
     },
     {
       icon: Swords,
-      label: "Στατιστικά Muay Thai",
+      label: "Video Analysis",
       path: effectiveCoachId ? `/dashboard/muaythai-stats?coachId=${effectiveCoachId}` : "/dashboard/muaythai-stats",
       badge: null,
       requiresSubscription: true,

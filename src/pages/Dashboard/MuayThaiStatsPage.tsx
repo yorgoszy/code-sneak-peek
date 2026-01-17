@@ -4,7 +4,7 @@ import { MuayThaiStatsOverview } from '@/components/muaythai-stats/MuayThaiStats
 
 const MuayThaiStatsPage = () => {
   return (
-    <CoachLayout title="Στατιστικά Muay Thai">
+    <CoachLayout title="Video Analysis">
       <MuayThaiStatsOverview />
     </CoachLayout>
   );
