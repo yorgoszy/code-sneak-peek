@@ -43,6 +43,24 @@ serve(async (req) => {
       }
     });
 
+    // Get closed days for current week
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    const dayOfWeek = now.getDay();
+    startOfWeek.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+    const { data: closedDays, error: closedError } = await supabase
+      .from('closed_days')
+      .select('closed_date, reason')
+      .gte('closed_date', startOfWeek.toISOString().split('T')[0])
+      .lte('closed_date', endOfWeek.toISOString().split('T')[0]);
+
+    if (closedError) {
+      console.log('Closed days fetch error (table may not exist):', closedError.message);
+    }
+
     // Filter out videocall sections and combine data
     const publicSections = (sections || [])
       .filter(section => 
@@ -59,7 +77,10 @@ serve(async (req) => {
         active_users: sectionCounts[section.id] || 0
       }));
 
-    return new Response(JSON.stringify(publicSections), {
+    return new Response(JSON.stringify({
+      sections: publicSections,
+      closedDays: closedDays || []
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

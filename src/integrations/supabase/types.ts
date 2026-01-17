@@ -1048,6 +1048,41 @@ export type Database = {
           },
         ]
       }
+      closed_days: {
+        Row: {
+          closed_date: string
+          created_at: string
+          created_by: string | null
+          id: string
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          closed_date: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          closed_date?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "closed_days_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_anthropometric_test_data: {
         Row: {
           arm_circumference: number | null
