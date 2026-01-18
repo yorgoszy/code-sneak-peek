@@ -18,7 +18,7 @@ import {
   ShoppingBag,
   Award,
   Lock,
-  Swords,
+  Video,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -186,7 +186,7 @@ export const CoachSidebar = ({
       requiresSubscription: true,
     },
     {
-      icon: Swords,
+      icon: Video,
       label: "Video Analysis",
       path: effectiveCoachId ? `/dashboard/video-analysis?coachId=${effectiveCoachId}` : "/dashboard/video-analysis",
       badge: null,
