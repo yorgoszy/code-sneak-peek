@@ -20,6 +20,7 @@ import {
   Lock,
   Video,
   Timer,
+  Compass,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -197,6 +198,13 @@ export const CoachSidebar = ({
       icon: Timer,
       label: "Sprint Timer",
       path: effectiveCoachId ? `/dashboard/sprint-timer?coachId=${effectiveCoachId}` : "/dashboard/sprint-timer",
+      badge: null,
+      requiresSubscription: true,
+    },
+    {
+      icon: Compass,
+      label: "Change Direction",
+      path: effectiveCoachId ? `/dashboard/change-direction?coachId=${effectiveCoachId}` : "/dashboard/change-direction",
       badge: null,
       requiresSubscription: true,
     },

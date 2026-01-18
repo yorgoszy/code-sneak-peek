@@ -25,7 +25,8 @@ import {
   Timer,
   Utensils,
   Award,
-  Swords
+  Swords,
+  Compass
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -552,6 +553,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Timer,
       label: "Sprint Timer",
       path: "/dashboard/sprint-timer",
+      badge: null
+    },
+    {
+      icon: Compass,
+      label: "Change Direction",
+      path: "/dashboard/change-direction",
       badge: null
     },
     { 
