@@ -5,6 +5,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { 
   Upload, 
   Play, 
@@ -16,19 +17,18 @@ import {
   Download,
   Volume2,
   VolumeX,
-  Maximize2,
   ChevronLeft,
   ChevronRight,
   Trash2,
   Plus,
   Clock,
   Film,
-  Settings,
-  ZoomIn,
-  ZoomOut,
-  RefreshCw
+  RefreshCw,
+  Loader2,
+  FileVideo
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useVideoExport } from '@/hooks/useVideoExport';
 
 interface TrimClip {
   id: string;
@@ -42,6 +42,18 @@ interface VideoEditorTabProps {
 }
 
 export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
+  // Video export hook
+  const { 
+    isLoading: isFFmpegLoading, 
+    isExporting, 
+    progress: exportProgress, 
+    isReady: isFFmpegReady,
+    loadFFmpeg,
+    exportTrimmedVideo,
+    exportMergedClips,
+    downloadBlob
+  } = useVideoExport();
+
   // Video state
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -549,6 +561,97 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
               <RotateCcw className="w-4 h-4 mr-2" />
               Reset
             </Button>
+          </div>
+
+          {/* Export Section */}
+          <div className="pt-4 border-t border-gray-200 space-y-3">
+            <Label className="text-sm font-medium">Εξαγωγή Βίντεο</Label>
+            
+            {isExporting && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm text-gray-600">Επεξεργασία βίντεο...</span>
+                </div>
+                <Progress value={exportProgress} className="h-2" />
+                <p className="text-xs text-gray-500">{exportProgress}% ολοκληρώθηκε</p>
+              </div>
+            )}
+
+            {!isExporting && (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  className="rounded-none"
+                  onClick={async () => {
+                    if (!videoFile) return;
+                    if (trimStart >= trimEnd) {
+                      toast.error('Ορίστε έγκυρο εύρος κοπής');
+                      return;
+                    }
+                    
+                    if (!isFFmpegReady) {
+                      toast.info('Φόρτωση FFmpeg... Περιμένετε');
+                      await loadFFmpeg();
+                    }
+                    
+                    const blob = await exportTrimmedVideo(videoFile, {
+                      startTime: trimStart,
+                      endTime: trimEnd,
+                      filename: `trimmed_${videoFile.name}`
+                    });
+                    
+                    if (blob) {
+                      const ext = videoFile.name.split('.').pop() || 'mp4';
+                      downloadBlob(blob, `trimmed_${Date.now()}.${ext}`);
+                    }
+                  }}
+                  disabled={isFFmpegLoading || !videoFile}
+                >
+                  {isFFmpegLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4 mr-2" />
+                  )}
+                  Κατέβασμα Trim
+                </Button>
+
+                {clips.length > 0 && (
+                  <Button
+                    className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
+                    onClick={async () => {
+                      if (!videoFile) return;
+                      
+                      if (!isFFmpegReady) {
+                        toast.info('Φόρτωση FFmpeg... Περιμένετε');
+                        await loadFFmpeg();
+                      }
+                      
+                      const blob = await exportMergedClips(videoFile, clips);
+                      
+                      if (blob) {
+                        const ext = videoFile.name.split('.').pop() || 'mp4';
+                        downloadBlob(blob, `merged_clips_${Date.now()}.${ext}`);
+                      }
+                    }}
+                    disabled={isFFmpegLoading}
+                  >
+                    {isFFmpegLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <FileVideo className="w-4 h-4 mr-2" />
+                    )}
+                    Συγχώνευση Clips ({clips.length})
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {!isFFmpegReady && !isFFmpegLoading && (
+              <p className="text-xs text-gray-400">
+                💡 Το FFmpeg θα φορτωθεί αυτόματα κατά την πρώτη εξαγωγή (~25MB)
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
