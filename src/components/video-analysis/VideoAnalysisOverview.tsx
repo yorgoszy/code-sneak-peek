@@ -179,16 +179,18 @@ export const VideoAnalysisOverview = () => {
 
           {/* Tabs για λεπτομερή ανάλυση */}
           <Tabs defaultValue="strikes" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 rounded-none h-auto">
-              <TabsTrigger value="strikes" className="rounded-none text-xs sm:text-sm py-2">Χτυπήματα</TabsTrigger>
-              <TabsTrigger value="defense" className="rounded-none text-xs sm:text-sm py-2">Άμυνα</TabsTrigger>
-              <TabsTrigger value="editor" className="rounded-none text-xs sm:text-sm py-2 flex items-center gap-1">
-                <Film className="w-3 h-3 hidden sm:inline" />
-                Editor
-              </TabsTrigger>
-              <TabsTrigger value="timeline" className="rounded-none text-xs sm:text-sm py-2">Χρονική</TabsTrigger>
-              <TabsTrigger value="fights" className="rounded-none text-xs sm:text-sm py-2">Αγώνες</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto -mx-4 px-4">
+              <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 rounded-none h-auto">
+                <TabsTrigger value="strikes" className="rounded-none text-xs sm:text-sm py-2 px-3 whitespace-nowrap">Χτυπήματα</TabsTrigger>
+                <TabsTrigger value="defense" className="rounded-none text-xs sm:text-sm py-2 px-3 whitespace-nowrap">Άμυνα</TabsTrigger>
+                <TabsTrigger value="editor" className="rounded-none text-xs sm:text-sm py-2 px-3 whitespace-nowrap flex items-center gap-1">
+                  <Film className="w-3 h-3" />
+                  Editor
+                </TabsTrigger>
+                <TabsTrigger value="timeline" className="rounded-none text-xs sm:text-sm py-2 px-3 whitespace-nowrap">Χρονική</TabsTrigger>
+                <TabsTrigger value="fights" className="rounded-none text-xs sm:text-sm py-2 px-3 whitespace-nowrap">Αγώνες</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="strikes" className="mt-4">
               <Card className="rounded-none">
