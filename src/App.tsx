@@ -85,7 +85,6 @@ import CoachShop from "@/pages/CoachShop";
 import CoachGoalsAwardsPage from "@/pages/Dashboard/CoachGoalsAwardsPage";
 import AdminGoalsAwardsPage from "@/pages/Dashboard/AdminGoalsAwardsPage";
 import VideoAnalysisPage from "@/pages/Dashboard/VideoAnalysisPage";
-import AdminVideoAnalysisPage from "@/pages/Dashboard/AdminVideoAnalysisPage";
 const queryClient = new QueryClient();
 
 function App() {
@@ -168,7 +167,6 @@ function App() {
                       <Route path="/dashboard/articles" element={<ProtectedRoute requireAdmin><ArticlesWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/results" element={<ProtectedRoute requireAdmin><ResultsWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/shop" element={<ProtectedRoute requireAdmin><AdminShopWithSidebar /></ProtectedRoute>} />
-                      <Route path="/dashboard/admin-video-analysis" element={<ProtectedRoute requireAdmin><AdminVideoAnalysisPage /></ProtectedRoute>} />
                       <Route path="/dashboard/offers" element={<ProtectedRoute requireAdmin><Offers /></ProtectedRoute>} />
                       <Route path="/dashboard/online-coaching" element={<ProtectedRoute requireAdmin><OnlineCoachingWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/online-booking" element={<ProtectedRoute requireAdmin><OnlineBookingWithSidebar /></ProtectedRoute>} />
