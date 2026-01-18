@@ -605,15 +605,17 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
       {/* Video Player */}
       <Card className="rounded-none">
         <CardContent className="p-4">
-          <div className="relative bg-black rounded-none overflow-hidden">
+          <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: '300px' }}>
             <video
               ref={videoRef}
               src={videoUrl}
-              className="w-full max-h-[50vh] object-contain"
+              className="w-full h-auto min-h-[300px] max-h-[60vh] object-contain"
               onLoadedMetadata={handleLoadedMetadata}
               onTimeUpdate={handleTimeUpdate}
               onEnded={handleEnded}
               onClick={togglePlay}
+              playsInline
+              controls={false}
             />
             
             {/* Play overlay */}
