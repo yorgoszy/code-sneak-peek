@@ -64,6 +64,18 @@ const SprintTimerPage = () => {
   // Sync ref
   useEffect(() => { motionDetectorRef.current = motionDetector; }, [motionDetector]);
 
+  // Auto-start camera when entering active mode (for single device)
+  useEffect(() => {
+    if (setupStep === 'active' && deviceCount === 1 && !stream && !cameraReady) {
+      console.log('📷 Auto-starting camera for single device mode');
+      // Small delay to ensure video element is mounted
+      const timer = setTimeout(() => {
+        handleStartCamera();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [setupStep, deviceCount, stream, cameraReady]);
+
   // Δημιουργία session
   const createSession = async () => {
     setIsLoading(true);
@@ -496,11 +508,11 @@ const SprintTimerPage = () => {
       <div className="space-y-2 sm:space-y-3">
         {/* 1 Συσκευή */}
         <Button
-          onClick={async () => {
+          onClick={() => {
             setDeviceCount(1);
             setDeviceRole('timer+start+stop');
-            await handleStartCamera();
             setSetupStep('active');
+            // Η κάμερα θα ξεκινήσει μέσω useEffect όταν το video element είναι έτοιμο
           }}
           className="w-full h-20 sm:h-28 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex items-center justify-between px-3 sm:px-6"
         >
