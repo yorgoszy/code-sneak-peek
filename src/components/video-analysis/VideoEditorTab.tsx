@@ -75,11 +75,20 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Supported video extensions
+  const supportedVideoExtensions = [
+    '.mp4', '.webm', '.ogg', '.avi', '.mov', '.mkv', '.wmv', 
+    '.flv', '.3gp', '.mpeg', '.mpg', '.m4v', '.ts', '.mts', '.m2ts'
+  ];
+
   // Handle file upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('video/')) {
+      const fileName = file.name.toLowerCase();
+      const hasVideoExtension = supportedVideoExtensions.some(ext => fileName.endsWith(ext));
+      
+      if (!file.type.startsWith('video/') && !hasVideoExtension) {
         toast.error('Παρακαλώ επιλέξτε αρχείο βίντεο');
         return;
       }
@@ -284,7 +293,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
             <input
               ref={fileInputRef}
               type="file"
-              accept="video/*"
+              accept="video/mp4,video/webm,video/ogg,video/avi,video/mov,video/quicktime,video/x-msvideo,video/x-matroska,video/mkv,video/wmv,video/flv,video/3gpp,video/mpeg,video/x-m4v,.mp4,.webm,.ogg,.avi,.mov,.mkv,.wmv,.flv,.3gp,.mpeg,.m4v,.ts,.mts,.m2ts"
               onChange={handleFileUpload}
               className="hidden"
             />
