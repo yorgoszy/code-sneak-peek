@@ -545,7 +545,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     {
       icon: Video,
       label: "Video Analysis",
-      path: "/dashboard/admin-video-analysis",
+      path: "/dashboard/video-analysis",
       badge: null
     },
     {
