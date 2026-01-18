@@ -5743,6 +5743,53 @@ export type Database = {
         }
         Relationships: []
       }
+      strike_types: {
+        Row: {
+          category: string
+          coach_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          order_index: number | null
+          side: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          coach_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          order_index?: number | null
+          side?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          coach_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          order_index?: number | null
+          side?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strike_types_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_types: {
         Row: {
           allowed_sections: string[] | null
