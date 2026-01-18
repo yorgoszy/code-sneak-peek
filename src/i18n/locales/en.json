@@ -528,6 +528,49 @@
     "waitingForSignal": "Waiting for signal...",
     "connecting": "Connecting..."
   },
+  "cognitive": {
+    "title": "Cognitive Training",
+    "selectGame": "Select Game",
+    "selectGameDescription": "Choose a cognitive training exercise",
+    "selectDifficulty": "Select Difficulty",
+    "back": "Back",
+    "startGame": "Start Game",
+    "score": "Score",
+    "questions": "Questions",
+    "gameComplete": "Game Complete!",
+    "yourResults": "Your results",
+    "correct": "Correct",
+    "accuracy": "Accuracy",
+    "bestStreak": "Best Streak",
+    "backToGames": "Back to Games",
+    "playAgain": "Play Again",
+    "comingSoon": "Coming Soon",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "games": {
+      "stroop": {
+        "title": "Colors (Stroop)",
+        "description": "Identify the ink color, not the word",
+        "instruction": "Select the COLOR of the text, not the word it spells!",
+        "selectColor": "What color is the TEXT written in?"
+      },
+      "math": {
+        "title": "Math Operations",
+        "description": "Solve mathematical problems quickly"
+      },
+      "memory": {
+        "title": "Memory",
+        "description": "Remember and recall patterns"
+      },
+      "logic": {
+        "title": "Logic Problems",
+        "description": "Solve logical reasoning challenges"
+      }
+    }
+  },
   "profile": {
     "firstName": "First Name",
     "lastName": "Last Name",

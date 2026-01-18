@@ -209,6 +209,13 @@ export const CoachSidebar = ({
       requiresSubscription: true,
     },
     {
+      icon: Brain,
+      label: "Cognitive",
+      path: effectiveCoachId ? `/dashboard/cognitive?coachId=${effectiveCoachId}` : "/dashboard/cognitive",
+      badge: null,
+      requiresSubscription: true,
+    },
+    {
       icon: Settings,
       label: "Ρυθμίσεις Προφίλ",
       path: effectiveCoachId ? `/dashboard/coach-profile?coachId=${effectiveCoachId}` : "/dashboard/coach-profile",

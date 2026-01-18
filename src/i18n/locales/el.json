@@ -528,6 +528,49 @@
     "waitingForSignal": "Αναμονή για σήμα...",
     "connecting": "Σύνδεση..."
   },
+  "cognitive": {
+    "title": "Γνωστική Εξάσκηση",
+    "selectGame": "Επιλέξτε Παιχνίδι",
+    "selectGameDescription": "Επιλέξτε μια άσκηση γνωστικής εξάσκησης",
+    "selectDifficulty": "Επιλέξτε Δυσκολία",
+    "back": "Πίσω",
+    "startGame": "Έναρξη",
+    "score": "Σκορ",
+    "questions": "Ερωτήσεις",
+    "gameComplete": "Παιχνίδι Ολοκληρώθηκε!",
+    "yourResults": "Τα αποτελέσματά σας",
+    "correct": "Σωστά",
+    "accuracy": "Ακρίβεια",
+    "bestStreak": "Καλύτερο Σερί",
+    "backToGames": "Πίσω στα Παιχνίδια",
+    "playAgain": "Παίξε Ξανά",
+    "comingSoon": "Σύντομα",
+    "difficulty": {
+      "easy": "Εύκολο",
+      "medium": "Μέτριο",
+      "hard": "Δύσκολο"
+    },
+    "games": {
+      "stroop": {
+        "title": "Χρώματα (Stroop)",
+        "description": "Αναγνώρισε το χρώμα της μελάνης, όχι τη λέξη",
+        "instruction": "Επέλεξε το ΧΡΩΜΑ του κειμένου, όχι τη λέξη που γράφει!",
+        "selectColor": "Με τι χρώμα είναι γραμμένο το ΚΕΙΜΕΝΟ;"
+      },
+      "math": {
+        "title": "Μαθηματικές Πράξεις",
+        "description": "Λύσε μαθηματικά προβλήματα γρήγορα"
+      },
+      "memory": {
+        "title": "Μνήμη",
+        "description": "Θυμήσου και ανάκτησε μοτίβα"
+      },
+      "logic": {
+        "title": "Ζητήματα Λογικής",
+        "description": "Λύσε προκλήσεις λογικής σκέψης"
+      }
+    }
+  },
   "profile": {
     "firstName": "Όνομα",
     "lastName": "Επώνυμο",

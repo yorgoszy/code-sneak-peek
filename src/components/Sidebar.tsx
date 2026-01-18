@@ -561,6 +561,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/change-direction",
       badge: null
     },
+    {
+      icon: Brain,
+      label: "Cognitive",
+      path: "/dashboard/cognitive",
+      badge: null
+    },
     { 
       icon: Dumbbell, 
       label: "Ασκήσεις", 
