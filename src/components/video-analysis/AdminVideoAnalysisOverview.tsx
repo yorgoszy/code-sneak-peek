@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Target, Shield, Clock, TrendingUp, Users, Swords, Plus, Settings } from 'lucide-react';
+import { Target, Shield, Clock, TrendingUp, Users, Swords, Plus, Settings, Activity } from 'lucide-react';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useVideoAnalysisStats } from '@/hooks/useVideoAnalysisStats';
@@ -34,6 +34,22 @@ export const AdminVideoAnalysisOverview = () => {
       icon: TrendingUp,
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10',
+    },
+    {
+      title: 'Ορθότητα',
+      value: `${stats?.correctnessRate || 0}%`,
+      subtitle: `${stats?.correctStrikes || 0} σωστά τεχνικά`,
+      icon: Activity,
+      color: 'text-yellow-500',
+      bgColor: 'bg-yellow-500/10',
+    },
+    {
+      title: 'Χτ. που Δέχτηκε',
+      value: stats?.totalHitsReceived || 0,
+      subtitle: `${stats?.avgHitsReceivedPerRound || 0} ανά γύρο`,
+      icon: Shield,
+      color: 'text-red-500',
+      bgColor: 'bg-red-500/10',
     },
     {
       title: 'Άμυνες',
@@ -107,8 +123,8 @@ export const AdminVideoAnalysisOverview = () => {
           </CardContent>
         </Card>
       ) : loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i} className="rounded-none animate-pulse">
               <CardContent className="py-6">
                 <div className="h-20 bg-gray-200 rounded" />
@@ -119,7 +135,7 @@ export const AdminVideoAnalysisOverview = () => {
       ) : (
         <>
           {/* Hero Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {statCards.map((card, index) => (
               <Card key={index} className="rounded-none hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
