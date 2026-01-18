@@ -7467,6 +7467,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin_safe: { Args: { user_auth_id: string }; Returns: boolean }
+      is_admin_user: { Args: never; Returns: boolean }
       is_coach_safe: { Args: { user_auth_id: string }; Returns: boolean }
       join_waiting_list:
         | {
