@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
-import { X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -127,16 +126,12 @@ export const FightRecordingDialog: React.FC<FightRecordingDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-none">
-        <DialogHeader className="relative">
+        <DialogHeader>
           <DialogTitle>
             {step === 'basic-info' && 'Νέος Αγώνας'}
             {step === 'round-recording' && `Γύρος ${currentRound} από ${totalRounds}`}
             {step === 'review' && 'Ανασκόπηση Αγώνα'}
           </DialogTitle>
-          <DialogClose className="absolute right-0 top-0 rounded-none opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DialogClose>
         </DialogHeader>
 
         {step === 'basic-info' && (

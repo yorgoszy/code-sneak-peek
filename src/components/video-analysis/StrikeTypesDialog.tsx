@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -29,7 +28,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit2, Trash2, Target, Loader2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Target, Loader2 } from 'lucide-react';
 import { useStrikeTypes, categoryLabels, sideLabels, StrikeType, CreateStrikeType } from '@/hooks/useStrikeTypes';
 
 interface StrikeTypesDialogProps {
@@ -129,15 +128,11 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto rounded-none">
-          <DialogHeader className="relative">
+          <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Target className="w-5 h-5" />
               Διαχείριση Τύπων Χτυπημάτων
             </DialogTitle>
-            <DialogClose className="absolute right-0 top-0 rounded-none opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </DialogClose>
           </DialogHeader>
 
           <div className="space-y-4">

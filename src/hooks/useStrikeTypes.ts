@@ -54,32 +54,42 @@ export const useStrikeTypes = (coachId: string | null) => {
   };
 
   const createStrikeType = async (strikeType: CreateStrikeType) => {
+    console.log('Creating strike type with coachId:', coachId, 'data:', strikeType);
+    
     if (!coachId) {
+      console.error('No coachId available');
       toast.error('Δεν βρέθηκε coach ID');
       return null;
     }
 
     try {
+      const insertData = {
+        coach_id: coachId,
+        name: strikeType.name,
+        category: strikeType.category,
+        side: strikeType.side || null,
+        description: strikeType.description || null,
+      };
+      console.log('Insert data:', insertData);
+      
       const { data, error } = await supabase
         .from('strike_types')
-        .insert({
-          coach_id: coachId,
-          name: strikeType.name,
-          category: strikeType.category,
-          side: strikeType.side || null,
-          description: strikeType.description || null,
-        })
+        .insert(insertData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
       
+      console.log('Strike type created:', data);
       toast.success('Το χτύπημα δημιουργήθηκε');
       await fetchStrikeTypes();
       return data as StrikeType;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating strike type:', error);
-      toast.error('Σφάλμα κατά τη δημιουργία');
+      toast.error(`Σφάλμα: ${error.message || 'Αποτυχία δημιουργίας'}`);
       return null;
     }
   };
