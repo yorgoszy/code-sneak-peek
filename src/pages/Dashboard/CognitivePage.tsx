@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/Sidebar";
-import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { 
   Brain, 
   Menu, 
@@ -20,16 +19,12 @@ import {
   ArrowLeft,
   Check,
   X,
-  Timer,
-  Mic,
-  MicOff,
-  MousePointer
+  Timer
 } from "lucide-react";
 import { toast } from "sonner";
 
 type Difficulty = 'easy' | 'medium' | 'hard';
 type GameType = 'stroop' | 'math' | 'memory' | 'logic';
-type InputMode = 'buttons' | 'voice' | 'both';
 
 interface GameConfig {
   id: GameType;
@@ -45,30 +40,22 @@ const GAMES: GameConfig[] = [
   { id: 'logic', icon: Lightbulb, labelKey: 'cognitive.games.logic.title', descriptionKey: 'cognitive.games.logic.description' },
 ];
 
-// Stroop Test Colors with voice recognition mappings
+// Stroop Test Colors
 const COLORS = [
-  { name: 'red', hex: '#ef4444', greek: 'ΚΟΚΚΙΝΟ', voiceMatches: ['κόκκινο', 'κοκκινο', 'red'] },
-  { name: 'blue', hex: '#3b82f6', greek: 'ΜΠΛΕ', voiceMatches: ['μπλε', 'blue'] },
-  { name: 'green', hex: '#22c55e', greek: 'ΠΡΑΣΙΝΟ', voiceMatches: ['πράσινο', 'πρασινο', 'green'] },
-  { name: 'yellow', hex: '#eab308', greek: 'ΚΙΤΡΙΝΟ', voiceMatches: ['κίτρινο', 'κιτρινο', 'yellow'] },
-  { name: 'purple', hex: '#a855f7', greek: 'ΜΩΒ', voiceMatches: ['μωβ', 'μοβ', 'purple'] },
-  { name: 'orange', hex: '#f97316', greek: 'ΠΟΡΤΟΚΑΛΙ', voiceMatches: ['πορτοκαλί', 'πορτοκαλι', 'orange'] },
+  { name: 'red', hex: '#ef4444', greek: 'ΚΟΚΚΙΝΟ' },
+  { name: 'blue', hex: '#3b82f6', greek: 'ΜΠΛΕ' },
+  { name: 'green', hex: '#22c55e', greek: 'ΠΡΑΣΙΝΟ' },
+  { name: 'yellow', hex: '#eab308', greek: 'ΚΙΤΡΙΝΟ' },
+  { name: 'purple', hex: '#a855f7', greek: 'ΜΩΒ' },
+  { name: 'orange', hex: '#f97316', greek: 'ΠΟΡΤΟΚΑΛΙ' },
+  { name: 'black', hex: '#000000', greek: 'ΜΑΥΡΟ' },
+  { name: 'white', hex: '#ffffff', greek: 'ΑΣΠΡΟ' },
+  { name: 'pink', hex: '#ec4899', greek: 'ΡΟΖ' },
+  { name: 'lightblue', hex: '#38bdf8', greek: 'ΓΑΛΑΖΙΟ' },
+  { name: 'darkblue', hex: '#1e3a8a', greek: 'ΣΚΟΥΡΟ ΜΠΛΕ' },
+  { name: 'brown', hex: '#92400e', greek: 'ΚΑΦΕ' },
 ];
 
-// Helper to match voice input to color
-const matchVoiceToColor = (transcript: string): string | null => {
-  const normalizedTranscript = transcript.toLowerCase().trim();
-  
-  for (const color of COLORS) {
-    for (const match of color.voiceMatches) {
-      if (normalizedTranscript.includes(match)) {
-        return color.name;
-      }
-    }
-  }
-  
-  return null;
-};
 
 interface StroopQuestion {
   text: string;
@@ -87,7 +74,7 @@ const generateStroopQuestion = (difficulty: Difficulty): StroopQuestion => {
   const bgColor = shuffled[2];   // Background color
   
   // Number of options based on difficulty
-  const optionCount = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 6;
+  const optionCount = difficulty === 'easy' ? 4 : difficulty === 'medium' ? 6 : 8;
   
   // Generate options - always include the correct answer (text color)
   let options = [textColor];
@@ -118,7 +105,6 @@ const CognitivePage: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<GameType | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
   const [isPlaying, setIsPlaying] = useState(false);
-  const [inputMode, setInputMode] = useState<InputMode>('buttons');
   
   // Stroop game state
   const [currentQuestion, setCurrentQuestion] = useState<StroopQuestion | null>(null);
@@ -128,33 +114,6 @@ const CognitivePage: React.FC = () => {
   const [gameOver, setGameOver] = useState(false);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
-  const [lastVoiceInput, setLastVoiceInput] = useState('');
-
-  // Speech recognition
-  const {
-    isListening,
-    isSupported: isVoiceSupported,
-    transcript,
-    startListening,
-    stopListening,
-    resetTranscript,
-    lastError
-  } = useSpeechRecognition({
-    language: 'el-GR',
-    continuous: true,
-    onResult: useCallback((voiceTranscript: string) => {
-      setLastVoiceInput(voiceTranscript);
-    }, []),
-    onError: useCallback((error: string) => {
-      // Most common in embedded/iframe previews or when permission is blocked
-      if (error === 'service-not-allowed' || error === 'not-allowed' || error === 'NotAllowedError') {
-        toast.error('Δεν επιτρέπεται η πρόσβαση στο μικρόφωνο. Δώσε άδεια (Allow) ή άνοιξε την εφαρμογή σε νέο tab (Published URL) γιατί στο preview μπορεί να μπλοκάρεται.');
-        return;
-      }
-
-      toast.error(`Σφάλμα μικροφώνου: ${error}`);
-    }, [])
-  });
 
   // Time settings based on difficulty
   const getTimeLimit = useCallback((diff: Difficulty) => {
@@ -173,15 +132,9 @@ const CognitivePage: React.FC = () => {
     setTotalQuestions(0);
     setStreak(0);
     setBestStreak(0);
-    setLastVoiceInput('');
     setCurrentQuestion(generateStroopQuestion(difficulty));
     setTimeLeft(getTimeLimit(difficulty));
-    
-    // Start listening if voice mode is enabled
-    if ((inputMode === 'voice' || inputMode === 'both') && isVoiceSupported) {
-      startListening();
-    }
-  }, [difficulty, getTimeLimit, inputMode, isVoiceSupported, startListening]);
+  }, [difficulty, getTimeLimit]);
 
   // Timer effect
   useEffect(() => {
@@ -201,17 +154,6 @@ const CognitivePage: React.FC = () => {
     return () => clearInterval(interval);
   }, [isPlaying, gameOver, currentQuestion, difficulty, getTimeLimit]);
 
-  // Handle voice input
-  useEffect(() => {
-    if (!lastVoiceInput || !isPlaying || gameOver) return;
-    
-    const matchedColor = matchVoiceToColor(lastVoiceInput);
-    if (matchedColor) {
-      handleStroopAnswer(matchedColor);
-      setLastVoiceInput('');
-      resetTranscript();
-    }
-  }, [lastVoiceInput, isPlaying, gameOver]);
 
   // Handle answer
   const handleStroopAnswer = useCallback((selectedColor: string) => {
@@ -239,8 +181,6 @@ const CognitivePage: React.FC = () => {
 
   // End game manually
   const endGame = useCallback(() => {
-    stopListening();
-    
     if (totalQuestions > 0) {
       setGameOver(true);
       setIsPlaying(false);
@@ -248,18 +188,16 @@ const CognitivePage: React.FC = () => {
     } else {
       resetGame();
     }
-  }, [totalQuestions, t, stopListening]);
+  }, [totalQuestions, t]);
 
   // Reset game
   const resetGame = () => {
-    stopListening();
     setIsPlaying(false);
     setGameOver(false);
     setCurrentQuestion(null);
     setScore(0);
     setTotalQuestions(0);
     setStreak(0);
-    setLastVoiceInput('');
   };
 
   // Render game selection
@@ -344,46 +282,6 @@ const CognitivePage: React.FC = () => {
         ))}
       </div>
       
-      {/* Input Mode Selection */}
-      <div className="space-y-2 mt-6">
-        <label className="text-sm font-medium">{t('cognitive.inputMode')}</label>
-        <div className="grid grid-cols-3 gap-2">
-          {(['buttons', 'voice', 'both'] as InputMode[]).map((mode) => {
-            const isDisabled = (mode === 'voice' || mode === 'both') && !isVoiceSupported;
-            const Icon = mode === 'buttons' ? MousePointer : mode === 'voice' ? Mic : null;
-            
-            return (
-              <Button
-                key={mode}
-                variant={inputMode === mode ? 'default' : 'outline'}
-                size="sm"
-                disabled={isDisabled}
-                className={`rounded-none flex items-center gap-2 ${
-                  inputMode === mode ? 'bg-[#00ffba] text-black hover:bg-[#00ffba]/90' : ''
-                } ${isDisabled ? 'opacity-50' : ''}`}
-                onClick={() => setInputMode(mode)}
-              >
-                {mode === 'both' ? (
-                  <>
-                    <MousePointer className="w-3 h-3" />
-                    <span>+</span>
-                    <Mic className="w-3 h-3" />
-                  </>
-                ) : Icon ? (
-                  <Icon className="w-4 h-4" />
-                ) : null}
-                <span className="text-xs">{t(`cognitive.inputModes.${mode}`)}</span>
-              </Button>
-            );
-          })}
-        </div>
-        {!isVoiceSupported && (
-          <p className="text-xs text-muted-foreground">
-            {t('cognitive.voiceNotSupported')}
-          </p>
-        )}
-      </div>
-      
       <Button
         className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 mt-4"
         onClick={startStroopGame}
@@ -399,8 +297,6 @@ const CognitivePage: React.FC = () => {
     if (!currentQuestion) return null;
     
     const progress = (timeLeft / getTimeLimit(difficulty)) * 100;
-    const showButtons = inputMode === 'buttons' || inputMode === 'both';
-    const showVoice = (inputMode === 'voice' || inputMode === 'both') && isVoiceSupported;
     
     return (
       <div className="space-y-4">
@@ -421,25 +317,14 @@ const CognitivePage: React.FC = () => {
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            {showVoice && (
-              <Badge 
-                variant="outline" 
-                className={`rounded-none ${isListening ? 'bg-red-500/10 border-red-500 text-red-500' : ''}`}
-              >
-                {isListening ? <Mic className="w-3 h-3 mr-1 animate-pulse" /> : <MicOff className="w-3 h-3 mr-1" />}
-                {isListening ? t('cognitive.listening') : ''}
-              </Badge>
-            )}
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={endGame}
-              className="rounded-none"
-            >
-              {t('cognitive.endGame')}
-            </Button>
-          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={endGame}
+            className="rounded-none"
+          >
+            {t('cognitive.endGame')}
+          </Button>
         </div>
         
         {/* Timer bar */}
@@ -465,48 +350,30 @@ const CognitivePage: React.FC = () => {
         
         {/* Instruction */}
         <p className="text-center text-sm text-muted-foreground">
-          {showVoice ? t('cognitive.sayTheColor') : t('cognitive.games.stroop.selectColor')}
+          {t('cognitive.games.stroop.selectColor')}
         </p>
         
-        {/* Voice feedback */}
-        {showVoice && transcript && (
-          <div className="text-center p-2 bg-muted/50 rounded-none">
-            <span className="text-sm text-muted-foreground">🎙️ "{transcript}"</span>
-          </div>
-        )}
-        
         {/* Answer options (buttons) */}
-        {showButtons && (
-          <div className={`grid gap-2 ${
-            currentQuestion.options.length <= 3 ? 'grid-cols-3' : 
-            currentQuestion.options.length <= 4 ? 'grid-cols-2 sm:grid-cols-4' : 
-            'grid-cols-3 sm:grid-cols-6'
-          }`}>
-            {currentQuestion.options.map((option) => (
-              <Button
-                key={option.color}
-                className="rounded-none h-14 sm:h-16 border-2 transition-transform hover:scale-105"
-                style={{ 
-                  backgroundColor: option.hex,
-                  borderColor: option.hex,
-                }}
-                onClick={() => handleStroopAnswer(option.color)}
-              >
-                <span className="sr-only">{option.color}</span>
-              </Button>
-            ))}
-          </div>
-        )}
-        
-        {/* Voice-only mode hint */}
-        {inputMode === 'voice' && (
-          <div className="text-center p-4 border border-dashed border-muted-foreground/30 rounded-none">
-            <Mic className="w-8 h-8 mx-auto mb-2 text-[#00ffba] animate-pulse" />
-            <p className="text-sm text-muted-foreground">
-              {t('cognitive.sayTheColor')}
-            </p>
-          </div>
-        )}
+        <div className={`grid gap-2 ${
+          currentQuestion.options.length <= 3 ? 'grid-cols-3' : 
+          currentQuestion.options.length <= 4 ? 'grid-cols-2 sm:grid-cols-4' : 
+          currentQuestion.options.length <= 6 ? 'grid-cols-3 sm:grid-cols-6' :
+          'grid-cols-4 sm:grid-cols-6'
+        }`}>
+          {currentQuestion.options.map((option) => (
+            <Button
+              key={option.color}
+              className="rounded-none h-14 sm:h-16 border-2 transition-transform hover:scale-105"
+              style={{ 
+                backgroundColor: option.hex,
+                borderColor: option.hex,
+              }}
+              onClick={() => handleStroopAnswer(option.color)}
+            >
+              <span className="sr-only">{option.color}</span>
+            </Button>
+          ))}
+        </div>
       </div>
     );
   };
