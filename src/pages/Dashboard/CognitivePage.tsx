@@ -131,18 +131,28 @@ const CognitivePage: React.FC = () => {
   const [lastVoiceInput, setLastVoiceInput] = useState('');
 
   // Speech recognition
-  const { 
-    isListening, 
-    isSupported: isVoiceSupported, 
+  const {
+    isListening,
+    isSupported: isVoiceSupported,
     transcript,
-    startListening, 
+    startListening,
     stopListening,
-    resetTranscript
+    resetTranscript,
+    lastError
   } = useSpeechRecognition({
     language: 'el-GR',
     continuous: true,
     onResult: useCallback((voiceTranscript: string) => {
       setLastVoiceInput(voiceTranscript);
+    }, []),
+    onError: useCallback((error: string) => {
+      // Most common in embedded/iframe previews or when permission is blocked
+      if (error === 'service-not-allowed' || error === 'not-allowed' || error === 'NotAllowedError') {
+        toast.error('Δεν επιτρέπεται η πρόσβαση στο μικρόφωνο. Δώσε άδεια (Allow) ή άνοιξε την εφαρμογή σε νέο tab (Published URL) γιατί στο preview μπορεί να μπλοκάρεται.');
+        return;
+      }
+
+      toast.error(`Σφάλμα μικροφώνου: ${error}`);
     }, [])
   });
 

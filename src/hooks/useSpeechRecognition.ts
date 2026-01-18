@@ -66,11 +66,19 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [lastError, setLastError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  // Keep callbacks stable without re-binding native handlers
+  const onResultRef = React.useRef(onResult);
+  onResultRef.current = onResult;
+
+  const onErrorRef = React.useRef(onError);
+  onErrorRef.current = onError;
 
   useEffect(() => {
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
+
     if (SpeechRecognitionAPI) {
       setIsSupported(true);
       recognitionRef.current = new SpeechRecognitionAPI();
@@ -93,17 +101,20 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
 
         const currentTranscript = finalTranscript || interimTranscript;
         setTranscript(currentTranscript);
-        
+
         // Trigger callback on both interim and final results for faster response
-        if (currentTranscript && onResult) {
-          onResult(currentTranscript.trim().toLowerCase());
+        if (currentTranscript && onResultRef.current) {
+          onResultRef.current(currentTranscript.trim().toLowerCase());
         }
       };
 
       recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error('Speech recognition error:', event.error);
-        if (event.error !== 'no-speech' && onError) {
-          onError(event.error);
+        setLastError(event.error);
+
+        // Avoid spamming on "no-speech"
+        if (event.error !== 'no-speech' && onErrorRef.current) {
+          onErrorRef.current(event.error);
         }
       };
 
@@ -113,7 +124,8 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
           try {
             recognitionRef.current.start();
           } catch (e) {
-            console.log('Recognition already started');
+            // Some browsers block restart without user gesture
+            console.log('Recognition restart blocked or already started');
           }
         }
       };
@@ -124,46 +136,21 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
         recognitionRef.current.abort();
       }
     };
-  }, [language, continuous]);
-
-  // Update onResult callback ref - use a ref to avoid re-binding
-  const onResultRef = React.useRef(onResult);
-  onResultRef.current = onResult;
-  
-  useEffect(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-          if (result.isFinal) {
-            finalTranscript += result[0].transcript;
-          } else {
-            interimTranscript += result[0].transcript;
-          }
-        }
-
-        const currentTranscript = finalTranscript || interimTranscript;
-        setTranscript(currentTranscript);
-        
-        // Trigger callback on both interim and final results for faster response
-        if (currentTranscript && onResultRef.current) {
-          onResultRef.current(currentTranscript.trim().toLowerCase());
-        }
-      };
-    }
-  }, []);
+  }, [language, continuous, isListening]);
 
   const startListening = useCallback(() => {
     if (recognitionRef.current && isSupported) {
       try {
+        setLastError(null);
         recognitionRef.current.start();
         setIsListening(true);
         setTranscript('');
-      } catch (e) {
-        console.log('Recognition already started');
+      } catch (e: any) {
+        // In practice you might get InvalidStateError if already started
+        console.log('SpeechRecognition start failed', e);
+        const errName = typeof e?.name === 'string' ? e.name : 'start-failed';
+        setLastError(errName);
+        onErrorRef.current?.(errName);
       }
     }
   }, [isSupported]);
@@ -183,6 +170,7 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
     isListening,
     isSupported,
     transcript,
+    lastError,
     startListening,
     stopListening,
     resetTranscript
