@@ -12,10 +12,10 @@ import { Sidebar } from '@/components/Sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { QRCodeSVG } from 'qrcode.react';
 
-type DeviceMode = 'idle' | 'timer' | 'start' | 'stop';
-type SetupStep = 'devices' | 'roles' | 'active' | 'join';
-type DeviceCount = 1 | 2;
-type DeviceRole = 'timer+start+stop' | 'timer+start' | 'timer+stop' | 'start' | 'stop';
+type DeviceMode = 'idle' | 'timer' | 'start' | 'stop' | 'distance';
+type SetupStep = 'devices' | 'roles' | 'roles3' | 'active' | 'join';
+type DeviceCount = 1 | 2 | 3;
+type DeviceRole = 'timer+start+stop' | 'timer+start' | 'timer+stop' | 'timer' | 'start' | 'stop' | 'distance';
 
 interface SprintSession {
   id: string;
@@ -350,6 +350,29 @@ const SprintTimerPage = () => {
     }
   };
 
+  // 3 συσκευές setup
+  const handleTripleDeviceSetup = async (role: DeviceRole) => {
+    setDeviceRole(role);
+    
+    // Η συσκευή με TIMER δημιουργεί το session
+    if (role === 'timer') {
+      const newSession = await createSession();
+      if (newSession) {
+        await setupDualDeviceBroadcast(newSession.session_code, role);
+        setSetupStep('active');
+      }
+    }
+    // Οι υπόλοιπες συσκευές (start/stop/distance) χρειάζονται κάμερα
+    else {
+      const newSession = await createSession();
+      if (newSession) {
+        await handleStartCamera();
+        await setupDualDeviceBroadcast(newSession.session_code, role);
+        setSetupStep('active');
+      }
+    }
+  };
+
   const handleJoinDualDevice = async (role: DeviceRole) => {
     const sessionData = await joinSession(joinCode);
     if (sessionData) {
@@ -500,17 +523,38 @@ const SprintTimerPage = () => {
             setDeviceCount(2);
             setSetupStep('roles');
           }}
-          className="w-full h-20 sm:h-28 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white flex items-center justify-between px-3 sm:px-6"
+          className="w-full h-16 sm:h-24 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white flex items-center justify-between px-3 sm:px-6"
         >
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="bg-black/20 p-2 sm:p-3 rounded-none flex gap-0.5 sm:gap-1">
-              <Monitor className="w-5 h-5 sm:w-8 sm:h-8" />
-              <Monitor className="w-5 h-5 sm:w-8 sm:h-8" />
+              <Monitor className="w-4 h-4 sm:w-6 sm:h-6" />
+              <Monitor className="w-4 h-4 sm:w-6 sm:h-6" />
             </div>
             <div className="text-left">
-              <div className="font-bold text-base sm:text-xl">2 Συσκευές</div>
+              <div className="font-bold text-sm sm:text-lg">2 Συσκευές</div>
               <div className="text-xs sm:text-sm opacity-80">Start & Stop ξεχωριστά</div>
-              <div className="text-[10px] sm:text-xs opacity-60 hidden sm:block">Μεγαλύτερη ακρίβεια</div>
+            </div>
+          </div>
+          <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
+        </Button>
+
+        {/* 3 Συσκευές */}
+        <Button
+          onClick={() => {
+            setDeviceCount(3);
+            setSetupStep('roles3');
+          }}
+          className="w-full h-16 sm:h-24 rounded-none bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-between px-3 sm:px-6"
+        >
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="bg-black/20 p-2 sm:p-3 rounded-none flex gap-0.5 sm:gap-1">
+              <Monitor className="w-3 h-3 sm:w-5 sm:h-5" />
+              <Monitor className="w-3 h-3 sm:w-5 sm:h-5" />
+              <Monitor className="w-3 h-3 sm:w-5 sm:h-5" />
+            </div>
+            <div className="text-left">
+              <div className="font-bold text-sm sm:text-lg">3 Συσκευές</div>
+              <div className="text-xs sm:text-sm opacity-80">Timer + Start + Stop/Distance</div>
             </div>
           </div>
           <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -598,6 +642,94 @@ const SprintTimerPage = () => {
     </div>
   );
 
+  // ΒΗΜΑ 2: Επιλογή ρόλων για 3 συσκευές
+  const renderRoleSelection3Devices = () => (
+    <div className="space-y-4 sm:space-y-6">
+      <div className="text-center">
+        <Badge className="rounded-none bg-purple-600 text-white mb-2 sm:mb-3 text-xs sm:text-sm">ΒΗΜΑ 2</Badge>
+        <h2 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Ρόλος αυτής της συσκευής;</h2>
+        <p className="text-muted-foreground text-xs sm:text-sm">3 συσκευές: Timer + Start + Stop/Distance</p>
+      </div>
+
+      <div className="space-y-3 sm:space-y-4">
+        {/* TIMER */}
+        <Button
+          onClick={() => handleTripleDeviceSetup('timer')}
+          disabled={isLoading}
+          className="w-full h-16 sm:h-20 rounded-none bg-purple-600 hover:bg-purple-700 text-white"
+        >
+          <div className="flex items-center gap-2 sm:gap-4 w-full px-2 sm:px-4">
+            <Timer className="w-6 h-6 sm:w-10 sm:h-10" />
+            <div className="text-left flex-1">
+              <div className="font-bold text-sm sm:text-lg">TIMER</div>
+              <div className="text-xs sm:text-sm opacity-80">Μόνο χρονόμετρο</div>
+            </div>
+          </div>
+        </Button>
+
+        {/* START */}
+        <Button
+          onClick={() => handleTripleDeviceSetup('start')}
+          disabled={isLoading}
+          className="w-full h-16 sm:h-20 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+        >
+          <div className="flex items-center gap-2 sm:gap-4 w-full px-2 sm:px-4">
+            <Play className="w-6 h-6 sm:w-10 sm:h-10" />
+            <div className="text-left flex-1">
+              <div className="font-bold text-sm sm:text-lg">START</div>
+              <div className="text-xs sm:text-sm opacity-80">Έναρξη sprint</div>
+            </div>
+          </div>
+        </Button>
+
+        {/* STOP */}
+        <Button
+          onClick={() => handleTripleDeviceSetup('stop')}
+          disabled={isLoading}
+          className="w-full h-16 sm:h-20 rounded-none bg-red-500 hover:bg-red-600 text-white"
+        >
+          <div className="flex items-center gap-2 sm:gap-4 w-full px-2 sm:px-4">
+            <Square className="w-6 h-6 sm:w-10 sm:h-10" />
+            <div className="text-left flex-1">
+              <div className="font-bold text-sm sm:text-lg">STOP</div>
+              <div className="text-xs sm:text-sm opacity-80">Τερματισμός sprint</div>
+            </div>
+          </div>
+        </Button>
+
+        {/* DISTANCE */}
+        <Button
+          onClick={() => handleTripleDeviceSetup('distance')}
+          disabled={isLoading}
+          className="w-full h-16 sm:h-20 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
+        >
+          <div className="flex items-center gap-2 sm:gap-4 w-full px-2 sm:px-4">
+            <Camera className="w-6 h-6 sm:w-10 sm:h-10" />
+            <div className="text-left flex-1">
+              <div className="font-bold text-sm sm:text-lg">DISTANCE</div>
+              <div className="text-xs sm:text-sm opacity-80">Ενδιάμεση απόσταση</div>
+            </div>
+          </div>
+        </Button>
+
+        <div className="bg-muted p-2 sm:p-3 rounded-none text-center text-xs sm:text-sm">
+          <strong>Σημείωση:</strong> Οι άλλες 2 συσκευές θα συνδεθούν με κωδικό
+        </div>
+      </div>
+
+      <Button
+        onClick={() => {
+          setSetupStep('devices');
+          setDeviceCount(null);
+        }}
+        variant="outline"
+        className="w-full rounded-none h-10 sm:h-11"
+      >
+        Πίσω
+      </Button>
+    </div>
+  );
+
   // Join session screen
   const renderJoinSession = () => (
     <div className="space-y-4 sm:space-y-6">
@@ -624,19 +756,29 @@ const SprintTimerPage = () => {
           <Button
             onClick={() => handleJoinDualDevice('start')}
             disabled={joinCode.length < 4 || isLoading}
-            className="h-16 sm:h-20 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex flex-col"
+            className="h-14 sm:h-18 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex flex-col"
           >
-            <Play className="w-6 h-6 sm:w-8 sm:h-8 mb-1" />
-            <span className="font-bold text-base sm:text-lg">START</span>
+            <Play className="w-5 h-5 sm:w-7 sm:h-7 mb-1" />
+            <span className="font-bold text-sm sm:text-base">START</span>
           </Button>
 
           <Button
             onClick={() => handleJoinDualDevice('stop')}
             disabled={joinCode.length < 4 || isLoading}
-            className="h-16 sm:h-20 rounded-none bg-red-500 hover:bg-red-600 text-white flex flex-col"
+            className="h-14 sm:h-18 rounded-none bg-red-500 hover:bg-red-600 text-white flex flex-col"
           >
-            <Square className="w-6 h-6 sm:w-8 sm:h-8 mb-1" />
-            <span className="font-bold text-base sm:text-lg">STOP</span>
+            <Square className="w-5 h-5 sm:w-7 sm:h-7 mb-1" />
+            <span className="font-bold text-sm sm:text-base">STOP</span>
+          </Button>
+
+          <Button
+            onClick={() => handleJoinDualDevice('distance')}
+            disabled={joinCode.length < 4 || isLoading}
+            className="h-14 sm:h-18 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white flex flex-col col-span-2"
+          >
+            <Camera className="w-5 h-5 sm:w-7 sm:h-7 mb-1" />
+            <span className="font-bold text-sm sm:text-base">DISTANCE</span>
+            <span className="text-[10px] sm:text-xs opacity-80">Ενδιάμεση απόσταση (3+ συσκευές)</span>
           </Button>
         </div>
       </div>
@@ -667,13 +809,19 @@ const SprintTimerPage = () => {
               deviceRole === 'timer+start+stop' ? 'bg-[#00ffba] text-black' :
               deviceRole === 'timer+start' ? 'bg-[#00ffba] text-black' :
               deviceRole === 'timer+stop' ? 'bg-red-500 text-white' :
+              deviceRole === 'timer' ? 'bg-purple-600 text-white' :
               deviceRole === 'start' ? 'bg-[#00ffba] text-black' :
-              'bg-red-500 text-white'
+              deviceRole === 'stop' ? 'bg-red-500 text-white' :
+              deviceRole === 'distance' ? 'bg-[#cb8954] text-white' :
+              'bg-gray-500 text-white'
             }`}>
               {deviceRole === 'timer+start+stop' ? '1 ΣΥΣΚΕΥΗ' :
                deviceRole === 'timer+start' ? 'TIMER+START' :
                deviceRole === 'timer+stop' ? 'TIMER+STOP' :
-               deviceRole === 'start' ? 'START' : 'STOP'}
+               deviceRole === 'timer' ? 'TIMER' :
+               deviceRole === 'start' ? 'START' : 
+               deviceRole === 'stop' ? 'STOP' :
+               deviceRole === 'distance' ? 'DISTANCE' : '-'}
             </Badge>
             <span className="text-xs sm:text-sm text-muted-foreground">{sprintDistance}m</span>
           </div>
@@ -681,19 +829,25 @@ const SprintTimerPage = () => {
           {session && !isSingleDevice && (
             <div className="text-right">
               <div className="font-mono font-bold text-sm sm:text-base">{session.session_code}</div>
-              {isSecondDeviceReady ? (
-                <span className="text-[10px] sm:text-xs text-[#00ffba]">2η συνδεδεμένη</span>
+              {connectedDevices.length >= (deviceCount === 3 ? 2 : 1) ? (
+                <span className="text-[10px] sm:text-xs text-[#00ffba]">
+                  {deviceCount === 3 ? `${connectedDevices.length + 1}/3 συνδεδεμένες` : '2η συνδεδεμένη'}
+                </span>
               ) : (
-                <span className="text-[10px] sm:text-xs text-yellow-500">Αναμονή...</span>
+                <span className="text-[10px] sm:text-xs text-yellow-500">
+                  {deviceCount === 3 ? `${connectedDevices.length + 1}/3 - Αναμονή...` : 'Αναμονή...'}
+                </span>
               )}
             </div>
           )}
         </div>
 
-        {/* QR Code for primary devices in dual mode */}
-        {!isSingleDevice && session && (deviceRole === 'timer+start' || deviceRole === 'timer+stop') && !isSecondDeviceReady && (
+        {/* QR Code for primary devices in dual/triple mode */}
+        {!isSingleDevice && session && (deviceRole === 'timer+start' || deviceRole === 'timer+stop' || deviceRole === 'timer' || deviceRole === 'start' || deviceRole === 'stop' || deviceRole === 'distance') && (
           <div className="text-center bg-white p-3 sm:p-4 border rounded-none">
-            <p className="text-xs sm:text-sm mb-2 sm:mb-3 text-gray-600">Σκανάρετε με τη 2η συσκευή:</p>
+            <p className="text-xs sm:text-sm mb-2 sm:mb-3 text-gray-600">
+              {deviceCount === 3 ? 'Σκανάρετε με τις άλλες συσκευές:' : 'Σκανάρετε με τη 2η συσκευή:'}
+            </p>
             <QRCodeSVG 
               value={`${window.location.origin}/dashboard/sprint-timer?join=${session.session_code}`}
               size={120}
@@ -825,6 +979,8 @@ const SprintTimerPage = () => {
         return renderDeviceSelection();
       case 'roles':
         return renderRoleSelection();
+      case 'roles3':
+        return renderRoleSelection3Devices();
       case 'join':
         return renderJoinSession();
       case 'active':
