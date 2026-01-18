@@ -447,29 +447,29 @@ const SprintTimerPage = () => {
 
   // ΒΗΜΑ 1: Επιλογή αριθμού συσκευών
   const renderDeviceSelection = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <Badge className="rounded-none bg-[#00ffba] text-black mb-3">ΒΗΜΑ 1</Badge>
-        <h2 className="text-xl font-bold mb-2">Πόσες συσκευές θα χρησιμοποιήσεις;</h2>
-        <p className="text-muted-foreground text-sm">Επιλέξτε τον αριθμό συσκευών για το sprint timing</p>
+        <Badge className="rounded-none bg-[#00ffba] text-black mb-2 sm:mb-3 text-xs sm:text-sm">ΒΗΜΑ 1</Badge>
+        <h2 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Πόσες συσκευές θα χρησιμοποιήσεις;</h2>
+        <p className="text-muted-foreground text-xs sm:text-sm">Επιλέξτε τον αριθμό συσκευών για το sprint timing</p>
       </div>
 
       {/* Απόσταση */}
-      <div className="bg-[#cb8954]/10 border border-[#cb8954]/30 p-4 rounded-none">
-        <div className="flex items-center gap-3">
-          <Label className="text-sm text-[#cb8954] whitespace-nowrap">Απόσταση Sprint:</Label>
+      <div className="bg-[#cb8954]/10 border border-[#cb8954]/30 p-3 sm:p-4 rounded-none">
+        <div className="flex items-center justify-center gap-2 sm:gap-3">
+          <Label className="text-xs sm:text-sm text-[#cb8954] whitespace-nowrap">Απόσταση:</Label>
           <Input
             type="number"
             value={sprintDistance}
             onChange={(e) => setSprintDistance(parseInt(e.target.value) || 0)}
-            className="rounded-none h-10 text-lg font-bold text-center w-24 bg-white"
+            className="rounded-none h-9 sm:h-10 text-base sm:text-lg font-bold text-center w-20 sm:w-24 bg-white"
             min={1}
           />
-          <span className="text-[#cb8954] font-semibold">μέτρα</span>
+          <span className="text-[#cb8954] font-semibold text-xs sm:text-sm">μέτρα</span>
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {/* 1 Συσκευή */}
         <Button
           onClick={async () => {
@@ -478,19 +478,19 @@ const SprintTimerPage = () => {
             await handleStartCamera();
             setSetupStep('active');
           }}
-          className="w-full h-28 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex items-center justify-between px-6"
+          className="w-full h-20 sm:h-28 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex items-center justify-between px-3 sm:px-6"
         >
-          <div className="flex items-center gap-4">
-            <div className="bg-black/20 p-3 rounded-none">
-              <Smartphone className="w-10 h-10" />
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="bg-black/20 p-2 sm:p-3 rounded-none">
+              <Smartphone className="w-6 h-6 sm:w-10 sm:h-10" />
             </div>
             <div className="text-left">
-              <div className="font-bold text-xl">1 Συσκευή</div>
-              <div className="text-sm opacity-80">Timer + Start + Stop</div>
-              <div className="text-xs opacity-60">Όλα σε μία οθόνη</div>
+              <div className="font-bold text-base sm:text-xl">1 Συσκευή</div>
+              <div className="text-xs sm:text-sm opacity-80">Timer + Start + Stop</div>
+              <div className="text-[10px] sm:text-xs opacity-60 hidden sm:block">Όλα σε μία οθόνη</div>
             </div>
           </div>
-          <ArrowRight className="w-6 h-6" />
+          <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
         </Button>
 
         {/* 2 Συσκευές */}
@@ -499,32 +499,32 @@ const SprintTimerPage = () => {
             setDeviceCount(2);
             setSetupStep('roles');
           }}
-          className="w-full h-28 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white flex items-center justify-between px-6"
+          className="w-full h-20 sm:h-28 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white flex items-center justify-between px-3 sm:px-6"
         >
-          <div className="flex items-center gap-4">
-            <div className="bg-black/20 p-3 rounded-none flex gap-1">
-              <Monitor className="w-8 h-8" />
-              <Monitor className="w-8 h-8" />
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="bg-black/20 p-2 sm:p-3 rounded-none flex gap-0.5 sm:gap-1">
+              <Monitor className="w-5 h-5 sm:w-8 sm:h-8" />
+              <Monitor className="w-5 h-5 sm:w-8 sm:h-8" />
             </div>
             <div className="text-left">
-              <div className="font-bold text-xl">2 Συσκευές</div>
-              <div className="text-sm opacity-80">Ξεχωριστές για Start & Stop</div>
-              <div className="text-xs opacity-60">Μεγαλύτερη ακρίβεια</div>
+              <div className="font-bold text-base sm:text-xl">2 Συσκευές</div>
+              <div className="text-xs sm:text-sm opacity-80">Start & Stop ξεχωριστά</div>
+              <div className="text-[10px] sm:text-xs opacity-60 hidden sm:block">Μεγαλύτερη ακρίβεια</div>
             </div>
           </div>
-          <ArrowRight className="w-6 h-6" />
+          <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
         </Button>
 
         {/* Σύνδεση σε session */}
         <Button
           onClick={() => setSetupStep('join')}
           variant="outline"
-          className="w-full h-16 rounded-none flex items-center justify-center gap-4"
+          className="w-full h-12 sm:h-16 rounded-none flex items-center justify-center gap-2 sm:gap-4"
         >
-          <Wifi className="w-6 h-6" />
+          <Wifi className="w-5 h-5 sm:w-6 sm:h-6" />
           <div className="text-left">
-            <div className="font-bold">Σύνδεση σε Session</div>
-            <div className="text-xs opacity-80">Έχω κωδικό από άλλη συσκευή</div>
+            <div className="font-bold text-sm sm:text-base">Σύνδεση σε Session</div>
+            <div className="text-[10px] sm:text-xs opacity-80">Έχω κωδικό από άλλη συσκευή</div>
           </div>
         </Button>
       </div>
@@ -533,29 +533,29 @@ const SprintTimerPage = () => {
 
   // ΒΗΜΑ 2: Επιλογή ρόλων (για 2 συσκευές)
   const renderRoleSelection = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <Badge className="rounded-none bg-[#cb8954] text-white mb-3">ΒΗΜΑ 2</Badge>
-        <h2 className="text-xl font-bold mb-2">Ποιον ρόλο θα έχει αυτή η συσκευή;</h2>
-        <p className="text-muted-foreground text-sm">Η δεύτερη συσκευή θα πάρει τον συμπληρωματικό ρόλο</p>
+        <Badge className="rounded-none bg-[#cb8954] text-white mb-2 sm:mb-3 text-xs sm:text-sm">ΒΗΜΑ 2</Badge>
+        <h2 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Ρόλος αυτής της συσκευής;</h2>
+        <p className="text-muted-foreground text-xs sm:text-sm">Η 2η συσκευή θα πάρει τον συμπληρωματικό ρόλο</p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {/* TIMER + START */}
         <Button
           onClick={() => handleDualDeviceSetup('timer+start')}
           disabled={isLoading}
-          className="w-full h-24 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+          className="w-full h-18 sm:h-24 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
         >
-          <div className="flex items-center gap-4 w-full px-4">
-            <div className="flex items-center gap-2">
-              <Timer className="w-8 h-8" />
-              <span className="text-2xl">+</span>
-              <Play className="w-8 h-8" />
+          <div className="flex items-center gap-2 sm:gap-4 w-full px-2 sm:px-4">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Timer className="w-5 h-5 sm:w-8 sm:h-8" />
+              <span className="text-lg sm:text-2xl">+</span>
+              <Play className="w-5 h-5 sm:w-8 sm:h-8" />
             </div>
             <div className="text-left flex-1">
-              <div className="font-bold text-lg">TIMER + START</div>
-              <div className="text-sm opacity-80">Χρονόμετρο & Ανίχνευση έναρξης</div>
+              <div className="font-bold text-sm sm:text-lg">TIMER + START</div>
+              <div className="text-xs sm:text-sm opacity-80">Χρονόμετρο & Έναρξη</div>
             </div>
           </div>
         </Button>
@@ -564,23 +564,23 @@ const SprintTimerPage = () => {
         <Button
           onClick={() => handleDualDeviceSetup('timer+stop')}
           disabled={isLoading}
-          className="w-full h-24 rounded-none bg-red-500 hover:bg-red-600 text-white"
+          className="w-full h-18 sm:h-24 rounded-none bg-red-500 hover:bg-red-600 text-white"
         >
-          <div className="flex items-center gap-4 w-full px-4">
-            <div className="flex items-center gap-2">
-              <Timer className="w-8 h-8" />
-              <span className="text-2xl">+</span>
-              <Square className="w-8 h-8" />
+          <div className="flex items-center gap-2 sm:gap-4 w-full px-2 sm:px-4">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Timer className="w-5 h-5 sm:w-8 sm:h-8" />
+              <span className="text-lg sm:text-2xl">+</span>
+              <Square className="w-5 h-5 sm:w-8 sm:h-8" />
             </div>
             <div className="text-left flex-1">
-              <div className="font-bold text-lg">TIMER + STOP</div>
-              <div className="text-sm opacity-80">Χρονόμετρο & Ανίχνευση τερματισμού</div>
+              <div className="font-bold text-sm sm:text-lg">TIMER + STOP</div>
+              <div className="text-xs sm:text-sm opacity-80">Χρονόμετρο & Τερματισμός</div>
             </div>
           </div>
         </Button>
 
-        <div className="bg-muted p-3 rounded-none text-center text-sm">
-          <strong>Σημείωση:</strong> Η 2η συσκευή θα λάβει κωδικό για να συνδεθεί
+        <div className="bg-muted p-2 sm:p-3 rounded-none text-center text-xs sm:text-sm">
+          <strong>Σημείωση:</strong> Η 2η συσκευή θα λάβει κωδικό
         </div>
       </div>
 
@@ -590,7 +590,7 @@ const SprintTimerPage = () => {
           setDeviceCount(null);
         }}
         variant="outline"
-        className="w-full rounded-none"
+        className="w-full rounded-none h-10 sm:h-11"
       >
         Πίσω
       </Button>
@@ -599,43 +599,43 @@ const SprintTimerPage = () => {
 
   // Join session screen
   const renderJoinSession = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <Badge className="rounded-none bg-blue-500 text-white mb-3">ΣΥΝΔΕΣΗ</Badge>
-        <h2 className="text-xl font-bold mb-2">Σύνδεση σε Session</h2>
-        <p className="text-muted-foreground text-sm">Εισάγετε τον κωδικό από την άλλη συσκευή</p>
+        <Badge className="rounded-none bg-blue-500 text-white mb-2 sm:mb-3 text-xs sm:text-sm">ΣΥΝΔΕΣΗ</Badge>
+        <h2 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Σύνδεση σε Session</h2>
+        <p className="text-muted-foreground text-xs sm:text-sm">Εισάγετε τον κωδικό από την άλλη συσκευή</p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <Input
           value={joinCode}
           onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
           placeholder="ΚΩΔΙΚΟΣ"
-          className="rounded-none h-16 text-3xl text-center font-bold tracking-widest"
+          className="rounded-none h-12 sm:h-16 text-2xl sm:text-3xl text-center font-bold tracking-widest"
           maxLength={6}
         />
 
-        <div className="text-center text-sm text-muted-foreground font-medium">
+        <div className="text-center text-xs sm:text-sm text-muted-foreground font-medium">
           Τι ρόλο θα έχει αυτή η συσκευή;
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <Button
             onClick={() => handleJoinDualDevice('start')}
             disabled={joinCode.length < 4 || isLoading}
-            className="h-20 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex flex-col"
+            className="h-16 sm:h-20 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex flex-col"
           >
-            <Play className="w-8 h-8 mb-1" />
-            <span className="font-bold text-lg">START</span>
+            <Play className="w-6 h-6 sm:w-8 sm:h-8 mb-1" />
+            <span className="font-bold text-base sm:text-lg">START</span>
           </Button>
 
           <Button
             onClick={() => handleJoinDualDevice('stop')}
             disabled={joinCode.length < 4 || isLoading}
-            className="h-20 rounded-none bg-red-500 hover:bg-red-600 text-white flex flex-col"
+            className="h-16 sm:h-20 rounded-none bg-red-500 hover:bg-red-600 text-white flex flex-col"
           >
-            <Square className="w-8 h-8 mb-1" />
-            <span className="font-bold text-lg">STOP</span>
+            <Square className="w-6 h-6 sm:w-8 sm:h-8 mb-1" />
+            <span className="font-bold text-base sm:text-lg">STOP</span>
           </Button>
         </div>
       </div>
@@ -646,7 +646,7 @@ const SprintTimerPage = () => {
           setJoinCode('');
         }}
         variant="outline"
-        className="w-full rounded-none"
+        className="w-full rounded-none h-10 sm:h-11"
       >
         Πίσω
       </Button>
@@ -658,11 +658,11 @@ const SprintTimerPage = () => {
     const isSingleDevice = deviceCount === 1;
     
     return (
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {/* Role & Session Info */}
-        <div className="flex items-center justify-between bg-muted p-3 rounded-none">
-          <div className="flex items-center gap-2">
-            <Badge className={`rounded-none ${
+        <div className="flex items-center justify-between bg-muted p-2 sm:p-3 rounded-none">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Badge className={`rounded-none text-xs sm:text-sm ${
               deviceRole === 'timer+start+stop' ? 'bg-[#00ffba] text-black' :
               deviceRole === 'timer+start' ? 'bg-[#00ffba] text-black' :
               deviceRole === 'timer+stop' ? 'bg-red-500 text-white' :
@@ -674,16 +674,16 @@ const SprintTimerPage = () => {
                deviceRole === 'timer+stop' ? 'TIMER+STOP' :
                deviceRole === 'start' ? 'START' : 'STOP'}
             </Badge>
-            <span className="text-sm text-muted-foreground">{sprintDistance}m</span>
+            <span className="text-xs sm:text-sm text-muted-foreground">{sprintDistance}m</span>
           </div>
           
           {session && !isSingleDevice && (
             <div className="text-right">
-              <div className="font-mono font-bold">{session.session_code}</div>
+              <div className="font-mono font-bold text-sm sm:text-base">{session.session_code}</div>
               {isSecondDeviceReady ? (
-                <span className="text-xs text-[#00ffba]">2η συνδεδεμένη</span>
+                <span className="text-[10px] sm:text-xs text-[#00ffba]">2η συνδεδεμένη</span>
               ) : (
-                <span className="text-xs text-yellow-500">Αναμονή...</span>
+                <span className="text-[10px] sm:text-xs text-yellow-500">Αναμονή...</span>
               )}
             </div>
           )}
@@ -691,14 +691,19 @@ const SprintTimerPage = () => {
 
         {/* QR Code for primary devices in dual mode */}
         {!isSingleDevice && session && (deviceRole === 'timer+start' || deviceRole === 'timer+stop') && !isSecondDeviceReady && (
-          <div className="text-center bg-white p-4 border rounded-none">
-            <p className="text-sm mb-3 text-gray-600">Σκανάρετε με τη 2η συσκευή:</p>
+          <div className="text-center bg-white p-3 sm:p-4 border rounded-none">
+            <p className="text-xs sm:text-sm mb-2 sm:mb-3 text-gray-600">Σκανάρετε με τη 2η συσκευή:</p>
+            <QRCodeSVG 
+              value={`${window.location.origin}/dashboard/sprint-timer?join=${session.session_code}`}
+              size={120}
+              className="mx-auto sm:hidden"
+            />
             <QRCodeSVG 
               value={`${window.location.origin}/dashboard/sprint-timer?join=${session.session_code}`}
               size={150}
-              className="mx-auto"
+              className="mx-auto hidden sm:block"
             />
-            <p className="mt-3 font-mono text-xl font-bold">{session.session_code}</p>
+            <p className="mt-2 sm:mt-3 font-mono text-lg sm:text-xl font-bold">{session.session_code}</p>
           </div>
         )}
 
@@ -713,47 +718,47 @@ const SprintTimerPage = () => {
             muted
           />
           {isMotionActive && stream && (
-            <div className={`absolute inset-0 border-4 pointer-events-none animate-pulse ${
+            <div className={`absolute inset-0 border-2 sm:border-4 pointer-events-none animate-pulse ${
               singleDeviceMode === 'start' || deviceRole?.includes('start') ? 'border-[#00ffba]' : 'border-red-500'
             }`} />
           )}
           {!stream && (
             <div className="absolute inset-0 flex items-center justify-center text-gray-500">
               <div className="text-center">
-                <Camera className="w-12 h-12 mx-auto mb-2" />
-                <p>Φόρτωση κάμερας...</p>
+                <Camera className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-1 sm:mb-2" />
+                <p className="text-xs sm:text-sm">Φόρτωση κάμερας...</p>
               </div>
             </div>
           )}
           
           {/* Status Badge on video */}
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2">
             <Badge 
-              className={`rounded-none text-sm px-3 py-1 ${
+              className={`rounded-none text-[10px] sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1 ${
                 singleDeviceMode === 'start' ? 'bg-[#00ffba] text-black' :
                 singleDeviceMode === 'stop' ? 'bg-red-500 text-white' :
                 isRunning ? 'bg-blue-500 text-white' :
                 elapsedTime > 0 ? 'bg-green-500 text-white' : 'bg-gray-500'
               }`}
             >
-              {singleDeviceMode === 'timer' && (isRunning ? 'Running' : (elapsedTime > 0 ? '✓ Ολοκληρώθηκε' : 'Αναμονή'))}
-              {singleDeviceMode === 'start' && '👋 Περάστε για ΕΝΑΡΞΗ'}
-              {singleDeviceMode === 'stop' && '👋 Περάστε για ΤΕΡΜΑΤΙΣΜΟ'}
+              {singleDeviceMode === 'timer' && (isRunning ? 'Running' : (elapsedTime > 0 ? '✓ OK' : 'Αναμονή'))}
+              {singleDeviceMode === 'start' && '👋 ΕΝΑΡΞΗ'}
+              {singleDeviceMode === 'stop' && '👋 ΤΕΡΜΑΤΙΣΜΟΣ'}
             </Badge>
           </div>
         </div>
 
         {/* Timer Display */}
-        <div className="bg-black/90 p-6 rounded-none">
+        <div className="bg-black/90 p-4 sm:p-6 rounded-none">
           <div className="text-center">
-            <div className={`font-mono text-6xl font-bold ${
+            <div className={`font-mono text-4xl sm:text-6xl font-bold ${
               isRunning ? 'text-[#00ffba] animate-pulse' : 
               elapsedTime > 0 ? 'text-blue-400' : 'text-gray-500'
             }`}>
               {formatTime(elapsedTime)}
             </div>
             {elapsedTime > 0 && !isRunning && sprintDistance > 0 && (
-              <div className="text-[#cb8954] text-2xl font-bold mt-3">
+              <div className="text-[#cb8954] text-xl sm:text-2xl font-bold mt-2 sm:mt-3">
                 {calculateSpeed(sprintDistance, elapsedTime).toFixed(2)} km/h
               </div>
             )}
@@ -761,24 +766,24 @@ const SprintTimerPage = () => {
         </div>
 
         {/* Control Buttons */}
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           {singleDeviceMode === 'timer' && !isRunning && (
             <Button
               onClick={isSingleDevice ? handleSingleDeviceStart : handleDualDeviceStart}
               disabled={!cameraReady}
-              className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-14 text-lg font-bold"
+              className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-12 sm:h-14 text-base sm:text-lg font-bold"
             >
-              <Play className="w-6 h-6 mr-2" />
-              {elapsedTime > 0 ? 'Νέα Μέτρηση' : 'Έναρξη'}
+              <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-1 sm:mr-2" />
+              {elapsedTime > 0 ? 'Νέα' : 'Έναρξη'}
             </Button>
           )}
           
           {(isMotionActive || elapsedTime > 0) && (
             <Button
               onClick={isSingleDevice ? handleSingleDeviceReset : handleDualDeviceReset}
-              className="flex-1 rounded-none bg-gray-500 hover:bg-gray-600 text-white h-14 text-lg font-bold"
+              className="flex-1 rounded-none bg-gray-500 hover:bg-gray-600 text-white h-12 sm:h-14 text-base sm:text-lg font-bold"
             >
-              <RotateCcw className="w-6 h-6 mr-2" />
+              <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6 mr-1 sm:mr-2" />
               Reset
             </Button>
           )}
@@ -804,7 +809,7 @@ const SprintTimerPage = () => {
             setIsSecondDeviceReady(false);
           }}
           variant="outline"
-          className="w-full rounded-none"
+          className="w-full rounded-none h-10 sm:h-11 text-sm sm:text-base"
         >
           {isSingleDevice ? 'Πίσω' : 'Τερματισμός Session'}
         </Button>
@@ -833,16 +838,16 @@ const SprintTimerPage = () => {
       <div className="min-h-screen bg-background flex w-full">
         <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
         
-        <div className="flex-1 p-4 md:p-6">
+        <div className="flex-1 p-2 sm:p-4 md:p-6">
           <div className="max-w-lg mx-auto">
             <Card className="rounded-none">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2">
-                  <Timer className="w-5 h-5 text-[#00ffba]" />
+              <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ffba]" />
                   Sprint Timer
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
                 {renderContent()}
               </CardContent>
             </Card>
