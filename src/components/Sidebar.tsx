@@ -543,7 +543,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
-      icon: Swords,
+      icon: Video,
       label: "Video Analysis",
       path: "/dashboard/video-analysis",
       badge: null
