@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Timer, Play, Square, Camera, RotateCcw, Smartphone, Monitor, Wifi, ArrowRight } from 'lucide-react';
+import { Timer, Play, Square, Camera, RotateCcw, Smartphone, Monitor, Wifi, ArrowRight, Menu } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +26,7 @@ interface SprintSession {
 const SprintTimerPage = () => {
   const { toast } = useToast();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   
   // Setup state - νέα δομή με βήματα
   const [setupStep, setSetupStep] = useState<SetupStep>('devices');
@@ -836,21 +837,50 @@ const SprintTimerPage = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-background flex w-full">
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        {/* Mobile sidebar overlay */}
+        {isMobileOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setIsMobileOpen(false)}
+          />
+        )}
         
-        <div className="flex-1 p-2 sm:p-4 md:p-6">
-          <div className="max-w-lg mx-auto">
-            <Card className="rounded-none">
-              <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ffba]" />
-                  Sprint Timer
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
-                {renderContent()}
-              </CardContent>
-            </Card>
+        {/* Sidebar */}
+        <div className={`
+          fixed lg:relative inset-y-0 left-0 z-50 
+          transform transition-transform duration-200 ease-in-out
+          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
+          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        </div>
+        
+        <div className="flex-1 overflow-auto">
+          {/* Mobile header with menu button */}
+          <div className="lg:hidden sticky top-0 z-30 bg-background border-b p-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileOpen(true)}
+              className="rounded-none"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
+          
+          <div className="p-2 sm:p-4 md:p-6">
+            <div className="max-w-lg mx-auto">
+              <Card className="rounded-none">
+                <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ffba]" />
+                    Sprint Timer
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
+                  {renderContent()}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
