@@ -166,17 +166,21 @@ const CognitivePage: React.FC = () => {
     
     setTotalQuestions(prev => prev + 1);
     
-    // Check if game should end (e.g., after 20 questions)
-    if (totalQuestions + 1 >= 20) {
+    // Generate next question (unlimited mode)
+    setCurrentQuestion(generateStroopQuestion(difficulty));
+    setTimeLeft(getTimeLimit(difficulty));
+  }, [currentQuestion, gameOver, difficulty, getTimeLimit, bestStreak]);
+
+  // End game manually
+  const endGame = useCallback(() => {
+    if (totalQuestions > 0) {
       setGameOver(true);
       setIsPlaying(false);
       toast.success(t('cognitive.gameComplete'));
     } else {
-      // Next question
-      setCurrentQuestion(generateStroopQuestion(difficulty));
-      setTimeLeft(getTimeLimit(difficulty));
+      resetGame();
     }
-  }, [currentQuestion, gameOver, totalQuestions, difficulty, getTimeLimit, bestStreak, t]);
+  }, [totalQuestions, t]);
 
   // Reset game
   const resetGame = () => {
@@ -296,7 +300,7 @@ const CognitivePage: React.FC = () => {
               <div className="text-xs text-muted-foreground">{t('cognitive.score')}</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-medium">{totalQuestions}/20</div>
+              <div className="text-lg font-medium">{totalQuestions}</div>
               <div className="text-xs text-muted-foreground">{t('cognitive.questions')}</div>
             </div>
             {streak > 1 && (
@@ -306,12 +310,12 @@ const CognitivePage: React.FC = () => {
             )}
           </div>
           <Button
-            variant="outline"
+            variant="destructive"
             size="sm"
-            onClick={resetGame}
+            onClick={endGame}
             className="rounded-none"
           >
-            <X className="w-4 h-4" />
+            {t('cognitive.endGame')}
           </Button>
         </div>
         
