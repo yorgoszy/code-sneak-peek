@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Target, Shield, Clock, Activity, TrendingUp, Users, Swords, Plus } from 'lucide-react';
+import { Target, Shield, Clock, Activity, TrendingUp, Users, Swords, Plus, Settings } from 'lucide-react';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useMuayThaiStats } from '@/hooks/useMuayThaiStats';
 import { FightRecordingDialog } from './FightRecordingDialog';
+import { StrikeTypesDialog } from './StrikeTypesDialog';
 import { useCoachContext } from '@/contexts/CoachContext';
 
 export const MuayThaiStatsOverview = () => {
@@ -14,6 +15,7 @@ export const MuayThaiStatsOverview = () => {
   const { coachId } = useCoachContext();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [isRecordingOpen, setIsRecordingOpen] = useState(false);
+  const [isStrikeTypesOpen, setIsStrikeTypesOpen] = useState(false);
   
   const { stats, loading } = useMuayThaiStats(selectedUserId);
 
@@ -68,7 +70,15 @@ export const MuayThaiStatsOverview = () => {
           <h1 className="text-2xl font-bold text-gray-900">Video Analysis</h1>
           <p className="text-gray-500 text-sm mt-1">Ανάλυση βίντεο και στατιστικά απόδοσης</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            onClick={() => setIsStrikeTypesOpen(true)}
+            variant="outline"
+            className="rounded-none"
+          >
+            <Settings className="w-4 h-4 mr-1" />
+            <span className="hidden sm:inline">Χτυπήματα</span>
+          </Button>
           <div className="w-full md:w-80">
             <UserSearchCombobox
               value={selectedUserId}
@@ -279,6 +289,13 @@ export const MuayThaiStatsOverview = () => {
           setSelectedUserId('');
           setTimeout(() => setSelectedUserId(selectedUserId), 100);
         }}
+      />
+
+      {/* Strike Types Management Dialog */}
+      <StrikeTypesDialog
+        isOpen={isStrikeTypesOpen}
+        onClose={() => setIsStrikeTypesOpen(false)}
+        coachId={coachId}
       />
     </div>
   );
