@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Upload, 
   Play, 
@@ -28,10 +30,16 @@ import {
   FileVideo,
   Flag,
   Swords,
-  Shield
+  Shield,
+  Target,
+  User,
+  Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
+import { useStrikeTypes, StrikeType, categoryLabels, sideLabels } from '@/hooks/useStrikeTypes';
+import { useRoleCheck } from '@/hooks/useRoleCheck';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TrimClip {
   id: string;
@@ -49,11 +57,29 @@ interface ActionFlag {
   endTime: number | null; // null αν δεν έχει κλείσει ακόμα
 }
 
+// Strike marker on timeline
+interface StrikeMarker {
+  id: string;
+  strikeTypeId: string;
+  strikeTypeName: string;
+  strikeCategory: string;
+  strikeSide: string | null;
+  time: number;
+  owner: 'athlete' | 'opponent'; // Determined by which flag it's inside
+}
+
 interface VideoEditorTabProps {
   userId: string;
 }
 
 export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
+  // Role check & coach ID - use useEffectiveCoachId hook
+  const { userProfile } = useRoleCheck();
+  const coachId = userProfile?.id || null;
+  
+  // Strike types hook
+  const { strikeTypes, loading: strikeTypesLoading } = useStrikeTypes(coachId);
+
   // Video export hook
   const { 
     isLoading: isFFmpegLoading, 
@@ -86,6 +112,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
   // Action flags state
   const [actionFlags, setActionFlags] = useState<ActionFlag[]>([]);
   const [activeFlag, setActiveFlag] = useState<{ id: string; type: ActionType } | null>(null);
+  
+  // Strike markers state
+  const [strikeMarkers, setStrikeMarkers] = useState<StrikeMarker[]>([]);
+  const [isStrikePopoverOpen, setIsStrikePopoverOpen] = useState(false);
   
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -120,6 +150,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
       setClips([]);
       setActionFlags([]);
       setActiveFlag(null);
+      setStrikeMarkers([]);
       setTrimStart(0);
       setTrimEnd(0);
       setCurrentTime(0);
@@ -318,6 +349,63 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
     };
   }, [actionFlags]);
 
+  // Determine strike owner based on which flag it falls into
+  const determineStrikeOwner = (time: number): 'athlete' | 'opponent' => {
+    // Find which flag this time falls into
+    for (const flag of actionFlags) {
+      const endTime = flag.endTime ?? duration;
+      if (time >= flag.startTime && time <= endTime) {
+        // Attack = athlete's strike, Defense = opponent's strike
+        return flag.type === 'attack' ? 'athlete' : 'opponent';
+      }
+    }
+    // Default to athlete if not in any flag
+    return 'athlete';
+  };
+
+  // Add strike marker at current time
+  const addStrikeMarker = (strikeType: StrikeType) => {
+    const owner = determineStrikeOwner(currentTime);
+    
+    const newMarker: StrikeMarker = {
+      id: crypto.randomUUID(),
+      strikeTypeId: strikeType.id,
+      strikeTypeName: strikeType.name,
+      strikeCategory: strikeType.category,
+      strikeSide: strikeType.side,
+      time: currentTime,
+      owner
+    };
+    
+    setStrikeMarkers(prev => [...prev, newMarker].sort((a, b) => a.time - b.time));
+    setIsStrikePopoverOpen(false);
+    toast.success(`${strikeType.name} (${owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) στο ${formatTime(currentTime)}`);
+  };
+
+  // Remove strike marker
+  const removeStrikeMarker = (id: string) => {
+    setStrikeMarkers(prev => prev.filter(m => m.id !== id));
+  };
+
+  // Strike statistics
+  const strikeStats = useMemo(() => {
+    const athleteStrikes = strikeMarkers.filter(m => m.owner === 'athlete');
+    const opponentStrikes = strikeMarkers.filter(m => m.owner === 'opponent');
+    
+    return {
+      athleteTotal: athleteStrikes.length,
+      opponentTotal: opponentStrikes.length,
+      athleteByCategory: athleteStrikes.reduce((acc, m) => {
+        acc[m.strikeCategory] = (acc[m.strikeCategory] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      opponentByCategory: opponentStrikes.reduce((acc, m) => {
+        acc[m.strikeCategory] = (acc[m.strikeCategory] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    };
+  }, [strikeMarkers]);
+
   // Export clips info (in real implementation, would use FFmpeg.wasm or server-side processing)
   const exportClipsInfo = () => {
     if (clips.length === 0) {
@@ -449,6 +537,19 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
                 );
               })}
               
+              {/* Strike markers */}
+              {strikeMarkers.map((marker) => (
+                <div
+                  key={marker.id}
+                  className={`absolute w-2 h-2 rounded-full cursor-pointer z-20 transform -translate-x-1/2 top-1/2 -translate-y-1/2 ${
+                    marker.owner === 'athlete' ? 'bg-[#00ffba] border border-[#00997a]' : 'bg-[#cb8954] border border-[#a06b3d]'
+                  }`}
+                  style={{ left: `${(marker.time / duration) * 100}%` }}
+                  title={`${marker.strikeTypeName} (${marker.owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) - ${formatTime(marker.time)}`}
+                  onClick={() => seek(marker.time)}
+                />
+              ))}
+              
               {/* Current position indicator */}
               <div 
                 className="absolute w-0.5 h-full bg-black z-10"
@@ -570,6 +671,76 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
                 Πάτησε "{activeFlag.type === 'attack' ? 'Τέλος Επίθεσης' : 'Τέλος Άμυνας'}" για να κλείσεις.
               </div>
             )}
+          </div>
+          
+          {/* Strike Controls */}
+          <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-none">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium">Χτυπήματα</span>
+                <div className="flex items-center gap-1 text-xs">
+                  <Badge variant="outline" className="rounded-none bg-[#00ffba]/10 text-[#00997a]">
+                    <User className="w-3 h-3 mr-1" />
+                    Αθλητής: {strikeStats.athleteTotal}
+                  </Badge>
+                  <Badge variant="outline" className="rounded-none bg-[#cb8954]/10 text-[#cb8954]">
+                    <Users className="w-3 h-3 mr-1" />
+                    Αντίπαλος: {strikeStats.opponentTotal}
+                  </Badge>
+                </div>
+              </div>
+              
+              <Popover open={isStrikePopoverOpen} onOpenChange={setIsStrikePopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    size="sm"
+                    className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
+                    disabled={strikeTypes.length === 0}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Προσθήκη Χτυπήματος
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-2 rounded-none" align="end">
+                  <div className="space-y-1 max-h-60 overflow-y-auto">
+                    {strikeTypesLoading ? (
+                      <p className="text-sm text-gray-500 p-2">Φόρτωση...</p>
+                    ) : strikeTypes.length === 0 ? (
+                      <p className="text-sm text-gray-500 p-2">Δεν υπάρχουν χτυπήματα. Δημιουργήστε από τις ρυθμίσεις.</p>
+                    ) : (
+                      strikeTypes.map((strike) => (
+                        <Button
+                          key={strike.id}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start rounded-none text-left"
+                          onClick={() => addStrikeMarker(strike)}
+                        >
+                          <Target className="w-3 h-3 mr-2" />
+                          <span className="truncate">{strike.name}</span>
+                          <span className="ml-auto text-xs text-gray-400">
+                            {categoryLabels[strike.category]}
+                          </span>
+                        </Button>
+                      ))
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            {/* Legend */}
+            <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-[#00ffba]" />
+                Επίθεση = Χτύπημα Αθλητή
+              </span>
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-[#cb8954]" />
+                Άμυνα = Χτύπημα Αντιπάλου
+              </span>
+            </div>
           </div>
           
           {/* Playback Controls */}
