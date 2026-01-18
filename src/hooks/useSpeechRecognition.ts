@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 interface UseSpeechRecognitionOptions {
   language?: string;
@@ -94,8 +94,9 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
         const currentTranscript = finalTranscript || interimTranscript;
         setTranscript(currentTranscript);
         
-        if (finalTranscript && onResult) {
-          onResult(finalTranscript.trim().toLowerCase());
+        // Trigger callback on both interim and final results for faster response
+        if (currentTranscript && onResult) {
+          onResult(currentTranscript.trim().toLowerCase());
         }
       };
 
@@ -125,7 +126,10 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
     };
   }, [language, continuous]);
 
-  // Update onResult callback ref
+  // Update onResult callback ref - use a ref to avoid re-binding
+  const onResultRef = React.useRef(onResult);
+  onResultRef.current = onResult;
+  
   useEffect(() => {
     if (recognitionRef.current) {
       recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
@@ -144,12 +148,13 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
         const currentTranscript = finalTranscript || interimTranscript;
         setTranscript(currentTranscript);
         
-        if (finalTranscript && onResult) {
-          onResult(finalTranscript.trim().toLowerCase());
+        // Trigger callback on both interim and final results for faster response
+        if (currentTranscript && onResultRef.current) {
+          onResultRef.current(currentTranscript.trim().toLowerCase());
         }
       };
     }
-  }, [onResult]);
+  }, []);
 
   const startListening = useCallback(() => {
     if (recognitionRef.current && isSupported) {
