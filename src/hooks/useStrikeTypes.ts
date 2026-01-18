@@ -54,7 +54,10 @@ export const useStrikeTypes = (coachId: string | null) => {
   };
 
   const createStrikeType = async (strikeType: CreateStrikeType) => {
-    if (!coachId) return null;
+    if (!coachId) {
+      toast.error('Δεν βρέθηκε coach ID');
+      return null;
+    }
 
     try {
       const { data, error } = await supabase
