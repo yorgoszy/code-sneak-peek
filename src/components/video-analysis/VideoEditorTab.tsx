@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -25,7 +25,10 @@ import {
   Film,
   RefreshCw,
   Loader2,
-  FileVideo
+  FileVideo,
+  Flag,
+  Swords,
+  Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
@@ -35,6 +38,15 @@ interface TrimClip {
   startTime: number;
   endTime: number;
   label: string;
+}
+
+type ActionType = 'attack' | 'defense';
+
+interface ActionFlag {
+  id: string;
+  type: ActionType;
+  startTime: number;
+  endTime: number | null; // null αν δεν έχει κλείσει ακόμα
 }
 
 interface VideoEditorTabProps {
@@ -71,6 +83,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
   const [isAddingClip, setIsAddingClip] = useState(false);
   const [clipLabel, setClipLabel] = useState('');
   
+  // Action flags state
+  const [actionFlags, setActionFlags] = useState<ActionFlag[]>([]);
+  const [activeFlag, setActiveFlag] = useState<{ id: string; type: ActionType } | null>(null);
+  
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,6 +118,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
       setVideoFile(file);
       setVideoUrl(url);
       setClips([]);
+      setActionFlags([]);
+      setActiveFlag(null);
       setTrimStart(0);
       setTrimEnd(0);
       setCurrentTime(0);
@@ -239,6 +257,67 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
   };
 
+  // Action Flags functions
+  const startActionFlag = (type: ActionType) => {
+    // Αν υπάρχει ήδη ανοιχτό flag, κλείσε το πρώτα
+    if (activeFlag) {
+      closeActiveFlag();
+    }
+    
+    const newFlag: ActionFlag = {
+      id: crypto.randomUUID(),
+      type,
+      startTime: currentTime,
+      endTime: null
+    };
+    
+    setActionFlags(prev => [...prev, newFlag]);
+    setActiveFlag({ id: newFlag.id, type });
+    toast.success(`${type === 'attack' ? 'Επίθεση' : 'Άμυνα'} ξεκίνησε στο ${formatTime(currentTime)}`);
+  };
+
+  const closeActiveFlag = () => {
+    if (!activeFlag) return;
+    
+    setActionFlags(prev => prev.map(flag => 
+      flag.id === activeFlag.id 
+        ? { ...flag, endTime: currentTime }
+        : flag
+    ));
+    
+    toast.success(`${activeFlag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'} τελείωσε στο ${formatTime(currentTime)}`);
+    setActiveFlag(null);
+  };
+
+  const removeActionFlag = (id: string) => {
+    if (activeFlag?.id === id) {
+      setActiveFlag(null);
+    }
+    setActionFlags(prev => prev.filter(f => f.id !== id));
+  };
+
+  // Calculate total action times
+  const actionStats = useMemo(() => {
+    const completedFlags = actionFlags.filter(f => f.endTime !== null);
+    
+    const attackFlags = completedFlags.filter(f => f.type === 'attack');
+    const defenseFlags = completedFlags.filter(f => f.type === 'defense');
+    
+    const attackTime = attackFlags.reduce((sum, f) => sum + (f.endTime! - f.startTime), 0);
+    const defenseTime = defenseFlags.reduce((sum, f) => sum + (f.endTime! - f.startTime), 0);
+    const totalActionTime = attackTime + defenseTime;
+    
+    return {
+      attackCount: attackFlags.length,
+      defenseCount: defenseFlags.length,
+      attackTime,
+      defenseTime,
+      totalActionTime,
+      attackPercentage: totalActionTime > 0 ? (attackTime / totalActionTime) * 100 : 0,
+      defensePercentage: totalActionTime > 0 ? (defenseTime / totalActionTime) * 100 : 0
+    };
+  }, [actionFlags]);
+
   // Export clips info (in real implementation, would use FFmpeg.wasm or server-side processing)
   const exportClipsInfo = () => {
     if (clips.length === 0) {
@@ -341,6 +420,42 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
           
           {/* Timeline */}
           <div className="mt-4 space-y-2">
+            {/* Action Flags Timeline */}
+            <div className="relative h-6 bg-gray-100 rounded-none border border-gray-200">
+              {/* Action flag markers */}
+              {actionFlags.map((flag) => {
+                const endTime = flag.endTime ?? currentTime;
+                const isOpen = flag.endTime === null;
+                return (
+                  <div
+                    key={flag.id}
+                    className={`absolute h-full cursor-pointer transition-opacity hover:opacity-80 ${
+                      flag.type === 'attack' 
+                        ? 'bg-[#00ffba]/60 border-l-2 border-r-2 border-[#00ffba]' 
+                        : 'bg-red-500/60 border-l-2 border-r-2 border-red-500'
+                    } ${isOpen ? 'animate-pulse' : ''}`}
+                    style={{ 
+                      left: `${(flag.startTime / duration) * 100}%`,
+                      width: `${((endTime - flag.startTime) / duration) * 100}%`,
+                      minWidth: '4px'
+                    }}
+                    title={`${flag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'}: ${formatTime(flag.startTime)} - ${flag.endTime ? formatTime(flag.endTime) : 'σε εξέλιξη'}`}
+                    onClick={() => seek(flag.startTime)}
+                  >
+                    <Flag className={`w-3 h-3 absolute -top-0.5 -left-1.5 ${
+                      flag.type === 'attack' ? 'text-[#00ffba]' : 'text-red-500'
+                    }`} />
+                  </div>
+                );
+              })}
+              
+              {/* Current position indicator */}
+              <div 
+                className="absolute w-0.5 h-full bg-black z-10"
+                style={{ left: `${(currentTime / duration) * 100}%` }}
+              />
+            </div>
+
             {/* Trim markers on timeline */}
             <div className="relative h-2 bg-gray-200 rounded-none">
               {/* Playback progress */}
@@ -387,6 +502,74 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
+          </div>
+          
+          {/* Action Flags Controls */}
+          <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-none">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Flag className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium">Σήμανση Δράσης</span>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Attack button */}
+                {activeFlag?.type === 'attack' ? (
+                  <Button
+                    size="sm"
+                    className="rounded-none bg-[#00ffba] text-black animate-pulse"
+                    onClick={closeActiveFlag}
+                  >
+                    <Swords className="w-4 h-4 mr-2" />
+                    Τέλος Επίθεσης
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black"
+                    onClick={() => startActionFlag('attack')}
+                    disabled={activeFlag !== null}
+                  >
+                    <Swords className="w-4 h-4 mr-2" />
+                    Επίθεση
+                  </Button>
+                )}
+                
+                {/* Defense button */}
+                {activeFlag?.type === 'defense' ? (
+                  <Button
+                    size="sm"
+                    className="rounded-none bg-red-500 text-white animate-pulse"
+                    onClick={closeActiveFlag}
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Τέλος Άμυνας
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-none border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                    onClick={() => startActionFlag('defense')}
+                    disabled={activeFlag !== null}
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Άμυνα
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            {/* Active flag indicator */}
+            {activeFlag && (
+              <div className={`mt-2 p-2 text-sm ${
+                activeFlag.type === 'attack' ? 'bg-[#00ffba]/20 text-[#00997a]' : 'bg-red-100 text-red-700'
+              }`}>
+                ⏱️ {activeFlag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'} σε εξέλιξη... 
+                Πάτησε "{activeFlag.type === 'attack' ? 'Τέλος Επίθεσης' : 'Τέλος Άμυνας'}" για να κλείσεις.
+              </div>
+            )}
           </div>
           
           {/* Playback Controls */}
@@ -731,6 +914,130 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
         </Card>
       )}
 
+      {/* Action Flags Stats & List */}
+      {actionFlags.length > 0 && (
+        <Card className="rounded-none">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between text-lg">
+              <span className="flex items-center gap-2">
+                <Flag className="w-5 h-5" />
+                Στατιστικά Δράσης
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-none text-red-500"
+                onClick={() => {
+                  setActionFlags([]);
+                  setActiveFlag(null);
+                }}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Καθαρισμός
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Stats Summary */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3 bg-[#00ffba]/10 border border-[#00ffba]/30 rounded-none text-center">
+                <Swords className="w-5 h-5 mx-auto text-[#00ffba] mb-1" />
+                <p className="text-xs text-gray-600">Επιθέσεις</p>
+                <p className="text-lg font-bold text-[#00997a]">{actionStats.attackCount}</p>
+              </div>
+              <div className="p-3 bg-red-50 border border-red-200 rounded-none text-center">
+                <Shield className="w-5 h-5 mx-auto text-red-500 mb-1" />
+                <p className="text-xs text-gray-600">Άμυνες</p>
+                <p className="text-lg font-bold text-red-600">{actionStats.defenseCount}</p>
+              </div>
+              <div className="p-3 bg-[#00ffba]/10 border border-[#00ffba]/30 rounded-none text-center">
+                <Clock className="w-5 h-5 mx-auto text-[#00ffba] mb-1" />
+                <p className="text-xs text-gray-600">Χρόνος Επίθεσης</p>
+                <p className="text-lg font-bold text-[#00997a]">{formatTime(actionStats.attackTime)}</p>
+              </div>
+              <div className="p-3 bg-red-50 border border-red-200 rounded-none text-center">
+                <Clock className="w-5 h-5 mx-auto text-red-500 mb-1" />
+                <p className="text-xs text-gray-600">Χρόνος Άμυνας</p>
+                <p className="text-lg font-bold text-red-600">{formatTime(actionStats.defenseTime)}</p>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-gray-600">
+                <span>Συνολικός Χρόνος Δράσης: {formatTime(actionStats.totalActionTime)}</span>
+                <span>
+                  Επίθεση {actionStats.attackPercentage.toFixed(1)}% / Άμυνα {actionStats.defensePercentage.toFixed(1)}%
+                </span>
+              </div>
+              <div className="h-4 bg-gray-200 rounded-none overflow-hidden flex">
+                <div 
+                  className="h-full bg-[#00ffba]"
+                  style={{ width: `${actionStats.attackPercentage}%` }}
+                />
+                <div 
+                  className="h-full bg-red-500"
+                  style={{ width: `${actionStats.defensePercentage}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Flags List */}
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {actionFlags.map((flag, index) => (
+                <div 
+                  key={flag.id}
+                  className={`flex items-center justify-between p-2 rounded-none ${
+                    flag.type === 'attack' 
+                      ? 'bg-[#00ffba]/10 border border-[#00ffba]/30' 
+                      : 'bg-red-50 border border-red-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {flag.type === 'attack' ? (
+                      <Swords className="w-4 h-4 text-[#00ffba]" />
+                    ) : (
+                      <Shield className="w-4 h-4 text-red-500" />
+                    )}
+                    <span className="text-sm font-medium">
+                      {flag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'} #{index + 1}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {formatTime(flag.startTime)} → {flag.endTime ? formatTime(flag.endTime) : '...'}
+                      {flag.endTime && (
+                        <span className={`ml-2 font-medium ${
+                          flag.type === 'attack' ? 'text-[#00997a]' : 'text-red-600'
+                        }`}>
+                          ({formatTime(flag.endTime - flag.startTime)})
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-none h-7 w-7 p-0"
+                      onClick={() => seek(flag.startTime)}
+                    >
+                      <Play className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-none h-7 w-7 p-0 text-red-500 hover:text-red-700"
+                      onClick={() => removeActionFlag(flag.id)}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* New Video Button */}
       <div className="flex justify-center">
         <Button
@@ -741,6 +1048,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
             setVideoFile(null);
             setVideoUrl(null);
             setClips([]);
+            setActionFlags([]);
+            setActiveFlag(null);
           }}
         >
           <RefreshCw className="w-4 h-4 mr-2" />
