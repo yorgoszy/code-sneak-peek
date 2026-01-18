@@ -551,7 +551,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     {
       icon: Timer,
       label: "Sprint Timer",
-      path: "/sprint-timing",
+      path: "/dashboard/sprint-timer",
       badge: null
     },
     { 
