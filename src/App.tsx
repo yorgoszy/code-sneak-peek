@@ -87,6 +87,7 @@ import AdminGoalsAwardsPage from "@/pages/Dashboard/AdminGoalsAwardsPage";
 import VideoAnalysisPage from "@/pages/Dashboard/VideoAnalysisPage";
 import SprintTimerPage from "@/pages/Dashboard/SprintTimerPage";
 import ChangeDirectionPage from "@/pages/Dashboard/ChangeDirectionPage";
+import CognitivePage from "@/pages/Dashboard/CognitivePage";
 const queryClient = new QueryClient();
 
 function App() {
@@ -153,6 +154,7 @@ function App() {
                       <Route path="/dashboard/video-analysis" element={<ProtectedRoute><VideoAnalysisPage /></ProtectedRoute>} />
                       <Route path="/dashboard/sprint-timer" element={<ProtectedRoute><SprintTimerPage /></ProtectedRoute>} />
                       <Route path="/dashboard/change-direction" element={<ProtectedRoute><ChangeDirectionPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/cognitive" element={<ProtectedRoute><CognitivePage /></ProtectedRoute>} />
                       {/* Admin-only routes */}
                       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
                       <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
