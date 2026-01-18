@@ -5,19 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Target, Shield, Clock, Activity, TrendingUp, Users, Swords, Plus, Settings } from 'lucide-react';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
-import { useMuayThaiStats } from '@/hooks/useMuayThaiStats';
+import { useVideoAnalysisStats } from '@/hooks/useVideoAnalysisStats';
 import { FightRecordingDialog } from './FightRecordingDialog';
 import { StrikeTypesDialog } from './StrikeTypesDialog';
 import { useCoachContext } from '@/contexts/CoachContext';
 
-export const MuayThaiStatsOverview = () => {
+export const VideoAnalysisOverview = () => {
   const { userProfile } = useRoleCheck();
   const { coachId } = useCoachContext();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [isRecordingOpen, setIsRecordingOpen] = useState(false);
   const [isStrikeTypesOpen, setIsStrikeTypesOpen] = useState(false);
   
-  const { stats, loading } = useMuayThaiStats(selectedUserId);
+  const { stats, loading } = useVideoAnalysisStats(selectedUserId);
 
   const statCards = [
     {
