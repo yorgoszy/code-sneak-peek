@@ -64,17 +64,21 @@ const SprintTimerPage = () => {
   // Sync ref
   useEffect(() => { motionDetectorRef.current = motionDetector; }, [motionDetector]);
 
-  // Auto-start camera when entering active mode (for single device)
+  // Auto-start camera when entering active mode (for single device or dual device with camera role)
   useEffect(() => {
-    if (setupStep === 'active' && deviceCount === 1 && !stream && !cameraReady) {
-      console.log('📷 Auto-starting camera for single device mode');
+    const needsCamera = deviceCount === 1 || 
+      (deviceCount === 2 && (deviceRole === 'timer+start' || deviceRole === 'timer+stop')) ||
+      (deviceCount === 3 && deviceRole !== 'timer');
+    
+    if (setupStep === 'active' && needsCamera && !stream && !cameraReady) {
+      console.log('📷 Auto-starting camera for mode:', deviceCount, 'role:', deviceRole);
       // Small delay to ensure video element is mounted
       const timer = setTimeout(() => {
         handleStartCamera();
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [setupStep, deviceCount, stream, cameraReady]);
+  }, [setupStep, deviceCount, deviceRole, stream, cameraReady]);
 
   // Δημιουργία session
   const createSession = async () => {
@@ -355,9 +359,9 @@ const SprintTimerPage = () => {
     if (role === 'timer+start' || role === 'timer+stop') {
       const newSession = await createSession();
       if (newSession) {
-        await handleStartCamera();
         await setupDualDeviceBroadcast(newSession.session_code, role);
         setSetupStep('active');
+        // Η κάμερα θα ξεκινήσει αυτόματα μέσω useEffect
       }
     }
   };
@@ -366,22 +370,11 @@ const SprintTimerPage = () => {
   const handleTripleDeviceSetup = async (role: DeviceRole) => {
     setDeviceRole(role);
     
-    // Η συσκευή με TIMER δημιουργεί το session
-    if (role === 'timer') {
-      const newSession = await createSession();
-      if (newSession) {
-        await setupDualDeviceBroadcast(newSession.session_code, role);
-        setSetupStep('active');
-      }
-    }
-    // Οι υπόλοιπες συσκευές (start/stop/distance) χρειάζονται κάμερα
-    else {
-      const newSession = await createSession();
-      if (newSession) {
-        await handleStartCamera();
-        await setupDualDeviceBroadcast(newSession.session_code, role);
-        setSetupStep('active');
-      }
+    const newSession = await createSession();
+    if (newSession) {
+      await setupDualDeviceBroadcast(newSession.session_code, role);
+      setSetupStep('active');
+      // Η κάμερα θα ξεκινήσει αυτόματα μέσω useEffect (αν χρειάζεται)
     }
   };
 
@@ -389,9 +382,9 @@ const SprintTimerPage = () => {
     const sessionData = await joinSession(joinCode);
     if (sessionData) {
       setDeviceRole(role);
-      await handleStartCamera();
       await setupDualDeviceBroadcast(sessionData.session_code, role);
       setSetupStep('active');
+      // Η κάμερα θα ξεκινήσει αυτόματα μέσω useEffect
     }
   };
 
