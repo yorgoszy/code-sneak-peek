@@ -150,22 +150,22 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
             {/* Form */}
             {isFormOpen && (
               <Card className="rounded-none border-2 border-[#00ffba]">
-                <CardContent className="pt-4">
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="p-3">
+                  <form onSubmit={handleSubmit} className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <Label>Όνομα *</Label>
+                        <Label className="text-xs">Όνομα *</Label>
                         <Input
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          placeholder="π.χ. Jab, Low Kick..."
-                          className="rounded-none"
+                          placeholder="π.χ. Jab"
+                          className="rounded-none h-9"
                           required
                         />
                       </div>
                       
                       <div>
-                        <Label>Κατηγορία *</Label>
+                        <Label className="text-xs">Κατηγορία *</Label>
                         <Select
                           value={formData.category}
                           onValueChange={(value) => setFormData({ 
@@ -173,7 +173,7 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
                             category: value as CreateStrikeType['category'] 
                           })}
                         >
-                          <SelectTrigger className="rounded-none">
+                          <SelectTrigger className="rounded-none h-9">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -188,7 +188,7 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
                       </div>
 
                       <div>
-                        <Label>Πλευρά</Label>
+                        <Label className="text-xs">Πλευρά</Label>
                         <Select
                           value={formData.side || 'none'}
                           onValueChange={(value) => setFormData({ 
@@ -196,11 +196,11 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
                             side: value === 'none' ? null : value as CreateStrikeType['side']
                           })}
                         >
-                          <SelectTrigger className="rounded-none">
+                          <SelectTrigger className="rounded-none h-9">
                             <SelectValue placeholder="Επιλέξτε..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">Χωρίς πλευρά</SelectItem>
+                            <SelectItem value="none">-</SelectItem>
                             <SelectItem value="left">Αριστερό</SelectItem>
                             <SelectItem value="right">Δεξί</SelectItem>
                             <SelectItem value="both">Και τα δύο</SelectItem>
@@ -209,23 +209,12 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
                       </div>
                     </div>
 
-                    <div>
-                      <Label>Περιγραφή</Label>
-                      <Textarea
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        placeholder="Προαιρετική περιγραφή..."
-                        className="rounded-none"
-                        rows={2}
-                      />
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button type="submit" className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
-                        {editingId ? 'Ενημέρωση' : 'Αποθήκευση'}
-                      </Button>
-                      <Button type="button" variant="outline" onClick={resetForm} className="rounded-none">
+                    <div className="flex gap-2 justify-end">
+                      <Button type="button" variant="outline" onClick={resetForm} className="rounded-none h-8 text-xs">
                         Ακύρωση
+                      </Button>
+                      <Button type="submit" className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-8 text-xs">
+                        {editingId ? 'Ενημέρωση' : 'Αποθήκευση'}
                       </Button>
                     </div>
                   </form>
