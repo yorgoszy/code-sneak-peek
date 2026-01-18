@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface MuayThaiStats {
+interface VideoAnalysisStats {
   totalStrikes: number;
   landedStrikes: number;
   accuracy: number;
@@ -40,7 +40,7 @@ interface MuayThaiStats {
   clinchSuccess: number;
 }
 
-const defaultStats: MuayThaiStats = {
+const defaultStats: VideoAnalysisStats = {
   totalStrikes: 0,
   landedStrikes: 0,
   accuracy: 0,
@@ -73,8 +73,8 @@ const defaultStats: MuayThaiStats = {
   clinchSuccess: 0,
 };
 
-export const useMuayThaiStats = (userId: string | null) => {
-  const [stats, setStats] = useState<MuayThaiStats>(defaultStats);
+export const useVideoAnalysisStats = (userId: string | null) => {
+  const [stats, setStats] = useState<VideoAnalysisStats>(defaultStats);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

@@ -188,7 +188,7 @@ export const CoachSidebar = ({
     {
       icon: Swords,
       label: "Video Analysis",
-      path: effectiveCoachId ? `/dashboard/muaythai-stats?coachId=${effectiveCoachId}` : "/dashboard/muaythai-stats",
+      path: effectiveCoachId ? `/dashboard/video-analysis?coachId=${effectiveCoachId}` : "/dashboard/video-analysis",
       badge: null,
       requiresSubscription: true,
     },
