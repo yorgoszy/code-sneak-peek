@@ -78,6 +78,7 @@ interface StrikeMarker {
   owner: 'athlete' | 'opponent'; // Determined by which flag it's inside
   roundNumber: number | null; // Which round this strike is in
   timeInRound: number | null; // Time (in seconds) within the round
+  hitTarget: boolean; // Did the strike hit the target? (ορθότητα)
 }
 
 interface VideoEditorTabProps {
@@ -453,7 +454,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
       time: currentTime,
       owner,
       roundNumber: roundInfo.roundNumber,
-      timeInRound: roundInfo.timeInRound
+      timeInRound: roundInfo.timeInRound,
+      hitTarget: false // Default to false, user can toggle with click
     };
     
     setStrikeMarkers(prev => [...prev, newMarker].sort((a, b) => a.time - b.time));
@@ -463,6 +465,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
       ? ` - R${roundInfo.roundNumber} @ ${formatTimeInRound(roundInfo.timeInRound!)}`
       : '';
     toast.success(`${strikeType.name} (${owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'})${roundText}`);
+  };
+
+  // Toggle strike hit target (ορθότητα)
+  const toggleStrikeHitTarget = (id: string) => {
+    setStrikeMarkers(prev => prev.map(m => 
+      m.id === id ? { ...m, hitTarget: !m.hitTarget } : m
+    ));
   };
 
   // Format time within round (MM:SS)
@@ -482,6 +491,17 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
     const athleteStrikes = strikeMarkers.filter(m => m.owner === 'athlete');
     const opponentStrikes = strikeMarkers.filter(m => m.owner === 'opponent');
     
+    // Calculate hit accuracy (ορθότητα)
+    const athleteHits = athleteStrikes.filter(m => m.hitTarget).length;
+    const opponentHits = opponentStrikes.filter(m => m.hitTarget).length;
+    
+    const athleteAccuracy = athleteStrikes.length > 0 
+      ? (athleteHits / athleteStrikes.length) * 100 
+      : 0;
+    const opponentAccuracy = opponentStrikes.length > 0 
+      ? (opponentHits / opponentStrikes.length) * 100 
+      : 0;
+    
     // Group strikes by round
     const byRound = strikeMarkers.reduce((acc, m) => {
       const key = m.roundNumber ?? 'unknown';
@@ -493,6 +513,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
     return {
       athleteTotal: athleteStrikes.length,
       opponentTotal: opponentStrikes.length,
+      athleteHits,
+      opponentHits,
+      athleteAccuracy,
+      opponentAccuracy,
       athleteByCategory: athleteStrikes.reduce((acc, m) => {
         acc[m.strikeCategory] = (acc[m.strikeCategory] || 0) + 1;
         return acc;
@@ -672,15 +696,29 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
                 const roundText = marker.roundNumber 
                   ? ` | R${marker.roundNumber} @ ${formatTimeInRound(marker.timeInRound!)}`
                   : '';
+                const hitText = marker.hitTarget ? ' ✓ Βρήκε στόχο' : ' ✗ Άστοχο';
                 return (
                   <div
                     key={marker.id}
-                    className={`absolute w-2 h-2 rounded-full cursor-pointer z-20 transform -translate-x-1/2 top-1/2 -translate-y-1/2 ${
-                      marker.owner === 'athlete' ? 'bg-[#00ffba] border border-[#00997a]' : 'bg-[#cb8954] border border-[#a06b3d]'
+                    className={`absolute cursor-pointer z-20 transform -translate-x-1/2 top-1/2 -translate-y-1/2 transition-all hover:scale-150 ${
+                      marker.hitTarget 
+                        ? 'w-3 h-3 rounded-full' 
+                        : 'w-2 h-2 rounded-full opacity-60'
+                    } ${
+                      marker.owner === 'athlete' 
+                        ? marker.hitTarget 
+                          ? 'bg-[#00ffba] border-2 border-[#00997a] ring-2 ring-[#00ffba]/50' 
+                          : 'bg-[#00ffba]/50 border border-[#00997a]/50'
+                        : marker.hitTarget 
+                          ? 'bg-[#cb8954] border-2 border-[#a06b3d] ring-2 ring-[#cb8954]/50' 
+                          : 'bg-[#cb8954]/50 border border-[#a06b3d]/50'
                     }`}
                     style={{ left: `${(marker.time / duration) * 100}%` }}
-                    title={`${marker.strikeTypeName} (${marker.owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) - ${formatTime(marker.time)}${roundText}`}
-                    onClick={() => seek(marker.time)}
+                    title={`${marker.strikeTypeName} (${marker.owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) - ${formatTime(marker.time)}${roundText}${hitText} | Κλικ για αλλαγή`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleStrikeHitTarget(marker.id);
+                    }}
                   />
                 );
               })}
@@ -891,16 +929,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
               <div className="flex items-center gap-2">
                 <Target className="w-4 h-4 text-gray-600" />
                 <span className="text-sm font-medium">Χτυπήματα</span>
-                <div className="flex items-center gap-1 text-xs">
-                  <Badge variant="outline" className="rounded-none bg-[#00ffba]/10 text-[#00997a]">
-                    <User className="w-3 h-3 mr-1" />
-                    Αθλητής: {strikeStats.athleteTotal}
-                  </Badge>
-                  <Badge variant="outline" className="rounded-none bg-[#cb8954]/10 text-[#cb8954]">
-                    <Users className="w-3 h-3 mr-1" />
-                    Αντίπαλος: {strikeStats.opponentTotal}
-                  </Badge>
-                </div>
               </div>
               
               <Popover open={isStrikePopoverOpen} onOpenChange={setIsStrikePopoverOpen}>
@@ -942,16 +970,75 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
               </Popover>
             </div>
             
+            {/* Strike Stats with Accuracy */}
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {/* Athlete Stats */}
+              <div className="p-2 bg-[#00ffba]/10 border border-[#00ffba]/30 rounded-none">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600 flex items-center gap-1">
+                    <User className="w-3 h-3" />
+                    Αθλητής
+                  </span>
+                  <Badge variant="outline" className="rounded-none text-[#00997a] text-xs">
+                    {strikeStats.athleteHits}/{strikeStats.athleteTotal}
+                  </Badge>
+                </div>
+                <div className="mt-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Ορθότητα</span>
+                    <span className="font-bold text-[#00997a]">{strikeStats.athleteAccuracy.toFixed(1)}%</span>
+                  </div>
+                  <Progress 
+                    value={strikeStats.athleteAccuracy} 
+                    className="h-1.5 mt-1" 
+                  />
+                </div>
+              </div>
+              
+              {/* Opponent Stats */}
+              <div className="p-2 bg-[#cb8954]/10 border border-[#cb8954]/30 rounded-none">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600 flex items-center gap-1">
+                    <Users className="w-3 h-3" />
+                    Αντίπαλος
+                  </span>
+                  <Badge variant="outline" className="rounded-none text-[#cb8954] text-xs">
+                    {strikeStats.opponentHits}/{strikeStats.opponentTotal}
+                  </Badge>
+                </div>
+                <div className="mt-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Ορθότητα</span>
+                    <span className="font-bold text-[#cb8954]">{strikeStats.opponentAccuracy.toFixed(1)}%</span>
+                  </div>
+                  <Progress 
+                    value={strikeStats.opponentAccuracy} 
+                    className="h-1.5 mt-1" 
+                  />
+                </div>
+              </div>
+            </div>
+            
             {/* Legend */}
-            <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-[#00ffba] ring-2 ring-[#00ffba]/50" />
+                Βρήκε στόχο
+              </span>
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-gray-400/50" />
+                Άστοχο
+              </span>
+              <span className="text-gray-400">|</span>
               <span className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-[#00ffba]" />
-                Επίθεση = Χτύπημα Αθλητή
+                Αθλητής
               </span>
               <span className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-[#cb8954]" />
-                Άμυνα = Χτύπημα Αντιπάλου
+                Αντίπαλος
               </span>
+              <span className="text-gray-400 ml-auto">Κλικ στο χτύπημα για αλλαγή ορθότητας</span>
             </div>
           </div>
           
