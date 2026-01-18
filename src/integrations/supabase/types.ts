@@ -3580,6 +3580,7 @@ export type Database = {
           defense_type: string
           id: string
           incoming_strike_type: string | null
+          is_opponent: boolean | null
           round_id: string
           successful: boolean
           timestamp_in_round: number | null
@@ -3589,6 +3590,7 @@ export type Database = {
           defense_type: string
           id?: string
           incoming_strike_type?: string | null
+          is_opponent?: boolean | null
           round_id: string
           successful?: boolean
           timestamp_in_round?: number | null
@@ -3598,6 +3600,7 @@ export type Database = {
           defense_type?: string
           id?: string
           incoming_strike_type?: string | null
+          is_opponent?: boolean | null
           round_id?: string
           successful?: boolean
           timestamp_in_round?: number | null
@@ -3742,27 +3745,42 @@ export type Database = {
       }
       muaythai_rounds: {
         Row: {
+          athlete_strikes_correct: number | null
+          athlete_strikes_total: number | null
           created_at: string
           duration_seconds: number | null
           fight_id: string
+          hits_received: number | null
           id: string
           notes: string | null
+          opponent_strikes_correct: number | null
+          opponent_strikes_total: number | null
           round_number: number
         }
         Insert: {
+          athlete_strikes_correct?: number | null
+          athlete_strikes_total?: number | null
           created_at?: string
           duration_seconds?: number | null
           fight_id: string
+          hits_received?: number | null
           id?: string
           notes?: string | null
+          opponent_strikes_correct?: number | null
+          opponent_strikes_total?: number | null
           round_number: number
         }
         Update: {
+          athlete_strikes_correct?: number | null
+          athlete_strikes_total?: number | null
           created_at?: string
           duration_seconds?: number | null
           fight_id?: string
+          hits_received?: number | null
           id?: string
           notes?: string | null
+          opponent_strikes_correct?: number | null
+          opponent_strikes_total?: number | null
           round_number?: number
         }
         Relationships: [
@@ -3779,7 +3797,9 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_correct: boolean | null
           is_counter: boolean | null
+          is_opponent: boolean | null
           landed: boolean
           power_level: number | null
           round_id: string
@@ -3791,7 +3811,9 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_correct?: boolean | null
           is_counter?: boolean | null
+          is_opponent?: boolean | null
           landed?: boolean
           power_level?: number | null
           round_id: string
@@ -3803,7 +3825,9 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_correct?: boolean | null
           is_counter?: boolean | null
+          is_opponent?: boolean | null
           landed?: boolean
           power_level?: number | null
           round_id?: string

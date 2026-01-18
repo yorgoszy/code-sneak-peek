@@ -38,6 +38,21 @@ interface VideoAnalysisStats {
   parriesSuccess: number;
   clinchTotal: number;
   clinchSuccess: number;
+
+  // NEW: Correctness / Technique quality
+  correctStrikes: number;
+  correctnessRate: number; // Ορθότητα %
+  
+  // NEW: Opponent stats
+  opponentTotalStrikes: number;
+  opponentLandedStrikes: number;
+  opponentAccuracy: number;
+  opponentCorrectStrikes: number;
+  opponentCorrectnessRate: number;
+  
+  // NEW: Hits received
+  totalHitsReceived: number;
+  avgHitsReceivedPerRound: number;
 }
 
 const defaultStats: VideoAnalysisStats = {
@@ -71,6 +86,16 @@ const defaultStats: VideoAnalysisStats = {
   parriesSuccess: 0,
   clinchTotal: 0,
   clinchSuccess: 0,
+  // New defaults
+  correctStrikes: 0,
+  correctnessRate: 0,
+  opponentTotalStrikes: 0,
+  opponentLandedStrikes: 0,
+  opponentAccuracy: 0,
+  opponentCorrectStrikes: 0,
+  opponentCorrectnessRate: 0,
+  totalHitsReceived: 0,
+  avgHitsReceivedPerRound: 0,
 };
 
 export const useVideoAnalysisStats = (userId: string | null) => {
@@ -104,10 +129,11 @@ export const useVideoAnalysisStats = (userId: string | null) => {
         // Fetch rounds for these fights
         const { data: rounds } = await supabase
           .from('muaythai_rounds')
-          .select('id, duration_seconds')
+          .select('id, duration_seconds, hits_received')
           .in('fight_id', fightIds);
 
         const roundIds = rounds?.map(r => r.id) || [];
+        const totalRounds = rounds?.length || 0;
 
         // Fetch strikes
         const { data: strikes } = await supabase
@@ -121,40 +147,59 @@ export const useVideoAnalysisStats = (userId: string | null) => {
           .select('*')
           .in('round_id', roundIds);
 
-        // Calculate stats
-        const totalStrikes = strikes?.length || 0;
-        const landedStrikes = strikes?.filter(s => s.landed).length || 0;
-        const accuracy = totalStrikes > 0 ? Math.round((landedStrikes / totalStrikes) * 100) : 0;
+        // Separate athlete vs opponent strikes
+        const athleteStrikes = strikes?.filter(s => !s.is_opponent) || [];
+        const opponentStrikesData = strikes?.filter(s => s.is_opponent) || [];
 
-        const totalDefenses = defenses?.length || 0;
-        const successfulDefenses = defenses?.filter(d => d.successful).length || 0;
+        // Athlete stats
+        const totalStrikes = athleteStrikes.length;
+        const landedStrikes = athleteStrikes.filter(s => s.landed).length;
+        const accuracy = totalStrikes > 0 ? Math.round((landedStrikes / totalStrikes) * 100) : 0;
+        const correctStrikes = athleteStrikes.filter(s => s.is_correct).length;
+        const correctnessRate = totalStrikes > 0 ? Math.round((correctStrikes / totalStrikes) * 100) : 0;
+
+        // Opponent stats
+        const opponentTotalStrikes = opponentStrikesData.length;
+        const opponentLandedStrikes = opponentStrikesData.filter(s => s.landed).length;
+        const opponentAccuracy = opponentTotalStrikes > 0 ? Math.round((opponentLandedStrikes / opponentTotalStrikes) * 100) : 0;
+        const opponentCorrectStrikes = opponentStrikesData.filter(s => s.is_correct).length;
+        const opponentCorrectnessRate = opponentTotalStrikes > 0 ? Math.round((opponentCorrectStrikes / opponentTotalStrikes) * 100) : 0;
+
+        // Hits received
+        const totalHitsReceived = rounds?.reduce((sum, r) => sum + (r.hits_received || 0), 0) || 0;
+        const avgHitsReceivedPerRound = totalRounds > 0 ? Math.round((totalHitsReceived / totalRounds) * 10) / 10 : 0;
+
+        // Athlete defenses only
+        const athleteDefenses = defenses?.filter(d => !d.is_opponent) || [];
+        const totalDefenses = athleteDefenses.length;
+        const successfulDefenses = athleteDefenses.filter(d => d.successful).length;
         const defenseSuccessRate = totalDefenses > 0 ? Math.round((successfulDefenses / totalDefenses) * 100) : 0;
 
-        // Strike breakdown by type
-        const punchesTotal = strikes?.filter(s => s.strike_type === 'punch').length || 0;
-        const punchesLanded = strikes?.filter(s => s.strike_type === 'punch' && s.landed).length || 0;
-        const kicksTotal = strikes?.filter(s => s.strike_type === 'kick').length || 0;
-        const kicksLanded = strikes?.filter(s => s.strike_type === 'kick' && s.landed).length || 0;
-        const kneesTotal = strikes?.filter(s => s.strike_type === 'knee').length || 0;
-        const kneesLanded = strikes?.filter(s => s.strike_type === 'knee' && s.landed).length || 0;
-        const elbowsTotal = strikes?.filter(s => s.strike_type === 'elbow').length || 0;
-        const elbowsLanded = strikes?.filter(s => s.strike_type === 'elbow' && s.landed).length || 0;
+        // Strike breakdown by type (athlete only)
+        const punchesTotal = athleteStrikes.filter(s => s.strike_type === 'punch').length;
+        const punchesLanded = athleteStrikes.filter(s => s.strike_type === 'punch' && s.landed).length;
+        const kicksTotal = athleteStrikes.filter(s => s.strike_type === 'kick').length;
+        const kicksLanded = athleteStrikes.filter(s => s.strike_type === 'kick' && s.landed).length;
+        const kneesTotal = athleteStrikes.filter(s => s.strike_type === 'knee').length;
+        const kneesLanded = athleteStrikes.filter(s => s.strike_type === 'knee' && s.landed).length;
+        const elbowsTotal = athleteStrikes.filter(s => s.strike_type === 'elbow').length;
+        const elbowsLanded = athleteStrikes.filter(s => s.strike_type === 'elbow' && s.landed).length;
 
-        // Side distribution
-        const leftSideStrikes = strikes?.filter(s => s.side === 'left').length || 0;
-        const rightSideStrikes = strikes?.filter(s => s.side === 'right').length || 0;
+        // Side distribution (athlete only)
+        const leftSideStrikes = athleteStrikes.filter(s => s.side === 'left').length;
+        const rightSideStrikes = athleteStrikes.filter(s => s.side === 'right').length;
         const leftSidePercentage = totalStrikes > 0 ? Math.round((leftSideStrikes / totalStrikes) * 100) : 0;
         const rightSidePercentage = totalStrikes > 0 ? Math.round((rightSideStrikes / totalStrikes) * 100) : 0;
 
-        // Defense breakdown
-        const blocksTotal = defenses?.filter(d => d.defense_type === 'block').length || 0;
-        const blocksSuccess = defenses?.filter(d => d.defense_type === 'block' && d.successful).length || 0;
-        const dodgesTotal = defenses?.filter(d => d.defense_type === 'dodge').length || 0;
-        const dodgesSuccess = defenses?.filter(d => d.defense_type === 'dodge' && d.successful).length || 0;
-        const parriesTotal = defenses?.filter(d => d.defense_type === 'parry').length || 0;
-        const parriesSuccess = defenses?.filter(d => d.defense_type === 'parry' && d.successful).length || 0;
-        const clinchTotal = defenses?.filter(d => d.defense_type === 'clinch').length || 0;
-        const clinchSuccess = defenses?.filter(d => d.defense_type === 'clinch' && d.successful).length || 0;
+        // Defense breakdown (athlete only)
+        const blocksTotal = athleteDefenses.filter(d => d.defense_type === 'block').length;
+        const blocksSuccess = athleteDefenses.filter(d => d.defense_type === 'block' && d.successful).length;
+        const dodgesTotal = athleteDefenses.filter(d => d.defense_type === 'dodge').length;
+        const dodgesSuccess = athleteDefenses.filter(d => d.defense_type === 'dodge' && d.successful).length;
+        const parriesTotal = athleteDefenses.filter(d => d.defense_type === 'parry').length;
+        const parriesSuccess = athleteDefenses.filter(d => d.defense_type === 'parry' && d.successful).length;
+        const clinchTotal = athleteDefenses.filter(d => d.defense_type === 'clinch').length;
+        const clinchSuccess = athleteDefenses.filter(d => d.defense_type === 'clinch' && d.successful).length;
 
         // Calculate fight style
         const attackDefenseRatio = totalDefenses > 0 ? totalStrikes / totalDefenses : totalStrikes;
@@ -197,9 +242,19 @@ export const useVideoAnalysisStats = (userId: string | null) => {
           parriesSuccess,
           clinchTotal,
           clinchSuccess,
+          // New stats
+          correctStrikes,
+          correctnessRate,
+          opponentTotalStrikes,
+          opponentLandedStrikes,
+          opponentAccuracy,
+          opponentCorrectStrikes,
+          opponentCorrectnessRate,
+          totalHitsReceived,
+          avgHitsReceivedPerRound,
         });
       } catch (error) {
-        console.error('Error fetching muay thai stats:', error);
+        console.error('Error fetching video analysis stats:', error);
       } finally {
         setLoading(false);
       }
