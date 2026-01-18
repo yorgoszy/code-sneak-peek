@@ -18,7 +18,7 @@ import {
   ShoppingBag,
   Award,
   Lock,
-  Video,
+  MonitorPlay,
   Timer,
   Compass,
 } from "lucide-react";
@@ -188,7 +188,7 @@ export const CoachSidebar = ({
       requiresSubscription: true,
     },
     {
-      icon: Video,
+      icon: MonitorPlay,
       label: "Video Analysis",
       path: effectiveCoachId ? `/dashboard/video-analysis?coachId=${effectiveCoachId}` : "/dashboard/video-analysis",
       badge: null,
