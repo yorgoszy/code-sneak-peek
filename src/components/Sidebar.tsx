@@ -15,6 +15,7 @@ import {
   TrendingUp,
   BookOpen,
   ShoppingCart,
+  MonitorPlay,
   Video,
   Tag,
   Pilcrow,
@@ -544,7 +545,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
-      icon: Video,
+      icon: MonitorPlay,
       label: "Video Analysis",
       path: "/dashboard/video-analysis",
       badge: null
