@@ -19,6 +19,7 @@ import {
   Award,
   Lock,
   Video,
+  Timer,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -189,6 +190,13 @@ export const CoachSidebar = ({
       icon: Video,
       label: "Video Analysis",
       path: effectiveCoachId ? `/dashboard/video-analysis?coachId=${effectiveCoachId}` : "/dashboard/video-analysis",
+      badge: null,
+      requiresSubscription: true,
+    },
+    {
+      icon: Timer,
+      label: "Sprint Timer",
+      path: effectiveCoachId ? `/dashboard/sprint-timer?coachId=${effectiveCoachId}` : "/dashboard/sprint-timer",
       badge: null,
       requiresSubscription: true,
     },
