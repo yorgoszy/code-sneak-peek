@@ -33,7 +33,9 @@ import {
   Shield,
   Target,
   User,
-  Users
+  Users,
+  CircleDot,
+  Timer
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
@@ -57,6 +59,14 @@ interface ActionFlag {
   endTime: number | null; // null αν δεν έχει κλείσει ακόμα
 }
 
+// Round marker on timeline
+interface RoundMarker {
+  id: string;
+  roundNumber: number;
+  startTime: number;
+  endTime: number | null;
+}
+
 // Strike marker on timeline
 interface StrikeMarker {
   id: string;
@@ -66,6 +76,8 @@ interface StrikeMarker {
   strikeSide: string | null;
   time: number;
   owner: 'athlete' | 'opponent'; // Determined by which flag it's inside
+  roundNumber: number | null; // Which round this strike is in
+  timeInRound: number | null; // Time (in seconds) within the round
 }
 
 interface VideoEditorTabProps {
@@ -113,6 +125,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
   const [actionFlags, setActionFlags] = useState<ActionFlag[]>([]);
   const [activeFlag, setActiveFlag] = useState<{ id: string; type: ActionType } | null>(null);
   
+  // Round markers state
+  const [roundMarkers, setRoundMarkers] = useState<RoundMarker[]>([]);
+  const [activeRound, setActiveRound] = useState<{ id: string; roundNumber: number } | null>(null);
+  
   // Strike markers state
   const [strikeMarkers, setStrikeMarkers] = useState<StrikeMarker[]>([]);
   const [isStrikePopoverOpen, setIsStrikePopoverOpen] = useState(false);
@@ -150,6 +166,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
       setClips([]);
       setActionFlags([]);
       setActiveFlag(null);
+      setRoundMarkers([]);
+      setActiveRound(null);
       setStrikeMarkers([]);
       setTrimStart(0);
       setTrimEnd(0);
@@ -363,9 +381,68 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
     return 'athlete';
   };
 
+  // Determine which round a timestamp is in and time within that round
+  const determineRoundInfo = (time: number): { roundNumber: number | null; timeInRound: number | null } => {
+    for (const round of roundMarkers) {
+      const endTime = round.endTime ?? duration;
+      if (time >= round.startTime && time <= endTime) {
+        return {
+          roundNumber: round.roundNumber,
+          timeInRound: time - round.startTime
+        };
+      }
+    }
+    return { roundNumber: null, timeInRound: null };
+  };
+
+  // Start a new round
+  const startRound = () => {
+    // Close any active round first
+    if (activeRound) {
+      closeActiveRound();
+    }
+    
+    const nextRoundNumber = roundMarkers.length + 1;
+    const newRound: RoundMarker = {
+      id: crypto.randomUUID(),
+      roundNumber: nextRoundNumber,
+      startTime: currentTime,
+      endTime: null
+    };
+    
+    setRoundMarkers(prev => [...prev, newRound]);
+    setActiveRound({ id: newRound.id, roundNumber: nextRoundNumber });
+    toast.success(`Round ${nextRoundNumber} ξεκίνησε στο ${formatTime(currentTime)}`);
+  };
+
+  const closeActiveRound = () => {
+    if (!activeRound) return;
+    
+    setRoundMarkers(prev => prev.map(round => 
+      round.id === activeRound.id 
+        ? { ...round, endTime: currentTime }
+        : round
+    ));
+    
+    toast.success(`Round ${activeRound.roundNumber} τελείωσε στο ${formatTime(currentTime)}`);
+    setActiveRound(null);
+  };
+
+  const removeRound = (id: string) => {
+    if (activeRound?.id === id) {
+      setActiveRound(null);
+    }
+    // Re-number remaining rounds
+    setRoundMarkers(prev => {
+      const filtered = prev.filter(r => r.id !== id);
+      return filtered.map((r, i) => ({ ...r, roundNumber: i + 1 }));
+    });
+  };
+
   // Add strike marker at current time
   const addStrikeMarker = (strikeType: StrikeType) => {
     const owner = determineStrikeOwner(currentTime);
+    const roundInfo = determineRoundInfo(currentTime);
     
     const newMarker: StrikeMarker = {
       id: crypto.randomUUID(),
@@ -374,12 +451,25 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
       strikeCategory: strikeType.category,
       strikeSide: strikeType.side,
       time: currentTime,
-      owner
+      owner,
+      roundNumber: roundInfo.roundNumber,
+      timeInRound: roundInfo.timeInRound
     };
     
     setStrikeMarkers(prev => [...prev, newMarker].sort((a, b) => a.time - b.time));
     setIsStrikePopoverOpen(false);
-    toast.success(`${strikeType.name} (${owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) στο ${formatTime(currentTime)}`);
+    
+    const roundText = roundInfo.roundNumber 
+      ? ` - R${roundInfo.roundNumber} @ ${formatTimeInRound(roundInfo.timeInRound!)}`
+      : '';
+    toast.success(`${strikeType.name} (${owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'})${roundText}`);
+  };
+
+  // Format time within round (MM:SS)
+  const formatTimeInRound = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   // Remove strike marker
@@ -392,6 +482,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
     const athleteStrikes = strikeMarkers.filter(m => m.owner === 'athlete');
     const opponentStrikes = strikeMarkers.filter(m => m.owner === 'opponent');
     
+    // Group strikes by round
+    const byRound = strikeMarkers.reduce((acc, m) => {
+      const key = m.roundNumber ?? 'unknown';
+      if (!acc[key]) acc[key] = { athlete: [], opponent: [] };
+      acc[key][m.owner].push(m);
+      return acc;
+    }, {} as Record<string | number, { athlete: StrikeMarker[]; opponent: StrikeMarker[] }>);
+    
     return {
       athleteTotal: athleteStrikes.length,
       opponentTotal: opponentStrikes.length,
@@ -402,7 +500,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
       opponentByCategory: opponentStrikes.reduce((acc, m) => {
         acc[m.strikeCategory] = (acc[m.strikeCategory] || 0) + 1;
         return acc;
-      }, {} as Record<string, number>)
+      }, {} as Record<string, number>),
+      byRound
     };
   }, [strikeMarkers]);
 
@@ -508,6 +607,37 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
           
           {/* Timeline */}
           <div className="mt-4 space-y-2">
+            {/* Rounds Timeline */}
+            <div className="relative h-5 bg-blue-50 rounded-none border border-blue-200">
+              {roundMarkers.map((round) => {
+                const endTime = round.endTime ?? currentTime;
+                const isOpen = round.endTime === null;
+                return (
+                  <div
+                    key={round.id}
+                    className={`absolute h-full cursor-pointer transition-opacity hover:opacity-80 bg-blue-400/50 border-l-2 border-r-2 border-blue-500 ${isOpen ? 'animate-pulse' : ''}`}
+                    style={{ 
+                      left: `${(round.startTime / duration) * 100}%`,
+                      width: `${((endTime - round.startTime) / duration) * 100}%`,
+                      minWidth: '4px'
+                    }}
+                    title={`Round ${round.roundNumber}: ${formatTime(round.startTime)} - ${round.endTime ? formatTime(round.endTime) : 'σε εξέλιξη'}`}
+                    onClick={() => seek(round.startTime)}
+                  >
+                    <div className="absolute -top-0.5 left-1 text-[9px] font-bold text-blue-700">
+                      R{round.roundNumber}
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* Current position indicator */}
+              <div 
+                className="absolute w-0.5 h-full bg-black z-10"
+                style={{ left: `${(currentTime / duration) * 100}%` }}
+              />
+            </div>
+            
             {/* Action Flags Timeline */}
             <div className="relative h-6 bg-gray-100 rounded-none border border-gray-200">
               {/* Action flag markers */}
@@ -538,17 +668,22 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
               })}
               
               {/* Strike markers */}
-              {strikeMarkers.map((marker) => (
-                <div
-                  key={marker.id}
-                  className={`absolute w-2 h-2 rounded-full cursor-pointer z-20 transform -translate-x-1/2 top-1/2 -translate-y-1/2 ${
-                    marker.owner === 'athlete' ? 'bg-[#00ffba] border border-[#00997a]' : 'bg-[#cb8954] border border-[#a06b3d]'
-                  }`}
-                  style={{ left: `${(marker.time / duration) * 100}%` }}
-                  title={`${marker.strikeTypeName} (${marker.owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) - ${formatTime(marker.time)}`}
-                  onClick={() => seek(marker.time)}
-                />
-              ))}
+              {strikeMarkers.map((marker) => {
+                const roundText = marker.roundNumber 
+                  ? ` | R${marker.roundNumber} @ ${formatTimeInRound(marker.timeInRound!)}`
+                  : '';
+                return (
+                  <div
+                    key={marker.id}
+                    className={`absolute w-2 h-2 rounded-full cursor-pointer z-20 transform -translate-x-1/2 top-1/2 -translate-y-1/2 ${
+                      marker.owner === 'athlete' ? 'bg-[#00ffba] border border-[#00997a]' : 'bg-[#cb8954] border border-[#a06b3d]'
+                    }`}
+                    style={{ left: `${(marker.time / duration) * 100}%` }}
+                    title={`${marker.strikeTypeName} (${marker.owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) - ${formatTime(marker.time)}${roundText}`}
+                    onClick={() => seek(marker.time)}
+                  />
+                );
+              })}
               
               {/* Current position indicator */}
               <div 
@@ -603,6 +738,83 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
+          </div>
+          
+          {/* Round Controls */}
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-none">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <CircleDot className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium">Γύροι (Rounds)</span>
+                {roundMarkers.length > 0 && (
+                  <Badge variant="outline" className="rounded-none bg-blue-100 text-blue-700">
+                    {roundMarkers.length} {roundMarkers.length === 1 ? 'γύρος' : 'γύροι'}
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-2">
+                {activeRound ? (
+                  <Button
+                    size="sm"
+                    className="rounded-none bg-blue-500 text-white animate-pulse"
+                    onClick={closeActiveRound}
+                  >
+                    <Timer className="w-4 h-4 mr-2" />
+                    Τέλος Round {activeRound.roundNumber}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-none border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white"
+                    onClick={startRound}
+                  >
+                    <CircleDot className="w-4 h-4 mr-2" />
+                    Νέος Γύρος (R{roundMarkers.length + 1})
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            {/* Active round indicator */}
+            {activeRound && (
+              <div className="mt-2 p-2 text-sm bg-blue-100 text-blue-700">
+                ⏱️ Round {activeRound.roundNumber} σε εξέλιξη... Πάτησε "Τέλος Round" για να κλείσεις.
+              </div>
+            )}
+            
+            {/* Rounds List */}
+            {roundMarkers.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {roundMarkers.map((round) => (
+                  <div 
+                    key={round.id}
+                    className={`flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 border border-blue-300 ${
+                      round.endTime === null ? 'animate-pulse' : ''
+                    }`}
+                  >
+                    <span className="font-medium">R{round.roundNumber}</span>
+                    <span className="text-blue-600">
+                      {formatTime(round.startTime)} - {round.endTime ? formatTime(round.endTime) : '...'}
+                    </span>
+                    {round.endTime && (
+                      <span className="text-blue-700 font-medium">
+                        ({formatTimeInRound(round.endTime - round.startTime)})
+                      </span>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0 text-blue-600 hover:text-red-500"
+                      onClick={() => removeRound(round.id)}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           
           {/* Action Flags Controls */}
@@ -1221,6 +1433,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
             setClips([]);
             setActionFlags([]);
             setActiveFlag(null);
+            setRoundMarkers([]);
+            setActiveRound(null);
+            setStrikeMarkers([]);
           }}
         >
           <RefreshCw className="w-4 h-4 mr-2" />
