@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Timer, Play, Square, Camera, RotateCcw, Smartphone, Monitor, AlertCircle, Check, QrCode, Wifi } from 'lucide-react';
+import { Timer, Play, Square, Camera, RotateCcw, Smartphone, Monitor, Wifi, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { useToast } from '@/hooks/use-toast';
@@ -14,8 +13,9 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { QRCodeSVG } from 'qrcode.react';
 
 type DeviceMode = 'idle' | 'timer' | 'start' | 'stop';
-type SetupMode = 'select' | 'single' | 'dual' | 'join';
-type DualDeviceRole = 'timer+start' | 'stop' | 'timer+stop' | 'start';
+type SetupStep = 'devices' | 'roles' | 'active' | 'join';
+type DeviceCount = 1 | 2;
+type DeviceRole = 'timer+start+stop' | 'timer+start' | 'timer+stop' | 'start' | 'stop';
 
 interface SprintSession {
   id: string;
@@ -27,14 +27,15 @@ const SprintTimerPage = () => {
   const { toast } = useToast();
   const [isCollapsed, setIsCollapsed] = useState(false);
   
-  // Setup state
-  const [setupMode, setSetupMode] = useState<SetupMode>('select');
+  // Setup state - νέα δομή με βήματα
+  const [setupStep, setSetupStep] = useState<SetupStep>('devices');
+  const [deviceCount, setDeviceCount] = useState<DeviceCount | null>(null);
   const [session, setSession] = useState<SprintSession | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [joinCode, setJoinCode] = useState('');
   
-  // Dual device state
-  const [dualDeviceRole, setDualDeviceRole] = useState<DualDeviceRole | null>(null);
+  // Device role state
+  const [deviceRole, setDeviceRole] = useState<DeviceRole | null>(null);
   const [connectedDevices, setConnectedDevices] = useState<string[]>([]);
   const [isSecondDeviceReady, setIsSecondDeviceReady] = useState(false);
   
@@ -202,11 +203,9 @@ const SprintTimerPage = () => {
       return;
     }
 
-    // Reset previous result
     setLastResult(null);
     setElapsedTime(0);
     
-    // Μετάβαση σε START mode - περιμένει κίνηση για να ξεκινήσει ο χρόνος
     setSingleDeviceMode('start');
     setIsMotionActive(true);
     
@@ -214,16 +213,13 @@ const SprintTimerPage = () => {
       console.log('🏁 Motion detected - START');
       motionDetector.stop();
       
-      // Ξεκίνα το χρόνο
       const now = Date.now();
       setStartTime(now);
       setIsRunning(true);
       setElapsedTime(0);
       
-      // Μετάβαση σε STOP mode
       setSingleDeviceMode('stop');
       
-      // Καθυστέρηση πριν ενεργοποιήσει την ανίχνευση για stop
       setTimeout(() => {
         if (motionDetectorRef.current) {
           motionDetectorRef.current.start(() => {
@@ -259,11 +255,6 @@ const SprintTimerPage = () => {
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       setElapsedTime(elapsed);
-      
-      // Αν σταμάτησε το isRunning, αποθήκευσε το αποτέλεσμα
-      if (!isRunning) {
-        setLastResult(elapsed);
-      }
     }, 10);
 
     return () => clearInterval(interval);
@@ -277,9 +268,7 @@ const SprintTimerPage = () => {
   }, [isRunning, elapsedTime, singleDeviceMode]);
 
   // === DUAL DEVICE FLOW ===
-  
-  // Setup broadcast channel για 2 συσκευές
-  const setupDualDeviceBroadcast = useCallback(async (sessionCode: string, role: DualDeviceRole) => {
+  const setupDualDeviceBroadcast = useCallback(async (sessionCode: string, role: DeviceRole) => {
     console.log(`📡 Setting up dual device broadcast for role: ${role}`);
     
     const channel = supabase.channel(`sprint-dual-${sessionCode}`, {
@@ -298,12 +287,10 @@ const SprintTimerPage = () => {
       .on('broadcast', { event: 'timer_start' }, (payload) => {
         console.log('▶️ Timer start event received');
         if (role === 'stop' || role === 'timer+stop') {
-          // Αυτή η συσκευή θα περιμένει για κίνηση για να σταματήσει
           setStartTime(payload.payload?.startTime);
           setIsRunning(true);
           setElapsedTime(0);
           
-          // Ενεργοποίηση motion detection για stop
           if (motionDetectorRef.current && cameraReady) {
             setIsMotionActive(true);
             motionDetectorRef.current.start(() => {
@@ -314,7 +301,6 @@ const SprintTimerPage = () => {
               setIsMotionActive(false);
               setIsRunning(false);
               
-              // Broadcast timer stop
               channel.send({
                 type: 'broadcast',
                 event: 'timer_stop',
@@ -339,7 +325,6 @@ const SprintTimerPage = () => {
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           console.log('✅ Broadcast channel subscribed');
-          // Announce this device
           await channel.send({
             type: 'broadcast',
             event: 'device_ready',
@@ -351,25 +336,26 @@ const SprintTimerPage = () => {
     broadcastChannelRef.current = channel;
   }, [cameraReady, connectedDevices]);
 
-  const handleDualDeviceSetup = async (role: DualDeviceRole) => {
-    setDualDeviceRole(role);
+  const handleDualDeviceSetup = async (role: DeviceRole) => {
+    setDeviceRole(role);
     
-    // Δημιουργία session αν είμαστε η κύρια συσκευή
     if (role === 'timer+start' || role === 'timer+stop') {
       const newSession = await createSession();
       if (newSession) {
         await handleStartCamera();
         await setupDualDeviceBroadcast(newSession.session_code, role);
+        setSetupStep('active');
       }
     }
   };
 
-  const handleJoinDualDevice = async (role: DualDeviceRole) => {
+  const handleJoinDualDevice = async (role: DeviceRole) => {
     const sessionData = await joinSession(joinCode);
     if (sessionData) {
-      setDualDeviceRole(role);
+      setDeviceRole(role);
       await handleStartCamera();
       await setupDualDeviceBroadcast(sessionData.session_code, role);
+      setSetupStep('active');
     }
   };
 
@@ -386,8 +372,7 @@ const SprintTimerPage = () => {
     setElapsedTime(0);
     setIsMotionActive(true);
     
-    // Αν είμαστε timer+start, περιμένουμε κίνηση για να ξεκινήσει
-    if (dualDeviceRole === 'timer+start') {
+    if (deviceRole === 'timer+start') {
       motionDetector.start(() => {
         console.log('🏁 START device detected motion');
         motionDetector.stop();
@@ -397,7 +382,6 @@ const SprintTimerPage = () => {
         setStartTime(now);
         setIsRunning(true);
         
-        // Broadcast timer start στη 2η συσκευή
         broadcastChannelRef.current?.send({
           type: 'broadcast',
           event: 'timer_start',
@@ -405,20 +389,17 @@ const SprintTimerPage = () => {
         });
       });
     }
-    // Αν είμαστε timer+stop, περιμένουμε χειροκίνητη έναρξη ή broadcast
-    else if (dualDeviceRole === 'timer+stop') {
+    else if (deviceRole === 'timer+stop') {
       const now = Date.now();
       setStartTime(now);
       setIsRunning(true);
       
-      // Broadcast timer start στη 2η συσκευή (start device)
       broadcastChannelRef.current?.send({
         type: 'broadcast',
         event: 'timer_start',
         payload: { startTime: now }
       });
       
-      // Ενεργοποίηση motion detection για stop
       motionDetector.start(() => {
         console.log('🏁 STOP device detected motion');
         motionDetector.stop();
@@ -444,7 +425,6 @@ const SprintTimerPage = () => {
     setElapsedTime(0);
     setLastResult(null);
     
-    // Broadcast reset
     broadcastChannelRef.current?.send({
       type: 'broadcast',
       event: 'reset',
@@ -465,115 +445,150 @@ const SprintTimerPage = () => {
 
   // === UI COMPONENTS ===
 
-  // Επιλογή λειτουργίας (1 ή 2 συσκευές)
-  const renderSetupSelection = () => (
+  // ΒΗΜΑ 1: Επιλογή αριθμού συσκευών
+  const renderDeviceSelection = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-bold mb-2">Sprint Timer</h2>
-        <p className="text-muted-foreground text-sm">Επιλέξτε πώς θέλετε να χρησιμοποιήσετε το χρονόμετρο</p>
+        <Badge className="rounded-none bg-[#00ffba] text-black mb-3">ΒΗΜΑ 1</Badge>
+        <h2 className="text-xl font-bold mb-2">Πόσες συσκευές θα χρησιμοποιήσεις;</h2>
+        <p className="text-muted-foreground text-sm">Επιλέξτε τον αριθμό συσκευών για το sprint timing</p>
+      </div>
+
+      {/* Απόσταση */}
+      <div className="bg-[#cb8954]/10 border border-[#cb8954]/30 p-4 rounded-none">
+        <div className="flex items-center gap-3">
+          <Label className="text-sm text-[#cb8954] whitespace-nowrap">Απόσταση Sprint:</Label>
+          <Input
+            type="number"
+            value={sprintDistance}
+            onChange={(e) => setSprintDistance(parseInt(e.target.value) || 0)}
+            className="rounded-none h-10 text-lg font-bold text-center w-24 bg-white"
+            min={1}
+          />
+          <span className="text-[#cb8954] font-semibold">μέτρα</span>
+        </div>
       </div>
 
       <div className="space-y-3">
-        {/* Απόσταση */}
-        <div className="bg-[#cb8954]/10 border border-[#cb8954]/30 p-4 rounded-none">
-          <div className="flex items-center gap-3">
-            <Label className="text-sm text-[#cb8954] whitespace-nowrap">Απόσταση:</Label>
-            <Input
-              type="number"
-              value={sprintDistance}
-              onChange={(e) => setSprintDistance(parseInt(e.target.value) || 0)}
-              className="rounded-none h-10 text-lg font-bold text-center w-24 bg-white"
-              min={1}
-            />
-            <span className="text-[#cb8954] font-semibold">μέτρα</span>
-          </div>
-        </div>
-
-        {/* Μία Συσκευή */}
+        {/* 1 Συσκευή */}
         <Button
           onClick={async () => {
-            setSetupMode('single');
+            setDeviceCount(1);
+            setDeviceRole('timer+start+stop');
             await handleStartCamera();
+            setSetupStep('active');
           }}
-          className="w-full h-24 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex items-center justify-center gap-4"
+          className="w-full h-28 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex items-center justify-between px-6"
         >
-          <Smartphone className="w-10 h-10" />
-          <div className="text-left">
-            <div className="font-bold text-lg">Μία Συσκευή</div>
-            <div className="text-xs opacity-80">Timer + Start + Stop σε μία οθόνη</div>
+          <div className="flex items-center gap-4">
+            <div className="bg-black/20 p-3 rounded-none">
+              <Smartphone className="w-10 h-10" />
+            </div>
+            <div className="text-left">
+              <div className="font-bold text-xl">1 Συσκευή</div>
+              <div className="text-sm opacity-80">Timer + Start + Stop</div>
+              <div className="text-xs opacity-60">Όλα σε μία οθόνη</div>
+            </div>
           </div>
+          <ArrowRight className="w-6 h-6" />
         </Button>
 
-        {/* Δύο Συσκευές */}
+        {/* 2 Συσκευές */}
         <Button
-          onClick={() => setSetupMode('dual')}
-          className="w-full h-24 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white flex items-center justify-center gap-4"
+          onClick={() => {
+            setDeviceCount(2);
+            setSetupStep('roles');
+          }}
+          className="w-full h-28 rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white flex items-center justify-between px-6"
         >
-          <Monitor className="w-10 h-10" />
-          <div className="text-left">
-            <div className="font-bold text-lg">Δύο Συσκευές</div>
-            <div className="text-xs opacity-80">Ξεχωριστές συσκευές για Start/Stop</div>
+          <div className="flex items-center gap-4">
+            <div className="bg-black/20 p-3 rounded-none flex gap-1">
+              <Monitor className="w-8 h-8" />
+              <Monitor className="w-8 h-8" />
+            </div>
+            <div className="text-left">
+              <div className="font-bold text-xl">2 Συσκευές</div>
+              <div className="text-sm opacity-80">Ξεχωριστές για Start & Stop</div>
+              <div className="text-xs opacity-60">Μεγαλύτερη ακρίβεια</div>
+            </div>
           </div>
+          <ArrowRight className="w-6 h-6" />
         </Button>
 
         {/* Σύνδεση σε session */}
         <Button
-          onClick={() => setSetupMode('join')}
+          onClick={() => setSetupStep('join')}
           variant="outline"
           className="w-full h-16 rounded-none flex items-center justify-center gap-4"
         >
           <Wifi className="w-6 h-6" />
           <div className="text-left">
             <div className="font-bold">Σύνδεση σε Session</div>
-            <div className="text-xs opacity-80">Εισάγετε κωδικό ή σκανάρετε QR</div>
+            <div className="text-xs opacity-80">Έχω κωδικό από άλλη συσκευή</div>
           </div>
         </Button>
       </div>
     </div>
   );
 
-  // Επιλογή ρόλων για 2 συσκευές
-  const renderDualDeviceSetup = () => (
+  // ΒΗΜΑ 2: Επιλογή ρόλων (για 2 συσκευές)
+  const renderRoleSelection = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-bold mb-2">Ρύθμιση 2 Συσκευών</h2>
-        <p className="text-muted-foreground text-sm">Τι ρόλο θα έχει αυτή η συσκευή;</p>
+        <Badge className="rounded-none bg-[#cb8954] text-white mb-3">ΒΗΜΑ 2</Badge>
+        <h2 className="text-xl font-bold mb-2">Ποιον ρόλο θα έχει αυτή η συσκευή;</h2>
+        <p className="text-muted-foreground text-sm">Η δεύτερη συσκευή θα πάρει τον συμπληρωματικό ρόλο</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-4">
+        {/* TIMER + START */}
         <Button
           onClick={() => handleDualDeviceSetup('timer+start')}
-          className="h-24 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+          disabled={isLoading}
+          className="w-full h-24 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
         >
-          <div className="flex items-center gap-4">
-            <Timer className="w-8 h-8" />
-            <Play className="w-6 h-6" />
-            <div className="text-left">
-              <div className="font-bold">TIMER + START</div>
-              <div className="text-xs opacity-80">Χρονόμετρο & Ανίχνευση έναρξης</div>
-              <div className="text-xs opacity-60">Η 2η συσκευή θα είναι STOP</div>
+          <div className="flex items-center gap-4 w-full px-4">
+            <div className="flex items-center gap-2">
+              <Timer className="w-8 h-8" />
+              <span className="text-2xl">+</span>
+              <Play className="w-8 h-8" />
+            </div>
+            <div className="text-left flex-1">
+              <div className="font-bold text-lg">TIMER + START</div>
+              <div className="text-sm opacity-80">Χρονόμετρο & Ανίχνευση έναρξης</div>
             </div>
           </div>
         </Button>
 
+        {/* TIMER + STOP */}
         <Button
           onClick={() => handleDualDeviceSetup('timer+stop')}
-          className="h-24 rounded-none bg-red-500 hover:bg-red-600 text-white"
+          disabled={isLoading}
+          className="w-full h-24 rounded-none bg-red-500 hover:bg-red-600 text-white"
         >
-          <div className="flex items-center gap-4">
-            <Timer className="w-8 h-8" />
-            <Square className="w-6 h-6" />
-            <div className="text-left">
-              <div className="font-bold">TIMER + STOP</div>
-              <div className="text-xs opacity-80">Χρονόμετρο & Ανίχνευση τερματισμού</div>
-              <div className="text-xs opacity-60">Η 2η συσκευή θα είναι START</div>
+          <div className="flex items-center gap-4 w-full px-4">
+            <div className="flex items-center gap-2">
+              <Timer className="w-8 h-8" />
+              <span className="text-2xl">+</span>
+              <Square className="w-8 h-8" />
+            </div>
+            <div className="text-left flex-1">
+              <div className="font-bold text-lg">TIMER + STOP</div>
+              <div className="text-sm opacity-80">Χρονόμετρο & Ανίχνευση τερματισμού</div>
             </div>
           </div>
         </Button>
+
+        <div className="bg-muted p-3 rounded-none text-center text-sm">
+          <strong>Σημείωση:</strong> Η 2η συσκευή θα λάβει κωδικό για να συνδεθεί
+        </div>
       </div>
 
       <Button
-        onClick={() => setSetupMode('select')}
+        onClick={() => {
+          setSetupStep('devices');
+          setDeviceCount(null);
+        }}
         variant="outline"
         className="w-full rounded-none"
       >
@@ -586,8 +601,9 @@ const SprintTimerPage = () => {
   const renderJoinSession = () => (
     <div className="space-y-6">
       <div className="text-center">
+        <Badge className="rounded-none bg-blue-500 text-white mb-3">ΣΥΝΔΕΣΗ</Badge>
         <h2 className="text-xl font-bold mb-2">Σύνδεση σε Session</h2>
-        <p className="text-muted-foreground text-sm">Εισάγετε τον κωδικό του session</p>
+        <p className="text-muted-foreground text-sm">Εισάγετε τον κωδικό από την άλλη συσκευή</p>
       </div>
 
       <div className="space-y-4">
@@ -595,11 +611,11 @@ const SprintTimerPage = () => {
           value={joinCode}
           onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
           placeholder="ΚΩΔΙΚΟΣ"
-          className="rounded-none h-14 text-2xl text-center font-bold tracking-widest"
+          className="rounded-none h-16 text-3xl text-center font-bold tracking-widest"
           maxLength={6}
         />
 
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-center text-sm text-muted-foreground font-medium">
           Τι ρόλο θα έχει αυτή η συσκευή;
         </div>
 
@@ -609,8 +625,8 @@ const SprintTimerPage = () => {
             disabled={joinCode.length < 4 || isLoading}
             className="h-20 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black flex flex-col"
           >
-            <Play className="w-6 h-6 mb-1" />
-            <span className="font-bold">START</span>
+            <Play className="w-8 h-8 mb-1" />
+            <span className="font-bold text-lg">START</span>
           </Button>
 
           <Button
@@ -618,15 +634,15 @@ const SprintTimerPage = () => {
             disabled={joinCode.length < 4 || isLoading}
             className="h-20 rounded-none bg-red-500 hover:bg-red-600 text-white flex flex-col"
           >
-            <Square className="w-6 h-6 mb-1" />
-            <span className="font-bold">STOP</span>
+            <Square className="w-8 h-8 mb-1" />
+            <span className="font-bold text-lg">STOP</span>
           </Button>
         </div>
       </div>
 
       <Button
         onClick={() => {
-          setSetupMode('select');
+          setSetupStep('devices');
           setJoinCode('');
         }}
         variant="outline"
@@ -637,253 +653,179 @@ const SprintTimerPage = () => {
     </div>
   );
 
-  // Single device - ολοκληρωμένο interface
-  const renderSingleDevice = () => (
-    <div className="space-y-4">
-      {/* Distance Display */}
-      <div className="bg-[#cb8954]/10 border border-[#cb8954]/30 p-3 rounded-none">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-[#cb8954]">Απόσταση:</span>
-          <span className="text-[#cb8954] font-bold text-lg">{sprintDistance} μέτρα</span>
-        </div>
-      </div>
-
-      {/* Camera Feed */}
-      <div className="relative bg-black rounded-none overflow-hidden aspect-video">
-        <video
-          ref={videoRef}
-          className="w-full h-full object-cover"
-          style={{ display: stream ? 'block' : 'none' }}
-          autoPlay
-          playsInline
-          muted
-        />
-        {isMotionActive && stream && (
-          <div className={`absolute inset-0 border-4 pointer-events-none animate-pulse ${
-            singleDeviceMode === 'start' ? 'border-[#00ffba]' : 'border-red-500'
-          }`} />
-        )}
-        {!stream && (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-            <div className="text-center">
-              <Camera className="w-12 h-12 mx-auto mb-2" />
-              <p>Φόρτωση κάμερας...</p>
-            </div>
+  // Active interface (single or dual)
+  const renderActiveInterface = () => {
+    const isSingleDevice = deviceCount === 1;
+    
+    return (
+      <div className="space-y-4">
+        {/* Role & Session Info */}
+        <div className="flex items-center justify-between bg-muted p-3 rounded-none">
+          <div className="flex items-center gap-2">
+            <Badge className={`rounded-none ${
+              deviceRole === 'timer+start+stop' ? 'bg-[#00ffba] text-black' :
+              deviceRole === 'timer+start' ? 'bg-[#00ffba] text-black' :
+              deviceRole === 'timer+stop' ? 'bg-red-500 text-white' :
+              deviceRole === 'start' ? 'bg-[#00ffba] text-black' :
+              'bg-red-500 text-white'
+            }`}>
+              {deviceRole === 'timer+start+stop' ? '1 ΣΥΣΚΕΥΗ' :
+               deviceRole === 'timer+start' ? 'TIMER+START' :
+               deviceRole === 'timer+stop' ? 'TIMER+STOP' :
+               deviceRole === 'start' ? 'START' : 'STOP'}
+            </Badge>
+            <span className="text-sm text-muted-foreground">{sprintDistance}m</span>
           </div>
-        )}
-        
-        {/* Status Badge on video */}
-        <div className="absolute top-2 right-2">
-          <Badge 
-            className={`rounded-none text-sm px-3 py-1 ${
-              singleDeviceMode === 'start' ? 'bg-[#00ffba] text-black' :
-              singleDeviceMode === 'stop' ? 'bg-red-500 text-white' :
-              isRunning ? 'bg-blue-500 text-white' :
-              elapsedTime > 0 ? 'bg-green-500 text-white' : 'bg-gray-500'
-            }`}
-          >
-            {singleDeviceMode === 'timer' && (isRunning ? 'Running' : (elapsedTime > 0 ? '✓ Ολοκληρώθηκε' : 'Αναμονή'))}
-            {singleDeviceMode === 'start' && '👋 Περάστε για ΕΝΑΡΞΗ'}
-            {singleDeviceMode === 'stop' && '👋 Περάστε για ΤΕΡΜΑΤΙΣΜΟ'}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Timer Display */}
-      <div className="bg-black/90 p-6 rounded-none">
-        <div className="text-center">
-          <div className={`font-mono text-6xl font-bold ${
-            isRunning ? 'text-[#00ffba] animate-pulse' : 
-            elapsedTime > 0 ? 'text-blue-400' : 'text-gray-500'
-          }`}>
-            {formatTime(elapsedTime)}
-          </div>
-          {elapsedTime > 0 && !isRunning && sprintDistance > 0 && (
-            <div className="text-[#cb8954] text-2xl font-bold mt-3">
-              {calculateSpeed(sprintDistance, elapsedTime).toFixed(2)} km/h
+          
+          {session && !isSingleDevice && (
+            <div className="text-right">
+              <div className="font-mono font-bold">{session.session_code}</div>
+              {isSecondDeviceReady ? (
+                <span className="text-xs text-[#00ffba]">2η συνδεδεμένη</span>
+              ) : (
+                <span className="text-xs text-yellow-500">Αναμονή...</span>
+              )}
             </div>
           )}
         </div>
-      </div>
 
-      {/* Control Buttons */}
-      <div className="flex gap-3">
-        {singleDeviceMode === 'timer' && !isRunning && (
-          <Button
-            onClick={handleSingleDeviceStart}
-            disabled={!cameraReady}
-            className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-14 text-lg font-bold"
-          >
-            <Play className="w-6 h-6 mr-2" />
-            {elapsedTime > 0 ? 'Νέα Μέτρηση' : 'Έναρξη'}
-          </Button>
-        )}
-        
-        {(isMotionActive || elapsedTime > 0) && (
-          <Button
-            onClick={handleSingleDeviceReset}
-            className="flex-1 rounded-none bg-gray-500 hover:bg-gray-600 text-white h-14 text-lg font-bold"
-          >
-            <RotateCcw className="w-6 h-6 mr-2" />
-            Reset
-          </Button>
-        )}
-      </div>
-
-      <Button
-        onClick={() => {
-          handleSingleDeviceReset();
-          if (stream) stopCamera(stream);
-          setStream(null);
-          setCameraReady(false);
-          setSetupMode('select');
-        }}
-        variant="outline"
-        className="w-full rounded-none"
-      >
-        Πίσω
-      </Button>
-    </div>
-  );
-
-  // Dual device active interface
-  const renderDualDeviceActive = () => (
-    <div className="space-y-4">
-      {/* Session Info */}
-      <div className="text-center bg-muted p-4 rounded-none">
-        <Badge className="rounded-none bg-[#00ffba] text-black mb-2">
-          {dualDeviceRole === 'timer+start' ? 'TIMER + START' : 
-           dualDeviceRole === 'timer+stop' ? 'TIMER + STOP' :
-           dualDeviceRole === 'start' ? 'START' : 'STOP'}
-        </Badge>
-        <div className="text-2xl font-bold font-mono">{session?.session_code}</div>
-        
-        {/* QR Code for primary devices */}
-        {(dualDeviceRole === 'timer+start' || dualDeviceRole === 'timer+stop') && session && (
-          <div className="mt-4 bg-white p-4 inline-block">
+        {/* QR Code for primary devices in dual mode */}
+        {!isSingleDevice && session && (deviceRole === 'timer+start' || deviceRole === 'timer+stop') && !isSecondDeviceReady && (
+          <div className="text-center bg-white p-4 border rounded-none">
+            <p className="text-sm mb-3 text-gray-600">Σκανάρετε με τη 2η συσκευή:</p>
             <QRCodeSVG 
               value={`${window.location.origin}/dashboard/sprint-timer?join=${session.session_code}`}
-              size={120}
+              size={150}
+              className="mx-auto"
             />
+            <p className="mt-3 font-mono text-xl font-bold">{session.session_code}</p>
           </div>
         )}
-      </div>
 
-      {/* Connected Devices */}
-      <div className="flex items-center justify-center gap-2">
-        <Wifi className={`w-5 h-5 ${isSecondDeviceReady ? 'text-[#00ffba]' : 'text-gray-400'}`} />
-        <span className={isSecondDeviceReady ? 'text-[#00ffba]' : 'text-gray-400'}>
-          {isSecondDeviceReady ? '2η συσκευή συνδεδεμένη' : 'Αναμονή 2ης συσκευής...'}
-        </span>
-      </div>
-
-      {/* Camera Feed */}
-      <div className="relative bg-black rounded-none overflow-hidden aspect-video">
-        <video
-          ref={videoRef}
-          className="w-full h-full object-cover"
-          style={{ display: stream ? 'block' : 'none' }}
-          autoPlay
-          playsInline
-          muted
-        />
-        {isMotionActive && stream && (
-          <div className={`absolute inset-0 border-4 pointer-events-none animate-pulse ${
-            dualDeviceRole?.includes('start') ? 'border-[#00ffba]' : 'border-red-500'
-          }`} />
-        )}
-        {!stream && (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-            <Camera className="w-12 h-12" />
-          </div>
-        )}
-      </div>
-
-      {/* Timer Display */}
-      <div className="bg-black/90 p-6 rounded-none">
-        <div className="text-center">
-          <div className={`font-mono text-6xl font-bold ${
-            isRunning ? 'text-[#00ffba] animate-pulse' : 
-            elapsedTime > 0 ? 'text-blue-400' : 'text-gray-500'
-          }`}>
-            {formatTime(elapsedTime)}
-          </div>
-          {elapsedTime > 0 && !isRunning && sprintDistance > 0 && (
-            <div className="text-[#cb8954] text-2xl font-bold mt-3">
-              {calculateSpeed(sprintDistance, elapsedTime).toFixed(2)} km/h
+        {/* Camera Feed */}
+        <div className="relative bg-black rounded-none overflow-hidden aspect-video">
+          <video
+            ref={videoRef}
+            className="w-full h-full object-cover"
+            style={{ display: stream ? 'block' : 'none' }}
+            autoPlay
+            playsInline
+            muted
+          />
+          {isMotionActive && stream && (
+            <div className={`absolute inset-0 border-4 pointer-events-none animate-pulse ${
+              singleDeviceMode === 'start' || deviceRole?.includes('start') ? 'border-[#00ffba]' : 'border-red-500'
+            }`} />
+          )}
+          {!stream && (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+              <div className="text-center">
+                <Camera className="w-12 h-12 mx-auto mb-2" />
+                <p>Φόρτωση κάμερας...</p>
+              </div>
             </div>
           )}
+          
+          {/* Status Badge on video */}
+          <div className="absolute top-2 right-2">
+            <Badge 
+              className={`rounded-none text-sm px-3 py-1 ${
+                singleDeviceMode === 'start' ? 'bg-[#00ffba] text-black' :
+                singleDeviceMode === 'stop' ? 'bg-red-500 text-white' :
+                isRunning ? 'bg-blue-500 text-white' :
+                elapsedTime > 0 ? 'bg-green-500 text-white' : 'bg-gray-500'
+              }`}
+            >
+              {singleDeviceMode === 'timer' && (isRunning ? 'Running' : (elapsedTime > 0 ? '✓ Ολοκληρώθηκε' : 'Αναμονή'))}
+              {singleDeviceMode === 'start' && '👋 Περάστε για ΕΝΑΡΞΗ'}
+              {singleDeviceMode === 'stop' && '👋 Περάστε για ΤΕΡΜΑΤΙΣΜΟ'}
+            </Badge>
+          </div>
         </div>
-      </div>
 
-      {/* Control Buttons */}
-      <div className="flex gap-3">
-        {(dualDeviceRole === 'timer+start' || dualDeviceRole === 'timer+stop') && !isRunning && !isMotionActive && (
-          <Button
-            onClick={handleDualDeviceStart}
-            disabled={!cameraReady}
-            className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-14 text-lg font-bold"
-          >
-            <Play className="w-6 h-6 mr-2" />
-            {elapsedTime > 0 ? 'Νέα Μέτρηση' : 'Έναρξη'}
-          </Button>
-        )}
-        
-        {(isMotionActive || elapsedTime > 0) && (
-          <Button
-            onClick={handleDualDeviceReset}
-            className="flex-1 rounded-none bg-gray-500 hover:bg-gray-600 text-white h-14 text-lg font-bold"
-          >
-            <RotateCcw className="w-6 h-6 mr-2" />
-            Reset
-          </Button>
-        )}
-      </div>
+        {/* Timer Display */}
+        <div className="bg-black/90 p-6 rounded-none">
+          <div className="text-center">
+            <div className={`font-mono text-6xl font-bold ${
+              isRunning ? 'text-[#00ffba] animate-pulse' : 
+              elapsedTime > 0 ? 'text-blue-400' : 'text-gray-500'
+            }`}>
+              {formatTime(elapsedTime)}
+            </div>
+            {elapsedTime > 0 && !isRunning && sprintDistance > 0 && (
+              <div className="text-[#cb8954] text-2xl font-bold mt-3">
+                {calculateSpeed(sprintDistance, elapsedTime).toFixed(2)} km/h
+              </div>
+            )}
+          </div>
+        </div>
 
-      <Button
-        onClick={() => {
-          handleDualDeviceReset();
-          if (stream) stopCamera(stream);
-          if (broadcastChannelRef.current) {
-            supabase.removeChannel(broadcastChannelRef.current);
-          }
-          setStream(null);
-          setCameraReady(false);
-          setSetupMode('select');
-          setSession(null);
-          setDualDeviceRole(null);
-          setIsSecondDeviceReady(false);
-        }}
-        variant="outline"
-        className="w-full rounded-none"
-      >
-        Τερματισμός Session
-      </Button>
-    </div>
-  );
+        {/* Control Buttons */}
+        <div className="flex gap-3">
+          {singleDeviceMode === 'timer' && !isRunning && (
+            <Button
+              onClick={isSingleDevice ? handleSingleDeviceStart : handleDualDeviceStart}
+              disabled={!cameraReady}
+              className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-14 text-lg font-bold"
+            >
+              <Play className="w-6 h-6 mr-2" />
+              {elapsedTime > 0 ? 'Νέα Μέτρηση' : 'Έναρξη'}
+            </Button>
+          )}
+          
+          {(isMotionActive || elapsedTime > 0) && (
+            <Button
+              onClick={isSingleDevice ? handleSingleDeviceReset : handleDualDeviceReset}
+              className="flex-1 rounded-none bg-gray-500 hover:bg-gray-600 text-white h-14 text-lg font-bold"
+            >
+              <RotateCcw className="w-6 h-6 mr-2" />
+              Reset
+            </Button>
+          )}
+        </div>
+
+        <Button
+          onClick={() => {
+            if (isSingleDevice) {
+              handleSingleDeviceReset();
+            } else {
+              handleDualDeviceReset();
+            }
+            if (stream) stopCamera(stream);
+            if (broadcastChannelRef.current) {
+              supabase.removeChannel(broadcastChannelRef.current);
+            }
+            setStream(null);
+            setCameraReady(false);
+            setSetupStep('devices');
+            setSession(null);
+            setDeviceRole(null);
+            setDeviceCount(null);
+            setIsSecondDeviceReady(false);
+          }}
+          variant="outline"
+          className="w-full rounded-none"
+        >
+          {isSingleDevice ? 'Πίσω' : 'Τερματισμός Session'}
+        </Button>
+      </div>
+    );
+  };
 
   // Render main content
   const renderContent = () => {
-    if (setupMode === 'select') {
-      return renderSetupSelection();
+    switch (setupStep) {
+      case 'devices':
+        return renderDeviceSelection();
+      case 'roles':
+        return renderRoleSelection();
+      case 'join':
+        return renderJoinSession();
+      case 'active':
+        return renderActiveInterface();
+      default:
+        return renderDeviceSelection();
     }
-    
-    if (setupMode === 'join') {
-      return renderJoinSession();
-    }
-    
-    if (setupMode === 'dual') {
-      if (dualDeviceRole && session) {
-        return renderDualDeviceActive();
-      }
-      return renderDualDeviceSetup();
-    }
-    
-    if (setupMode === 'single') {
-      return renderSingleDevice();
-    }
-
-    return null;
   };
 
   return (
