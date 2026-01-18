@@ -546,6 +546,15 @@
     "playAgain": "Παίξε Ξανά",
     "comingSoon": "Σύντομα",
     "endGame": "Τερματισμός",
+    "inputMode": "Τρόπος Απάντησης",
+    "inputModes": {
+      "buttons": "Κουμπιά",
+      "voice": "Φωνή",
+      "both": "Και τα δύο"
+    },
+    "listening": "Ακούω...",
+    "voiceNotSupported": "Η αναγνώριση φωνής δεν υποστηρίζεται",
+    "sayTheColor": "Πείτε το χρώμα του κειμένου",
     "difficulty": {
       "easy": "Εύκολο",
       "medium": "Μέτριο",

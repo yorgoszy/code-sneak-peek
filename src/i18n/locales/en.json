@@ -546,6 +546,15 @@
     "playAgain": "Play Again",
     "comingSoon": "Coming Soon",
     "endGame": "End Game",
+    "inputMode": "Input Mode",
+    "inputModes": {
+      "buttons": "Buttons",
+      "voice": "Voice",
+      "both": "Both"
+    },
+    "listening": "Listening...",
+    "voiceNotSupported": "Voice recognition is not supported",
+    "sayTheColor": "Say the color of the text",
     "difficulty": {
       "easy": "Easy",
       "medium": "Medium",
