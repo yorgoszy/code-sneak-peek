@@ -78,11 +78,15 @@ const Groups = () => {
   const { toast } = useToast();
 
   const fetchUsers = async () => {
+    if (!userProfile?.id) return;
+    
     setLoadingUsers(true);
     try {
+      // Admin βλέπει μόνο χρήστες χωρίς coach_id ή με coach_id = admin id
       const { data, error } = await supabase
         .from('app_users')
         .select('*')
+        .or(`coach_id.is.null,coach_id.eq.${userProfile.id}`)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -98,11 +102,15 @@ const Groups = () => {
   };
 
   const fetchGroups = async () => {
+    if (!userProfile?.id) return;
+    
     setLoadingGroups(true);
     try {
+      // Admin βλέπει μόνο ομάδες που δημιούργησε ή ανήκουν σε αυτόν
       const { data, error } = await supabase
         .from('groups')
         .select('*')
+        .or(`created_by.eq.${userProfile.id},coach_id.eq.${userProfile.id}`)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -146,9 +154,11 @@ const Groups = () => {
   }, [user]);
 
   useEffect(() => {
-    fetchUsers();
-    fetchGroups();
-  }, []);
+    if (userProfile?.id) {
+      fetchUsers();
+      fetchGroups();
+    }
+  }, [userProfile?.id]);
 
   const handleCreateGroup = async () => {
     if (!groupName.trim() || selectedUsers.length === 0) {
