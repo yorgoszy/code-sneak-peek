@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Target, Shield, Clock, TrendingUp, Users, Swords, Plus, Settings, Activity } from 'lucide-react';
+import { Target, Shield, Clock, TrendingUp, Users, Swords, Plus, Settings, Activity, Film } from 'lucide-react';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useVideoAnalysisStats } from '@/hooks/useVideoAnalysisStats';
 import { FightRecordingDialog } from './FightRecordingDialog';
 import { StrikeTypesDialog } from './StrikeTypesDialog';
+import { VideoEditorTab } from './VideoEditorTab';
 
 export const AdminVideoAnalysisOverview = () => {
   const { userProfile } = useRoleCheck();
@@ -177,12 +178,18 @@ export const AdminVideoAnalysisOverview = () => {
 
           {/* Tabs για λεπτομερή ανάλυση */}
           <Tabs defaultValue="strikes" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 rounded-none h-auto">
-              <TabsTrigger value="strikes" className="rounded-none text-xs sm:text-sm py-2">Χτυπήματα</TabsTrigger>
-              <TabsTrigger value="defense" className="rounded-none text-xs sm:text-sm py-2">Άμυνα</TabsTrigger>
-              <TabsTrigger value="timeline" className="rounded-none text-xs sm:text-sm py-2">Χρονική</TabsTrigger>
-              <TabsTrigger value="fights" className="rounded-none text-xs sm:text-sm py-2">Αγώνες</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto pb-2">
+              <TabsList className="flex w-max sm:grid sm:w-full sm:grid-cols-5 rounded-none h-auto gap-1">
+                <TabsTrigger value="strikes" className="rounded-none text-xs sm:text-sm py-2 px-4 whitespace-nowrap flex-shrink-0">Χτυπήματα</TabsTrigger>
+                <TabsTrigger value="defense" className="rounded-none text-xs sm:text-sm py-2 px-4 whitespace-nowrap flex-shrink-0">Άμυνα</TabsTrigger>
+                <TabsTrigger value="editor" className="rounded-none text-xs sm:text-sm py-2 px-4 whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                  <Film className="w-3 h-3" />
+                  Editor
+                </TabsTrigger>
+                <TabsTrigger value="timeline" className="rounded-none text-xs sm:text-sm py-2 px-4 whitespace-nowrap flex-shrink-0">Χρονική</TabsTrigger>
+                <TabsTrigger value="fights" className="rounded-none text-xs sm:text-sm py-2 px-4 whitespace-nowrap flex-shrink-0">Αγώνες</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="strikes" className="mt-4">
               <Card className="rounded-none">
@@ -256,6 +263,10 @@ export const AdminVideoAnalysisOverview = () => {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="editor" className="mt-4">
+              <VideoEditorTab userId={selectedUserId} />
             </TabsContent>
 
             <TabsContent value="timeline" className="mt-4">
