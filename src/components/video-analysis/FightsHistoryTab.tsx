@@ -88,13 +88,13 @@ export const FightsHistoryTab: React.FC<FightsHistoryTabProps> = ({ userId, onRe
 
       if (error) throw error;
 
+      // Soft refresh - just update local state
+      setFights(prev => prev.filter(f => f.id !== selectedFight.id));
+      
       toast({
         title: "Επιτυχία",
         description: "Ο αγώνας διαγράφηκε"
       });
-
-      fetchFights();
-      onRefresh?.();
     } catch (error) {
       console.error('Error deleting fight:', error);
       toast({
