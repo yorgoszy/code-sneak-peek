@@ -578,6 +578,29 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
     };
   }, [videoUrl]);
 
+  // Calculate action time from action flags
+  const calculateActionTime = useMemo(() => {
+    let totalActionTime = 0;
+    actionFlags.forEach(flag => {
+      if (flag.endTime !== null) {
+        totalActionTime += (flag.endTime - flag.startTime);
+      }
+    });
+    return Math.round(totalActionTime);
+  }, [actionFlags]);
+
+  // Calculate average round duration from roundMarkers
+  const calculateAverageRoundDuration = useMemo(() => {
+    const completedRounds = roundMarkers.filter(r => r.endTime !== null);
+    if (completedRounds.length === 0) return 180; // default 3 minutes
+    
+    const totalDuration = completedRounds.reduce((sum, r) => {
+      return sum + ((r.endTime || 0) - r.startTime);
+    }, 0);
+    
+    return Math.round(totalDuration / completedRounds.length);
+  }, [roundMarkers]);
+
   // Save fight to database
   const saveFight = async () => {
     if (!userId || !coachId) {
@@ -591,6 +614,16 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
     }
 
     try {
+      // Calculate average round duration from marked rounds
+      const completedRounds = roundMarkers.filter(r => r.endTime !== null);
+      let avgRoundDuration = 180; // default
+      if (completedRounds.length > 0) {
+        const totalDuration = completedRounds.reduce((sum, r) => {
+          return sum + ((r.endTime || 0) - r.startTime);
+        }, 0);
+        avgRoundDuration = Math.round(totalDuration / completedRounds.length);
+      }
+
       // Create fight record
       const { data: fightData, error: fightError } = await supabase
         .from('muaythai_fights')
@@ -601,13 +634,117 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
           fight_type: 'sparring',
           opponent_name: 'Sparring Partner',
           total_rounds: roundMarkers.length || 1,
-          round_duration_seconds: 180,
+          round_duration_seconds: avgRoundDuration,
           notes: `Video: ${videoFile?.name || 'Unknown'}`
         })
         .select()
         .single();
 
       if (fightError) throw fightError;
+
+      const fightId = fightData.id;
+
+      // Create round records from roundMarkers
+      const roundsToInsert = roundMarkers.map(round => {
+        const roundDuration = round.endTime !== null 
+          ? Math.round(round.endTime - round.startTime) 
+          : avgRoundDuration;
+        
+        // Calculate stats for this round
+        const roundStrikes = strikeMarkers.filter(s => s.roundNumber === round.roundNumber);
+        const athleteStrikes = roundStrikes.filter(s => s.owner === 'athlete');
+        const opponentStrikes = roundStrikes.filter(s => s.owner === 'opponent');
+        
+        const athleteStrikesTotal = athleteStrikes.length;
+        const athleteStrikesCorrect = athleteStrikes.filter(s => s.hitTarget).length;
+        const opponentStrikesTotal = opponentStrikes.length;
+        const opponentStrikesCorrect = opponentStrikes.filter(s => s.hitTarget).length;
+        const hitsReceived = opponentStrikesCorrect; // Opponent strikes that hit target = hits received by athlete
+        
+        return {
+          fight_id: fightId,
+          round_number: round.roundNumber,
+          duration_seconds: roundDuration,
+          athlete_strikes_total: athleteStrikesTotal,
+          athlete_strikes_correct: athleteStrikesCorrect,
+          opponent_strikes_total: opponentStrikesTotal,
+          opponent_strikes_correct: opponentStrikesCorrect,
+          hits_received: hitsReceived
+        };
+      });
+
+      // If no rounds were marked, create a default round with all strikes
+      if (roundsToInsert.length === 0) {
+        const athleteStrikes = strikeMarkers.filter(s => s.owner === 'athlete');
+        const opponentStrikes = strikeMarkers.filter(s => s.owner === 'opponent');
+        
+        roundsToInsert.push({
+          fight_id: fightId,
+          round_number: 1,
+          duration_seconds: avgRoundDuration,
+          athlete_strikes_total: athleteStrikes.length,
+          athlete_strikes_correct: athleteStrikes.filter(s => s.hitTarget).length,
+          opponent_strikes_total: opponentStrikes.length,
+          opponent_strikes_correct: opponentStrikes.filter(s => s.hitTarget).length,
+          hits_received: opponentStrikes.filter(s => s.hitTarget).length
+        });
+      }
+
+      // Insert rounds
+      const { data: roundsData, error: roundsError } = await supabase
+        .from('muaythai_rounds')
+        .insert(roundsToInsert)
+        .select();
+
+      if (roundsError) throw roundsError;
+
+      // Create a map from round_number to round_id
+      const roundIdMap = new Map<number, string>();
+      roundsData?.forEach(r => {
+        roundIdMap.set(r.round_number, r.id);
+      });
+
+      // Create strike records
+      if (strikeMarkers.length > 0) {
+        const strikesToInsert = strikeMarkers.map(strike => {
+          // Find the round_id for this strike
+          const roundId = strike.roundNumber 
+            ? roundIdMap.get(strike.roundNumber) 
+            : roundIdMap.get(1); // Default to round 1
+          
+          if (!roundId) return null;
+
+          // Map strike category to the expected strike_type
+          let strikeType: 'punch' | 'kick' | 'knee' | 'elbow' = 'punch';
+          if (strike.strikeCategory === 'kick' || strike.strikeCategory === 'kicks') {
+            strikeType = 'kick';
+          } else if (strike.strikeCategory === 'knee' || strike.strikeCategory === 'knees') {
+            strikeType = 'knee';
+          } else if (strike.strikeCategory === 'elbow' || strike.strikeCategory === 'elbows') {
+            strikeType = 'elbow';
+          } else if (strike.strikeCategory === 'punch' || strike.strikeCategory === 'punches') {
+            strikeType = 'punch';
+          }
+
+          return {
+            round_id: roundId,
+            timestamp_in_round: strike.timeInRound ? Math.round(strike.timeInRound) : 0,
+            strike_type: strikeType,
+            side: strike.strikeSide || 'right',
+            landed: strike.hitTarget,
+            is_opponent: strike.owner === 'opponent',
+            is_correct: strike.hitTarget
+          };
+        }).filter(Boolean);
+
+        if (strikesToInsert.length > 0) {
+          const { error: strikesError } = await supabase
+            .from('muaythai_strikes')
+            .insert(strikesToInsert as any[]);
+
+          if (strikesError) throw strikesError;
+        }
+      }
 
       toast.success('Αγώνας αποθηκεύτηκε επιτυχώς!');
       
