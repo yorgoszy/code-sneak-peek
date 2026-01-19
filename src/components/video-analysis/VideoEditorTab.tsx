@@ -1325,6 +1325,22 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                           // Vertical position - newest on top (index 0 = top)
                           const topOffset = 4 + (indexInCombo * rowHeight);
                           
+                          // Generate abbreviation from strike name
+                          const getStrikeAbbreviation = (name: string): string => {
+                            const lowerName = name.toLowerCase();
+                            if (lowerName.includes('punch') || lowerName.includes('box') || lowerName.includes('μπουνιά') || lowerName.includes('γροθιά')) return 'B';
+                            if (lowerName.includes('knee') || lowerName.includes('γόνατο') || lowerName.includes('γονατο')) return 'KN';
+                            if (lowerName.includes('kick') || lowerName.includes('λάκτισμα') || lowerName.includes('κλωτσιά') || lowerName.includes('κλωτσια')) return 'K';
+                            if (lowerName.includes('elbow') || lowerName.includes('αγκώνας') || lowerName.includes('αγκωνας')) return 'EL';
+                            if (lowerName.includes('clinch') || lowerName.includes('plam') || lowerName.includes('πλαμ')) return 'CL';
+                            // For numbered strikes (1, 2, 3, etc.)
+                            if (/^\d+$/.test(name.trim())) return name.trim();
+                            // Default: first 2 letters uppercase
+                            return name.substring(0, 2).toUpperCase();
+                          };
+                          
+                          const abbreviation = getStrikeAbbreviation(marker.strikeTypeName || '');
+                          
                           return (
                             <div
                               key={marker.id}
@@ -1333,13 +1349,15 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                                 left: `${(marker.time / duration) * 100}%`,
                                 top: `${topOffset}px`,
                                 transform: 'translateX(-50%)',
-                                width: '20px',
+                                minWidth: '18px',
                                 height: '16px'
                               }}
                               onClick={() => toggleStrikeState(marker.id)}
                               title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'}${isCombo ? ` (Combo ${indexInCombo + 1}/${markers.length})` : ''}`}
                             >
-                              <div className={`w-3 h-3 rounded-full ${dotColor} ${isCombo ? 'ring-2 ring-white shadow-md' : 'ring-1 ring-gray-200'}`} />
+                              <div className={`px-1 py-0.5 rounded text-[9px] font-bold ${dotColor} ${isCombo ? 'ring-2 ring-white shadow-md' : 'ring-1 ring-gray-200'} ${marker.owner === 'athlete' ? 'text-black' : 'text-white'}`}>
+                                {abbreviation}
+                              </div>
                             </div>
                           );
                         });
