@@ -7,6 +7,7 @@ import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, F
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useFightStats, defaultFightStats, FightStats } from '@/hooks/useFightStats';
+import { FightTimelineChart } from './FightTimelineChart';
 import { FightRecordingDialog } from './FightRecordingDialog';
 import { StrikeTypesDialog } from './StrikeTypesDialog';
 import { VideoEditorTab } from './VideoEditorTab';
@@ -199,6 +200,58 @@ export const AdminVideoAnalysisOverview = () => {
     },
   ];
 
+  // Second row of stats
+  const statCards2 = [
+    {
+      title: 'Χέρι Αρ.',
+      value: stats?.leftHandStrikes || 0,
+      subtitle: `${stats?.leftHandPercentage || 0}%`,
+      icon: Target,
+      color: 'text-cyan-500',
+      bgColor: 'bg-cyan-500/10',
+    },
+    {
+      title: 'Χέρι Δεξ.',
+      value: stats?.rightHandStrikes || 0,
+      subtitle: `${stats?.rightHandPercentage || 0}%`,
+      icon: Target,
+      color: 'text-indigo-500',
+      bgColor: 'bg-indigo-500/10',
+    },
+    {
+      title: 'Επίθεση',
+      value: stats?.attackTimeFormatted || '0:00',
+      subtitle: 'Χρόνος',
+      icon: Swords,
+      color: 'text-red-500',
+      bgColor: 'bg-red-500/10',
+    },
+    {
+      title: 'Άμυνα',
+      value: stats?.defenseTimeFormatted || '0:00',
+      subtitle: 'Χρόνος',
+      icon: Shield,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10',
+    },
+    {
+      title: 'Kicks',
+      value: stats?.kicksTotal || 0,
+      subtitle: `${stats?.kicksLanded || 0} επιτυχ.`,
+      icon: Activity,
+      color: 'text-pink-500',
+      bgColor: 'bg-pink-500/10',
+    },
+    {
+      title: 'Knees',
+      value: stats?.kneesTotal || 0,
+      subtitle: `${stats?.kneesLanded || 0} επιτυχ.`,
+      icon: Activity,
+      color: 'text-amber-500',
+      bgColor: 'bg-amber-500/10',
+    },
+  ];
+
   const styleInfo = {
     aggressive: { label: 'Επιθετικός', color: 'bg-red-500' },
     defensive: { label: 'Αμυντικός', color: 'bg-blue-500' },
@@ -241,7 +294,7 @@ export const AdminVideoAnalysisOverview = () => {
         </Card>
       ) : (
         <>
-          {/* Stats Cards - always visible, show fight stats when selected */}
+          {/* Stats Cards Row 1 */}
           <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
             {statCards.map((card, index) => (
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/20' : 'opacity-50'}`}>
@@ -261,6 +314,35 @@ export const AdminVideoAnalysisOverview = () => {
               </Card>
             ))}
           </div>
+
+          {/* Stats Cards Row 2 */}
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+            {statCards2.map((card, index) => (
+              <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
+                <CardContent className="p-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 ${card.bgColor} rounded-none`}>
+                      <card.icon className={`w-4 h-4 ${card.color}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className={`text-lg font-bold ${card.color} leading-tight`}>
+                        {loadingStats ? '...' : card.value}
+                      </p>
+                      <p className="text-[10px] text-gray-500 truncate">{card.title}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Timeline Chart - only show when fight is selected */}
+          {selectedFightId && (
+            <FightTimelineChart 
+              data={stats?.timelineData || []} 
+              loading={loadingStats} 
+            />
+          )}
 
           {/* Selected Fight Info & Fight Style */}
           <div className="flex items-center gap-3 px-2 flex-wrap">
