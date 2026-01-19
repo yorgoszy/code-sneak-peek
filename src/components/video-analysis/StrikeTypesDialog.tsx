@@ -111,6 +111,7 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
       elbow: 'bg-purple-500',
       combo: 'bg-[#00ffba]',
       combo_kick_finish: 'bg-[#cb8954]',
+      muay_plam: 'bg-pink-500',
     };
     return colors[category] || 'bg-gray-500';
   };
@@ -183,6 +184,7 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
                             <SelectItem value="elbow">Αγκώνας</SelectItem>
                             <SelectItem value="combo">Κόμπο</SelectItem>
                             <SelectItem value="combo_kick_finish">Κόμπο + Πόδι</SelectItem>
+                            <SelectItem value="muay_plam">Muay Plam</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

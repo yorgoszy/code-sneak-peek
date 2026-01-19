@@ -6,7 +6,7 @@ export interface StrikeType {
   id: string;
   coach_id: string;
   name: string;
-  category: 'punch' | 'kick' | 'knee' | 'elbow' | 'combo' | 'combo_kick_finish';
+  category: 'punch' | 'kick' | 'knee' | 'elbow' | 'combo' | 'combo_kick_finish' | 'muay_plam';
   side: 'left' | 'right' | 'both' | null;
   description: string | null;
   order_index: number;
@@ -17,7 +17,7 @@ export interface StrikeType {
 
 export interface CreateStrikeType {
   name: string;
-  category: 'punch' | 'kick' | 'knee' | 'elbow' | 'combo' | 'combo_kick_finish';
+  category: 'punch' | 'kick' | 'knee' | 'elbow' | 'combo' | 'combo_kick_finish' | 'muay_plam';
   side?: 'left' | 'right' | 'both' | null;
   description?: string;
 }
@@ -149,6 +149,7 @@ export const categoryLabels: Record<string, string> = {
   elbow: 'Αγκώνας',
   combo: 'Κόμπο',
   combo_kick_finish: 'Κόμπο + Πόδι',
+  muay_plam: 'Muay Plam',
 };
 
 export const sideLabels: Record<string, string> = {
