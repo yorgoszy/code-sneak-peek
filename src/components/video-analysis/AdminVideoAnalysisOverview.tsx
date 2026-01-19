@@ -206,14 +206,6 @@ export const AdminVideoAnalysisOverview = () => {
       bgColor: 'bg-cyan-500/10',
     },
     {
-      title: 'Clinch',
-      value: stats?.clinchTimeFormatted || '0:00',
-      subtitle: `${stats?.clinchTotal || 0} φορές`,
-      icon: Users,
-      color: 'text-indigo-500',
-      bgColor: 'bg-indigo-500/10',
-    },
-    {
       title: 'Kicks',
       value: stats?.kicksTotal || 0,
       subtitle: `${stats?.kicksLanded || 0} επιτυχ.`,
