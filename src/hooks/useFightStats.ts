@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface TimelineDataPoint {
+  time: string;
+  timeSeconds: number;
+  strikes: number;
+  defenses: number;
+  attacks: number;
+}
+
 export interface FightStats {
   totalStrikes: number;
   landedStrikes: number;
@@ -10,6 +18,10 @@ export interface FightStats {
   defenseSuccessRate: number;
   actionTimeSeconds: number;
   actionTimeFormatted: string; // Format X:XX
+  attackTimeSeconds: number;
+  attackTimeFormatted: string;
+  defenseTimeSeconds: number;
+  defenseTimeFormatted: string;
   fightStyle: 'aggressive' | 'defensive' | 'balanced';
   attackDefenseRatio: number;
   
@@ -31,7 +43,13 @@ export interface FightStats {
   elbowsTotal: number;
   elbowsLanded: number;
   
-  // Side distribution
+  // Side distribution - punches only (hands)
+  leftHandStrikes: number;
+  rightHandStrikes: number;
+  leftHandPercentage: number;
+  rightHandPercentage: number;
+  
+  // Side distribution - all strikes
   leftSideStrikes: number;
   rightSideStrikes: number;
   leftSidePercentage: number;
@@ -51,6 +69,9 @@ export interface FightStats {
   opponentTotalStrikes: number;
   opponentLandedStrikes: number;
   opponentAccuracy: number;
+  
+  // Timeline data for chart (every 30 seconds)
+  timelineData: TimelineDataPoint[];
 }
 
 export const defaultFightStats: FightStats = {
@@ -62,6 +83,10 @@ export const defaultFightStats: FightStats = {
   defenseSuccessRate: 0,
   actionTimeSeconds: 0,
   actionTimeFormatted: '0:00',
+  attackTimeSeconds: 0,
+  attackTimeFormatted: '0:00',
+  defenseTimeSeconds: 0,
+  defenseTimeFormatted: '0:00',
   fightStyle: 'balanced',
   attackDefenseRatio: 1,
   correctStrikes: 0,
@@ -76,6 +101,10 @@ export const defaultFightStats: FightStats = {
   kneesLanded: 0,
   elbowsTotal: 0,
   elbowsLanded: 0,
+  leftHandStrikes: 0,
+  rightHandStrikes: 0,
+  leftHandPercentage: 0,
+  rightHandPercentage: 0,
   leftSideStrikes: 0,
   rightSideStrikes: 0,
   leftSidePercentage: 0,
@@ -91,6 +120,7 @@ export const defaultFightStats: FightStats = {
   opponentTotalStrikes: 0,
   opponentLandedStrikes: 0,
   opponentAccuracy: 0,
+  timelineData: [],
 };
 
 export const useFightStats = (fightId: string | null) => {
@@ -169,7 +199,15 @@ export const useFightStats = (fightId: string | null) => {
         const elbowsTotal = athleteStrikes.filter(s => s.strike_type === 'elbow').length;
         const elbowsLanded = athleteStrikes.filter(s => s.strike_type === 'elbow' && s.landed).length;
 
-        // Side distribution (athlete only)
+        // Hand strikes (punches) side distribution
+        const punchStrikes = athleteStrikes.filter(s => s.strike_type === 'punch');
+        const leftHandStrikes = punchStrikes.filter(s => s.side === 'left').length;
+        const rightHandStrikes = punchStrikes.filter(s => s.side === 'right').length;
+        const totalHandStrikes = punchStrikes.length;
+        const leftHandPercentage = totalHandStrikes > 0 ? Math.round((leftHandStrikes / totalHandStrikes) * 100) : 0;
+        const rightHandPercentage = totalHandStrikes > 0 ? Math.round((rightHandStrikes / totalHandStrikes) * 100) : 0;
+
+        // Side distribution (all athlete strikes)
         const leftSideStrikes = athleteStrikes.filter(s => s.side === 'left').length;
         const rightSideStrikes = athleteStrikes.filter(s => s.side === 'right').length;
         const leftSidePercentage = totalStrikes > 0 ? Math.round((leftSideStrikes / totalStrikes) * 100) : 0;
@@ -193,10 +231,62 @@ export const useFightStats = (fightId: string | null) => {
 
         // Action time (sum of round durations) - keep in seconds
         const actionTimeSeconds = rounds?.reduce((sum, r) => sum + (r.duration_seconds || 0), 0) || 0;
-        // Format as X:XX (minutes:seconds)
-        const minutes = Math.floor(actionTimeSeconds / 60);
-        const seconds = actionTimeSeconds % 60;
-        const actionTimeFormatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        const formatTime = (totalSecs: number) => {
+          const mins = Math.floor(totalSecs / 60);
+          const secs = totalSecs % 60;
+          return `${mins}:${secs.toString().padStart(2, '0')}`;
+        };
+        const actionTimeFormatted = formatTime(actionTimeSeconds);
+
+        // Attack time and Defense time calculation
+        // Estimate based on strikes vs defenses ratio
+        // Attack time = proportional to athlete strikes
+        // Defense time = proportional to opponent strikes (when athlete is defending)
+        const totalActions = totalStrikes + opponentTotalStrikes;
+        const attackTimeSeconds = totalActions > 0 
+          ? Math.round((totalStrikes / totalActions) * actionTimeSeconds) 
+          : 0;
+        const defenseTimeSeconds = totalActions > 0 
+          ? Math.round((opponentTotalStrikes / totalActions) * actionTimeSeconds) 
+          : 0;
+        const attackTimeFormatted = formatTime(attackTimeSeconds);
+        const defenseTimeFormatted = formatTime(defenseTimeSeconds);
+
+        // Build timeline data (every 30 seconds)
+        const timelineData: TimelineDataPoint[] = [];
+        const maxDuration = actionTimeSeconds || 180; // default 3 minutes
+        const interval = 30; // 30 seconds
+        
+        for (let t = 0; t < maxDuration; t += interval) {
+          const endT = t + interval;
+          // Count strikes in this interval
+          const strikesInInterval = athleteStrikes.filter(s => {
+            const ts = s.timestamp_in_round || 0;
+            return ts >= t && ts < endT;
+          }).length;
+          
+          // Count defenses in this interval
+          const defensesInInterval = athleteDefenses.filter(d => {
+            const ts = (d as any).timestamp_in_round || 0;
+            return ts >= t && ts < endT;
+          }).length;
+          
+          // Attacks (opponent strikes that athlete received)
+          const attacksInInterval = opponentStrikesData.filter(s => {
+            const ts = s.timestamp_in_round || 0;
+            return ts >= t && ts < endT;
+          }).length;
+          
+          const timeLabel = formatTime(t);
+          
+          timelineData.push({
+            time: timeLabel,
+            timeSeconds: t,
+            strikes: strikesInInterval,
+            defenses: defensesInInterval,
+            attacks: attacksInInterval,
+          });
+        }
 
         setStats({
           totalStrikes,
@@ -207,6 +297,10 @@ export const useFightStats = (fightId: string | null) => {
           defenseSuccessRate,
           actionTimeSeconds,
           actionTimeFormatted,
+          attackTimeSeconds,
+          attackTimeFormatted,
+          defenseTimeSeconds,
+          defenseTimeFormatted,
           fightStyle,
           attackDefenseRatio,
           correctStrikes,
@@ -221,6 +315,10 @@ export const useFightStats = (fightId: string | null) => {
           kneesLanded,
           elbowsTotal,
           elbowsLanded,
+          leftHandStrikes,
+          rightHandStrikes,
+          leftHandPercentage,
+          rightHandPercentage,
           leftSideStrikes,
           rightSideStrikes,
           leftSidePercentage,
@@ -236,6 +334,7 @@ export const useFightStats = (fightId: string | null) => {
           opponentTotalStrikes,
           opponentLandedStrikes,
           opponentAccuracy,
+          timelineData,
         });
       } catch (error) {
         console.error('Error fetching fight stats:', error);
