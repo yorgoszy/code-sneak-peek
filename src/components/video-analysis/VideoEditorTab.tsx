@@ -1009,73 +1009,100 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
 
           {/* Timeline with Zoom */}
           <div className="mt-2 space-y-2">
-            {/* Zoom Controls + Volume + Speed */}
-            <div className="flex items-center justify-between bg-gray-50 border border-gray-200 p-1.5 rounded-none flex-wrap gap-2">
+            {/* Controls Row: Rounds + Σήμανση + Zoom + Volume + Speed */}
+            <div className="flex items-center bg-gray-50 border border-gray-200 p-1.5 rounded-none flex-wrap gap-3">
+              {/* Round Controls */}
+              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
+                <CircleDot className="w-4 h-4 text-blue-600" />
+                {roundMarkers.length > 0 && (
+                  <Badge variant="outline" className="rounded-none bg-blue-100 text-blue-700 text-xs px-1">
+                    {roundMarkers.length}
+                  </Badge>
+                )}
+                {activeRound ? (
+                  <Button
+                    size="sm"
+                    className="rounded-none bg-blue-500 text-white animate-pulse h-6 text-xs px-2"
+                    onClick={closeActiveRound}
+                  >
+                    <Timer className="w-3 h-3 mr-1" />
+                    R{activeRound.roundNumber}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-none border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white h-6 text-xs px-2"
+                    onClick={startRound}
+                  >
+                    R{roundMarkers.length + 1}
+                  </Button>
+                )}
+              </div>
+              
+              {/* Action Flags Controls */}
+              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
+                <Flag className="w-4 h-4 text-gray-600" />
+                {activeFlag?.type === 'attack' ? (
+                  <Button size="sm" className="rounded-none bg-[#00ffba] text-black animate-pulse h-6 text-xs px-2" onClick={closeActiveFlag}>
+                    <Swords className="w-3 h-3" />
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black h-6 text-xs px-2" onClick={() => startActionFlag('attack')} disabled={activeFlag !== null}>
+                    <Swords className="w-3 h-3" />
+                  </Button>
+                )}
+                {activeFlag?.type === 'defense' ? (
+                  <Button size="sm" className="rounded-none bg-red-500 text-white animate-pulse h-6 text-xs px-2" onClick={closeActiveFlag}>
+                    <Shield className="w-3 h-3" />
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" className="rounded-none border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-6 text-xs px-2" onClick={() => startActionFlag('defense')} disabled={activeFlag !== null}>
+                    <Shield className="w-3 h-3" />
+                  </Button>
+                )}
+                {activeFlag?.type === 'clinch' ? (
+                  <Button size="sm" className="rounded-none bg-purple-500 text-white animate-pulse h-6 text-xs px-2" onClick={closeActiveFlag}>
+                    CL
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" className="rounded-none border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white h-6 text-xs px-2" onClick={() => startActionFlag('clinch')} disabled={activeFlag !== null}>
+                    CL
+                  </Button>
+                )}
+              </div>
+              
               {/* Zoom */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
                 <ZoomIn className="w-4 h-4 text-gray-500" />
-                <span className="text-xs text-gray-600">Zoom: {timelineZoom.toFixed(1)}x</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 w-6 p-0 rounded-none"
-                  onClick={() => setTimelineZoom(Math.max(1, timelineZoom - 0.5))}
-                  disabled={timelineZoom <= 1}
-                >
+                <span className="text-xs text-gray-600">{timelineZoom.toFixed(1)}x</span>
+                <Button variant="outline" size="sm" className="h-6 w-6 p-0 rounded-none" onClick={() => setTimelineZoom(Math.max(1, timelineZoom - 0.5))} disabled={timelineZoom <= 1}>
                   <Minus className="w-3 h-3" />
                 </Button>
-                <Slider
-                  value={[timelineZoom]}
-                  min={1}
-                  max={10}
-                  step={0.5}
-                  onValueChange={(value) => setTimelineZoom(value[0])}
-                  className="w-20"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 w-6 p-0 rounded-none"
-                  onClick={() => setTimelineZoom(Math.min(10, timelineZoom + 0.5))}
-                  disabled={timelineZoom >= 10}
-                >
+                <Slider value={[timelineZoom]} min={1} max={10} step={0.5} onValueChange={(value) => setTimelineZoom(value[0])} className="w-16" />
+                <Button variant="outline" size="sm" className="h-6 w-6 p-0 rounded-none" onClick={() => setTimelineZoom(Math.min(10, timelineZoom + 0.5))} disabled={timelineZoom >= 10}>
                   <PlusIcon className="w-3 h-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 rounded-none text-xs"
-                  onClick={() => setTimelineZoom(1)}
-                  disabled={timelineZoom === 1}
-                >
-                  Reset
                 </Button>
               </div>
               
               {/* Volume */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0 rounded-none" onClick={toggleMute}>
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </Button>
-                <div className="w-16">
-                  <Slider
-                    value={[isMuted ? 0 : volume]}
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    onValueChange={changeVolume}
-                  />
+                <div className="w-14">
+                  <Slider value={[isMuted ? 0 : volume]} min={0} max={1} step={0.1} onValueChange={changeVolume} />
                 </div>
               </div>
               
               {/* Speed */}
               <div className="flex items-center gap-1">
-                {[0.25, 0.5, 1, 1.5, 2].map(rate => (
+                {[0.5, 1, 1.5, 2].map(rate => (
                   <Button
                     key={rate}
                     variant={playbackRate === rate ? "default" : "outline"}
                     size="sm"
-                    className={`rounded-none text-xs px-2 h-6 ${playbackRate === rate ? 'bg-[#00ffba] text-black' : ''}`}
+                    className={`rounded-none text-xs px-1.5 h-6 ${playbackRate === rate ? 'bg-[#00ffba] text-black' : ''}`}
                     onClick={() => changePlaybackRate(rate)}
                   >
                     {rate}x
@@ -1463,215 +1490,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                 </div>
               </div>
             )}
-          </div>
-          
-          {/* Tools Row - All in one line */}
-          <div className="mt-4 flex flex-wrap items-stretch gap-2">
-            {/* Round Controls */}
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-none flex items-center gap-3 min-w-[160px]">
-              <div className="flex items-center gap-1.5">
-                <CircleDot className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium">Γύροι</span>
-                {roundMarkers.length > 0 && (
-                  <Badge variant="outline" className="rounded-none bg-blue-100 text-blue-700 text-xs px-1.5">
-                    {roundMarkers.length}
-                  </Badge>
-                )}
-              </div>
-              
-              {activeRound ? (
-                <Button
-                  size="sm"
-                  className="rounded-none bg-blue-500 text-white animate-pulse h-8 text-xs"
-                  onClick={closeActiveRound}
-                >
-                  <Timer className="w-3.5 h-3.5 mr-1" />
-                  Τέλος R{activeRound.roundNumber}
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="rounded-none border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white h-8 text-xs"
-                  onClick={startRound}
-                >
-                  <CircleDot className="w-3.5 h-3.5 mr-1" />
-                  R{roundMarkers.length + 1}
-                </Button>
-              )}
-            </div>
-            
-            {/* Action Flags Controls */}
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-3 min-w-[180px]">
-              <div className="flex items-center gap-1.5">
-                <Flag className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium">Σήμανση</span>
-              </div>
-              
-              <div className="flex items-center gap-1.5">
-                {activeFlag?.type === 'attack' ? (
-                  <Button
-                    size="sm"
-                    className="rounded-none bg-[#00ffba] text-black animate-pulse h-8 text-xs"
-                    onClick={closeActiveFlag}
-                  >
-                    <Swords className="w-3.5 h-3.5 mr-1" />
-                    Τέλος
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black h-8 text-xs px-2.5"
-                    onClick={() => startActionFlag('attack')}
-                    disabled={activeFlag !== null}
-                  >
-                    <Swords className="w-3.5 h-3.5" />
-                  </Button>
-                )}
-                
-                {activeFlag?.type === 'defense' ? (
-                  <Button
-                    size="sm"
-                    className="rounded-none bg-red-500 text-white animate-pulse h-8 text-xs"
-                    onClick={closeActiveFlag}
-                  >
-                    <Shield className="w-3.5 h-3.5 mr-1" />
-                    Τέλος
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-none border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-8 text-xs px-2.5"
-                    onClick={() => startActionFlag('defense')}
-                    disabled={activeFlag !== null}
-                  >
-                    <Shield className="w-3.5 h-3.5" />
-                  </Button>
-                )}
-                
-                {activeFlag?.type === 'clinch' ? (
-                  <Button
-                    size="sm"
-                    className="rounded-none bg-purple-500 text-white animate-pulse h-8 text-xs"
-                    onClick={closeActiveFlag}
-                  >
-                    <Users className="w-3.5 h-3.5 mr-1" />
-                    Τέλος
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-none border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white h-8 text-xs px-2.5"
-                    onClick={() => startActionFlag('clinch')}
-                    disabled={activeFlag !== null}
-                    title="Clinch"
-                  >
-                    Clinch
-                  </Button>
-                )}
-              </div>
-            </div>
-            
-            {/* Export Controls */}
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-3 min-w-[180px]">
-              <div className="flex items-center gap-1.5">
-                <Download className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium">Εξαγωγή</span>
-              </div>
-              
-              {isExporting ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-xs text-gray-600">{exportProgress}%</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-none h-8 text-xs"
-                    onClick={async () => {
-                      if (!videoFile) return;
-                      if (trimStart >= trimEnd) {
-                        toast.error('Ορίστε έγκυρο εύρος κοπής');
-                        return;
-                      }
-                      
-                      if (!isFFmpegReady) {
-                        toast.info('Φόρτωση FFmpeg...');
-                        await loadFFmpeg();
-                      }
-                      
-                      const blob = await exportTrimmedVideo(videoFile, {
-                        startTime: trimStart,
-                        endTime: trimEnd,
-                        filename: `trimmed_${videoFile.name}`
-                      });
-                      
-                      if (blob) {
-                        const ext = videoFile.name.split('.').pop() || 'mp4';
-                        downloadBlob(blob, `trimmed_${Date.now()}.${ext}`);
-                      }
-                    }}
-                    disabled={isFFmpegLoading || !videoFile}
-                  >
-                    {isFFmpegLoading ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <>
-                        <Download className="w-3.5 h-3.5 mr-1" />
-                        Trim
-                      </>
-                    )}
-                  </Button>
-                  
-                  {clips.length > 0 && (
-                    <Button
-                      size="sm"
-                      className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white h-8 text-xs"
-                      onClick={async () => {
-                        if (!videoFile) return;
-                        
-                        if (!isFFmpegReady) {
-                          toast.info('Φόρτωση FFmpeg...');
-                          await loadFFmpeg();
-                        }
-                        
-                        const blob = await exportMergedClips(videoFile, clips);
-                        
-                        if (blob) {
-                          const ext = videoFile.name.split('.').pop() || 'mp4';
-                          downloadBlob(blob, `merged_clips_${Date.now()}.${ext}`);
-                        }
-                      }}
-                      disabled={isFFmpegLoading}
-                    >
-                      <FileVideo className="w-3.5 h-3.5 mr-1" />
-                      ({clips.length})
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Strike Stats Compact */}
-            <div className="p-2 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-2 ml-auto">
-              <div className="flex items-center gap-1 text-[10px]">
-                <span className="text-gray-600 flex items-center gap-0.5">
-                  <User className="w-2 h-2" />
-                </span>
-                <span className="font-bold text-[#00997a]">{strikeStats.athleteHits}/{strikeStats.athleteTotal}</span>
-              </div>
-              <div className="flex items-center gap-1 text-[10px]">
-                <span className="text-gray-600 flex items-center gap-0.5">
-                  <Users className="w-2 h-2" />
-                </span>
-                <span className="font-bold text-[#cb8954]">{strikeStats.opponentHits}/{strikeStats.opponentTotal}</span>
-              </div>
-            </div>
           </div>
           
           {/* Playback Controls */}
