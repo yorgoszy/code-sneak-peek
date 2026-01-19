@@ -9,10 +9,10 @@ export interface TimelineDataPoint {
   attacks: number;
 }
 
-export interface RoundBoundary {
+export interface RoundTimelineData {
   roundNumber: number;
-  startTime: number;
-  startTimeLabel: string;
+  duration: number;
+  data: TimelineDataPoint[];
 }
 
 export interface FightStats {
@@ -76,11 +76,8 @@ export interface FightStats {
   opponentLandedStrikes: number;
   opponentAccuracy: number;
   
-  // Timeline data for chart (every 30 seconds)
-  timelineData: TimelineDataPoint[];
-  
-  // Round boundaries for chart separators
-  roundBoundaries: RoundBoundary[];
+  // Timeline data for chart - per round
+  roundsTimelineData: RoundTimelineData[];
 }
 
 export const defaultFightStats: FightStats = {
@@ -129,8 +126,7 @@ export const defaultFightStats: FightStats = {
   opponentTotalStrikes: 0,
   opponentLandedStrikes: 0,
   opponentAccuracy: 0,
-  timelineData: [],
-  roundBoundaries: [],
+  roundsTimelineData: [],
 };
 
 export const useFightStats = (fightId: string | null) => {
@@ -162,10 +158,8 @@ export const useFightStats = (fightId: string | null) => {
           return;
         }
 
-        // Create a map of round_id to cumulative start time and build round boundaries
-        const roundStartTimes: Record<string, number> = {};
-        const roundBoundaries: RoundBoundary[] = [];
-        let cumulativeTime = 0;
+        // Create a map of round_id to its info
+        const roundInfoMap: Record<string, { roundNumber: number; duration: number }> = {};
         
         const formatTime = (totalSecs: number) => {
           const mins = Math.floor(totalSecs / 60);
@@ -174,13 +168,10 @@ export const useFightStats = (fightId: string | null) => {
         };
         
         for (const round of rounds || []) {
-          roundStartTimes[round.id] = cumulativeTime;
-          roundBoundaries.push({
+          roundInfoMap[round.id] = {
             roundNumber: round.round_number,
-            startTime: cumulativeTime,
-            startTimeLabel: formatTime(cumulativeTime),
-          });
-          cumulativeTime += round.duration_seconds || 0;
+            duration: round.duration_seconds || 0,
+          };
         }
 
         // Fetch strikes
@@ -279,48 +270,58 @@ export const useFightStats = (fightId: string | null) => {
         const attackTimeFormatted = formatTime(attackTimeSeconds);
         const defenseTimeFormatted = formatTime(defenseTimeSeconds);
 
-        // Build timeline data (every 30 seconds across ALL rounds)
-        const timelineData: TimelineDataPoint[] = [];
-        const totalDuration = cumulativeTime || 180; // Total fight duration
+        // Build timeline data per round (every 30 seconds)
+        const roundsTimelineData: RoundTimelineData[] = [];
         const interval = 30; // 30 seconds
         
-        // Helper to get absolute time for a strike/defense
-        const getAbsoluteTime = (item: any) => {
-          const roundId = item.round_id;
-          const roundStartTime = roundStartTimes[roundId] || 0;
-          const timestampInRound = item.timestamp_in_round || 0;
-          return roundStartTime + timestampInRound;
-        };
-        
-        for (let t = 0; t < totalDuration; t += interval) {
-          const endT = t + interval;
+        for (const round of rounds || []) {
+          const roundId = round.id;
+          const roundDuration = round.duration_seconds || 0;
+          const roundNumber = round.round_number;
           
-          // Count athlete strikes in this interval (using absolute time)
-          const strikesInInterval = athleteStrikes.filter(s => {
-            const absTime = getAbsoluteTime(s);
-            return absTime >= t && absTime < endT;
-          }).length;
+          const roundStrikes = athleteStrikes.filter(s => s.round_id === roundId);
+          const roundDefenses = athleteDefenses.filter(d => d.round_id === roundId);
+          const roundOpponentStrikes = opponentStrikesData.filter(s => s.round_id === roundId);
           
-          // Count athlete defenses in this interval
-          const defensesInInterval = athleteDefenses.filter(d => {
-            const absTime = getAbsoluteTime(d);
-            return absTime >= t && absTime < endT;
-          }).length;
+          const roundData: TimelineDataPoint[] = [];
           
-          // Attacks (opponent strikes - hits received by athlete)
-          const attacksInInterval = opponentStrikesData.filter(s => {
-            const absTime = getAbsoluteTime(s);
-            return absTime >= t && absTime < endT;
-          }).length;
+          // Generate intervals from 0 to roundDuration (inclusive of last interval)
+          for (let t = 0; t <= roundDuration; t += interval) {
+            const endT = t + interval;
+            
+            // Count strikes in this interval
+            const strikesInInterval = roundStrikes.filter(s => {
+              const ts = s.timestamp_in_round || 0;
+              return ts >= t && ts < endT;
+            }).length;
+            
+            // Count defenses in this interval
+            const defensesInInterval = roundDefenses.filter(d => {
+              const ts = (d as any).timestamp_in_round || 0;
+              return ts >= t && ts < endT;
+            }).length;
+            
+            // Attacks (opponent strikes)
+            const attacksInInterval = roundOpponentStrikes.filter(s => {
+              const ts = s.timestamp_in_round || 0;
+              return ts >= t && ts < endT;
+            }).length;
+            
+            const timeLabel = formatTime(t);
+            
+            roundData.push({
+              time: timeLabel,
+              timeSeconds: t,
+              strikes: strikesInInterval,
+              defenses: defensesInInterval,
+              attacks: attacksInInterval,
+            });
+          }
           
-          const timeLabel = formatTime(t);
-          
-          timelineData.push({
-            time: timeLabel,
-            timeSeconds: t,
-            strikes: strikesInInterval,
-            defenses: defensesInInterval,
-            attacks: attacksInInterval,
+          roundsTimelineData.push({
+            roundNumber,
+            duration: roundDuration,
+            data: roundData,
           });
         }
 
@@ -370,8 +371,7 @@ export const useFightStats = (fightId: string | null) => {
           opponentTotalStrikes,
           opponentLandedStrikes,
           opponentAccuracy,
-          timelineData,
-          roundBoundaries,
+          roundsTimelineData,
         });
       } catch (error) {
         console.error('Error fetching fight stats:', error);
