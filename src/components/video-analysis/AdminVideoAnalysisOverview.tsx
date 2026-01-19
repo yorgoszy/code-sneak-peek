@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy } from 'lucide-react';
+import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy, LucideIcon } from 'lucide-react';
+import elbowIcon from '@/assets/elbow-icon.png';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useFightStats, defaultFightStats, FightStats } from '@/hooks/useFightStats';
@@ -210,12 +211,21 @@ export const AdminVideoAnalysisOverview = () => {
   ];
 
   // Second row of stats
-  const statCards2 = [
+  const statCards2: Array<{
+    title: string;
+    value: number | string;
+    subtitle: string;
+    icon?: LucideIcon;
+    emoji?: string;
+    imageIcon?: string;
+    color: string;
+    bgColor: string;
+  }> = [
     {
       title: 'Box',
       value: stats?.punchesTotal || 0,
       subtitle: `${stats?.punchesLanded || 0} επιτυχ.`,
-      icon: Target,
+      emoji: '👊',
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
@@ -223,7 +233,7 @@ export const AdminVideoAnalysisOverview = () => {
       title: 'Kicks',
       value: stats?.kicksTotal || 0,
       subtitle: `${stats?.kicksLanded || 0} επιτυχ.`,
-      icon: Activity,
+      emoji: '🦶',
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
@@ -239,7 +249,7 @@ export const AdminVideoAnalysisOverview = () => {
       title: 'Elbows',
       value: stats?.elbowsTotal || 0,
       subtitle: `${stats?.elbowsLanded || 0} επιτυχ.`,
-      icon: Activity,
+      imageIcon: elbowIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
@@ -247,7 +257,7 @@ export const AdminVideoAnalysisOverview = () => {
       title: 'Clinch',
       value: stats?.clinchTimeFormatted || '0:00',
       subtitle: `${stats?.clinchTotal || 0} φορές`,
-      icon: Users,
+      emoji: '🤼',
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
@@ -314,8 +324,14 @@ export const AdminVideoAnalysisOverview = () => {
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
                 <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 ${card.bgColor} rounded-none`}>
-                      <card.icon className={`w-4 h-4 ${card.color}`} />
+                    <div className={`p-1.5 ${card.bgColor} rounded-none flex items-center justify-center`}>
+                      {card.emoji ? (
+                        <span className="text-base">{card.emoji}</span>
+                      ) : card.imageIcon ? (
+                        <img src={card.imageIcon} alt={card.title} className="w-5 h-5 object-contain" />
+                      ) : card.icon ? (
+                        <card.icon className={`w-4 h-4 ${card.color}`} />
+                      ) : null}
                     </div>
                     <div className="min-w-0">
                       <p className={`text-lg font-bold ${card.color} leading-tight`}>
