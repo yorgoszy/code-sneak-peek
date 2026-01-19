@@ -54,7 +54,7 @@ interface TrimClip {
   label: string;
 }
 
-type ActionType = 'attack' | 'defense' | 'block';
+type ActionType = 'attack' | 'defense' | 'clinch';
 
 interface ActionFlag {
   id: string;
@@ -83,6 +83,7 @@ interface StrikeMarker {
   roundNumber: number | null; // Which round this strike is in
   timeInRound: number | null; // Time (in seconds) within the round
   hitTarget: boolean; // Did the strike hit the target? (ορθότητα)
+  blocked: boolean; // Was the strike blocked? (only for opponent strikes during defense)
 }
 
 interface VideoEditorTabProps {
@@ -339,7 +340,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
     
     setActionFlags(prev => [...prev, newFlag]);
     setActiveFlag({ id: newFlag.id, type });
-    const typeLabels = { attack: 'Επίθεση', defense: 'Άμυνα', block: 'Μπλοκ' };
+    const typeLabels = { attack: 'Επίθεση', defense: 'Άμυνα', clinch: 'Clinch' };
     toast.success(`${typeLabels[type]} ξεκίνησε στο ${formatTime(currentTime)}`);
   };
 
@@ -352,7 +353,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
         : flag
     ));
     
-    const typeLabels = { attack: 'Επίθεση', defense: 'Άμυνα', block: 'Μπλοκ' };
+    const typeLabels = { attack: 'Επίθεση', defense: 'Άμυνα', clinch: 'Clinch' };
     toast.success(`${typeLabels[activeFlag.type]} τελείωσε στο ${formatTime(currentTime)}`);
     setActiveFlag(null);
   };
@@ -371,24 +372,24 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
     
     const attackFlags = completedFlags.filter(f => f.type === 'attack');
     const defenseFlags = completedFlags.filter(f => f.type === 'defense');
-    const blockFlags = completedFlags.filter(f => f.type === 'block');
+    const clinchFlags = completedFlags.filter(f => f.type === 'clinch');
     
     const attackTime = attackFlags.reduce((sum, f) => sum + (f.endTime! - f.startTime), 0);
     const defenseTime = defenseFlags.reduce((sum, f) => sum + (f.endTime! - f.startTime), 0);
-    const blockTime = blockFlags.reduce((sum, f) => sum + (f.endTime! - f.startTime), 0);
-    const totalActionTime = attackTime + defenseTime + blockTime;
+    const clinchTime = clinchFlags.reduce((sum, f) => sum + (f.endTime! - f.startTime), 0);
+    const totalActionTime = attackTime + defenseTime + clinchTime;
     
     return {
       attackCount: attackFlags.length,
       defenseCount: defenseFlags.length,
-      blockCount: blockFlags.length,
+      clinchCount: clinchFlags.length,
       attackTime,
       defenseTime,
-      blockTime,
+      clinchTime,
       totalActionTime,
       attackPercentage: totalActionTime > 0 ? (attackTime / totalActionTime) * 100 : 0,
       defensePercentage: totalActionTime > 0 ? (defenseTime / totalActionTime) * 100 : 0,
-      blockPercentage: totalActionTime > 0 ? (blockTime / totalActionTime) * 100 : 0
+      clinchPercentage: totalActionTime > 0 ? (clinchTime / totalActionTime) * 100 : 0
     };
   }, [actionFlags]);
 
@@ -575,7 +576,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
       owner,
       roundNumber: roundInfo.roundNumber,
       timeInRound: roundInfo.timeInRound,
-      hitTarget: false // Default to false, user can toggle with click
+      hitTarget: false, // Default to false, user can toggle with click
+      blocked: false // Default to false, can toggle only for opponent strikes during defense
     };
     
     setStrikeMarkers(prev => [...prev, newMarker].sort((a, b) => a.time - b.time));
@@ -587,11 +589,30 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
     toast.success(`${strikeType.name} (${owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'})${roundText}`);
   };
 
-  // Toggle strike hit target (ορθότητα)
-  const toggleStrikeHitTarget = (id: string) => {
-    setStrikeMarkers(prev => prev.map(m => 
-      m.id === id ? { ...m, hitTarget: !m.hitTarget } : m
-    ));
+  // Toggle strike states based on owner
+  // For athlete strikes: toggle hitTarget (correct/incorrect technique)
+  // For opponent strikes: cycle through states (miss -> hit -> blocked -> miss)
+  const toggleStrikeState = (id: string) => {
+    setStrikeMarkers(prev => prev.map(m => {
+      if (m.id !== id) return m;
+      
+      if (m.owner === 'athlete') {
+        // Athlete strikes: simple toggle for hitTarget (ορθότητα)
+        return { ...m, hitTarget: !m.hitTarget };
+      } else {
+        // Opponent strikes: cycle through miss -> hit -> blocked -> miss
+        if (!m.hitTarget && !m.blocked) {
+          // miss -> hit
+          return { ...m, hitTarget: true, blocked: false };
+        } else if (m.hitTarget && !m.blocked) {
+          // hit -> blocked
+          return { ...m, hitTarget: false, blocked: true };
+        } else {
+          // blocked -> miss
+          return { ...m, hitTarget: false, blocked: false };
+        }
+      }
+    }));
   };
 
   // Format time within round (MM:SS)
@@ -1133,7 +1154,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                     
                     const getColors = (type: ActionType) => {
                       if (type === 'attack') return { bg: 'bg-[#00ffba]/60', dark: 'bg-[#00997a]', hover: 'hover:bg-[#00b894]', text: 'text-[#00997a]', label: 'ΕΠ', title: 'Επίθεση' };
-                      if (type === 'block') return { bg: 'bg-blue-500/60', dark: 'bg-blue-700', hover: 'hover:bg-blue-600', text: 'text-blue-700', label: 'ΜΠ', title: 'Μπλοκ' };
+                      if (type === 'clinch') return { bg: 'bg-purple-500/60', dark: 'bg-purple-700', hover: 'hover:bg-purple-600', text: 'text-purple-700', label: 'CL', title: 'Clinch' };
                       return { bg: 'bg-red-500/60', dark: 'bg-red-700', hover: 'hover:bg-red-600', text: 'text-red-700', label: 'ΑΜ', title: 'Άμυνα' };
                     };
                     const colors = getColors(flag.type);
@@ -1196,28 +1217,44 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                     const roundText = marker.roundNumber 
                       ? ` | R${marker.roundNumber} @ ${formatTimeInRound(marker.timeInRound!)}`
                       : '';
-                    const hitText = marker.hitTarget ? ' ✓ Βρήκε στόχο' : ' ✗ Άστοχο';
+                    
+                    // Status text based on owner and state
+                    let statusText = '';
+                    if (marker.owner === 'athlete') {
+                      statusText = marker.hitTarget ? ' ✓ Ορθό' : ' ✗ Λάθος';
+                    } else {
+                      if (marker.blocked) statusText = ' 🛡 Μπλοκ';
+                      else if (marker.hitTarget) statusText = ' ✓ Χτύπησε';
+                      else statusText = ' ✗ Άστοχο';
+                    }
+                    
+                    // Visual styling based on owner and state
+                    const getMarkerStyle = () => {
+                      if (marker.owner === 'athlete') {
+                        return marker.hitTarget 
+                          ? 'bg-[#00ffba] border-2 border-[#00997a] ring-2 ring-[#00ffba]/50 w-3 h-3' 
+                          : 'bg-[#00ffba]/50 border border-[#00997a]/50 w-2 h-2 opacity-60';
+                      } else {
+                        // Opponent strikes
+                        if (marker.blocked) {
+                          return 'bg-blue-500 border-2 border-blue-700 ring-2 ring-blue-500/50 w-3 h-3';
+                        } else if (marker.hitTarget) {
+                          return 'bg-[#cb8954] border-2 border-[#a06b3d] ring-2 ring-[#cb8954]/50 w-3 h-3';
+                        } else {
+                          return 'bg-[#cb8954]/50 border border-[#a06b3d]/50 w-2 h-2 opacity-60';
+                        }
+                      }
+                    };
+                    
                     return (
                       <div
                         key={marker.id}
-                        className={`absolute cursor-pointer z-20 transform -translate-x-1/2 top-1/2 -translate-y-1/2 transition-all hover:scale-150 ${
-                          marker.hitTarget 
-                            ? 'w-3 h-3 rounded-full' 
-                            : 'w-2 h-2 rounded-full opacity-60'
-                        } ${
-                          marker.owner === 'athlete' 
-                            ? marker.hitTarget 
-                              ? 'bg-[#00ffba] border-2 border-[#00997a] ring-2 ring-[#00ffba]/50' 
-                              : 'bg-[#00ffba]/50 border border-[#00997a]/50'
-                            : marker.hitTarget 
-                              ? 'bg-[#cb8954] border-2 border-[#a06b3d] ring-2 ring-[#cb8954]/50' 
-                              : 'bg-[#cb8954]/50 border border-[#a06b3d]/50'
-                        }`}
+                        className={`absolute cursor-pointer z-20 transform -translate-x-1/2 top-1/2 -translate-y-1/2 transition-all hover:scale-150 rounded-full ${getMarkerStyle()}`}
                         style={{ left: `${(marker.time / duration) * 100}%` }}
-                        title={`${marker.strikeTypeName} (${marker.owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) - ${formatTime(marker.time)}${roundText}${hitText} | Κλικ για αλλαγή`}
+                        title={`${marker.strikeTypeName} (${marker.owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) - ${formatTime(marker.time)}${roundText}${statusText} | Κλικ για αλλαγή`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleStrikeHitTarget(marker.id);
+                          toggleStrikeState(marker.id);
                         }}
                       />
                     );
@@ -1385,25 +1422,25 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                   </Button>
                 )}
                 
-                {activeFlag?.type === 'block' ? (
+                {activeFlag?.type === 'clinch' ? (
                   <Button
                     size="sm"
-                    className="rounded-none bg-blue-500 text-white animate-pulse h-8 text-xs"
+                    className="rounded-none bg-purple-500 text-white animate-pulse h-8 text-xs"
                     onClick={closeActiveFlag}
                   >
-                    <Shield className="w-3.5 h-3.5 mr-1" />
+                    <Users className="w-3.5 h-3.5 mr-1" />
                     Τέλος
                   </Button>
                 ) : (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-none border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white h-8 text-xs px-2.5"
-                    onClick={() => startActionFlag('block')}
+                    className="rounded-none border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white h-8 text-xs px-2.5"
+                    onClick={() => startActionFlag('clinch')}
                     disabled={activeFlag !== null}
-                    title="Μπλοκ"
+                    title="Clinch"
                   >
-                    Μπλοκ
+                    Clinch
                   </Button>
                 )}
               </div>
