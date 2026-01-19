@@ -832,29 +832,45 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
           
           {/* Strike Buttons - Above Timeline */}
           <div className="mt-4 p-2 bg-gray-50 border border-gray-200 rounded-none">
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="flex items-center gap-1 mr-2">
-                <Target className="w-3 h-3 text-gray-600" />
-                <span className="text-xs font-medium">Χτυπήματα:</span>
+            {strikeTypesLoading ? (
+              <span className="text-xs text-gray-500">Φόρτωση...</span>
+            ) : strikeTypes.length === 0 ? (
+              <span className="text-xs text-gray-500">Δεν υπάρχουν χτυπήματα</span>
+            ) : (
+              <div className="flex flex-col gap-1">
+                {/* Row of numbers */}
+                <div className="flex items-center gap-0.5">
+                  <div className="w-16 flex items-center gap-1">
+                    <Target className="w-3 h-3 text-gray-600" />
+                  </div>
+                  {strikeTypes.map((strike, index) => (
+                    <Button
+                      key={`num-${strike.id}`}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-none h-5 w-6 text-[10px] p-0 font-bold hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]"
+                      onClick={() => addStrikeMarker(strike)}
+                    >
+                      {index + 1}
+                    </Button>
+                  ))}
+                </div>
+                {/* Row of names */}
+                <div className="flex items-center gap-0.5">
+                  <div className="w-16 text-[9px] text-gray-500 font-medium">Χτυπήματα</div>
+                  {strikeTypes.map((strike, index) => (
+                    <div
+                      key={`name-${strike.id}`}
+                      className="w-6 text-[7px] text-gray-600 text-center truncate cursor-pointer hover:text-[#cb8954]"
+                      onClick={() => addStrikeMarker(strike)}
+                      title={strike.name}
+                    >
+                      {strike.name.substring(0, 4)}
+                    </div>
+                  ))}
+                </div>
               </div>
-              {strikeTypesLoading ? (
-                <span className="text-xs text-gray-500">Φόρτωση...</span>
-              ) : strikeTypes.length === 0 ? (
-                <span className="text-xs text-gray-500">Δεν υπάρχουν χτυπήματα</span>
-              ) : (
-                strikeTypes.map((strike) => (
-                  <Button
-                    key={strike.id}
-                    size="sm"
-                    variant="outline"
-                    className="rounded-none h-6 text-[10px] px-2 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]"
-                    onClick={() => addStrikeMarker(strike)}
-                  >
-                    {strike.name}
-                  </Button>
-                ))
-              )}
-            </div>
+            )}
           </div>
 
           {/* Timeline with Zoom */}
