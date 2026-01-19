@@ -185,7 +185,10 @@ export const AdminVideoAnalysisOverview = () => {
     {
       title: 'Χρόνος',
       value: stats?.actionTimeFormatted || '0:00',
-      subtitle: `Επ: ${stats?.attackTimeFormatted || '0:00'} | Άμ: ${stats?.defenseTimeFormatted || '0:00'}`,
+      subtitle: null, // Will use custom rendering
+      customSubtitle: true,
+      attackTime: stats?.attackTimeFormatted || '0:00',
+      defenseTime: stats?.defenseTimeFormatted || '0:00',
       icon: Clock,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10',
@@ -291,7 +294,15 @@ export const AdminVideoAnalysisOverview = () => {
                       <p className={`text-lg font-bold ${card.color} leading-tight`}>
                         {loadingStats ? '...' : card.value}
                       </p>
-                      <p className="text-[10px] text-gray-500 truncate">{card.title}</p>
+                      {card.customSubtitle ? (
+                        <p className="text-[10px] truncate">
+                          <span className="text-[#00ffba] font-medium">Επ: {card.attackTime}</span>
+                          <span className="text-gray-400 mx-1">|</span>
+                          <span className="text-red-500 font-medium">Άμ: {card.defenseTime}</span>
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-gray-500 truncate">{card.title}</p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
