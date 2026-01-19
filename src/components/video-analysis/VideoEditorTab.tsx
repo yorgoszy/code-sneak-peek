@@ -54,7 +54,7 @@ interface TrimClip {
   label: string;
 }
 
-type ActionType = 'attack' | 'defense';
+type ActionType = 'attack' | 'defense' | 'block';
 
 interface ActionFlag {
   id: string;
@@ -339,7 +339,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
     
     setActionFlags(prev => [...prev, newFlag]);
     setActiveFlag({ id: newFlag.id, type });
-    toast.success(`${type === 'attack' ? 'Επίθεση' : 'Άμυνα'} ξεκίνησε στο ${formatTime(currentTime)}`);
+    const typeLabels = { attack: 'Επίθεση', defense: 'Άμυνα', block: 'Μπλοκ' };
+    toast.success(`${typeLabels[type]} ξεκίνησε στο ${formatTime(currentTime)}`);
   };
 
   const closeActiveFlag = () => {
@@ -351,7 +352,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
         : flag
     ));
     
-    toast.success(`${activeFlag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'} τελείωσε στο ${formatTime(currentTime)}`);
+    const typeLabels = { attack: 'Επίθεση', defense: 'Άμυνα', block: 'Μπλοκ' };
+    toast.success(`${typeLabels[activeFlag.type]} τελείωσε στο ${formatTime(currentTime)}`);
     setActiveFlag(null);
   };
 
@@ -369,19 +371,24 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
     
     const attackFlags = completedFlags.filter(f => f.type === 'attack');
     const defenseFlags = completedFlags.filter(f => f.type === 'defense');
+    const blockFlags = completedFlags.filter(f => f.type === 'block');
     
     const attackTime = attackFlags.reduce((sum, f) => sum + (f.endTime! - f.startTime), 0);
     const defenseTime = defenseFlags.reduce((sum, f) => sum + (f.endTime! - f.startTime), 0);
-    const totalActionTime = attackTime + defenseTime;
+    const blockTime = blockFlags.reduce((sum, f) => sum + (f.endTime! - f.startTime), 0);
+    const totalActionTime = attackTime + defenseTime + blockTime;
     
     return {
       attackCount: attackFlags.length,
       defenseCount: defenseFlags.length,
+      blockCount: blockFlags.length,
       attackTime,
       defenseTime,
+      blockTime,
       totalActionTime,
       attackPercentage: totalActionTime > 0 ? (attackTime / totalActionTime) * 100 : 0,
-      defensePercentage: totalActionTime > 0 ? (defenseTime / totalActionTime) * 100 : 0
+      defensePercentage: totalActionTime > 0 ? (defenseTime / totalActionTime) * 100 : 0,
+      blockPercentage: totalActionTime > 0 ? (blockTime / totalActionTime) * 100 : 0
     };
   }, [actionFlags]);
 
@@ -1124,28 +1131,27 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                     const flagWidth = Math.max(0, ((effectiveEndTime - flag.startTime) / duration) * 100);
                     const isDraggingThis = draggingFlag?.id === flag.id;
                     
+                    const getColors = (type: ActionType) => {
+                      if (type === 'attack') return { bg: 'bg-[#00ffba]/60', dark: 'bg-[#00997a]', hover: 'hover:bg-[#00b894]', text: 'text-[#00997a]', label: 'ΕΠ', title: 'Επίθεση' };
+                      if (type === 'block') return { bg: 'bg-blue-500/60', dark: 'bg-blue-700', hover: 'hover:bg-blue-600', text: 'text-blue-700', label: 'ΜΠ', title: 'Μπλοκ' };
+                      return { bg: 'bg-red-500/60', dark: 'bg-red-700', hover: 'hover:bg-red-600', text: 'text-red-700', label: 'ΑΜ', title: 'Άμυνα' };
+                    };
+                    const colors = getColors(flag.type);
+                    
                     return (
                       <div
                         key={flag.id}
-                        className={`absolute h-full transition-opacity group ${
-                          flag.type === 'attack' 
-                            ? 'bg-[#00ffba]/60' 
-                            : 'bg-red-500/60'
-                        } ${isOpen ? 'animate-pulse' : ''} ${isDraggingThis ? 'z-20' : ''}`}
+                        className={`absolute h-full transition-opacity group ${colors.bg} ${isOpen ? 'animate-pulse' : ''} ${isDraggingThis ? 'z-20' : ''}`}
                         style={{ 
                           left: `${(flag.startTime / duration) * 100}%`,
                           width: `${flagWidth}%`,
                           minWidth: '20px'
                         }}
-                        title={`${flag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'}: ${formatTime(flag.startTime)} - ${flag.endTime ? formatTime(flag.endTime) : 'σε εξέλιξη'}`}
+                        title={`${colors.title}: ${formatTime(flag.startTime)} - ${flag.endTime ? formatTime(flag.endTime) : 'σε εξέλιξη'}`}
                       >
                         {/* Start edge drag handle */}
                         <div 
-                          className={`absolute left-0 top-0 w-2 h-full cursor-ew-resize transition-colors ${
-                            flag.type === 'attack' 
-                              ? 'bg-[#00997a] hover:bg-[#00b894]' 
-                              : 'bg-red-700 hover:bg-red-600'
-                          }`}
+                          className={`absolute left-0 top-0 w-2 h-full cursor-ew-resize transition-colors ${colors.dark} ${colors.hover}`}
                           onMouseDown={(e) => handleFlagDragStart(e, flag.id, 'start')}
                           title="Σύρετε για αλλαγή αρχής"
                         />
@@ -1155,28 +1161,20 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                           className="absolute left-2 right-2 top-0 h-full cursor-pointer hover:opacity-80 flex items-center"
                           onClick={() => seek(flag.startTime)}
                         >
-                          <Flag className={`w-3 h-3 ${
-                            flag.type === 'attack' ? 'text-[#00997a]' : 'text-red-700'
-                          }`} />
-                          <span className={`ml-1 text-[8px] font-medium ${
-                            flag.type === 'attack' ? 'text-[#00997a]' : 'text-red-700'
-                          }`}>
-                            {flag.type === 'attack' ? 'ΕΠ' : 'ΑΜ'}
+                          <Flag className={`w-3 h-3 ${colors.text}`} />
+                          <span className={`ml-1 text-[8px] font-medium ${colors.text}`}>
+                            {colors.label}
                           </span>
                         </div>
                         
                         {/* Delete button - appears on hover, positioned above the flag */}
                         <button
-                          className={`absolute -top-5 left-1/2 -translate-x-1/2 w-5 h-5 text-white rounded-full flex items-center justify-center text-xs font-bold z-20 opacity-0 group-hover:opacity-100 transition-opacity shadow-md ${
-                            flag.type === 'attack' 
-                              ? 'bg-[#00997a] hover:bg-[#00b894]' 
-                              : 'bg-red-700 hover:bg-red-600'
-                          }`}
+                          className={`absolute -top-5 left-1/2 -translate-x-1/2 w-5 h-5 text-white rounded-full flex items-center justify-center text-xs font-bold z-20 opacity-0 group-hover:opacity-100 transition-opacity shadow-md ${colors.dark} ${colors.hover}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             removeActionFlag(flag.id);
                           }}
-                          title={`Διαγραφή ${flag.type === 'attack' ? 'Επίθεσης' : 'Άμυνας'}`}
+                          title={`Διαγραφή ${colors.title}`}
                         >
                           ×
                         </button>
@@ -1184,11 +1182,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                         {/* End edge drag handle - only show if flag is closed */}
                         {!isOpen && (
                           <div 
-                            className={`absolute right-0 top-0 w-2 h-full cursor-ew-resize transition-colors ${
-                              flag.type === 'attack' 
-                                ? 'bg-[#00997a] hover:bg-[#00b894]' 
-                                : 'bg-red-700 hover:bg-red-600'
-                            }`}
+                            className={`absolute right-0 top-0 w-2 h-full cursor-ew-resize transition-colors ${colors.dark} ${colors.hover}`}
                             onMouseDown={(e) => handleFlagDragStart(e, flag.id, 'end')}
                             title="Σύρετε για αλλαγή τέλους"
                           />
@@ -1388,6 +1382,28 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                     disabled={activeFlag !== null}
                   >
                     <Shield className="w-3.5 h-3.5" />
+                  </Button>
+                )}
+                
+                {activeFlag?.type === 'block' ? (
+                  <Button
+                    size="sm"
+                    className="rounded-none bg-blue-500 text-white animate-pulse h-8 text-xs"
+                    onClick={closeActiveFlag}
+                  >
+                    <Shield className="w-3.5 h-3.5 mr-1" />
+                    Τέλος
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-none border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white h-8 text-xs px-2.5"
+                    onClick={() => startActionFlag('block')}
+                    disabled={activeFlag !== null}
+                    title="Μπλοκ"
+                  >
+                    Μπλοκ
                   </Button>
                 )}
               </div>

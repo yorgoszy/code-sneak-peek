@@ -70,6 +70,7 @@ export interface FightStats {
   parriesSuccess: number;
   clinchTotal: number;
   clinchSuccess: number;
+  clinchTimeFormatted: string;
   
   // Opponent stats
   opponentTotalStrikes: number;
@@ -123,6 +124,7 @@ export const defaultFightStats: FightStats = {
   parriesSuccess: 0,
   clinchTotal: 0,
   clinchSuccess: 0,
+  clinchTimeFormatted: '0:00',
   opponentTotalStrikes: 0,
   opponentLandedStrikes: 0,
   opponentAccuracy: 0,
@@ -245,6 +247,9 @@ export const useFightStats = (fightId: string | null) => {
         const parriesSuccess = athleteDefenses.filter(d => d.defense_type === 'parry' && d.successful).length;
         const clinchTotal = athleteDefenses.filter(d => d.defense_type === 'clinch').length;
         const clinchSuccess = athleteDefenses.filter(d => d.defense_type === 'clinch' && d.successful).length;
+        // Estimate clinch time: average 5 seconds per clinch
+        const clinchTimeSeconds = clinchTotal * 5;
+        const clinchTimeFormatted = formatTime(clinchTimeSeconds);
 
         // Calculate fight style
         const attackDefenseRatio = totalDefenses > 0 ? totalStrikes / totalDefenses : totalStrikes;
@@ -368,6 +373,7 @@ export const useFightStats = (fightId: string | null) => {
           parriesSuccess,
           clinchTotal,
           clinchSuccess,
+          clinchTimeFormatted,
           opponentTotalStrikes,
           opponentLandedStrikes,
           opponentAccuracy,

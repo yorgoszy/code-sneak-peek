@@ -185,7 +185,7 @@ export const AdminVideoAnalysisOverview = () => {
     {
       title: 'Χρόνος',
       value: stats?.actionTimeFormatted || '0:00',
-      subtitle: 'Δράσης',
+      subtitle: `Επ: ${stats?.attackTimeFormatted || '0:00'} | Άμ: ${stats?.defenseTimeFormatted || '0:00'}`,
       icon: Clock,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10',
@@ -195,36 +195,20 @@ export const AdminVideoAnalysisOverview = () => {
   // Second row of stats
   const statCards2 = [
     {
-      title: 'Αριστ.',
-      value: stats?.leftSideStrikes || 0,
-      subtitle: `${stats?.leftSidePercentage || 0}%`,
+      title: 'Γροθιές',
+      value: stats?.punchesTotal || 0,
+      subtitle: `${stats?.punchesLanded || 0} επιτυχ.`,
       icon: Target,
       color: 'text-cyan-500',
       bgColor: 'bg-cyan-500/10',
     },
     {
-      title: 'Δεξί',
-      value: stats?.rightSideStrikes || 0,
-      subtitle: `${stats?.rightSidePercentage || 0}%`,
-      icon: Target,
+      title: 'Clinch',
+      value: stats?.clinchTimeFormatted || '0:00',
+      subtitle: `${stats?.clinchTotal || 0} φορές`,
+      icon: Users,
       color: 'text-indigo-500',
       bgColor: 'bg-indigo-500/10',
-    },
-    {
-      title: 'Επίθεση',
-      value: stats?.attackTimeFormatted || '0:00',
-      subtitle: 'Χρόνος',
-      icon: Swords,
-      color: 'text-red-500',
-      bgColor: 'bg-red-500/10',
-    },
-    {
-      title: 'Άμυνα',
-      value: stats?.defenseTimeFormatted || '0:00',
-      subtitle: 'Χρόνος',
-      icon: Shield,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10',
     },
     {
       title: 'Kicks',
