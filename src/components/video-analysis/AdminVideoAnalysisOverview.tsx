@@ -1,30 +1,157 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Target, Shield, Clock, TrendingUp, Users, Swords, Plus, Settings, Activity, Film } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy } from 'lucide-react';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
-import { useVideoAnalysisStats } from '@/hooks/useVideoAnalysisStats';
+import { useFightStats, defaultFightStats, FightStats } from '@/hooks/useFightStats';
 import { FightRecordingDialog } from './FightRecordingDialog';
 import { StrikeTypesDialog } from './StrikeTypesDialog';
 import { VideoEditorTab } from './VideoEditorTab';
-import { FightsHistoryTab } from './FightsHistoryTab';
+import { FightViewDialog } from './FightViewDialog';
+import { FightEditDialog } from './FightEditDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { el } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+interface Fight {
+  id: string;
+  opponent_name: string | null;
+  fight_date: string;
+  result: string | null;
+  fight_type: string | null;
+  total_rounds: number | null;
+  round_duration_seconds: number | null;
+  location: string | null;
+  weight_class: string | null;
+  notes: string | null;
+  video_url: string | null;
+}
 
 export const AdminVideoAnalysisOverview = () => {
   const { userProfile } = useRoleCheck();
-  const adminId = userProfile?.id; // Admin uses their own ID
+  const adminId = userProfile?.id;
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [selectedFightId, setSelectedFightId] = useState<string | null>(null);
   const [isRecordingOpen, setIsRecordingOpen] = useState(false);
   const [isStrikeTypesOpen, setIsStrikeTypesOpen] = useState(false);
   
-  const { stats, loading } = useVideoAnalysisStats(selectedUserId);
+  // Fights state
+  const [fights, setFights] = useState<Fight[]>([]);
+  const [loadingFights, setLoadingFights] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedFightForAction, setSelectedFightForAction] = useState<Fight | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  
+  const { toast } = useToast();
+  const { stats, loading: loadingStats } = useFightStats(selectedFightId);
+
+  // Fetch fights when user changes
+  useEffect(() => {
+    if (!selectedUserId) {
+      setFights([]);
+      setSelectedFightId(null);
+      return;
+    }
+    
+    const fetchFights = async () => {
+      setLoadingFights(true);
+      try {
+        const { data, error } = await supabase
+          .from('muaythai_fights')
+          .select('*')
+          .eq('user_id', selectedUserId)
+          .order('fight_date', { ascending: false });
+
+        if (error) throw error;
+        setFights(data || []);
+        setSelectedFightId(null); // Reset selected fight
+      } catch (error) {
+        console.error('Error fetching fights:', error);
+      } finally {
+        setLoadingFights(false);
+      }
+    };
+
+    fetchFights();
+  }, [selectedUserId]);
+
+  const handleDeleteFight = async () => {
+    if (!selectedFightForAction) return;
+
+    try {
+      const { error } = await supabase
+        .from('muaythai_fights')
+        .delete()
+        .eq('id', selectedFightForAction.id);
+
+      if (error) throw error;
+
+      setFights(prev => prev.filter(f => f.id !== selectedFightForAction.id));
+      if (selectedFightId === selectedFightForAction.id) {
+        setSelectedFightId(null);
+      }
+      
+      toast({
+        title: "Επιτυχία",
+        description: "Ο αγώνας διαγράφηκε"
+      });
+    } catch (error) {
+      console.error('Error deleting fight:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Αποτυχία διαγραφής αγώνα",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setSelectedFightForAction(null);
+    }
+  };
+
+  const getResultBadge = (result: string | null) => {
+    switch (result) {
+      case 'win':
+        return <Badge className="bg-green-500 hover:bg-green-600 rounded-none text-xs">Νίκη</Badge>;
+      case 'loss':
+        return <Badge className="bg-red-500 hover:bg-red-600 rounded-none text-xs">Ήττα</Badge>;
+      case 'draw':
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600 rounded-none text-xs">Ισοπαλία</Badge>;
+      case 'no_contest':
+        return <Badge className="bg-gray-500 hover:bg-gray-600 rounded-none text-xs">Ακυρος</Badge>;
+      default:
+        return <Badge variant="outline" className="rounded-none text-xs">-</Badge>;
+    }
+  };
+
+  const getFightTypeLabel = (type: string | null) => {
+    switch (type) {
+      case 'amateur': return 'Ερασ.';
+      case 'professional': return 'Επαγ.';
+      case 'sparring': return 'Spar';
+      default: return type || '-';
+    }
+  };
 
   const statCards = [
     {
-      title: 'Συνολικά Χτυπήματα',
+      title: 'Χτυπήματα',
       value: stats?.totalStrikes || 0,
-      subtitle: `${stats?.landedStrikes || 0} επιτυχημένα`,
+      subtitle: `${stats?.landedStrikes || 0} επιτυχ.`,
       icon: Target,
       color: 'text-[#00ffba]',
       bgColor: 'bg-[#00ffba]/10',
@@ -40,15 +167,15 @@ export const AdminVideoAnalysisOverview = () => {
     {
       title: 'Ορθότητα',
       value: `${stats?.correctnessRate || 0}%`,
-      subtitle: `${stats?.correctStrikes || 0} σωστά τεχνικά`,
+      subtitle: `${stats?.correctStrikes || 0} σωστά`,
       icon: Activity,
       color: 'text-yellow-500',
       bgColor: 'bg-yellow-500/10',
     },
     {
-      title: 'Χτ. που Δέχτηκε',
+      title: 'Δέχτηκε',
       value: stats?.totalHitsReceived || 0,
-      subtitle: `${stats?.avgHitsReceivedPerRound || 0} ανά γύρο`,
+      subtitle: `${stats?.avgHitsReceivedPerRound || 0}/γύρο`,
       icon: Shield,
       color: 'text-red-500',
       bgColor: 'bg-red-500/10',
@@ -56,15 +183,15 @@ export const AdminVideoAnalysisOverview = () => {
     {
       title: 'Άμυνες',
       value: stats?.totalDefenses || 0,
-      subtitle: `${stats?.successfulDefenses || 0} επιτυχημένες`,
+      subtitle: `${stats?.successfulDefenses || 0} επιτυχ.`,
       icon: Shield,
       color: 'text-purple-500',
       bgColor: 'bg-purple-500/10',
     },
     {
-      title: 'Χρόνος Δράσης',
+      title: 'Χρόνος',
       value: `${stats?.actionTimeMinutes || 0}'`,
-      subtitle: 'Ενεργός χρόνος',
+      subtitle: 'Δράσης',
       icon: Clock,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10',
@@ -78,10 +205,11 @@ export const AdminVideoAnalysisOverview = () => {
   };
 
   const currentStyle = stats?.fightStyle || 'balanced';
+  const selectedFight = fights.find(f => f.id === selectedFightId);
 
   return (
     <div className="space-y-4 p-3 md:p-4">
-      {/* Compact Header */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
         <div className="flex items-center gap-2 flex-1">
           <Button
@@ -110,29 +238,21 @@ export const AdminVideoAnalysisOverview = () => {
             <p className="text-gray-500 text-sm">Επιλέξτε χρήστη</p>
           </CardContent>
         </Card>
-      ) : loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} className="rounded-none animate-pulse">
-              <CardContent className="py-4">
-                <div className="h-12 bg-gray-200 rounded" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
       ) : (
         <>
-          {/* Compact Stats Cards - 2 rows of 3 */}
+          {/* Stats Cards - always visible, show fight stats when selected */}
           <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
             {statCards.map((card, index) => (
-              <Card key={index} className="rounded-none">
+              <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/20' : 'opacity-50'}`}>
                 <CardContent className="p-2">
                   <div className="flex items-center gap-2">
                     <div className={`p-1.5 ${card.bgColor} rounded-none`}>
                       <card.icon className={`w-4 h-4 ${card.color}`} />
                     </div>
                     <div className="min-w-0">
-                      <p className={`text-lg font-bold ${card.color} leading-tight`}>{card.value}</p>
+                      <p className={`text-lg font-bold ${card.color} leading-tight`}>
+                        {loadingStats ? '...' : card.value}
+                      </p>
                       <p className="text-[10px] text-gray-500 truncate">{card.title}</p>
                     </div>
                   </div>
@@ -141,148 +261,230 @@ export const AdminVideoAnalysisOverview = () => {
             ))}
           </div>
 
-          {/* Compact Fight Style */}
-          <div className="flex items-center gap-3 px-2">
-            <Swords className="w-4 h-4 text-gray-400" />
-            <div className={`px-3 py-1 ${styleInfo[currentStyle as keyof typeof styleInfo].color} text-white text-sm font-medium rounded-none`}>
-              {styleInfo[currentStyle as keyof typeof styleInfo].label}
-            </div>
-            <span className="text-xs text-gray-500">
-              Επ/Άμ: {stats?.attackDefenseRatio?.toFixed(2) || '1.00'}
-            </span>
+          {/* Selected Fight Info & Fight Style */}
+          <div className="flex items-center gap-3 px-2 flex-wrap">
+            {selectedFight ? (
+              <>
+                <div className="flex items-center gap-2">
+                  {getResultBadge(selectedFight.result)}
+                  <span className="text-sm font-medium">
+                    vs {selectedFight.opponent_name || 'Άγνωστος'}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {format(new Date(selectedFight.fight_date), 'dd/MM/yy', { locale: el })}
+                  </span>
+                </div>
+                <Swords className="w-4 h-4 text-gray-400" />
+                <div className={`px-2 py-0.5 ${styleInfo[currentStyle as keyof typeof styleInfo].color} text-white text-xs font-medium rounded-none`}>
+                  {styleInfo[currentStyle as keyof typeof styleInfo].label}
+                </div>
+                <span className="text-xs text-gray-500">
+                  Επ/Άμ: {stats?.attackDefenseRatio?.toFixed(2) || '1.00'}
+                </span>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500 italic">
+                Επιλέξτε αγώνα για να δείτε τα στατιστικά
+              </p>
+            )}
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="editor" className="w-full">
+          <Tabs defaultValue="fights" className="w-full">
             <div className="overflow-x-auto">
-              <TabsList className="flex w-max sm:grid sm:w-full sm:grid-cols-5 rounded-none h-8 gap-0.5">
+              <TabsList className="flex w-max sm:grid sm:w-full sm:grid-cols-2 rounded-none h-8 gap-0.5">
+                <TabsTrigger value="fights" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap flex items-center gap-1">
+                  <Trophy className="w-3 h-3" />
+                  Αγώνες ({fights.length})
+                </TabsTrigger>
                 <TabsTrigger value="editor" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap flex items-center gap-1">
                   <Film className="w-3 h-3" />
                   Editor
                 </TabsTrigger>
-                <TabsTrigger value="strikes" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap">Χτυπήματα</TabsTrigger>
-                <TabsTrigger value="defense" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap">Άμυνα</TabsTrigger>
-                <TabsTrigger value="timeline" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap">Χρονική</TabsTrigger>
-                <TabsTrigger value="fights" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap">Αγώνες</TabsTrigger>
               </TabsList>
             </div>
 
-            <TabsContent value="strikes" className="mt-4">
-              <Card className="rounded-none">
-                <CardHeader>
-                  <CardTitle>Ανάλυση Χτυπημάτων</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                      { type: 'Γροθιές', landed: stats?.punchesLanded || 0, total: stats?.punchesTotal || 0 },
-                      { type: 'Κλωτσιές', landed: stats?.kicksLanded || 0, total: stats?.kicksTotal || 0 },
-                      { type: 'Γόνατα', landed: stats?.kneesLanded || 0, total: stats?.kneesTotal || 0 },
-                      { type: 'Αγκώνες', landed: stats?.elbowsLanded || 0, total: stats?.elbowsTotal || 0 },
-                    ].map((item, i) => (
-                      <div key={i} className="p-4 bg-gray-50 rounded-none text-center">
-                        <p className="text-sm text-gray-500">{item.type}</p>
-                        <p className="text-2xl font-bold text-[#00ffba]">{item.landed}</p>
-                        <p className="text-xs text-gray-400">από {item.total}</p>
-                        <div className="mt-2 h-2 bg-gray-200 rounded-none">
-                          <div 
-                            className="h-full bg-[#00ffba] rounded-none" 
-                            style={{ width: `${item.total > 0 ? (item.landed / item.total) * 100 : 0}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+            {/* Fights Tab */}
+            <TabsContent value="fights" className="mt-2">
+              {loadingFights ? (
+                <Card className="rounded-none">
+                  <CardContent className="p-8 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  </CardContent>
+                </Card>
+              ) : fights.length === 0 ? (
+                <Card className="rounded-none">
+                  <CardContent className="py-8 text-center">
+                    <Trophy className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+                    <p className="text-gray-500 text-sm">Δεν υπάρχουν αγώνες</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-2">
+                  {fights.map((fight) => (
+                    <Card 
+                      key={fight.id} 
+                      className={`rounded-none cursor-pointer transition-all hover:shadow-md ${
+                        selectedFightId === fight.id 
+                          ? 'ring-2 ring-[#00ffba] bg-[#00ffba]/5' 
+                          : 'border hover:border-gray-300'
+                      }`}
+                      onClick={() => setSelectedFightId(fight.id === selectedFightId ? null : fight.id)}
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          {/* Left side - Fight info */}
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {getResultBadge(fight.result)}
+                              <Badge variant="outline" className="rounded-none text-xs">
+                                {getFightTypeLabel(fight.fight_type)}
+                              </Badge>
+                              {fight.weight_class && (
+                                <Badge variant="secondary" className="rounded-none text-xs">
+                                  {fight.weight_class}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
+                              {fight.opponent_name && (
+                                <div className="flex items-center gap-1">
+                                  <User className="w-3 h-3" />
+                                  <span>vs {fight.opponent_name}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>{format(new Date(fight.fight_date), 'dd MMM yyyy', { locale: el })}</span>
+                              </div>
+                              {fight.location && (
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  <span>{fight.location}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
 
-                  {/* Side Distribution */}
-                  <div className="mt-6 grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-blue-50 rounded-none text-center">
-                      <p className="text-sm text-gray-500">Αριστερό</p>
-                      <p className="text-2xl font-bold text-blue-500">{stats?.leftSideStrikes || 0}</p>
-                      <p className="text-xs text-gray-400">{stats?.leftSidePercentage || 0}%</p>
-                    </div>
-                    <div className="p-4 bg-red-50 rounded-none text-center">
-                      <p className="text-sm text-gray-500">Δεξί</p>
-                      <p className="text-2xl font-bold text-red-500">{stats?.rightSideStrikes || 0}</p>
-                      <p className="text-xs text-gray-400">{stats?.rightSidePercentage || 0}%</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                          {/* Right side - Actions */}
+                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-none h-7 w-7 p-0"
+                              onClick={() => {
+                                setSelectedFightForAction(fight);
+                                setViewDialogOpen(true);
+                              }}
+                            >
+                              <Eye className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-none h-7 w-7 p-0"
+                              onClick={() => {
+                                setSelectedFightForAction(fight);
+                                setEditDialogOpen(true);
+                              }}
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-none h-7 w-7 p-0 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                              onClick={() => {
+                                setSelectedFightForAction(fight);
+                                setDeleteDialogOpen(true);
+                              }}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
-            <TabsContent value="defense" className="mt-4">
-              <Card className="rounded-none">
-                <CardHeader>
-                  <CardTitle>Ανάλυση Άμυνας</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                      { type: 'Block', success: stats?.blocksSuccess || 0, total: stats?.blocksTotal || 0 },
-                      { type: 'Dodge', success: stats?.dodgesSuccess || 0, total: stats?.dodgesTotal || 0 },
-                      { type: 'Parry', success: stats?.parriesSuccess || 0, total: stats?.parriesTotal || 0 },
-                      { type: 'Clinch', success: stats?.clinchSuccess || 0, total: stats?.clinchTotal || 0 },
-                    ].map((item, i) => (
-                      <div key={i} className="p-4 bg-gray-50 rounded-none text-center">
-                        <p className="text-sm text-gray-500">{item.type}</p>
-                        <p className="text-2xl font-bold text-purple-500">{item.success}</p>
-                        <p className="text-xs text-gray-400">από {item.total}</p>
-                        <div className="mt-2 h-2 bg-gray-200 rounded-none">
-                          <div 
-                            className="h-full bg-purple-500 rounded-none" 
-                            style={{ width: `${item.total > 0 ? (item.success / item.total) * 100 : 0}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
+            {/* Editor Tab */}
             <TabsContent value="editor" className="mt-4">
               <VideoEditorTab userId={selectedUserId} />
-            </TabsContent>
-
-            <TabsContent value="timeline" className="mt-4">
-              <Card className="rounded-none">
-                <CardHeader>
-                  <CardTitle>Χρονική Ανάλυση</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-500 text-center py-8">
-                    Επιλέξτε αγώνα για χρονική ανάλυση ανά γύρο
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="fights" className="mt-2">
-              <FightsHistoryTab userId={selectedUserId} />
             </TabsContent>
           </Tabs>
         </>
       )}
 
-      {/* Fight Recording Dialog */}
+      {/* Dialogs */}
       <FightRecordingDialog
         isOpen={isRecordingOpen}
         onClose={() => setIsRecordingOpen(false)}
         userId={selectedUserId}
         coachId={adminId}
         onSuccess={() => {
-          // Trigger refresh
           setSelectedUserId('');
           setTimeout(() => setSelectedUserId(selectedUserId), 100);
         }}
       />
 
-      {/* Strike Types Management Dialog */}
       <StrikeTypesDialog
         isOpen={isStrikeTypesOpen}
         onClose={() => setIsStrikeTypesOpen(false)}
         coachId={adminId}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogDescription>
+              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Ο αγώνας και όλα τα σχετικά δεδομένα θα διαγραφούν οριστικά.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteFight} 
+              className="bg-destructive hover:bg-destructive/90 rounded-none"
+            >
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <FightViewDialog
+        isOpen={viewDialogOpen}
+        onClose={() => {
+          setViewDialogOpen(false);
+          setSelectedFightForAction(null);
+        }}
+        fight={selectedFightForAction}
+      />
+
+      <FightEditDialog
+        isOpen={editDialogOpen}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedFightForAction(null);
+        }}
+        fight={selectedFightForAction}
+        onSave={() => {
+          // Refresh fights
+          const fetchFights = async () => {
+            const { data } = await supabase
+              .from('muaythai_fights')
+              .select('*')
+              .eq('user_id', selectedUserId)
+              .order('fight_date', { ascending: false });
+            setFights(data || []);
+          };
+          fetchFights();
+        }}
       />
     </div>
   );
