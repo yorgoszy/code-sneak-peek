@@ -35,7 +35,11 @@ import {
   User,
   Users,
   CircleDot,
-  Timer
+  Timer,
+  ZoomIn,
+  ZoomOut,
+  Minus,
+  Plus as PlusIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
@@ -133,6 +137,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
   // Strike markers state
   const [strikeMarkers, setStrikeMarkers] = useState<StrikeMarker[]>([]);
   const [isStrikePopoverOpen, setIsStrikePopoverOpen] = useState(false);
+  
+  // Timeline zoom state
+  const [timelineZoom, setTimelineZoom] = useState(1); // 1 = normal, up to 10x zoom
+  const timelineScrollRef = useRef<HTMLDivElement>(null);
   
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -679,139 +687,214 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
             )}
           </div>
           
-          {/* Timeline */}
+          {/* Timeline with Zoom */}
           <div className="mt-4 space-y-2">
-            {/* Rounds Timeline */}
-            <div className="relative h-5 bg-blue-50 rounded-none border border-blue-200">
-              {roundMarkers.map((round) => {
-                const endTime = round.endTime ?? currentTime;
-                const isOpen = round.endTime === null;
-                return (
-                  <div
-                    key={round.id}
-                    className={`absolute h-full cursor-pointer transition-opacity hover:opacity-80 bg-blue-400/50 border-l-2 border-r-2 border-blue-500 ${isOpen ? 'animate-pulse' : ''}`}
-                    style={{ 
-                      left: `${(round.startTime / duration) * 100}%`,
-                      width: `${((endTime - round.startTime) / duration) * 100}%`,
-                      minWidth: '4px'
-                    }}
-                    title={`Round ${round.roundNumber}: ${formatTime(round.startTime)} - ${round.endTime ? formatTime(round.endTime) : 'σε εξέλιξη'}`}
-                    onClick={() => seek(round.startTime)}
-                  >
-                    <div className="absolute -top-0.5 left-1 text-[9px] font-bold text-blue-700">
-                      R{round.roundNumber}
-                    </div>
-                  </div>
-                );
-              })}
-              
-              {/* Current position indicator */}
-              <div 
-                className="absolute w-0.5 h-full bg-black z-10"
-                style={{ left: `${(currentTime / duration) * 100}%` }}
-              />
+            {/* Zoom Controls */}
+            <div className="flex items-center justify-between bg-gray-50 border border-gray-200 p-1.5 rounded-none">
+              <div className="flex items-center gap-2">
+                <ZoomIn className="w-4 h-4 text-gray-500" />
+                <span className="text-xs text-gray-600">Zoom: {timelineZoom.toFixed(1)}x</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 w-6 p-0 rounded-none"
+                  onClick={() => setTimelineZoom(Math.max(1, timelineZoom - 0.5))}
+                  disabled={timelineZoom <= 1}
+                >
+                  <Minus className="w-3 h-3" />
+                </Button>
+                <Slider
+                  value={[timelineZoom]}
+                  min={1}
+                  max={10}
+                  step={0.5}
+                  onValueChange={(value) => setTimelineZoom(value[0])}
+                  className="w-24"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 w-6 p-0 rounded-none"
+                  onClick={() => setTimelineZoom(Math.min(10, timelineZoom + 0.5))}
+                  disabled={timelineZoom >= 10}
+                >
+                  <PlusIcon className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 rounded-none text-xs"
+                  onClick={() => setTimelineZoom(1)}
+                  disabled={timelineZoom === 1}
+                >
+                  Reset
+                </Button>
+              </div>
             </div>
             
-            {/* Action Flags Timeline */}
-            <div className="relative h-6 bg-gray-100 rounded-none border border-gray-200">
-              {/* Action flag markers */}
-              {actionFlags.map((flag) => {
-                const endTime = flag.endTime ?? currentTime;
-                const isOpen = flag.endTime === null;
-                return (
-                  <div
-                    key={flag.id}
-                    className={`absolute h-full cursor-pointer transition-opacity hover:opacity-80 ${
-                      flag.type === 'attack' 
-                        ? 'bg-[#00ffba]/60 border-l-2 border-r-2 border-[#00ffba]' 
-                        : 'bg-red-500/60 border-l-2 border-r-2 border-red-500'
-                    } ${isOpen ? 'animate-pulse' : ''}`}
+            {/* Scrollable Timeline Container */}
+            <div 
+              ref={timelineScrollRef}
+              className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+              style={{ 
+                scrollbarWidth: 'thin',
+              }}
+            >
+              <div style={{ width: `${100 * timelineZoom}%`, minWidth: '100%' }}>
+                {/* Rounds Timeline */}
+                <div className="relative h-5 bg-blue-50 rounded-none border border-blue-200">
+                  {roundMarkers.map((round) => {
+                    const endTime = round.endTime ?? currentTime;
+                    const isOpen = round.endTime === null;
+                    return (
+                      <div
+                        key={round.id}
+                        className={`absolute h-full cursor-pointer transition-opacity hover:opacity-80 bg-blue-400/50 border-l-2 border-r-2 border-blue-500 ${isOpen ? 'animate-pulse' : ''}`}
+                        style={{ 
+                          left: `${(round.startTime / duration) * 100}%`,
+                          width: `${((endTime - round.startTime) / duration) * 100}%`,
+                          minWidth: '4px'
+                        }}
+                        title={`Round ${round.roundNumber}: ${formatTime(round.startTime)} - ${round.endTime ? formatTime(round.endTime) : 'σε εξέλιξη'}`}
+                        onClick={() => seek(round.startTime)}
+                      >
+                        <div className="absolute -top-0.5 left-1 text-[9px] font-bold text-blue-700">
+                          R{round.roundNumber}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Current position indicator */}
+                  <div 
+                    className="absolute w-0.5 h-full bg-black z-10"
+                    style={{ left: `${(currentTime / duration) * 100}%` }}
+                  />
+                </div>
+                
+                {/* Action Flags Timeline */}
+                <div className="relative h-6 bg-gray-100 rounded-none border border-gray-200 mt-1">
+                  {/* Action flag markers */}
+                  {actionFlags.map((flag) => {
+                    const endTime = flag.endTime ?? currentTime;
+                    const isOpen = flag.endTime === null;
+                    return (
+                      <div
+                        key={flag.id}
+                        className={`absolute h-full cursor-pointer transition-opacity hover:opacity-80 ${
+                          flag.type === 'attack' 
+                            ? 'bg-[#00ffba]/60 border-l-2 border-r-2 border-[#00ffba]' 
+                            : 'bg-red-500/60 border-l-2 border-r-2 border-red-500'
+                        } ${isOpen ? 'animate-pulse' : ''}`}
+                        style={{ 
+                          left: `${(flag.startTime / duration) * 100}%`,
+                          width: `${((endTime - flag.startTime) / duration) * 100}%`,
+                          minWidth: '4px'
+                        }}
+                        title={`${flag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'}: ${formatTime(flag.startTime)} - ${flag.endTime ? formatTime(flag.endTime) : 'σε εξέλιξη'}`}
+                        onClick={() => seek(flag.startTime)}
+                      >
+                        <Flag className={`w-3 h-3 absolute -top-0.5 -left-1.5 ${
+                          flag.type === 'attack' ? 'text-[#00ffba]' : 'text-red-500'
+                        }`} />
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Strike markers */}
+                  {strikeMarkers.map((marker) => {
+                    const roundText = marker.roundNumber 
+                      ? ` | R${marker.roundNumber} @ ${formatTimeInRound(marker.timeInRound!)}`
+                      : '';
+                    const hitText = marker.hitTarget ? ' ✓ Βρήκε στόχο' : ' ✗ Άστοχο';
+                    return (
+                      <div
+                        key={marker.id}
+                        className={`absolute cursor-pointer z-20 transform -translate-x-1/2 top-1/2 -translate-y-1/2 transition-all hover:scale-150 ${
+                          marker.hitTarget 
+                            ? 'w-3 h-3 rounded-full' 
+                            : 'w-2 h-2 rounded-full opacity-60'
+                        } ${
+                          marker.owner === 'athlete' 
+                            ? marker.hitTarget 
+                              ? 'bg-[#00ffba] border-2 border-[#00997a] ring-2 ring-[#00ffba]/50' 
+                              : 'bg-[#00ffba]/50 border border-[#00997a]/50'
+                            : marker.hitTarget 
+                              ? 'bg-[#cb8954] border-2 border-[#a06b3d] ring-2 ring-[#cb8954]/50' 
+                              : 'bg-[#cb8954]/50 border border-[#a06b3d]/50'
+                        }`}
+                        style={{ left: `${(marker.time / duration) * 100}%` }}
+                        title={`${marker.strikeTypeName} (${marker.owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) - ${formatTime(marker.time)}${roundText}${hitText} | Κλικ για αλλαγή`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleStrikeHitTarget(marker.id);
+                        }}
+                      />
+                    );
+                  })}
+                  
+                  {/* Current position indicator */}
+                  <div 
+                    className="absolute w-0.5 h-full bg-black z-10"
+                    style={{ left: `${(currentTime / duration) * 100}%` }}
+                  />
+                </div>
+
+                {/* Trim markers on timeline */}
+                <div className="relative h-2 bg-gray-200 rounded-none mt-1">
+                  {/* Playback progress */}
+                  <div 
+                    className="absolute h-full bg-[#00ffba] rounded-none"
+                    style={{ width: `${(currentTime / duration) * 100}%` }}
+                  />
+                  
+                  {/* Trim range indicator */}
+                  <div 
+                    className="absolute h-full bg-blue-500/30"
                     style={{ 
-                      left: `${(flag.startTime / duration) * 100}%`,
-                      width: `${((endTime - flag.startTime) / duration) * 100}%`,
-                      minWidth: '4px'
-                    }}
-                    title={`${flag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'}: ${formatTime(flag.startTime)} - ${flag.endTime ? formatTime(flag.endTime) : 'σε εξέλιξη'}`}
-                    onClick={() => seek(flag.startTime)}
-                  >
-                    <Flag className={`w-3 h-3 absolute -top-0.5 -left-1.5 ${
-                      flag.type === 'attack' ? 'text-[#00ffba]' : 'text-red-500'
-                    }`} />
-                  </div>
-                );
-              })}
-              
-              {/* Strike markers */}
-              {strikeMarkers.map((marker) => {
-                const roundText = marker.roundNumber 
-                  ? ` | R${marker.roundNumber} @ ${formatTimeInRound(marker.timeInRound!)}`
-                  : '';
-                const hitText = marker.hitTarget ? ' ✓ Βρήκε στόχο' : ' ✗ Άστοχο';
-                return (
-                  <div
-                    key={marker.id}
-                    className={`absolute cursor-pointer z-20 transform -translate-x-1/2 top-1/2 -translate-y-1/2 transition-all hover:scale-150 ${
-                      marker.hitTarget 
-                        ? 'w-3 h-3 rounded-full' 
-                        : 'w-2 h-2 rounded-full opacity-60'
-                    } ${
-                      marker.owner === 'athlete' 
-                        ? marker.hitTarget 
-                          ? 'bg-[#00ffba] border-2 border-[#00997a] ring-2 ring-[#00ffba]/50' 
-                          : 'bg-[#00ffba]/50 border border-[#00997a]/50'
-                        : marker.hitTarget 
-                          ? 'bg-[#cb8954] border-2 border-[#a06b3d] ring-2 ring-[#cb8954]/50' 
-                          : 'bg-[#cb8954]/50 border border-[#a06b3d]/50'
-                    }`}
-                    style={{ left: `${(marker.time / duration) * 100}%` }}
-                    title={`${marker.strikeTypeName} (${marker.owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'}) - ${formatTime(marker.time)}${roundText}${hitText} | Κλικ για αλλαγή`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleStrikeHitTarget(marker.id);
+                      left: `${(trimStart / duration) * 100}%`,
+                      width: `${((trimEnd - trimStart) / duration) * 100}%`
                     }}
                   />
-                );
-              })}
-              
-              {/* Current position indicator */}
-              <div 
-                className="absolute w-0.5 h-full bg-black z-10"
-                style={{ left: `${(currentTime / duration) * 100}%` }}
-              />
-            </div>
-
-            {/* Trim markers on timeline */}
-            <div className="relative h-2 bg-gray-200 rounded-none">
-              {/* Playback progress */}
-              <div 
-                className="absolute h-full bg-[#00ffba] rounded-none"
-                style={{ width: `${(currentTime / duration) * 100}%` }}
-              />
-              
-              {/* Trim range indicator */}
-              <div 
-                className="absolute h-full bg-blue-500/30"
-                style={{ 
-                  left: `${(trimStart / duration) * 100}%`,
-                  width: `${((trimEnd - trimStart) / duration) * 100}%`
-                }}
-              />
-              
-              {/* Clip markers */}
-              {clips.map((clip, i) => (
-                <div
-                  key={clip.id}
-                  className="absolute h-full bg-purple-500/50 border-l-2 border-r-2 border-purple-600"
-                  style={{ 
-                    left: `${(clip.startTime / duration) * 100}%`,
-                    width: `${((clip.endTime - clip.startTime) / duration) * 100}%`
-                  }}
-                  title={clip.label}
-                />
-              ))}
+                  
+                  {/* Clip markers */}
+                  {clips.map((clip, i) => (
+                    <div
+                      key={clip.id}
+                      className="absolute h-full bg-purple-500/50 border-l-2 border-r-2 border-purple-600"
+                      style={{ 
+                        left: `${(clip.startTime / duration) * 100}%`,
+                        width: `${((clip.endTime - clip.startTime) / duration) * 100}%`
+                      }}
+                      title={clip.label}
+                    />
+                  ))}
+                </div>
+                
+                {/* Time markers */}
+                {timelineZoom > 1 && (
+                  <div className="relative h-3 flex">
+                    {Array.from({ length: Math.ceil(duration / (timelineZoom > 5 ? 1 : 5)) + 1 }).map((_, i) => {
+                      const time = i * (timelineZoom > 5 ? 1 : 5);
+                      if (time > duration) return null;
+                      return (
+                        <div
+                          key={i}
+                          className="absolute text-[8px] text-gray-400 transform -translate-x-1/2"
+                          style={{ left: `${(time / duration) * 100}%` }}
+                        >
+                          {formatTime(time)}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
             
-            {/* Seek slider */}
+            {/* Seek slider - outside zoom container */}
             <Slider
               value={[currentTime]}
               min={0}
