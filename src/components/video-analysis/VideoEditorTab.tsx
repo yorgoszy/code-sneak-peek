@@ -1009,13 +1009,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
 
           {/* Timeline with Zoom */}
           <div className="mt-2 space-y-2">
-            {/* Zoom Controls */}
-            <div className="flex items-center justify-between bg-gray-50 border border-gray-200 p-1.5 rounded-none">
+            {/* Zoom Controls + Volume + Speed */}
+            <div className="flex items-center justify-between bg-gray-50 border border-gray-200 p-1.5 rounded-none flex-wrap gap-2">
+              {/* Zoom */}
               <div className="flex items-center gap-2">
                 <ZoomIn className="w-4 h-4 text-gray-500" />
                 <span className="text-xs text-gray-600">Zoom: {timelineZoom.toFixed(1)}x</span>
-              </div>
-              <div className="flex items-center gap-1">
                 <Button
                   variant="outline"
                   size="sm"
@@ -1031,7 +1030,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                   max={10}
                   step={0.5}
                   onValueChange={(value) => setTimelineZoom(value[0])}
-                  className="w-24"
+                  className="w-20"
                 />
                 <Button
                   variant="outline"
@@ -1051,6 +1050,37 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                 >
                   Reset
                 </Button>
+              </div>
+              
+              {/* Volume */}
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 rounded-none" onClick={toggleMute}>
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </Button>
+                <div className="w-16">
+                  <Slider
+                    value={[isMuted ? 0 : volume]}
+                    min={0}
+                    max={1}
+                    step={0.1}
+                    onValueChange={changeVolume}
+                  />
+                </div>
+              </div>
+              
+              {/* Speed */}
+              <div className="flex items-center gap-1">
+                {[0.25, 0.5, 1, 1.5, 2].map(rate => (
+                  <Button
+                    key={rate}
+                    variant={playbackRate === rate ? "default" : "outline"}
+                    size="sm"
+                    className={`rounded-none text-xs px-2 h-6 ${playbackRate === rate ? 'bg-[#00ffba] text-black' : ''}`}
+                    onClick={() => changePlaybackRate(rate)}
+                  >
+                    {rate}x
+                  </Button>
+                ))}
               </div>
             </div>
             
@@ -1545,53 +1575,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
               </div>
             </div>
             
-            {/* Trim Controls */}
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-3 min-w-[200px]">
-              <div className="flex items-center gap-1.5">
-                <Scissors className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium">Κοπή</span>
-              </div>
-              
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-none h-8 text-xs px-2.5"
-                  onClick={setTrimStartToCurrent}
-                  title="Ορισμός αρχής"
-                >
-                  [
-                </Button>
-                <Badge variant="outline" className="rounded-none font-mono text-xs px-1.5">
-                  {formatTime(trimEnd - trimStart)}
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-none h-8 text-xs px-2.5"
-                  onClick={setTrimEndToCurrent}
-                  title="Ορισμός τέλους"
-                >
-                  ]
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-none h-8 text-xs"
-                  onClick={previewTrim}
-                >
-                  <Play className="w-3.5 h-3.5" />
-                </Button>
-                <Button
-                  size="sm"
-                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-8 text-xs"
-                  onClick={() => setIsAddingClip(true)}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
-            
             {/* Export Controls */}
             <div className="p-3 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-3 min-w-[180px]">
               <div className="flex items-center gap-1.5">
@@ -1712,35 +1695,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
             <Button variant="outline" size="sm" className="rounded-none" onClick={frameForward}>
               <ChevronRight className="w-4 h-4" />
             </Button>
-            
-            <div className="flex items-center gap-2 ml-4">
-              <Button variant="outline" size="sm" className="rounded-none" onClick={toggleMute}>
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              </Button>
-              <div className="w-20">
-                <Slider
-                  value={[isMuted ? 0 : volume]}
-                  min={0}
-                  max={1}
-                  step={0.1}
-                  onValueChange={changeVolume}
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-1 ml-4">
-              {[0.25, 0.5, 1, 1.5, 2].map(rate => (
-                <Button
-                  key={rate}
-                  variant={playbackRate === rate ? "default" : "outline"}
-                  size="sm"
-                  className={`rounded-none text-xs px-2 ${playbackRate === rate ? 'bg-[#00ffba] text-black' : ''}`}
-                  onClick={() => changePlaybackRate(rate)}
-                >
-                  {rate}x
-                </Button>
-              ))}
-            </div>
           </div>
         </CardContent>
       </Card>
