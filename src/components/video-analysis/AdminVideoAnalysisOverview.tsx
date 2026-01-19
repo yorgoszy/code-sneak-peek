@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy, Palette } from 'lucide-react';
-import { IconPreview } from './icons/IconPreview';
+import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy } from 'lucide-react';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useFightStats, defaultFightStats, FightStats } from '@/hooks/useFightStats';
@@ -53,7 +52,7 @@ export const AdminVideoAnalysisOverview = () => {
   const [selectedFightId, setSelectedFightId] = useState<string | null>(null);
   const [isRecordingOpen, setIsRecordingOpen] = useState(false);
   const [isStrikeTypesOpen, setIsStrikeTypesOpen] = useState(false);
-  const [isIconPreviewOpen, setIsIconPreviewOpen] = useState(false);
+  
   
   // Fights state
   const [fights, setFights] = useState<Fight[]>([]);
@@ -275,14 +274,6 @@ export const AdminVideoAnalysisOverview = () => {
             className="rounded-none h-9"
           >
             <Settings className="w-4 h-4" />
-          </Button>
-          <Button
-            onClick={() => setIsIconPreviewOpen(true)}
-            variant="outline"
-            size="sm"
-            className="rounded-none h-9"
-          >
-            <Palette className="w-4 h-4" />
           </Button>
           <h1 className="text-lg font-semibold">Video Analysis</h1>
         </div>
@@ -559,10 +550,6 @@ export const AdminVideoAnalysisOverview = () => {
         onSave={fetchFights}
       />
 
-      <IconPreview
-        isOpen={isIconPreviewOpen}
-        onClose={() => setIsIconPreviewOpen(false)}
-      />
     </div>
   );
 };
