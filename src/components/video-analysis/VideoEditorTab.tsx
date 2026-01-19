@@ -1363,7 +1363,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
             {strikeMarkers.length > 0 && (
               <div className="mt-2 max-h-32 overflow-y-auto border border-gray-200 rounded-none bg-gray-50">
                 <div className="p-2 space-y-1">
-                  {strikeMarkers.map((marker, index) => {
+                  {[...strikeMarkers].reverse().map((marker, index) => {
                     const roundText = marker.roundNumber 
                       ? `R${marker.roundNumber}` 
                       : '';

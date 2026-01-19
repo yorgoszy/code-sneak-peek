@@ -198,7 +198,7 @@ export const AdminVideoAnalysisOverview = () => {
   // Second row of stats
   const statCards2 = [
     {
-      title: 'Γροθιές',
+      title: 'Box',
       value: stats?.punchesTotal || 0,
       subtitle: `${stats?.punchesLanded || 0} επιτυχ.`,
       icon: Target,
