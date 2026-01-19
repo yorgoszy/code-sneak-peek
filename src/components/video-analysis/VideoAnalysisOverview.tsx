@@ -9,6 +9,7 @@ import { useVideoAnalysisStats } from '@/hooks/useVideoAnalysisStats';
 import { FightRecordingDialog } from './FightRecordingDialog';
 import { StrikeTypesDialog } from './StrikeTypesDialog';
 import { VideoEditorTab } from './VideoEditorTab';
+import { FightsHistoryTab } from './FightsHistoryTab';
 import { useCoachContext } from '@/contexts/CoachContext';
 
 export const VideoAnalysisOverview = () => {
@@ -284,22 +285,13 @@ export const VideoAnalysisOverview = () => {
             </TabsContent>
 
             <TabsContent value="fights" className="mt-4">
-              <Card className="rounded-none">
-                <CardHeader>
-                  <CardTitle>Ιστορικό Αγώνων</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {stats?.totalFights === 0 ? (
-                    <p className="text-gray-500 text-center py-8">
-                      Δεν υπάρχουν καταχωρημένοι αγώνες
-                    </p>
-                  ) : (
-                    <p className="text-gray-500 text-center py-8">
-                      {stats?.totalFights || 0} αγώνες καταχωρημένοι
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+              <FightsHistoryTab 
+                userId={selectedUserId} 
+                onRefresh={() => {
+                  setSelectedUserId('');
+                  setTimeout(() => setSelectedUserId(selectedUserId), 100);
+                }}
+              />
             </TabsContent>
           </Tabs>
         </>
