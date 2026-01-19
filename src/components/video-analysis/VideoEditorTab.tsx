@@ -1127,7 +1127,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                     return (
                       <div
                         key={flag.id}
-                        className={`absolute h-full transition-opacity ${
+                        className={`absolute h-full transition-opacity group ${
                           flag.type === 'attack' 
                             ? 'bg-[#00ffba]/60' 
                             : 'bg-red-500/60'
@@ -1152,7 +1152,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                         
                         {/* Center - click to seek */}
                         <div 
-                          className="absolute left-2 right-6 top-0 h-full cursor-pointer hover:opacity-80 flex items-center"
+                          className="absolute left-2 right-2 top-0 h-full cursor-pointer hover:opacity-80 flex items-center"
                           onClick={() => seek(flag.startTime)}
                         >
                           <Flag className={`w-3 h-3 ${
@@ -1165,9 +1165,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                           </span>
                         </div>
                         
-                        {/* Delete button */}
+                        {/* Delete button - appears on hover, positioned above the flag */}
                         <button
-                          className={`absolute top-0.5 right-3 w-4 h-4 text-white rounded-full flex items-center justify-center text-[8px] font-bold z-10 ${
+                          className={`absolute -top-5 left-1/2 -translate-x-1/2 w-5 h-5 text-white rounded-full flex items-center justify-center text-xs font-bold z-20 opacity-0 group-hover:opacity-100 transition-opacity shadow-md ${
                             flag.type === 'attack' 
                               ? 'bg-[#00997a] hover:bg-[#00b894]' 
                               : 'bg-red-700 hover:bg-red-600'
