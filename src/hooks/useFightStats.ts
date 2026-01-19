@@ -8,7 +8,8 @@ export interface FightStats {
   totalDefenses: number;
   successfulDefenses: number;
   defenseSuccessRate: number;
-  actionTimeMinutes: number;
+  actionTimeSeconds: number;
+  actionTimeFormatted: string; // Format X:XX
   fightStyle: 'aggressive' | 'defensive' | 'balanced';
   attackDefenseRatio: number;
   
@@ -59,7 +60,8 @@ export const defaultFightStats: FightStats = {
   totalDefenses: 0,
   successfulDefenses: 0,
   defenseSuccessRate: 0,
-  actionTimeMinutes: 0,
+  actionTimeSeconds: 0,
+  actionTimeFormatted: '0:00',
   fightStyle: 'balanced',
   attackDefenseRatio: 1,
   correctStrikes: 0,
@@ -189,9 +191,12 @@ export const useFightStats = (fightId: string | null) => {
         if (attackDefenseRatio > 1.5) fightStyle = 'aggressive';
         else if (attackDefenseRatio < 0.67) fightStyle = 'defensive';
 
-        // Action time (sum of round durations)
-        const totalSeconds = rounds?.reduce((sum, r) => sum + (r.duration_seconds || 0), 0) || 0;
-        const actionTimeMinutes = Math.round((totalSeconds / 60) * 100) / 100;
+        // Action time (sum of round durations) - keep in seconds
+        const actionTimeSeconds = rounds?.reduce((sum, r) => sum + (r.duration_seconds || 0), 0) || 0;
+        // Format as X:XX (minutes:seconds)
+        const minutes = Math.floor(actionTimeSeconds / 60);
+        const seconds = actionTimeSeconds % 60;
+        const actionTimeFormatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
         setStats({
           totalStrikes,
@@ -200,7 +205,8 @@ export const useFightStats = (fightId: string | null) => {
           totalDefenses,
           successfulDefenses,
           defenseSuccessRate,
-          actionTimeMinutes,
+          actionTimeSeconds,
+          actionTimeFormatted,
           fightStyle,
           attackDefenseRatio,
           correctStrikes,
