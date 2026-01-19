@@ -231,8 +231,8 @@ export const AdminVideoAnalysisOverview = () => {
     },
     {
       title: 'Clinch',
-      value: stats?.clinchTotal || 0,
-      subtitle: stats?.clinchTimeFormatted || '0:00',
+      value: stats?.clinchTimeFormatted || '0:00',
+      subtitle: `${stats?.clinchTotal || 0} φορές`,
       icon: Users,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
