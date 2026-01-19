@@ -195,17 +195,17 @@ export const AdminVideoAnalysisOverview = () => {
   // Second row of stats
   const statCards2 = [
     {
-      title: 'Χέρι Αρ.',
-      value: stats?.leftHandStrikes || 0,
-      subtitle: `${stats?.leftHandPercentage || 0}%`,
+      title: 'Αριστ.',
+      value: stats?.leftSideStrikes || 0,
+      subtitle: `${stats?.leftSidePercentage || 0}%`,
       icon: Target,
       color: 'text-cyan-500',
       bgColor: 'bg-cyan-500/10',
     },
     {
-      title: 'Χέρι Δεξ.',
-      value: stats?.rightHandStrikes || 0,
-      subtitle: `${stats?.rightHandPercentage || 0}%`,
+      title: 'Δεξί',
+      value: stats?.rightSideStrikes || 0,
+      subtitle: `${stats?.rightSidePercentage || 0}%`,
       icon: Target,
       color: 'text-indigo-500',
       bgColor: 'bg-indigo-500/10',
@@ -241,6 +241,14 @@ export const AdminVideoAnalysisOverview = () => {
       icon: Activity,
       color: 'text-amber-500',
       bgColor: 'bg-amber-500/10',
+    },
+    {
+      title: 'Elbows',
+      value: stats?.elbowsTotal || 0,
+      subtitle: `${stats?.elbowsLanded || 0} επιτυχ.`,
+      icon: Activity,
+      color: 'text-teal-500',
+      bgColor: 'bg-teal-500/10',
     },
   ];
 

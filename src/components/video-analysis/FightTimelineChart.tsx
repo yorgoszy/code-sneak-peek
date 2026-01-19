@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Card, CardContent } from '@/components/ui/card';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TimelineDataPoint } from '@/hooks/useFightStats';
 
 interface FightTimelineChartProps {
@@ -46,7 +46,21 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ data, lo
         </div>
         <div className="h-24">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 2, right: 2, left: -25, bottom: 0 }} barSize={8}>
+            <AreaChart data={data} margin={{ top: 2, right: 2, left: -25, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorStrikes" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#00ffba" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#00ffba" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorAttacks" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorDefenses" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="2 2" stroke="#e5e5e5" vertical={false} />
               <XAxis 
                 dataKey="time" 
@@ -72,25 +86,31 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ data, lo
                 }}
                 labelFormatter={(label) => label}
               />
-              <Bar 
+              <Area 
+                type="monotone"
                 dataKey="strikes" 
                 name="Χτυπ." 
-                fill="#00ffba" 
-                radius={[1, 1, 0, 0]}
+                stroke="#00ffba" 
+                strokeWidth={2}
+                fill="url(#colorStrikes)"
               />
-              <Bar 
+              <Area 
+                type="monotone"
                 dataKey="attacks" 
                 name="Δέχτ." 
-                fill="#ef4444" 
-                radius={[1, 1, 0, 0]}
+                stroke="#ef4444" 
+                strokeWidth={2}
+                fill="url(#colorAttacks)"
               />
-              <Bar 
+              <Area 
+                type="monotone"
                 dataKey="defenses" 
                 name="Άμυν." 
-                fill="#8b5cf6" 
-                radius={[1, 1, 0, 0]}
+                stroke="#8b5cf6" 
+                strokeWidth={2}
+                fill="url(#colorDefenses)"
               />
-            </BarChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
