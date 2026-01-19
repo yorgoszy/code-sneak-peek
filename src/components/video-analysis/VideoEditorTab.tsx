@@ -1341,81 +1341,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                   </div>
                 )}
               </div>
-              
-              {/* Strike Boxes - List of strikes below timeline */}
-              {strikeMarkers.length > 0 && (
-                <div className="mt-2 max-h-32 overflow-y-auto border border-gray-200 rounded-none bg-gray-50">
-                  <div className="p-2 space-y-1">
-                    {strikeMarkers.map((marker, index) => {
-                      const roundText = marker.roundNumber 
-                        ? `R${marker.roundNumber}` 
-                        : '';
-                      
-                      // Status and styling based on owner and state
-                      let statusText = '';
-                      let statusColor = '';
-                      let bgColor = '';
-                      
-                      if (marker.owner === 'athlete') {
-                        statusText = marker.hitTarget ? 'Ορθό' : 'Λάθος';
-                        statusColor = marker.hitTarget ? 'text-[#00ffba]' : 'text-gray-400';
-                        bgColor = marker.hitTarget ? 'bg-[#00ffba]/10 border-[#00ffba]/30' : 'bg-gray-100 border-gray-200';
-                      } else {
-                        if (marker.blocked) {
-                          statusText = 'Μπλοκ';
-                          statusColor = 'text-blue-500';
-                          bgColor = 'bg-blue-50 border-blue-200';
-                        } else if (marker.hitTarget) {
-                          statusText = 'Χτύπησε';
-                          statusColor = 'text-red-500';
-                          bgColor = 'bg-red-50 border-red-200';
-                        } else {
-                          statusText = 'Άστοχο';
-                          statusColor = 'text-gray-400';
-                          bgColor = 'bg-gray-100 border-gray-200';
-                        }
-                      }
-                      
-                      return (
-                        <div
-                          key={marker.id}
-                          onClick={() => toggleStrikeState(marker.id)}
-                          className={`flex items-center justify-between p-2 border rounded-none cursor-pointer hover:opacity-80 transition-all ${bgColor}`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono text-gray-500 w-8">{formatTime(marker.time)}</span>
-                            <span className={`text-xs font-medium px-1.5 py-0.5 rounded-none ${
-                              marker.owner === 'athlete' 
-                                ? 'bg-[#00ffba]/20 text-[#00997a]' 
-                                : 'bg-[#cb8954]/20 text-[#a06b3d]'
-                            }`}>
-                              {marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'}
-                            </span>
-                            <span className="text-xs font-medium">{marker.strikeTypeName}</span>
-                            {roundText && (
-                              <span className="text-[10px] text-gray-400">{roundText}</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs font-semibold ${statusColor}`}>
-                              {statusText}
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setStrikeMarkers(prev => prev.filter(m => m.id !== marker.id));
-                              }}
-                              className="text-gray-400 hover:text-red-500 text-xs"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
             
             {/* Seek slider - outside zoom container */}
@@ -1433,6 +1358,81 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
+            
+            {/* Strike History - Below time bar */}
+            {strikeMarkers.length > 0 && (
+              <div className="mt-2 max-h-32 overflow-y-auto border border-gray-200 rounded-none bg-gray-50">
+                <div className="p-2 space-y-1">
+                  {strikeMarkers.map((marker, index) => {
+                    const roundText = marker.roundNumber 
+                      ? `R${marker.roundNumber}` 
+                      : '';
+                    
+                    // Status and styling based on owner and state
+                    let statusText = '';
+                    let statusColor = '';
+                    let bgColor = '';
+                    
+                    if (marker.owner === 'athlete') {
+                      statusText = marker.hitTarget ? 'Ορθό' : 'Λάθος';
+                      statusColor = marker.hitTarget ? 'text-[#00ffba]' : 'text-gray-400';
+                      bgColor = marker.hitTarget ? 'bg-[#00ffba]/10 border-[#00ffba]/30' : 'bg-gray-100 border-gray-200';
+                    } else {
+                      if (marker.blocked) {
+                        statusText = 'Μπλοκ';
+                        statusColor = 'text-blue-500';
+                        bgColor = 'bg-blue-50 border-blue-200';
+                      } else if (marker.hitTarget) {
+                        statusText = 'Χτύπησε';
+                        statusColor = 'text-red-500';
+                        bgColor = 'bg-red-50 border-red-200';
+                      } else {
+                        statusText = 'Άστοχο';
+                        statusColor = 'text-gray-400';
+                        bgColor = 'bg-gray-100 border-gray-200';
+                      }
+                    }
+                    
+                    return (
+                      <div
+                        key={marker.id}
+                        onClick={() => toggleStrikeState(marker.id)}
+                        className={`flex items-center justify-between p-2 border rounded-none cursor-pointer hover:opacity-80 transition-all ${bgColor}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono text-gray-500 w-8">{formatTime(marker.time)}</span>
+                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded-none ${
+                            marker.owner === 'athlete' 
+                              ? 'bg-[#00ffba]/20 text-[#00997a]' 
+                              : 'bg-[#cb8954]/20 text-[#a06b3d]'
+                          }`}>
+                            {marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'}
+                          </span>
+                          <span className="text-xs font-medium">{marker.strikeTypeName}</span>
+                          {roundText && (
+                            <span className="text-[10px] text-gray-400">{roundText}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-semibold ${statusColor}`}>
+                            {statusText}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setStrikeMarkers(prev => prev.filter(m => m.id !== marker.id));
+                            }}
+                            className="text-gray-400 hover:text-red-500 text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Tools Row - All in one line */}
