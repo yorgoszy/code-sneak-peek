@@ -746,15 +746,20 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
                 {/* Rounds Timeline */}
                 <div className="relative h-5 bg-blue-50 rounded-none border border-blue-200">
                   {roundMarkers.map((round) => {
-                    const endTime = round.endTime ?? currentTime;
                     const isOpen = round.endTime === null;
+                    // For open rounds, use the max of currentTime and startTime to prevent backwards jumping
+                    const effectiveEndTime = isOpen 
+                      ? Math.max(currentTime, round.startTime + 0.1) 
+                      : round.endTime!;
+                    const roundWidth = Math.max(0, ((effectiveEndTime - round.startTime) / duration) * 100);
+                    
                     return (
                       <div
                         key={round.id}
                         className={`absolute h-full cursor-pointer transition-opacity hover:opacity-80 bg-blue-400/50 border-l-2 border-r-2 border-blue-500 ${isOpen ? 'animate-pulse' : ''}`}
                         style={{ 
                           left: `${(round.startTime / duration) * 100}%`,
-                          width: `${((endTime - round.startTime) / duration) * 100}%`,
+                          width: `${roundWidth}%`,
                           minWidth: '4px'
                         }}
                         title={`Round ${round.roundNumber}: ${formatTime(round.startTime)} - ${round.endTime ? formatTime(round.endTime) : 'σε εξέλιξη'}`}
@@ -778,8 +783,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
                 <div className="relative h-6 bg-gray-100 rounded-none border border-gray-200 mt-1">
                   {/* Action flag markers */}
                   {actionFlags.map((flag) => {
-                    const endTime = flag.endTime ?? currentTime;
                     const isOpen = flag.endTime === null;
+                    // For open flags, use the max of currentTime and startTime to prevent backwards jumping
+                    const effectiveEndTime = isOpen 
+                      ? Math.max(currentTime, flag.startTime + 0.1) 
+                      : flag.endTime!;
+                    const flagWidth = Math.max(0, ((effectiveEndTime - flag.startTime) / duration) * 100);
+                    
                     return (
                       <div
                         key={flag.id}
@@ -790,7 +800,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
                         } ${isOpen ? 'animate-pulse' : ''}`}
                         style={{ 
                           left: `${(flag.startTime / duration) * 100}%`,
-                          width: `${((endTime - flag.startTime) / duration) * 100}%`,
+                          width: `${flagWidth}%`,
                           minWidth: '4px'
                         }}
                         title={`${flag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'}: ${formatTime(flag.startTime)} - ${flag.endTime ? formatTime(flag.endTime) : 'σε εξέλιξη'}`}
