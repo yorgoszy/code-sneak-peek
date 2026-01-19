@@ -30,6 +30,7 @@ import {
 
 interface Fight {
   id: string;
+  user_id: string;
   opponent_name: string | null;
   fight_date: string;
   result: string | null;
@@ -40,12 +41,14 @@ interface Fight {
   weight_class: string | null;
   notes: string | null;
   video_url: string | null;
+  // Joined fields
+  user_name?: string;
+  user_avatar?: string;
 }
 
 export const AdminVideoAnalysisOverview = () => {
   const { userProfile } = useRoleCheck();
   const adminId = userProfile?.id;
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [selectedFightId, setSelectedFightId] = useState<string | null>(null);
   const [isRecordingOpen, setIsRecordingOpen] = useState(false);
   const [isStrikeTypesOpen, setIsStrikeTypesOpen] = useState(false);
@@ -61,36 +64,45 @@ export const AdminVideoAnalysisOverview = () => {
   const { toast } = useToast();
   const { stats, loading: loadingStats } = useFightStats(selectedFightId);
 
-  // Fetch fights function
+  // Fetch ALL fights (with user info)
   const fetchFights = useCallback(async () => {
-    if (!selectedUserId) {
-      setFights([]);
-      setSelectedFightId(null);
-      return;
-    }
+    if (!adminId) return;
     
     setLoadingFights(true);
     try {
       const { data, error } = await supabase
         .from('muaythai_fights')
-        .select('*')
-        .eq('user_id', selectedUserId)
+        .select(`
+          *,
+          app_users!muaythai_fights_user_id_fkey (
+            name,
+            avatar_url
+          )
+        `)
+        .eq('coach_id', adminId)
         .order('fight_date', { ascending: false });
 
       if (error) throw error;
-      setFights(data || []);
+      
+      // Map the joined data
+      const mappedFights = (data || []).map((f: any) => ({
+        ...f,
+        user_name: f.app_users?.name,
+        user_avatar: f.app_users?.avatar_url
+      }));
+      
+      setFights(mappedFights);
     } catch (error) {
       console.error('Error fetching fights:', error);
     } finally {
       setLoadingFights(false);
     }
-  }, [selectedUserId]);
+  }, [adminId]);
 
-  // Fetch fights when user changes
+  // Fetch fights on mount
   useEffect(() => {
     fetchFights();
-    setSelectedFightId(null); // Reset selected fight
-  }, [selectedUserId, fetchFights]);
+  }, [fetchFights]);
 
   const handleDeleteFight = async () => {
     if (!selectedFightForAction) return;
@@ -261,27 +273,11 @@ export const AdminVideoAnalysisOverview = () => {
           >
             <Settings className="w-4 h-4" />
           </Button>
-          <div className="flex-1 max-w-xs">
-            <UserSearchCombobox
-              value={selectedUserId}
-              onValueChange={setSelectedUserId}
-              placeholder="Επιλέξτε χρήστη..."
-              coachId={adminId}
-            />
-          </div>
+          <h1 className="text-lg font-semibold">Video Analysis</h1>
         </div>
       </div>
 
-      {!selectedUserId ? (
-        <Card className="rounded-none">
-          <CardContent className="py-8 text-center">
-            <Users className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-            <p className="text-gray-500 text-sm">Επιλέξτε χρήστη</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          {/* Stats Cards Row 1 */}
+      {/* Stats Cards Row 1 - always show */}
           <div className="grid grid-cols-5 md:grid-cols-5 gap-2">
             {statCards.map((card, index) => (
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/20' : 'opacity-50'}`}>
@@ -411,37 +407,47 @@ export const AdminVideoAnalysisOverview = () => {
                     >
                       <CardContent className="p-3">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          {/* Left side - Fight info */}
-                          <div className="flex-1 space-y-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {getResultBadge(fight.result)}
-                              <Badge variant="outline" className="rounded-none text-xs">
-                                {getFightTypeLabel(fight.fight_type)}
-                              </Badge>
-                              {fight.weight_class && (
-                                <Badge variant="secondary" className="rounded-none text-xs">
-                                  {fight.weight_class}
-                                </Badge>
+                          {/* Left side - User Avatar + Fight info */}
+                          <div className="flex items-center gap-3 flex-1">
+                            {/* User Avatar */}
+                            <div className="flex-shrink-0">
+                              {fight.user_avatar ? (
+                                <img 
+                                  src={fight.user_avatar} 
+                                  alt={fight.user_name || ''} 
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                  <User className="w-5 h-5 text-gray-500" />
+                                </div>
                               )}
                             </div>
                             
-                            <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
-                              {fight.opponent_name && (
-                                <div className="flex items-center gap-1">
-                                  <User className="w-3 h-3" />
-                                  <span>vs {fight.opponent_name}</span>
-                                </div>
-                              )}
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                <span>{format(new Date(fight.fight_date), 'dd MMM yyyy', { locale: el })}</span>
+                            <div className="space-y-1 flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-medium truncate">{fight.user_name || 'Χρήστης'}</span>
+                                {getResultBadge(fight.result)}
+                                <Badge variant="outline" className="rounded-none text-xs">
+                                  {getFightTypeLabel(fight.fight_type)}
+                                </Badge>
                               </div>
-                              {fight.location && (
+                              
+                              <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
+                                {fight.opponent_name && (
+                                  <span>vs {fight.opponent_name}</span>
+                                )}
                                 <div className="flex items-center gap-1">
-                                  <MapPin className="w-3 h-3" />
-                                  <span>{fight.location}</span>
+                                  <Calendar className="w-3 h-3" />
+                                  <span>{format(new Date(fight.fight_date), 'dd MMM yyyy', { locale: el })}</span>
                                 </div>
-                              )}
+                                {fight.location && (
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" />
+                                    <span>{fight.location}</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
 
@@ -491,29 +497,17 @@ export const AdminVideoAnalysisOverview = () => {
 
             {/* Editor Tab */}
             <TabsContent value="editor" className="mt-4">
-              <VideoEditorTab userId={selectedUserId} onFightSaved={fetchFights} />
+              <VideoEditorTab onFightSaved={fetchFights} />
             </TabsContent>
           </Tabs>
-        </>
-      )}
 
       {/* Dialogs */}
-      <FightRecordingDialog
-        isOpen={isRecordingOpen}
-        onClose={() => setIsRecordingOpen(false)}
-        userId={selectedUserId}
-        coachId={adminId}
-        onSuccess={() => {
-          setSelectedUserId('');
-          setTimeout(() => setSelectedUserId(selectedUserId), 100);
-        }}
-      />
-
       <StrikeTypesDialog
         isOpen={isStrikeTypesOpen}
         onClose={() => setIsStrikeTypesOpen(false)}
         coachId={adminId}
       />
+
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="rounded-none">
@@ -551,18 +545,7 @@ export const AdminVideoAnalysisOverview = () => {
           setSelectedFightForAction(null);
         }}
         fight={selectedFightForAction}
-        onSave={() => {
-          // Refresh fights
-          const fetchFights = async () => {
-            const { data } = await supabase
-              .from('muaythai_fights')
-              .select('*')
-              .eq('user_id', selectedUserId)
-              .order('fight_date', { ascending: false });
-            setFights(data || []);
-          };
-          fetchFights();
-        }}
+        onSave={fetchFights}
       />
     </div>
   );
