@@ -232,47 +232,44 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
                 Δεν έχετε δημιουργήσει χτυπήματα ακόμα
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {Object.entries(groupedStrikes).map(([category, strikes]) => (
-                  <div key={category}>
-                    <h3 className="text-sm font-semibold text-gray-600 mb-2 flex items-center gap-2">
-                      <div className={`w-3 h-3 ${getCategoryColor(category)} rounded-full`} />
-                      {categoryLabels[category]}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div key={category} className="border border-gray-200 rounded-none p-2">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className={`w-2 h-2 ${getCategoryColor(category)} rounded-full`} />
+                      <span className="text-xs font-semibold text-gray-600">{categoryLabels[category]}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
                       {strikes.map((strike) => (
-                        <Card key={strike.id} className="rounded-none">
-                          <CardContent className="p-3 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Badge className={`${getCategoryColor(strike.category)} text-white rounded-none`}>
-                                {strike.name}
-                              </Badge>
-                              {strike.side && (
-                                <span className="text-xs text-gray-500">
-                                  ({sideLabels[strike.side]})
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleEdit(strike)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteClick(strike.id)}
-                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
+                        <div 
+                          key={strike.id} 
+                          className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-1.5 py-0.5 group hover:bg-gray-100"
+                        >
+                          <Badge className={`${getCategoryColor(strike.category)} text-white rounded-none text-[10px] px-1.5 py-0`}>
+                            {strike.name}
+                          </Badge>
+                          {strike.side && (
+                            <span className="text-[9px] text-gray-500">
+                              ({sideLabels[strike.side]})
+                            </span>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEdit(strike)}
+                            className="h-5 w-5 p-0 opacity-50 hover:opacity-100"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteClick(strike.id)}
+                            className="h-5 w-5 p-0 opacity-50 hover:opacity-100 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
                       ))}
                     </div>
                   </div>
