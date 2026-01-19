@@ -41,7 +41,6 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
           <div className="flex items-center gap-3 text-[10px]">
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-[#00ffba]"></span>Χτυπ.</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-red-500"></span>Δέχτ.</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-violet-500"></span>Άμυν.</span>
           </div>
         </div>
         
@@ -63,10 +62,6 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
                       <linearGradient id={`colorAttacks-${round.roundNumber}`} x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
                         <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id={`colorDefenses-${round.roundNumber}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="2 2" stroke="#e5e5e5" vertical={false} />
@@ -111,14 +106,6 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
                       stroke="#ef4444" 
                       strokeWidth={1.5}
                       fill={`url(#colorAttacks-${round.roundNumber})`}
-                    />
-                    <Area 
-                      type="monotone"
-                      dataKey="defenses" 
-                      name="Άμυν." 
-                      stroke="#8b5cf6" 
-                      strokeWidth={1.5}
-                      fill={`url(#colorDefenses-${round.roundNumber})`}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
