@@ -147,6 +147,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
   // Drag state for round markers
   const [draggingRound, setDraggingRound] = useState<{ id: string; edge: 'start' | 'end' } | null>(null);
   
+  // Drag state for action flags
+  const [draggingFlag, setDraggingFlag] = useState<{ id: string; edge: 'start' | 'end' } | null>(null);
+  
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -489,17 +492,63 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
     }
   }, [draggingRound]);
 
+  // Drag handlers for action flags
+  const handleFlagDragStart = (e: React.MouseEvent, flagId: string, edge: 'start' | 'end') => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggingFlag({ id: flagId, edge });
+  };
+
+  const handleFlagDrag = useCallback((e: MouseEvent) => {
+    if (!draggingFlag || !timelineContainerRef.current) return;
+    
+    const rect = timelineContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, x / rect.width));
+    const newTime = percentage * duration;
+    
+    setActionFlags(prev => prev.map(flag => {
+      if (flag.id !== draggingFlag.id) return flag;
+      
+      if (draggingFlag.edge === 'start') {
+        const maxStart = flag.endTime ? flag.endTime - 0.1 : duration - 0.1;
+        return { ...flag, startTime: Math.min(newTime, maxStart) };
+      } else {
+        const minEnd = flag.startTime + 0.1;
+        return { ...flag, endTime: Math.max(newTime, minEnd) };
+      }
+    }));
+  }, [draggingFlag, duration]);
+
+  const handleFlagDragEnd = useCallback(() => {
+    if (draggingFlag) {
+      setDraggingFlag(null);
+    }
+  }, [draggingFlag]);
+
   // Add/remove mouse event listeners for dragging
   useEffect(() => {
-    if (draggingRound) {
-      window.addEventListener('mousemove', handleRoundDrag);
-      window.addEventListener('mouseup', handleRoundDragEnd);
+    const isDragging = draggingRound || draggingFlag;
+    
+    if (isDragging) {
+      const handleDrag = (e: MouseEvent) => {
+        if (draggingRound) handleRoundDrag(e);
+        if (draggingFlag) handleFlagDrag(e);
+      };
+      
+      const handleDragEnd = () => {
+        handleRoundDragEnd();
+        handleFlagDragEnd();
+      };
+      
+      window.addEventListener('mousemove', handleDrag);
+      window.addEventListener('mouseup', handleDragEnd);
       return () => {
-        window.removeEventListener('mousemove', handleRoundDrag);
-        window.removeEventListener('mouseup', handleRoundDragEnd);
+        window.removeEventListener('mousemove', handleDrag);
+        window.removeEventListener('mouseup', handleDragEnd);
       };
     }
-  }, [draggingRound, handleRoundDrag, handleRoundDragEnd]);
+  }, [draggingRound, draggingFlag, handleRoundDrag, handleRoundDragEnd, handleFlagDrag, handleFlagDragEnd]);
 
   // Add strike marker at current time
   const addStrikeMarker = (strikeType: StrikeType) => {
@@ -983,8 +1032,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
               }}
             >
               <div ref={timelineContainerRef} style={{ width: `${100 * timelineZoom}%`, minWidth: '100%' }}>
-                {/* Rounds Timeline */}
-                <div className="relative h-6 bg-blue-50 rounded-none border border-blue-200">
+                {/* Rounds Timeline - Enlarged */}
+                <div className="relative h-10 bg-blue-50 rounded-none border border-blue-200">
                   {roundMarkers.map((round) => {
                     const isOpen = round.endTime === null;
                     // For open rounds, use the max of currentTime and startTime to prevent backwards jumping
@@ -993,6 +1042,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                       : round.endTime!;
                     const roundWidth = Math.max(0, ((effectiveEndTime - round.startTime) / duration) * 100);
                     const isDragging = draggingRound?.id === round.id;
+                    const roundDuration = effectiveEndTime - round.startTime;
+                    const roundMinutes = Math.floor(roundDuration / 60);
+                    const roundSeconds = Math.floor(roundDuration % 60);
+                    const durationText = `${roundMinutes}:${roundSeconds.toString().padStart(2, '0')}`;
                     
                     return (
                       <div
@@ -1001,9 +1054,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                         style={{ 
                           left: `${(round.startTime / duration) * 100}%`,
                           width: `${roundWidth}%`,
-                          minWidth: '20px'
+                          minWidth: '40px'
                         }}
-                        title={`Round ${round.roundNumber}: ${formatTime(round.startTime)} - ${round.endTime ? formatTime(round.endTime) : 'σε εξέλιξη'}`}
+                        title={`Round ${round.roundNumber}: ${formatTime(round.startTime)} - ${round.endTime ? formatTime(round.endTime) : 'σε εξέλιξη'} (${durationText})`}
                       >
                         {/* Start edge drag handle */}
                         <div 
@@ -1014,11 +1067,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                         
                         {/* Center - click to seek */}
                         <div 
-                          className="absolute left-2 right-2 top-0 h-full cursor-pointer hover:bg-blue-500/20"
+                          className="absolute left-2 right-2 top-0 h-full cursor-pointer hover:bg-blue-500/20 flex flex-col justify-center"
                           onClick={() => seek(round.startTime)}
                         >
-                          <div className="absolute top-0.5 left-1 text-[9px] font-bold text-blue-700">
+                          <div className="text-[10px] font-bold text-blue-700 leading-tight">
                             R{round.roundNumber}
+                          </div>
+                          <div className="text-[9px] text-blue-600 leading-tight">
+                            {durationText}
                           </div>
                         </div>
                         
@@ -1042,7 +1098,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                 </div>
                 
                 {/* Action Flags Timeline */}
-                <div className="relative h-6 bg-gray-100 rounded-none border border-gray-200 mt-1">
+                <div className="relative h-8 bg-gray-100 rounded-none border border-gray-200 mt-1">
                   {/* Action flag markers */}
                   {actionFlags.map((flag) => {
                     const isOpen = flag.endTime === null;
@@ -1051,26 +1107,61 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                       ? Math.max(currentTime, flag.startTime + 0.1) 
                       : flag.endTime!;
                     const flagWidth = Math.max(0, ((effectiveEndTime - flag.startTime) / duration) * 100);
+                    const isDraggingThis = draggingFlag?.id === flag.id;
                     
                     return (
                       <div
                         key={flag.id}
-                        className={`absolute h-full cursor-pointer transition-opacity hover:opacity-80 ${
+                        className={`absolute h-full transition-opacity ${
                           flag.type === 'attack' 
-                            ? 'bg-[#00ffba]/60 border-l-2 border-r-2 border-[#00ffba]' 
-                            : 'bg-red-500/60 border-l-2 border-r-2 border-red-500'
-                        } ${isOpen ? 'animate-pulse' : ''}`}
+                            ? 'bg-[#00ffba]/60' 
+                            : 'bg-red-500/60'
+                        } ${isOpen ? 'animate-pulse' : ''} ${isDraggingThis ? 'z-20' : ''}`}
                         style={{ 
                           left: `${(flag.startTime / duration) * 100}%`,
                           width: `${flagWidth}%`,
-                          minWidth: '4px'
+                          minWidth: '20px'
                         }}
                         title={`${flag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'}: ${formatTime(flag.startTime)} - ${flag.endTime ? formatTime(flag.endTime) : 'σε εξέλιξη'}`}
-                        onClick={() => seek(flag.startTime)}
                       >
-                        <Flag className={`w-3 h-3 absolute -top-0.5 -left-1.5 ${
-                          flag.type === 'attack' ? 'text-[#00ffba]' : 'text-red-500'
-                        }`} />
+                        {/* Start edge drag handle */}
+                        <div 
+                          className={`absolute left-0 top-0 w-2 h-full cursor-ew-resize transition-colors ${
+                            flag.type === 'attack' 
+                              ? 'bg-[#00997a] hover:bg-[#00b894]' 
+                              : 'bg-red-700 hover:bg-red-600'
+                          }`}
+                          onMouseDown={(e) => handleFlagDragStart(e, flag.id, 'start')}
+                          title="Σύρετε για αλλαγή αρχής"
+                        />
+                        
+                        {/* Center - click to seek */}
+                        <div 
+                          className="absolute left-2 right-2 top-0 h-full cursor-pointer hover:opacity-80 flex items-center"
+                          onClick={() => seek(flag.startTime)}
+                        >
+                          <Flag className={`w-3 h-3 ${
+                            flag.type === 'attack' ? 'text-[#00997a]' : 'text-red-700'
+                          }`} />
+                          <span className={`ml-1 text-[8px] font-medium ${
+                            flag.type === 'attack' ? 'text-[#00997a]' : 'text-red-700'
+                          }`}>
+                            {flag.type === 'attack' ? 'ΕΠ' : 'ΑΜ'}
+                          </span>
+                        </div>
+                        
+                        {/* End edge drag handle - only show if flag is closed */}
+                        {!isOpen && (
+                          <div 
+                            className={`absolute right-0 top-0 w-2 h-full cursor-ew-resize transition-colors ${
+                              flag.type === 'attack' 
+                                ? 'bg-[#00997a] hover:bg-[#00b894]' 
+                                : 'bg-red-700 hover:bg-red-600'
+                            }`}
+                            onMouseDown={(e) => handleFlagDragStart(e, flag.id, 'end')}
+                            title="Σύρετε για αλλαγή τέλους"
+                          />
+                        )}
                       </div>
                     );
                   })}
