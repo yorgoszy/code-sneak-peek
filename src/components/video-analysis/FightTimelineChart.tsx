@@ -39,7 +39,7 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-medium text-gray-600">Ανά 30"</span>
           <div className="flex items-center gap-3 text-[10px]">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-[#00ffba]"></span>Χτυπ.</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500"></span>Χτυπ.</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-red-500"></span>Δέχτ.</span>
           </div>
         </div>
@@ -56,8 +56,8 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
                   <AreaChart data={round.data} margin={{ top: 2, right: 2, left: -30, bottom: 0 }}>
                     <defs>
                       <linearGradient id={`colorStrikes-${round.roundNumber}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00ffba" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#00ffba" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                       </linearGradient>
                       <linearGradient id={`colorAttacks-${round.roundNumber}`} x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
@@ -95,7 +95,7 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
                       type="monotone"
                       dataKey="strikes" 
                       name="Χτυπ." 
-                      stroke="#00ffba" 
+                      stroke="#3b82f6" 
                       strokeWidth={1.5}
                       fill={`url(#colorStrikes-${round.roundNumber})`}
                     />
