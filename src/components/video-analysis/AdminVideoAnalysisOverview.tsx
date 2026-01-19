@@ -85,11 +85,11 @@ export const AdminVideoAnalysisOverview = () => {
 
       if (error) throw error;
       
-      // Map the joined data - use photo_url if avatar_url is not available
+      // Map the joined data - prefer photo_url over avatar_url
       const mappedFights = (data || []).map((f: any) => ({
         ...f,
         user_name: f.app_users?.name,
-        user_avatar: f.app_users?.avatar_url || f.app_users?.photo_url
+        user_avatar: f.app_users?.photo_url || f.app_users?.avatar_url
       }));
       
       setFights(mappedFights);
