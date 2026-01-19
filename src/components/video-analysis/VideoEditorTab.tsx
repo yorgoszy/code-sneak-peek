@@ -96,8 +96,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const { userProfile } = useRoleCheck();
   const coachId = userProfile?.id || null;
   
-  // User selection for saving fights
+  // User selection and opponent name for saving fights
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [opponentName, setOpponentName] = useState<string>('');
   
   // Strike types hook
   const { strikeTypes, loading: strikeTypesLoading } = useStrikeTypes(coachId);
@@ -768,7 +769,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
           coach_id: coachId,
           fight_date: new Date().toISOString().split('T')[0],
           fight_type: 'sparring',
-          opponent_name: 'Sparring Partner',
+          opponent_name: opponentName || 'Αντίπαλος',
           total_rounds: roundMarkers.length || 1,
           round_duration_seconds: avgRoundDuration,
           notes: `Video: ${videoFile?.name || 'Unknown'}`
@@ -1779,14 +1780,20 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
           Νέο
         </Button>
         <div className="flex items-center gap-2">
-          <div className="w-48">
+          <div className="w-44">
             <UserSearchCombobox
               value={selectedUserId}
               onValueChange={setSelectedUserId}
-              placeholder="Επιλέξτε χρήστη..."
+              placeholder="Χρήστης..."
               coachId={coachId || undefined}
             />
           </div>
+          <Input
+            value={opponentName}
+            onChange={(e) => setOpponentName(e.target.value)}
+            placeholder="Όνομα αντιπάλου..."
+            className="w-40 h-9 rounded-none text-sm"
+          />
           <Button
             onClick={saveFight}
             size="sm"
@@ -1794,7 +1801,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
             disabled={!selectedUserId}
           >
             <Download className="w-4 h-4 mr-1" />
-            Αποθήκευση Αγώνα
+            Αποθήκευση
           </Button>
         </div>
       </div>
