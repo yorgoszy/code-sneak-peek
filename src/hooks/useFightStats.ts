@@ -136,11 +136,12 @@ export const useFightStats = (fightId: string | null) => {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        // Fetch rounds for this fight
+        // Fetch rounds for this fight (ordered by round number)
         const { data: rounds } = await supabase
           .from('muaythai_rounds')
-          .select('id, duration_seconds, hits_received')
-          .eq('fight_id', fightId);
+          .select('id, round_number, duration_seconds, hits_received')
+          .eq('fight_id', fightId)
+          .order('round_number', { ascending: true });
 
         const roundIds = rounds?.map(r => r.id) || [];
         const totalRounds = rounds?.length || 0;
@@ -149,6 +150,14 @@ export const useFightStats = (fightId: string | null) => {
           setStats(defaultFightStats);
           setLoading(false);
           return;
+        }
+
+        // Create a map of round_id to cumulative start time
+        const roundStartTimes: Record<string, number> = {};
+        let cumulativeTime = 0;
+        for (const round of rounds || []) {
+          roundStartTimes[round.id] = cumulativeTime;
+          cumulativeTime += round.duration_seconds || 0;
         }
 
         // Fetch strikes
@@ -252,29 +261,38 @@ export const useFightStats = (fightId: string | null) => {
         const attackTimeFormatted = formatTime(attackTimeSeconds);
         const defenseTimeFormatted = formatTime(defenseTimeSeconds);
 
-        // Build timeline data (every 30 seconds)
+        // Build timeline data (every 30 seconds across ALL rounds)
         const timelineData: TimelineDataPoint[] = [];
-        const maxDuration = actionTimeSeconds || 180; // default 3 minutes
+        const totalDuration = cumulativeTime || 180; // Total fight duration
         const interval = 30; // 30 seconds
         
-        for (let t = 0; t < maxDuration; t += interval) {
+        // Helper to get absolute time for a strike/defense
+        const getAbsoluteTime = (item: any) => {
+          const roundId = item.round_id;
+          const roundStartTime = roundStartTimes[roundId] || 0;
+          const timestampInRound = item.timestamp_in_round || 0;
+          return roundStartTime + timestampInRound;
+        };
+        
+        for (let t = 0; t < totalDuration; t += interval) {
           const endT = t + interval;
-          // Count strikes in this interval
+          
+          // Count athlete strikes in this interval (using absolute time)
           const strikesInInterval = athleteStrikes.filter(s => {
-            const ts = s.timestamp_in_round || 0;
-            return ts >= t && ts < endT;
+            const absTime = getAbsoluteTime(s);
+            return absTime >= t && absTime < endT;
           }).length;
           
-          // Count defenses in this interval
+          // Count athlete defenses in this interval
           const defensesInInterval = athleteDefenses.filter(d => {
-            const ts = (d as any).timestamp_in_round || 0;
-            return ts >= t && ts < endT;
+            const absTime = getAbsoluteTime(d);
+            return absTime >= t && absTime < endT;
           }).length;
           
-          // Attacks (opponent strikes that athlete received)
+          // Attacks (opponent strikes - hits received by athlete)
           const attacksInInterval = opponentStrikesData.filter(s => {
-            const ts = s.timestamp_in_round || 0;
-            return ts >= t && ts < endT;
+            const absTime = getAbsoluteTime(s);
+            return absTime >= t && absTime < endT;
           }).length;
           
           const timeLabel = formatTime(t);
