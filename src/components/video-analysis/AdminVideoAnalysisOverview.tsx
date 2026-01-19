@@ -229,6 +229,14 @@ export const AdminVideoAnalysisOverview = () => {
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
+    {
+      title: 'Clinch',
+      value: stats?.clinchTotal || 0,
+      subtitle: stats?.clinchTimeFormatted || '0:00',
+      icon: Users,
+      color: 'text-foreground',
+      bgColor: 'bg-gray-100 dark:bg-gray-800',
+    },
   ];
 
   const styleInfo = {

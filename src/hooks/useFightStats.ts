@@ -208,10 +208,16 @@ export const useFightStats = (fightId: string | null) => {
         const totalHitsReceived = rounds?.reduce((sum, r) => sum + (r.hits_received || 0), 0) || 0;
         const avgHitsReceivedPerRound = totalRounds > 0 ? Math.round((totalHitsReceived / totalRounds) * 10) / 10 : 0;
 
-        // Athlete defenses only
+        // Athlete defenses only (from muaythai_defenses table)
         const athleteDefenses = defenses?.filter(d => !d.is_opponent) || [];
-        const totalDefenses = athleteDefenses.length;
-        const successfulDefenses = athleteDefenses.filter(d => d.successful).length;
+        
+        // Count opponent strikes that didn't land as blocked (successful defense)
+        // When an opponent strike doesn't land, it means the athlete defended
+        const blockedOpponentStrikes = opponentStrikesData.filter(s => !s.landed).length;
+        
+        // Total defenses = table defenses + blocked opponent strikes
+        const totalDefenses = athleteDefenses.length + blockedOpponentStrikes;
+        const successfulDefenses = athleteDefenses.filter(d => d.successful).length + blockedOpponentStrikes;
         const defenseSuccessRate = totalDefenses > 0 ? Math.round((successfulDefenses / totalDefenses) * 100) : 0;
 
         // Strike breakdown by type (athlete only)
