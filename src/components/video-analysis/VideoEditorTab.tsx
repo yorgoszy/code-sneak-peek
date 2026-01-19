@@ -1229,13 +1229,24 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                     groupedBySecond[second].push(marker);
                   });
                   
+                  // Reverse each group so newest is first (top)
+                  Object.keys(groupedBySecond).forEach(key => {
+                    groupedBySecond[Number(key)] = groupedBySecond[Number(key)].reverse();
+                  });
+                  
                   // Calculate max combo size to determine row count
                   const maxCombo = Math.max(1, ...Object.values(groupedBySecond).map(g => g.length));
-                  const rowHeight = 10; // pixels per row
-                  const totalHeight = Math.max(20, maxCombo * rowHeight + 4);
+                  const rowHeight = 18; // bigger click area
+                  const totalHeight = Math.max(40, maxCombo * rowHeight + 8);
                   
                   return (
                     <div className="relative bg-gray-50 rounded-none border border-gray-200 mt-1" style={{ height: `${totalHeight}px` }}>
+                      {/* Timebar on top */}
+                      <div 
+                        className="absolute w-0.5 h-full bg-black z-20"
+                        style={{ left: `${(currentTime / duration) * 100}%` }}
+                      />
+                      
                       {Object.entries(groupedBySecond).map(([second, markers]) => {
                         const isCombo = markers.length >= 2;
                         
@@ -1254,30 +1265,28 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                             }
                           }
                           
-                          // Vertical position - stack from top
-                          const topOffset = 2 + (indexInCombo * rowHeight);
+                          // Vertical position - newest on top (index 0 = top)
+                          const topOffset = 4 + (indexInCombo * rowHeight);
                           
                           return (
                             <div
                               key={marker.id}
-                              className={`absolute w-2.5 h-2.5 rounded-full cursor-pointer hover:scale-125 transition-all ${dotColor} ${isCombo ? 'ring-1 ring-white shadow-sm' : ''}`}
+                              className={`absolute cursor-pointer hover:scale-110 transition-all z-10 flex items-center justify-center`}
                               style={{ 
                                 left: `${(marker.time / duration) * 100}%`,
                                 top: `${topOffset}px`,
-                                transform: 'translateX(-50%)'
+                                transform: 'translateX(-50%)',
+                                width: '20px',
+                                height: '16px'
                               }}
                               onClick={() => toggleStrikeState(marker.id)}
                               title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'}${isCombo ? ` (Combo ${indexInCombo + 1}/${markers.length})` : ''}`}
-                            />
+                            >
+                              <div className={`w-3 h-3 rounded-full ${dotColor} ${isCombo ? 'ring-2 ring-white shadow-md' : 'ring-1 ring-gray-200'}`} />
+                            </div>
                           );
                         });
                       })}
-                      
-                      {/* Current position indicator */}
-                      <div 
-                        className="absolute w-0.5 h-full bg-black z-10"
-                        style={{ left: `${(currentTime / duration) * 100}%` }}
-                      />
                     </div>
                   );
                 })()}
