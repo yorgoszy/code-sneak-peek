@@ -830,8 +830,35 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
             )}
           </div>
           
+          {/* Strike Buttons - Above Timeline */}
+          <div className="mt-4 p-2 bg-gray-50 border border-gray-200 rounded-none">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1 mr-2">
+                <Target className="w-3 h-3 text-gray-600" />
+                <span className="text-xs font-medium">Χτυπήματα:</span>
+              </div>
+              {strikeTypesLoading ? (
+                <span className="text-xs text-gray-500">Φόρτωση...</span>
+              ) : strikeTypes.length === 0 ? (
+                <span className="text-xs text-gray-500">Δεν υπάρχουν χτυπήματα</span>
+              ) : (
+                strikeTypes.map((strike) => (
+                  <Button
+                    key={strike.id}
+                    size="sm"
+                    variant="outline"
+                    className="rounded-none h-6 text-[10px] px-2 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]"
+                    onClick={() => addStrikeMarker(strike)}
+                  >
+                    {strike.name}
+                  </Button>
+                ))
+              )}
+            </div>
+          </div>
+
           {/* Timeline with Zoom */}
-          <div className="mt-4 space-y-2">
+          <div className="mt-2 space-y-2">
             {/* Zoom Controls */}
             <div className="flex items-center justify-between bg-gray-50 border border-gray-200 p-1.5 rounded-none">
               <div className="flex items-center gap-2">
@@ -1064,284 +1091,159 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
             </div>
           </div>
           
-          {/* Tools Grid - Compact Layout */}
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {/* Tools Row - All in one line */}
+          <div className="mt-4 flex flex-wrap items-stretch gap-2">
             {/* Round Controls */}
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-none">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1">
-                  <CircleDot className="w-3 h-3 text-blue-600" />
-                  <span className="text-xs font-medium">Γύροι</span>
-                  {roundMarkers.length > 0 && (
-                    <Badge variant="outline" className="rounded-none bg-blue-100 text-blue-700 text-[10px] px-1">
-                      {roundMarkers.length}
-                    </Badge>
-                  )}
-                </div>
-                
-                {activeRound ? (
+            <div className="p-2 bg-blue-50 border border-blue-200 rounded-none flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <CircleDot className="w-3 h-3 text-blue-600" />
+                <span className="text-xs font-medium">Γύροι</span>
+                {roundMarkers.length > 0 && (
+                  <Badge variant="outline" className="rounded-none bg-blue-100 text-blue-700 text-[10px] px-1">
+                    {roundMarkers.length}
+                  </Badge>
+                )}
+              </div>
+              
+              {activeRound ? (
+                <Button
+                  size="sm"
+                  className="rounded-none bg-blue-500 text-white animate-pulse h-7 text-xs"
+                  onClick={closeActiveRound}
+                >
+                  <Timer className="w-3 h-3 mr-1" />
+                  Τέλος R{activeRound.roundNumber}
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-none border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white h-7 text-xs"
+                  onClick={startRound}
+                >
+                  <CircleDot className="w-3 h-3 mr-1" />
+                  R{roundMarkers.length + 1}
+                </Button>
+              )}
+            </div>
+            
+            {/* Action Flags Controls */}
+            <div className="p-2 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Flag className="w-3 h-3 text-gray-600" />
+                <span className="text-xs font-medium">Σήμανση</span>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                {activeFlag?.type === 'attack' ? (
                   <Button
                     size="sm"
-                    className="rounded-none bg-blue-500 text-white animate-pulse h-7 text-xs"
-                    onClick={closeActiveRound}
+                    className="rounded-none bg-[#00ffba] text-black animate-pulse h-7 text-xs"
+                    onClick={closeActiveFlag}
                   >
-                    <Timer className="w-3 h-3 mr-1" />
-                    Τέλος R{activeRound.roundNumber}
+                    <Swords className="w-3 h-3 mr-1" />
+                    Τέλος
                   </Button>
                 ) : (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-none border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white h-7 text-xs"
-                    onClick={startRound}
+                    className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black h-7 text-xs px-2"
+                    onClick={() => startActionFlag('attack')}
+                    disabled={activeFlag !== null}
                   >
-                    <CircleDot className="w-3 h-3 mr-1" />
-                    R{roundMarkers.length + 1}
+                    <Swords className="w-3 h-3" />
+                  </Button>
+                )}
+                
+                {activeFlag?.type === 'defense' ? (
+                  <Button
+                    size="sm"
+                    className="rounded-none bg-red-500 text-white animate-pulse h-7 text-xs"
+                    onClick={closeActiveFlag}
+                  >
+                    <Shield className="w-3 h-3 mr-1" />
+                    Τέλος
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-none border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-7 text-xs px-2"
+                    onClick={() => startActionFlag('defense')}
+                    disabled={activeFlag !== null}
+                  >
+                    <Shield className="w-3 h-3" />
                   </Button>
                 )}
               </div>
-              
-              {activeRound && (
-                <div className="p-1.5 text-[10px] bg-blue-100 text-blue-700 mb-2">
-                  ⏱️ R{activeRound.roundNumber} σε εξέλιξη
-                </div>
-              )}
-              
-              {roundMarkers.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {roundMarkers.map((round) => (
-                    <div 
-                      key={round.id}
-                      className={`flex items-center gap-1 px-1.5 py-0.5 text-[10px] bg-blue-100 border border-blue-300 ${
-                        round.endTime === null ? 'animate-pulse' : ''
-                      }`}
-                    >
-                      <span className="font-medium">R{round.roundNumber}</span>
-                      {round.endTime && (
-                        <span className="text-blue-700">
-                          {formatTimeInRound(round.endTime - round.startTime)}
-                        </span>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-3 w-3 p-0 text-blue-600 hover:text-red-500"
-                        onClick={() => removeRound(round.id)}
-                      >
-                        <Trash2 className="w-2 h-2" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
             
-            {/* Action Flags Controls */}
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-none">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1">
-                  <Flag className="w-3 h-3 text-gray-600" />
-                  <span className="text-xs font-medium">Σήμανση</span>
-                </div>
-                
-                <div className="flex items-center gap-1">
-                  {activeFlag?.type === 'attack' ? (
-                    <Button
-                      size="sm"
-                      className="rounded-none bg-[#00ffba] text-black animate-pulse h-7 text-xs"
-                      onClick={closeActiveFlag}
-                    >
-                      <Swords className="w-3 h-3 mr-1" />
-                      Τέλος
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black h-7 text-xs px-2"
-                      onClick={() => startActionFlag('attack')}
-                      disabled={activeFlag !== null}
-                    >
-                      <Swords className="w-3 h-3" />
-                    </Button>
-                  )}
-                  
-                  {activeFlag?.type === 'defense' ? (
-                    <Button
-                      size="sm"
-                      className="rounded-none bg-red-500 text-white animate-pulse h-7 text-xs"
-                      onClick={closeActiveFlag}
-                    >
-                      <Shield className="w-3 h-3 mr-1" />
-                      Τέλος
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-none border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-7 text-xs px-2"
-                      onClick={() => startActionFlag('defense')}
-                      disabled={activeFlag !== null}
-                    >
-                      <Shield className="w-3 h-3" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-              
-              {activeFlag && (
-                <div className={`p-1.5 text-[10px] ${
-                  activeFlag.type === 'attack' ? 'bg-[#00ffba]/20 text-[#00997a]' : 'bg-red-100 text-red-700'
-                }`}>
-                  ⏱️ {activeFlag.type === 'attack' ? 'Επίθεση' : 'Άμυνα'} σε εξέλιξη
-                </div>
-              )}
-            </div>
-            
-            {/* Strike Controls */}
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-none">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1">
-                  <Target className="w-3 h-3 text-gray-600" />
-                  <span className="text-xs font-medium">Χτυπήματα</span>
-                </div>
-                
-                <Popover open={isStrikePopoverOpen} onOpenChange={setIsStrikePopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      size="sm"
-                      className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white h-7 text-xs"
-                      disabled={strikeTypes.length === 0}
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
-                      Προσθήκη
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64 p-2 rounded-none" align="end">
-                    <div className="space-y-1 max-h-60 overflow-y-auto">
-                      {strikeTypesLoading ? (
-                        <p className="text-sm text-gray-500 p-2">Φόρτωση...</p>
-                      ) : strikeTypes.length === 0 ? (
-                        <p className="text-sm text-gray-500 p-2">Δεν υπάρχουν χτυπήματα.</p>
-                      ) : (
-                        strikeTypes.map((strike) => (
-                          <Button
-                            key={strike.id}
-                            variant="ghost"
-                            size="sm"
-                            className="w-full justify-start rounded-none text-left"
-                            onClick={() => addStrikeMarker(strike)}
-                          >
-                            <Target className="w-3 h-3 mr-2" />
-                            <span className="truncate">{strike.name}</span>
-                          </Button>
-                        ))
-                      )}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              {/* Strike Stats Compact */}
-              <div className="grid grid-cols-2 gap-1">
-                <div className="p-1.5 bg-[#00ffba]/10 border border-[#00ffba]/30 rounded-none">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-gray-600 flex items-center gap-0.5">
-                      <User className="w-2 h-2" />
-                      Αθλητής
-                    </span>
-                    <span className="font-bold text-[#00997a]">{strikeStats.athleteHits}/{strikeStats.athleteTotal}</span>
-                  </div>
-                </div>
-                <div className="p-1.5 bg-[#cb8954]/10 border border-[#cb8954]/30 rounded-none">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-gray-600 flex items-center gap-0.5">
-                      <Users className="w-2 h-2" />
-                      Αντίπαλος
-                    </span>
-                    <span className="font-bold text-[#cb8954]">{strikeStats.opponentHits}/{strikeStats.opponentTotal}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Trim Controls Compact */}
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-none">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1">
-                  <Scissors className="w-3 h-3 text-gray-600" />
-                  <span className="text-xs font-medium">Κοπή</span>
-                </div>
-                
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-none h-7 text-xs px-2"
-                    onClick={setTrimStartToCurrent}
-                    title="Ορισμός αρχής"
-                  >
-                    [
-                  </Button>
-                  <Badge variant="outline" className="rounded-none font-mono text-[10px] px-1">
-                    {formatTime(trimEnd - trimStart)}
-                  </Badge>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-none h-7 text-xs px-2"
-                    onClick={setTrimEndToCurrent}
-                    title="Ορισμός τέλους"
-                  >
-                    ]
-                  </Button>
-                </div>
+            {/* Trim Controls */}
+            <div className="p-2 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Scissors className="w-3 h-3 text-gray-600" />
+                <span className="text-xs font-medium">Κοπή</span>
               </div>
               
               <div className="flex items-center gap-1">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-none h-7 text-xs flex-1"
+                  className="rounded-none h-7 text-xs px-2"
+                  onClick={setTrimStartToCurrent}
+                  title="Ορισμός αρχής"
+                >
+                  [
+                </Button>
+                <Badge variant="outline" className="rounded-none font-mono text-[10px] px-1">
+                  {formatTime(trimEnd - trimStart)}
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-none h-7 text-xs px-2"
+                  onClick={setTrimEndToCurrent}
+                  title="Ορισμός τέλους"
+                >
+                  ]
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-none h-7 text-xs"
                   onClick={previewTrim}
                 >
-                  <Play className="w-3 h-3 mr-1" />
-                  Preview
+                  <Play className="w-3 h-3" />
                 </Button>
                 <Button
                   size="sm"
-                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-7 text-xs flex-1"
+                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-7 text-xs"
                   onClick={() => setIsAddingClip(true)}
                 >
-                  <Plus className="w-3 h-3 mr-1" />
-                  Clip
+                  <Plus className="w-3 h-3" />
                 </Button>
               </div>
             </div>
             
-            {/* Export Compact */}
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-none">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1">
-                  <Download className="w-3 h-3 text-gray-600" />
-                  <span className="text-xs font-medium">Εξαγωγή</span>
-                </div>
+            {/* Export Controls */}
+            <div className="p-2 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Download className="w-3 h-3 text-gray-600" />
+                <span className="text-xs font-medium">Εξαγωγή</span>
               </div>
               
               {isExporting ? (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    <span className="text-[10px] text-gray-600">{exportProgress}%</span>
-                  </div>
-                  <Progress value={exportProgress} className="h-1" />
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span className="text-[10px] text-gray-600">{exportProgress}%</span>
                 </div>
               ) : (
-                <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-none h-7 text-xs w-full"
+                    className="rounded-none h-7 text-xs"
                     onClick={async () => {
                       if (!videoFile) return;
                       if (trimStart >= trimEnd) {
@@ -1380,7 +1282,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                   {clips.length > 0 && (
                     <Button
                       size="sm"
-                      className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white h-7 text-xs w-full"
+                      className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white h-7 text-xs"
                       onClick={async () => {
                         if (!videoFile) return;
                         
@@ -1399,11 +1301,27 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                       disabled={isFFmpegLoading}
                     >
                       <FileVideo className="w-3 h-3 mr-1" />
-                      Clips ({clips.length})
+                      ({clips.length})
                     </Button>
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Strike Stats Compact */}
+            <div className="p-2 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-2 ml-auto">
+              <div className="flex items-center gap-1 text-[10px]">
+                <span className="text-gray-600 flex items-center gap-0.5">
+                  <User className="w-2 h-2" />
+                </span>
+                <span className="font-bold text-[#00997a]">{strikeStats.athleteHits}/{strikeStats.athleteTotal}</span>
+              </div>
+              <div className="flex items-center gap-1 text-[10px]">
+                <span className="text-gray-600 flex items-center gap-0.5">
+                  <Users className="w-2 h-2" />
+                </span>
+                <span className="font-bold text-[#cb8954]">{strikeStats.opponentHits}/{strikeStats.opponentTotal}</span>
+              </div>
             </div>
           </div>
           
