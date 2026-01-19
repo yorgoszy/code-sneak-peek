@@ -296,7 +296,7 @@ export const AdminVideoAnalysisOverview = () => {
                       </p>
                       {card.customSubtitle ? (
                         <p className="text-[10px] truncate">
-                          <span className="text-[#00ffba] font-medium">Επ: {card.attackTime}</span>
+                          <span className="text-blue-500 font-medium">Επ: {card.attackTime}</span>
                           <span className="text-gray-400 mx-1">|</span>
                           <span className="text-red-500 font-medium">Άμ: {card.defenseTime}</span>
                         </p>
