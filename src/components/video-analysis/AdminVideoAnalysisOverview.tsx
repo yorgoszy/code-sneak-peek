@@ -191,7 +191,7 @@ export const AdminVideoAnalysisOverview = () => {
     },
     {
       title: 'Χρόνος',
-      value: `${stats?.actionTimeMinutes || 0}'`,
+      value: stats?.actionTimeFormatted || '0:00',
       subtitle: 'Δράσης',
       icon: Clock,
       color: 'text-orange-500',
