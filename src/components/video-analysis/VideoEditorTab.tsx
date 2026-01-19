@@ -360,6 +360,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
       setActiveFlag(null);
     }
     setActionFlags(prev => prev.filter(f => f.id !== id));
+    toast.success('Σήμανση διαγράφηκε');
   };
 
   // Calculate total action times
@@ -454,7 +455,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
       const filtered = prev.filter(r => r.id !== id);
       return filtered.map((r, i) => ({ ...r, roundNumber: i + 1 }));
     });
+    toast.success('Round διαγράφηκε');
   };
+
 
   // Drag handlers for round markers
   const handleRoundDragStart = (e: React.MouseEvent, roundId: string, edge: 'start' | 'end') => {
@@ -1067,7 +1070,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                         
                         {/* Center - click to seek */}
                         <div 
-                          className="absolute left-2 right-2 top-0 h-full cursor-pointer hover:bg-blue-500/20 flex flex-col justify-center"
+                          className="absolute left-2 right-6 top-0 h-full cursor-pointer hover:bg-blue-500/20 flex flex-col justify-center"
                           onClick={() => seek(round.startTime)}
                         >
                           <div className="text-[10px] font-bold text-blue-700 leading-tight">
@@ -1077,6 +1080,18 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                             {durationText}
                           </div>
                         </div>
+                        
+                        {/* Delete button */}
+                        <button
+                          className="absolute top-0.5 right-3 w-4 h-4 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[8px] font-bold z-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeRound(round.id);
+                          }}
+                          title="Διαγραφή Round"
+                        >
+                          ×
+                        </button>
                         
                         {/* End edge drag handle - only show if round is closed */}
                         {!isOpen && (
@@ -1137,7 +1152,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                         
                         {/* Center - click to seek */}
                         <div 
-                          className="absolute left-2 right-2 top-0 h-full cursor-pointer hover:opacity-80 flex items-center"
+                          className="absolute left-2 right-6 top-0 h-full cursor-pointer hover:opacity-80 flex items-center"
                           onClick={() => seek(flag.startTime)}
                         >
                           <Flag className={`w-3 h-3 ${
@@ -1149,6 +1164,22 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                             {flag.type === 'attack' ? 'ΕΠ' : 'ΑΜ'}
                           </span>
                         </div>
+                        
+                        {/* Delete button */}
+                        <button
+                          className={`absolute top-0.5 right-3 w-4 h-4 text-white rounded-full flex items-center justify-center text-[8px] font-bold z-10 ${
+                            flag.type === 'attack' 
+                              ? 'bg-[#00997a] hover:bg-[#00b894]' 
+                              : 'bg-red-700 hover:bg-red-600'
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeActionFlag(flag.id);
+                          }}
+                          title={`Διαγραφή ${flag.type === 'attack' ? 'Επίθεσης' : 'Άμυνας'}`}
+                        >
+                          ×
+                        </button>
                         
                         {/* End edge drag handle - only show if flag is closed */}
                         {!isOpen && (
