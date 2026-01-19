@@ -842,17 +842,35 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
               ) : strikeTypes.length === 0 ? (
                 <span className="text-xs text-gray-500">Δεν υπάρχουν χτυπήματα</span>
               ) : (
-                strikeTypes.map((strike) => (
-                  <Button
-                    key={strike.id}
-                    size="sm"
-                    variant="outline"
-                    className="rounded-none h-6 text-[10px] px-2 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]"
-                    onClick={() => addStrikeMarker(strike)}
-                  >
-                    {strike.name}
-                  </Button>
-                ))
+                [...strikeTypes]
+                  .sort((a, b) => {
+                    // Check if name is a number
+                    const aIsNumber = /^\d+$/.test(a.name.trim());
+                    const bIsNumber = /^\d+$/.test(b.name.trim());
+                    
+                    // Numbers come first
+                    if (aIsNumber && !bIsNumber) return -1;
+                    if (!aIsNumber && bIsNumber) return 1;
+                    
+                    // If both are numbers, sort numerically
+                    if (aIsNumber && bIsNumber) {
+                      return parseInt(a.name) - parseInt(b.name);
+                    }
+                    
+                    // Otherwise keep original order
+                    return 0;
+                  })
+                  .map((strike) => (
+                    <Button
+                      key={strike.id}
+                      size="sm"
+                      variant="outline"
+                      className="rounded-none h-6 text-[10px] px-2 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]"
+                      onClick={() => addStrikeMarker(strike)}
+                    >
+                      {strike.name}
+                    </Button>
+                  ))
               )}
             </div>
           </div>
