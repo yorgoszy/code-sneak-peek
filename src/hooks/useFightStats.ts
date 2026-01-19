@@ -9,6 +9,12 @@ export interface TimelineDataPoint {
   attacks: number;
 }
 
+export interface RoundBoundary {
+  roundNumber: number;
+  startTime: number;
+  startTimeLabel: string;
+}
+
 export interface FightStats {
   totalStrikes: number;
   landedStrikes: number;
@@ -72,6 +78,9 @@ export interface FightStats {
   
   // Timeline data for chart (every 30 seconds)
   timelineData: TimelineDataPoint[];
+  
+  // Round boundaries for chart separators
+  roundBoundaries: RoundBoundary[];
 }
 
 export const defaultFightStats: FightStats = {
@@ -121,6 +130,7 @@ export const defaultFightStats: FightStats = {
   opponentLandedStrikes: 0,
   opponentAccuracy: 0,
   timelineData: [],
+  roundBoundaries: [],
 };
 
 export const useFightStats = (fightId: string | null) => {
@@ -152,11 +162,24 @@ export const useFightStats = (fightId: string | null) => {
           return;
         }
 
-        // Create a map of round_id to cumulative start time
+        // Create a map of round_id to cumulative start time and build round boundaries
         const roundStartTimes: Record<string, number> = {};
+        const roundBoundaries: RoundBoundary[] = [];
         let cumulativeTime = 0;
+        
+        const formatTime = (totalSecs: number) => {
+          const mins = Math.floor(totalSecs / 60);
+          const secs = totalSecs % 60;
+          return `${mins}:${secs.toString().padStart(2, '0')}`;
+        };
+        
         for (const round of rounds || []) {
           roundStartTimes[round.id] = cumulativeTime;
+          roundBoundaries.push({
+            roundNumber: round.round_number,
+            startTime: cumulativeTime,
+            startTimeLabel: formatTime(cumulativeTime),
+          });
           cumulativeTime += round.duration_seconds || 0;
         }
 
@@ -240,11 +263,6 @@ export const useFightStats = (fightId: string | null) => {
 
         // Action time (sum of round durations) - keep in seconds
         const actionTimeSeconds = rounds?.reduce((sum, r) => sum + (r.duration_seconds || 0), 0) || 0;
-        const formatTime = (totalSecs: number) => {
-          const mins = Math.floor(totalSecs / 60);
-          const secs = totalSecs % 60;
-          return `${mins}:${secs.toString().padStart(2, '0')}`;
-        };
         const actionTimeFormatted = formatTime(actionTimeSeconds);
 
         // Attack time and Defense time calculation
@@ -353,6 +371,7 @@ export const useFightStats = (fightId: string | null) => {
           opponentLandedStrikes,
           opponentAccuracy,
           timelineData,
+          roundBoundaries,
         });
       } catch (error) {
         console.error('Error fetching fight stats:', error);

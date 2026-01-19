@@ -1,14 +1,15 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TimelineDataPoint } from '@/hooks/useFightStats';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { TimelineDataPoint, RoundBoundary } from '@/hooks/useFightStats';
 
 interface FightTimelineChartProps {
   data: TimelineDataPoint[];
+  roundBoundaries?: RoundBoundary[];
   loading?: boolean;
 }
 
-export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ data, loading }) => {
+export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ data, roundBoundaries = [], loading }) => {
   if (loading) {
     return (
       <Card className="rounded-none">
@@ -42,6 +43,9 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ data, lo
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-[#00ffba]"></span>Χτυπ.</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-red-500"></span>Δέχτ.</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-violet-500"></span>Άμυν.</span>
+            {roundBoundaries.length > 1 && (
+              <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-gray-400"></span>Round</span>
+            )}
           </div>
         </div>
         <div className="h-24">
@@ -86,6 +90,23 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ data, lo
                 }}
                 labelFormatter={(label) => label}
               />
+              {/* Round boundaries - skip first round (starts at 0) */}
+              {roundBoundaries.slice(1).map((boundary) => (
+                <ReferenceLine
+                  key={`round-${boundary.roundNumber}`}
+                  x={boundary.startTimeLabel}
+                  stroke="#9ca3af"
+                  strokeDasharray="4 2"
+                  strokeWidth={1}
+                  label={{
+                    value: `R${boundary.roundNumber}`,
+                    position: 'top',
+                    fontSize: 8,
+                    fill: '#6b7280',
+                    offset: -2
+                  }}
+                />
+              ))}
               <Area 
                 type="monotone"
                 dataKey="strikes" 

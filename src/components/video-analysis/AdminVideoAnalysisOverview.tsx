@@ -340,6 +340,7 @@ export const AdminVideoAnalysisOverview = () => {
           {selectedFightId && (
             <FightTimelineChart 
               data={stats?.timelineData || []} 
+              roundBoundaries={stats?.roundBoundaries || []}
               loading={loadingStats} 
             />
           )}
