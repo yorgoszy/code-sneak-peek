@@ -121,7 +121,9 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
                     {fight.total_rounds} γύροι
                     {fight.round_duration_seconds && (
                       <span className="text-gray-500">
-                        {' '}× {Math.floor(fight.round_duration_seconds / 60)} λεπτά
+                        {' '}× {fight.round_duration_seconds >= 60 
+                          ? `${Math.floor(fight.round_duration_seconds / 60)}:${(fight.round_duration_seconds % 60).toString().padStart(2, '0')}`
+                          : `${fight.round_duration_seconds}"`}
                       </span>
                     )}
                   </p>
