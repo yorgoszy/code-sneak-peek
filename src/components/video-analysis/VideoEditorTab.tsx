@@ -142,6 +142,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
   // Timeline zoom state
   const [timelineZoom, setTimelineZoom] = useState(1); // 1 = normal, up to 10x zoom
   const timelineScrollRef = useRef<HTMLDivElement>(null);
+  const timelineContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Drag state for round markers
+  const [draggingRound, setDraggingRound] = useState<{ id: string; edge: 'start' | 'end' } | null>(null);
   
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -448,6 +452,54 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
       return filtered.map((r, i) => ({ ...r, roundNumber: i + 1 }));
     });
   };
+
+  // Drag handlers for round markers
+  const handleRoundDragStart = (e: React.MouseEvent, roundId: string, edge: 'start' | 'end') => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggingRound({ id: roundId, edge });
+  };
+
+  const handleRoundDrag = useCallback((e: MouseEvent) => {
+    if (!draggingRound || !timelineContainerRef.current) return;
+    
+    const rect = timelineContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, x / rect.width));
+    const newTime = percentage * duration;
+    
+    setRoundMarkers(prev => prev.map(round => {
+      if (round.id !== draggingRound.id) return round;
+      
+      if (draggingRound.edge === 'start') {
+        // Don't let start go past end
+        const maxStart = round.endTime ? round.endTime - 0.1 : duration - 0.1;
+        return { ...round, startTime: Math.min(newTime, maxStart) };
+      } else {
+        // Don't let end go before start
+        const minEnd = round.startTime + 0.1;
+        return { ...round, endTime: Math.max(newTime, minEnd) };
+      }
+    }));
+  }, [draggingRound, duration]);
+
+  const handleRoundDragEnd = useCallback(() => {
+    if (draggingRound) {
+      setDraggingRound(null);
+    }
+  }, [draggingRound]);
+
+  // Add/remove mouse event listeners for dragging
+  useEffect(() => {
+    if (draggingRound) {
+      window.addEventListener('mousemove', handleRoundDrag);
+      window.addEventListener('mouseup', handleRoundDragEnd);
+      return () => {
+        window.removeEventListener('mousemove', handleRoundDrag);
+        window.removeEventListener('mouseup', handleRoundDragEnd);
+      };
+    }
+  }, [draggingRound, handleRoundDrag, handleRoundDragEnd]);
 
   // Add strike marker at current time
   const addStrikeMarker = (strikeType: StrikeType) => {
@@ -930,9 +982,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                 scrollbarWidth: 'thin',
               }}
             >
-              <div style={{ width: `${100 * timelineZoom}%`, minWidth: '100%' }}>
+              <div ref={timelineContainerRef} style={{ width: `${100 * timelineZoom}%`, minWidth: '100%' }}>
                 {/* Rounds Timeline */}
-                <div className="relative h-5 bg-blue-50 rounded-none border border-blue-200">
+                <div className="relative h-6 bg-blue-50 rounded-none border border-blue-200">
                   {roundMarkers.map((round) => {
                     const isOpen = round.endTime === null;
                     // For open rounds, use the max of currentTime and startTime to prevent backwards jumping
@@ -940,22 +992,44 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                       ? Math.max(currentTime, round.startTime + 0.1) 
                       : round.endTime!;
                     const roundWidth = Math.max(0, ((effectiveEndTime - round.startTime) / duration) * 100);
+                    const isDragging = draggingRound?.id === round.id;
                     
                     return (
                       <div
                         key={round.id}
-                        className={`absolute h-full cursor-pointer transition-opacity hover:opacity-80 bg-blue-400/50 border-l-2 border-r-2 border-blue-500 ${isOpen ? 'animate-pulse' : ''}`}
+                        className={`absolute h-full transition-opacity bg-blue-400/50 ${isOpen ? 'animate-pulse' : ''} ${isDragging ? 'z-20' : ''}`}
                         style={{ 
                           left: `${(round.startTime / duration) * 100}%`,
                           width: `${roundWidth}%`,
-                          minWidth: '4px'
+                          minWidth: '20px'
                         }}
                         title={`Round ${round.roundNumber}: ${formatTime(round.startTime)} - ${round.endTime ? formatTime(round.endTime) : 'σε εξέλιξη'}`}
-                        onClick={() => seek(round.startTime)}
                       >
-                        <div className="absolute -top-0.5 left-1 text-[9px] font-bold text-blue-700">
-                          R{round.roundNumber}
+                        {/* Start edge drag handle */}
+                        <div 
+                          className="absolute left-0 top-0 w-2 h-full bg-blue-600 cursor-ew-resize hover:bg-blue-700 transition-colors"
+                          onMouseDown={(e) => handleRoundDragStart(e, round.id, 'start')}
+                          title="Σύρετε για αλλαγή αρχής"
+                        />
+                        
+                        {/* Center - click to seek */}
+                        <div 
+                          className="absolute left-2 right-2 top-0 h-full cursor-pointer hover:bg-blue-500/20"
+                          onClick={() => seek(round.startTime)}
+                        >
+                          <div className="absolute top-0.5 left-1 text-[9px] font-bold text-blue-700">
+                            R{round.roundNumber}
+                          </div>
                         </div>
+                        
+                        {/* End edge drag handle - only show if round is closed */}
+                        {!isOpen && (
+                          <div 
+                            className="absolute right-0 top-0 w-2 h-full bg-blue-600 cursor-ew-resize hover:bg-blue-700 transition-colors"
+                            onMouseDown={(e) => handleRoundDragStart(e, round.id, 'end')}
+                            title="Σύρετε για αλλαγή τέλους"
+                          />
+                        )}
                       </div>
                     );
                   })}
@@ -1112,12 +1186,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
           {/* Tools Row - All in one line */}
           <div className="mt-4 flex flex-wrap items-stretch gap-2">
             {/* Round Controls */}
-            <div className="p-2 bg-blue-50 border border-blue-200 rounded-none flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <CircleDot className="w-3 h-3 text-blue-600" />
-                <span className="text-xs font-medium">Γύροι</span>
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-none flex items-center gap-3 min-w-[160px]">
+              <div className="flex items-center gap-1.5">
+                <CircleDot className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium">Γύροι</span>
                 {roundMarkers.length > 0 && (
-                  <Badge variant="outline" className="rounded-none bg-blue-100 text-blue-700 text-[10px] px-1">
+                  <Badge variant="outline" className="rounded-none bg-blue-100 text-blue-700 text-xs px-1.5">
                     {roundMarkers.length}
                   </Badge>
                 )}
@@ -1126,101 +1200,101 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
               {activeRound ? (
                 <Button
                   size="sm"
-                  className="rounded-none bg-blue-500 text-white animate-pulse h-7 text-xs"
+                  className="rounded-none bg-blue-500 text-white animate-pulse h-8 text-xs"
                   onClick={closeActiveRound}
                 >
-                  <Timer className="w-3 h-3 mr-1" />
+                  <Timer className="w-3.5 h-3.5 mr-1" />
                   Τέλος R{activeRound.roundNumber}
                 </Button>
               ) : (
                 <Button
                   size="sm"
                   variant="outline"
-                  className="rounded-none border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white h-7 text-xs"
+                  className="rounded-none border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white h-8 text-xs"
                   onClick={startRound}
                 >
-                  <CircleDot className="w-3 h-3 mr-1" />
+                  <CircleDot className="w-3.5 h-3.5 mr-1" />
                   R{roundMarkers.length + 1}
                 </Button>
               )}
             </div>
             
             {/* Action Flags Controls */}
-            <div className="p-2 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <Flag className="w-3 h-3 text-gray-600" />
-                <span className="text-xs font-medium">Σήμανση</span>
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-3 min-w-[180px]">
+              <div className="flex items-center gap-1.5">
+                <Flag className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium">Σήμανση</span>
               </div>
               
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 {activeFlag?.type === 'attack' ? (
                   <Button
                     size="sm"
-                    className="rounded-none bg-[#00ffba] text-black animate-pulse h-7 text-xs"
+                    className="rounded-none bg-[#00ffba] text-black animate-pulse h-8 text-xs"
                     onClick={closeActiveFlag}
                   >
-                    <Swords className="w-3 h-3 mr-1" />
+                    <Swords className="w-3.5 h-3.5 mr-1" />
                     Τέλος
                   </Button>
                 ) : (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black h-7 text-xs px-2"
+                    className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black h-8 text-xs px-2.5"
                     onClick={() => startActionFlag('attack')}
                     disabled={activeFlag !== null}
                   >
-                    <Swords className="w-3 h-3" />
+                    <Swords className="w-3.5 h-3.5" />
                   </Button>
                 )}
                 
                 {activeFlag?.type === 'defense' ? (
                   <Button
                     size="sm"
-                    className="rounded-none bg-red-500 text-white animate-pulse h-7 text-xs"
+                    className="rounded-none bg-red-500 text-white animate-pulse h-8 text-xs"
                     onClick={closeActiveFlag}
                   >
-                    <Shield className="w-3 h-3 mr-1" />
+                    <Shield className="w-3.5 h-3.5 mr-1" />
                     Τέλος
                   </Button>
                 ) : (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-none border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-7 text-xs px-2"
+                    className="rounded-none border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-8 text-xs px-2.5"
                     onClick={() => startActionFlag('defense')}
                     disabled={activeFlag !== null}
                   >
-                    <Shield className="w-3 h-3" />
+                    <Shield className="w-3.5 h-3.5" />
                   </Button>
                 )}
               </div>
             </div>
             
             {/* Trim Controls */}
-            <div className="p-2 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <Scissors className="w-3 h-3 text-gray-600" />
-                <span className="text-xs font-medium">Κοπή</span>
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-3 min-w-[200px]">
+              <div className="flex items-center gap-1.5">
+                <Scissors className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium">Κοπή</span>
               </div>
               
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-none h-7 text-xs px-2"
+                  className="rounded-none h-8 text-xs px-2.5"
                   onClick={setTrimStartToCurrent}
                   title="Ορισμός αρχής"
                 >
                   [
                 </Button>
-                <Badge variant="outline" className="rounded-none font-mono text-[10px] px-1">
+                <Badge variant="outline" className="rounded-none font-mono text-xs px-1.5">
                   {formatTime(trimEnd - trimStart)}
                 </Badge>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-none h-7 text-xs px-2"
+                  className="rounded-none h-8 text-xs px-2.5"
                   onClick={setTrimEndToCurrent}
                   title="Ορισμός τέλους"
                 >
@@ -1229,39 +1303,39 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-none h-7 text-xs"
+                  className="rounded-none h-8 text-xs"
                   onClick={previewTrim}
                 >
-                  <Play className="w-3 h-3" />
+                  <Play className="w-3.5 h-3.5" />
                 </Button>
                 <Button
                   size="sm"
-                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-7 text-xs"
+                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-8 text-xs"
                   onClick={() => setIsAddingClip(true)}
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3.5 h-3.5" />
                 </Button>
               </div>
             </div>
             
             {/* Export Controls */}
-            <div className="p-2 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <Download className="w-3 h-3 text-gray-600" />
-                <span className="text-xs font-medium">Εξαγωγή</span>
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-none flex items-center gap-3 min-w-[180px]">
+              <div className="flex items-center gap-1.5">
+                <Download className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium">Εξαγωγή</span>
               </div>
               
               {isExporting ? (
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  <span className="text-[10px] text-gray-600">{exportProgress}%</span>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-xs text-gray-600">{exportProgress}%</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-none h-7 text-xs"
+                    className="rounded-none h-8 text-xs"
                     onClick={async () => {
                       if (!videoFile) return;
                       if (trimStart >= trimEnd) {
@@ -1288,10 +1362,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                     disabled={isFFmpegLoading || !videoFile}
                   >
                     {isFFmpegLoading ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
                       <>
-                        <Download className="w-3 h-3 mr-1" />
+                        <Download className="w-3.5 h-3.5 mr-1" />
                         Trim
                       </>
                     )}
@@ -1300,7 +1374,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                   {clips.length > 0 && (
                     <Button
                       size="sm"
-                      className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white h-7 text-xs"
+                      className="rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white h-8 text-xs"
                       onClick={async () => {
                         if (!videoFile) return;
                         
@@ -1318,7 +1392,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                       }}
                       disabled={isFFmpegLoading}
                     >
-                      <FileVideo className="w-3 h-3 mr-1" />
+                      <FileVideo className="w-3.5 h-3.5 mr-1" />
                       ({clips.length})
                     </Button>
                   )}
