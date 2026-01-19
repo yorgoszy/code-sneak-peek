@@ -339,8 +339,7 @@ export const AdminVideoAnalysisOverview = () => {
           {/* Timeline Chart - only show when fight is selected */}
           {selectedFightId && (
             <FightTimelineChart 
-              data={stats?.timelineData || []} 
-              roundBoundaries={stats?.roundBoundaries || []}
+              roundsData={stats?.roundsTimelineData || []}
               loading={loadingStats} 
             />
           )}

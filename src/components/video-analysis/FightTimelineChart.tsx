@@ -1,15 +1,14 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { TimelineDataPoint, RoundBoundary } from '@/hooks/useFightStats';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { RoundTimelineData } from '@/hooks/useFightStats';
 
 interface FightTimelineChartProps {
-  data: TimelineDataPoint[];
-  roundBoundaries?: RoundBoundary[];
+  roundsData: RoundTimelineData[];
   loading?: boolean;
 }
 
-export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ data, roundBoundaries = [], loading }) => {
+export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsData, loading }) => {
   if (loading) {
     return (
       <Card className="rounded-none">
@@ -22,7 +21,7 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ data, ro
     );
   }
 
-  if (!data || data.length === 0) {
+  if (!roundsData || roundsData.length === 0) {
     return (
       <Card className="rounded-none">
         <CardContent className="p-4">
@@ -43,96 +42,89 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ data, ro
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-[#00ffba]"></span>Χτυπ.</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-red-500"></span>Δέχτ.</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 bg-violet-500"></span>Άμυν.</span>
-            {roundBoundaries.length > 1 && (
-              <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-gray-400"></span>Round</span>
-            )}
           </div>
         </div>
-        <div className="h-24">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 2, right: 2, left: -25, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorStrikes" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#00ffba" stopOpacity={0.4}/>
-                  <stop offset="95%" stopColor="#00ffba" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorAttacks" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorDefenses" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="2 2" stroke="#e5e5e5" vertical={false} />
-              <XAxis 
-                dataKey="time" 
-                tick={{ fontSize: 8 }} 
-                stroke="#9ca3af"
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis 
-                tick={{ fontSize: 8 }} 
-                stroke="#9ca3af"
-                allowDecimals={false}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e5e5e5',
-                  borderRadius: 0,
-                  fontSize: 10,
-                  padding: '4px 8px'
-                }}
-                labelFormatter={(label) => label}
-              />
-              {/* Round boundaries - skip first round (starts at 0) */}
-              {roundBoundaries.slice(1).map((boundary) => (
-                <ReferenceLine
-                  key={`round-${boundary.roundNumber}`}
-                  x={boundary.startTimeLabel}
-                  stroke="#9ca3af"
-                  strokeDasharray="4 2"
-                  strokeWidth={1}
-                  label={{
-                    value: `R${boundary.roundNumber}`,
-                    position: 'top',
-                    fontSize: 8,
-                    fill: '#6b7280',
-                    offset: -2
-                  }}
-                />
-              ))}
-              <Area 
-                type="monotone"
-                dataKey="strikes" 
-                name="Χτυπ." 
-                stroke="#00ffba" 
-                strokeWidth={2}
-                fill="url(#colorStrikes)"
-              />
-              <Area 
-                type="monotone"
-                dataKey="attacks" 
-                name="Δέχτ." 
-                stroke="#ef4444" 
-                strokeWidth={2}
-                fill="url(#colorAttacks)"
-              />
-              <Area 
-                type="monotone"
-                dataKey="defenses" 
-                name="Άμυν." 
-                stroke="#8b5cf6" 
-                strokeWidth={2}
-                fill="url(#colorDefenses)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+        
+        {/* Rounds displayed horizontally with gaps */}
+        <div className="flex gap-2">
+          {roundsData.map((round) => (
+            <div key={round.roundNumber} className="flex-1 min-w-0">
+              <div className="text-[10px] text-center text-gray-500 mb-0.5">
+                R{round.roundNumber}
+              </div>
+              <div className="h-20 border border-gray-100 rounded-none">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={round.data} margin={{ top: 2, right: 2, left: -30, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id={`colorStrikes-${round.roundNumber}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00ffba" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#00ffba" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id={`colorAttacks-${round.roundNumber}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id={`colorDefenses-${round.roundNumber}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="2 2" stroke="#e5e5e5" vertical={false} />
+                    <XAxis 
+                      dataKey="time" 
+                      tick={{ fontSize: 7 }} 
+                      stroke="#9ca3af"
+                      tickLine={false}
+                      axisLine={false}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 7 }} 
+                      stroke="#9ca3af"
+                      allowDecimals={false}
+                      tickLine={false}
+                      axisLine={false}
+                      width={20}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'white', 
+                        border: '1px solid #e5e5e5',
+                        borderRadius: 0,
+                        fontSize: 9,
+                        padding: '3px 6px'
+                      }}
+                      labelFormatter={(label) => `R${round.roundNumber} - ${label}`}
+                    />
+                    <Area 
+                      type="monotone"
+                      dataKey="strikes" 
+                      name="Χτυπ." 
+                      stroke="#00ffba" 
+                      strokeWidth={1.5}
+                      fill={`url(#colorStrikes-${round.roundNumber})`}
+                    />
+                    <Area 
+                      type="monotone"
+                      dataKey="attacks" 
+                      name="Δέχτ." 
+                      stroke="#ef4444" 
+                      strokeWidth={1.5}
+                      fill={`url(#colorAttacks-${round.roundNumber})`}
+                    />
+                    <Area 
+                      type="monotone"
+                      dataKey="defenses" 
+                      name="Άμυν." 
+                      stroke="#8b5cf6" 
+                      strokeWidth={1.5}
+                      fill={`url(#colorDefenses-${round.roundNumber})`}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
