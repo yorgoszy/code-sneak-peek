@@ -1218,6 +1218,41 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                     style={{ left: `${(currentTime / duration) * 100}%` }}
                   />
                 </div>
+                
+                {/* Strike Markers on Timeline - Visual bars */}
+                <div className="relative h-6 bg-gray-50 rounded-none border border-gray-200 mt-1">
+                  {strikeMarkers.map((marker) => {
+                    // Color based on owner and state
+                    let barColor = '';
+                    if (marker.owner === 'athlete') {
+                      barColor = marker.hitTarget ? 'bg-[#00ffba]' : 'bg-gray-300';
+                    } else {
+                      if (marker.blocked) {
+                        barColor = 'bg-blue-500';
+                      } else if (marker.hitTarget) {
+                        barColor = 'bg-red-500';
+                      } else {
+                        barColor = 'bg-gray-300';
+                      }
+                    }
+                    
+                    return (
+                      <div
+                        key={marker.id}
+                        className={`absolute w-1.5 h-5 top-0.5 cursor-pointer hover:opacity-80 transition-all ${barColor}`}
+                        style={{ left: `${(marker.time / duration) * 100}%` }}
+                        onClick={() => toggleStrikeState(marker.id)}
+                        title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'} - ${formatTime(marker.time)}`}
+                      />
+                    );
+                  })}
+                  
+                  {/* Current position indicator */}
+                  <div 
+                    className="absolute w-0.5 h-full bg-black z-10"
+                    style={{ left: `${(currentTime / duration) * 100}%` }}
+                  />
+                </div>
 
                 {/* Trim markers on timeline */}
                 <div className="relative h-2 bg-gray-200 rounded-none mt-1">
