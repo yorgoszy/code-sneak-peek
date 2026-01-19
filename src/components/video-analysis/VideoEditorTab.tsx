@@ -570,15 +570,63 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
     };
   }, [videoUrl]);
 
+  // Save fight to database
+  const saveFight = async () => {
+    if (!userId || !coachId) {
+      toast.error('Απαιτείται επιλογή χρήστη');
+      return;
+    }
+
+    if (strikeMarkers.length === 0 && roundMarkers.length === 0) {
+      toast.error('Δεν υπάρχουν δεδομένα για αποθήκευση');
+      return;
+    }
+
+    try {
+      // Create fight record
+      const { data: fightData, error: fightError } = await supabase
+        .from('muaythai_fights')
+        .insert({
+          user_id: userId,
+          coach_id: coachId,
+          fight_date: new Date().toISOString().split('T')[0],
+          fight_type: 'sparring',
+          opponent_name: 'Sparring Partner',
+          total_rounds: roundMarkers.length || 1,
+          round_duration_seconds: 180,
+          notes: `Video: ${videoFile?.name || 'Unknown'}`
+        })
+        .select()
+        .single();
+
+      if (fightError) throw fightError;
+
+      toast.success('Αγώνας αποθηκεύτηκε επιτυχώς!');
+      
+      // Reset editor
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+      setVideoFile(null);
+      setVideoUrl(null);
+      setClips([]);
+      setActionFlags([]);
+      setActiveFlag(null);
+      setRoundMarkers([]);
+      setActiveRound(null);
+      setStrikeMarkers([]);
+    } catch (error) {
+      console.error('Error saving fight:', error);
+      toast.error('Σφάλμα κατά την αποθήκευση');
+    }
+  };
+
   if (!videoUrl) {
     return (
-      <Card className="rounded-none">
-        <CardContent className="py-12">
+      <Card className="rounded-none border-dashed border-2 border-gray-300">
+        <CardContent className="py-6">
           <div className="text-center">
-            <Film className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Video Editor</h3>
-            <p className="text-gray-500 mb-6">
-              Ανεβάστε ένα βίντεο για επεξεργασία και δημιουργία clips
+            <Film className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+            <p className="text-gray-500 text-sm mb-3">
+              Ανεβάστε βίντεο για νέο αγώνα
             </p>
             <input
               ref={fileInputRef}
@@ -589,9 +637,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
             />
             <Button
               onClick={() => fileInputRef.current?.click()}
+              size="sm"
               className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
             >
-              <Upload className="w-4 h-4 mr-2" />
+              <Upload className="w-4 h-4 mr-1" />
               Επιλογή Βίντεο
             </Button>
           </div>
@@ -1510,10 +1559,11 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
         </Card>
       )}
 
-      {/* New Video Button */}
-      <div className="flex justify-center">
+      {/* Save & New Video Buttons */}
+      <div className="flex justify-center gap-2">
         <Button
           variant="outline"
+          size="sm"
           className="rounded-none"
           onClick={() => {
             if (videoUrl) URL.revokeObjectURL(videoUrl);
@@ -1527,8 +1577,16 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
             setStrikeMarkers([]);
           }}
         >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Νέο Βίντεο
+          <RefreshCw className="w-4 h-4 mr-1" />
+          Νέο
+        </Button>
+        <Button
+          onClick={saveFight}
+          size="sm"
+          className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+        >
+          <Download className="w-4 h-4 mr-1" />
+          Αποθήκευση Αγώνα
         </Button>
       </div>
     </div>

@@ -80,23 +80,19 @@ export const AdminVideoAnalysisOverview = () => {
   const currentStyle = stats?.fightStyle || 'balanced';
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      {/* Header με User Search */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Video Analysis</h1>
-          <p className="text-gray-500 text-sm mt-1">Ανάλυση βίντεο και στατιστικά απόδοσης</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
+    <div className="space-y-4 p-3 md:p-4">
+      {/* Compact Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           <Button
             onClick={() => setIsStrikeTypesOpen(true)}
             variant="outline"
-            className="rounded-none"
+            size="sm"
+            className="rounded-none h-9"
           >
-            <Settings className="w-4 h-4 mr-1" />
-            <span className="hidden sm:inline">Χτυπήματα</span>
+            <Settings className="w-4 h-4" />
           </Button>
-          <div className="w-full md:w-80">
+          <div className="flex-1 max-w-xs">
             <UserSearchCombobox
               value={selectedUserId}
               onValueChange={setSelectedUserId}
@@ -104,51 +100,40 @@ export const AdminVideoAnalysisOverview = () => {
               coachId={adminId}
             />
           </div>
-          {selectedUserId && (
-            <Button
-              onClick={() => setIsRecordingOpen(true)}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              <span className="hidden sm:inline">Νέος Αγώνας</span>
-              <span className="sm:hidden">Νέος</span>
-            </Button>
-          )}
         </div>
       </div>
 
       {!selectedUserId ? (
         <Card className="rounded-none">
-          <CardContent className="py-12 text-center">
-            <Users className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500">Επιλέξτε χρήστη για να δείτε τα στατιστικά</p>
+          <CardContent className="py-8 text-center">
+            <Users className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+            <p className="text-gray-500 text-sm">Επιλέξτε χρήστη</p>
           </CardContent>
         </Card>
       ) : loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i} className="rounded-none animate-pulse">
-              <CardContent className="py-6">
-                <div className="h-20 bg-gray-200 rounded" />
+              <CardContent className="py-4">
+                <div className="h-12 bg-gray-200 rounded" />
               </CardContent>
             </Card>
           ))}
         </div>
       ) : (
         <>
-          {/* Hero Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Compact Stats Cards - 2 rows of 3 */}
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
             {statCards.map((card, index) => (
-              <Card key={index} className="rounded-none hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">{card.title}</p>
-                      <p className={`text-3xl font-bold ${card.color} mt-1`}>{card.value}</p>
-                      <p className="text-xs text-gray-400 mt-1">{card.subtitle}</p>
+              <Card key={index} className="rounded-none">
+                <CardContent className="p-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 ${card.bgColor} rounded-none`}>
+                      <card.icon className={`w-4 h-4 ${card.color}`} />
                     </div>
-                    <div className={`p-3 ${card.bgColor} rounded-none`}>
-                      <card.icon className={`w-6 h-6 ${card.color}`} />
+                    <div className="min-w-0">
+                      <p className={`text-lg font-bold ${card.color} leading-tight`}>{card.value}</p>
+                      <p className="text-[10px] text-gray-500 truncate">{card.title}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -156,39 +141,29 @@ export const AdminVideoAnalysisOverview = () => {
             ))}
           </div>
 
-          {/* Fight Style Badge */}
-          <Card className="rounded-none">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Swords className="w-5 h-5" />
-                Στυλ Μάχης
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className={`px-4 py-2 ${styleInfo[currentStyle as keyof typeof styleInfo].color} text-white font-semibold rounded-none`}>
-                  {styleInfo[currentStyle as keyof typeof styleInfo].label}
-                </div>
-                <div className="text-sm text-gray-500">
-                  <span className="font-medium">Αναλογία Επίθεσης/Άμυνας:</span>{' '}
-                  {stats?.attackDefenseRatio?.toFixed(2) || '1.00'}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Compact Fight Style */}
+          <div className="flex items-center gap-3 px-2">
+            <Swords className="w-4 h-4 text-gray-400" />
+            <div className={`px-3 py-1 ${styleInfo[currentStyle as keyof typeof styleInfo].color} text-white text-sm font-medium rounded-none`}>
+              {styleInfo[currentStyle as keyof typeof styleInfo].label}
+            </div>
+            <span className="text-xs text-gray-500">
+              Επ/Άμ: {stats?.attackDefenseRatio?.toFixed(2) || '1.00'}
+            </span>
+          </div>
 
-          {/* Tabs για λεπτομερή ανάλυση */}
-          <Tabs defaultValue="strikes" className="w-full">
-            <div className="overflow-x-auto pb-2">
-              <TabsList className="flex w-max sm:grid sm:w-full sm:grid-cols-5 rounded-none h-auto gap-1">
-                <TabsTrigger value="strikes" className="rounded-none text-xs sm:text-sm py-2 px-4 whitespace-nowrap flex-shrink-0">Χτυπήματα</TabsTrigger>
-                <TabsTrigger value="defense" className="rounded-none text-xs sm:text-sm py-2 px-4 whitespace-nowrap flex-shrink-0">Άμυνα</TabsTrigger>
-                <TabsTrigger value="editor" className="rounded-none text-xs sm:text-sm py-2 px-4 whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+          {/* Tabs */}
+          <Tabs defaultValue="editor" className="w-full">
+            <div className="overflow-x-auto">
+              <TabsList className="flex w-max sm:grid sm:w-full sm:grid-cols-5 rounded-none h-8 gap-0.5">
+                <TabsTrigger value="editor" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap flex items-center gap-1">
                   <Film className="w-3 h-3" />
                   Editor
                 </TabsTrigger>
-                <TabsTrigger value="timeline" className="rounded-none text-xs sm:text-sm py-2 px-4 whitespace-nowrap flex-shrink-0">Χρονική</TabsTrigger>
-                <TabsTrigger value="fights" className="rounded-none text-xs sm:text-sm py-2 px-4 whitespace-nowrap flex-shrink-0">Αγώνες</TabsTrigger>
+                <TabsTrigger value="strikes" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap">Χτυπήματα</TabsTrigger>
+                <TabsTrigger value="defense" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap">Άμυνα</TabsTrigger>
+                <TabsTrigger value="timeline" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap">Χρονική</TabsTrigger>
+                <TabsTrigger value="fights" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap">Αγώνες</TabsTrigger>
               </TabsList>
             </div>
 
@@ -283,14 +258,8 @@ export const AdminVideoAnalysisOverview = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="fights" className="mt-4">
-              <FightsHistoryTab 
-                userId={selectedUserId} 
-                onRefresh={() => {
-                  setSelectedUserId('');
-                  setTimeout(() => setSelectedUserId(selectedUserId), 100);
-                }}
-              />
+            <TabsContent value="fights" className="mt-2">
+              <FightsHistoryTab userId={selectedUserId} />
             </TabsContent>
           </Tabs>
         </>
