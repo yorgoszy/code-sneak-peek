@@ -76,7 +76,8 @@ export const AdminVideoAnalysisOverview = () => {
           *,
           app_users!muaythai_fights_user_id_fkey (
             name,
-            avatar_url
+            avatar_url,
+            photo_url
           )
         `)
         .eq('coach_id', adminId)
@@ -84,11 +85,11 @@ export const AdminVideoAnalysisOverview = () => {
 
       if (error) throw error;
       
-      // Map the joined data
+      // Map the joined data - use photo_url if avatar_url is not available
       const mappedFights = (data || []).map((f: any) => ({
         ...f,
         user_name: f.app_users?.name,
-        user_avatar: f.app_users?.avatar_url
+        user_avatar: f.app_users?.avatar_url || f.app_users?.photo_url
       }));
       
       setFights(mappedFights);
