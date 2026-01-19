@@ -159,14 +159,6 @@ export const AdminVideoAnalysisOverview = () => {
       bgColor: 'bg-[#00ffba]/10',
     },
     {
-      title: 'Ακρίβεια',
-      value: `${stats?.accuracy || 0}%`,
-      subtitle: 'Strike Accuracy',
-      icon: TrendingUp,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10',
-    },
-    {
       title: 'Ορθότητα',
       value: `${stats?.correctnessRate || 0}%`,
       subtitle: `${stats?.correctStrikes || 0} σωστά`,
@@ -295,7 +287,7 @@ export const AdminVideoAnalysisOverview = () => {
       ) : (
         <>
           {/* Stats Cards Row 1 */}
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+          <div className="grid grid-cols-5 md:grid-cols-5 gap-2">
             {statCards.map((card, index) => (
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/20' : 'opacity-50'}`}>
                 <CardContent className="p-2">

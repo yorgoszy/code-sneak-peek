@@ -35,59 +35,60 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ data, lo
 
   return (
     <Card className="rounded-none">
-      <CardHeader className="p-3 pb-0">
-        <CardTitle className="text-sm font-medium">Ανάλυση ανά 30"</CardTitle>
-      </CardHeader>
-      <CardContent className="p-3">
-        <div className="h-48">
+      <CardContent className="p-2">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs font-medium text-gray-600">Ανά 30"</span>
+          <div className="flex items-center gap-3 text-[10px]">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-[#00ffba]"></span>Χτυπ.</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-red-500"></span>Δέχτ.</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-violet-500"></span>Άμυν.</span>
+          </div>
+        </div>
+        <div className="h-24">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
+            <BarChart data={data} margin={{ top: 2, right: 2, left: -25, bottom: 0 }} barSize={8}>
+              <CartesianGrid strokeDasharray="2 2" stroke="#e5e5e5" vertical={false} />
               <XAxis 
                 dataKey="time" 
-                tick={{ fontSize: 10 }} 
+                tick={{ fontSize: 8 }} 
                 stroke="#9ca3af"
+                tickLine={false}
+                axisLine={false}
               />
               <YAxis 
-                tick={{ fontSize: 10 }} 
+                tick={{ fontSize: 8 }} 
                 stroke="#9ca3af"
                 allowDecimals={false}
+                tickLine={false}
+                axisLine={false}
               />
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'white', 
                   border: '1px solid #e5e5e5',
                   borderRadius: 0,
-                  fontSize: 12
+                  fontSize: 10,
+                  padding: '4px 8px'
                 }}
-                labelFormatter={(label) => `Χρόνος: ${label}`}
-              />
-              <Legend 
-                wrapperStyle={{ fontSize: 10, paddingTop: 10 }}
-                formatter={(value) => {
-                  if (value === 'strikes') return 'Χτυπήματα';
-                  if (value === 'attacks') return 'Δέχτηκε';
-                  if (value === 'defenses') return 'Άμυνες';
-                  return value;
-                }}
+                labelFormatter={(label) => label}
               />
               <Bar 
                 dataKey="strikes" 
-                name="strikes" 
+                name="Χτυπ." 
                 fill="#00ffba" 
-                radius={[2, 2, 0, 0]}
+                radius={[1, 1, 0, 0]}
               />
               <Bar 
                 dataKey="attacks" 
-                name="attacks" 
+                name="Δέχτ." 
                 fill="#ef4444" 
-                radius={[2, 2, 0, 0]}
+                radius={[1, 1, 0, 0]}
               />
               <Bar 
                 dataKey="defenses" 
-                name="defenses" 
+                name="Άμυν." 
                 fill="#8b5cf6" 
-                radius={[2, 2, 0, 0]}
+                radius={[1, 1, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>
