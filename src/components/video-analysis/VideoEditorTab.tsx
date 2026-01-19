@@ -87,9 +87,10 @@ interface StrikeMarker {
 
 interface VideoEditorTabProps {
   userId: string;
+  onFightSaved?: () => void;
 }
 
-export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
+export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightSaved }) => {
   // Role check & coach ID - use useEffectiveCoachId hook
   const { userProfile } = useRoleCheck();
   const coachId = userProfile?.id || null;
@@ -758,6 +759,11 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId }) => {
       setRoundMarkers([]);
       setActiveRound(null);
       setStrikeMarkers([]);
+      
+      // Call the callback to refresh fights list
+      if (onFightSaved) {
+        onFightSaved();
+      }
     } catch (error) {
       console.error('Error saving fight:', error);
       toast.error('Σφάλμα κατά την αποθήκευση');

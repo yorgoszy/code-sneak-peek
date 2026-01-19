@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -60,35 +60,36 @@ export const AdminVideoAnalysisOverview = () => {
   const { toast } = useToast();
   const { stats, loading: loadingStats } = useFightStats(selectedFightId);
 
-  // Fetch fights when user changes
-  useEffect(() => {
+  // Fetch fights function
+  const fetchFights = useCallback(async () => {
     if (!selectedUserId) {
       setFights([]);
       setSelectedFightId(null);
       return;
     }
     
-    const fetchFights = async () => {
-      setLoadingFights(true);
-      try {
-        const { data, error } = await supabase
-          .from('muaythai_fights')
-          .select('*')
-          .eq('user_id', selectedUserId)
-          .order('fight_date', { ascending: false });
+    setLoadingFights(true);
+    try {
+      const { data, error } = await supabase
+        .from('muaythai_fights')
+        .select('*')
+        .eq('user_id', selectedUserId)
+        .order('fight_date', { ascending: false });
 
-        if (error) throw error;
-        setFights(data || []);
-        setSelectedFightId(null); // Reset selected fight
-      } catch (error) {
-        console.error('Error fetching fights:', error);
-      } finally {
-        setLoadingFights(false);
-      }
-    };
-
-    fetchFights();
+      if (error) throw error;
+      setFights(data || []);
+    } catch (error) {
+      console.error('Error fetching fights:', error);
+    } finally {
+      setLoadingFights(false);
+    }
   }, [selectedUserId]);
+
+  // Fetch fights when user changes
+  useEffect(() => {
+    fetchFights();
+    setSelectedFightId(null); // Reset selected fight
+  }, [selectedUserId, fetchFights]);
 
   const handleDeleteFight = async () => {
     if (!selectedFightForAction) return;
@@ -413,7 +414,7 @@ export const AdminVideoAnalysisOverview = () => {
 
             {/* Editor Tab */}
             <TabsContent value="editor" className="mt-4">
-              <VideoEditorTab userId={selectedUserId} />
+              <VideoEditorTab userId={selectedUserId} onFightSaved={fetchFights} />
             </TabsContent>
           </Tabs>
         </>
