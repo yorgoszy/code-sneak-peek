@@ -268,7 +268,7 @@ export const VideoAnalysisOverview = () => {
             </TabsContent>
 
             <TabsContent value="editor" className="mt-4">
-              <VideoEditorTab userId={selectedUserId} />
+              <VideoEditorTab />
             </TabsContent>
 
             <TabsContent value="timeline" className="mt-4">

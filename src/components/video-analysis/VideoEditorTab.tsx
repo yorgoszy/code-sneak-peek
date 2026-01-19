@@ -46,6 +46,7 @@ import { useVideoExport } from '@/hooks/useVideoExport';
 import { useStrikeTypes, StrikeType, categoryLabels, sideLabels } from '@/hooks/useStrikeTypes';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { supabase } from '@/integrations/supabase/client';
+import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 
 interface TrimClip {
   id: string;
@@ -87,14 +88,16 @@ interface StrikeMarker {
 }
 
 interface VideoEditorTabProps {
-  userId: string;
   onFightSaved?: () => void;
 }
 
-export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightSaved }) => {
+export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) => {
   // Role check & coach ID - use useEffectiveCoachId hook
   const { userProfile } = useRoleCheck();
   const coachId = userProfile?.id || null;
+  
+  // User selection for saving fights
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
   
   // Strike types hook
   const { strikeTypes, loading: strikeTypesLoading } = useStrikeTypes(coachId);
@@ -736,7 +739,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
 
   // Save fight to database
   const saveFight = async () => {
-    if (!userId || !coachId) {
+    if (!selectedUserId || !coachId) {
       toast.error('Απαιτείται επιλογή χρήστη');
       return;
     }
@@ -761,7 +764,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
       const { data: fightData, error: fightError } = await supabase
         .from('muaythai_fights')
         .insert({
-          user_id: userId,
+          user_id: selectedUserId,
           coach_id: coachId,
           fight_date: new Date().toISOString().split('T')[0],
           fight_type: 'sparring',
@@ -1775,14 +1778,25 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
           <RefreshCw className="w-4 h-4 mr-1" />
           Νέο
         </Button>
-        <Button
-          onClick={saveFight}
-          size="sm"
-          className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-        >
-          <Download className="w-4 h-4 mr-1" />
-          Αποθήκευση Αγώνα
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="w-48">
+            <UserSearchCombobox
+              value={selectedUserId}
+              onValueChange={setSelectedUserId}
+              placeholder="Επιλέξτε χρήστη..."
+              coachId={coachId || undefined}
+            />
+          </div>
+          <Button
+            onClick={saveFight}
+            size="sm"
+            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            disabled={!selectedUserId}
+          >
+            <Download className="w-4 h-4 mr-1" />
+            Αποθήκευση Αγώνα
+          </Button>
+        </div>
       </div>
     </div>
   );
