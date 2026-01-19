@@ -1219,40 +1219,68 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ userId, onFightS
                   />
                 </div>
                 
-                {/* Strike Markers on Timeline - Visual bars */}
-                <div className="relative h-6 bg-gray-50 rounded-none border border-gray-200 mt-1">
-                  {strikeMarkers.map((marker) => {
-                    // Color based on owner and state
-                    let barColor = '';
-                    if (marker.owner === 'athlete') {
-                      barColor = marker.hitTarget ? 'bg-[#00ffba]' : 'bg-gray-300';
-                    } else {
-                      if (marker.blocked) {
-                        barColor = 'bg-blue-500';
-                      } else if (marker.hitTarget) {
-                        barColor = 'bg-red-500';
-                      } else {
-                        barColor = 'bg-gray-300';
-                      }
-                    }
-                    
-                    return (
-                      <div
-                        key={marker.id}
-                        className={`absolute w-1.5 h-5 top-0.5 cursor-pointer hover:opacity-80 transition-all ${barColor}`}
-                        style={{ left: `${(marker.time / duration) * 100}%` }}
-                        onClick={() => toggleStrikeState(marker.id)}
-                        title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'} - ${formatTime(marker.time)}`}
-                      />
-                    );
-                  })}
+                {/* Strike Markers on Timeline - Dots with combo stacking */}
+                {(() => {
+                  // Group strikes by second for combo stacking
+                  const groupedBySecond: { [key: number]: typeof strikeMarkers } = {};
+                  strikeMarkers.forEach(marker => {
+                    const second = Math.floor(marker.time);
+                    if (!groupedBySecond[second]) groupedBySecond[second] = [];
+                    groupedBySecond[second].push(marker);
+                  });
                   
-                  {/* Current position indicator */}
-                  <div 
-                    className="absolute w-0.5 h-full bg-black z-10"
-                    style={{ left: `${(currentTime / duration) * 100}%` }}
-                  />
-                </div>
+                  // Calculate max combo size to determine row count
+                  const maxCombo = Math.max(1, ...Object.values(groupedBySecond).map(g => g.length));
+                  const rowHeight = 10; // pixels per row
+                  const totalHeight = Math.max(20, maxCombo * rowHeight + 4);
+                  
+                  return (
+                    <div className="relative bg-gray-50 rounded-none border border-gray-200 mt-1" style={{ height: `${totalHeight}px` }}>
+                      {Object.entries(groupedBySecond).map(([second, markers]) => {
+                        const isCombo = markers.length >= 2;
+                        
+                        return markers.map((marker, indexInCombo) => {
+                          // Color based on owner and state
+                          let dotColor = '';
+                          if (marker.owner === 'athlete') {
+                            dotColor = marker.hitTarget ? 'bg-[#00ffba]' : 'bg-gray-300';
+                          } else {
+                            if (marker.blocked) {
+                              dotColor = 'bg-blue-500';
+                            } else if (marker.hitTarget) {
+                              dotColor = 'bg-red-500';
+                            } else {
+                              dotColor = 'bg-gray-300';
+                            }
+                          }
+                          
+                          // Vertical position - stack from top
+                          const topOffset = 2 + (indexInCombo * rowHeight);
+                          
+                          return (
+                            <div
+                              key={marker.id}
+                              className={`absolute w-2.5 h-2.5 rounded-full cursor-pointer hover:scale-125 transition-all ${dotColor} ${isCombo ? 'ring-1 ring-white shadow-sm' : ''}`}
+                              style={{ 
+                                left: `${(marker.time / duration) * 100}%`,
+                                top: `${topOffset}px`,
+                                transform: 'translateX(-50%)'
+                              }}
+                              onClick={() => toggleStrikeState(marker.id)}
+                              title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'}${isCombo ? ` (Combo ${indexInCombo + 1}/${markers.length})` : ''}`}
+                            />
+                          );
+                        });
+                      })}
+                      
+                      {/* Current position indicator */}
+                      <div 
+                        className="absolute w-0.5 h-full bg-black z-10"
+                        style={{ left: `${(currentTime / duration) * 100}%` }}
+                      />
+                    </div>
+                  );
+                })()}
 
                 {/* Trim markers on timeline */}
                 <div className="relative h-2 bg-gray-200 rounded-none mt-1">
