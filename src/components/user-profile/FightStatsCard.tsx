@@ -108,6 +108,7 @@ export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
 
   // Progression calculations
   const strikesChange = prevStats ? getPercentChange(stats?.totalStrikes || 0, prevStats.totalStrikes || 0) : null;
+  const correctnessChange = prevStats ? getPercentChange(stats?.correctnessRate || 0, prevStats.correctnessRate || 0) : null;
   const hitsReceivedChange = prevStats ? getPercentChange(stats?.totalHitsReceived || 0, prevStats.totalHitsReceived || 0) : null;
   const boxChange = prevStats ? getPercentChange(stats?.punchesTotal || 0, prevStats.punchesTotal || 0) : null;
   const kicksChange = prevStats ? getPercentChange(stats?.kicksTotal || 0, prevStats.kicksTotal || 0) : null;
@@ -125,6 +126,7 @@ export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
       title: 'Ορθ.',
       value: `${stats?.correctnessRate || 0}%`,
       icon: CheckCircle,
+      change: correctnessChange,
     },
     {
       title: 'Άμ.',
