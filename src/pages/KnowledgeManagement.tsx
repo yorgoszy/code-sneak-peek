@@ -40,6 +40,7 @@ interface Course {
 const KnowledgeManagement: React.FC = () => {
   const { isAdmin } = useRoleCheck();
   const { effectiveCoachId } = useEffectiveCoachId();
+  const isCoach = !isAdmin() && !!effectiveCoachId;
   
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,10 +58,12 @@ const KnowledgeManagement: React.FC = () => {
   });
 
   useEffect(() => {
-    if (isAdmin()) {
+    if (!isCoach) {
       fetchCourses();
+    } else {
+      setLoading(false);
     }
-  }, []);
+  }, [isCoach]);
 
   const fetchCourses = async () => {
     try {
@@ -80,7 +83,7 @@ const KnowledgeManagement: React.FC = () => {
   };
 
   // If coach, render shop view
-  if (!isAdmin() && effectiveCoachId) {
+  if (isCoach && effectiveCoachId) {
     return <CoachKnowledgeShop coachId={effectiveCoachId} />;
   }
 
