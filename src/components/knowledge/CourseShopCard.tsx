@@ -106,7 +106,7 @@ export const CourseShopCard: React.FC<CourseShopCardProps> = ({
           <h3 className="font-semibold text-sm truncate flex-1">{course.title}</h3>
           {isPurchased && course.pdf_url && (
             <button
-              className="bg-muted hover:bg-muted/80 p-1.5 rounded-none transition-colors flex-shrink-0"
+              className="hover:opacity-70 p-1 transition-opacity flex-shrink-0"
               title="Λήψη PDF"
               onClick={async (e) => {
                 e.stopPropagation();
