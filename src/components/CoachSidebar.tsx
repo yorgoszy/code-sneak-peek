@@ -21,6 +21,7 @@ import {
   MonitorPlay,
   Timer,
   Compass,
+  BookOpen,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -214,6 +215,13 @@ export const CoachSidebar = ({
       path: effectiveCoachId ? `/dashboard/cognitive?coachId=${effectiveCoachId}` : "/dashboard/cognitive",
       badge: null,
       requiresSubscription: true,
+    },
+    {
+      icon: BookOpen,
+      label: "Knowledge",
+      path: effectiveCoachId ? `/dashboard/knowledge?coachId=${effectiveCoachId}` : "/dashboard/knowledge",
+      badge: null,
+      requiresSubscription: false,
     },
     {
       icon: Settings,

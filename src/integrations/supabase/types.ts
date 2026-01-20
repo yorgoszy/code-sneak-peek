@@ -1200,6 +1200,51 @@ export type Database = {
           },
         ]
       }
+      coach_course_purchases: {
+        Row: {
+          amount_paid: number
+          coach_id: string
+          course_id: string
+          created_at: string
+          id: string
+          purchase_date: string
+          status: string
+        }
+        Insert: {
+          amount_paid: number
+          coach_id: string
+          course_id: string
+          created_at?: string
+          id?: string
+          purchase_date?: string
+          status?: string
+        }
+        Update: {
+          amount_paid?: number
+          coach_id?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          purchase_date?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_course_purchases_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_course_purchases_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_endurance_test_data: {
         Row: {
           created_at: string | null
@@ -3389,6 +3434,59 @@ export type Database = {
             columns: ["test_id"]
             isOneToOne: false
             referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_courses: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          is_active: boolean
+          price: number
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          youtube_url: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          price?: number
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          youtube_url: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          price?: number
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          youtube_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_courses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
         ]
