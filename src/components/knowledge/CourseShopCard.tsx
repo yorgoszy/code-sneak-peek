@@ -59,35 +59,8 @@ export const CourseShopCard: React.FC<CourseShopCardProps> = ({
           </div>
         )}
         
-        {/* Status Badge & PDF Download */}
-        <div className="absolute top-2 right-2 flex items-center gap-1">
-          {/* PDF Download Button - only for purchased courses with PDF */}
-          {isPurchased && course.pdf_url && (
-            <button
-              className="bg-black/70 hover:bg-black/90 text-white p-1.5 rounded-none transition-colors"
-              title="Λήψη PDF"
-              onClick={async (e) => {
-                e.stopPropagation();
-                try {
-                  const response = await fetch(course.pdf_url!);
-                  if (!response.ok) throw new Error('Download failed');
-                  const blob = await response.blob();
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = course.pdf_url!.split('/').pop() || 'document.pdf';
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  window.URL.revokeObjectURL(url);
-                } catch (error) {
-                  console.error('Download error:', error);
-                }
-              }}
-            >
-              <FileDown className="w-4 h-4" />
-            </button>
-          )}
+        {/* Status Badge */}
+        <div className="absolute top-2 right-2">
           {isPurchased ? (
             <Badge className="rounded-none bg-[#00ffba] text-black">
               <Check className="w-3 h-3 mr-1" />
@@ -128,7 +101,36 @@ export const CourseShopCard: React.FC<CourseShopCardProps> = ({
       </div>
 
       <CardContent className="p-3 space-y-2">
-        <h3 className="font-semibold text-sm truncate">{course.title}</h3>
+        {/* Title with PDF download button */}
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-sm truncate flex-1">{course.title}</h3>
+          {isPurchased && course.pdf_url && (
+            <button
+              className="bg-muted hover:bg-muted/80 p-1.5 rounded-none transition-colors flex-shrink-0"
+              title="Λήψη PDF"
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  const response = await fetch(course.pdf_url!);
+                  if (!response.ok) throw new Error('Download failed');
+                  const blob = await response.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = course.pdf_url!.split('/').pop() || 'document.pdf';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  window.URL.revokeObjectURL(url);
+                } catch (error) {
+                  console.error('Download error:', error);
+                }
+              }}
+            >
+              <FileDown className="w-4 h-4 text-[#cb8954]" />
+            </button>
+          )}
+        </div>
         {course.description && (
           <p className="text-xs text-muted-foreground line-clamp-2">{course.description}</p>
         )}
