@@ -287,9 +287,7 @@ export const AdminVideoAnalysisOverview = () => {
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/20' : 'opacity-50'}`}>
                 <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 ${card.bgColor} rounded-none`}>
-                      <card.icon className={`w-4 h-4 ${card.color}`} />
-                    </div>
+                    <card.icon className={`w-4 h-4 ${card.color}`} />
                     <div className="min-w-0">
                       <p className={`text-lg font-bold ${card.color} leading-tight`}>
                         {loadingStats ? '...' : card.value}
@@ -316,13 +314,11 @@ export const AdminVideoAnalysisOverview = () => {
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
                 <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 ${card.bgColor} rounded-none`}>
-                      {(card as any).imageIcon ? (
-                        <img src={(card as any).imageIcon} alt={card.title} className="w-4 h-4 object-contain" />
-                      ) : (
-                        <card.icon className={`w-4 h-4 ${card.color}`} />
-                      )}
-                    </div>
+                    {(card as any).imageIcon ? (
+                      <img src={(card as any).imageIcon} alt={card.title} className="w-4 h-4 object-contain" />
+                    ) : (
+                      <card.icon className={`w-4 h-4 ${card.color}`} />
+                    )}
                     <div className="min-w-0">
                       <p className={`text-lg font-bold ${card.color} leading-tight`}>
                         {loadingStats ? '...' : card.value}
