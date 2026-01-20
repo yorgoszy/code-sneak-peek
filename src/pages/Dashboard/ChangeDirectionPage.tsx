@@ -584,9 +584,7 @@ const ChangeDirectionPage = () => {
             </svg>
           )
         ) : isWaiting ? (
-          <svg viewBox="0 0 80 80" className="w-64 h-64">
-            <rect x="10" y="10" width="60" height="60" fill="#EF4444" />
-          </svg>
+          <div className="w-full h-full" />
         ) : (
           <div className="text-center text-white">
             <Wifi className="w-16 h-16 mx-auto mb-4 animate-pulse" />
