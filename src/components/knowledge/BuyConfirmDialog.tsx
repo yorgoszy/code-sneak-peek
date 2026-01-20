@@ -22,13 +22,15 @@ interface BuyConfirmDialogProps {
   onClose: () => void;
   course: Course | null;
   onConfirm: () => Promise<void>;
+  isPurchasing?: boolean;
 }
 
 export const BuyConfirmDialog: React.FC<BuyConfirmDialogProps> = ({
   isOpen,
   onClose,
   course,
-  onConfirm
+  onConfirm,
+  isPurchasing = false
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -40,6 +42,8 @@ export const BuyConfirmDialog: React.FC<BuyConfirmDialogProps> = ({
       setLoading(false);
     }
   };
+
+  const isDisabled = loading || isPurchasing;
 
   if (!course) return null;
 
@@ -61,7 +65,7 @@ export const BuyConfirmDialog: React.FC<BuyConfirmDialogProps> = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="rounded-none" disabled={loading}>
+          <AlertDialogCancel className="rounded-none" disabled={isDisabled}>
             Ακύρωση
           </AlertDialogCancel>
           <AlertDialogAction 
@@ -70,9 +74,9 @@ export const BuyConfirmDialog: React.FC<BuyConfirmDialogProps> = ({
               handleConfirm();
             }}
             className="bg-[#cb8954] hover:bg-[#cb8954]/90 rounded-none"
-            disabled={loading}
+            disabled={isDisabled}
           >
-            {loading ? 'Αγορά...' : 'Επιβεβαίωση Αγοράς'}
+            {isDisabled ? 'Μετάβαση σε Stripe...' : 'Επιβεβαίωση Αγοράς'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

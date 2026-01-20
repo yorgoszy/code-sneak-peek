@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { BookOpen, ShoppingBag } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -24,9 +25,11 @@ interface CoachKnowledgeShopProps {
 }
 
 export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
   const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [purchasing, setPurchasing] = useState(false);
   
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -36,6 +39,58 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
   useEffect(() => {
     fetchData();
   }, [coachId]);
+
+  // Handle payment success/cancel callbacks
+  useEffect(() => {
+    const payment = searchParams.get('payment');
+    const sessionId = searchParams.get('session_id');
+    const courseId = searchParams.get('course_id');
+    
+    if (payment === 'success' && sessionId) {
+      console.log('🎉 Course payment successful, processing...', sessionId);
+      handlePaymentSuccess(sessionId, courseId);
+    } else if (payment === 'cancelled') {
+      toast.error('Η πληρωμή ακυρώθηκε');
+      // Clean up URL params
+      cleanupUrlParams();
+    }
+  }, [searchParams]);
+
+  const cleanupUrlParams = () => {
+    searchParams.delete('payment');
+    searchParams.delete('session_id');
+    searchParams.delete('course_id');
+    setSearchParams(searchParams);
+  };
+
+  const handlePaymentSuccess = async (sessionId: string, courseId: string | null) => {
+    try {
+      // Call the process-course-payment function to complete the purchase
+      const { data, error } = await supabase.functions.invoke('process-course-payment', {
+        body: { session_id: sessionId }
+      });
+
+      if (error) throw error;
+
+      console.log('✅ Course payment processed:', data);
+      
+      if (data.alreadyOwned) {
+        toast.info('Έχετε ήδη αγοράσει αυτό το μάθημα');
+      } else {
+        toast.success('Επιτυχής αγορά! Το μάθημα είναι πλέον διαθέσιμο.');
+      }
+      
+      // Refresh data
+      fetchData();
+      
+      // Clean up URL params
+      cleanupUrlParams();
+    } catch (error) {
+      console.error('Error processing course payment:', error);
+      toast.error('Σφάλμα ολοκλήρωσης πληρωμής');
+      cleanupUrlParams();
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -74,30 +129,39 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
 
   const handleConfirmBuy = async () => {
     if (!courseToBuy) return;
+    
+    setPurchasing(true);
 
     try {
-      const { error } = await supabase
-        .from('coach_course_purchases')
-        .insert({
-          coach_id: coachId,
-          course_id: courseToBuy.id,
-          amount_paid: courseToBuy.price,
-          status: 'completed'
-        });
+      // Create Stripe checkout session via edge function
+      const { data, error } = await supabase.functions.invoke('create-course-payment', {
+        body: {
+          courseId: courseToBuy.id,
+          courseTitle: courseToBuy.title,
+          amount: courseToBuy.price,
+          currency: "eur"
+        }
+      });
 
       if (error) throw error;
 
-      toast.success('Επιτυχής αγορά! Το μάθημα είναι πλέον διαθέσιμο.');
+      console.log('✅ Stripe session created:', data);
+      
+      // Close dialog
       setBuyDialogOpen(false);
       setCourseToBuy(null);
-      fetchData();
-    } catch (error: any) {
-      console.error('Error purchasing course:', error);
-      if (error.code === '23505') {
-        toast.error('Έχετε ήδη αγοράσει αυτό το μάθημα');
+      
+      // Open Stripe checkout
+      if (data.url) {
+        window.location.href = data.url;
       } else {
-        toast.error('Σφάλμα αγοράς');
+        throw new Error('No checkout URL received');
       }
+    } catch (error: any) {
+      console.error('Error initiating payment:', error);
+      toast.error('Σφάλμα δημιουργίας πληρωμής');
+    } finally {
+      setPurchasing(false);
     }
   };
 
@@ -190,6 +254,7 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
         }}
         course={courseToBuy}
         onConfirm={handleConfirmBuy}
+        isPurchasing={purchasing}
       />
     </div>
   );
