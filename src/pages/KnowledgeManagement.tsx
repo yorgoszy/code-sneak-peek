@@ -153,7 +153,21 @@ const KnowledgeManagement: React.FC = () => {
       // 1) Upload PDF (if selected)
       let pdfUrl = formData.pdf_url;
       if (formData.pdf_file) {
+        // Basic client-side guardrails
+        const maxMb = 20;
+        const sizeMb = formData.pdf_file.size / (1024 * 1024);
+        if (sizeMb > maxMb) {
+          toast.error(`Το PDF είναι πολύ μεγάλο (${sizeMb.toFixed(1)}MB). Μέγιστο ${maxMb}MB.`);
+          return;
+        }
+
         setUploadingPdf(true);
+        console.info('📄 PDF upload: start', {
+          name: formData.pdf_file.name,
+          size: formData.pdf_file.size,
+          type: formData.pdf_file.type,
+        });
+
         try {
           const fileExt = (formData.pdf_file.name.split('.').pop() || 'pdf').toLowerCase();
           const uid = (globalThis.crypto && 'randomUUID' in globalThis.crypto)
@@ -161,33 +175,48 @@ const KnowledgeManagement: React.FC = () => {
             : Math.random().toString(36).slice(2);
           const fileName = `${Date.now()}-${uid}.${fileExt}`;
 
-          const uploadPromise = supabase.storage
+          // Use signed upload URL so we can abort with timeout reliably
+          const { data: signed, error: signedErr } = await supabase.storage
             .from('course-pdfs')
-            .upload(fileName, formData.pdf_file, {
-              cacheControl: '3600',
-              upsert: false,
-              contentType: 'application/pdf',
+            .createSignedUploadUrl(fileName);
+
+          if (signedErr || !signed) {
+            console.error('PDF signed upload url error:', signedErr);
+            toast.error(`Σφάλμα προετοιμασίας PDF: ${signedErr?.message || 'Unknown error'}`);
+            return;
+          }
+
+          const controller = new AbortController();
+          const timeoutMs = 45_000;
+          const t = window.setTimeout(() => controller.abort(), timeoutMs);
+
+          try {
+            const res = await fetch(signed.signedUrl, {
+              method: 'PUT',
+              body: formData.pdf_file,
+              headers: {
+                'Content-Type': 'application/pdf',
+              },
+              signal: controller.signal,
             });
 
-          const timeoutMs = 45_000;
-          const { error: uploadError } = await Promise.race([
-            uploadPromise,
-            new Promise<{ data: null; error: { message: string } }>((_, reject) =>
-              setTimeout(() => reject(new Error(`timeout:${timeoutMs}`)), timeoutMs)
-            ),
-          ]).catch((e: unknown) => {
+            if (!res.ok) {
+              const text = await res.text().catch(() => '');
+              console.error('PDF upload PUT failed:', res.status, text);
+              toast.error(`Σφάλμα μεταφόρτωσης PDF: ${res.status}`);
+              return;
+            }
+          } catch (e) {
+            if (e instanceof DOMException && e.name === 'AbortError') {
+              toast.error('Η μεταφόρτωση PDF καθυστέρησε πολύ. Δοκίμασε ξανά ή με μικρότερο αρχείο.');
+              return;
+            }
+            console.error('PDF upload error (unexpected):', e);
             const msg = e instanceof Error ? e.message : String(e);
-            throw new Error(
-              msg.startsWith('timeout:')
-                ? 'Η μεταφόρτωση PDF καθυστέρησε πολύ. Δοκίμασε ξανά ή με μικρότερο αρχείο.'
-                : msg
-            );
-          });
-
-          if (uploadError) {
-            console.error('PDF upload error:', uploadError);
-            toast.error(`Σφάλμα μεταφόρτωσης PDF: ${uploadError.message}`);
+            toast.error(`Σφάλμα μεταφόρτωσης PDF: ${msg}`);
             return;
+          } finally {
+            window.clearTimeout(t);
           }
 
           const { data: urlData } = supabase.storage
@@ -195,15 +224,13 @@ const KnowledgeManagement: React.FC = () => {
             .getPublicUrl(fileName);
 
           pdfUrl = urlData.publicUrl;
-        } catch (e) {
-          console.error('PDF upload error (unexpected):', e);
-          const msg = e instanceof Error ? e.message : String(e);
-          toast.error(`Σφάλμα μεταφόρτωσης PDF: ${msg}`);
-          return;
+          console.info('📄 PDF upload: success', { pdfUrl });
         } finally {
           setUploadingPdf(false);
         }
       }
+
+      console.info('💾 Course save: start', { mode: selectedCourse ? 'update' : 'insert' });
 
       // 2) Insert/Update course
       if (selectedCourse) {
