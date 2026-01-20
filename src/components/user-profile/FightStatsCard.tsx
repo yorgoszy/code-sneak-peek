@@ -150,10 +150,10 @@ export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
     { title: 'Cli.', value: stats?.clinchTimeFormatted || '0:00', imageIcon: clinchIcon },
   ];
 
-  const ChangeIndicator = ({ change }: { change: { value: number; icon: React.ReactNode } | null | undefined }) => {
+  const ChangeIndicator = ({ change, showAsTitle = false }: { change: { value: number; icon: React.ReactNode } | null | undefined; showAsTitle?: boolean }) => {
     if (!change) return null;
     return (
-      <span className="flex items-center gap-0.5 text-[6px]">
+      <span className={`flex items-center gap-0.5 ${showAsTitle ? 'text-[6px]' : 'text-[6px]'}`}>
         {change.icon}
         <span className={change.value > 0 ? 'text-green-500' : change.value < 0 ? 'text-destructive' : 'text-muted-foreground'}>
           {change.value > 0 ? '+' : ''}{change.value.toFixed(0)}%
@@ -189,7 +189,6 @@ export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
                     <p className="text-[10px] font-bold text-foreground leading-tight truncate">
                       {statsLoading ? '...' : card.value}
                     </p>
-                    <ChangeIndicator change={(card as any).change} />
                   </div>
                   {(card as any).customSubtitle ? (
                     <p className="text-[6px] truncate">
@@ -197,6 +196,8 @@ export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
                       <span className="text-muted-foreground mx-0.5">|</span>
                       <span className="text-destructive">Άμ:{(card as any).defenseTime}</span>
                     </p>
+                  ) : (card as any).change ? (
+                    <ChangeIndicator change={(card as any).change} showAsTitle />
                   ) : (
                     <p className="text-[6px] text-muted-foreground truncate">{card.title}</p>
                   )}
@@ -217,9 +218,12 @@ export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
                     <p className="text-[10px] font-bold text-foreground leading-tight truncate">
                       {statsLoading ? '...' : card.value}
                     </p>
-                    <ChangeIndicator change={(card as any).change} />
                   </div>
-                  <p className="text-[6px] text-muted-foreground truncate">{card.title}</p>
+                  {(card as any).change ? (
+                    <ChangeIndicator change={(card as any).change} showAsTitle />
+                  ) : (
+                    <p className="text-[6px] text-muted-foreground truncate">{card.title}</p>
+                  )}
                 </div>
               </div>
             </div>

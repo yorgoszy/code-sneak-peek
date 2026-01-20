@@ -133,15 +133,20 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
               }}
             />
             {/* Legend removed to save space */}
+            {/* Only show last 2 sessions per exercise for 1RM comparison */}
             {selectedExercises.map((exerciseName, index) => {
               const exerciseData = data.filter(d => d.exerciseName === exerciseName);
               const exerciseId = exerciseData[0]?.exerciseId;
-              const sessions = selectedSessions[exerciseId || ''];
+              const allSessions = exerciseSessions[exerciseId || ''] || [];
               
-              // Αν δεν υπάρχουν selected sessions, εμφάνισε όλα τα unique sessions για αυτή την άσκηση
+              // Πάρε μόνο τις 2 τελευταίες μετρήσεις (sessions)
+              const lastTwoSessions = allSessions.slice(0, 2).map(s => s.sessionId);
+              
+              // Αν υπάρχουν selected sessions, φιλτράρισε μόνο τις τελευταίες 2
+              const sessions = selectedSessions[exerciseId || ''];
               const sessionIds = sessions && sessions.length > 0 
-                ? sessions 
-                : [...new Set(exerciseData.map(d => d.sessionId).filter(Boolean))];
+                ? sessions.filter(s => lastTwoSessions.includes(s))
+                : lastTwoSessions;
               
               if (sessionIds.length === 0) {
                 // Fallback: εμφάνισε μια γραμμή χωρίς session ID
