@@ -210,6 +210,17 @@ export const AdminVideoAnalysisOverview = () => {
     },
   ];
 
+  // Determine fight style
+  const getFightStyleInfo = () => {
+    if (!stats) return { label: '-', color: 'text-gray-400' };
+    const ratio = stats.attackDefenseRatio || 0;
+    if (ratio >= 1.5) return { label: 'Επιθετικός', color: 'text-red-500' };
+    if (ratio <= 0.7) return { label: 'Αμυντικός', color: 'text-blue-500' };
+    return { label: 'Ισορροπημένος', color: 'text-green-500' };
+  };
+
+  const fightStyleInfo = getFightStyleInfo();
+
   // Second row of stats
   const statCards2 = [
     {
@@ -255,6 +266,14 @@ export const AdminVideoAnalysisOverview = () => {
       icon: Users,
       imageIcon: clinchIcon,
       color: 'text-foreground',
+      bgColor: 'bg-gray-100 dark:bg-gray-800',
+    },
+    {
+      title: 'Στυλ',
+      value: fightStyleInfo.label,
+      subtitle: `Επ/Άμ: ${stats?.attackDefenseRatio?.toFixed(2) || '0.00'}`,
+      icon: Swords,
+      color: fightStyleInfo.color,
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
   ];
