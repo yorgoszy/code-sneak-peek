@@ -127,7 +127,7 @@ export const CourseShopCard: React.FC<CourseShopCardProps> = ({
                 }
               }}
             >
-              <FileDown className="w-4 h-4 text-[#cb8954]" />
+              <FileDown className="w-4 h-4 text-black" />
             </button>
           )}
         </div>
