@@ -173,10 +173,8 @@ const KnowledgeManagement: React.FC = () => {
         });
 
         try {
-          // Use the original filename, sanitize it and add timestamp to avoid conflicts
-          const originalName = formData.pdf_file.name;
-          const sanitizedName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
-          const fileName = `${Date.now()}-${sanitizedName}`;
+          // Use exact original filename (no timestamp, no extra modifications)
+          const fileName = formData.pdf_file.name;
 
           // Use resumable (TUS) uploads for reliability with large PDFs
           await uploadToSupabaseResumable({
