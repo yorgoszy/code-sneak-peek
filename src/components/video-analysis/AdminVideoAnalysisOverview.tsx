@@ -296,80 +296,84 @@ export const AdminVideoAnalysisOverview = () => {
         </div>
       </div>
 
-      {/* Stats Cards Row 1 - always show */}
-          <div className="grid grid-cols-4 md:grid-cols-4 gap-0.5 md:gap-2">
-            {statCards.map((card, index) => (
-              <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/20' : 'opacity-50'}`}>
-                <CardContent className="p-1 md:p-2">
-                  <div className="flex items-center gap-1 md:gap-2">
-                    {(card as any).imageIcon ? (
-                      <img src={(card as any).imageIcon} alt={card.title} className="w-3 h-3 md:w-4 md:h-4 object-contain flex-shrink-0" />
-                    ) : (
-                      <card.icon className={`w-3 h-3 md:w-4 md:h-4 ${card.color} flex-shrink-0`} />
-                    )}
-                    <div className="min-w-0 flex-1 overflow-hidden">
-                      <p className={`text-sm md:text-lg font-bold ${card.color} leading-tight truncate`}>
-                        {loadingStats ? '...' : card.value}
-                      </p>
-                      {(card as any).customSubtitle ? (
-                        <p className="text-[8px] md:text-[10px] truncate">
-                          <span className="text-blue-500 font-medium">Επ: {(card as any).attackTime}</span>
-                          <span className="text-gray-400 mx-0.5">|</span>
-                          <span className="text-red-500 font-medium">Άμ: {(card as any).defenseTime}</span>
-                        </p>
+      {/* Stats Cards - All rows with minimal gap */}
+          <div className="space-y-0.5 md:space-y-2">
+            {/* Row 1 */}
+            <div className="grid grid-cols-4 md:grid-cols-4 gap-0.5 md:gap-2">
+              {statCards.map((card, index) => (
+                <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/20' : 'opacity-50'}`}>
+                  <CardContent className="p-1 md:p-2">
+                    <div className="flex items-center gap-1 md:gap-2">
+                      {(card as any).imageIcon ? (
+                        <img src={(card as any).imageIcon} alt={card.title} className="w-3 h-3 md:w-4 md:h-4 object-contain flex-shrink-0" />
                       ) : (
-                        <p className="text-[8px] md:text-[10px] text-gray-500 truncate">{card.title}</p>
+                        <card.icon className={`w-3 h-3 md:w-4 md:h-4 ${card.color} flex-shrink-0`} />
                       )}
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <p className={`text-sm md:text-lg font-bold ${card.color} leading-tight truncate`}>
+                          {loadingStats ? '...' : card.value}
+                        </p>
+                        {(card as any).customSubtitle ? (
+                          <p className="text-[8px] md:text-[10px] truncate">
+                            <span className="text-blue-500 font-medium">Επ: {(card as any).attackTime}</span>
+                            <span className="text-gray-400 mx-0.5">|</span>
+                            <span className="text-red-500 font-medium">Άμ: {(card as any).defenseTime}</span>
+                          </p>
+                        ) : (
+                          <p className="text-[8px] md:text-[10px] text-gray-500 truncate">{card.title}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-          <div className="grid grid-cols-5 md:grid-cols-5 gap-0.5 md:gap-2">
-            {statCards2.map((card, index) => (
-              <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
-                <CardContent className="p-1 md:p-2">
-                  <div className="flex items-center gap-1 md:gap-2">
-                    {(card as any).imageIcon ? (
-                      <img src={(card as any).imageIcon} alt={card.title} className="w-3 h-3 md:w-4 md:h-4 object-contain flex-shrink-0" />
-                    ) : (
-                      <card.icon className={`w-3 h-3 md:w-4 md:h-4 ${card.color} flex-shrink-0`} />
-                    )}
-                    <div className="min-w-0 flex-1 overflow-hidden">
-                      <p className={`text-sm md:text-lg font-bold ${card.color} leading-tight truncate`}>
-                        {loadingStats ? '...' : card.value}
+            {/* Row 2 */}
+            <div className="grid grid-cols-5 md:grid-cols-5 gap-0.5 md:gap-2">
+              {statCards2.map((card, index) => (
+                <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
+                  <CardContent className="p-1 md:p-2">
+                    <div className="flex items-center gap-1 md:gap-2">
+                      {(card as any).imageIcon ? (
+                        <img src={(card as any).imageIcon} alt={card.title} className="w-3 h-3 md:w-4 md:h-4 object-contain flex-shrink-0" />
+                      ) : (
+                        <card.icon className={`w-3 h-3 md:w-4 md:h-4 ${card.color} flex-shrink-0`} />
+                      )}
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <p className={`text-sm md:text-lg font-bold ${card.color} leading-tight truncate`}>
+                          {loadingStats ? '...' : card.value}
+                        </p>
+                        <p className="text-[8px] md:text-[10px] text-gray-500 truncate">{card.title}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Row 3 - Στυλ Box */}
+            <Card className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
+              <CardContent className="p-1 md:p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Swords className={`w-4 h-4 md:w-5 md:h-5 ${fightStyleInfo.color} flex-shrink-0`} />
+                    <div>
+                      <p className={`text-sm md:text-xl font-bold ${fightStyleInfo.color} leading-tight`}>
+                        {loadingStats ? '...' : fightStyleInfo.label}
                       </p>
-                      <p className="text-[8px] md:text-[10px] text-gray-500 truncate">{card.title}</p>
+                      <p className="text-[8px] md:text-xs text-gray-500">Στυλ Μάχης</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Στυλ Box - Full width on mobile */}
-          <Card className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
-            <CardContent className="p-2 md:p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Swords className={`w-4 h-4 md:w-5 md:h-5 ${fightStyleInfo.color} flex-shrink-0`} />
-                  <div>
-                    <p className={`text-lg md:text-xl font-bold ${fightStyleInfo.color} leading-tight`}>
-                      {loadingStats ? '...' : fightStyleInfo.label}
+                  <div className="text-right">
+                    <p className="text-xs md:text-base font-semibold text-foreground">
+                      Επ/Άμ: {stats?.attackDefenseRatio?.toFixed(2) || '0.00'}
                     </p>
-                    <p className="text-[10px] md:text-xs text-gray-500">Στυλ Μάχης</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm md:text-base font-semibold text-foreground">
-                    Επ/Άμ: {stats?.attackDefenseRatio?.toFixed(2) || '0.00'}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Timeline Chart - only show when fight is selected */}
           {selectedFightId && (
