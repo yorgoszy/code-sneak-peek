@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/Sidebar";
+import { CoachSidebar } from "@/components/CoachSidebar";
+import { useRoleCheck } from '@/hooks/useRoleCheck';
+import { useEffectiveCoachId } from '@/hooks/useEffectiveCoachId';
 import { 
   Brain, 
   Menu, 
@@ -98,6 +101,8 @@ const generateStroopQuestion = (difficulty: Difficulty): StroopQuestion => {
 
 const CognitivePage: React.FC = () => {
   const { t } = useTranslation();
+  const { isAdmin } = useRoleCheck();
+  const { effectiveCoachId } = useEffectiveCoachId();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   
@@ -447,7 +452,11 @@ const CognitivePage: React.FC = () => {
           transform transition-transform duration-200 ease-in-out
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
-          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+          {isAdmin() ? (
+            <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+          ) : (
+            <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={effectiveCoachId} />
+          )}
         </div>
         
         <div className="flex-1 overflow-auto">
