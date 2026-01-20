@@ -154,7 +154,7 @@ const KnowledgeManagement: React.FC = () => {
       let pdfUrl = formData.pdf_url;
       if (formData.pdf_file) {
         // Basic client-side guardrails
-        const maxMb = 20;
+        const maxMb = 500;
         const sizeMb = formData.pdf_file.size / (1024 * 1024);
         if (sizeMb > maxMb) {
           toast.error(`Το PDF είναι πολύ μεγάλο (${sizeMb.toFixed(1)}MB). Μέγιστο ${maxMb}MB.`);
