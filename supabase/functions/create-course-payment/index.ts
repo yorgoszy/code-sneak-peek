@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { courseId, courseTitle, amount, currency = "eur" } = await req.json();
+    const { courseId, courseTitle, amount, currency = "eur", coachId } = await req.json();
 
     if (!courseId || !amount || amount <= 0) {
       throw new Error("Course ID and valid amount are required");
@@ -50,6 +50,13 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
+    // Resolve origin for redirect URLs
+    const originHeader = req.headers.get("origin");
+    const refererHeader = req.headers.get("referer");
+    const origin = originHeader ?? (refererHeader ? new URL(refererHeader).origin : "");
+
+    const coachQuery = coachId ? `&coachId=${encodeURIComponent(coachId)}` : "";
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -65,15 +72,15 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/dashboard/knowledge?payment=success&session_id={CHECKOUT_SESSION_ID}&course_id=${courseId}`,
-      cancel_url: `${req.headers.get("origin")}/dashboard/knowledge?payment=cancelled`,
+      success_url: `${origin}/dashboard/knowledge?payment=success&session_id={CHECKOUT_SESSION_ID}&course_id=${courseId}${coachQuery}`,
+      cancel_url: `${origin}/dashboard/knowledge?payment=cancelled${coachQuery}`,
       metadata: {
         user_id: user.id,
         course_id: courseId,
         course_title: courseTitle || "Μάθημα",
         amount: amount.toString(),
-        payment_type: "course_purchase"
-      }
+        payment_type: "course_purchase",
+      },
     });
 
     console.log("✅ Stripe session created:", session.id);

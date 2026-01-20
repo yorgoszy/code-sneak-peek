@@ -139,7 +139,8 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
           courseId: courseToBuy.id,
           courseTitle: courseToBuy.title,
           amount: courseToBuy.price,
-          currency: "eur"
+          currency: "eur",
+          coachId,
         }
       });
 
