@@ -9,6 +9,7 @@ import boxIcon from '@/assets/box-icon.png';
 import kneeIcon from '@/assets/knee-icon.png';
 import kickIcon from '@/assets/kick-icon.png';
 import clinchIcon from '@/assets/clinch-icon.png';
+import defenseIcon from '@/assets/defense-icon.png';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useFightStats, defaultFightStats, FightStats } from '@/hooks/useFightStats';
@@ -198,6 +199,7 @@ export const AdminVideoAnalysisOverview = () => {
       value: stats?.totalDefenses || 0,
       subtitle: `${stats?.successfulDefenses || 0} επιτυχ.`,
       icon: Shield,
+      imageIcon: defenseIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
