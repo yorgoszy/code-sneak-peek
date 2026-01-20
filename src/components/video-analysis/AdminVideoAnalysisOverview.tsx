@@ -7,6 +7,7 @@ import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, F
 import elbowIcon from '@/assets/elbow-icon.png';
 import boxIcon from '@/assets/box-icon.png';
 import kneeIcon from '@/assets/knee-icon.png';
+import kickIcon from '@/assets/kick-icon.png';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useFightStats, defaultFightStats, FightStats } from '@/hooks/useFightStats';
@@ -228,6 +229,7 @@ export const AdminVideoAnalysisOverview = () => {
       value: stats?.kicksTotal || 0,
       subtitle: `${stats?.kicksLanded || 0} επιτυχ.`,
       icon: Activity,
+      imageIcon: kickIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
