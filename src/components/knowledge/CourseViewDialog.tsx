@@ -165,14 +165,38 @@ export const CourseViewDialog: React.FC<CourseViewDialogProps> = ({
 
             {/* PDF Download */}
             {course.pdf_url && (
-              <Button
-                variant="outline"
-                className="w-full rounded-none"
-                onClick={() => window.open(course.pdf_url!, '_blank')}
-              >
-                <FileDown className="w-4 h-4 mr-2" />
-                Λήψη PDF
-              </Button>
+              <div className="flex items-center justify-between bg-muted/50 p-3 rounded-none">
+                <div className="flex items-center gap-2 text-sm truncate">
+                  <FileDown className="w-4 h-4 text-[#cb8954] flex-shrink-0" />
+                  <span className="truncate">{course.pdf_url.split('/').pop()}</span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-none flex-shrink-0 ml-2"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(course.pdf_url!);
+                      if (!response.ok) throw new Error('Download failed');
+                      const blob = await response.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = course.pdf_url!.split('/').pop() || 'document.pdf';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      window.URL.revokeObjectURL(url);
+                    } catch (error) {
+                      console.error('Download error:', error);
+                      toast.error('Σφάλμα λήψης PDF');
+                    }
+                  }}
+                >
+                  <FileDown className="w-4 h-4 mr-1" />
+                  Λήψη
+                </Button>
+              </div>
             )}
 
             <Separator />
