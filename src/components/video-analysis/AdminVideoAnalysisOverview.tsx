@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy } from 'lucide-react';
+import elbowIcon from '@/assets/elbow-icon.png';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useFightStats, defaultFightStats, FightStats } from '@/hooks/useFightStats';
@@ -240,6 +241,7 @@ export const AdminVideoAnalysisOverview = () => {
       value: stats?.elbowsTotal || 0,
       subtitle: `${stats?.elbowsLanded || 0} επιτυχ.`,
       icon: Activity,
+      imageIcon: elbowIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
@@ -315,7 +317,11 @@ export const AdminVideoAnalysisOverview = () => {
                 <CardContent className="p-2">
                   <div className="flex items-center gap-2">
                     <div className={`p-1.5 ${card.bgColor} rounded-none`}>
-                      <card.icon className={`w-4 h-4 ${card.color}`} />
+                      {(card as any).imageIcon ? (
+                        <img src={(card as any).imageIcon} alt={card.title} className="w-4 h-4 object-contain" />
+                      ) : (
+                        <card.icon className={`w-4 h-4 ${card.color}`} />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className={`text-lg font-bold ${card.color} leading-tight`}>
