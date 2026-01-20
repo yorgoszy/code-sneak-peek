@@ -151,9 +151,9 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
       setBuyDialogOpen(false);
       setCourseToBuy(null);
       
-      // Open Stripe checkout
+      // Open Stripe checkout in new tab (same as Shop.tsx for consistency)
       if (data.url) {
-        window.location.href = data.url;
+        window.open(data.url, '_blank');
       } else {
         throw new Error('No checkout URL received');
       }
