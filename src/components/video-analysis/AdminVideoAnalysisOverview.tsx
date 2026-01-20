@@ -198,9 +198,17 @@ export const AdminVideoAnalysisOverview = () => {
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
     {
+      title: 'Στυλ',
+      value: stats?.fightStyle === 'aggressive' ? 'Επιθ.' : stats?.fightStyle === 'defensive' ? 'Αμυν.' : 'Ισορ.',
+      subtitle: `Επ/Άμ: ${stats?.attackDefenseRatio?.toFixed(1) || '1.0'}`,
+      icon: Swords,
+      color: 'text-foreground',
+      bgColor: 'bg-gray-100 dark:bg-gray-800',
+    },
+    {
       title: 'Χρόνος',
       value: stats?.actionTimeFormatted || '0:00',
-      subtitle: null, // Will use custom rendering
+      subtitle: null,
       customSubtitle: true,
       attackTime: stats?.attackTimeFormatted || '0:00',
       defenseTime: stats?.defenseTimeFormatted || '0:00',
@@ -286,7 +294,7 @@ export const AdminVideoAnalysisOverview = () => {
       </div>
 
       {/* Stats Cards Row 1 - always show */}
-          <div className="grid grid-cols-4 md:grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 md:grid-cols-5 gap-2">
             {statCards.map((card, index) => (
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/20' : 'opacity-50'}`}>
                 <CardContent className="p-2">
