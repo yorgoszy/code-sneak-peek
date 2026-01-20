@@ -2139,6 +2139,67 @@ export type Database = {
           },
         ]
       }
+      course_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          answered_by: string | null
+          coach_id: string
+          course_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          coach_id: string
+          course_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          coach_id?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          question?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_questions_answered_by_fkey"
+            columns: ["answered_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_questions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_questions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discount_coupons: {
         Row: {
           code: string
@@ -3447,6 +3508,7 @@ export type Database = {
           duration_minutes: number | null
           id: string
           is_active: boolean
+          pdf_url: string | null
           price: number
           thumbnail_url: string | null
           title: string
@@ -3461,6 +3523,7 @@ export type Database = {
           duration_minutes?: number | null
           id?: string
           is_active?: boolean
+          pdf_url?: string | null
           price?: number
           thumbnail_url?: string | null
           title: string
@@ -3475,6 +3538,7 @@ export type Database = {
           duration_minutes?: number | null
           id?: string
           is_active?: boolean
+          pdf_url?: string | null
           price?: number
           thumbnail_url?: string | null
           title?: string

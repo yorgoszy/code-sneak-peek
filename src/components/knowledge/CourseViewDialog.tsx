@@ -1,0 +1,254 @@
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { FileDown, Send, MessageCircle, Clock, User } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { el } from 'date-fns/locale';
+
+interface Course {
+  id: string;
+  title: string;
+  description: string | null;
+  youtube_url: string;
+  thumbnail_url: string | null;
+  price: number;
+  duration_minutes: number | null;
+  category: string | null;
+  pdf_url?: string | null;
+}
+
+interface Question {
+  id: string;
+  question: string;
+  answer: string | null;
+  created_at: string;
+  answered_at: string | null;
+}
+
+interface CourseViewDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  course: Course | null;
+  coachId: string;
+}
+
+const extractYouTubeId = (url: string): string | null => {
+  const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+};
+
+export const CourseViewDialog: React.FC<CourseViewDialogProps> = ({
+  isOpen,
+  onClose,
+  course,
+  coachId
+}) => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [newQuestion, setNewQuestion] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && course) {
+      fetchQuestions();
+    }
+  }, [isOpen, course?.id]);
+
+  const fetchQuestions = async () => {
+    if (!course) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('course_questions')
+        .select('*')
+        .eq('course_id', course.id)
+        .eq('coach_id', coachId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setQuestions(data || []);
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitQuestion = async () => {
+    if (!course || !newQuestion.trim()) return;
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('course_questions')
+        .insert({
+          course_id: course.id,
+          coach_id: coachId,
+          question: newQuestion.trim()
+        });
+
+      if (error) throw error;
+
+      // Send email notification to admin
+      try {
+        await supabase.functions.invoke('send-course-question-email', {
+          body: {
+            courseId: course.id,
+            courseTitle: course.title,
+            coachId: coachId,
+            question: newQuestion.trim()
+          }
+        });
+      } catch (emailError) {
+        console.error('Email notification error:', emailError);
+        // Don't fail the whole operation if email fails
+      }
+
+      toast.success('Η ερώτηση στάλθηκε επιτυχώς');
+      setNewQuestion('');
+      fetchQuestions();
+    } catch (error) {
+      console.error('Error submitting question:', error);
+      toast.error('Σφάλμα αποστολής ερώτησης');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!course) return null;
+
+  const videoId = extractYouTubeId(course.youtube_url);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="rounded-none max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {course.title}
+            {course.category && (
+              <Badge variant="outline" className="rounded-none">
+                {course.category}
+              </Badge>
+            )}
+          </DialogTitle>
+        </DialogHeader>
+
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-4">
+            {/* Video Player */}
+            {videoId && (
+              <div className="aspect-video bg-black rounded-none overflow-hidden">
+                <iframe
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  title={course.title}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            )}
+
+            {/* Description */}
+            {course.description && (
+              <div className="bg-muted/50 p-3 rounded-none">
+                <p className="text-sm text-muted-foreground">{course.description}</p>
+              </div>
+            )}
+
+            {/* PDF Download */}
+            {course.pdf_url && (
+              <Button
+                variant="outline"
+                className="w-full rounded-none"
+                onClick={() => window.open(course.pdf_url!, '_blank')}
+              >
+                <FileDown className="w-4 h-4 mr-2" />
+                Λήψη PDF
+              </Button>
+            )}
+
+            <Separator />
+
+            {/* Q&A Section */}
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2">
+                <MessageCircle className="w-4 h-4" />
+                Ερωτήσεις & Απαντήσεις
+              </h3>
+
+              {/* Ask Question */}
+              <div className="space-y-2">
+                <Textarea
+                  placeholder="Γράψτε την ερώτησή σας..."
+                  value={newQuestion}
+                  onChange={(e) => setNewQuestion(e.target.value)}
+                  className="rounded-none resize-none"
+                  rows={3}
+                />
+                <Button
+                  onClick={handleSubmitQuestion}
+                  disabled={!newQuestion.trim() || submitting}
+                  className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  {submitting ? 'Αποστολή...' : 'Αποστολή Ερώτησης'}
+                </Button>
+              </div>
+
+              {/* Questions List */}
+              {loading ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Φόρτωση...</p>
+              ) : questions.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Δεν υπάρχουν ερωτήσεις ακόμα
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {questions.map((q) => (
+                    <div key={q.id} className="border rounded-none p-3 space-y-2">
+                      {/* Question */}
+                      <div className="flex items-start gap-2">
+                        <User className="w-4 h-4 mt-0.5 text-[#cb8954]" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{q.question}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(q.created_at), 'd MMM yyyy, HH:mm', { locale: el })}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Answer */}
+                      {q.answer ? (
+                        <div className="ml-6 bg-[#00ffba]/10 p-2 rounded-none border-l-2 border-[#00ffba]">
+                          <p className="text-sm">{q.answer}</p>
+                          {q.answered_at && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Απάντηση: {format(new Date(q.answered_at), 'd MMM yyyy, HH:mm', { locale: el })}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="ml-6 flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          Αναμονή απάντησης...
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+};

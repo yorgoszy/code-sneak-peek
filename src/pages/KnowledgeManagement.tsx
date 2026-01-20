@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Play, Euro, Clock, BookOpen, Youtube } from 'lucide-react';
+import { Plus, Pencil, Trash2, Play, Euro, Clock, BookOpen, Youtube, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -19,6 +19,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useRoleCheck } from '@/hooks/useRoleCheck';
+import { useEffectiveCoachId } from '@/hooks/useEffectiveCoachId';
+import { CoachKnowledgeShop } from '@/components/knowledge/CoachKnowledgeShop';
 
 interface Course {
   id: string;
@@ -30,10 +33,14 @@ interface Course {
   duration_minutes: number | null;
   category: string | null;
   is_active: boolean;
+  pdf_url: string | null;
   created_at: string;
 }
 
 const KnowledgeManagement: React.FC = () => {
+  const { isAdmin } = useRoleCheck();
+  const { effectiveCoachId } = useEffectiveCoachId();
+  
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -43,13 +50,16 @@ const KnowledgeManagement: React.FC = () => {
     title: '',
     description: '',
     youtube_url: '',
+    pdf_url: '',
     price: 0,
     duration_minutes: 0,
     category: '',
   });
 
   useEffect(() => {
-    fetchCourses();
+    if (isAdmin()) {
+      fetchCourses();
+    }
   }, []);
 
   const fetchCourses = async () => {
@@ -69,6 +79,11 @@ const KnowledgeManagement: React.FC = () => {
     }
   };
 
+  // If coach, render shop view
+  if (!isAdmin() && effectiveCoachId) {
+    return <CoachKnowledgeShop coachId={effectiveCoachId} />;
+  }
+
   const extractYouTubeThumbnail = (url: string): string | null => {
     const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(regex);
@@ -85,6 +100,7 @@ const KnowledgeManagement: React.FC = () => {
         title: course.title,
         description: course.description || '',
         youtube_url: course.youtube_url,
+        pdf_url: course.pdf_url || '',
         price: course.price,
         duration_minutes: course.duration_minutes || 0,
         category: course.category || '',
@@ -95,6 +111,7 @@ const KnowledgeManagement: React.FC = () => {
         title: '',
         description: '',
         youtube_url: '',
+        pdf_url: '',
         price: 0,
         duration_minutes: 0,
         category: '',
@@ -120,6 +137,7 @@ const KnowledgeManagement: React.FC = () => {
             description: formData.description || null,
             youtube_url: formData.youtube_url,
             thumbnail_url: thumbnail,
+            pdf_url: formData.pdf_url || null,
             price: formData.price,
             duration_minutes: formData.duration_minutes || null,
             category: formData.category || null,
@@ -136,6 +154,7 @@ const KnowledgeManagement: React.FC = () => {
             description: formData.description || null,
             youtube_url: formData.youtube_url,
             thumbnail_url: thumbnail,
+            pdf_url: formData.pdf_url || null,
             price: formData.price,
             duration_minutes: formData.duration_minutes || null,
             category: formData.category || null,
@@ -387,6 +406,19 @@ const KnowledgeManagement: React.FC = () => {
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 placeholder="π.χ. Τεχνική, Τακτική, Φυσική Κατάσταση"
+              />
+            </div>
+
+            <div>
+              <Label className="flex items-center gap-1">
+                <FileText className="w-4 h-4" />
+                PDF URL (προαιρετικό)
+              </Label>
+              <Input
+                className="rounded-none"
+                value={formData.pdf_url}
+                onChange={(e) => setFormData({ ...formData, pdf_url: e.target.value })}
+                placeholder="https://example.com/document.pdf"
               />
             </div>
           </div>
