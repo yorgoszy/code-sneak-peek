@@ -484,9 +484,23 @@ const ChangeDirectionPage = () => {
       {currentDirection && (
         <div className="flex justify-center py-4">
           {currentDirection === 'left' ? (
-            <ArrowLeft className="w-24 h-24 text-[#00ffba] animate-bounce" />
+            <svg viewBox="0 0 100 60" className="w-32 h-20">
+              <polygon 
+                points="0,30 50,0 50,20 100,20 100,40 50,40 50,60" 
+                fill="#3B82F6" 
+                stroke="#1E40AF" 
+                strokeWidth="3"
+              />
+            </svg>
           ) : (
-            <ArrowRight className="w-24 h-24 text-[#00ffba] animate-bounce" />
+            <svg viewBox="0 0 100 60" className="w-32 h-20">
+              <polygon 
+                points="100,30 50,0 50,20 0,20 0,40 50,40 50,60" 
+                fill="#FACC15" 
+                stroke="#CA8A04" 
+                strokeWidth="3"
+              />
+            </svg>
           )}
         </div>
       )}
@@ -550,14 +564,35 @@ const ChangeDirectionPage = () => {
       <div className="bg-black aspect-square rounded-none flex items-center justify-center min-h-[300px]">
         {currentDirection ? (
           currentDirection === 'left' ? (
-            <ArrowLeft className="w-48 h-48 text-[#00ffba] animate-bounce" />
+            <div className="flex flex-col items-center">
+              <svg viewBox="0 0 100 60" className="w-80 h-48">
+                <polygon 
+                  points="0,30 50,0 50,20 100,20 100,40 50,40 50,60" 
+                  fill="#3B82F6" 
+                  stroke="#1E40AF" 
+                  strokeWidth="3"
+                />
+              </svg>
+            </div>
           ) : (
-            <ArrowRight className="w-48 h-48 text-[#00ffba] animate-bounce" />
+            <div className="flex flex-col items-center">
+              <svg viewBox="0 0 100 60" className="w-80 h-48">
+                <polygon 
+                  points="100,30 50,0 50,20 0,20 0,40 50,40 50,60" 
+                  fill="#FACC15" 
+                  stroke="#CA8A04" 
+                  strokeWidth="3"
+                />
+              </svg>
+            </div>
           )
         ) : isWaiting ? (
-          <div className="text-center text-white">
-            <Compass className="w-16 h-16 mx-auto mb-4 animate-spin-slow opacity-50" />
-            <p className="text-lg">{t('changeDirection.waitingForSignal')}</p>
+          <div className="flex flex-col items-center">
+            <svg viewBox="0 0 80 80" className="w-64 h-64">
+              <rect x="15" y="10" width="20" height="60" rx="4" fill="#EF4444" />
+              <rect x="45" y="10" width="20" height="60" rx="4" fill="#EF4444" />
+            </svg>
+            <p className="text-white text-2xl font-bold mt-4">PAUSE</p>
           </div>
         ) : (
           <div className="text-center text-white">
