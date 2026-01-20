@@ -173,11 +173,10 @@ const KnowledgeManagement: React.FC = () => {
         });
 
         try {
-          const fileExt = (formData.pdf_file.name.split('.').pop() || 'pdf').toLowerCase();
-          const uid = (globalThis.crypto && 'randomUUID' in globalThis.crypto)
-            ? (globalThis.crypto as Crypto).randomUUID()
-            : Math.random().toString(36).slice(2);
-          const fileName = `${Date.now()}-${uid}.${fileExt}`;
+          // Use the original filename, sanitize it and add timestamp to avoid conflicts
+          const originalName = formData.pdf_file.name;
+          const sanitizedName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const fileName = `${Date.now()}-${sanitizedName}`;
 
           // Use resumable (TUS) uploads for reliability with large PDFs
           await uploadToSupabaseResumable({
