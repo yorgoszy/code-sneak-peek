@@ -161,13 +161,28 @@ const KnowledgeManagement: React.FC = () => {
             : Math.random().toString(36).slice(2);
           const fileName = `${Date.now()}-${uid}.${fileExt}`;
 
-          const { error: uploadError } = await supabase.storage
+          const uploadPromise = supabase.storage
             .from('course-pdfs')
             .upload(fileName, formData.pdf_file, {
               cacheControl: '3600',
               upsert: false,
               contentType: 'application/pdf',
             });
+
+          const timeoutMs = 45_000;
+          const { error: uploadError } = await Promise.race([
+            uploadPromise,
+            new Promise<{ data: null; error: { message: string } }>((_, reject) =>
+              setTimeout(() => reject(new Error(`timeout:${timeoutMs}`)), timeoutMs)
+            ),
+          ]).catch((e: unknown) => {
+            const msg = e instanceof Error ? e.message : String(e);
+            throw new Error(
+              msg.startsWith('timeout:')
+                ? 'Η μεταφόρτωση PDF καθυστέρησε πολύ. Δοκίμασε ξανά ή με μικρότερο αρχείο.'
+                : msg
+            );
+          });
 
           if (uploadError) {
             console.error('PDF upload error:', uploadError);
@@ -180,6 +195,11 @@ const KnowledgeManagement: React.FC = () => {
             .getPublicUrl(fileName);
 
           pdfUrl = urlData.publicUrl;
+        } catch (e) {
+          console.error('PDF upload error (unexpected):', e);
+          const msg = e instanceof Error ? e.message : String(e);
+          toast.error(`Σφάλμα μεταφόρτωσης PDF: ${msg}`);
+          return;
         } finally {
           setUploadingPdf(false);
         }
