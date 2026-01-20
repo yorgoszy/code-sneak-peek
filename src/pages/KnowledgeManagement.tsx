@@ -52,10 +52,13 @@ const KnowledgeManagement: React.FC = () => {
     description: '',
     youtube_url: '',
     pdf_url: '',
-    price: 0,
-    duration_minutes: 0,
+    pdf_file: null as File | null,
+    price: '' as string | number,
+    duration_minutes: '' as string | number,
     category: '',
   });
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [fetchingDuration, setFetchingDuration] = useState(false);
 
   useEffect(() => {
     if (!isCoach) {
@@ -104,8 +107,9 @@ const KnowledgeManagement: React.FC = () => {
         description: course.description || '',
         youtube_url: course.youtube_url,
         pdf_url: course.pdf_url || '',
+        pdf_file: null,
         price: course.price,
-        duration_minutes: course.duration_minutes || 0,
+        duration_minutes: course.duration_minutes || '',
         category: course.category || '',
       });
     } else {
@@ -115,8 +119,9 @@ const KnowledgeManagement: React.FC = () => {
         description: '',
         youtube_url: '',
         pdf_url: '',
-        price: 0,
-        duration_minutes: 0,
+        pdf_file: null,
+        price: '',
+        duration_minutes: '',
         category: '',
       });
     }
@@ -129,8 +134,42 @@ const KnowledgeManagement: React.FC = () => {
       return;
     }
 
+    const priceValue = typeof formData.price === 'string' 
+      ? parseFloat(formData.price) || 0 
+      : formData.price;
+    
+    if (priceValue <= 0) {
+      toast.error('Η τιμή πρέπει να είναι μεγαλύτερη από 0');
+      return;
+    }
+
+    const durationValue = typeof formData.duration_minutes === 'string'
+      ? parseInt(formData.duration_minutes) || null
+      : formData.duration_minutes || null;
+
     try {
       const thumbnail = extractYouTubeThumbnail(formData.youtube_url);
+      
+      // Upload PDF if file selected
+      let pdfUrl = formData.pdf_url;
+      if (formData.pdf_file) {
+        setUploadingPdf(true);
+        const fileExt = formData.pdf_file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('course-pdfs')
+          .upload(fileName, formData.pdf_file);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage
+          .from('course-pdfs')
+          .getPublicUrl(fileName);
+        
+        pdfUrl = urlData.publicUrl;
+        setUploadingPdf(false);
+      }
       
       if (selectedCourse) {
         const { error } = await supabase
@@ -140,9 +179,9 @@ const KnowledgeManagement: React.FC = () => {
             description: formData.description || null,
             youtube_url: formData.youtube_url,
             thumbnail_url: thumbnail,
-            pdf_url: formData.pdf_url || null,
-            price: formData.price,
-            duration_minutes: formData.duration_minutes || null,
+            pdf_url: pdfUrl || null,
+            price: priceValue,
+            duration_minutes: durationValue,
             category: formData.category || null,
           })
           .eq('id', selectedCourse.id);
@@ -152,16 +191,16 @@ const KnowledgeManagement: React.FC = () => {
       } else {
         const { error } = await supabase
           .from('knowledge_courses')
-          .insert({
+          .insert([{
             title: formData.title,
             description: formData.description || null,
             youtube_url: formData.youtube_url,
             thumbnail_url: thumbnail,
-            pdf_url: formData.pdf_url || null,
-            price: formData.price,
-            duration_minutes: formData.duration_minutes || null,
+            pdf_url: pdfUrl || null,
+            price: priceValue,
+            duration_minutes: durationValue,
             category: formData.category || null,
-          });
+          }]);
 
         if (error) throw error;
         toast.success('Το μάθημα δημιουργήθηκε');
@@ -172,6 +211,7 @@ const KnowledgeManagement: React.FC = () => {
     } catch (error) {
       console.error('Error saving course:', error);
       toast.error('Σφάλμα αποθήκευσης');
+      setUploadingPdf(false);
     }
   };
 
@@ -380,14 +420,15 @@ const KnowledgeManagement: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Τιμή (€)</Label>
+                <Label>Τιμή (€) *</Label>
                 <Input
                   type="number"
                   className="rounded-none"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                  min={0}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  min={0.01}
                   step={0.01}
+                  placeholder="π.χ. 45"
                 />
               </div>
               <div>
@@ -396,8 +437,9 @@ const KnowledgeManagement: React.FC = () => {
                   type="number"
                   className="rounded-none"
                   value={formData.duration_minutes}
-                  onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) || 0 })}
-                  min={0}
+                  onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
+                  min={1}
+                  placeholder="π.χ. 30"
                 />
               </div>
             </div>
@@ -415,23 +457,33 @@ const KnowledgeManagement: React.FC = () => {
             <div>
               <Label className="flex items-center gap-1">
                 <FileText className="w-4 h-4" />
-                PDF URL (προαιρετικό)
+                PDF Αρχείο (προαιρετικό)
               </Label>
-              <Input
-                className="rounded-none"
-                value={formData.pdf_url}
-                onChange={(e) => setFormData({ ...formData, pdf_url: e.target.value })}
-                placeholder="https://example.com/document.pdf"
-              />
+              <div className="space-y-2">
+                <Input
+                  type="file"
+                  accept=".pdf"
+                  className="rounded-none"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setFormData({ ...formData, pdf_file: file });
+                  }}
+                />
+                {formData.pdf_url && !formData.pdf_file && (
+                  <p className="text-xs text-muted-foreground">
+                    Υπάρχον PDF: {formData.pdf_url.split('/').pop()}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" className="rounded-none" onClick={() => setDialogOpen(false)}>
+            <Button variant="outline" className="rounded-none" onClick={() => setDialogOpen(false)} disabled={uploadingPdf}>
               Ακύρωση
             </Button>
-            <Button className="rounded-none" onClick={handleSave}>
-              {selectedCourse ? 'Ενημέρωση' : 'Δημιουργία'}
+            <Button className="rounded-none" onClick={handleSave} disabled={uploadingPdf}>
+              {uploadingPdf ? 'Μεταφόρτωση...' : selectedCourse ? 'Ενημέρωση' : 'Δημιουργία'}
             </Button>
           </DialogFooter>
         </DialogContent>
