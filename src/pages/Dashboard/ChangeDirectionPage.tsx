@@ -35,7 +35,7 @@ const ChangeDirectionPage = () => {
   const [joinCode, setJoinCode] = useState('');
   
   // Direction state
-  const [currentDirection, setCurrentDirection] = useState<'left' | 'right' | null>(null);
+  const [currentDirection, setCurrentDirection] = useState<'left' | 'right' | 'center' | null>(null);
   const [isWaiting, setIsWaiting] = useState(false);
   const [directionCount, setDirectionCount] = useState(0);
   
@@ -223,7 +223,7 @@ const ChangeDirectionPage = () => {
       .on('broadcast', { event: 'show_direction' }, (payload) => {
         console.log('➡️ Direction event received:', payload);
         if (role === 'display') {
-          const direction = payload.payload?.direction as 'left' | 'right';
+          const direction = payload.payload?.direction as 'left' | 'right' | 'center';
           setCurrentDirection(direction);
           setIsWaiting(false);
           
@@ -289,8 +289,9 @@ const ChangeDirectionPage = () => {
       motionDetector.stop();
       setIsMotionActive(false);
       
-      // Generate random direction
-      const direction: 'left' | 'right' = Math.random() > 0.5 ? 'right' : 'left';
+      // Generate random direction (left, right, or center)
+      const directions: ('left' | 'right' | 'center')[] = ['left', 'right', 'center'];
+      const direction = directions[Math.floor(Math.random() * 3)];
       setCurrentDirection(direction);
       setDirectionCount(prev => prev + 1);
       
@@ -487,19 +488,19 @@ const ChangeDirectionPage = () => {
             <svg viewBox="0 0 100 60" className="w-32 h-20">
               <polygon 
                 points="0,30 50,0 50,20 100,20 100,40 50,40 50,60" 
-                fill="#3B82F6" 
-                stroke="#1E40AF" 
-                strokeWidth="3"
+                fill="#3B82F6"
               />
             </svg>
-          ) : (
+          ) : currentDirection === 'right' ? (
             <svg viewBox="0 0 100 60" className="w-32 h-20">
               <polygon 
                 points="100,30 50,0 50,20 0,20 0,40 50,40 50,60" 
-                fill="#FACC15" 
-                stroke="#CA8A04" 
-                strokeWidth="3"
+                fill="#FACC15"
               />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 60 60" className="w-20 h-20">
+              <rect x="5" y="5" width="50" height="50" fill="#EF4444" />
             </svg>
           )}
         </div>
@@ -564,36 +565,28 @@ const ChangeDirectionPage = () => {
       <div className="bg-black aspect-square rounded-none flex items-center justify-center min-h-[300px]">
         {currentDirection ? (
           currentDirection === 'left' ? (
-            <div className="flex flex-col items-center">
-              <svg viewBox="0 0 100 60" className="w-80 h-48">
-                <polygon 
-                  points="0,30 50,0 50,20 100,20 100,40 50,40 50,60" 
-                  fill="#3B82F6" 
-                  stroke="#1E40AF" 
-                  strokeWidth="3"
-                />
-              </svg>
-            </div>
+            <svg viewBox="0 0 100 60" className="w-80 h-48">
+              <polygon 
+                points="0,30 50,0 50,20 100,20 100,40 50,40 50,60" 
+                fill="#3B82F6"
+              />
+            </svg>
+          ) : currentDirection === 'right' ? (
+            <svg viewBox="0 0 100 60" className="w-80 h-48">
+              <polygon 
+                points="100,30 50,0 50,20 0,20 0,40 50,40 50,60" 
+                fill="#FACC15"
+              />
+            </svg>
           ) : (
-            <div className="flex flex-col items-center">
-              <svg viewBox="0 0 100 60" className="w-80 h-48">
-                <polygon 
-                  points="100,30 50,0 50,20 0,20 0,40 50,40 50,60" 
-                  fill="#FACC15" 
-                  stroke="#CA8A04" 
-                  strokeWidth="3"
-                />
-              </svg>
-            </div>
+            <svg viewBox="0 0 80 80" className="w-64 h-64">
+              <rect x="10" y="10" width="60" height="60" fill="#EF4444" />
+            </svg>
           )
         ) : isWaiting ? (
-          <div className="flex flex-col items-center">
-            <svg viewBox="0 0 80 80" className="w-64 h-64">
-              <rect x="15" y="10" width="20" height="60" rx="4" fill="#EF4444" />
-              <rect x="45" y="10" width="20" height="60" rx="4" fill="#EF4444" />
-            </svg>
-            <p className="text-white text-2xl font-bold mt-4">PAUSE</p>
-          </div>
+          <svg viewBox="0 0 80 80" className="w-64 h-64">
+            <rect x="10" y="10" width="60" height="60" fill="#EF4444" />
+          </svg>
         ) : (
           <div className="text-center text-white">
             <Wifi className="w-16 h-16 mx-auto mb-4 animate-pulse" />
