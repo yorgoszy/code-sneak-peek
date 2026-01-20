@@ -335,19 +335,18 @@ export const AdminVideoAnalysisOverview = () => {
             ))}
           </div>
 
-          {/* Stats Cards Row 2 */}
           <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
             {statCards2.map((card, index) => (
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
                 <CardContent className="p-2">
                   <div className="flex items-center gap-2">
                     {(card as any).imageIcon ? (
-                      <img src={(card as any).imageIcon} alt={card.title} className="w-4 h-4 object-contain" />
+                      <img src={(card as any).imageIcon} alt={card.title} className="w-4 h-4 object-contain flex-shrink-0" />
                     ) : (
-                      <card.icon className={`w-4 h-4 ${card.color}`} />
+                      <card.icon className={`w-4 h-4 ${card.color} flex-shrink-0`} />
                     )}
-                    <div className="min-w-0">
-                      <p className={`text-lg font-bold ${card.color} leading-tight`}>
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <p className={`text-lg font-bold ${card.color} leading-tight truncate`}>
                         {loadingStats ? '...' : card.value}
                       </p>
                       <p className="text-[10px] text-gray-500 truncate">{card.title}</p>
