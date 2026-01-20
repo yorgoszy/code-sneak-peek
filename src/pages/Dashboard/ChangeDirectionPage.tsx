@@ -11,6 +11,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 
 type SetupStep = 'menu' | 'sensor' | 'display' | 'join';
 
@@ -23,6 +24,7 @@ interface DirectionSession {
 const ChangeDirectionPage = () => {
   const { toast } = useToast();
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   
@@ -50,6 +52,27 @@ const ChangeDirectionPage = () => {
 
   // Sync ref
   useEffect(() => { motionDetectorRef.current = motionDetector; }, [motionDetector]);
+
+  // Auto-join from URL query parameter (QR code)
+  useEffect(() => {
+    const joinCodeFromUrl = searchParams.get('join');
+    if (joinCodeFromUrl && setupStep === 'menu') {
+      console.log('🔗 Auto-joining from URL:', joinCodeFromUrl);
+      setJoinCode(joinCodeFromUrl.toUpperCase());
+      // Auto-trigger join
+      const autoJoin = async () => {
+        const sessionData = await joinSession(joinCodeFromUrl);
+        if (sessionData) {
+          await setupBroadcast(sessionData.session_code, 'display');
+          setSetupStep('display');
+          setIsWaiting(true);
+          // Clear the URL parameter
+          setSearchParams({});
+        }
+      };
+      autoJoin();
+    }
+  }, [searchParams, setupStep]);
 
   // Auto-start camera for sensor device
   useEffect(() => {
@@ -99,30 +122,41 @@ const ChangeDirectionPage = () => {
   const joinSession = async (code: string) => {
     setIsLoading(true);
     try {
+      console.log('🔍 Searching for session with code:', code.toUpperCase());
+      
       const { data, error } = await supabase
         .from('sprint_timing_sessions')
         .select('*')
         .eq('session_code', code.toUpperCase())
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database error:', error);
+        throw error;
+      }
 
       if (!data) {
+        console.log('❌ Session not found for code:', code);
         toast({
-          title: 'Error',
-          description: t('changeDirection.sessionNotFound'),
+          title: 'Σφάλμα',
+          description: 'Δεν βρέθηκε session με αυτόν τον κωδικό',
           variant: 'destructive',
         });
         return null;
       }
 
+      console.log('✅ Session found:', data);
       setSession(data as DirectionSession);
+      toast({
+        title: 'Επιτυχής σύνδεση!',
+        description: `Συνδεθήκατε στο session ${data.session_code}`,
+      });
       return data as DirectionSession;
     } catch (error) {
       console.error('Error joining session:', error);
       toast({
-        title: 'Error',
-        description: t('changeDirection.sessionJoinError'),
+        title: 'Σφάλμα',
+        description: 'Αποτυχία σύνδεσης στο session',
         variant: 'destructive',
       });
       return null;
