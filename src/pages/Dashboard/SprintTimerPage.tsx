@@ -9,8 +9,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { useToast } from '@/hooks/use-toast';
 import { Sidebar } from '@/components/Sidebar';
+import { CoachSidebar } from '@/components/CoachSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { QRCodeSVG } from 'qrcode.react';
+import { useRoleCheck } from '@/hooks/useRoleCheck';
+import { useEffectiveCoachId } from '@/hooks/useEffectiveCoachId';
 
 type DeviceMode = 'idle' | 'timer' | 'start' | 'stop' | 'distance';
 type SetupStep = 'devices' | 'roles' | 'roles3' | 'active' | 'join';
@@ -25,6 +28,8 @@ interface SprintSession {
 
 const SprintTimerPage = () => {
   const { toast } = useToast();
+  const { isAdmin } = useRoleCheck();
+  const { effectiveCoachId } = useEffectiveCoachId();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   
@@ -1012,7 +1017,11 @@ const SprintTimerPage = () => {
           transform transition-transform duration-200 ease-in-out
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
-          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+          {isAdmin() ? (
+            <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+          ) : (
+            <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={effectiveCoachId} />
+          )}
         </div>
         
         <div className="flex-1 overflow-auto">
