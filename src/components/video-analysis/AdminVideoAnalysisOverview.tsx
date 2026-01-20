@@ -190,8 +190,8 @@ export const AdminVideoAnalysisOverview = () => {
     },
     {
       title: 'Άμυνες',
-      value: `${stats?.totalHitsReceived || 0}/${stats?.successfulDefenses || 0}`,
-      subtitle: 'δέχτ./μπλοκ.',
+      value: `${stats?.successfulDefenses || 0}/${stats?.totalHitsReceived || 0}`,
+      subtitle: 'αμυν./δέχτ.',
       icon: Shield,
       imageIcon: defenseIcon,
       color: 'text-foreground',
