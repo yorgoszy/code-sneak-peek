@@ -221,7 +221,7 @@ export const AdminVideoAnalysisOverview = () => {
 
   const fightStyleInfo = getFightStyleInfo();
 
-  // Second row of stats
+  // Second row of stats (without Στυλ - that's rendered separately)
   const statCards2 = [
     {
       title: 'Box',
@@ -268,14 +268,6 @@ export const AdminVideoAnalysisOverview = () => {
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
-    {
-      title: 'Στυλ',
-      value: fightStyleInfo.label,
-      subtitle: `Επ/Άμ: ${stats?.attackDefenseRatio?.toFixed(2) || '0.00'}`,
-      icon: Swords,
-      color: fightStyleInfo.color,
-      bgColor: 'bg-gray-100 dark:bg-gray-800',
-    },
   ];
 
   const styleInfo = {
@@ -305,28 +297,28 @@ export const AdminVideoAnalysisOverview = () => {
       </div>
 
       {/* Stats Cards Row 1 - always show */}
-          <div className="grid grid-cols-4 md:grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 md:grid-cols-4 gap-0.5 md:gap-2">
             {statCards.map((card, index) => (
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/20' : 'opacity-50'}`}>
-                <CardContent className="p-2">
-                  <div className="flex items-center gap-2">
+                <CardContent className="p-1 md:p-2">
+                  <div className="flex items-center gap-1 md:gap-2">
                     {(card as any).imageIcon ? (
-                      <img src={(card as any).imageIcon} alt={card.title} className="w-4 h-4 object-contain" />
+                      <img src={(card as any).imageIcon} alt={card.title} className="w-3 h-3 md:w-4 md:h-4 object-contain flex-shrink-0" />
                     ) : (
-                      <card.icon className={`w-4 h-4 ${card.color}`} />
+                      <card.icon className={`w-3 h-3 md:w-4 md:h-4 ${card.color} flex-shrink-0`} />
                     )}
-                    <div className="min-w-0">
-                      <p className={`text-lg font-bold ${card.color} leading-tight`}>
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <p className={`text-sm md:text-lg font-bold ${card.color} leading-tight truncate`}>
                         {loadingStats ? '...' : card.value}
                       </p>
                       {(card as any).customSubtitle ? (
-                        <p className="text-[10px] truncate">
+                        <p className="text-[8px] md:text-[10px] truncate">
                           <span className="text-blue-500 font-medium">Επ: {(card as any).attackTime}</span>
-                          <span className="text-gray-400 mx-1">|</span>
+                          <span className="text-gray-400 mx-0.5">|</span>
                           <span className="text-red-500 font-medium">Άμ: {(card as any).defenseTime}</span>
                         </p>
                       ) : (
-                        <p className="text-[10px] text-gray-500 truncate">{card.title}</p>
+                        <p className="text-[8px] md:text-[10px] text-gray-500 truncate">{card.title}</p>
                       )}
                     </div>
                   </div>
@@ -335,7 +327,7 @@ export const AdminVideoAnalysisOverview = () => {
             ))}
           </div>
 
-          <div className="grid grid-cols-5 md:grid-cols-6 gap-0.5 md:gap-2">
+          <div className="grid grid-cols-5 md:grid-cols-5 gap-0.5 md:gap-2">
             {statCards2.map((card, index) => (
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
                 <CardContent className="p-1 md:p-2">
@@ -356,6 +348,28 @@ export const AdminVideoAnalysisOverview = () => {
               </Card>
             ))}
           </div>
+
+          {/* Στυλ Box - Full width on mobile */}
+          <Card className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
+            <CardContent className="p-2 md:p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Swords className={`w-4 h-4 md:w-5 md:h-5 ${fightStyleInfo.color} flex-shrink-0`} />
+                  <div>
+                    <p className={`text-lg md:text-xl font-bold ${fightStyleInfo.color} leading-tight`}>
+                      {loadingStats ? '...' : fightStyleInfo.label}
+                    </p>
+                    <p className="text-[10px] md:text-xs text-gray-500">Στυλ Μάχης</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm md:text-base font-semibold text-foreground">
+                    Επ/Άμ: {stats?.attackDefenseRatio?.toFixed(2) || '0.00'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Timeline Chart - only show when fight is selected */}
           {selectedFightId && (
