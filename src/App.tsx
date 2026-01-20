@@ -59,6 +59,7 @@ import AthletesProgressWidget from "@/pages/AthletesProgressWidget";
 import InstallAthletesProgressWidget from "@/pages/InstallAthletesProgressWidget";
 import RidAiCoachPage from "@/pages/RidAiCoachPage";
 import { AdminAIKnowledgeWithSidebar } from "@/pages/Dashboard/AdminAIKnowledgeWithSidebar";
+import KnowledgeManagementWithSidebar from "@/pages/KnowledgeManagementWithSidebar";
 import { NutritionWithSidebar } from "@/pages/Dashboard/NutritionWithSidebar";
 import { AnnualPlanningWithSidebar } from "@/pages/Dashboard/AnnualPlanningWithSidebar";
 import { PhaseConfigWithSidebar } from "@/pages/Dashboard/PhaseConfigWithSidebar";
@@ -183,6 +184,7 @@ function App() {
                       <Route path="/dashboard/one-rm" element={<ProtectedRoute requireAdmin><OneRMManagementWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/rid-ai-coach" element={<ProtectedRoute><RidAiCoachPage /></ProtectedRoute>} />
                       <Route path="/dashboard/ai-knowledge" element={<ProtectedRoute requireAdmin><AdminAIKnowledgeWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/knowledge" element={<ProtectedRoute><KnowledgeManagementWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/goals-awards" element={<ProtectedRoute requireAdmin><AdminGoalsAwardsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/nutrition" element={<ProtectedRoute><NutritionWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/annual-planning" element={<ProtectedRoute><AnnualPlanningWithSidebar /></ProtectedRoute>} />
