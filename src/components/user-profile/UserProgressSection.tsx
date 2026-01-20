@@ -335,7 +335,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
     selectedSessions[d.exerciseId]?.includes(d.sessionId)
   );
 
-  // Υπολογισμός 1RM για κάθε επιλεγμένη άσκηση με ιστορικό
+  // Υπολογισμός 1RM για όλες τις διαθέσιμες ασκήσεις με ιστορικό
   const exerciseOneRMs = useMemo(() => {
     const oneRMs: Record<string, { 
       weight: number; 
@@ -345,7 +345,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
       history: Array<{ weight: number; velocity: number; date: string }>;
     }> = {};
     
-    selectedExercises.forEach(exerciseId => {
+    availableExercises.forEach(exerciseId => {
       const exerciseData = historicalData.filter(d => d.exerciseId === exerciseId);
       if (exerciseData.length === 0) return;
       
@@ -407,7 +407,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
     });
     
     return oneRMs;
-  }, [selectedExercises, historicalData]);
+  }, [availableExercises, historicalData]);
 
   return (
     <div className="space-y-2 sm:space-y-0 px-2 sm:px-0">
@@ -425,85 +425,39 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
 
       {historicalData.length > 0 ? (
         <>
-          {/* Φίλτρα Ασκήσεων - Compact */}
-          <div className="bg-white border border-gray-200 rounded-none p-1.5 sm:p-2 w-full sm:max-w-2xl">
-            <div className="mb-1">
-              <span className="text-[9px] sm:text-[10px] font-medium text-gray-700">{t('progress.selectExercises')}</span>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {availableExercises.map((exerciseId, index) => {
-                const exercise = exercises.find(e => e.id === exerciseId);
-                const isSelected = selectedExercises.includes(exerciseId);
-                const exerciseColor = getExerciseColor(exercise?.name || '', index);
-                const sessions = exerciseSessions[exerciseId] || [];
-                
-                return (
-                  <div key={exerciseId} className="flex items-center gap-0.5">
-                    <button
-                      onClick={() => toggleExercise(exerciseId)}
-                      className={`px-1.5 py-0.5 text-[9px] rounded-none transition-all ${
-                        isSelected
-                          ? 'text-white font-medium'
-                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
-                      }`}
-                      style={isSelected ? { backgroundColor: exerciseColor } : {}}
-                    >
-                      {exercise?.name || t('progress.unknownExercise')}
-                    </button>
-                    
-                    {isSelected && sessions.length > 0 && (
-                      <div className="flex gap-0.5">
-                        {sessions.map((session, sessionIndex) => {
-                          const isSessionSelected = selectedSessions[exerciseId]?.includes(session.sessionId);
-                          return (
-                            <button
-                              key={session.sessionId}
-                              onClick={() => toggleSession(exerciseId, session.sessionId)}
-                              className={`px-1 py-0.5 text-[8px] rounded-none transition-all ${
-                                isSessionSelected
-                                  ? 'bg-gray-700 text-white'
-                                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200 opacity-50'
-                              }`}
-                            >
-                              {sessionIndex + 1}η
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Progress Cards Container - Responsive */}
           <div className="flex gap-0 w-full">
-            {/* 1RM Display - Compact */}
-            {selectedExercises.length > 0 && Object.keys(exerciseOneRMs).length > 0 && (
+            {/* 1RM Display - Compact & Clickable */}
+            {availableExercises.length > 0 && Object.keys(exerciseOneRMs).length > 0 && (
               <div className="bg-white border border-gray-200 rounded-none p-1.5 w-full sm:max-w-2xl">
                 <div className="mb-1">
                   <span className="text-[9px] font-medium text-gray-700">1RM</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1">
-                  {selectedExercises.map((exerciseId, index) => {
+                  {availableExercises.map((exerciseId, index) => {
                     const exercise = exercises.find(e => e.id === exerciseId);
                     const oneRM = exerciseOneRMs[exerciseId];
                     const exerciseColor = getExerciseColor(exercise?.name || '', index);
+                    const isSelected = selectedExercises.includes(exerciseId);
                     
                     if (!oneRM) return null;
                     
                     return (
                       <div 
                         key={exerciseId} 
-                        className="border border-gray-200 rounded-none p-1"
+                        onClick={() => toggleExercise(exerciseId)}
+                        className={`border rounded-none p-1 cursor-pointer transition-all ${
+                          isSelected 
+                            ? 'border-gray-400 bg-white' 
+                            : 'border-gray-200 bg-gray-50 opacity-60'
+                        }`}
                         style={{ borderLeftWidth: '2px', borderLeftColor: exerciseColor }}
                       >
                         <div className="text-[8px] text-gray-500 truncate" title={exercise?.name}>
                           {exercise?.name}
                         </div>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-sm font-bold" style={{ color: exerciseColor }}>
+                          <span className="text-sm font-bold" style={{ color: isSelected ? exerciseColor : '#9ca3af' }}>
                             {oneRM.weight}<span className="text-[8px]">kg</span>
                           </span>
                           <span className="text-[8px] text-gray-400">
