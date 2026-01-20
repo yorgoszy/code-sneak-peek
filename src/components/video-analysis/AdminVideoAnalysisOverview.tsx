@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy } from 'lucide-react';
+import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy, CheckCircle } from 'lucide-react';
 import elbowIcon from '@/assets/elbow-icon.png';
 import boxIcon from '@/assets/box-icon.png';
 import kneeIcon from '@/assets/knee-icon.png';
@@ -175,7 +175,6 @@ export const AdminVideoAnalysisOverview = () => {
       value: stats?.totalStrikes || 0,
       subtitle: `${stats?.landedStrikes || 0} επιτυχ.`,
       icon: Target,
-      imageIcon: boxIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
@@ -183,8 +182,7 @@ export const AdminVideoAnalysisOverview = () => {
       title: 'Ορθότητα',
       value: `${stats?.correctnessRate || 0}%`,
       subtitle: `${stats?.correctStrikes || 0} σωστά`,
-      icon: Target,
-      imageIcon: boxIcon,
+      icon: CheckCircle,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
@@ -193,7 +191,6 @@ export const AdminVideoAnalysisOverview = () => {
       value: `${stats?.successfulDefenses || 0}/${stats?.totalHitsReceived || 0}`,
       subtitle: 'αμυν./δέχτ.',
       icon: Shield,
-      imageIcon: defenseIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
