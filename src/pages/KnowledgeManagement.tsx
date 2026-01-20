@@ -134,43 +134,58 @@ const KnowledgeManagement: React.FC = () => {
       return;
     }
 
-    const priceValue = typeof formData.price === 'string' 
-      ? parseFloat(formData.price) || 0 
+    const priceValue = typeof formData.price === 'string'
+      ? parseFloat(formData.price) || 0
       : formData.price;
-    
+
     if (priceValue <= 0) {
       toast.error('Η τιμή πρέπει να είναι μεγαλύτερη από 0');
       return;
     }
 
     const durationValue = typeof formData.duration_minutes === 'string'
-      ? parseInt(formData.duration_minutes) || null
-      : formData.duration_minutes || null;
+      ? (formData.duration_minutes.trim() ? parseInt(formData.duration_minutes, 10) : null)
+      : (formData.duration_minutes || null);
+
+    const thumbnail = extractYouTubeThumbnail(formData.youtube_url);
 
     try {
-      const thumbnail = extractYouTubeThumbnail(formData.youtube_url);
-      
-      // Upload PDF if file selected
+      // 1) Upload PDF (if selected)
       let pdfUrl = formData.pdf_url;
       if (formData.pdf_file) {
         setUploadingPdf(true);
-        const fileExt = formData.pdf_file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('course-pdfs')
-          .upload(fileName, formData.pdf_file);
-        
-        if (uploadError) throw uploadError;
-        
-        const { data: urlData } = supabase.storage
-          .from('course-pdfs')
-          .getPublicUrl(fileName);
-        
-        pdfUrl = urlData.publicUrl;
-        setUploadingPdf(false);
+        try {
+          const fileExt = (formData.pdf_file.name.split('.').pop() || 'pdf').toLowerCase();
+          const uid = (globalThis.crypto && 'randomUUID' in globalThis.crypto)
+            ? (globalThis.crypto as Crypto).randomUUID()
+            : Math.random().toString(36).slice(2);
+          const fileName = `${Date.now()}-${uid}.${fileExt}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('course-pdfs')
+            .upload(fileName, formData.pdf_file, {
+              cacheControl: '3600',
+              upsert: false,
+              contentType: 'application/pdf',
+            });
+
+          if (uploadError) {
+            console.error('PDF upload error:', uploadError);
+            toast.error(`Σφάλμα μεταφόρτωσης PDF: ${uploadError.message}`);
+            return;
+          }
+
+          const { data: urlData } = supabase.storage
+            .from('course-pdfs')
+            .getPublicUrl(fileName);
+
+          pdfUrl = urlData.publicUrl;
+        } finally {
+          setUploadingPdf(false);
+        }
       }
-      
+
+      // 2) Insert/Update course
       if (selectedCourse) {
         const { error } = await supabase
           .from('knowledge_courses')
@@ -186,31 +201,45 @@ const KnowledgeManagement: React.FC = () => {
           })
           .eq('id', selectedCourse.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Course update error:', error);
+          toast.error(`Σφάλμα ενημέρωσης: ${error.message}`);
+          return;
+        }
+
         toast.success('Το μάθημα ενημερώθηκε');
       } else {
         const { error } = await supabase
           .from('knowledge_courses')
-          .insert([{
-            title: formData.title,
-            description: formData.description || null,
-            youtube_url: formData.youtube_url,
-            thumbnail_url: thumbnail,
-            pdf_url: pdfUrl || null,
-            price: priceValue,
-            duration_minutes: durationValue,
-            category: formData.category || null,
-          }]);
+          .insert([
+            {
+              title: formData.title,
+              description: formData.description || null,
+              youtube_url: formData.youtube_url,
+              thumbnail_url: thumbnail,
+              pdf_url: pdfUrl || null,
+              price: priceValue,
+              duration_minutes: durationValue,
+              category: formData.category || null,
+            },
+          ]);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Course insert error:', error);
+          toast.error(`Σφάλμα δημιουργίας: ${error.message}`);
+          return;
+        }
+
         toast.success('Το μάθημα δημιουργήθηκε');
       }
 
       setDialogOpen(false);
       fetchCourses();
     } catch (error) {
-      console.error('Error saving course:', error);
-      toast.error('Σφάλμα αποθήκευσης');
+      // This is usually a network / CORS / blocked-request case
+      console.error('Error saving course (unexpected):', error);
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error(`Σφάλμα αποθήκευσης: ${msg}`);
       setUploadingPdf(false);
     }
   };
