@@ -30,6 +30,11 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
   const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
+
+  // When checkout opens in a new tab, we keep the sessionId here so we can finalize the purchase
+  // without relying on Stripe redirect parameters.
+  const [pendingCheckout, setPendingCheckout] = useState<{ sessionId: string; courseId: string } | null>(null);
+  const [processingPending, setProcessingPending] = useState(false);
   
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -39,6 +44,18 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
   useEffect(() => {
     fetchData();
   }, [coachId]);
+
+  // Resume a pending checkout (if user returned without URL params)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('knowledge_pending_checkout');
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { sessionId: string; courseId: string };
+      if (parsed?.sessionId) setPendingCheckout(parsed);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Handle payment success/cancel callbacks
   useEffect(() => {
@@ -51,45 +68,97 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
       handlePaymentSuccess(sessionId, courseId);
     } else if (payment === 'cancelled') {
       toast.error('Η πληρωμή ακυρώθηκε');
-      // Clean up URL params
       cleanupUrlParams();
     }
   }, [searchParams]);
 
+  // Poll for completion when checkout was opened in another tab
+  useEffect(() => {
+    if (!pendingCheckout?.sessionId) return;
+
+    let cancelled = false;
+    let attempts = 0;
+
+    const tick = async () => {
+      if (cancelled) return;
+      attempts += 1;
+      await attemptProcessCoursePayment(pendingCheckout.sessionId);
+      if (attempts >= 24) {
+        // ~2 minutes
+        cancelled = true;
+      }
+    };
+
+    // start after a short delay
+    const t0 = window.setTimeout(() => {
+      tick();
+      const id = window.setInterval(tick, 5000);
+      (tick as any).__intervalId = id;
+    }, 1500);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t0);
+      const intervalId = (tick as any).__intervalId;
+      if (intervalId) window.clearInterval(intervalId);
+    };
+  }, [pendingCheckout?.sessionId]);
+
   const cleanupUrlParams = () => {
-    searchParams.delete('payment');
-    searchParams.delete('session_id');
-    searchParams.delete('course_id');
-    setSearchParams(searchParams);
+    const next = new URLSearchParams(searchParams);
+    next.delete('payment');
+    next.delete('session_id');
+    next.delete('course_id');
+    setSearchParams(next);
   };
 
-  const handlePaymentSuccess = async (sessionId: string, courseId: string | null) => {
+  const PENDING_CHECKOUT_KEY = 'knowledge_pending_checkout';
+
+  const clearPendingCheckout = () => {
+    setPendingCheckout(null);
+    localStorage.removeItem(PENDING_CHECKOUT_KEY);
+  };
+
+  const attemptProcessCoursePayment = async (sessionId: string) => {
+    if (processingPending) return;
+    setProcessingPending(true);
     try {
-      // Call the process-course-payment function to complete the purchase
       const { data, error } = await supabase.functions.invoke('process-course-payment', {
         body: { session_id: sessionId }
       });
-
       if (error) throw error;
 
       console.log('✅ Course payment processed:', data);
-      
-      if (data.alreadyOwned) {
+
+      if (data?.alreadyOwned) {
         toast.info('Έχετε ήδη αγοράσει αυτό το μάθημα');
       } else {
         toast.success('Επιτυχής αγορά! Το μάθημα είναι πλέον διαθέσιμο.');
       }
-      
-      // Refresh data
-      fetchData();
-      
-      // Clean up URL params
+
+      await fetchData();
+      clearPendingCheckout();
       cleanupUrlParams();
-    } catch (error) {
-      console.error('Error processing course payment:', error);
-      toast.error('Σφάλμα ολοκλήρωσης πληρωμής');
-      cleanupUrlParams();
+
+      // Optionally open the course after unlock
+      if (data?.courseId || pendingCheckout?.courseId) {
+        const idToOpen = data?.courseId ?? pendingCheckout?.courseId;
+        const course = courses.find(c => c.id === idToOpen);
+        if (course) {
+          setSelectedCourse(course);
+          setViewDialogOpen(true);
+        }
+      }
+    } catch (e) {
+      console.error('Error processing course payment:', e);
+      // don't clear pending - keep trying
+    } finally {
+      setProcessingPending(false);
     }
+  };
+
+  const handlePaymentSuccess = async (sessionId: string, _courseId: string | null) => {
+    await attemptProcessCoursePayment(sessionId);
   };
 
   const fetchData = async () => {
@@ -152,11 +221,17 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
       setBuyDialogOpen(false);
       setCourseToBuy(null);
       
-      // Redirect to Stripe checkout (must use location.href to handle return params)
-      if (data.url) {
-        window.location.href = data.url;
+      // Open Stripe checkout in a new tab (same as Shop)
+      // and keep sessionId locally so we can finalize purchase even if redirect params don't fire.
+      if (data.url && data.sessionId) {
+        const pending = { sessionId: data.sessionId as string, courseId: courseToBuy.id };
+        setPendingCheckout(pending);
+        localStorage.setItem(PENDING_CHECKOUT_KEY, JSON.stringify(pending));
+
+        toast.info('Ολοκλήρωσε την πληρωμή στο νέο tab. Θα ξεκλειδώσει αυτόματα εδώ.');
+        window.open(data.url, '_blank');
       } else {
-        throw new Error('No checkout URL received');
+        throw new Error('No checkout URL/session received');
       }
     } catch (error: any) {
       console.error('Error initiating payment:', error);
