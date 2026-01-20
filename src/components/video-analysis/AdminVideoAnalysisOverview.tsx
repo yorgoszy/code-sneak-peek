@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy } from 'lucide-react';
 import elbowIcon from '@/assets/elbow-icon.png';
+import boxIcon from '@/assets/box-icon.png';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useFightStats, defaultFightStats, FightStats } from '@/hooks/useFightStats';
@@ -217,6 +218,7 @@ export const AdminVideoAnalysisOverview = () => {
       value: stats?.punchesTotal || 0,
       subtitle: `${stats?.punchesLanded || 0} επιτυχ.`,
       icon: Target,
+      imageIcon: boxIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
