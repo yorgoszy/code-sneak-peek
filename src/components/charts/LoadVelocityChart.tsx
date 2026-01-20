@@ -132,7 +132,7 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
                 return null;
               }}
             />
-            <Legend verticalAlign="bottom" height={24} wrapperStyle={{ paddingTop: '5px', fontSize: '9px' }} />
+            {/* Legend removed to save space */}
             {selectedExercises.map((exerciseName, index) => {
               const exerciseData = data.filter(d => d.exerciseName === exerciseName);
               const exerciseId = exerciseData[0]?.exerciseId;
