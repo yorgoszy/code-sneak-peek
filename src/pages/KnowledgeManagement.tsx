@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Plus, Pencil, Trash2, Play, Euro, Clock, BookOpen, Youtube, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToSupabaseResumable } from '@/utils/supabaseResumableUpload';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -58,6 +60,7 @@ const KnowledgeManagement: React.FC = () => {
     category: '',
   });
   const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState<number>(0);
   const [fetchingDuration, setFetchingDuration] = useState(false);
 
   useEffect(() => {
@@ -153,7 +156,7 @@ const KnowledgeManagement: React.FC = () => {
       // 1) Upload PDF (if selected)
       let pdfUrl = formData.pdf_url;
       if (formData.pdf_file) {
-        // Basic client-side guardrails
+        // Basic client-side guardrails (UI only)
         const maxMb = 500;
         const sizeMb = formData.pdf_file.size / (1024 * 1024);
         if (sizeMb > maxMb) {
@@ -162,6 +165,7 @@ const KnowledgeManagement: React.FC = () => {
         }
 
         setUploadingPdf(true);
+        setPdfProgress(0);
         console.info('📄 PDF upload: start', {
           name: formData.pdf_file.name,
           size: formData.pdf_file.size,
@@ -175,27 +179,27 @@ const KnowledgeManagement: React.FC = () => {
             : Math.random().toString(36).slice(2);
           const fileName = `${Date.now()}-${uid}.${fileExt}`;
 
-          // Use standard Supabase upload (no timeout - let it complete)
-          const { error: uploadError } = await supabase.storage
-            .from('course-pdfs')
-            .upload(fileName, formData.pdf_file, {
-              cacheControl: '3600',
-              upsert: false,
-              contentType: 'application/pdf',
-            });
-
-          if (uploadError) {
-            console.error('PDF upload error:', uploadError);
-            toast.error(`Σφάλμα μεταφόρτωσης PDF: ${uploadError.message}`);
-            return;
-          }
+          // Use resumable (TUS) uploads for reliability with large PDFs
+          await uploadToSupabaseResumable({
+            bucket: 'course-pdfs',
+            objectName: fileName,
+            file: formData.pdf_file,
+            upsert: false,
+            onProgress: (p) => setPdfProgress(p),
+          });
 
           const { data: urlData } = supabase.storage
             .from('course-pdfs')
             .getPublicUrl(fileName);
 
           pdfUrl = urlData.publicUrl;
+          setPdfProgress(100);
           console.info('📄 PDF upload: success', { pdfUrl });
+        } catch (e: any) {
+          console.error('PDF upload error:', e);
+          const msg = e?.message || String(e);
+          toast.error(`Σφάλμα μεταφόρτωσης PDF: ${msg}`);
+          return;
         } finally {
           setUploadingPdf(false);
         }
