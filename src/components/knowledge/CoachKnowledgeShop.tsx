@@ -126,6 +126,13 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
       const { data, error } = await supabase.functions.invoke('process-course-payment', {
         body: { session_id: sessionId }
       });
+
+      // When payment isn't completed yet we intentionally get a 200 with pending=true
+      if (data?.pending) {
+        console.log('⏳ Waiting for Stripe payment to complete...', { sessionId, status: data.payment_status });
+        return;
+      }
+
       if (error) throw error;
 
       console.log('✅ Course payment processed:', data);

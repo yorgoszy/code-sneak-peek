@@ -35,7 +35,16 @@ serve(async (req) => {
     logStep("Session retrieved from Stripe", { sessionId: session.id, status: session.payment_status });
 
     if (session.payment_status !== 'paid') {
-      throw new Error("Payment not completed");
+      // Payment is not completed yet (e.g. user still in checkout). Return 200 so the client can poll safely.
+      return new Response(JSON.stringify({
+        success: false,
+        pending: true,
+        payment_status: session.payment_status,
+        message: "Payment not completed"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
     const metadata = session.metadata;
