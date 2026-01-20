@@ -175,6 +175,7 @@ export const AdminVideoAnalysisOverview = () => {
       value: stats?.totalStrikes || 0,
       subtitle: `${stats?.landedStrikes || 0} επιτυχ.`,
       icon: Target,
+      imageIcon: boxIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
@@ -182,22 +183,15 @@ export const AdminVideoAnalysisOverview = () => {
       title: 'Ορθότητα',
       value: `${stats?.correctnessRate || 0}%`,
       subtitle: `${stats?.correctStrikes || 0} σωστά`,
-      icon: Activity,
-      color: 'text-foreground',
-      bgColor: 'bg-gray-100 dark:bg-gray-800',
-    },
-    {
-      title: 'Δέχτηκε',
-      value: stats?.totalHitsReceived || 0,
-      subtitle: `${stats?.avgHitsReceivedPerRound || 0}/γύρο`,
-      icon: Shield,
+      icon: Target,
+      imageIcon: boxIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
     {
       title: 'Άμυνες',
-      value: stats?.totalDefenses || 0,
-      subtitle: `${stats?.successfulDefenses || 0} επιτυχ.`,
+      value: `${stats?.totalHitsReceived || 0}/${stats?.successfulDefenses || 0}`,
+      subtitle: 'δέχτ./μπλοκ.',
       icon: Shield,
       imageIcon: defenseIcon,
       color: 'text-foreground',
@@ -292,21 +286,25 @@ export const AdminVideoAnalysisOverview = () => {
       </div>
 
       {/* Stats Cards Row 1 - always show */}
-          <div className="grid grid-cols-5 md:grid-cols-5 gap-2">
+          <div className="grid grid-cols-4 md:grid-cols-4 gap-2">
             {statCards.map((card, index) => (
               <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/20' : 'opacity-50'}`}>
                 <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                    <card.icon className={`w-4 h-4 ${card.color}`} />
+                    {(card as any).imageIcon ? (
+                      <img src={(card as any).imageIcon} alt={card.title} className="w-4 h-4 object-contain" />
+                    ) : (
+                      <card.icon className={`w-4 h-4 ${card.color}`} />
+                    )}
                     <div className="min-w-0">
                       <p className={`text-lg font-bold ${card.color} leading-tight`}>
                         {loadingStats ? '...' : card.value}
                       </p>
-                      {card.customSubtitle ? (
+                      {(card as any).customSubtitle ? (
                         <p className="text-[10px] truncate">
-                          <span className="text-blue-500 font-medium">Επ: {card.attackTime}</span>
+                          <span className="text-blue-500 font-medium">Επ: {(card as any).attackTime}</span>
                           <span className="text-gray-400 mx-1">|</span>
-                          <span className="text-red-500 font-medium">Άμ: {card.defenseTime}</span>
+                          <span className="text-red-500 font-medium">Άμ: {(card as any).defenseTime}</span>
                         </p>
                       ) : (
                         <p className="text-[10px] text-gray-500 truncate">{card.title}</p>
