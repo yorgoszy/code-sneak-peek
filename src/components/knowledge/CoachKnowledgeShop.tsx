@@ -18,6 +18,7 @@ interface Course {
   duration_minutes: number | null;
   category: string | null;
   pdf_url?: string | null;
+  video_file_path?: string | null;
 }
 
 interface CoachKnowledgeShopProps {

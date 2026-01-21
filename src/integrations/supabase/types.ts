@@ -3513,6 +3513,7 @@ export type Database = {
           thumbnail_url: string | null
           title: string
           updated_at: string
+          video_file_path: string | null
           youtube_url: string
         }
         Insert: {
@@ -3528,6 +3529,7 @@ export type Database = {
           thumbnail_url?: string | null
           title: string
           updated_at?: string
+          video_file_path?: string | null
           youtube_url: string
         }
         Update: {
@@ -3543,6 +3545,7 @@ export type Database = {
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
+          video_file_path?: string | null
           youtube_url?: string
         }
         Relationships: [
