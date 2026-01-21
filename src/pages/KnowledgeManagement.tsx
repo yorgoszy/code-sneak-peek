@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Plus, Pencil, Trash2, Play, Euro, Clock, BookOpen, Youtube, FileText, Video } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadToSupabaseResumable } from '@/utils/supabaseResumableUpload';
+import { extractThumbnailFromVideoFile, uploadThumbnailToStorage } from '@/utils/videoThumbnailExtractor';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -167,8 +168,10 @@ const KnowledgeManagement: React.FC = () => {
       : (formData.duration_minutes || null);
 
     try {
-      // 1) Upload Video (if selected)
+      // 1) Upload Video (if selected) and extract thumbnail
       let videoFilePath = formData.video_file_path;
+      let thumbnailUrl: string | null = selectedCourse?.thumbnail_url || null;
+      
       if (formData.video_file) {
         const maxMb = 5120; // 5GB
         const sizeMb = formData.video_file.size / (1024 * 1024);
@@ -186,6 +189,21 @@ const KnowledgeManagement: React.FC = () => {
         });
 
         try {
+          // Extract thumbnail from video before uploading
+          console.info('🖼️ Extracting thumbnail from video...');
+          const thumbnailBlob = await extractThumbnailFromVideoFile(formData.video_file);
+          if (thumbnailBlob) {
+            const uploadedThumbnailUrl = await uploadThumbnailToStorage(
+              supabase,
+              thumbnailBlob,
+              formData.video_file.name
+            );
+            if (uploadedThumbnailUrl) {
+              thumbnailUrl = uploadedThumbnailUrl;
+              console.info('✅ Thumbnail extracted and uploaded:', thumbnailUrl);
+            }
+          }
+
           const fileName = formData.video_file.name;
 
           await uploadToSupabaseResumable({
@@ -255,6 +273,14 @@ const KnowledgeManagement: React.FC = () => {
         }
       }
 
+      // Handle YouTube URL thumbnail extraction
+      if (formData.youtube_url && !thumbnailUrl) {
+        const ytThumb = extractYouTubeThumbnail(formData.youtube_url);
+        if (ytThumb) {
+          thumbnailUrl = ytThumb;
+        }
+      }
+
       console.info('💾 Course save: start', { mode: selectedCourse ? 'update' : 'insert' });
 
       // 3) Insert/Update course
@@ -265,7 +291,7 @@ const KnowledgeManagement: React.FC = () => {
             title: formData.title,
             description: formData.description || null,
             youtube_url: formData.youtube_url || '',
-            thumbnail_url: null,
+            thumbnail_url: thumbnailUrl,
             pdf_url: pdfUrl || null,
             video_file_path: videoFilePath || null,
             price: priceValue,
@@ -289,7 +315,7 @@ const KnowledgeManagement: React.FC = () => {
               title: formData.title,
               description: formData.description || null,
               youtube_url: formData.youtube_url || '',
-              thumbnail_url: null,
+              thumbnail_url: thumbnailUrl,
               pdf_url: pdfUrl || null,
               video_file_path: videoFilePath || null,
               price: priceValue,
