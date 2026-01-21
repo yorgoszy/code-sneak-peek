@@ -170,7 +170,7 @@ const KnowledgeManagement: React.FC = () => {
       // 1) Upload Video (if selected)
       let videoFilePath = formData.video_file_path;
       if (formData.video_file) {
-        const maxMb = 500;
+        const maxMb = 2048; // 2GB
         const sizeMb = formData.video_file.size / (1024 * 1024);
         if (sizeMb > maxMb) {
           toast.error(`Το βίντεο είναι πολύ μεγάλο (${sizeMb.toFixed(1)}MB). Μέγιστο ${maxMb}MB.`);
