@@ -224,7 +224,7 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[95vw] max-w-7xl h-[90vh] overflow-hidden rounded-none p-2 sm:p-4 md:p-6 flex flex-col gap-0">
+        <DialogContent className="w-[95vw] max-w-7xl h-[90vh] overflow-hidden rounded-none p-2 sm:p-4 md:p-6 flex flex-col gap-0 [&>button]:hidden">
           <EditableProgramDialogHeader
             programData={programData}
             assignment={assignment}
