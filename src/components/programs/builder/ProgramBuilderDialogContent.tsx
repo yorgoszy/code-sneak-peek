@@ -111,7 +111,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : null);
 
   return (
-    <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none">
+    <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none [&>button]:hidden">
       <FmsExerciseStatusProvider userId={selectedUserId}>
         <ScrollArea className="flex-1 w-full h-full">
           <div className="space-y-2 p-2">
