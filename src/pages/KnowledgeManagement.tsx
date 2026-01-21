@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Pencil, Trash2, Play, Euro, Clock, BookOpen, Youtube, FileText } from 'lucide-react';
+import { Plus, Pencil, Trash2, Play, Euro, Clock, BookOpen, Youtube, FileText, Video } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadToSupabaseResumable } from '@/utils/supabaseResumableUpload';
 import { toast } from 'sonner';
@@ -36,6 +36,7 @@ interface Course {
   category: string | null;
   is_active: boolean;
   pdf_url: string | null;
+  video_file_path: string | null;
   created_at: string;
 }
 
@@ -55,12 +56,16 @@ const KnowledgeManagement: React.FC = () => {
     youtube_url: '',
     pdf_url: '',
     pdf_file: null as File | null,
+    video_file: null as File | null,
+    video_file_path: '',
     price: '' as string | number,
     duration_minutes: '' as string | number,
     category: '',
   });
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [pdfProgress, setPdfProgress] = useState<number>(0);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoProgress, setVideoProgress] = useState<number>(0);
   const [fetchingDuration, setFetchingDuration] = useState(false);
 
   useEffect(() => {
@@ -111,6 +116,8 @@ const KnowledgeManagement: React.FC = () => {
         youtube_url: course.youtube_url,
         pdf_url: course.pdf_url || '',
         pdf_file: null,
+        video_file: null,
+        video_file_path: course.video_file_path || '',
         price: course.price,
         duration_minutes: course.duration_minutes || '',
         category: course.category || '',
@@ -123,6 +130,8 @@ const KnowledgeManagement: React.FC = () => {
         youtube_url: '',
         pdf_url: '',
         pdf_file: null,
+        video_file: null,
+        video_file_path: '',
         price: '',
         duration_minutes: '',
         category: '',
@@ -132,8 +141,15 @@ const KnowledgeManagement: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.title || !formData.youtube_url) {
-      toast.error('Συμπληρώστε τίτλο και YouTube URL');
+    if (!formData.title) {
+      toast.error('Συμπληρώστε τον τίτλο');
+      return;
+    }
+
+    // Check if either video file or existing video path exists
+    const hasVideo = formData.video_file || formData.video_file_path;
+    if (!hasVideo) {
+      toast.error('Ανεβάστε ένα βίντεο');
       return;
     }
 
@@ -150,13 +166,52 @@ const KnowledgeManagement: React.FC = () => {
       ? (formData.duration_minutes.trim() ? parseInt(formData.duration_minutes, 10) : null)
       : (formData.duration_minutes || null);
 
-    const thumbnail = extractYouTubeThumbnail(formData.youtube_url);
-
     try {
-      // 1) Upload PDF (if selected)
+      // 1) Upload Video (if selected)
+      let videoFilePath = formData.video_file_path;
+      if (formData.video_file) {
+        const maxMb = 500;
+        const sizeMb = formData.video_file.size / (1024 * 1024);
+        if (sizeMb > maxMb) {
+          toast.error(`Το βίντεο είναι πολύ μεγάλο (${sizeMb.toFixed(1)}MB). Μέγιστο ${maxMb}MB.`);
+          return;
+        }
+
+        setUploadingVideo(true);
+        setVideoProgress(0);
+        console.info('🎬 Video upload: start', {
+          name: formData.video_file.name,
+          size: formData.video_file.size,
+          type: formData.video_file.type,
+        });
+
+        try {
+          const fileName = formData.video_file.name;
+
+          await uploadToSupabaseResumable({
+            bucket: 'course-videos',
+            objectName: fileName,
+            file: formData.video_file,
+            upsert: true,
+            onProgress: (p) => setVideoProgress(p),
+          });
+
+          videoFilePath = fileName;
+          setVideoProgress(100);
+          console.info('🎬 Video upload: success', { videoFilePath });
+        } catch (e: any) {
+          console.error('Video upload error:', e);
+          const msg = e?.message || String(e);
+          toast.error(`Σφάλμα μεταφόρτωσης βίντεο: ${msg}`);
+          return;
+        } finally {
+          setUploadingVideo(false);
+        }
+      }
+
+      // 2) Upload PDF (if selected)
       let pdfUrl = formData.pdf_url;
       if (formData.pdf_file) {
-        // Basic client-side guardrails (UI only)
         const maxMb = 500;
         const sizeMb = formData.pdf_file.size / (1024 * 1024);
         if (sizeMb > maxMb) {
@@ -173,10 +228,8 @@ const KnowledgeManagement: React.FC = () => {
         });
 
         try {
-          // Use exact original filename (no timestamp, no extra modifications)
           const fileName = formData.pdf_file.name;
 
-          // Use resumable (TUS) uploads for reliability with large PDFs
           await uploadToSupabaseResumable({
             bucket: 'course-pdfs',
             objectName: fileName,
@@ -204,16 +257,17 @@ const KnowledgeManagement: React.FC = () => {
 
       console.info('💾 Course save: start', { mode: selectedCourse ? 'update' : 'insert' });
 
-      // 2) Insert/Update course
+      // 3) Insert/Update course
       if (selectedCourse) {
         const { error } = await supabase
           .from('knowledge_courses')
           .update({
             title: formData.title,
             description: formData.description || null,
-            youtube_url: formData.youtube_url,
-            thumbnail_url: thumbnail,
+            youtube_url: formData.youtube_url || '',
+            thumbnail_url: null,
             pdf_url: pdfUrl || null,
+            video_file_path: videoFilePath || null,
             price: priceValue,
             duration_minutes: durationValue,
             category: formData.category || null,
@@ -234,9 +288,10 @@ const KnowledgeManagement: React.FC = () => {
             {
               title: formData.title,
               description: formData.description || null,
-              youtube_url: formData.youtube_url,
-              thumbnail_url: thumbnail,
+              youtube_url: formData.youtube_url || '',
+              thumbnail_url: null,
               pdf_url: pdfUrl || null,
+              video_file_path: videoFilePath || null,
               price: priceValue,
               duration_minutes: durationValue,
               category: formData.category || null,
@@ -255,11 +310,11 @@ const KnowledgeManagement: React.FC = () => {
       setDialogOpen(false);
       fetchCourses();
     } catch (error) {
-      // This is usually a network / CORS / blocked-request case
       console.error('Error saving course (unexpected):', error);
       const msg = error instanceof Error ? error.message : String(error);
       toast.error(`Σφάλμα αποθήκευσης: ${msg}`);
       setUploadingPdf(false);
+      setUploadingVideo(false);
     }
   };
 
@@ -446,13 +501,32 @@ const KnowledgeManagement: React.FC = () => {
             </div>
 
             <div>
-              <Label>YouTube URL *</Label>
-              <Input
-                className="rounded-none"
-                value={formData.youtube_url}
-                onChange={(e) => setFormData({ ...formData, youtube_url: e.target.value })}
-                placeholder="https://youtube.com/watch?v=..."
-              />
+              <Label className="flex items-center gap-1">
+                <Video className="w-4 h-4" />
+                Βίντεο Μαθήματος *
+              </Label>
+              <div className="space-y-2">
+                <Input
+                  type="file"
+                  accept="video/*"
+                  className="rounded-none"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setFormData({ ...formData, video_file: file });
+                  }}
+                />
+                {formData.video_file_path && !formData.video_file && (
+                  <p className="text-xs text-muted-foreground">
+                    Υπάρχον βίντεο: {formData.video_file_path}
+                  </p>
+                )}
+                {uploadingVideo && (
+                  <div className="space-y-1">
+                    <Progress value={videoProgress} className="h-2" />
+                    <p className="text-xs text-muted-foreground">{videoProgress.toFixed(0)}%</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
@@ -527,11 +601,11 @@ const KnowledgeManagement: React.FC = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" className="rounded-none" onClick={() => setDialogOpen(false)} disabled={uploadingPdf}>
+            <Button variant="outline" className="rounded-none" onClick={() => setDialogOpen(false)} disabled={uploadingPdf || uploadingVideo}>
               Ακύρωση
             </Button>
-            <Button className="rounded-none" onClick={handleSave} disabled={uploadingPdf}>
-              {uploadingPdf ? 'Μεταφόρτωση...' : selectedCourse ? 'Ενημέρωση' : 'Δημιουργία'}
+            <Button className="rounded-none" onClick={handleSave} disabled={uploadingPdf || uploadingVideo}>
+              {uploadingPdf || uploadingVideo ? 'Μεταφόρτωση...' : selectedCourse ? 'Ενημέρωση' : 'Δημιουργία'}
             </Button>
           </DialogFooter>
         </DialogContent>

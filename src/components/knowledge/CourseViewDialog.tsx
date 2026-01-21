@@ -21,6 +21,7 @@ interface Course {
   duration_minutes: number | null;
   category: string | null;
   pdf_url?: string | null;
+  video_file_path?: string | null;
 }
 
 interface Question {
@@ -39,9 +40,27 @@ interface CourseViewDialogProps {
 }
 
 const extractYouTubeId = (url: string): string | null => {
+  if (!url) return null;
   const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
   const match = url.match(regex);
   return match ? match[1] : null;
+};
+
+const getVideoUrl = async (videoFilePath: string): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase.storage
+      .from('course-videos')
+      .createSignedUrl(videoFilePath, 3600); // 1 hour expiry
+    
+    if (error) {
+      console.error('Error getting signed URL:', error);
+      return null;
+    }
+    return data.signedUrl;
+  } catch (e) {
+    console.error('Error getting video URL:', e);
+    return null;
+  }
 };
 
 export const CourseViewDialog: React.FC<CourseViewDialogProps> = ({
@@ -54,12 +73,24 @@ export const CourseViewDialog: React.FC<CourseViewDialogProps> = ({
   const [newQuestion, setNewQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoLoading, setVideoLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen && course) {
       fetchQuestions();
+      // Load video URL if video_file_path exists
+      if (course.video_file_path) {
+        setVideoLoading(true);
+        getVideoUrl(course.video_file_path).then((url) => {
+          setVideoUrl(url);
+          setVideoLoading(false);
+        });
+      } else {
+        setVideoUrl(null);
+      }
     }
-  }, [isOpen, course?.id]);
+  }, [isOpen, course?.id, course?.video_file_path]);
 
   const fetchQuestions = async () => {
     if (!course) return;
@@ -143,8 +174,25 @@ export const CourseViewDialog: React.FC<CourseViewDialogProps> = ({
 
         <ScrollArea className="flex-1 pr-4">
           <div className="space-y-4">
-            {/* Video Player */}
-            {videoId && (
+            {/* Video Player - prioritize storage video over YouTube */}
+            {videoLoading ? (
+              <div className="aspect-video bg-black rounded-none overflow-hidden flex items-center justify-center">
+                <p className="text-white">Φόρτωση βίντεο...</p>
+              </div>
+            ) : videoUrl ? (
+              <div className="aspect-video bg-black rounded-none overflow-hidden">
+                <video
+                  src={videoUrl}
+                  controls
+                  controlsList="nodownload"
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="w-full h-full"
+                  title={course.title}
+                >
+                  Ο browser σας δεν υποστηρίζει video.
+                </video>
+              </div>
+            ) : videoId ? (
               <div className="aspect-video bg-black rounded-none overflow-hidden">
                 <iframe
                   src={`https://www.youtube.com/embed/${videoId}`}
@@ -153,6 +201,10 @@ export const CourseViewDialog: React.FC<CourseViewDialogProps> = ({
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
+              </div>
+            ) : (
+              <div className="aspect-video bg-muted rounded-none flex items-center justify-center">
+                <p className="text-muted-foreground">Δεν υπάρχει διαθέσιμο βίντεο</p>
               </div>
             )}
 
