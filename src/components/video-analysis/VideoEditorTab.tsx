@@ -251,7 +251,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
         const isFirstVideo = videos.length === 0;
         setVideos(prev => [...prev, newVideo]);
-        setActiveVideoIndex(videos.length); // Switch to new video
+        // When adding 2nd/3rd video, keep timeline cursor at 0 (global)
+        // and keep the active clip on the 1st video to avoid jumping to the start of the new clip.
+        if (isFirstVideo) {
+          setActiveVideoIndex(0);
+        } else {
+          setActiveVideoIndex(0);
+          setCurrentTime(0);
+        }
 
         // Only reset markers if this is the first video
         if (isFirstVideo) {
