@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ArrowRight, Camera, RotateCcw, Smartphone, Wifi, Menu, Compass, Maximize, SwitchCamera } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, RotateCcw, Smartphone, Wifi, Menu, Compass, Maximize, SwitchCamera, Minimize2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { useToast } from '@/hooks/use-toast';
@@ -53,6 +53,10 @@ const ChangeDirectionPage = () => {
   const [cameraReady, setCameraReady] = useState(false);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const motionDetectorRef = useRef<MotionDetector | null>(null);
+
+  // Fullscreen UI controls (show exit button for a few seconds on touch)
+  const [showFullscreenControls, setShowFullscreenControls] = useState(false);
+  const fullscreenControlsTimeoutRef = useRef<number | null>(null);
 
   // Broadcast channel refs
   const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -304,8 +308,11 @@ const ChangeDirectionPage = () => {
       return;
     }
 
+    // Guard against double-starts (prevents multiple RAF loops)
+    if (isMotionActive) return;
+
     setIsMotionActive(true);
-    
+
     motionDetector.start(() => {
       console.log('🏁 Motion detected!');
       
@@ -338,6 +345,18 @@ const ChangeDirectionPage = () => {
       motionDetector.stop();
     }
     setIsMotionActive(false);
+  };
+
+  const showFsControlsTemporarily = () => {
+    if (!document.fullscreenElement) return;
+    setShowFullscreenControls(true);
+    if (fullscreenControlsTimeoutRef.current) {
+      window.clearTimeout(fullscreenControlsTimeoutRef.current);
+    }
+    fullscreenControlsTimeoutRef.current = window.setTimeout(() => {
+      setShowFullscreenControls(false);
+      fullscreenControlsTimeoutRef.current = null;
+    }, 3500);
   };
 
   // Reset
@@ -588,6 +607,21 @@ const ChangeDirectionPage = () => {
     }
   };
 
+  // Keep fullscreen controls state in sync (e.g. user exits with system gesture)
+  useEffect(() => {
+    const onFsChange = () => {
+      if (!document.fullscreenElement) {
+        setShowFullscreenControls(false);
+        if (fullscreenControlsTimeoutRef.current) {
+          window.clearTimeout(fullscreenControlsTimeoutRef.current);
+          fullscreenControlsTimeoutRef.current = null;
+        }
+      }
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
   // Display device view
   const renderDisplayView = () => (
     <div className="space-y-4">
@@ -609,8 +643,24 @@ const ChangeDirectionPage = () => {
       {/* Direction arrow display */}
       <div 
         ref={displayRef}
-        className="bg-black aspect-square rounded-none flex items-center justify-center min-h-[300px]"
+        className="relative bg-black aspect-square rounded-none flex items-center justify-center min-h-[300px]"
+        onTouchStart={showFsControlsTemporarily}
+        onMouseDown={showFsControlsTemporarily}
       >
+        {document.fullscreenElement && showFullscreenControls && (
+          <div className="absolute top-3 right-3 z-10">
+            <Button
+              onClick={handleFullscreen}
+              variant="outline"
+              size="sm"
+              className="rounded-none"
+            >
+              <Minimize2 className="w-4 h-4 mr-1" />
+              Έξοδος
+            </Button>
+          </div>
+        )}
+
         {currentDirection ? (
           currentDirection === 'left' ? (
             <svg viewBox="0 0 100 60" className="w-80 h-48">
