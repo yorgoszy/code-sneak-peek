@@ -178,14 +178,14 @@ serve(async (req) => {
     // NOTE: We must use a redirect URL that is allow-listed in Supabase Auth > URL Configuration.
     // We accept the redirectTo sent from the frontend ONLY if it matches our allowlist.
 
-    const DEFAULT_REDIRECT = 'https://www.hyperkids.gr/auth/reset-password';
+    const DEFAULT_REDIRECT = 'https://www.hyperkids.gr/reset-password';
 
     const isAllowedRedirect = (value: string) => {
       try {
         const url = new URL(value);
 
-        // We only allow our reset password route.
-        if (url.pathname !== '/auth/reset-password') return false;
+        // We allow the reset password route (with or without /auth prefix for backwards compatibility)
+        if (url.pathname !== '/reset-password' && url.pathname !== '/auth/reset-password') return false;
 
         const host = url.hostname.toLowerCase();
 
@@ -193,7 +193,7 @@ serve(async (req) => {
         if (host === 'www.hyperkids.gr' || host === 'hyperkids.gr') return true;
 
         // Lovable preview domains
-        if (host.endsWith('.lovableproject.com')) return true;
+        if (host.endsWith('.lovableproject.com') || host.endsWith('.lovable.app')) return true;
 
         return false;
       } catch {
