@@ -216,9 +216,13 @@ export const useVideoExport = () => {
       return videoFiles[0];
     }
 
+    // Load FFmpeg if not already loaded
     if (!ffmpegRef.current) {
       const loaded = await loadFFmpeg();
-      if (!loaded) return null;
+      if (!loaded) {
+        console.error('[mergeVideoFiles] Failed to load FFmpeg');
+        return null;
+      }
     }
 
     const ffmpeg = ffmpegRef.current!;
@@ -231,30 +235,39 @@ export const useVideoExport = () => {
       // Write all input files
       for (let i = 0; i < videoFiles.length; i++) {
         const file = videoFiles[i];
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
-        const inputName = `input_${i}.${ext}`;
+        const inputName = `input_${i}.mp4`; // Force mp4 extension for consistency
         const fileData = await fetchFile(file);
         await ffmpeg.writeFile(inputName, fileData);
         inputNames.push(inputName);
-        setProgress(Math.round((i + 1) / videoFiles.length * 30));
+        setProgress(Math.round((i + 1) / videoFiles.length * 20));
       }
 
-      // Re-encode each to ensure compatible streams (different codecs may fail concat copy)
+      // Re-encode each to ensure compatible streams with explicit settings
       const intermediateNames: string[] = [];
       for (let i = 0; i < inputNames.length; i++) {
         const intermediateName = `intermediate_${i}.mp4`;
+        
+        // Force consistent resolution, framerate, and codec for browser compatibility
         await ffmpeg.exec([
           '-i', inputNames[i],
           '-c:v', 'libx264',
+          '-profile:v', 'baseline', // Most compatible H.264 profile
+          '-level', '3.0',
+          '-pix_fmt', 'yuv420p', // Required for browser playback
           '-preset', 'ultrafast',
           '-crf', '23',
+          '-r', '30', // Force 30fps for consistency
           '-c:a', 'aac',
+          '-ar', '44100', // Consistent audio sample rate
+          '-ac', '2', // Stereo audio
           '-b:a', '128k',
           '-movflags', '+faststart',
+          '-y', // Overwrite if exists
           intermediateName
         ]);
+        
         intermediateNames.push(intermediateName);
-        setProgress(30 + Math.round((i + 1) / inputNames.length * 40));
+        setProgress(20 + Math.round((i + 1) / inputNames.length * 50));
       }
 
       // Create concat list
@@ -263,18 +276,27 @@ export const useVideoExport = () => {
 
       const outputName = `merged_${Date.now()}.mp4`;
 
-      // Concat (copy since we've already normalized)
+      // Concat with stream copy since we've normalized everything
       await ffmpeg.exec([
         '-f', 'concat',
         '-safe', '0',
         '-i', 'concat.txt',
         '-c', 'copy',
+        '-movflags', '+faststart', // Important for web playback
+        '-y',
         outputName
       ]);
 
       setProgress(90);
 
       const data = await ffmpeg.readFile(outputName);
+      
+      // Validate output size
+      if (!data || (data as Uint8Array).length === 0) {
+        throw new Error('FFmpeg produced empty output');
+      }
+
+      console.log('[mergeVideoFiles] Success, output size:', (data as Uint8Array).length);
 
       // Cleanup
       for (const name of inputNames) {
@@ -293,8 +315,8 @@ export const useVideoExport = () => {
 
       return blob;
     } catch (error) {
-      console.error('Merge video files failed:', error);
-      toast.error('Αποτυχία ένωσης βίντεο');
+      console.error('[mergeVideoFiles] Failed:', error);
+      toast.error('Αποτυχία ένωσης βίντεο - δοκίμασε MP4 (H.264)');
       setIsExporting(false);
       return null;
     }
