@@ -204,6 +204,102 @@ export const useVideoExport = () => {
     }
   }, [loadFFmpeg]);
 
+  // Merge multiple video FILES into one blob (for multi-video playback fix)
+  const mergeVideoFiles = useCallback(async (
+    videoFiles: File[]
+  ): Promise<Blob | null> => {
+    if (videoFiles.length === 0) {
+      return null;
+    }
+    if (videoFiles.length === 1) {
+      // Single file, just return it as blob
+      return videoFiles[0];
+    }
+
+    if (!ffmpegRef.current) {
+      const loaded = await loadFFmpeg();
+      if (!loaded) return null;
+    }
+
+    const ffmpeg = ffmpegRef.current!;
+    setIsExporting(true);
+    setProgress(0);
+
+    try {
+      const inputNames: string[] = [];
+
+      // Write all input files
+      for (let i = 0; i < videoFiles.length; i++) {
+        const file = videoFiles[i];
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+        const inputName = `input_${i}.${ext}`;
+        const fileData = await fetchFile(file);
+        await ffmpeg.writeFile(inputName, fileData);
+        inputNames.push(inputName);
+        setProgress(Math.round((i + 1) / videoFiles.length * 30));
+      }
+
+      // Re-encode each to ensure compatible streams (different codecs may fail concat copy)
+      const intermediateNames: string[] = [];
+      for (let i = 0; i < inputNames.length; i++) {
+        const intermediateName = `intermediate_${i}.mp4`;
+        await ffmpeg.exec([
+          '-i', inputNames[i],
+          '-c:v', 'libx264',
+          '-preset', 'ultrafast',
+          '-crf', '23',
+          '-c:a', 'aac',
+          '-b:a', '128k',
+          '-movflags', '+faststart',
+          intermediateName
+        ]);
+        intermediateNames.push(intermediateName);
+        setProgress(30 + Math.round((i + 1) / inputNames.length * 40));
+      }
+
+      // Create concat list
+      const concatList = intermediateNames.map(f => `file '${f}'`).join('\n');
+      await ffmpeg.writeFile('concat.txt', concatList);
+
+      const outputName = `merged_${Date.now()}.mp4`;
+
+      // Concat (copy since we've already normalized)
+      await ffmpeg.exec([
+        '-f', 'concat',
+        '-safe', '0',
+        '-i', 'concat.txt',
+        '-c', 'copy',
+        outputName
+      ]);
+
+      setProgress(90);
+
+      const data = await ffmpeg.readFile(outputName);
+
+      // Cleanup
+      for (const name of inputNames) {
+        try { await ffmpeg.deleteFile(name); } catch { /* ignore */ }
+      }
+      for (const name of intermediateNames) {
+        try { await ffmpeg.deleteFile(name); } catch { /* ignore */ }
+      }
+      try { await ffmpeg.deleteFile('concat.txt'); } catch { /* ignore */ }
+      try { await ffmpeg.deleteFile(outputName); } catch { /* ignore */ }
+
+      const blob = new Blob([new Uint8Array(data as Uint8Array)], { type: 'video/mp4' });
+
+      setIsExporting(false);
+      setProgress(100);
+
+      return blob;
+    } catch (error) {
+      console.error('Merge video files failed:', error);
+      toast.error('Αποτυχία ένωσης βίντεο');
+      setIsExporting(false);
+      return null;
+    }
+  }, [loadFFmpeg]);
+
   // Download blob as file
   const downloadBlob = useCallback((blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
@@ -225,6 +321,7 @@ export const useVideoExport = () => {
     loadFFmpeg,
     exportTrimmedVideo,
     exportMergedClips,
+    mergeVideoFiles,
     downloadBlob,
   };
 };
