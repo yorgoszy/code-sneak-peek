@@ -22,6 +22,7 @@ import {
   Timer,
   Compass,
   BookOpen,
+  Download,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -220,6 +221,13 @@ export const CoachSidebar = ({
       icon: BookOpen,
       label: "Knowledge",
       path: effectiveCoachId ? `/dashboard/knowledge?coachId=${effectiveCoachId}` : "/dashboard/knowledge",
+      badge: null,
+      requiresSubscription: false,
+    },
+    {
+      icon: Download,
+      label: "Κατέβασε την Εφαρμογή",
+      path: "/install",
       badge: null,
       requiresSubscription: false,
     },
