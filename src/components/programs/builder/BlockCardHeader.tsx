@@ -110,7 +110,7 @@ export const BlockCardHeader: React.FC<BlockCardHeaderProps> = ({
               <SelectTrigger className="h-6 text-xs rounded-none bg-gray-700 border-gray-600 text-white w-[100px] flex-shrink-0">
                 <SelectValue placeholder="Τύπος" />
               </SelectTrigger>
-              <SelectContent className="rounded-none bg-white z-50">
+              <SelectContent className="rounded-none bg-white z-50 max-h-none overflow-visible">
                 {Object.entries(TRAINING_TYPE_LABELS).map(([value, label]) => (
                   <SelectItem key={value} value={value} className="text-xs">
                     {label}
