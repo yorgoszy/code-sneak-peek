@@ -61,6 +61,8 @@ interface VideoSlot {
   file: File;
   url: string;
   name: string;
+  duration: number; // Duration in seconds
+  startOffset: number; // Start time offset in the combined timeline
 }
 
 type ActionType = 'attack' | 'defense' | 'clinch';
@@ -195,32 +197,57 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       }
       
       const url = URL.createObjectURL(file);
-      const newVideo: VideoSlot = {
-        id: `video-${Date.now()}`,
-        file,
-        url,
-        name: file.name
+      
+      // Create a temporary video element to get duration
+      const tempVideo = document.createElement('video');
+      tempVideo.preload = 'metadata';
+      tempVideo.src = url;
+      
+      tempVideo.onloadedmetadata = () => {
+        const videoDuration = tempVideo.duration;
+        
+        // Calculate start offset based on existing videos
+        const currentTotalDuration = videos.reduce((sum, v) => sum + v.duration, 0);
+        
+        const newVideo: VideoSlot = {
+          id: `video-${Date.now()}`,
+          file,
+          url,
+          name: file.name,
+          duration: videoDuration,
+          startOffset: currentTotalDuration
+        };
+        
+        const isFirstVideo = videos.length === 0;
+        setVideos(prev => [...prev, newVideo]);
+        setActiveVideoIndex(videos.length); // Switch to new video
+        
+        // Only reset markers if this is the first video
+        if (isFirstVideo) {
+          setClips([]);
+          setActionFlags([]);
+          setActiveFlag(null);
+          setRoundMarkers([]);
+          setActiveRound(null);
+          setStrikeMarkers([]);
+          setTrimStart(0);
+          setTrimEnd(0);
+          setCurrentTime(0);
+        }
+        
+        toast.success(`Βίντεο ${videos.length + 1} φορτώθηκε επιτυχώς`);
       };
-      
-      const isFirstVideo = videos.length === 0;
-      setVideos(prev => [...prev, newVideo]);
-      setActiveVideoIndex(videos.length); // Switch to new video
-      
-      // Only reset markers if this is the first video
-      if (isFirstVideo) {
-        setClips([]);
-        setActionFlags([]);
-        setActiveFlag(null);
-        setRoundMarkers([]);
-        setActiveRound(null);
-        setStrikeMarkers([]);
-        setTrimStart(0);
-        setTrimEnd(0);
-        setCurrentTime(0);
-      }
-      
-      toast.success(`Βίντεο ${videos.length + 1} φορτώθηκε επιτυχώς`);
     }
+  };
+
+  // Recalculate video offsets when videos change
+  const recalculateVideoOffsets = (videoList: VideoSlot[]): VideoSlot[] => {
+    let offset = 0;
+    return videoList.map(v => {
+      const updated = { ...v, startOffset: offset };
+      offset += v.duration;
+      return updated;
+    });
   };
 
   // Remove a video from the list
@@ -230,13 +257,20 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       URL.revokeObjectURL(videoToRemove.url);
     }
     
-    setVideos(prev => prev.filter((_, i) => i !== index));
+    // Recalculate offsets after removal
+    const filteredVideos = videos.filter((_, i) => i !== index);
+    setVideos(recalculateVideoOffsets(filteredVideos));
     
     // Adjust active index if needed
     if (activeVideoIndex >= index && activeVideoIndex > 0) {
       setActiveVideoIndex(activeVideoIndex - 1);
+    } else if (filteredVideos.length === 0) {
+      setActiveVideoIndex(0);
     }
   };
+
+  // Calculate total duration of all videos
+  const totalDuration = videos.reduce((sum, v) => sum + v.duration, 0);
 
   // Reset all videos
   const resetAllVideos = () => {
@@ -1217,6 +1251,65 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
               }}
             >
               <div ref={timelineContainerRef} style={{ width: `${100 * timelineZoom}%`, minWidth: '100%' }}>
+                {/* Video Segments Timeline - Shows where each video starts/ends */}
+                {videos.length > 1 && (
+                  <div className="relative h-8 bg-gray-100 rounded-none border border-gray-300 mb-1">
+                    {videos.map((video, index) => {
+                      const segmentWidth = (video.duration / totalDuration) * 100;
+                      const segmentLeft = (video.startOffset / totalDuration) * 100;
+                      const isActive = activeVideoIndex === index;
+                      const colors = ['bg-purple-400/70', 'bg-orange-400/70', 'bg-teal-400/70'];
+                      const borderColors = ['border-purple-500', 'border-orange-500', 'border-teal-500'];
+                      
+                      return (
+                        <div
+                          key={video.id}
+                          className={`absolute h-full ${colors[index % 3]} ${isActive ? 'ring-2 ring-offset-1 ring-[#00ffba]' : ''} cursor-pointer group`}
+                          style={{ 
+                            left: `${segmentLeft}%`,
+                            width: `${segmentWidth}%`,
+                            minWidth: '60px'
+                          }}
+                          onClick={() => setActiveVideoIndex(index)}
+                          title={`${video.name} (${formatTime(video.duration)})`}
+                        >
+                          {/* Video label */}
+                          <div className="absolute inset-0 flex items-center justify-between px-2 overflow-hidden">
+                            <span className="text-[10px] font-medium text-gray-800 truncate">
+                              {index + 1}. {video.name.length > 12 ? video.name.slice(0, 12) + '...' : video.name}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[9px] text-gray-600">
+                                {formatTime(video.duration)}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white rounded-none"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeVideo(index);
+                                }}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          {/* Segment border markers */}
+                          <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${borderColors[index % 3]}`} />
+                          <div className={`absolute right-0 top-0 bottom-0 w-0.5 ${borderColors[index % 3]}`} />
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Label for the row */}
+                    <div className="absolute -left-1 top-0 bottom-0 flex items-center">
+                      <span className="text-[8px] text-gray-500 -rotate-90 whitespace-nowrap">Βίντεο</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Rounds Timeline - Enlarged */}
                 <div className="relative h-10 bg-blue-50 rounded-none border border-blue-200">
                   {roundMarkers.map((round) => {
