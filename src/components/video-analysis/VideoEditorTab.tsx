@@ -146,6 +146,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const activeVideo = videos[activeVideoIndex] || null;
   const videoUrl = activeVideo?.url || null;
   const videoFile = activeVideo?.file || null;
+  
+  // Calculate total duration of all videos combined
+  const totalDuration = videos.reduce((sum, v) => sum + v.duration, 0);
+  
+  // Global current time (position in the combined timeline)
+  const globalCurrentTime = activeVideo 
+    ? activeVideo.startOffset + currentTime 
+    : currentTime;
   // Action flags state
   const [actionFlags, setActionFlags] = useState<ActionFlag[]>([]);
   const [activeFlag, setActiveFlag] = useState<{ id: string; type: ActionType } | null>(null);
@@ -269,8 +277,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     }
   };
 
-  // Calculate total duration of all videos
-  const totalDuration = videos.reduce((sum, v) => sum + v.duration, 0);
+  // Note: totalDuration is now calculated above with derived video state
 
   // Reset all videos
   const resetAllVideos = () => {
@@ -316,6 +323,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     }
   };
 
+  // Seek within current video (local time)
   const seek = (time: number) => {
     if (videoRef.current) {
       videoRef.current.currentTime = Math.max(0, Math.min(time, duration));
@@ -323,8 +331,51 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     }
   };
 
-  const skipBack = () => seek(currentTime - 5);
-  const skipForward = () => seek(currentTime + 5);
+  // Seek to global time (finds correct video and seeks within it)
+  const seekGlobal = (globalTime: number) => {
+    const clampedTime = Math.max(0, Math.min(globalTime, totalDuration));
+    
+    // Find which video this time belongs to
+    let targetVideoIndex = 0;
+    for (let i = 0; i < videos.length; i++) {
+      const video = videos[i];
+      if (clampedTime >= video.startOffset && clampedTime < video.startOffset + video.duration) {
+        targetVideoIndex = i;
+        break;
+      }
+      // If past all videos, use the last one
+      if (i === videos.length - 1) {
+        targetVideoIndex = i;
+      }
+    }
+    
+    const targetVideo = videos[targetVideoIndex];
+    if (!targetVideo) return;
+    
+    // Calculate local time within the target video
+    const localTime = clampedTime - targetVideo.startOffset;
+    
+    // Switch video if needed
+    if (targetVideoIndex !== activeVideoIndex) {
+      setActiveVideoIndex(targetVideoIndex);
+      // Set a flag to seek after video loads
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.currentTime = Math.max(0, Math.min(localTime, targetVideo.duration));
+          setCurrentTime(videoRef.current.currentTime);
+        }
+      }, 100);
+    } else {
+      // Same video, just seek
+      if (videoRef.current) {
+        videoRef.current.currentTime = Math.max(0, Math.min(localTime, targetVideo.duration));
+        setCurrentTime(videoRef.current.currentTime);
+      }
+    }
+  };
+
+  const skipBack = () => seekGlobal(globalCurrentTime - 5);
+  const skipForward = () => seekGlobal(globalCurrentTime + 5);
   const frameBack = () => seek(currentTime - (1/30)); // ~1 frame at 30fps
   const frameForward = () => seek(currentTime + (1/30));
 
@@ -425,14 +476,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     const newFlag: ActionFlag = {
       id: crypto.randomUUID(),
       type,
-      startTime: currentTime,
+      startTime: globalCurrentTime,
       endTime: null
     };
     
     setActionFlags(prev => [...prev, newFlag]);
     setActiveFlag({ id: newFlag.id, type });
     const typeLabels = { attack: 'Επίθεση', defense: 'Άμυνα', clinch: 'Clinch' };
-    toast.success(`${typeLabels[type]} ξεκίνησε στο ${formatTime(currentTime)}`);
+    toast.success(`${typeLabels[type]} ξεκίνησε στο ${formatTime(globalCurrentTime)}`);
   };
 
   const closeActiveFlag = () => {
@@ -440,12 +491,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     
     setActionFlags(prev => prev.map(flag => 
       flag.id === activeFlag.id 
-        ? { ...flag, endTime: currentTime }
+        ? { ...flag, endTime: globalCurrentTime }
         : flag
     ));
     
     const typeLabels = { attack: 'Επίθεση', defense: 'Άμυνα', clinch: 'Clinch' };
-    toast.success(`${typeLabels[activeFlag.type]} τελείωσε στο ${formatTime(currentTime)}`);
+    toast.success(`${typeLabels[activeFlag.type]} τελείωσε στο ${formatTime(globalCurrentTime)}`);
     setActiveFlag(null);
   };
 
@@ -487,8 +538,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   // Determine strike owner based on which flag it falls into
   const determineStrikeOwner = (time: number): 'athlete' | 'opponent' => {
     // Find which flag this time falls into
+    const effectiveTotalDuration = totalDuration > 0 ? totalDuration : duration;
     for (const flag of actionFlags) {
-      const endTime = flag.endTime ?? duration;
+      const endTime = flag.endTime ?? effectiveTotalDuration;
       if (time >= flag.startTime && time <= endTime) {
         // Attack = athlete's strike, Defense = opponent's strike
         return flag.type === 'attack' ? 'athlete' : 'opponent';
@@ -500,8 +552,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Determine which round a timestamp is in and time within that round
   const determineRoundInfo = (time: number): { roundNumber: number | null; timeInRound: number | null } => {
+    const effectiveTotalDuration = totalDuration > 0 ? totalDuration : duration;
     for (const round of roundMarkers) {
-      const endTime = round.endTime ?? duration;
+      const endTime = round.endTime ?? effectiveTotalDuration;
       if (time >= round.startTime && time <= endTime) {
         return {
           roundNumber: round.roundNumber,
@@ -523,13 +576,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     const newRound: RoundMarker = {
       id: crypto.randomUUID(),
       roundNumber: nextRoundNumber,
-      startTime: currentTime,
+      startTime: globalCurrentTime,
       endTime: null
     };
     
     setRoundMarkers(prev => [...prev, newRound]);
     setActiveRound({ id: newRound.id, roundNumber: nextRoundNumber });
-    toast.success(`Round ${nextRoundNumber} ξεκίνησε στο ${formatTime(currentTime)}`);
+    toast.success(`Round ${nextRoundNumber} ξεκίνησε στο ${formatTime(globalCurrentTime)}`);
   };
 
   const closeActiveRound = () => {
@@ -537,11 +590,11 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     
     setRoundMarkers(prev => prev.map(round => 
       round.id === activeRound.id 
-        ? { ...round, endTime: currentTime }
+        ? { ...round, endTime: globalCurrentTime }
         : round
     ));
     
-    toast.success(`Round ${activeRound.roundNumber} τελείωσε στο ${formatTime(currentTime)}`);
+    toast.success(`Round ${activeRound.roundNumber} τελείωσε στο ${formatTime(globalCurrentTime)}`);
     setActiveRound(null);
   };
 
@@ -654,8 +707,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Add strike marker at current time
   const addStrikeMarker = (strikeType: StrikeType) => {
-    const owner = determineStrikeOwner(currentTime);
-    const roundInfo = determineRoundInfo(currentTime);
+    const owner = determineStrikeOwner(globalCurrentTime);
+    const roundInfo = determineRoundInfo(globalCurrentTime);
     
     const newMarker: StrikeMarker = {
       id: crypto.randomUUID(),
@@ -663,7 +716,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       strikeTypeName: strikeType.name,
       strikeCategory: strikeType.category,
       strikeSide: strikeType.side,
-      time: currentTime,
+      time: globalCurrentTime,
       owner,
       roundNumber: roundInfo.roundNumber,
       timeInRound: roundInfo.timeInRound,
@@ -1314,11 +1367,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                 <div className="relative h-10 bg-blue-50 rounded-none border border-blue-200">
                   {roundMarkers.map((round) => {
                     const isOpen = round.endTime === null;
-                    // For open rounds, use the max of currentTime and startTime to prevent backwards jumping
+                    // For open rounds, use the max of globalCurrentTime and startTime to prevent backwards jumping
                     const effectiveEndTime = isOpen 
-                      ? Math.max(currentTime, round.startTime + 0.1) 
+                      ? Math.max(globalCurrentTime, round.startTime + 0.1) 
                       : round.endTime!;
-                    const roundWidth = Math.max(0, ((effectiveEndTime - round.startTime) / duration) * 100);
+                    const timelineDuration = totalDuration > 0 ? totalDuration : duration;
+                    const roundWidth = Math.max(0, ((effectiveEndTime - round.startTime) / timelineDuration) * 100);
                     const isDragging = draggingRound?.id === round.id;
                     const roundDuration = effectiveEndTime - round.startTime;
                     const roundMinutes = Math.floor(roundDuration / 60);
@@ -1330,7 +1384,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                         key={round.id}
                         className={`absolute h-full transition-opacity bg-blue-400/50 ${isOpen ? 'animate-pulse' : ''} ${isDragging ? 'z-20' : ''}`}
                         style={{ 
-                          left: `${(round.startTime / duration) * 100}%`,
+                          left: `${(round.startTime / timelineDuration) * 100}%`,
                           width: `${roundWidth}%`,
                           minWidth: '40px'
                         }}
@@ -1346,7 +1400,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                         {/* Center - click to seek */}
                         <div 
                           className="absolute left-2 right-6 top-0 h-full cursor-pointer hover:bg-blue-500/20 flex flex-col justify-center"
-                          onClick={() => seek(round.startTime)}
+                          onClick={() => seekGlobal(round.startTime)}
                         >
                           <div className="text-[10px] font-bold text-blue-700 leading-tight">
                             R{round.roundNumber}
@@ -1383,7 +1437,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                   {/* Current position indicator */}
                   <div 
                     className="absolute w-0.5 h-full bg-black z-10"
-                    style={{ left: `${(currentTime / duration) * 100}%` }}
+                    style={{ left: `${(globalCurrentTime / (totalDuration > 0 ? totalDuration : duration)) * 100}%` }}
                   />
                 </div>
                 
@@ -1392,11 +1446,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                   {/* Action flag markers */}
                   {actionFlags.map((flag) => {
                     const isOpen = flag.endTime === null;
-                    // For open flags, use the max of currentTime and startTime to prevent backwards jumping
+                    const timelineDuration = totalDuration > 0 ? totalDuration : duration;
+                    // For open flags, use the max of globalCurrentTime and startTime to prevent backwards jumping
                     const effectiveEndTime = isOpen 
-                      ? Math.max(currentTime, flag.startTime + 0.1) 
+                      ? Math.max(globalCurrentTime, flag.startTime + 0.1) 
                       : flag.endTime!;
-                    const flagWidth = Math.max(0, ((effectiveEndTime - flag.startTime) / duration) * 100);
+                    const flagWidth = Math.max(0, ((effectiveEndTime - flag.startTime) / timelineDuration) * 100);
                     const isDraggingThis = draggingFlag?.id === flag.id;
                     
                     const getColors = (type: ActionType) => {
@@ -1411,7 +1466,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                         key={flag.id}
                         className={`absolute h-full transition-opacity group ${colors.bg} ${isOpen ? 'animate-pulse' : ''} ${isDraggingThis ? 'z-20' : ''}`}
                         style={{ 
-                          left: `${(flag.startTime / duration) * 100}%`,
+                          left: `${(flag.startTime / timelineDuration) * 100}%`,
                           width: `${flagWidth}%`,
                           minWidth: '20px'
                         }}
@@ -1427,7 +1482,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                         {/* Center - click to seek */}
                         <div 
                           className="absolute left-2 right-2 top-0 h-full cursor-pointer hover:opacity-80 flex items-center"
-                          onClick={() => seek(flag.startTime)}
+                          onClick={() => seekGlobal(flag.startTime)}
                         >
                           <Flag className={`w-3 h-3 ${colors.text}`} />
                           <span className={`ml-1 text-[8px] font-medium ${colors.text}`}>
@@ -1462,7 +1517,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                   {/* Current position indicator */}
                   <div 
                     className="absolute w-0.5 h-full bg-black z-10"
-                    style={{ left: `${(currentTime / duration) * 100}%` }}
+                    style={{ left: `${(globalCurrentTime / (totalDuration > 0 ? totalDuration : duration)) * 100}%` }}
                   />
                 </div>
                 
@@ -1491,7 +1546,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                       {/* Timebar on top */}
                       <div 
                         className="absolute w-0.5 h-full bg-black z-20"
-                        style={{ left: `${(currentTime / duration) * 100}%` }}
+                        style={{ left: `${(globalCurrentTime / (totalDuration > 0 ? totalDuration : duration)) * 100}%` }}
                       />
                       
                       {Object.entries(groupedBySecond).map(([second, markers]) => {
@@ -1536,7 +1591,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                               key={marker.id}
                               className={`absolute cursor-pointer hover:scale-110 transition-all z-10 flex items-center justify-center`}
                               style={{ 
-                                left: `${(marker.time / duration) * 100}%`,
+                                left: `${(marker.time / (totalDuration > 0 ? totalDuration : duration)) * 100}%`,
                                 top: `${topOffset}px`,
                                 transform: 'translateX(-50%)',
                                 minWidth: '18px',
@@ -1561,7 +1616,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                   {/* Playback progress */}
                   <div 
                     className="absolute h-full bg-[#00ffba] rounded-none"
-                    style={{ width: `${(currentTime / duration) * 100}%` }}
+                    style={{ width: `${(globalCurrentTime / (totalDuration > 0 ? totalDuration : duration)) * 100}%` }}
                   />
                   
                   {/* Trim range indicator */}
@@ -1610,18 +1665,18 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
             
             {/* Seek slider - outside zoom container */}
             <Slider
-              value={[currentTime]}
+              value={[globalCurrentTime]}
               min={0}
-              max={duration || 100}
+              max={totalDuration > 0 ? totalDuration : (duration || 100)}
               step={0.01}
-              onValueChange={(value) => seek(value[0])}
+              onValueChange={(value) => seekGlobal(value[0])}
               className="cursor-pointer"
             />
             
             {/* Time display */}
             <div className="flex justify-between text-xs text-gray-500">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
+              <span>{formatTime(globalCurrentTime)}</span>
+              <span>{formatTime(totalDuration > 0 ? totalDuration : duration)}</span>
             </div>
             
             {/* Strike History - Below time bar */}
