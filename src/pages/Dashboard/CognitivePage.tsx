@@ -119,6 +119,11 @@ const CognitivePage: React.FC = () => {
   const [gameOver, setGameOver] = useState(false);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
+  
+  // Reaction time tracking
+  const [questionStartTime, setQuestionStartTime] = useState<number>(0);
+  const [reactionTimes, setReactionTimes] = useState<number[]>([]);
+  const [lastReactionTime, setLastReactionTime] = useState<number | null>(null);
 
   // Time settings based on difficulty
   const getTimeLimit = useCallback((diff: Difficulty) => {
@@ -137,8 +142,11 @@ const CognitivePage: React.FC = () => {
     setTotalQuestions(0);
     setStreak(0);
     setBestStreak(0);
+    setReactionTimes([]);
+    setLastReactionTime(null);
     setCurrentQuestion(generateStroopQuestion(difficulty));
     setTimeLeft(getTimeLimit(difficulty));
+    setQuestionStartTime(Date.now());
   }, [difficulty, getTimeLimit]);
 
   // Timer effect
@@ -164,6 +172,15 @@ const CognitivePage: React.FC = () => {
   const handleStroopAnswer = useCallback((selectedColor: string) => {
     if (!currentQuestion || gameOver) return;
 
+    // Calculate reaction time (only for non-timeout answers)
+    if (selectedColor !== 'timeout' && questionStartTime > 0) {
+      const reactionTime = Date.now() - questionStartTime;
+      setLastReactionTime(reactionTime);
+      setReactionTimes(prev => [...prev, reactionTime]);
+    } else {
+      setLastReactionTime(null);
+    }
+
     const isCorrect = selectedColor === currentQuestion.correctAnswer;
     
     if (isCorrect) {
@@ -182,7 +199,8 @@ const CognitivePage: React.FC = () => {
     // Generate next question (unlimited mode)
     setCurrentQuestion(generateStroopQuestion(difficulty));
     setTimeLeft(getTimeLimit(difficulty));
-  }, [currentQuestion, gameOver, difficulty, getTimeLimit, bestStreak]);
+    setQuestionStartTime(Date.now());
+  }, [currentQuestion, gameOver, difficulty, getTimeLimit, bestStreak, questionStartTime]);
 
   // End game manually
   const endGame = useCallback(() => {
@@ -203,7 +221,19 @@ const CognitivePage: React.FC = () => {
     setScore(0);
     setTotalQuestions(0);
     setStreak(0);
+    setReactionTimes([]);
+    setLastReactionTime(null);
   };
+
+  // Calculate average reaction time
+  const averageReactionTime = reactionTimes.length > 0 
+    ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length)
+    : 0;
+  
+  // Calculate best reaction time
+  const bestReactionTime = reactionTimes.length > 0 
+    ? Math.min(...reactionTimes)
+    : 0;
 
   // Render game selection
   const renderGameSelection = () => (
@@ -316,6 +346,20 @@ const CognitivePage: React.FC = () => {
               <div className="text-lg font-medium">{totalQuestions}</div>
               <div className="text-xs text-muted-foreground">{t('cognitive.questions')}</div>
             </div>
+            <div className="text-center">
+              <div className="text-lg font-medium text-[#cb8954]">
+                {averageReactionTime > 0 ? `${(averageReactionTime / 1000).toFixed(2)}s` : '-'}
+              </div>
+              <div className="text-xs text-muted-foreground">Μ.Ο. Αντ.</div>
+            </div>
+            {lastReactionTime && (
+              <div className="text-center">
+                <div className="text-lg font-medium text-blue-500">
+                  {(lastReactionTime / 1000).toFixed(2)}s
+                </div>
+                <div className="text-xs text-muted-foreground">Τελευταία</div>
+              </div>
+            )}
             {streak > 1 && (
               <Badge className="rounded-none bg-[#cb8954] text-white">
                 🔥 {streak}
@@ -396,7 +440,7 @@ const CognitivePage: React.FC = () => {
           <p className="text-muted-foreground">{t('cognitive.yourResults')}</p>
         </div>
         
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="bg-muted/50 p-4 rounded-none">
             <div className="text-3xl font-bold text-[#00ffba]">{score}</div>
             <div className="text-xs text-muted-foreground">{t('cognitive.correct')}</div>
@@ -408,6 +452,18 @@ const CognitivePage: React.FC = () => {
           <div className="bg-muted/50 p-4 rounded-none">
             <div className="text-3xl font-bold text-[#cb8954]">{bestStreak}</div>
             <div className="text-xs text-muted-foreground">{t('cognitive.bestStreak')}</div>
+          </div>
+          <div className="bg-muted/50 p-4 rounded-none">
+            <div className="text-3xl font-bold text-blue-500">
+              {averageReactionTime > 0 ? `${(averageReactionTime / 1000).toFixed(2)}s` : '-'}
+            </div>
+            <div className="text-xs text-muted-foreground">Μ.Ο. Αντίδρ.</div>
+          </div>
+          <div className="bg-muted/50 p-4 rounded-none">
+            <div className="text-3xl font-bold text-green-500">
+              {bestReactionTime > 0 ? `${(bestReactionTime / 1000).toFixed(2)}s` : '-'}
+            </div>
+            <div className="text-xs text-muted-foreground">Καλύτερη</div>
           </div>
         </div>
         
