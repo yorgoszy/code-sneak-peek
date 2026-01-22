@@ -299,7 +299,7 @@ const ChangeDirectionPage = () => {
     }
   };
 
-  // Start motion detection (persistent mode)
+  // Start motion detection (persistent mode with 5s cooldown)
   const handleStartMotion = () => {
     if (!cameraReady || !motionDetector) {
       toast({
@@ -315,30 +315,45 @@ const ChangeDirectionPage = () => {
 
     setIsMotionActive(true);
 
-    motionDetector.start(() => {
-      console.log('🏁 Motion detected!');
+    const startDetection = () => {
+      if (!motionDetectorRef.current) return;
       
-      // Generate random direction (left, right, or center)
-      const directions: ('left' | 'right' | 'center')[] = ['left', 'right', 'center'];
-      const direction = directions[Math.floor(Math.random() * 3)];
-      setCurrentDirection(direction);
-      setDirectionCount(prev => prev + 1);
-      
-      // Broadcast direction to display device
-      broadcastChannelRef.current?.send({
-        type: 'broadcast',
-        event: 'show_direction',
-        payload: { direction, timestamp: Date.now() }
+      motionDetectorRef.current.start(() => {
+        console.log('🏁 Motion detected!');
+        
+        // Stop detection during cooldown
+        motionDetectorRef.current?.stop();
+        
+        // Generate random direction (left, right, or center)
+        const directions: ('left' | 'right' | 'center')[] = ['left', 'right', 'center'];
+        const direction = directions[Math.floor(Math.random() * 3)];
+        setCurrentDirection(direction);
+        setDirectionCount(prev => prev + 1);
+        
+        // Broadcast direction to display device
+        broadcastChannelRef.current?.send({
+          type: 'broadcast',
+          event: 'show_direction',
+          payload: { direction, timestamp: Date.now() }
+        });
+        
+        // Auto-reset direction display after 2 seconds
+        setTimeout(() => {
+          setCurrentDirection(null);
+        }, 2000);
+        
+        // Re-arm detection after 5 seconds cooldown
+        setTimeout(() => {
+          // Only restart if still in active mode
+          if (motionDetectorRef.current) {
+            console.log('🔄 Re-arming motion detection after 5s cooldown');
+            startDetection();
+          }
+        }, 5000);
       });
-      
-      // Auto-reset direction display after 2 seconds, but keep detection active
-      setTimeout(() => {
-        setCurrentDirection(null);
-      }, 2000);
-      
-      // NOTE: Motion detection stays active (no motionDetector.stop() call)
-      // User must explicitly press deactivate button
-    });
+    };
+
+    startDetection();
   };
 
   // Stop motion detection
