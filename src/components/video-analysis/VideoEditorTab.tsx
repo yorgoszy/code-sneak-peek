@@ -134,6 +134,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
   
   // Trim state
   const [trimStart, setTrimStart] = useState(0);
@@ -308,18 +309,54 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   };
 
   const handleEnded = () => {
-    setIsPlaying(false);
+    // Check if there's a next video to play
+    if (activeVideoIndex < videos.length - 1) {
+      // Switch to next video and continue playing
+      const nextIndex = activeVideoIndex + 1;
+      setActiveVideoIndex(nextIndex);
+      setCurrentTime(0);
+      setShouldAutoPlay(true); // Trigger auto-play for next video
+    } else {
+      // No more videos, stop playing
+      setIsPlaying(false);
+    }
   };
 
+  // Auto-play when switching videos if was playing
+  useEffect(() => {
+    if (shouldAutoPlay && videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+          setShouldAutoPlay(false);
+        })
+        .catch((err) => {
+          console.error('Auto-play failed:', err);
+          setShouldAutoPlay(false);
+        });
+    }
+  }, [shouldAutoPlay, activeVideoIndex]);
+
   // Playback controls
-  const togglePlay = () => {
-    if (videoRef.current) {
+  const togglePlay = async () => {
+    if (!videoRef.current) {
+      console.log('Video ref not available');
+      return;
+    }
+    
+    try {
       if (isPlaying) {
         videoRef.current.pause();
+        setIsPlaying(false);
       } else {
-        videoRef.current.play();
+        await videoRef.current.play();
+        setIsPlaying(true);
       }
-      setIsPlaying(!isPlaying);
+    } catch (error) {
+      console.error('Play/Pause failed:', error);
+      // Try to recover
+      setIsPlaying(false);
     }
   };
 
