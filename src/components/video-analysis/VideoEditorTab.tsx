@@ -206,18 +206,37 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       }
       
       const url = URL.createObjectURL(file);
-      
-      // Create a temporary video element to get duration
+
+      // Create a temporary video element to validate support + get duration
       const tempVideo = document.createElement('video');
       tempVideo.preload = 'metadata';
       tempVideo.src = url;
-      
+
+      const cleanupTemp = () => {
+        tempVideo.removeAttribute('src');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (tempVideo as any).load?.();
+      };
+
+      tempVideo.onerror = () => {
+        cleanupTemp();
+        URL.revokeObjectURL(url);
+        toast.error('Το format/codec του βίντεο δεν υποστηρίζεται από τον browser. Δοκίμασε MP4 (H.264).');
+      };
+
       tempVideo.onloadedmetadata = () => {
         const videoDuration = tempVideo.duration;
-        
+        cleanupTemp();
+
+        if (!Number.isFinite(videoDuration) || videoDuration <= 0) {
+          URL.revokeObjectURL(url);
+          toast.error('Αποτυχία φόρτωσης μεταδεδομένων βίντεο. Δοκίμασε άλλο αρχείο (MP4 H.264).');
+          return;
+        }
+
         // Calculate start offset based on existing videos
         const currentTotalDuration = videos.reduce((sum, v) => sum + v.duration, 0);
-        
+
         const newVideo: VideoSlot = {
           id: `video-${Date.now()}`,
           file,
@@ -226,11 +245,11 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
           duration: videoDuration,
           startOffset: currentTotalDuration
         };
-        
+
         const isFirstVideo = videos.length === 0;
         setVideos(prev => [...prev, newVideo]);
         setActiveVideoIndex(videos.length); // Switch to new video
-        
+
         // Only reset markers if this is the first video
         if (isFirstVideo) {
           setClips([]);
@@ -243,7 +262,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
           setTrimEnd(0);
           setCurrentTime(0);
         }
-        
+
         toast.success(`Βίντεο ${videos.length + 1} φορτώθηκε επιτυχώς`);
       };
     }
@@ -340,8 +359,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Playback controls
   const togglePlay = async () => {
-    if (!videoRef.current) {
-      console.log('Video ref not available');
+    if (!videoRef.current) return;
+    if (!videoUrl) {
+      toast.error('Δεν υπάρχει έγκυρο βίντεο για αναπαραγωγή.');
       return;
     }
     
@@ -350,6 +370,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
         videoRef.current.pause();
         setIsPlaying(false);
       } else {
+        // Ensure browser reloads the new source if needed
+        videoRef.current.load();
         await videoRef.current.play();
         setIsPlaying(true);
       }
