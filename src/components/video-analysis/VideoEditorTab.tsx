@@ -295,16 +295,61 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const triggerMerge = async (files: File[]) => {
     if (files.length < 2) return;
     setIsMerging(true);
-    toast.info('Ένωση βίντεο σε εξέλιξη...');
+    toast.info('Ένωση βίντεο σε εξέλιξη... (μπορεί να πάρει 1-2 λεπτά)');
 
-    const mergedBlob = await mergeVideoFiles(files);
-    if (mergedBlob) {
-      // Revoke old merged URL if exists
-      if (mergedVideoUrl) URL.revokeObjectURL(mergedVideoUrl);
-      const newUrl = URL.createObjectURL(mergedBlob);
-      setMergedVideoUrl(newUrl);
-      toast.success('Τα βίντεο ενώθηκαν επιτυχώς!');
+    try {
+      const mergedBlob = await mergeVideoFiles(files);
+      if (mergedBlob && mergedBlob.size > 0) {
+        // Revoke old merged URL if exists
+        if (mergedVideoUrl) URL.revokeObjectURL(mergedVideoUrl);
+        const newUrl = URL.createObjectURL(mergedBlob);
+        
+        // Validate the blob can actually be played
+        const testVideo = document.createElement('video');
+        testVideo.preload = 'metadata';
+        
+        await new Promise<void>((resolve, reject) => {
+          const cleanup = () => {
+            testVideo.removeAttribute('src');
+            testVideo.load();
+          };
+          
+          testVideo.onloadedmetadata = () => {
+            if (testVideo.duration > 0) {
+              cleanup();
+              resolve();
+            } else {
+              cleanup();
+              reject(new Error('Invalid duration'));
+            }
+          };
+          
+          testVideo.onerror = () => {
+            cleanup();
+            reject(new Error('Video validation failed'));
+          };
+          
+          testVideo.src = newUrl;
+          
+          // Timeout after 10 seconds
+          setTimeout(() => {
+            cleanup();
+            reject(new Error('Validation timeout'));
+          }, 10000);
+        });
+        
+        setMergedVideoUrl(newUrl);
+        toast.success('Τα βίντεο ενώθηκαν επιτυχώς!');
+        console.log('[triggerMerge] Merged video ready, size:', mergedBlob.size);
+      } else {
+        console.error('[triggerMerge] Merge returned empty or null blob');
+        toast.error('Αποτυχία ένωσης - χρήση ξεχωριστών clips');
+      }
+    } catch (error) {
+      console.error('[triggerMerge] Failed:', error);
+      toast.error('Αποτυχία ένωσης βίντεο');
     }
+    
     setIsMerging(false);
   };
 
