@@ -14,6 +14,7 @@ interface Course {
   duration_minutes: number | null;
   category: string | null;
   pdf_url?: string | null;
+  video_file_path?: string | null;
 }
 
 interface CourseShopCardProps {
@@ -50,14 +51,19 @@ export const CourseShopCard: React.FC<CourseShopCardProps> = ({
             alt={course.title}
             className="w-full h-full object-cover"
             onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const fallback = target.nextElementSibling as HTMLElement;
+              if (fallback) fallback.style.display = 'flex';
             }}
           />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Youtube className="w-12 h-12 text-muted-foreground" />
-          </div>
-        )}
+        ) : null}
+        <div 
+          className={`w-full h-full flex items-center justify-center ${course.thumbnail_url ? 'hidden' : ''}`}
+          style={{ display: course.thumbnail_url ? 'none' : 'flex' }}
+        >
+          <Youtube className="w-12 h-12 text-muted-foreground" />
+        </div>
         
         {/* Status Badge */}
         <div className="absolute top-2 right-2">
