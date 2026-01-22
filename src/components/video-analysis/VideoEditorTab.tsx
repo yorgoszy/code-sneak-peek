@@ -155,14 +155,18 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const activeVideo = videos[activeVideoIndex] || null;
   const videoUrl = activeVideo?.url || null;
   const videoFile = activeVideo?.file || null;
+
+  const isMergedPlayback = Boolean(mergedVideoUrl);
   
   // Calculate total duration of all videos combined
-  const totalDuration = videos.reduce((sum, v) => sum + v.duration, 0);
+  // In merged playback we use the merged video's duration (single timeline)
+  const totalDuration = isMergedPlayback ? duration : videos.reduce((sum, v) => sum + v.duration, 0);
   
   // Global current time (position in the combined timeline)
-  const globalCurrentTime = activeVideo 
-    ? activeVideo.startOffset + currentTime 
-    : currentTime;
+  // In merged playback currentTime is already global.
+  const globalCurrentTime = isMergedPlayback
+    ? currentTime
+    : (activeVideo ? activeVideo.startOffset + currentTime : currentTime);
   // Action flags state
   const [actionFlags, setActionFlags] = useState<ActionFlag[]>([]);
   const [activeFlag, setActiveFlag] = useState<{ id: string; type: ActionType } | null>(null);
@@ -191,6 +195,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getActiveVideoEl = () => videoElsRef.current[activeVideoIndex] ?? null;
+
+  const getPlaybackEl = () => (isMergedPlayback ? singleVideoRef.current : getActiveVideoEl());
 
   // Supported video extensions
   const supportedVideoExtensions = [
@@ -457,6 +463,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Playback controls
   const togglePlay = async () => {
+    // If we have a merged video, all playback should be handled by the single element
+    if (isMergedPlayback) {
+      await togglePlayMerged();
+      return;
+    }
+
     const el = getActiveVideoEl();
     if (!el) return;
     if (!videoUrl) {
@@ -528,7 +540,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Seek within current video (local time)
   const seek = (time: number) => {
-    const el = getActiveVideoEl();
+    const el = getPlaybackEl();
     if (el) {
       el.currentTime = Math.max(0, Math.min(time, duration));
       setCurrentTime(el.currentTime);
@@ -538,6 +550,15 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   // Seek to global time (finds correct video and seeks within it)
   const seekGlobal = (globalTime: number) => {
     const clampedTime = Math.max(0, Math.min(globalTime, totalDuration));
+
+    // If merged playback is available, treat it as a single track.
+    if (isMergedPlayback) {
+      const el = singleVideoRef.current;
+      if (!el) return;
+      el.currentTime = clampedTime;
+      setCurrentTime(el.currentTime);
+      return;
+    }
     
     // Find which video this time belongs to
     let targetVideoIndex = 0;
@@ -585,7 +606,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const frameForward = () => seek(currentTime + (1/30));
 
   const toggleMute = () => {
-    const el = getActiveVideoEl();
+    const el = getPlaybackEl();
     if (el) {
       el.muted = !isMuted;
       setIsMuted(!isMuted);
@@ -595,7 +616,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const changeVolume = (value: number[]) => {
     const vol = value[0];
     setVolume(vol);
-    const el = getActiveVideoEl();
+    const el = getPlaybackEl();
     if (el) {
       el.volume = vol;
     }
@@ -603,7 +624,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   const changePlaybackRate = (rate: number) => {
     setPlaybackRate(rate);
-    const el = getActiveVideoEl();
+    const el = getPlaybackEl();
     if (el) {
       el.playbackRate = rate;
     }
@@ -622,7 +643,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   const previewTrim = () => {
     seek(trimStart);
-    const el = getActiveVideoEl();
+    const el = getPlaybackEl();
     if (el) {
       el.play();
       setIsPlaying(true);
@@ -654,7 +675,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   const playClip = (clip: TrimClip) => {
     seek(clip.startTime);
-    const el = getActiveVideoEl();
+    const el = getPlaybackEl();
     if (el) {
       el.play();
       setIsPlaying(true);
@@ -829,6 +850,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
         el.pause();
         setIsPlaying(false);
       } else {
+        // Apply current settings (in case user changed volume/rate before merging)
+        el.muted = isMuted;
+        el.volume = volume;
+        el.playbackRate = playbackRate;
         await el.play();
         setIsPlaying(true);
       }
