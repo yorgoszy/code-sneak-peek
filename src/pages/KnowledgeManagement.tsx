@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Pencil, Trash2, Play, Euro, Clock, BookOpen, Youtube, FileText, Video } from 'lucide-react';
+import { Plus, Pencil, Trash2, Play, Euro, Clock, BookOpen, Youtube, FileText, Video, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadToSupabaseResumable } from '@/utils/supabaseResumableUpload';
 import { extractThumbnailFromVideoFile, uploadThumbnailToStorage } from '@/utils/videoThumbnailExtractor';
@@ -380,6 +380,69 @@ const KnowledgeManagement: React.FC = () => {
     }
   };
 
+  const handleRemoveVideo = async () => {
+    if (!selectedCourse || !formData.video_file_path) return;
+    
+    try {
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from('course-videos')
+        .remove([formData.video_file_path]);
+      
+      if (storageError) {
+        console.error('Storage delete error:', storageError);
+      }
+      
+      // Update database
+      const { error: dbError } = await supabase
+        .from('knowledge_courses')
+        .update({ video_file_path: null, thumbnail_url: null })
+        .eq('id', selectedCourse.id);
+      
+      if (dbError) throw dbError;
+      
+      setFormData({ ...formData, video_file_path: '' });
+      toast.success('Το βίντεο διαγράφηκε');
+      fetchCourses();
+    } catch (error) {
+      console.error('Error removing video:', error);
+      toast.error('Σφάλμα διαγραφής βίντεο');
+    }
+  };
+
+  const handleRemovePdf = async () => {
+    if (!selectedCourse || !formData.pdf_url) return;
+    
+    try {
+      // Extract filename from URL
+      const pdfFileName = formData.pdf_url.split('/').pop();
+      if (pdfFileName) {
+        const { error: storageError } = await supabase.storage
+          .from('course-pdfs')
+          .remove([pdfFileName]);
+        
+        if (storageError) {
+          console.error('PDF storage delete error:', storageError);
+        }
+      }
+      
+      // Update database
+      const { error: dbError } = await supabase
+        .from('knowledge_courses')
+        .update({ pdf_url: null })
+        .eq('id', selectedCourse.id);
+      
+      if (dbError) throw dbError;
+      
+      setFormData({ ...formData, pdf_url: '' });
+      toast.success('Το PDF διαγράφηκε');
+      fetchCourses();
+    } catch (error) {
+      console.error('Error removing PDF:', error);
+      toast.error('Σφάλμα διαγραφής PDF');
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-4 text-center text-muted-foreground">
@@ -542,9 +605,20 @@ const KnowledgeManagement: React.FC = () => {
                   }}
                 />
                 {formData.video_file_path && !formData.video_file && (
-                  <p className="text-xs text-muted-foreground">
-                    Υπάρχον βίντεο: {formData.video_file_path}
-                  </p>
+                  <div className="flex items-center justify-between bg-muted p-2">
+                    <p className="text-xs text-muted-foreground truncate flex-1">
+                      Υπάρχον βίντεο: {formData.video_file_path}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 rounded-none text-destructive hover:text-destructive"
+                      onClick={handleRemoveVideo}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
                 )}
                 {uploadingVideo && (
                   <div className="space-y-1">
@@ -618,9 +692,20 @@ const KnowledgeManagement: React.FC = () => {
                   }}
                 />
                 {formData.pdf_url && !formData.pdf_file && (
-                  <p className="text-xs text-muted-foreground">
-                    Υπάρχον PDF: {formData.pdf_url.split('/').pop()}
-                  </p>
+                  <div className="flex items-center justify-between bg-muted p-2">
+                    <p className="text-xs text-muted-foreground truncate flex-1">
+                      Υπάρχον PDF: {formData.pdf_url.split('/').pop()}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 rounded-none text-destructive hover:text-destructive"
+                      onClick={handleRemovePdf}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
