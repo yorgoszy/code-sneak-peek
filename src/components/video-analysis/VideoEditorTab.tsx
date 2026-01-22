@@ -63,6 +63,7 @@ interface VideoSlot {
   name: string;
   duration: number; // Duration in seconds
   startOffset: number; // Start time offset in the combined timeline
+  mimeType: string; // File mime type (helps browser pick decoder)
 }
 
 type ActionType = 'attack' | 'defense' | 'clinch';
@@ -244,7 +245,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
           url,
           name: file.name,
           duration: videoDuration,
-          startOffset: currentTotalDuration
+          startOffset: currentTotalDuration,
+          mimeType: file.type || 'video/mp4'
         };
 
         const isFirstVideo = videos.length === 0;
@@ -377,11 +379,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       } else {
         const el = videoRef.current;
 
-        // Ensure a fresh load attempt after switching clips
-        el.load();
-
-        // Wait until it can actually decode frames (important when switching back to 1st clip)
-        if (!isVideoReady || el.readyState < 2) {
+        // Wait until it can decode frames (important when switching back to 1st clip)
+        const waitReady = async () => {
+          if (isVideoReady && el.readyState >= 2) return;
           await new Promise<void>((resolve, reject) => {
             let timeoutId: number | undefined;
             const onReady = () => {
@@ -405,11 +405,20 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
             timeoutId = window.setTimeout(() => {
               cleanup();
               reject(new Error('Timeout waiting for video to be ready'));
-            }, 2500);
+            }, 3500);
           });
-        }
+        };
 
-        await el.play();
+        try {
+          await waitReady();
+          await el.play();
+        } catch (e) {
+          // One recovery attempt: force reload then retry
+          console.log('[VideoEditor] play failed, retrying with load()', e);
+          el.load();
+          await waitReady();
+          await el.play();
+        }
         setIsPlaying(true);
       }
     } catch (error) {
@@ -1229,7 +1238,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
             <video
               key={activeVideo?.id || 'video'}
               ref={videoRef}
-              src={videoUrl}
               className="w-full max-h-[60vh] object-contain"
               onLoadedMetadata={handleLoadedMetadata}
               onLoadedData={handleLoadedData}
@@ -1249,7 +1257,16 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
               }}
               onClick={togglePlay}
               playsInline
-            />
+              preload="metadata"
+            >
+              {videoUrl && (
+                <source
+                  key={videoUrl}
+                  src={videoUrl}
+                  type={activeVideo?.mimeType || activeVideo?.file?.type || 'video/mp4'}
+                />
+              )}
+            </video>
             
             {/* Play overlay */}
             {!isPlaying && (
