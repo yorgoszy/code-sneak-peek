@@ -125,14 +125,22 @@ const CoachShopContent = () => {
 
       if (error) throw error;
 
-      // Open Stripe checkout in a new tab
-      window.open(data.url, '_blank');
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+        toast.info('Το Stripe checkout άνοιξε σε νέα καρτέλα');
+      } else {
+        throw new Error('No checkout URL received');
+      }
     } catch (error) {
       console.error('Payment error:', error);
       toast.error('Σφάλμα δημιουργίας πληρωμής');
-    } finally {
-      setPurchasing(null);
     }
+    
+    // Always reset purchasing state after a short delay (to show feedback)
+    setTimeout(() => {
+      setPurchasing(null);
+    }, 1000);
   };
   
   if (!coachId) return null;
