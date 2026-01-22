@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSprintTiming } from '@/hooks/useSprintTiming';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
-import { MapPin, Camera, AlertCircle } from 'lucide-react';
+import { MapPin, Camera, AlertCircle, ZoomIn, ZoomOut } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -20,6 +21,7 @@ export const SprintTimingDistance = () => {
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const [cameraZoom, setCameraZoom] = useState(1);
   const { session, currentResult, joinSession, stopTiming } = useSprintTiming(sessionCode);
 
   // Track presence as Distance device with distances info
@@ -253,13 +255,32 @@ export const SprintTimingDistance = () => {
             <video
               ref={videoRef}
               className="w-full"
-              style={{ display: stream ? 'block' : 'none' }}
+              style={{ display: stream ? 'block' : 'none', transform: `scale(${cameraZoom})` }}
               autoPlay
               playsInline
               muted
             />
             {isActive && stream && (
               <div className="absolute inset-0 border-4 border-[#00ffba] pointer-events-none animate-pulse" />
+            )}
+            
+            {/* Zoom control overlay */}
+            {isReady && stream && (
+              <div className="absolute bottom-2 left-2 right-2 flex justify-center">
+                <div className="flex items-center gap-2 px-3 py-2 bg-black/60 rounded-none">
+                  <ZoomOut className="w-4 h-4 text-white" />
+                  <Slider
+                    value={[cameraZoom]}
+                    onValueChange={(values) => setCameraZoom(values[0])}
+                    min={1}
+                    max={3}
+                    step={0.1}
+                    className="w-24 sm:w-32"
+                  />
+                  <ZoomIn className="w-4 h-4 text-white" />
+                  <span className="text-xs text-white min-w-[2rem]">{cameraZoom.toFixed(1)}x</span>
+                </div>
+              </div>
             )}
           </div>
 
