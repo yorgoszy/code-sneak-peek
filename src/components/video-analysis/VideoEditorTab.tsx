@@ -131,6 +131,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
@@ -321,6 +322,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     }
   };
 
+  const handleLoadedData = () => {
+    setIsVideoReady(true);
+  };
+
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       setCurrentTime(videoRef.current.currentTime);
@@ -370,29 +375,41 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
         videoRef.current.pause();
         setIsPlaying(false);
       } else {
-        // Play can fail if the source just changed; wait until it's playable.
-        if (videoRef.current.readyState < 2) {
-          await new Promise<void>((resolve, reject) => {
-            const el = videoRef.current;
-            if (!el) return reject(new Error('Video element not available'));
+        const el = videoRef.current;
 
-            const onCanPlay = () => {
-              el.removeEventListener('canplay', onCanPlay);
-              el.removeEventListener('error', onError);
+        // Ensure a fresh load attempt after switching clips
+        el.load();
+
+        // Wait until it can actually decode frames (important when switching back to 1st clip)
+        if (!isVideoReady || el.readyState < 2) {
+          await new Promise<void>((resolve, reject) => {
+            let timeoutId: number | undefined;
+            const onReady = () => {
+              cleanup();
               resolve();
             };
             const onError = () => {
-              el.removeEventListener('canplay', onCanPlay);
-              el.removeEventListener('error', onError);
+              cleanup();
               reject(new Error('Video source error'));
             };
+            const cleanup = () => {
+              if (timeoutId) window.clearTimeout(timeoutId);
+              el.removeEventListener('loadeddata', onReady);
+              el.removeEventListener('canplay', onReady);
+              el.removeEventListener('error', onError);
+            };
 
-            el.addEventListener('canplay', onCanPlay, { once: true });
+            el.addEventListener('loadeddata', onReady, { once: true });
+            el.addEventListener('canplay', onReady, { once: true });
             el.addEventListener('error', onError, { once: true });
+            timeoutId = window.setTimeout(() => {
+              cleanup();
+              reject(new Error('Timeout waiting for video to be ready'));
+            }, 2500);
           });
         }
 
-        await videoRef.current.play();
+        await el.play();
         setIsPlaying(true);
       }
     } catch (error) {
@@ -402,51 +419,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     }
   };
 
-  // Ensure the video element fully reloads when switching clips (fixes "no supported sources" on 2nd clip)
+  // When switching clips, reset local playback state and wait for the new source to become ready
   useEffect(() => {
-    if (!videoRef.current) return;
-    if (!videoUrl) return;
-
-    const el = videoRef.current;
-    console.log('[VideoEditor] source switch', {
-      activeVideoIndex,
-      videoId: activeVideo?.id,
-      url: videoUrl,
-      prevReadyState: el.readyState,
-      prevNetworkState: el.networkState,
-    });
-
-    // Stop any previous playback
-    try {
-      el.pause();
-    } catch {
-      // ignore
-    }
-
-    // HARD reset: clear src to drop previous decoder state, then reload
-    try {
-      el.removeAttribute('src');
-      el.load();
-    } catch {
-      // ignore
-    }
-
     setIsPlaying(false);
+    setIsVideoReady(false);
     setCurrentTime(0);
-
-    // Re-apply src after the reset tick (React will also set src, this helps stubborn browsers)
-    setTimeout(() => {
-      const el2 = videoRef.current;
-      if (!el2) return;
-      el2.src = videoUrl;
-      el2.load();
-      console.log('[VideoEditor] after reset+load', {
-        readyState: el2.readyState,
-        networkState: el2.networkState,
-        currentSrc: el2.currentSrc,
-      });
-    }, 0);
-  }, [videoUrl]);
+    // keep duration/trimEnd driven by onLoadedMetadata
+  }, [activeVideo?.id]);
 
   // Seek within current video (local time)
   const seek = (time: number) => {
@@ -1253,6 +1232,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
               src={videoUrl}
               className="w-full max-h-[60vh] object-contain"
               onLoadedMetadata={handleLoadedMetadata}
+              onLoadedData={handleLoadedData}
               onTimeUpdate={handleTimeUpdate}
               onEnded={handleEnded}
               onError={() => {
