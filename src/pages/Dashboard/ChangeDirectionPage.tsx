@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ArrowRight, Camera, RotateCcw, Smartphone, Wifi, Menu, Compass } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, RotateCcw, Smartphone, Wifi, Menu, Compass, Maximize, SwitchCamera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { useToast } from '@/hooks/use-toast';
@@ -46,10 +46,12 @@ const ChangeDirectionPage = () => {
   
   // Camera/Motion detection state
   const videoRef = useRef<HTMLVideoElement>(null);
+  const displayRef = useRef<HTMLDivElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [motionDetector, setMotionDetector] = useState<MotionDetector | null>(null);
   const [isMotionActive, setIsMotionActive] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const motionDetectorRef = useRef<MotionDetector | null>(null);
 
   // Broadcast channel refs
@@ -171,15 +173,23 @@ const ChangeDirectionPage = () => {
   };
 
   // Start camera
-  const handleStartCamera = async () => {
+  const handleStartCamera = async (mode: 'user' | 'environment' = facingMode) => {
     try {
       if (!videoRef.current) {
         console.error('Video element not found');
         return;
       }
 
-      console.log('🎥 Starting camera...');
-      const mediaStream = await initializeCamera(videoRef.current, 'environment');
+      // Stop existing stream if switching cameras
+      if (stream) {
+        stopCamera(stream);
+        setStream(null);
+        setMotionDetector(null);
+        setCameraReady(false);
+      }
+
+      console.log('🎥 Starting camera with mode:', mode);
+      const mediaStream = await initializeCamera(videoRef.current, mode);
       setStream(mediaStream);
 
       const waitForVideo = () => {
@@ -207,6 +217,13 @@ const ChangeDirectionPage = () => {
         variant: "destructive",
       });
     }
+  };
+
+  // Switch camera facing mode
+  const handleSwitchCamera = () => {
+    const newMode = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(newMode);
+    handleStartCamera(newMode);
   };
 
   // Setup broadcast channel
@@ -276,7 +293,7 @@ const ChangeDirectionPage = () => {
     }
   };
 
-  // Start motion detection
+  // Start motion detection (persistent mode)
   const handleStartMotion = () => {
     if (!cameraReady || !motionDetector) {
       toast({
@@ -291,8 +308,6 @@ const ChangeDirectionPage = () => {
     
     motionDetector.start(() => {
       console.log('🏁 Motion detected!');
-      motionDetector.stop();
-      setIsMotionActive(false);
       
       // Generate random direction (left, right, or center)
       const directions: ('left' | 'right' | 'center')[] = ['left', 'right', 'center'];
@@ -307,10 +322,13 @@ const ChangeDirectionPage = () => {
         payload: { direction, timestamp: Date.now() }
       });
       
-      // Auto-reset after 2 seconds
+      // Auto-reset direction display after 2 seconds, but keep detection active
       setTimeout(() => {
         setCurrentDirection(null);
       }, 2000);
+      
+      // NOTE: Motion detection stays active (no motionDetector.stop() call)
+      // User must explicitly press deactivate button
     });
   };
 
@@ -518,25 +536,27 @@ const ChangeDirectionPage = () => {
         </Badge>
       </div>
 
+      {/* Camera switch button */}
+      <Button
+        onClick={handleSwitchCamera}
+        variant="outline"
+        className="w-full rounded-none"
+        disabled={!cameraReady}
+      >
+        <SwitchCamera className="w-4 h-4 mr-2" />
+        {facingMode === 'environment' ? 'Μπροστινή Κάμερα' : 'Πίσω Κάμερα'}
+      </Button>
+
       {/* Controls */}
       <div className="flex gap-2">
-        {!isMotionActive ? (
-          <Button
-            onClick={handleStartMotion}
-            className="flex-1 rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-            disabled={!cameraReady}
-          >
-            <Camera className="w-4 h-4 mr-2" />
-            {t('changeDirection.activate')}
-          </Button>
-        ) : (
-          <Button
-            onClick={handleStopMotion}
-            className="flex-1 rounded-none bg-red-500 hover:bg-red-600 text-white"
-          >
-            {t('changeDirection.stop')}
-          </Button>
-        )}
+        <Button
+          onClick={isMotionActive ? handleStopMotion : handleStartMotion}
+          className={`flex-1 rounded-none ${isMotionActive ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'}`}
+          disabled={!cameraReady}
+        >
+          <Camera className="w-4 h-4 mr-2" />
+          {isMotionActive ? 'Απενεργοποίηση' : 'Ενεργοποίηση'}
+        </Button>
         
         <Button
           onClick={handleReset}
@@ -557,17 +577,40 @@ const ChangeDirectionPage = () => {
     </div>
   );
 
+  // Fullscreen toggle for display
+  const handleFullscreen = () => {
+    if (displayRef.current) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        displayRef.current.requestFullscreen();
+      }
+    }
+  };
+
   // Display device view
   const renderDisplayView = () => (
     <div className="space-y-4">
-      <div className="text-center">
-        <Badge className="rounded-none bg-[#00ffba] text-black mb-2">
+      <div className="flex items-center justify-between">
+        <Badge className="rounded-none bg-[#00ffba] text-black">
           {t('changeDirection.displayMode')}
         </Badge>
+        <Button
+          onClick={handleFullscreen}
+          variant="outline"
+          size="sm"
+          className="rounded-none"
+        >
+          <Maximize className="w-4 h-4 mr-1" />
+          Fullscreen
+        </Button>
       </div>
 
       {/* Direction arrow display */}
-      <div className="bg-black aspect-square rounded-none flex items-center justify-center min-h-[300px]">
+      <div 
+        ref={displayRef}
+        className="bg-black aspect-square rounded-none flex items-center justify-center min-h-[300px]"
+      >
         {currentDirection ? (
           currentDirection === 'left' ? (
             <svg viewBox="0 0 100 60" className="w-80 h-48">
