@@ -570,30 +570,7 @@ const ChangeDirectionPage = () => {
         )}
       </div>
 
-      {/* Direction display */}
-      {currentDirection && (
-        <div className="flex justify-center py-4">
-          {currentDirection === 'left' ? (
-            <svg viewBox="0 0 100 60" className="w-32 h-20">
-              <polygon 
-                points="0,30 50,0 50,20 100,20 100,40 50,40 50,60" 
-                fill="#3B82F6"
-              />
-            </svg>
-          ) : currentDirection === 'right' ? (
-            <svg viewBox="0 0 100 60" className="w-32 h-20">
-              <polygon 
-                points="100,30 50,0 50,20 0,20 0,40 50,40 50,60" 
-                fill="#FACC15"
-              />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 60 60" className="w-20 h-20">
-              <rect x="5" y="5" width="50" height="50" fill="#EF4444" />
-            </svg>
-          )}
-        </div>
-      )}
+      {/* Direction display removed - only shown on display device */}
 
       {/* Stats */}
       <div className="text-center">
