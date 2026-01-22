@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ArrowRight, Camera, RotateCcw, Smartphone, Wifi, Menu, Compass, Maximize, SwitchCamera, Minimize2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, RotateCcw, Smartphone, Wifi, Menu, Compass, Maximize, SwitchCamera, Minimize2, ZoomIn, ZoomOut } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { MotionDetector, initializeCamera, stopCamera } from '@/utils/motionDetection';
 import { useToast } from '@/hooks/use-toast';
@@ -52,6 +53,7 @@ const ChangeDirectionPage = () => {
   const [isMotionActive, setIsMotionActive] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
+  const [cameraZoom, setCameraZoom] = useState(1);
   const motionDetectorRef = useRef<MotionDetector | null>(null);
 
   // Fullscreen UI controls (show exit button for a few seconds on touch)
@@ -507,6 +509,7 @@ const ChangeDirectionPage = () => {
           playsInline
           muted
           className="w-full h-full object-cover"
+          style={{ transform: `scale(${cameraZoom})` }}
         />
         
         {isMotionActive && (
@@ -518,6 +521,25 @@ const ChangeDirectionPage = () => {
             <div className="text-center text-white">
               <Camera className="w-8 h-8 mx-auto mb-2 animate-pulse" />
               <p className="text-sm">{t('changeDirection.initCamera')}</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Zoom control overlay */}
+        {cameraReady && (
+          <div className="absolute bottom-2 left-2 right-2 flex justify-center">
+            <div className="flex items-center gap-2 px-3 py-2 bg-black/60 rounded-none">
+              <ZoomOut className="w-4 h-4 text-white" />
+              <Slider
+                value={[cameraZoom]}
+                onValueChange={(values) => setCameraZoom(values[0])}
+                min={1}
+                max={3}
+                step={0.1}
+                className="w-24 sm:w-32"
+              />
+              <ZoomIn className="w-4 h-4 text-white" />
+              <span className="text-xs text-white min-w-[2rem]">{cameraZoom.toFixed(1)}x</span>
             </div>
           </div>
         )}
