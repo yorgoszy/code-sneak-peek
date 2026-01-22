@@ -216,6 +216,14 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
     try {
       setSaving(true);
 
+      // Update coach name in app_users
+      const { error: nameError } = await supabase
+        .from('app_users')
+        .update({ name: coachData.name })
+        .eq('id', coachId);
+
+      if (nameError) throw nameError;
+
       let logoUrl = profile.logo_url;
       if (logoFile) {
         logoUrl = await uploadLogo() || '';
@@ -350,8 +358,15 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 disabled={avatarUploading}
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">{coachData.name}</p>
+            <div className="flex-1 min-w-0 space-y-1">
+              <div>
+                <Label className="text-[10px] text-gray-500">Όνομα</Label>
+                <Input
+                  value={coachData.name}
+                  onChange={(e) => setCoachData({ ...coachData, name: e.target.value })}
+                  className="rounded-none h-7 text-xs"
+                />
+              </div>
               <p className="text-xs text-gray-500 truncate">{coachData.email}</p>
             </div>
             <Button

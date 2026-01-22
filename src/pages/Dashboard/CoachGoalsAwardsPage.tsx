@@ -18,7 +18,7 @@ const CoachGoalsAwardsContent = () => {
 
 const CoachGoalsAwardsPage = () => {
   return (
-    <CoachLayout title="Στόχοι & Βραβεία" showHeader={false} ContentComponent={CoachGoalsAwardsContent} />
+    <CoachLayout title="Στόχοι & Βραβεία" ContentComponent={CoachGoalsAwardsContent} />
   );
 };
 
