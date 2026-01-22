@@ -299,6 +299,9 @@ const ChangeDirectionPage = () => {
     }
   };
 
+  // Ref to track if we're still in active mode (for closures)
+  const isMotionActiveRef = useRef(false);
+
   // Start motion detection (persistent mode with 5s cooldown)
   const handleStartMotion = () => {
     if (!cameraReady || !motionDetector) {
@@ -313,10 +316,17 @@ const ChangeDirectionPage = () => {
     // Guard against double-starts (prevents multiple RAF loops)
     if (isMotionActive) return;
 
+    // Make detection LESS sensitive - require more significant motion
+    motionDetector.setThreshold(80); // Higher = less sensitive (was 40)
+    motionDetector.setMinMotionPixels(10000); // More pixels required (was 3000)
+
     setIsMotionActive(true);
+    isMotionActiveRef.current = true;
 
     const startDetection = () => {
-      if (!motionDetectorRef.current) return;
+      if (!motionDetectorRef.current || !isMotionActiveRef.current) return;
+      
+      console.log('🎯 Motion detection armed and waiting...');
       
       motionDetectorRef.current.start(() => {
         console.log('🏁 Motion detected!');
@@ -342,10 +352,9 @@ const ChangeDirectionPage = () => {
           setCurrentDirection(null);
         }, 2000);
         
-        // Re-arm detection after 5 seconds cooldown
+        // Re-arm detection after 5 seconds cooldown - ONLY if still active
         setTimeout(() => {
-          // Only restart if still in active mode
-          if (motionDetectorRef.current) {
+          if (isMotionActiveRef.current && motionDetectorRef.current) {
             console.log('🔄 Re-arming motion detection after 5s cooldown');
             startDetection();
           }
@@ -362,6 +371,7 @@ const ChangeDirectionPage = () => {
       motionDetector.stop();
     }
     setIsMotionActive(false);
+    isMotionActiveRef.current = false; // Critical: stop re-arming
   };
 
   const showFsControlsTemporarily = () => {
