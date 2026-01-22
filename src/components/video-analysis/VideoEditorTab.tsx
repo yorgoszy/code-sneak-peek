@@ -348,28 +348,36 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       const nextIndex = activeVideoIndex + 1;
       setActiveVideoIndex(nextIndex);
       setCurrentTime(0);
-      setShouldAutoPlay(true); // Trigger auto-play for next video
+      // Do NOT auto-play: browsers may block non-user-gesture play (power saving),
+      // leaving the element in a stuck state.
+      setIsPlaying(false);
+      setShouldAutoPlay(false);
     } else {
       // No more videos, stop playing
       setIsPlaying(false);
     }
   };
 
-  // Auto-play when switching videos if was playing
+  // When the active video source changes, force the element to pick up the new <source>
   useEffect(() => {
-    if (shouldAutoPlay && videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play()
-        .then(() => {
-          setIsPlaying(true);
-          setShouldAutoPlay(false);
-        })
-        .catch((err) => {
-          console.error('Auto-play failed:', err);
-          setShouldAutoPlay(false);
-        });
-    }
-  }, [shouldAutoPlay, activeVideoIndex]);
+    const el = videoRef.current;
+    if (!el) return;
+    if (!videoUrl) return;
+
+    setIsVideoReady(false);
+    setIsPlaying(false);
+
+    // Ensure the <source> is in the DOM before calling load()
+    requestAnimationFrame(() => {
+      const el2 = videoRef.current;
+      if (!el2) return;
+      try {
+        el2.load();
+      } catch {
+        // ignore
+      }
+    });
+  }, [videoUrl]);
 
   // Playback controls
   const togglePlay = async () => {
