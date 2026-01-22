@@ -181,8 +181,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const [draggingFlag, setDraggingFlag] = useState<{ id: string; edge: 'start' | 'end' } | null>(null);
   
   // Refs
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoElsRef = useRef<(HTMLVideoElement | null)[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const getActiveVideoEl = () => videoElsRef.current[activeVideoIndex] ?? null;
 
   // Supported video extensions
   const supportedVideoExtensions = [
@@ -324,8 +326,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Video event handlers
   const handleLoadedMetadata = () => {
-    if (videoRef.current) {
-      const dur = videoRef.current.duration;
+    const el = getActiveVideoEl();
+    if (el) {
+      const dur = el.duration;
       setDuration(dur);
       setTrimEnd(dur);
     }
@@ -336,8 +339,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   };
 
   const handleTimeUpdate = () => {
-    if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
+    const el = getActiveVideoEl();
+    if (el) {
+      setCurrentTime(el.currentTime);
     }
   };
 
@@ -358,30 +362,30 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     }
   };
 
-  // When the active video source changes, force the element to pick up the new <source>
+  // When switching active clip, pause others and ensure the active element is loaded
   useEffect(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    if (!videoUrl) return;
-
-    setIsVideoReady(false);
-    setIsPlaying(false);
-
-    // Ensure the <source> is in the DOM before calling load()
-    requestAnimationFrame(() => {
-      const el2 = videoRef.current;
-      if (!el2) return;
+    videoElsRef.current.forEach((el, idx) => {
+      if (!el) return;
       try {
-        el2.load();
+        if (idx !== activeVideoIndex) el.pause();
       } catch {
         // ignore
       }
     });
-  }, [videoUrl]);
+
+    const activeEl = getActiveVideoEl();
+    if (!activeEl) return;
+    try {
+      activeEl.load();
+    } catch {
+      // ignore
+    }
+  }, [activeVideoIndex]);
 
   // Playback controls
   const togglePlay = async () => {
-    if (!videoRef.current) return;
+    const el = getActiveVideoEl();
+    if (!el) return;
     if (!videoUrl) {
       toast.error('Δεν υπάρχει έγκυρο βίντεο για αναπαραγωγή.');
       return;
@@ -389,11 +393,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     
     try {
       if (isPlaying) {
-        videoRef.current.pause();
+        el.pause();
         setIsPlaying(false);
       } else {
-        const el = videoRef.current;
-
         // Wait until it can decode frames (important when switching back to 1st clip)
         const waitReady = async () => {
           if (isVideoReady && el.readyState >= 2) return;
@@ -453,9 +455,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Seek within current video (local time)
   const seek = (time: number) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = Math.max(0, Math.min(time, duration));
-      setCurrentTime(videoRef.current.currentTime);
+    const el = getActiveVideoEl();
+    if (el) {
+      el.currentTime = Math.max(0, Math.min(time, duration));
+      setCurrentTime(el.currentTime);
     }
   };
 
@@ -486,18 +489,19 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     // Switch video if needed
     if (targetVideoIndex !== activeVideoIndex) {
       setActiveVideoIndex(targetVideoIndex);
-      // Set a flag to seek after video loads
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.currentTime = Math.max(0, Math.min(localTime, targetVideo.duration));
-          setCurrentTime(videoRef.current.currentTime);
-        }
-      }, 100);
+      // Seek after the target element exists
+      requestAnimationFrame(() => {
+        const el = videoElsRef.current[targetVideoIndex];
+        if (!el) return;
+        el.currentTime = Math.max(0, Math.min(localTime, targetVideo.duration));
+        setCurrentTime(el.currentTime);
+      });
     } else {
       // Same video, just seek
-      if (videoRef.current) {
-        videoRef.current.currentTime = Math.max(0, Math.min(localTime, targetVideo.duration));
-        setCurrentTime(videoRef.current.currentTime);
+      const el = getActiveVideoEl();
+      if (el) {
+        el.currentTime = Math.max(0, Math.min(localTime, targetVideo.duration));
+        setCurrentTime(el.currentTime);
       }
     }
   };
@@ -508,8 +512,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const frameForward = () => seek(currentTime + (1/30));
 
   const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
+    const el = getActiveVideoEl();
+    if (el) {
+      el.muted = !isMuted;
       setIsMuted(!isMuted);
     }
   };
@@ -517,15 +522,17 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const changeVolume = (value: number[]) => {
     const vol = value[0];
     setVolume(vol);
-    if (videoRef.current) {
-      videoRef.current.volume = vol;
+    const el = getActiveVideoEl();
+    if (el) {
+      el.volume = vol;
     }
   };
 
   const changePlaybackRate = (rate: number) => {
     setPlaybackRate(rate);
-    if (videoRef.current) {
-      videoRef.current.playbackRate = rate;
+    const el = getActiveVideoEl();
+    if (el) {
+      el.playbackRate = rate;
     }
   };
 
@@ -542,8 +549,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   const previewTrim = () => {
     seek(trimStart);
-    if (videoRef.current) {
-      videoRef.current.play();
+    const el = getActiveVideoEl();
+    if (el) {
+      el.play();
       setIsPlaying(true);
     }
   };
@@ -573,8 +581,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   const playClip = (clip: TrimClip) => {
     seek(clip.startTime);
-    if (videoRef.current) {
-      videoRef.current.play();
+    const el = getActiveVideoEl();
+    if (el) {
+      el.play();
       setIsPlaying(true);
     }
   };
@@ -1250,38 +1259,44 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       <Card className="rounded-none">
         <CardContent className="p-4">
           <div className="relative bg-black rounded-none overflow-hidden">
-            <video
-              key={activeVideo?.id || 'video'}
-              ref={videoRef}
-              className="w-full max-h-[60vh] object-contain"
-              onLoadedMetadata={handleLoadedMetadata}
-              onLoadedData={handleLoadedData}
-              onTimeUpdate={handleTimeUpdate}
-              onEnded={handleEnded}
-              onError={() => {
-                const el = videoRef.current;
-                console.log('[VideoEditor] video element error', {
-                  activeVideoIndex,
-                  videoId: activeVideo?.id,
-                  url: videoUrl,
-                  readyState: el?.readyState,
-                  networkState: el?.networkState,
-                  currentSrc: el?.currentSrc,
-                  error: el?.error?.code,
-                });
-              }}
-              onClick={togglePlay}
-              playsInline
-              preload="metadata"
-            >
-              {videoUrl && (
-                <source
-                  key={videoUrl}
-                  src={videoUrl}
-                  type={activeVideo?.mimeType || activeVideo?.file?.type || 'video/mp4'}
-                />
-              )}
-            </video>
+            {videos.map((v, idx) => (
+              <video
+                key={v.id}
+                ref={(el) => {
+                  videoElsRef.current[idx] = el;
+                }}
+                src={v.url}
+                className={`w-full max-h-[60vh] object-contain ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
+                onLoadedMetadata={() => {
+                  if (idx === activeVideoIndex) handleLoadedMetadata();
+                }}
+                onLoadedData={() => {
+                  if (idx === activeVideoIndex) handleLoadedData();
+                }}
+                onTimeUpdate={() => {
+                  if (idx === activeVideoIndex) handleTimeUpdate();
+                }}
+                onEnded={() => {
+                  if (idx === activeVideoIndex) handleEnded();
+                }}
+                onError={() => {
+                  const el = videoElsRef.current[idx];
+                  console.log('[VideoEditor] video element error', {
+                    activeVideoIndex,
+                    idx,
+                    videoId: v.id,
+                    url: v.url,
+                    readyState: el?.readyState,
+                    networkState: el?.networkState,
+                    currentSrc: el?.currentSrc,
+                    error: el?.error?.code,
+                  });
+                }}
+                onClick={togglePlay}
+                playsInline
+                preload="metadata"
+              />
+            ))}
             
             {/* Play overlay */}
             {!isPlaying && (
