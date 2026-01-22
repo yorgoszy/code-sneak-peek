@@ -103,37 +103,62 @@ serve(async (req) => {
     let authUserId = appUser.auth_user_id;
     
     if (!authUserId) {
-      console.log("🔄 Creating auth user for existing app_user...");
-      // Create auth user for this app_user
-      const { data: authUser, error: createError } = await supabase.auth.admin.createUser({
-        email: normalizedEmail,
-        email_confirm: true, // Skip email confirmation
-        user_metadata: {
-          app_user_id: appUser.id
-        }
-      });
+      console.log("🔄 No auth_user_id in app_users, checking if auth user exists...");
       
-      if (createError) {
-        console.log("❌ Error creating auth user:", createError);
-        // Return success for security reasons
-        return new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      // First, check if user already exists in auth.users by email
+      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers();
+      
+      if (!listError && existingUsers?.users) {
+        const existingAuthUser = existingUsers.users.find(
+          u => u.email?.toLowerCase() === normalizedEmail
+        );
+        
+        if (existingAuthUser) {
+          console.log("✅ Found existing auth user, linking to app_user...");
+          authUserId = existingAuthUser.id;
+          
+          // Update app_user with auth_user_id
+          await supabase
+            .from('app_users')
+            .update({ auth_user_id: authUserId })
+            .eq('id', appUser.id);
+          console.log("✅ Linked app_user with existing auth_user_id");
+        }
       }
       
-      authUserId = authUser.user?.id;
-      
-      // Update app_user with auth_user_id
-      if (authUserId) {
-        await supabase
-          .from('app_users')
-          .update({ auth_user_id: authUserId })
-          .eq('id', appUser.id);
-        console.log("✅ Updated app_user with auth_user_id");
+      // If still no auth user, create one
+      if (!authUserId) {
+        console.log("🔄 Creating new auth user for existing app_user...");
+        const { data: authUser, error: createError } = await supabase.auth.admin.createUser({
+          email: normalizedEmail,
+          email_confirm: true,
+          user_metadata: {
+            app_user_id: appUser.id
+          }
+        });
+        
+        if (createError) {
+          console.log("❌ Error creating auth user:", createError);
+          // Return success for security reasons
+          return new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        
+        authUserId = authUser.user?.id;
+        
+        // Update app_user with auth_user_id
+        if (authUserId) {
+          await supabase
+            .from('app_users')
+            .update({ auth_user_id: authUserId })
+            .eq('id', appUser.id);
+          console.log("✅ Updated app_user with new auth_user_id");
+        }
       }
     } else {
-      console.log("✅ User already has auth account");
+      console.log("✅ User already has auth account:", authUserId);
       
       // Sync email in auth.users with app_users if they differ
       console.log("🔄 Syncing email in auth.users with app_users...");
