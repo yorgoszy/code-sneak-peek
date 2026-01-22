@@ -123,16 +123,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     loadFFmpeg,
     exportTrimmedVideo,
     exportMergedClips,
-    mergeVideoFiles,
     downloadBlob
   } = useVideoExport();
-
-  // Merged video state (single blob for reliable playback)
-  const [mergedVideoUrl, setMergedVideoUrl] = useState<string | null>(null);
-  const [isMerging, setIsMerging] = useState(false);
-  const [mergeStage, setMergeStage] = useState<string>('');
-  const singleVideoRef = useRef<HTMLVideoElement>(null);
-  const mergeInFlightRef = useRef(false);
 
   // Video state - Multi-video support (up to 3 videos)
   const [videos, setVideos] = useState<VideoSlot[]>([]);
@@ -157,18 +149,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const activeVideo = videos[activeVideoIndex] || null;
   const videoUrl = activeVideo?.url || null;
   const videoFile = activeVideo?.file || null;
-
-  const isMergedPlayback = Boolean(mergedVideoUrl);
   
   // Calculate total duration of all videos combined
-  // In merged playback we use the merged video's duration (single timeline)
-  const totalDuration = isMergedPlayback ? duration : videos.reduce((sum, v) => sum + v.duration, 0);
+  const totalDuration = videos.reduce((sum, v) => sum + v.duration, 0);
   
   // Global current time (position in the combined timeline)
-  // In merged playback currentTime is already global.
-  const globalCurrentTime = isMergedPlayback
-    ? currentTime
-    : (activeVideo ? activeVideo.startOffset + currentTime : currentTime);
+  const globalCurrentTime = activeVideo 
+    ? activeVideo.startOffset + currentTime 
+    : currentTime;
   // Action flags state
   const [actionFlags, setActionFlags] = useState<ActionFlag[]>([]);
   const [activeFlag, setActiveFlag] = useState<{ id: string; type: ActionType } | null>(null);
@@ -197,8 +185,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getActiveVideoEl = () => videoElsRef.current[activeVideoIndex] ?? null;
-
-  const getPlaybackEl = () => (isMergedPlayback ? singleVideoRef.current : getActiveVideoEl());
 
   // Supported video extensions
   const supportedVideoExtensions = [
@@ -290,100 +276,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
         }
 
         toast.success(`Βίντεο ${videos.length + 1} φορτώθηκε επιτυχώς`);
-
-        // Trigger merge when we have 2+ videos
-        if (!isFirstVideo) {
-          triggerMerge([...videos, newVideo].map(v => v.file));
-        }
       };
     }
-  };
-
-  // Merge all uploaded video files into one blob for reliable playback
-  const triggerMerge = async (files: File[]) => {
-    if (files.length < 2) return;
-    if (mergeInFlightRef.current) {
-      toast.info('Η ένωση βίντεο είναι ήδη σε εξέλιξη...');
-      return;
-    }
-    mergeInFlightRef.current = true;
-    setIsMerging(true);
-    setMergeStage('Φόρτωση FFmpeg...');
-    toast.info('Ένωση βίντεο σε εξέλιξη... (μπορεί να πάρει 1-2 λεπτά)');
-
-    try {
-      // Ensure FFmpeg is loaded (otherwise progress will stay at 0% with no feedback)
-      const loaded = await loadFFmpeg();
-      if (!loaded) {
-        throw new Error('FFmpeg load failed');
-      }
-
-      setMergeStage('Επεξεργασία / μετατροπή βίντεο...');
-
-      // Safety timeout to avoid getting stuck indefinitely
-      const timeoutMs = 6 * 60 * 1000; // 6 minutes
-      const mergePromise = mergeVideoFiles(files);
-      const mergedBlob = await Promise.race([
-        mergePromise,
-        new Promise<null>((_, reject) => {
-          window.setTimeout(() => reject(new Error('Merge timeout')), timeoutMs);
-        })
-      ]);
-
-      if (mergedBlob && mergedBlob.size > 0) {
-        // Revoke old merged URL if exists
-        if (mergedVideoUrl) URL.revokeObjectURL(mergedVideoUrl);
-        const newUrl = URL.createObjectURL(mergedBlob);
-        
-        // Validate the blob can actually be played
-        const testVideo = document.createElement('video');
-        testVideo.preload = 'metadata';
-        
-        await new Promise<void>((resolve, reject) => {
-          const cleanup = () => {
-            testVideo.removeAttribute('src');
-            testVideo.load();
-          };
-          
-          testVideo.onloadedmetadata = () => {
-            if (testVideo.duration > 0) {
-              cleanup();
-              resolve();
-            } else {
-              cleanup();
-              reject(new Error('Invalid duration'));
-            }
-          };
-          
-          testVideo.onerror = () => {
-            cleanup();
-            reject(new Error('Video validation failed'));
-          };
-          
-          testVideo.src = newUrl;
-          
-          // Timeout after 10 seconds
-          setTimeout(() => {
-            cleanup();
-            reject(new Error('Validation timeout'));
-          }, 10000);
-        });
-        
-        setMergedVideoUrl(newUrl);
-        toast.success('Τα βίντεο ενώθηκαν επιτυχώς!');
-        console.log('[triggerMerge] Merged video ready, size:', mergedBlob.size);
-      } else {
-        console.error('[triggerMerge] Merge returned empty or null blob');
-        toast.error('Αποτυχία ένωσης - χρήση ξεχωριστών clips');
-      }
-    } catch (error) {
-      console.error('[triggerMerge] Failed:', error);
-      toast.error('Αποτυχία ένωσης βίντεο (πιθανό format/μέγεθος). Δοκίμασε MP4 H.264.');
-    }
-    
-    setIsMerging(false);
-    setMergeStage('');
-    mergeInFlightRef.current = false;
   };
 
   // Recalculate video offsets when videos change
@@ -490,12 +384,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Playback controls
   const togglePlay = async () => {
-    // If we have a merged video, all playback should be handled by the single element
-    if (isMergedPlayback) {
-      await togglePlayMerged();
-      return;
-    }
-
     const el = getActiveVideoEl();
     if (!el) return;
     if (!videoUrl) {
@@ -567,7 +455,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Seek within current video (local time)
   const seek = (time: number) => {
-    const el = getPlaybackEl();
+    const el = getActiveVideoEl();
     if (el) {
       el.currentTime = Math.max(0, Math.min(time, duration));
       setCurrentTime(el.currentTime);
@@ -577,15 +465,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   // Seek to global time (finds correct video and seeks within it)
   const seekGlobal = (globalTime: number) => {
     const clampedTime = Math.max(0, Math.min(globalTime, totalDuration));
-
-    // If merged playback is available, treat it as a single track.
-    if (isMergedPlayback) {
-      const el = singleVideoRef.current;
-      if (!el) return;
-      el.currentTime = clampedTime;
-      setCurrentTime(el.currentTime);
-      return;
-    }
     
     // Find which video this time belongs to
     let targetVideoIndex = 0;
@@ -633,7 +512,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const frameForward = () => seek(currentTime + (1/30));
 
   const toggleMute = () => {
-    const el = getPlaybackEl();
+    const el = getActiveVideoEl();
     if (el) {
       el.muted = !isMuted;
       setIsMuted(!isMuted);
@@ -643,7 +522,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const changeVolume = (value: number[]) => {
     const vol = value[0];
     setVolume(vol);
-    const el = getPlaybackEl();
+    const el = getActiveVideoEl();
     if (el) {
       el.volume = vol;
     }
@@ -651,7 +530,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   const changePlaybackRate = (rate: number) => {
     setPlaybackRate(rate);
-    const el = getPlaybackEl();
+    const el = getActiveVideoEl();
     if (el) {
       el.playbackRate = rate;
     }
@@ -670,7 +549,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   const previewTrim = () => {
     seek(trimStart);
-    const el = getPlaybackEl();
+    const el = getActiveVideoEl();
     if (el) {
       el.play();
       setIsPlaying(true);
@@ -702,7 +581,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   const playClip = (clip: TrimClip) => {
     seek(clip.startTime);
-    const el = getPlaybackEl();
+    const el = getActiveVideoEl();
     if (el) {
       el.play();
       setIsPlaying(true);
@@ -866,28 +745,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       return filtered.map((r, i) => ({ ...r, roundNumber: i + 1 }));
     });
     toast.success('Round διαγράφηκε');
-  };
-
-  // Toggle play for merged single video
-  const togglePlayMerged = async () => {
-    const el = singleVideoRef.current;
-    if (!el) return;
-    try {
-      if (isPlaying) {
-        el.pause();
-        setIsPlaying(false);
-      } else {
-        // Apply current settings (in case user changed volume/rate before merging)
-        el.muted = isMuted;
-        el.volume = volume;
-        el.playbackRate = playbackRate;
-        await el.play();
-        setIsPlaying(true);
-      }
-    } catch (error) {
-      console.error('Play/Pause merged failed:', error);
-      setIsPlaying(false);
-    }
   };
 
 
@@ -1398,83 +1255,48 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
         </div>
       )}
 
-      {/* Merging indicator */}
-      {isMerging && (
-        <Card className="rounded-none mb-4">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Loader2 className="w-5 h-5 animate-spin text-[#00ffba]" />
-            <span className="text-sm">{mergeStage || 'Ένωση βίντεο...'} {exportProgress}%</span>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Video Player */}
       <Card className="rounded-none">
         <CardContent className="p-4">
           <div className="relative bg-black rounded-none overflow-hidden">
-            {/* Use merged video if available, otherwise show per-clip videos */}
-            {mergedVideoUrl ? (
+            {videos.map((v, idx) => (
               <video
-                ref={singleVideoRef}
-                src={mergedVideoUrl}
-                className="w-full max-h-[60vh] object-contain"
+                key={v.id}
+                ref={(el) => {
+                  videoElsRef.current[idx] = el;
+                }}
+                src={v.url}
+                className={`w-full max-h-[60vh] object-contain ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
                 onLoadedMetadata={() => {
-                  if (singleVideoRef.current) {
-                    setDuration(singleVideoRef.current.duration);
-                    setTrimEnd(singleVideoRef.current.duration);
-                    setIsVideoReady(true);
-                  }
+                  if (idx === activeVideoIndex) handleLoadedMetadata();
+                }}
+                onLoadedData={() => {
+                  if (idx === activeVideoIndex) handleLoadedData();
                 }}
                 onTimeUpdate={() => {
-                  if (singleVideoRef.current) {
-                    setCurrentTime(singleVideoRef.current.currentTime);
-                  }
+                  if (idx === activeVideoIndex) handleTimeUpdate();
                 }}
-                onEnded={() => setIsPlaying(false)}
-                onClick={togglePlayMerged}
+                onEnded={() => {
+                  if (idx === activeVideoIndex) handleEnded();
+                }}
+                onError={() => {
+                  const el = videoElsRef.current[idx];
+                  console.log('[VideoEditor] video element error', {
+                    activeVideoIndex,
+                    idx,
+                    videoId: v.id,
+                    url: v.url,
+                    readyState: el?.readyState,
+                    networkState: el?.networkState,
+                    currentSrc: el?.currentSrc,
+                    error: el?.error?.code,
+                  });
+                }}
+                onClick={togglePlay}
                 playsInline
                 preload="metadata"
               />
-            ) : (
-              videos.map((v, idx) => (
-                <video
-                  key={v.id}
-                  ref={(el) => {
-                    videoElsRef.current[idx] = el;
-                  }}
-                  src={v.url}
-                  className={`w-full max-h-[60vh] object-contain ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
-                  onLoadedMetadata={() => {
-                    if (idx === activeVideoIndex) handleLoadedMetadata();
-                  }}
-                  onLoadedData={() => {
-                    if (idx === activeVideoIndex) handleLoadedData();
-                  }}
-                  onTimeUpdate={() => {
-                    if (idx === activeVideoIndex) handleTimeUpdate();
-                  }}
-                  onEnded={() => {
-                    if (idx === activeVideoIndex) handleEnded();
-                  }}
-                  onError={() => {
-                    const el = videoElsRef.current[idx];
-                    console.log('[VideoEditor] video element error', {
-                      activeVideoIndex,
-                      idx,
-                      videoId: v.id,
-                      url: v.url,
-                      readyState: el?.readyState,
-                      networkState: el?.networkState,
-                      currentSrc: el?.currentSrc,
-                      error: el?.error?.code,
-                    });
-                  }}
-                  onClick={togglePlay}
-                  playsInline
-                  preload="metadata"
-                />
-              ))
-            )}
+            ))}
             
             {/* Play overlay */}
             {!isPlaying && (

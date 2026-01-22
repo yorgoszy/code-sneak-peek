@@ -204,124 +204,6 @@ export const useVideoExport = () => {
     }
   }, [loadFFmpeg]);
 
-  // Merge multiple video FILES into one blob (for multi-video playback fix)
-  const mergeVideoFiles = useCallback(async (
-    videoFiles: File[]
-  ): Promise<Blob | null> => {
-    if (videoFiles.length === 0) {
-      return null;
-    }
-    if (videoFiles.length === 1) {
-      // Single file, just return it as blob
-      return videoFiles[0];
-    }
-
-    // Load FFmpeg if not already loaded
-    if (!ffmpegRef.current) {
-      const loaded = await loadFFmpeg();
-      if (!loaded) {
-        console.error('[mergeVideoFiles] Failed to load FFmpeg');
-        return null;
-      }
-    }
-
-    const ffmpeg = ffmpegRef.current!;
-    setIsExporting(true);
-    setProgress(0);
-
-    try {
-      const inputNames: string[] = [];
-
-      // Write all input files
-      for (let i = 0; i < videoFiles.length; i++) {
-        const file = videoFiles[i];
-        const inputName = `input_${i}.mp4`; // Force mp4 extension for consistency
-        const fileData = await fetchFile(file);
-        await ffmpeg.writeFile(inputName, fileData);
-        inputNames.push(inputName);
-        setProgress(Math.round((i + 1) / videoFiles.length * 20));
-      }
-
-      // Re-encode each to ensure compatible streams with explicit settings
-      const intermediateNames: string[] = [];
-      for (let i = 0; i < inputNames.length; i++) {
-        const intermediateName = `intermediate_${i}.mp4`;
-        
-        // Force consistent resolution, framerate, and codec for browser compatibility
-        await ffmpeg.exec([
-          '-i', inputNames[i],
-          '-c:v', 'libx264',
-          '-profile:v', 'baseline', // Most compatible H.264 profile
-          '-level', '3.0',
-          '-pix_fmt', 'yuv420p', // Required for browser playback
-          '-preset', 'ultrafast',
-          '-crf', '23',
-          '-r', '30', // Force 30fps for consistency
-          '-c:a', 'aac',
-          '-ar', '44100', // Consistent audio sample rate
-          '-ac', '2', // Stereo audio
-          '-b:a', '128k',
-          '-movflags', '+faststart',
-          '-y', // Overwrite if exists
-          intermediateName
-        ]);
-        
-        intermediateNames.push(intermediateName);
-        setProgress(20 + Math.round((i + 1) / inputNames.length * 50));
-      }
-
-      // Create concat list
-      const concatList = intermediateNames.map(f => `file '${f}'`).join('\n');
-      await ffmpeg.writeFile('concat.txt', concatList);
-
-      const outputName = `merged_${Date.now()}.mp4`;
-
-      // Concat with stream copy since we've normalized everything
-      await ffmpeg.exec([
-        '-f', 'concat',
-        '-safe', '0',
-        '-i', 'concat.txt',
-        '-c', 'copy',
-        '-movflags', '+faststart', // Important for web playback
-        '-y',
-        outputName
-      ]);
-
-      setProgress(90);
-
-      const data = await ffmpeg.readFile(outputName);
-      
-      // Validate output size
-      if (!data || (data as Uint8Array).length === 0) {
-        throw new Error('FFmpeg produced empty output');
-      }
-
-      console.log('[mergeVideoFiles] Success, output size:', (data as Uint8Array).length);
-
-      // Cleanup
-      for (const name of inputNames) {
-        try { await ffmpeg.deleteFile(name); } catch { /* ignore */ }
-      }
-      for (const name of intermediateNames) {
-        try { await ffmpeg.deleteFile(name); } catch { /* ignore */ }
-      }
-      try { await ffmpeg.deleteFile('concat.txt'); } catch { /* ignore */ }
-      try { await ffmpeg.deleteFile(outputName); } catch { /* ignore */ }
-
-      const blob = new Blob([new Uint8Array(data as Uint8Array)], { type: 'video/mp4' });
-
-      setIsExporting(false);
-      setProgress(100);
-
-      return blob;
-    } catch (error) {
-      console.error('[mergeVideoFiles] Failed:', error);
-      toast.error('Αποτυχία ένωσης βίντεο - δοκίμασε MP4 (H.264)');
-      setIsExporting(false);
-      return null;
-    }
-  }, [loadFFmpeg]);
-
   // Download blob as file
   const downloadBlob = useCallback((blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
@@ -343,7 +225,6 @@ export const useVideoExport = () => {
     loadFFmpeg,
     exportTrimmedVideo,
     exportMergedClips,
-    mergeVideoFiles,
     downloadBlob,
   };
 };
