@@ -130,7 +130,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   // Merged video state (single blob for reliable playback)
   const [mergedVideoUrl, setMergedVideoUrl] = useState<string | null>(null);
   const [isMerging, setIsMerging] = useState(false);
+  const [mergeStage, setMergeStage] = useState<string>('');
   const singleVideoRef = useRef<HTMLVideoElement>(null);
+  const mergeInFlightRef = useRef(false);
 
   // Video state - Multi-video support (up to 3 videos)
   const [videos, setVideos] = useState<VideoSlot[]>([]);
@@ -300,11 +302,34 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   // Merge all uploaded video files into one blob for reliable playback
   const triggerMerge = async (files: File[]) => {
     if (files.length < 2) return;
+    if (mergeInFlightRef.current) {
+      toast.info('Η ένωση βίντεο είναι ήδη σε εξέλιξη...');
+      return;
+    }
+    mergeInFlightRef.current = true;
     setIsMerging(true);
+    setMergeStage('Φόρτωση FFmpeg...');
     toast.info('Ένωση βίντεο σε εξέλιξη... (μπορεί να πάρει 1-2 λεπτά)');
 
     try {
-      const mergedBlob = await mergeVideoFiles(files);
+      // Ensure FFmpeg is loaded (otherwise progress will stay at 0% with no feedback)
+      const loaded = await loadFFmpeg();
+      if (!loaded) {
+        throw new Error('FFmpeg load failed');
+      }
+
+      setMergeStage('Επεξεργασία / μετατροπή βίντεο...');
+
+      // Safety timeout to avoid getting stuck indefinitely
+      const timeoutMs = 6 * 60 * 1000; // 6 minutes
+      const mergePromise = mergeVideoFiles(files);
+      const mergedBlob = await Promise.race([
+        mergePromise,
+        new Promise<null>((_, reject) => {
+          window.setTimeout(() => reject(new Error('Merge timeout')), timeoutMs);
+        })
+      ]);
+
       if (mergedBlob && mergedBlob.size > 0) {
         // Revoke old merged URL if exists
         if (mergedVideoUrl) URL.revokeObjectURL(mergedVideoUrl);
@@ -353,10 +378,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       }
     } catch (error) {
       console.error('[triggerMerge] Failed:', error);
-      toast.error('Αποτυχία ένωσης βίντεο');
+      toast.error('Αποτυχία ένωσης βίντεο (πιθανό format/μέγεθος). Δοκίμασε MP4 H.264.');
     }
     
     setIsMerging(false);
+    setMergeStage('');
+    mergeInFlightRef.current = false;
   };
 
   // Recalculate video offsets when videos change
@@ -1376,7 +1403,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
         <Card className="rounded-none mb-4">
           <CardContent className="p-4 flex items-center gap-3">
             <Loader2 className="w-5 h-5 animate-spin text-[#00ffba]" />
-            <span className="text-sm">Ένωση βίντεο... {exportProgress}%</span>
+            <span className="text-sm">{mergeStage || 'Ένωση βίντεο...'} {exportProgress}%</span>
           </CardContent>
         </Card>
       )}
