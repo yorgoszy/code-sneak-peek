@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Target, Shield, Clock, TrendingUp, Users, Swords, Settings, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy, CheckCircle } from 'lucide-react';
+import { Target, Shield, Clock, TrendingUp, Users, Swords, Plus, Activity, Film, Calendar, MapPin, User, Eye, Edit, Trash2, Loader2, Trophy, CheckCircle } from 'lucide-react';
 import elbowIcon from '@/assets/elbow-icon.png';
 import boxIcon from '@/assets/box-icon.png';
 import kneeIcon from '@/assets/knee-icon.png';
@@ -282,7 +282,8 @@ export const VideoAnalysisOverview = () => {
             size="sm"
             className="rounded-none h-9"
           >
-            <Settings className="w-4 h-4" />
+            <Target className="w-4 h-4" />
+            <Plus className="w-3 h-3 -ml-1" />
           </Button>
           <h1 className="text-lg font-semibold">Video Analysis</h1>
         </div>
