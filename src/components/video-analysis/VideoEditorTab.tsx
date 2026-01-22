@@ -407,15 +407,45 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     if (!videoRef.current) return;
     if (!videoUrl) return;
 
-    // Stop any previous playback and force reload of the new src
+    const el = videoRef.current;
+    console.log('[VideoEditor] source switch', {
+      activeVideoIndex,
+      videoId: activeVideo?.id,
+      url: videoUrl,
+      prevReadyState: el.readyState,
+      prevNetworkState: el.networkState,
+    });
+
+    // Stop any previous playback
     try {
-      videoRef.current.pause();
+      el.pause();
     } catch {
       // ignore
     }
+
+    // HARD reset: clear src to drop previous decoder state, then reload
+    try {
+      el.removeAttribute('src');
+      el.load();
+    } catch {
+      // ignore
+    }
+
     setIsPlaying(false);
     setCurrentTime(0);
-    videoRef.current.load();
+
+    // Re-apply src after the reset tick (React will also set src, this helps stubborn browsers)
+    setTimeout(() => {
+      const el2 = videoRef.current;
+      if (!el2) return;
+      el2.src = videoUrl;
+      el2.load();
+      console.log('[VideoEditor] after reset+load', {
+        readyState: el2.readyState,
+        networkState: el2.networkState,
+        currentSrc: el2.currentSrc,
+      });
+    }, 0);
   }, [videoUrl]);
 
   // Seek within current video (local time)
@@ -1225,6 +1255,18 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
               onLoadedMetadata={handleLoadedMetadata}
               onTimeUpdate={handleTimeUpdate}
               onEnded={handleEnded}
+              onError={() => {
+                const el = videoRef.current;
+                console.log('[VideoEditor] video element error', {
+                  activeVideoIndex,
+                  videoId: activeVideo?.id,
+                  url: videoUrl,
+                  readyState: el?.readyState,
+                  networkState: el?.networkState,
+                  currentSrc: el?.currentSrc,
+                  error: el?.error?.code,
+                });
+              }}
               onClick={togglePlay}
               playsInline
             />
