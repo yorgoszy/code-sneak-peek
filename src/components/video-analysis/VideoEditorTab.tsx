@@ -370,8 +370,28 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
         videoRef.current.pause();
         setIsPlaying(false);
       } else {
-        // Ensure browser reloads the new source if needed
-        videoRef.current.load();
+        // Play can fail if the source just changed; wait until it's playable.
+        if (videoRef.current.readyState < 2) {
+          await new Promise<void>((resolve, reject) => {
+            const el = videoRef.current;
+            if (!el) return reject(new Error('Video element not available'));
+
+            const onCanPlay = () => {
+              el.removeEventListener('canplay', onCanPlay);
+              el.removeEventListener('error', onError);
+              resolve();
+            };
+            const onError = () => {
+              el.removeEventListener('canplay', onCanPlay);
+              el.removeEventListener('error', onError);
+              reject(new Error('Video source error'));
+            };
+
+            el.addEventListener('canplay', onCanPlay, { once: true });
+            el.addEventListener('error', onError, { once: true });
+          });
+        }
+
         await videoRef.current.play();
         setIsPlaying(true);
       }
@@ -381,6 +401,22 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       setIsPlaying(false);
     }
   };
+
+  // Ensure the video element fully reloads when switching clips (fixes "no supported sources" on 2nd clip)
+  useEffect(() => {
+    if (!videoRef.current) return;
+    if (!videoUrl) return;
+
+    // Stop any previous playback and force reload of the new src
+    try {
+      videoRef.current.pause();
+    } catch {
+      // ignore
+    }
+    setIsPlaying(false);
+    setCurrentTime(0);
+    videoRef.current.load();
+  }, [videoUrl]);
 
   // Seek within current video (local time)
   const seek = (time: number) => {
@@ -1182,6 +1218,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
         <CardContent className="p-4">
           <div className="relative bg-black rounded-none overflow-hidden">
             <video
+              key={activeVideo?.id || 'video'}
               ref={videoRef}
               src={videoUrl}
               className="w-full max-h-[60vh] object-contain"
