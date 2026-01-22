@@ -156,7 +156,7 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   return (
     <>
       <DialogContent
-        className="rounded-none w-[900px] h-[600px] max-w-[95vw] max-h-[90vh] p-3 sm:p-4 md:p-6 flex flex-col"
+        className="rounded-none w-[900px] h-[600px] max-w-[95vw] max-h-[90vh] p-3 sm:p-4 md:p-6 flex flex-col [&>button]:hidden"
         onPointerDownOutside={(e) => {
           if (addExerciseDialogOpen || createTemplateDialogOpen || selectTemplateDialogOpen || redExercisePopup.open) {
             e.preventDefault();
