@@ -55,6 +55,14 @@ interface TrimClip {
   label: string;
 }
 
+// Multi-video support
+interface VideoSlot {
+  id: string;
+  file: File;
+  url: string;
+  name: string;
+}
+
 type ActionType = 'attack' | 'defense' | 'clinch';
 
 interface ActionFlag {
@@ -115,9 +123,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     downloadBlob
   } = useVideoExport();
 
-  // Video state
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  // Video state - Multi-video support (up to 3 videos)
+  const [videos, setVideos] = useState<VideoSlot[]>([]);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -132,6 +140,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const [isAddingClip, setIsAddingClip] = useState(false);
   const [clipLabel, setClipLabel] = useState('');
   
+  // Derived video state for current active video
+  const activeVideo = videos[activeVideoIndex] || null;
+  const videoUrl = activeVideo?.url || null;
+  const videoFile = activeVideo?.file || null;
   // Action flags state
   const [actionFlags, setActionFlags] = useState<ActionFlag[]>([]);
   const [activeFlag, setActiveFlag] = useState<{ id: string; type: ActionType } | null>(null);
@@ -165,7 +177,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     '.flv', '.3gp', '.mpeg', '.mpg', '.m4v', '.ts', '.mts', '.m2ts'
   ];
 
-  // Handle file upload
+  // Handle file upload - adds to videos array
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -176,26 +188,67 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
         toast.error('Παρακαλώ επιλέξτε αρχείο βίντεο');
         return;
       }
-      
-      // Cleanup previous URL
-      if (videoUrl) {
-        URL.revokeObjectURL(videoUrl);
+
+      if (videos.length >= 3) {
+        toast.error('Μέγιστος αριθμός βίντεο: 3');
+        return;
       }
       
       const url = URL.createObjectURL(file);
-      setVideoFile(file);
-      setVideoUrl(url);
-      setClips([]);
-      setActionFlags([]);
-      setActiveFlag(null);
-      setRoundMarkers([]);
-      setActiveRound(null);
-      setStrikeMarkers([]);
-      setTrimStart(0);
-      setTrimEnd(0);
-      setCurrentTime(0);
-      toast.success('Βίντεο φορτώθηκε επιτυχώς');
+      const newVideo: VideoSlot = {
+        id: `video-${Date.now()}`,
+        file,
+        url,
+        name: file.name
+      };
+      
+      const isFirstVideo = videos.length === 0;
+      setVideos(prev => [...prev, newVideo]);
+      setActiveVideoIndex(videos.length); // Switch to new video
+      
+      // Only reset markers if this is the first video
+      if (isFirstVideo) {
+        setClips([]);
+        setActionFlags([]);
+        setActiveFlag(null);
+        setRoundMarkers([]);
+        setActiveRound(null);
+        setStrikeMarkers([]);
+        setTrimStart(0);
+        setTrimEnd(0);
+        setCurrentTime(0);
+      }
+      
+      toast.success(`Βίντεο ${videos.length + 1} φορτώθηκε επιτυχώς`);
     }
+  };
+
+  // Remove a video from the list
+  const removeVideo = (index: number) => {
+    const videoToRemove = videos[index];
+    if (videoToRemove) {
+      URL.revokeObjectURL(videoToRemove.url);
+    }
+    
+    setVideos(prev => prev.filter((_, i) => i !== index));
+    
+    // Adjust active index if needed
+    if (activeVideoIndex >= index && activeVideoIndex > 0) {
+      setActiveVideoIndex(activeVideoIndex - 1);
+    }
+  };
+
+  // Reset all videos
+  const resetAllVideos = () => {
+    videos.forEach(v => URL.revokeObjectURL(v.url));
+    setVideos([]);
+    setActiveVideoIndex(0);
+    setClips([]);
+    setActionFlags([]);
+    setActiveFlag(null);
+    setRoundMarkers([]);
+    setActiveRound(null);
+    setStrikeMarkers([]);
   };
 
   // Video event handlers
@@ -886,15 +939,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       toast.success('Αγώνας αποθηκεύτηκε επιτυχώς!');
       
       // Reset editor
-      if (videoUrl) URL.revokeObjectURL(videoUrl);
-      setVideoFile(null);
-      setVideoUrl(null);
-      setClips([]);
-      setActionFlags([]);
-      setActiveFlag(null);
-      setRoundMarkers([]);
-      setActiveRound(null);
-      setStrikeMarkers([]);
+      resetAllVideos();
       
       // Call the callback to refresh fights list
       if (onFightSaved) {
@@ -906,14 +951,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     }
   };
 
-  if (!videoUrl) {
+  if (videos.length === 0) {
     return (
       <Card className="rounded-none border-dashed border-2 border-gray-300">
         <CardContent className="py-6">
           <div className="text-center">
             <Film className="w-10 h-10 mx-auto text-gray-300 mb-2" />
             <p className="text-gray-500 text-sm mb-3">
-              Ανεβάστε βίντεο για νέο αγώνα
+              Ανεβάστε βίντεο για νέο αγώνα (έως 3 βίντεο)
             </p>
             <input
               ref={fileInputRef}
@@ -938,6 +983,54 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   return (
     <div className="space-y-4">
+      {/* Hidden file input for adding more videos */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="video/mp4,video/webm,video/ogg,video/avi,video/mov,video/quicktime,video/x-msvideo,video/x-matroska,video/mkv,video/wmv,video/flv,video/3gpp,video/mpeg,video/x-m4v,.mp4,.webm,.ogg,.avi,.mov,.mkv,.wmv,.flv,.3gp,.mpeg,.m4v,.ts,.mts,.m2ts"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+      
+      {/* Video Selector Tabs - Only show if multiple videos */}
+      {videos.length > 1 && (
+        <div className="flex items-center gap-2 p-2 bg-gray-100 border border-gray-200 rounded-none">
+          <Film className="w-4 h-4 text-gray-600" />
+          <span className="text-xs font-medium text-gray-600">Βίντεο:</span>
+          {videos.map((video, index) => (
+            <div key={video.id} className="flex items-center gap-1">
+              <Button
+                variant={activeVideoIndex === index ? "default" : "outline"}
+                size="sm"
+                className={`rounded-none h-7 px-2 text-xs ${activeVideoIndex === index ? 'bg-[#00ffba] text-black hover:bg-[#00ffba]/90' : ''}`}
+                onClick={() => setActiveVideoIndex(index)}
+              >
+                {index + 1}. {video.name.length > 15 ? video.name.slice(0, 15) + '...' : video.name}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-none h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                onClick={() => removeVideo(index)}
+              >
+                <Trash2 className="w-3 h-3" />
+              </Button>
+            </div>
+          ))}
+          {videos.length < 3 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-none h-7 px-2 text-xs"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              Προσθήκη
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Video Player */}
       <Card className="rounded-none">
         <CardContent className="p-4">
@@ -1759,26 +1852,27 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       )}
 
       {/* Save & New Video Buttons */}
-      <div className="flex justify-center gap-2">
+      <div className="flex justify-center gap-2 flex-wrap">
         <Button
           variant="outline"
           size="sm"
           className="rounded-none"
-          onClick={() => {
-            if (videoUrl) URL.revokeObjectURL(videoUrl);
-            setVideoFile(null);
-            setVideoUrl(null);
-            setClips([]);
-            setActionFlags([]);
-            setActiveFlag(null);
-            setRoundMarkers([]);
-            setActiveRound(null);
-            setStrikeMarkers([]);
-          }}
+          onClick={resetAllVideos}
         >
           <RefreshCw className="w-4 h-4 mr-1" />
           Νέο
         </Button>
+        {videos.length < 3 && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-none"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Προσθήκη Βίντεο
+          </Button>
+        )}
         <div className="flex items-center gap-2">
           <div className="w-44">
             <UserSearchCombobox
