@@ -246,13 +246,15 @@ const KnowledgeManagement: React.FC = () => {
         });
 
         try {
-          const fileName = formData.pdf_file.name;
+          // Use unique filename to avoid conflicts
+          const timestamp = Date.now();
+          const fileName = `${timestamp}_${formData.pdf_file.name}`;
 
           await uploadToSupabaseResumable({
             bucket: 'course-pdfs',
             objectName: fileName,
             file: formData.pdf_file,
-            upsert: false,
+            upsert: true,
             onProgress: (p) => setPdfProgress(p),
           });
 
@@ -571,151 +573,163 @@ const KnowledgeManagement: React.FC = () => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="rounded-none max-w-md">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="rounded-none max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-base sm:text-lg">
               {selectedCourse ? 'Επεξεργασία Μαθήματος' : 'Νέο Μάθημα'}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
+            {/* Title */}
             <div>
-              <Label>Τίτλος *</Label>
+              <Label className="text-xs sm:text-sm">Τίτλος *</Label>
               <Input
-                className="rounded-none"
+                className="rounded-none h-8 sm:h-9 text-sm"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="π.χ. Τεχνική Straight Punch"
               />
             </div>
 
+            {/* Video Upload */}
             <div>
-              <Label className="flex items-center gap-1">
-                <Video className="w-4 h-4" />
-                Βίντεο Μαθήματος *
+              <Label className="flex items-center gap-1 text-xs sm:text-sm">
+                <Video className="w-3 h-3 sm:w-4 sm:h-4" />
+                Βίντεο *
               </Label>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Input
                   type="file"
                   accept="video/*"
-                  className="rounded-none"
+                  className="rounded-none h-8 text-xs sm:text-sm"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
                     setFormData({ ...formData, video_file: file });
                   }}
                 />
                 {formData.video_file_path && !formData.video_file && (
-                  <div className="flex items-center justify-between bg-muted p-2">
-                    <p className="text-xs text-muted-foreground truncate flex-1">
-                      Υπάρχον βίντεο: {formData.video_file_path}
+                  <div className="flex items-center justify-between bg-muted p-1.5 sm:p-2">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate flex-1">
+                      {formData.video_file_path}
                     </p>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0 rounded-none text-destructive hover:text-destructive"
+                      className="h-5 w-5 sm:h-6 sm:w-6 p-0 rounded-none text-destructive hover:text-destructive"
                       onClick={handleRemoveVideo}
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
                   </div>
                 )}
                 {uploadingVideo && (
                   <div className="space-y-1">
-                    <Progress value={videoProgress} className="h-2" />
-                    <p className="text-xs text-muted-foreground">{videoProgress.toFixed(0)}%</p>
+                    <Progress value={videoProgress} className="h-1.5" />
+                    <p className="text-[10px] text-muted-foreground">{videoProgress.toFixed(0)}%</p>
                   </div>
                 )}
               </div>
             </div>
 
+            {/* Description */}
             <div>
-              <Label>Περιγραφή</Label>
+              <Label className="text-xs sm:text-sm">Περιγραφή</Label>
               <Textarea
-                className="rounded-none"
+                className="rounded-none text-sm min-h-[60px] sm:min-h-[80px]"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Περιγραφή μαθήματος..."
-                rows={3}
+                rows={2}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Price & Duration - Row */}
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
               <div>
-                <Label>Τιμή (€) *</Label>
+                <Label className="text-xs sm:text-sm">Τιμή (€) *</Label>
                 <Input
                   type="number"
-                  className="rounded-none"
+                  className="rounded-none h-8 sm:h-9 text-sm"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   min={0.01}
                   step={0.01}
-                  placeholder="π.χ. 45"
+                  placeholder="45"
                 />
               </div>
               <div>
-                <Label>Διάρκεια (λεπτά)</Label>
+                <Label className="text-xs sm:text-sm">Διάρκεια (λεπτά)</Label>
                 <Input
                   type="number"
-                  className="rounded-none"
+                  className="rounded-none h-8 sm:h-9 text-sm"
                   value={formData.duration_minutes}
                   onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
                   min={1}
-                  placeholder="π.χ. 30"
+                  placeholder="30"
                 />
               </div>
             </div>
 
+            {/* Category */}
             <div>
-              <Label>Κατηγορία</Label>
+              <Label className="text-xs sm:text-sm">Κατηγορία</Label>
               <Input
-                className="rounded-none"
+                className="rounded-none h-8 sm:h-9 text-sm"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                placeholder="π.χ. Τεχνική, Τακτική, Φυσική Κατάσταση"
+                placeholder="π.χ. Τεχνική, Τακτική"
               />
             </div>
 
+            {/* PDF Upload */}
             <div>
-              <Label className="flex items-center gap-1">
-                <FileText className="w-4 h-4" />
-                PDF Αρχείο (προαιρετικό)
+              <Label className="flex items-center gap-1 text-xs sm:text-sm">
+                <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
+                PDF (προαιρετικό)
               </Label>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Input
                   type="file"
                   accept=".pdf"
-                  className="rounded-none"
+                  className="rounded-none h-8 text-xs sm:text-sm"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
                     setFormData({ ...formData, pdf_file: file });
                   }}
                 />
                 {formData.pdf_url && !formData.pdf_file && (
-                  <div className="flex items-center justify-between bg-muted p-2">
-                    <p className="text-xs text-muted-foreground truncate flex-1">
-                      Υπάρχον PDF: {formData.pdf_url.split('/').pop()}
+                  <div className="flex items-center justify-between bg-muted p-1.5 sm:p-2">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate flex-1">
+                      {formData.pdf_url.split('/').pop()}
                     </p>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0 rounded-none text-destructive hover:text-destructive"
+                      className="h-5 w-5 sm:h-6 sm:w-6 p-0 rounded-none text-destructive hover:text-destructive"
                       onClick={handleRemovePdf}
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
+                  </div>
+                )}
+                {uploadingPdf && (
+                  <div className="space-y-1">
+                    <Progress value={pdfProgress} className="h-1.5" />
+                    <p className="text-[10px] text-muted-foreground">{pdfProgress.toFixed(0)}%</p>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" className="rounded-none" onClick={() => setDialogOpen(false)} disabled={uploadingPdf || uploadingVideo}>
+          <DialogFooter className="pt-3 gap-2 sm:gap-0">
+            <Button variant="outline" size="sm" className="rounded-none h-8 text-xs sm:text-sm" onClick={() => setDialogOpen(false)} disabled={uploadingPdf || uploadingVideo}>
               Ακύρωση
             </Button>
-            <Button className="rounded-none" onClick={handleSave} disabled={uploadingPdf || uploadingVideo}>
+            <Button size="sm" className="rounded-none h-8 text-xs sm:text-sm" onClick={handleSave} disabled={uploadingPdf || uploadingVideo}>
               {uploadingPdf || uploadingVideo ? 'Μεταφόρτωση...' : selectedCourse ? 'Ενημέρωση' : 'Δημιουργία'}
             </Button>
           </DialogFooter>
