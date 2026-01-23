@@ -39,7 +39,8 @@ import {
   ZoomIn,
   ZoomOut,
   Minus,
-  Plus as PlusIcon
+  Plus as PlusIcon,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
@@ -47,6 +48,9 @@ import { useStrikeTypes, StrikeType, categoryLabels, sideLabels } from '@/hooks/
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { supabase } from '@/integrations/supabase/client';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
+import { AutoAnalysisPanel } from './AutoAnalysisPanel';
+import { DetectedStrike } from '@/hooks/useStrikeDetection';
+import { AnalysisResult } from '@/hooks/useVideoAnalyzer';
 
 interface TrimClip {
   id: string;
@@ -169,6 +173,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const [strikeMarkers, setStrikeMarkers] = useState<StrikeMarker[]>([]);
   const [isStrikePopoverOpen, setIsStrikePopoverOpen] = useState(false);
   
+  // AI Analysis panel visibility
+  const [showAIPanel, setShowAIPanel] = useState(false);
   // Timeline zoom state
   const [timelineZoom, setTimelineZoom] = useState(1); // 1 = normal, up to 10x zoom
   const timelineScrollRef = useRef<HTMLDivElement>(null);
@@ -908,6 +914,69 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     setStrikeMarkers(prev => prev.filter(m => m.id !== id));
   };
 
+  // Handle AI detected strikes - convert to our format
+  const handleAIStrikesDetected = (detectedStrikes: DetectedStrike[]) => {
+    // Map detected strike types to our strike types
+    const typeMapping: Record<string, string> = {
+      'jab': 'Box',
+      'cross': 'Box', 
+      'hook': 'Box',
+      'uppercut': 'Box',
+      'front_kick': 'Kick',
+      'roundhouse_kick': 'Kick',
+      'side_kick': 'Kick',
+      'back_kick': 'Kick',
+      'knee': 'Knee',
+      'flying_knee': 'Knee',
+      'elbow': 'Elbow',
+      'spinning_elbow': 'Elbow',
+    };
+
+    const categoryMapping: Record<string, string> = {
+      'punch': 'box',
+      'kick': 'kick',
+      'knee': 'knee',
+      'elbow': 'elbow',
+    };
+
+    const newMarkers: StrikeMarker[] = detectedStrikes.map(strike => {
+      // Find matching strike type from our database
+      const matchingType = strikeTypes.find(st => 
+        st.category === categoryMapping[strike.category] &&
+        (st.side === strike.side || st.side === 'both' || !st.side)
+      );
+
+      // Determine round info
+      const roundInfo = determineRoundInfo(strike.timestamp);
+      
+      return {
+        id: crypto.randomUUID(),
+        strikeTypeId: matchingType?.id || '',
+        strikeTypeName: matchingType?.name || typeMapping[strike.type] || strike.type,
+        strikeCategory: matchingType?.category || categoryMapping[strike.category] || strike.category,
+        strikeSide: strike.side,
+        time: strike.timestamp,
+        owner: 'athlete' as const, // AI detects athlete strikes
+        roundNumber: roundInfo.roundNumber,
+        timeInRound: roundInfo.timeInRound,
+        hitTarget: strike.isVerified && strike.confidence > 0.8,
+        blocked: false,
+      };
+    });
+
+    setStrikeMarkers(prev => [...prev, ...newMarkers].sort((a, b) => a.time - b.time));
+    toast.success(`Προστέθηκαν ${newMarkers.length} χτυπήματα από AI ανάλυση`);
+  };
+
+  // Handle AI analysis complete
+  const handleAIAnalysisComplete = (result: AnalysisResult) => {
+    console.log('AI Analysis complete:', result.stats);
+    toast.success(
+      `Ανάλυση ολοκληρώθηκε! Βρέθηκαν ${result.stats.totalStrikes} χτυπήματα (${result.stats.correctTechnique} σωστή τεχνική)`,
+      { duration: 5000 }
+    );
+  };
+
   // Strike statistics
   const strikeStats = useMemo(() => {
     const athleteStrikes = strikeMarkers.filter(m => m.owner === 'athlete');
@@ -1310,6 +1379,35 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
               </div>
             )}
           </div>
+          
+          {/* AI Auto Analysis Toggle */}
+          <div className="mt-4 flex items-center gap-2">
+            <Button
+              variant={showAIPanel ? "default" : "outline"}
+              size="sm"
+              className={`rounded-none ${showAIPanel ? 'bg-[#00ffba] text-black hover:bg-[#00ffba]/90' : ''}`}
+              onClick={() => setShowAIPanel(!showAIPanel)}
+            >
+              <Sparkles className="w-4 h-4 mr-1" />
+              AI Ανάλυση
+            </Button>
+            {showAIPanel && (
+              <span className="text-xs text-gray-500">
+                Αυτόματη ανίχνευση χτυπημάτων με AI
+              </span>
+            )}
+          </div>
+          
+          {/* AI Analysis Panel */}
+          {showAIPanel && (
+            <div className="mt-3">
+              <AutoAnalysisPanel
+                videoElement={getActiveVideoEl()}
+                onStrikesDetected={handleAIStrikesDetected}
+                onAnalysisComplete={handleAIAnalysisComplete}
+              />
+            </div>
+          )}
           
           {/* Strike Buttons - Above Timeline */}
           <div className="mt-4 p-2 bg-gray-50 border border-gray-200 rounded-none">
