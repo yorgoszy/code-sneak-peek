@@ -81,6 +81,11 @@ export const MemorySequenceGame: React.FC<MemorySequenceGameProps> = ({
     startRound(1); // Pass level 1 explicitly
   }, [startRound]);
 
+  // Auto-start game on mount
+  useEffect(() => {
+    startGame();
+  }, [startGame]);
+
   // Show sequence animation
   useEffect(() => {
     if (!isShowingSequence || sequence.length === 0) return;
@@ -282,16 +287,6 @@ export const MemorySequenceGame: React.FC<MemorySequenceGameProps> = ({
         })}
       </div>
 
-      {/* Start button if not started */}
-      {sequence.length === 0 && !isShowingSequence && (
-        <Button
-          className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 h-10"
-          onClick={startGame}
-        >
-          <Play className="w-4 h-4 mr-2" />
-          Ξεκίνα
-        </Button>
-      )}
     </div>
   );
 };

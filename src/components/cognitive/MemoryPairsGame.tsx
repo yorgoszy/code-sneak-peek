@@ -80,6 +80,11 @@ export const MemoryPairsGame: React.FC<MemoryPairsGameProps> = ({
     setReactionTimes([]);
   }, [difficulty]);
 
+  // Auto-start game on mount
+  useEffect(() => {
+    initializeCards();
+  }, [initializeCards]);
+
   // Preview countdown effect
   useEffect(() => {
     if (!isPreviewPhase) return;
@@ -224,20 +229,11 @@ export const MemoryPairsGame: React.FC<MemoryPairsGameProps> = ({
     );
   }
 
+  // Show loading state if not started yet
   if (!gameStarted) {
     return (
-      <div className="text-center space-y-3 py-4">
-        <h2 className="text-lg font-bold">Βρες τα Ζευγάρια</h2>
-        <p className="text-sm text-muted-foreground">
-          Θα δεις τις κάρτες για 5" και μετά θα κλείσουν
-        </p>
-        <Button
-          className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 h-10"
-          onClick={initializeCards}
-        >
-          <Play className="w-4 h-4 mr-2" />
-          Ξεκίνα
-        </Button>
+      <div className="text-center py-4">
+        <div className="text-muted-foreground">Φόρτωση...</div>
       </div>
     );
   }
