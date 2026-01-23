@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
-
+import hyperkidsLogo from '@/assets/hyperkids-logo.svg';
 interface NavigationProps {
   navigationItems: Array<{ name: string; href: string }>;
   isAuthenticated: boolean;
@@ -80,7 +80,7 @@ const Navigation: React.FC<NavigationProps> = ({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <img 
-              src="/assets/hyperkids-logo.png" 
+              src={hyperkidsLogo} 
               alt="HyperKids Logo" 
               className="h-10 w-auto"
             />
