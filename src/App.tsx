@@ -108,7 +108,7 @@ function App() {
                       {/* Public routes */}
                       <Route path="/" element={<RootRedirect />} />
                       <Route path="/auth" element={<Auth />} />
-                      <Route path="/auth/reset-password" element={<ResetPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/shop" element={<Shop />} />
                       <Route path="/online-coaching" element={<OnlineCoaching />} />
                       <Route path="/payment-success" element={<PaymentSuccess />} />
