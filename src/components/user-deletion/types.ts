@@ -9,6 +9,7 @@ export interface AppUser {
   user_status: string;
   birth_date?: string;
   created_at: string;
+  auth_user_id?: string | null;
 }
 
 export interface DeleteUserDialogProps {
