@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 interface BaseSidebarProps {
   isCollapsed: boolean;
@@ -12,6 +13,9 @@ interface BaseSidebarProps {
   className?: string;
 }
 
+// Key for storing scroll position in sessionStorage
+const SIDEBAR_SCROLL_KEY = 'sidebar-scroll-position';
+
 export const BaseSidebar: React.FC<BaseSidebarProps> = ({
   isCollapsed,
   setIsCollapsed,
@@ -20,6 +24,24 @@ export const BaseSidebar: React.FC<BaseSidebarProps> = ({
   bottomContent,
   className = ""
 }) => {
+  const navRef = useRef<HTMLElement>(null);
+  const location = useLocation();
+
+  // Restore scroll position on mount and route changes
+  useEffect(() => {
+    const savedPosition = sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
+    if (savedPosition && navRef.current) {
+      navRef.current.scrollTop = parseInt(savedPosition, 10);
+    }
+  }, [location.pathname]);
+
+  // Save scroll position before navigation
+  const handleScroll = () => {
+    if (navRef.current) {
+      sessionStorage.setItem(SIDEBAR_SCROLL_KEY, navRef.current.scrollTop.toString());
+    }
+  };
+
   return (
     <div
       className={`bg-background border-r border-border transition-all duration-300 h-screen sticky top-0 flex flex-col ${
@@ -65,7 +87,11 @@ export const BaseSidebar: React.FC<BaseSidebarProps> = ({
       </div>
 
       {/* Navigation */}
-      <nav className="p-4 flex-1 overflow-y-auto max-h-[calc(100vh-120px)] scrollbar-none">
+      <nav 
+        ref={navRef}
+        onScroll={handleScroll}
+        className="p-4 flex-1 overflow-y-auto max-h-[calc(100vh-120px)] scrollbar-none"
+      >
         {navigationContent}
       </nav>
 
