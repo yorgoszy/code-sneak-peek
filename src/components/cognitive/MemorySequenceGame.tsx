@@ -60,16 +60,16 @@ export const MemorySequenceGame: React.FC<MemorySequenceGameProps> = ({
     return newSequence;
   }, [gridSize]);
 
-  // Start a new round
-  const startRound = useCallback(() => {
-    const seqLength = getStartingLength() + level - 1;
+  // Start a new round with explicit level parameter
+  const startRound = useCallback((currentLevel: number) => {
+    const seqLength = getStartingLength() + currentLevel - 1;
     const newSequence = generateSequence(seqLength);
     setSequence(newSequence);
     setPlayerSequence([]);
     setIsShowingSequence(true);
     setCurrentShowIndex(-1);
     setIsPlayerTurn(false);
-  }, [level, generateSequence]);
+  }, [generateSequence]);
 
   // Start the game
   const startGame = useCallback(() => {
@@ -78,8 +78,8 @@ export const MemorySequenceGame: React.FC<MemorySequenceGameProps> = ({
     setGameOver(false);
     setReactionTimes([]);
     setLastReactionTime(null);
-    startRound();
-  }, []);
+    startRound(1); // Pass level 1 explicitly
+  }, [startRound]);
 
   // Show sequence animation
   useEffect(() => {
@@ -133,13 +133,14 @@ export const MemorySequenceGame: React.FC<MemorySequenceGameProps> = ({
     // Check if sequence complete
     if (newPlayerSequence.length === sequence.length) {
       // Level complete
+      const nextLevel = level + 1;
       setScore(prev => prev + sequence.length);
-      setLevel(prev => prev + 1);
+      setLevel(nextLevel);
       setIsPlayerTurn(false);
       
       // Start next round after delay
       setTimeout(() => {
-        startRound();
+        startRound(nextLevel);
       }, 1000);
     }
   };
