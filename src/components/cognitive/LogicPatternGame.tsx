@@ -210,48 +210,47 @@ export const LogicPatternGame: React.FC<LogicPatternGameProps> = ({
     const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
     
     return (
-      <div className="text-center space-y-6 py-8">
-        <Trophy className="w-16 h-16 mx-auto text-[#cb8954]" />
+      <div className="text-center space-y-3 py-4">
+        <Trophy className="w-10 h-10 mx-auto text-[#cb8954]" />
         
         <div>
-          <h2 className="text-2xl font-bold mb-2">Τέλος Παιχνιδιού!</h2>
-          <p className="text-muted-foreground">Τα αποτελέσματά σου</p>
+          <h2 className="text-lg font-bold mb-1">Τέλος Παιχνιδιού!</h2>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <div className="bg-muted/50 p-4 rounded-none">
-            <div className="text-3xl font-bold text-[#00ffba]">{score}</div>
-            <div className="text-xs text-muted-foreground">Σωστά</div>
+        <div className="grid grid-cols-5 gap-1">
+          <div className="bg-muted/50 p-1.5 rounded-none">
+            <div className="text-lg font-bold text-[#00ffba]">{score}</div>
+            <div className="text-[9px] text-muted-foreground">Σωστά</div>
           </div>
-          <div className="bg-muted/50 p-4 rounded-none">
-            <div className="text-3xl font-bold">{percentage}%</div>
-            <div className="text-xs text-muted-foreground">Ακρίβεια</div>
+          <div className="bg-muted/50 p-1.5 rounded-none">
+            <div className="text-lg font-bold">{percentage}%</div>
+            <div className="text-[9px] text-muted-foreground">Ακρίβ.</div>
           </div>
-          <div className="bg-muted/50 p-4 rounded-none">
-            <div className="text-3xl font-bold text-[#cb8954]">{bestStreak}</div>
-            <div className="text-xs text-muted-foreground">Καλύτερο Streak</div>
+          <div className="bg-muted/50 p-1.5 rounded-none">
+            <div className="text-lg font-bold text-[#cb8954]">{bestStreak}</div>
+            <div className="text-[9px] text-muted-foreground">Streak</div>
           </div>
-          <div className="bg-muted/50 p-4 rounded-none">
-            <div className="text-3xl font-bold text-blue-500">
-              {averageReactionTime > 0 ? `${(averageReactionTime / 1000).toFixed(2)}s` : '-'}
+          <div className="bg-muted/50 p-1.5 rounded-none">
+            <div className="text-lg font-bold text-blue-500">
+              {averageReactionTime > 0 ? `${(averageReactionTime / 1000).toFixed(1)}s` : '-'}
             </div>
-            <div className="text-xs text-muted-foreground">Μ.Ο. Αντίδρ.</div>
+            <div className="text-[9px] text-muted-foreground">Μ.Ο.</div>
           </div>
-          <div className="bg-muted/50 p-4 rounded-none">
-            <div className="text-3xl font-bold text-green-500">
-              {bestReactionTime > 0 ? `${(bestReactionTime / 1000).toFixed(2)}s` : '-'}
+          <div className="bg-muted/50 p-1.5 rounded-none">
+            <div className="text-lg font-bold text-green-500">
+              {bestReactionTime > 0 ? `${(bestReactionTime / 1000).toFixed(1)}s` : '-'}
             </div>
-            <div className="text-xs text-muted-foreground">Καλύτερη</div>
+            <div className="text-[9px] text-muted-foreground">Best</div>
           </div>
         </div>
         
-        <div className="flex gap-3 justify-center">
-          <Button variant="outline" onClick={onBack} className="rounded-none">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+        <div className="flex gap-2 justify-center">
+          <Button variant="outline" onClick={onBack} className="rounded-none h-8 text-xs">
+            <ArrowLeft className="w-3 h-3 mr-1" />
             Πίσω
           </Button>
-          <Button onClick={onPlayAgain} className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90">
-            <RotateCcw className="w-4 h-4 mr-2" />
+          <Button onClick={onPlayAgain} className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 h-8 text-xs">
+            <RotateCcw className="w-3 h-3 mr-1" />
             Ξανά
           </Button>
         </div>
