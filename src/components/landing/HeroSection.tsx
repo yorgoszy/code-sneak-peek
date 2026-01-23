@@ -56,21 +56,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         </div>
       </div>
 
-      {/* Dots indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-10">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => scrollTo(index)}
-            className={`w-3 h-3 rounded-none transition-all duration-300 ${
-              index === selectedIndex 
-                ? 'bg-white' 
-                : 'bg-white/40 hover:bg-white/60'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
     </section>
   );
 };
