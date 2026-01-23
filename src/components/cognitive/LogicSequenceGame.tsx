@@ -317,11 +317,11 @@ export const LogicSequenceGame: React.FC<LogicSequenceGameProps> = ({
       </p>
 
       {/* Answer options */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         {currentQuestion.options.map((option, index) => (
           <Button
             key={index}
-            className="rounded-none h-16 text-2xl font-bold transition-transform hover:scale-105 bg-muted hover:bg-[#00ffba] hover:text-black"
+            className="rounded-none h-12 text-xl font-bold transition-transform hover:scale-105 bg-muted text-blue-900 hover:bg-[#00ffba] hover:text-black"
             onClick={() => handleAnswer(option)}
           >
             {option}
