@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -23,10 +22,22 @@ const Navigation: React.FC<NavigationProps> = ({
   onSignOut,
   translations
 }) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show header after scrolling 100px
+      setIsVisible(window.scrollY > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleNavigationClick = (href: string, event: React.MouseEvent) => {
     if (href.startsWith('#')) {
       event.preventDefault();
-      const targetId = href.substring(1); // Remove the #
+      const targetId = href.substring(1);
       const element = document.getElementById(targetId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
@@ -37,7 +48,11 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   return (
-    <nav className="fixed top-0 w-full bg-black z-50">
+    <nav 
+      className={`fixed top-0 w-full bg-black z-50 transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       <style>{`
         .nav-link:hover {
           color: #cf8d54 !important;
