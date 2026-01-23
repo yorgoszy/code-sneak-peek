@@ -10,6 +10,13 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Play, 
   Pause, 
@@ -34,6 +41,18 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
+export type CombatSport = 'muay_thai' | 'boxing' | 'kickboxing' | 'mma' | 'karate' | 'taekwondo' | 'judo';
+
+export const combatSportLabels: Record<CombatSport, string> = {
+  muay_thai: 'Muay Thai',
+  boxing: 'Πυγμαχία',
+  kickboxing: 'Kickboxing',
+  mma: 'MMA',
+  karate: 'Καράτε',
+  taekwondo: 'Taekwondo',
+  judo: 'Τζούντο',
+};
+
 interface AutoAnalysisPanelProps {
   videoElement: HTMLVideoElement | null;
   onStrikesDetected: (strikes: DetectedStrike[]) => void;
@@ -49,6 +68,7 @@ export const AutoAnalysisPanel: React.FC<AutoAnalysisPanelProps> = ({
   const [settingsOpen, setSettingsOpen] = useState(false);
   
   // Settings
+  const [sport, setSport] = useState<CombatSport>('muay_thai');
   const [sensitivity, setSensitivity] = useState<'low' | 'medium' | 'high'>('medium');
   const [enableAI, setEnableAI] = useState(true);
   const [analysisSpeed, setAnalysisSpeed] = useState<'fast' | 'normal' | 'thorough'>('normal');
@@ -68,6 +88,7 @@ export const AutoAnalysisPanel: React.FC<AutoAnalysisPanelProps> = ({
     isLoading,
     isVerifying,
   } = useVideoAnalyzer({
+    sport,
     sensitivity,
     enableAIVerification: enableAI,
     analysisSpeed,
@@ -219,6 +240,23 @@ export const AutoAnalysisPanel: React.FC<AutoAnalysisPanelProps> = ({
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-4 pt-4">
+            {/* Sport Selection */}
+            <div className="space-y-2">
+              <Label className="text-gray-400">Άθλημα</Label>
+              <Select value={sport} onValueChange={(value: CombatSport) => setSport(value)}>
+                <SelectTrigger className="rounded-none bg-gray-900 border-gray-700 text-white">
+                  <SelectValue placeholder="Επιλέξτε άθλημα" />
+                </SelectTrigger>
+                <SelectContent className="rounded-none">
+                  {Object.entries(combatSportLabels).map(([key, label]) => (
+                    <SelectItem key={key} value={key} className="rounded-none">
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Sensitivity */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">

@@ -33,7 +33,10 @@ export interface AnalysisResult {
   };
 }
 
-interface UseVideoAnalyzerOptions {
+export type CombatSport = 'muay_thai' | 'boxing' | 'kickboxing' | 'mma' | 'karate' | 'taekwondo' | 'judo';
+
+export interface UseVideoAnalyzerOptions {
+  sport: CombatSport;
   sensitivity: 'low' | 'medium' | 'high';
   enableAIVerification: boolean;
   analysisSpeed: 'fast' | 'normal' | 'thorough';
@@ -44,6 +47,7 @@ interface UseVideoAnalyzerOptions {
 }
 
 const defaultOptions: UseVideoAnalyzerOptions = {
+  sport: 'muay_thai',
   sensitivity: 'medium',
   enableAIVerification: true,
   analysisSpeed: 'normal',
@@ -109,6 +113,7 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
     analyzeVideoFrames,
     clearResults: clearVerifications,
   } = useAIStrikeVerification({
+    sport: config.sport,
     autoVerify: config.enableAIVerification,
     minConfidenceForAutoApprove: 0.85,
   });
@@ -225,7 +230,7 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
           detectedStrike: strike,
         }));
 
-        await analyzeVideoFrames(framesToVerify);
+        await analyzeVideoFrames(framesToVerify, config.sport);
 
         setProgress(prev => ({
           ...prev,

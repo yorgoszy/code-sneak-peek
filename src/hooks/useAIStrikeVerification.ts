@@ -22,12 +22,16 @@ export interface FrameData {
   detectedStrike: DetectedStrike;
 }
 
+export type CombatSport = 'muay_thai' | 'boxing' | 'kickboxing' | 'mma' | 'karate' | 'taekwondo' | 'judo';
+
 interface UseAIStrikeVerificationOptions {
+  sport?: CombatSport;
   autoVerify: boolean;
   minConfidenceForAutoApprove: number; // 0-1
 }
 
 export function useAIStrikeVerification(options: UseAIStrikeVerificationOptions = {
+  sport: 'muay_thai',
   autoVerify: true,
   minConfidenceForAutoApprove: 0.85
 }) {
@@ -119,7 +123,8 @@ export function useAIStrikeVerification(options: UseAIStrikeVerificationOptions 
 
   // Batch analyze entire video
   const analyzeVideoFrames = useCallback(async (
-    frames: FrameData[]
+    frames: FrameData[],
+    sport: CombatSport = 'muay_thai'
   ): Promise<AIVerificationResult[]> => {
     const results: AIVerificationResult[] = [];
     const batchSize = 10;
@@ -132,6 +137,7 @@ export function useAIStrikeVerification(options: UseAIStrikeVerificationOptions 
         
         const { data, error } = await supabase.functions.invoke('analyze-combat-frame', {
           body: {
+            sport,
             frames: batch.map(f => ({
               imageData: f.imageData,
               timestamp: f.timestamp,
