@@ -22,25 +22,33 @@ import {
   ArrowLeft,
   Check,
   X,
-  Timer
+  Timer,
+  Layers,
+  Puzzle
 } from "lucide-react";
 import { toast } from "sonner";
+import { MemorySequenceGame } from "@/components/cognitive/MemorySequenceGame";
+import { MemoryPairsGame } from "@/components/cognitive/MemoryPairsGame";
+import { LogicSequenceGame } from "@/components/cognitive/LogicSequenceGame";
+import { LogicPatternGame } from "@/components/cognitive/LogicPatternGame";
 
 type Difficulty = 'easy' | 'medium' | 'hard';
 type GameType = 'stroop' | 'math' | 'memory' | 'logic';
+type SubGameType = 'memory-sequence' | 'memory-pairs' | 'logic-sequence' | 'logic-pattern' | null;
 
 interface GameConfig {
   id: GameType;
   icon: React.ElementType;
   labelKey: string;
   descriptionKey: string;
+  hasSubGames?: boolean;
 }
 
 const GAMES: GameConfig[] = [
   { id: 'stroop', icon: Palette, labelKey: 'cognitive.games.stroop.title', descriptionKey: 'cognitive.games.stroop.description' },
   { id: 'math', icon: Calculator, labelKey: 'cognitive.games.math.title', descriptionKey: 'cognitive.games.math.description' },
-  { id: 'memory', icon: Grid3X3, labelKey: 'cognitive.games.memory.title', descriptionKey: 'cognitive.games.memory.description' },
-  { id: 'logic', icon: Lightbulb, labelKey: 'cognitive.games.logic.title', descriptionKey: 'cognitive.games.logic.description' },
+  { id: 'memory', icon: Grid3X3, labelKey: 'cognitive.games.memory.title', descriptionKey: 'cognitive.games.memory.description', hasSubGames: true },
+  { id: 'logic', icon: Lightbulb, labelKey: 'cognitive.games.logic.title', descriptionKey: 'cognitive.games.logic.description', hasSubGames: true },
 ];
 
 // Stroop Test Colors
@@ -176,6 +184,7 @@ const CognitivePage: React.FC = () => {
   
   // Game state
   const [selectedGame, setSelectedGame] = useState<GameType | null>(null);
+  const [selectedSubGame, setSelectedSubGame] = useState<SubGameType>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
   const [isPlaying, setIsPlaying] = useState(false);
   
@@ -365,6 +374,19 @@ const CognitivePage: React.FC = () => {
     setLastReactionTime(null);
   };
 
+  // Go back to games
+  const goBackToGames = () => {
+    resetGame();
+    setSelectedGame(null);
+    setSelectedSubGame(null);
+  };
+
+  // Go back from subgame
+  const goBackFromSubGame = () => {
+    resetGame();
+    setSelectedSubGame(null);
+  };
+
   // Calculate average reaction time
   const averageReactionTime = reactionTimes.length > 0 
     ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length)
@@ -386,7 +408,7 @@ const CognitivePage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {GAMES.map((game) => {
           const Icon = game.icon;
-          const isAvailable = game.id === 'stroop' || game.id === 'math';
+          const isAvailable = true; // All games now available
           
           return (
             <Card 
@@ -406,17 +428,119 @@ const CognitivePage: React.FC = () => {
                   <h3 className="font-medium text-sm">{t(game.labelKey)}</h3>
                   <p className="text-xs text-muted-foreground">{t(game.descriptionKey)}</p>
                 </div>
-                {isAvailable ? (
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <Badge variant="outline" className="rounded-none text-xs">
-                    {t('cognitive.comingSoon')}
-                  </Badge>
-                )}
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
               </CardContent>
             </Card>
           );
         })}
+      </div>
+    </div>
+  );
+
+  // Render sub-game selection for Memory
+  const renderMemorySubGames = () => (
+    <div className="space-y-4">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={goBackToGames}
+        className="rounded-none mb-2"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        {t('cognitive.back')}
+      </Button>
+      
+      <div className="text-center mb-6">
+        <h2 className="text-lg font-semibold mb-2">Μνήμη</h2>
+        <p className="text-sm text-muted-foreground">Επίλεξε τύπο παιχνιδιού</p>
+      </div>
+      
+      <div className="space-y-3">
+        <Card 
+          className="rounded-none cursor-pointer transition-all hover:border-[#00ffba] hover:shadow-md"
+          onClick={() => setSelectedSubGame('memory-sequence')}
+        >
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-none bg-[#00ffba]/10">
+              <Layers className="w-5 h-5 text-[#00ffba]" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-sm">Θυμήσου τη Σειρά</h3>
+              <p className="text-xs text-muted-foreground">Επανάλαβε τη σειρά που θα δεις</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </CardContent>
+        </Card>
+        
+        <Card 
+          className="rounded-none cursor-pointer transition-all hover:border-[#00ffba] hover:shadow-md"
+          onClick={() => setSelectedSubGame('memory-pairs')}
+        >
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-none bg-[#00ffba]/10">
+              <Grid3X3 className="w-5 h-5 text-[#00ffba]" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-sm">Βρες τα Ζευγάρια</h3>
+              <p className="text-xs text-muted-foreground">Βρες τις κάρτες που ταιριάζουν</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  // Render sub-game selection for Logic
+  const renderLogicSubGames = () => (
+    <div className="space-y-4">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={goBackToGames}
+        className="rounded-none mb-2"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        {t('cognitive.back')}
+      </Button>
+      
+      <div className="text-center mb-6">
+        <h2 className="text-lg font-semibold mb-2">Λογική</h2>
+        <p className="text-sm text-muted-foreground">Επίλεξε τύπο παιχνιδιού</p>
+      </div>
+      
+      <div className="space-y-3">
+        <Card 
+          className="rounded-none cursor-pointer transition-all hover:border-[#00ffba] hover:shadow-md"
+          onClick={() => setSelectedSubGame('logic-sequence')}
+        >
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-none bg-[#00ffba]/10">
+              <Calculator className="w-5 h-5 text-[#00ffba]" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-sm">Ακολουθίες Αριθμών</h3>
+              <p className="text-xs text-muted-foreground">Βρες τον επόμενο αριθμό</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </CardContent>
+        </Card>
+        
+        <Card 
+          className="rounded-none cursor-pointer transition-all hover:border-[#00ffba] hover:shadow-md"
+          onClick={() => setSelectedSubGame('logic-pattern')}
+        >
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-none bg-[#00ffba]/10">
+              <Puzzle className="w-5 h-5 text-[#00ffba]" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-sm">Αναγνώριση Μοτίβου</h3>
+              <p className="text-xs text-muted-foreground">Βρες το επόμενο στο μοτίβο</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -427,6 +551,14 @@ const CognitivePage: React.FC = () => {
       return diff === 'easy' ? '5s' : diff === 'medium' ? '3s' : '2s';
     } else if (selectedGame === 'math') {
       return diff === 'easy' ? '+/- (8s)' : diff === 'medium' ? '+/-/× (6s)' : '+/-/×/÷ (4s)';
+    } else if (selectedSubGame === 'memory-sequence') {
+      return diff === 'easy' ? '4 πλακίδια' : diff === 'medium' ? '6 πλακίδια' : '9 πλακίδια';
+    } else if (selectedSubGame === 'memory-pairs') {
+      return diff === 'easy' ? '6 ζευγάρια' : diff === 'medium' ? '8 ζευγάρια' : '12 ζευγάρια';
+    } else if (selectedSubGame === 'logic-sequence') {
+      return diff === 'easy' ? 'Απλές' : diff === 'medium' ? 'Μέτριες' : 'Σύνθετες';
+    } else if (selectedSubGame === 'logic-pattern') {
+      return diff === 'easy' ? 'Σχήμα' : diff === 'medium' ? 'Σχήμα/Χρώμα' : 'Συνδυασμός';
     }
     return '';
   };
@@ -437,6 +569,14 @@ const CognitivePage: React.FC = () => {
       return t('cognitive.games.stroop.instruction');
     } else if (selectedGame === 'math') {
       return 'Λύσε τις πράξεις όσο πιο γρήγορα μπορείς!';
+    } else if (selectedSubGame === 'memory-sequence') {
+      return 'Θυμήσου και επανάλαβε τη σειρά!';
+    } else if (selectedSubGame === 'memory-pairs') {
+      return 'Βρες όλα τα ζευγάρια!';
+    } else if (selectedSubGame === 'logic-sequence') {
+      return 'Βρες τον επόμενο αριθμό της ακολουθίας!';
+    } else if (selectedSubGame === 'logic-pattern') {
+      return 'Βρες το επόμενο στοιχείο του μοτίβου!';
     }
     return '';
   };
@@ -447,6 +587,8 @@ const CognitivePage: React.FC = () => {
       startStroopGame();
     } else if (selectedGame === 'math') {
       startMathGame();
+    } else if (selectedSubGame) {
+      setIsPlaying(true);
     }
   };
 
@@ -456,7 +598,13 @@ const CognitivePage: React.FC = () => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => setSelectedGame(null)}
+        onClick={() => {
+          if (selectedSubGame) {
+            setSelectedSubGame(null);
+          } else {
+            setSelectedGame(null);
+          }
+        }}
         className="rounded-none mb-2"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -712,9 +860,49 @@ const CognitivePage: React.FC = () => {
       return renderStroopGame();
     } else if (selectedGame === 'math') {
       return renderMathGame();
+    } else if (selectedSubGame === 'memory-sequence') {
+      return (
+        <MemorySequenceGame
+          difficulty={difficulty}
+          onBack={goBackFromSubGame}
+          onPlayAgain={() => setIsPlaying(true)}
+        />
+      );
+    } else if (selectedSubGame === 'memory-pairs') {
+      return (
+        <MemoryPairsGame
+          difficulty={difficulty}
+          onBack={goBackFromSubGame}
+          onPlayAgain={() => setIsPlaying(true)}
+        />
+      );
+    } else if (selectedSubGame === 'logic-sequence') {
+      return (
+        <LogicSequenceGame
+          difficulty={difficulty}
+          onBack={goBackFromSubGame}
+          onPlayAgain={() => setIsPlaying(true)}
+        />
+      );
+    } else if (selectedSubGame === 'logic-pattern') {
+      return (
+        <LogicPatternGame
+          difficulty={difficulty}
+          onBack={goBackFromSubGame}
+          onPlayAgain={() => setIsPlaying(true)}
+        />
+      );
     }
     return null;
   };
+
+  // Check if we should show sub-game selection
+  const shouldShowSubGameSelection = selectedGame && (selectedGame === 'memory' || selectedGame === 'logic') && !selectedSubGame;
+  
+  // Check if we should show difficulty selection
+  const shouldShowDifficulty = 
+    (selectedGame === 'stroop' || selectedGame === 'math') || 
+    (selectedSubGame !== null);
 
   return (
     <SidebarProvider>
@@ -765,9 +953,11 @@ const CognitivePage: React.FC = () => {
                 
                 <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
                   {!selectedGame && renderGameSelection()}
-                  {selectedGame && !isPlaying && !gameOver && renderDifficultySelection()}
+                  {shouldShowSubGameSelection && selectedGame === 'memory' && renderMemorySubGames()}
+                  {shouldShowSubGameSelection && selectedGame === 'logic' && renderLogicSubGames()}
+                  {shouldShowDifficulty && !isPlaying && !gameOver && renderDifficultySelection()}
                   {isPlaying && !gameOver && renderCurrentGame()}
-                  {gameOver && renderGameOver()}
+                  {gameOver && (selectedGame === 'stroop' || selectedGame === 'math') && renderGameOver()}
                 </CardContent>
               </Card>
             </div>
