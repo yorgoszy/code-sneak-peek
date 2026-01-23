@@ -31,21 +31,56 @@ export const GymBookingsOverview = () => {
   const isMobile = useIsMobile();
   const [bookings, setBookings] = useState<GymBooking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lastCheckTimestamp, setLastCheckTimestamp] = useState<number>(() => {
-    // Φορτώνουμε το timestamp της τελευταίας "ενημέρωσης"
-    const saved = localStorage.getItem('lastGymBookingCheck');
-    // Αν δεν υπάρχει αποθηκευμένη τιμή, ξεκινάμε από 7 ημέρες πριν
-    return saved ? parseInt(saved) : (Date.now() - 7 * 24 * 60 * 60 * 1000);
-  });
+  const [acknowledgedBookingIds, setAcknowledgedBookingIds] = useState<Set<string>>(new Set());
   const [markingAsRead, setMarkingAsRead] = useState(false);
+  const [userProfileId, setUserProfileId] = useState<string | null>(null);
 
+  // Φόρτωση user profile ID
   useEffect(() => {
+    const loadUserProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('app_users')
+          .select('id')
+          .eq('auth_user_id', user.id)
+          .maybeSingle();
+        
+        if (profile) {
+          setUserProfileId(profile.id);
+        }
+      }
+    };
+    loadUserProfile();
+    
     // Καθαρίζουμε παλιά localStorage entries που δεν χρησιμοποιούνται πια
     localStorage.removeItem('readGymBookingIds');
+    localStorage.removeItem('lastGymBookingCheck');
   }, []);
 
+  // Φόρτωση acknowledged bookings από τη βάση
+  const loadAcknowledgedBookings = async () => {
+    if (!userProfileId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('acknowledged_gym_bookings')
+        .select('booking_id')
+        .eq('admin_user_id', userProfileId);
+      
+      if (error) throw error;
+      
+      setAcknowledgedBookingIds(new Set(data?.map(item => item.booking_id) || []));
+    } catch (error) {
+      console.error('Error loading acknowledged bookings:', error);
+    }
+  };
+
   useEffect(() => {
-    fetchBookings();
+    if (userProfileId) {
+      fetchBookings();
+      loadAcknowledgedBookings();
+    }
     
     // Realtime updates για νέες κρατήσεις
     const channel = supabase
@@ -81,7 +116,7 @@ export const GymBookingsOverview = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [userProfileId]);
 
   const fetchBookings = async () => {
     try {
@@ -134,11 +169,8 @@ export const GymBookingsOverview = () => {
     return bookingDate >= startOfWeek && bookingDate <= endOfWeek;
   });
   
-  // Νέες κρατήσεις είναι μόνο αυτές που δημιουργήθηκαν μετά το τελευταίο check
-  const newBookings = bookings.filter(booking => {
-    const bookingCreatedAt = new Date(booking.created_at || booking.booking_date).getTime();
-    return bookingCreatedAt > lastCheckTimestamp;
-  });
+  // Νέες κρατήσεις είναι μόνο αυτές που ΔΕΝ έχουν acknowledged
+  const newBookings = bookings.filter(booking => !acknowledgedBookingIds.has(booking.id));
   
   const pastBookings = bookings.filter(booking => 
     (booking.status === 'confirmed' && new Date(`${booking.booking_date} ${booking.booking_time}`) <= new Date()) ||
@@ -146,20 +178,33 @@ export const GymBookingsOverview = () => {
   );
 
   const handleMarkAsRead = async () => {
+    if (!userProfileId) return;
+    
     setMarkingAsRead(true);
     
     try {
-      // Ενημερώνουμε το timestamp της τελευταίας επισκόπησης
-      const currentTimestamp = Date.now();
-      setLastCheckTimestamp(currentTimestamp);
+      // Εισαγωγή όλων των νέων bookings στη βάση ως acknowledged
+      const acknowledgeRecords = newBookings.map(booking => ({
+        booking_id: booking.id,
+        admin_user_id: userProfileId
+      }));
+
+      if (acknowledgeRecords.length > 0) {
+        const { error } = await supabase
+          .from('acknowledged_gym_bookings')
+          .upsert(acknowledgeRecords, { onConflict: 'booking_id,admin_user_id' });
+
+        if (error) throw error;
+      }
       
-      // Αποθηκεύουμε στο localStorage
-      localStorage.setItem('lastGymBookingCheck', currentTimestamp.toString());
+      // Ενημερώνουμε το local state
+      const newAcknowledgedIds = new Set(acknowledgedBookingIds);
+      newBookings.forEach(booking => newAcknowledgedIds.add(booking.id));
+      setAcknowledgedBookingIds(newAcknowledgedIds);
       
       // Ενημερώνουμε το sidebar
       window.dispatchEvent(new CustomEvent('gym-bookings-read'));
       
-      console.log('Marked as read at:', new Date(currentTimestamp));
       toast.success('Η λίστα "Νέα" καθαρίστηκε επιτυχώς');
     } catch (error) {
       console.error('Error marking as read:', error);

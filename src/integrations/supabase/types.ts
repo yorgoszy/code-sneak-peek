@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      acknowledged_gym_bookings: {
+        Row: {
+          acknowledged_at: string
+          admin_user_id: string
+          booking_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          acknowledged_at?: string
+          admin_user_id: string
+          booking_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          acknowledged_at?: string
+          admin_user_id?: string
+          booking_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acknowledged_gym_bookings_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acknowledged_gym_bookings_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       acknowledged_payments: {
         Row: {
           acknowledged_at: string
