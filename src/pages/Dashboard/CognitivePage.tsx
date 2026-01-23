@@ -99,6 +99,74 @@ const generateStroopQuestion = (difficulty: Difficulty): StroopQuestion => {
   };
 };
 
+// Math Game Types
+interface MathQuestion {
+  display: string;
+  correctAnswer: number;
+  options: number[];
+}
+
+type MathOperation = '+' | '-' | '×' | '÷';
+
+const generateMathQuestion = (difficulty: Difficulty): MathQuestion => {
+  let num1: number, num2: number, operation: MathOperation, result: number;
+  
+  // Get available operations based on difficulty
+  const operations: MathOperation[] = 
+    difficulty === 'easy' ? ['+', '-'] :
+    difficulty === 'medium' ? ['+', '-', '×'] :
+    ['+', '-', '×', '÷'];
+  
+  operation = operations[Math.floor(Math.random() * operations.length)];
+  
+  // Generate numbers based on difficulty
+  const maxNum = difficulty === 'easy' ? 20 : difficulty === 'medium' ? 50 : 100;
+  
+  switch (operation) {
+    case '+':
+      num1 = Math.floor(Math.random() * maxNum) + 1;
+      num2 = Math.floor(Math.random() * maxNum) + 1;
+      result = num1 + num2;
+      break;
+    case '-':
+      num1 = Math.floor(Math.random() * maxNum) + 10;
+      num2 = Math.floor(Math.random() * Math.min(num1, maxNum)) + 1;
+      result = num1 - num2;
+      break;
+    case '×':
+      num1 = Math.floor(Math.random() * (difficulty === 'hard' ? 15 : 12)) + 1;
+      num2 = Math.floor(Math.random() * (difficulty === 'hard' ? 15 : 12)) + 1;
+      result = num1 * num2;
+      break;
+    case '÷':
+      num2 = Math.floor(Math.random() * 12) + 1;
+      result = Math.floor(Math.random() * 12) + 1;
+      num1 = num2 * result; // Ensure clean division
+      break;
+    default:
+      num1 = 1; num2 = 1; result = 2;
+  }
+  
+  // Generate wrong options
+  const wrongOptions = new Set<number>();
+  while (wrongOptions.size < 3) {
+    const offset = Math.floor(Math.random() * 20) - 10;
+    const wrongAnswer = result + offset;
+    if (wrongAnswer !== result && wrongAnswer >= 0) {
+      wrongOptions.add(wrongAnswer);
+    }
+  }
+  
+  // Mix correct answer with wrong options
+  const options = [result, ...Array.from(wrongOptions)].sort(() => Math.random() - 0.5);
+  
+  return {
+    display: `${num1} ${operation} ${num2} = ?`,
+    correctAnswer: result,
+    options,
+  };
+};
+
 const CognitivePage: React.FC = () => {
   const { t } = useTranslation();
   const { isAdmin } = useRoleCheck();
@@ -112,7 +180,12 @@ const CognitivePage: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   
   // Stroop game state
-  const [currentQuestion, setCurrentQuestion] = useState<StroopQuestion | null>(null);
+  const [currentStroopQuestion, setCurrentStroopQuestion] = useState<StroopQuestion | null>(null);
+  
+  // Math game state
+  const [currentMathQuestion, setCurrentMathQuestion] = useState<MathQuestion | null>(null);
+  
+  // Shared game state
   const [score, setScore] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -128,9 +201,18 @@ const CognitivePage: React.FC = () => {
   // Time settings based on difficulty
   const getTimeLimit = useCallback((diff: Difficulty) => {
     switch (diff) {
-      case 'easy': return 5000; // 5 seconds
-      case 'medium': return 3000; // 3 seconds
-      case 'hard': return 2000; // 2 seconds
+      case 'easy': return 8000; // 8 seconds for math
+      case 'medium': return 6000; // 6 seconds
+      case 'hard': return 4000; // 4 seconds
+    }
+  }, []);
+
+  // Time settings for Stroop (faster)
+  const getStroopTimeLimit = useCallback((diff: Difficulty) => {
+    switch (diff) {
+      case 'easy': return 5000;
+      case 'medium': return 3000;
+      case 'hard': return 2000;
     }
   }, []);
 
@@ -144,33 +226,56 @@ const CognitivePage: React.FC = () => {
     setBestStreak(0);
     setReactionTimes([]);
     setLastReactionTime(null);
-    setCurrentQuestion(generateStroopQuestion(difficulty));
+    setCurrentStroopQuestion(generateStroopQuestion(difficulty));
+    setCurrentMathQuestion(null);
+    setTimeLeft(getStroopTimeLimit(difficulty));
+    setQuestionStartTime(Date.now());
+  }, [difficulty, getStroopTimeLimit]);
+
+  // Start Math game
+  const startMathGame = useCallback(() => {
+    setIsPlaying(true);
+    setGameOver(false);
+    setScore(0);
+    setTotalQuestions(0);
+    setStreak(0);
+    setBestStreak(0);
+    setReactionTimes([]);
+    setLastReactionTime(null);
+    setCurrentMathQuestion(generateMathQuestion(difficulty));
+    setCurrentStroopQuestion(null);
     setTimeLeft(getTimeLimit(difficulty));
     setQuestionStartTime(Date.now());
   }, [difficulty, getTimeLimit]);
 
   // Timer effect
   useEffect(() => {
-    if (!isPlaying || gameOver || !currentQuestion) return;
+    if (!isPlaying || gameOver || (!currentStroopQuestion && !currentMathQuestion)) return;
+
+    const currentTimeLimit = selectedGame === 'stroop' ? getStroopTimeLimit(difficulty) : getTimeLimit(difficulty);
 
     const interval = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 100) {
           // Time's up - wrong answer
-          handleStroopAnswer('timeout');
-          return getTimeLimit(difficulty);
+          if (selectedGame === 'stroop') {
+            handleStroopAnswer('timeout');
+          } else if (selectedGame === 'math') {
+            handleMathAnswer(-999); // Impossible answer for timeout
+          }
+          return currentTimeLimit;
         }
         return prev - 100;
       });
     }, 100);
 
     return () => clearInterval(interval);
-  }, [isPlaying, gameOver, currentQuestion, difficulty, getTimeLimit]);
+  }, [isPlaying, gameOver, currentStroopQuestion, currentMathQuestion, selectedGame, difficulty, getTimeLimit, getStroopTimeLimit]);
 
 
-  // Handle answer
+  // Handle Stroop answer
   const handleStroopAnswer = useCallback((selectedColor: string) => {
-    if (!currentQuestion || gameOver) return;
+    if (!currentStroopQuestion || gameOver) return;
 
     // Calculate reaction time (only for non-timeout answers)
     if (selectedColor !== 'timeout' && questionStartTime > 0) {
@@ -181,7 +286,7 @@ const CognitivePage: React.FC = () => {
       setLastReactionTime(null);
     }
 
-    const isCorrect = selectedColor === currentQuestion.correctAnswer;
+    const isCorrect = selectedColor === currentStroopQuestion.correctAnswer;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -197,10 +302,44 @@ const CognitivePage: React.FC = () => {
     setTotalQuestions(prev => prev + 1);
     
     // Generate next question (unlimited mode)
-    setCurrentQuestion(generateStroopQuestion(difficulty));
+    setCurrentStroopQuestion(generateStroopQuestion(difficulty));
+    setTimeLeft(getStroopTimeLimit(difficulty));
+    setQuestionStartTime(Date.now());
+  }, [currentStroopQuestion, gameOver, difficulty, getStroopTimeLimit, bestStreak, questionStartTime]);
+
+  // Handle Math answer
+  const handleMathAnswer = useCallback((selectedAnswer: number) => {
+    if (!currentMathQuestion || gameOver) return;
+
+    // Calculate reaction time (only for non-timeout answers)
+    if (selectedAnswer !== -999 && questionStartTime > 0) {
+      const reactionTime = Date.now() - questionStartTime;
+      setLastReactionTime(reactionTime);
+      setReactionTimes(prev => [...prev, reactionTime]);
+    } else {
+      setLastReactionTime(null);
+    }
+
+    const isCorrect = selectedAnswer === currentMathQuestion.correctAnswer;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      setStreak(prev => {
+        const newStreak = prev + 1;
+        if (newStreak > bestStreak) setBestStreak(newStreak);
+        return newStreak;
+      });
+    } else {
+      setStreak(0);
+    }
+    
+    setTotalQuestions(prev => prev + 1);
+    
+    // Generate next question
+    setCurrentMathQuestion(generateMathQuestion(difficulty));
     setTimeLeft(getTimeLimit(difficulty));
     setQuestionStartTime(Date.now());
-  }, [currentQuestion, gameOver, difficulty, getTimeLimit, bestStreak, questionStartTime]);
+  }, [currentMathQuestion, gameOver, difficulty, getTimeLimit, bestStreak, questionStartTime]);
 
   // End game manually
   const endGame = useCallback(() => {
@@ -217,7 +356,8 @@ const CognitivePage: React.FC = () => {
   const resetGame = () => {
     setIsPlaying(false);
     setGameOver(false);
-    setCurrentQuestion(null);
+    setCurrentStroopQuestion(null);
+    setCurrentMathQuestion(null);
     setScore(0);
     setTotalQuestions(0);
     setStreak(0);
@@ -246,7 +386,7 @@ const CognitivePage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {GAMES.map((game) => {
           const Icon = game.icon;
-          const isAvailable = game.id === 'stroop'; // Only stroop is available for now
+          const isAvailable = game.id === 'stroop' || game.id === 'math';
           
           return (
             <Card 
@@ -281,6 +421,35 @@ const CognitivePage: React.FC = () => {
     </div>
   );
 
+  // Get difficulty description for each game
+  const getDifficultyDescription = (diff: Difficulty) => {
+    if (selectedGame === 'stroop') {
+      return diff === 'easy' ? '5s' : diff === 'medium' ? '3s' : '2s';
+    } else if (selectedGame === 'math') {
+      return diff === 'easy' ? '+/- (8s)' : diff === 'medium' ? '+/-/× (6s)' : '+/-/×/÷ (4s)';
+    }
+    return '';
+  };
+
+  // Get game-specific instruction
+  const getGameInstruction = () => {
+    if (selectedGame === 'stroop') {
+      return t('cognitive.games.stroop.instruction');
+    } else if (selectedGame === 'math') {
+      return 'Λύσε τις πράξεις όσο πιο γρήγορα μπορείς!';
+    }
+    return '';
+  };
+
+  // Start game based on type
+  const startGame = () => {
+    if (selectedGame === 'stroop') {
+      startStroopGame();
+    } else if (selectedGame === 'math') {
+      startMathGame();
+    }
+  };
+
   // Render difficulty selection
   const renderDifficultySelection = () => (
     <div className="space-y-4">
@@ -296,7 +465,7 @@ const CognitivePage: React.FC = () => {
       
       <div className="text-center mb-6">
         <h2 className="text-lg font-semibold mb-2">{t('cognitive.selectDifficulty')}</h2>
-        <p className="text-sm text-muted-foreground">{t('cognitive.games.stroop.instruction')}</p>
+        <p className="text-sm text-muted-foreground">{getGameInstruction()}</p>
       </div>
       
       <div className="grid grid-cols-3 gap-3">
@@ -311,7 +480,7 @@ const CognitivePage: React.FC = () => {
           >
             <span className="font-medium">{t(`cognitive.difficulty.${diff}`)}</span>
             <span className="text-xs opacity-70">
-              {diff === 'easy' ? '5s' : diff === 'medium' ? '3s' : '2s'}
+              {getDifficultyDescription(diff)}
             </span>
           </Button>
         ))}
@@ -319,7 +488,7 @@ const CognitivePage: React.FC = () => {
       
       <Button
         className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 mt-4"
-        onClick={startStroopGame}
+        onClick={startGame}
       >
         <Play className="w-4 h-4 mr-2" />
         {t('cognitive.startGame')}
@@ -327,14 +496,13 @@ const CognitivePage: React.FC = () => {
     </div>
   );
 
-  // Render Stroop game
-  const renderStroopGame = () => {
-    if (!currentQuestion) return null;
-    
-    const progress = (timeLeft / getTimeLimit(difficulty)) * 100;
+  // Render game header (shared)
+  const renderGameHeader = () => {
+    const currentTimeLimit = selectedGame === 'stroop' ? getStroopTimeLimit(difficulty) : getTimeLimit(difficulty);
+    const progress = (timeLeft / currentTimeLimit) * 100;
     
     return (
-      <div className="space-y-4">
+      <>
         {/* Header with score and timer */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
@@ -383,17 +551,28 @@ const CognitivePage: React.FC = () => {
             style={{ width: `${progress}%` }}
           />
         </div>
+      </>
+    );
+  };
+
+  // Render Stroop game
+  const renderStroopGame = () => {
+    if (!currentStroopQuestion) return null;
+    
+    return (
+      <div className="space-y-4">
+        {renderGameHeader()}
         
         {/* Question display */}
         <div 
           className="p-8 rounded-none flex items-center justify-center min-h-[150px]"
-          style={{ backgroundColor: currentQuestion.backgroundColor }}
+          style={{ backgroundColor: currentStroopQuestion.backgroundColor }}
         >
           <span 
             className="text-4xl sm:text-5xl font-bold tracking-wider"
-            style={{ color: currentQuestion.textColor }}
+            style={{ color: currentStroopQuestion.textColor }}
           >
-            {currentQuestion.text}
+            {currentStroopQuestion.text}
           </span>
         </div>
         
@@ -404,12 +583,12 @@ const CognitivePage: React.FC = () => {
         
         {/* Answer options (buttons) */}
         <div className={`grid gap-2 ${
-          currentQuestion.options.length <= 3 ? 'grid-cols-3' : 
-          currentQuestion.options.length <= 4 ? 'grid-cols-2 sm:grid-cols-4' : 
-          currentQuestion.options.length <= 6 ? 'grid-cols-3 sm:grid-cols-6' :
+          currentStroopQuestion.options.length <= 3 ? 'grid-cols-3' : 
+          currentStroopQuestion.options.length <= 4 ? 'grid-cols-2 sm:grid-cols-4' : 
+          currentStroopQuestion.options.length <= 6 ? 'grid-cols-3 sm:grid-cols-6' :
           'grid-cols-4 sm:grid-cols-6'
         }`}>
-          {currentQuestion.options.map((option) => (
+          {currentStroopQuestion.options.map((option) => (
             <Button
               key={option.color}
               className="rounded-none h-14 sm:h-16 border-2 transition-transform hover:scale-105"
@@ -420,6 +599,42 @@ const CognitivePage: React.FC = () => {
               onClick={() => handleStroopAnswer(option.color)}
             >
               <span className="sr-only">{option.color}</span>
+            </Button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render Math game
+  const renderMathGame = () => {
+    if (!currentMathQuestion) return null;
+    
+    return (
+      <div className="space-y-4">
+        {renderGameHeader()}
+        
+        {/* Question display */}
+        <div className="p-8 rounded-none flex items-center justify-center min-h-[150px] bg-gradient-to-br from-[#1a1a2e] to-[#2d2d44]">
+          <span className="text-4xl sm:text-5xl font-bold tracking-wider text-white">
+            {currentMathQuestion.display}
+          </span>
+        </div>
+        
+        {/* Instruction */}
+        <p className="text-center text-sm text-muted-foreground">
+          Επίλεξε τη σωστή απάντηση
+        </p>
+        
+        {/* Answer options */}
+        <div className="grid grid-cols-2 gap-3">
+          {currentMathQuestion.options.map((option, index) => (
+            <Button
+              key={index}
+              className="rounded-none h-16 text-2xl font-bold transition-transform hover:scale-105 bg-muted hover:bg-[#00ffba] hover:text-black"
+              onClick={() => handleMathAnswer(option)}
+            >
+              {option}
             </Button>
           ))}
         </div>
@@ -480,7 +695,7 @@ const CognitivePage: React.FC = () => {
             {t('cognitive.backToGames')}
           </Button>
           <Button
-            onClick={startStroopGame}
+            onClick={startGame}
             className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
@@ -489,6 +704,16 @@ const CognitivePage: React.FC = () => {
         </div>
       </div>
     );
+  };
+
+  // Render current game
+  const renderCurrentGame = () => {
+    if (selectedGame === 'stroop') {
+      return renderStroopGame();
+    } else if (selectedGame === 'math') {
+      return renderMathGame();
+    }
+    return null;
   };
 
   return (
@@ -541,7 +766,7 @@ const CognitivePage: React.FC = () => {
                 <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
                   {!selectedGame && renderGameSelection()}
                   {selectedGame && !isPlaying && !gameOver && renderDifficultySelection()}
-                  {isPlaying && !gameOver && renderStroopGame()}
+                  {isPlaying && !gameOver && renderCurrentGame()}
                   {gameOver && renderGameOver()}
                 </CardContent>
               </Card>
