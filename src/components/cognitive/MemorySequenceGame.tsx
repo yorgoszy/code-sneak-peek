@@ -202,48 +202,48 @@ export const MemorySequenceGame: React.FC<MemorySequenceGameProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <div className="text-center">
-            <div className="text-2xl font-bold text-[#00ffba]">{score}</div>
-            <div className="text-xs text-muted-foreground">Σκορ</div>
+            <div className="text-xl font-bold text-[#00ffba]">{score}</div>
+            <div className="text-[10px] text-muted-foreground">Σκορ</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-medium">{level}</div>
-            <div className="text-xs text-muted-foreground">Επίπεδο</div>
+            <div className="text-base font-medium">{level}</div>
+            <div className="text-[10px] text-muted-foreground">Επίπεδο</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-medium">{sequence.length}</div>
-            <div className="text-xs text-muted-foreground">Μήκος</div>
+            <div className="text-base font-medium">{sequence.length}</div>
+            <div className="text-[10px] text-muted-foreground">Μήκος</div>
           </div>
           {lastReactionTime && (
             <div className="text-center">
-              <div className="text-lg font-medium text-blue-500">
+              <div className="text-base font-medium text-blue-500">
                 {(lastReactionTime / 1000).toFixed(2)}s
               </div>
-              <div className="text-xs text-muted-foreground">Αντίδραση</div>
+              <div className="text-[10px] text-muted-foreground">Αντίδρ.</div>
             </div>
           )}
         </div>
-        <Button variant="destructive" size="sm" onClick={() => setGameOver(true)} className="rounded-none">
+        <Button variant="destructive" size="sm" onClick={() => setGameOver(true)} className="rounded-none h-7 text-xs px-2">
           Τέλος
         </Button>
       </div>
 
       {/* Status */}
-      <div className="text-center mb-4">
+      <div className="text-center">
         {isShowingSequence ? (
-          <Badge className="rounded-none bg-yellow-500 text-black">
-            Παρακολούθησε τη σειρά...
+          <Badge className="rounded-none bg-yellow-500 text-black text-xs">
+            Παρακολούθησε...
           </Badge>
         ) : isPlayerTurn ? (
-          <Badge className="rounded-none bg-[#00ffba] text-black">
-            Η σειρά σου! ({playerSequence.length}/{sequence.length})
+          <Badge className="rounded-none bg-[#00ffba] text-black text-xs">
+            Σειρά σου! ({playerSequence.length}/{sequence.length})
           </Badge>
         ) : (
-          <Badge className="rounded-none">
+          <Badge className="rounded-none text-xs">
             Ετοιμάσου...
           </Badge>
         )}
@@ -251,7 +251,7 @@ export const MemorySequenceGame: React.FC<MemorySequenceGameProps> = ({
 
       {/* Grid */}
       <div 
-        className="grid gap-3 max-w-xs mx-auto"
+        className="grid gap-2 max-w-[200px] mx-auto"
         style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}
       >
         {Array.from({ length: gridSize }).map((_, index) => {
@@ -286,7 +286,7 @@ export const MemorySequenceGame: React.FC<MemorySequenceGameProps> = ({
       {/* Start button if not started */}
       {sequence.length === 0 && !isShowingSequence && (
         <Button
-          className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
+          className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 h-10"
           onClick={startGame}
         >
           <Play className="w-4 h-4 mr-2" />
