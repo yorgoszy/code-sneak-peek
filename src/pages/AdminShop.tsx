@@ -89,10 +89,11 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
 
       if (paymentsError) throw paymentsError;
 
-      // Fetch acknowledged payment IDs from database
+      // Fetch acknowledged payment IDs from database for this admin
       const { data: acknowledgedData, error: acknowledgedError } = await supabase
         .from('acknowledged_payments')
-        .select('payment_id');
+        .select('payment_id')
+        .eq('admin_user_id', userProfile.id);
 
       if (acknowledgedError) throw acknowledgedError;
 

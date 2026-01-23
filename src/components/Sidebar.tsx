@@ -244,10 +244,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
       if (error) throw error;
 
-      // Φέρνουμε τα acknowledged payments από τη βάση δεδομένων
+      // Φέρνουμε τα acknowledged payments από τη βάση δεδομένων για τον συγκεκριμένο admin
       const { data: acknowledgedPayments, error: ackError } = await supabase
         .from('acknowledged_payments')
-        .select('payment_id');
+        .select('payment_id')
+        .eq('admin_user_id', userProfile.id);
 
       if (ackError) throw ackError;
 
