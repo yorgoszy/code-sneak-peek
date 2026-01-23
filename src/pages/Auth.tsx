@@ -21,11 +21,17 @@ const Auth = () => {
   const [isResettingPasswords, setIsResettingPasswords] = useState(false);
   const [signupPassword, setSignupPassword] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [coachSignupPassword, setCoachSignupPassword] = useState("");
+  const [coachPasswordError, setCoachPasswordError] = useState<string | null>(null);
   const [signupFeedback, setSignupFeedback] = useState<
     | { variant: "default" | "destructive"; title: string; description?: string }
     | null
   >(null);
-  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  const [coachSignupFeedback, setCoachSignupFeedback] = useState<
+    | { variant: "default" | "destructive"; title: string; description?: string }
+    | null
+  >(null);
+  const [activeTab, setActiveTab] = useState<'login' | 'signup' | 'coach-signup'>('login');
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
@@ -277,6 +283,172 @@ const Auth = () => {
     }
   };
 
+  const handleCoachSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setCoachSignupFeedback(null);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("coach-email") as string;
+    const password = coachSignupPassword;
+    const name = formData.get("coach-name") as string;
+
+    // Password validation
+    const validatePassword = (pwd: string) => {
+      const errors: string[] = [];
+      if (pwd.length < 8) errors.push(t.authPasswordMinChars);
+
+      const lowerRe = /[a-zα-ωάέήίόύώϊϋΐΰ]/;
+      const upperRe = /[A-ZΑ-ΩΆΈΉΊΌΎΏΪΫ]/;
+      const numberRe = /[0-9]/;
+      const specialRe = /[^A-Za-z0-9Α-ΩΆΈΉΊΌΎΏΪΫα-ωάέήίόύώϊϋΐΰ]/;
+
+      if (!lowerRe.test(pwd)) errors.push(t.authPasswordLowercase);
+      if (!upperRe.test(pwd)) errors.push(t.authPasswordUppercase);
+      if (!numberRe.test(pwd)) errors.push(language === 'el' ? "αριθμούς" : "numbers");
+      if (!specialRe.test(pwd)) errors.push(language === 'el' ? "ειδικούς χαρακτήρες" : "special characters");
+      return errors;
+    };
+
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      const msg = `${t.authPasswordRequirements} ${passwordErrors.join(', ')}.`;
+      setCoachPasswordError(msg);
+      setCoachSignupFeedback({ variant: "destructive", title: t.authErrorInvalidPassword, description: msg });
+      toast({
+        title: t.authErrorInvalidPassword,
+        description: msg,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      console.log('📝 Coach sign up start for:', email);
+      
+      // Create user with role: coach in metadata
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+          data: {
+            name: name,
+            role: 'coach'  // This will be picked up by the database trigger
+          }
+        }
+      });
+
+      console.log('📝 Supabase auth response:', { data, error });
+
+      if (error) {
+        console.error('📝 Coach signup error:', error.message, error.status);
+        
+        let errorTitle = t.authErrorGeneric;
+        let errorDescription = t.authErrorGenericDesc;
+        
+        if (error.message.includes('User already registered') || 
+            error.message.includes('already been registered') ||
+            error.message.includes('already exists')) {
+          errorTitle = t.authErrorEmailExists;
+          errorDescription = t.authErrorEmailExistsDesc;
+        } else if (error.message.includes('Password should be at least') || 
+                   error.message.includes('password') ||
+                   error.message.includes('weak')) {
+          errorTitle = t.authErrorWeakPassword;
+          errorDescription = t.authErrorWeakPasswordDesc;
+        } else if (error.message.includes('Invalid email') || 
+                   error.message.includes('valid email')) {
+          errorTitle = t.authErrorInvalidEmail;
+          errorDescription = t.authErrorInvalidEmailDesc;
+        } else if (error.message.includes('rate limit') || 
+                   error.message.includes('too many requests') ||
+                   error.message.includes('Too many')) {
+          errorTitle = t.authErrorTooManyRequests;
+          errorDescription = t.authErrorTooManyRequestsDesc;
+        } else if (error.message.includes('network') || 
+                   error.message.includes('connection')) {
+          errorTitle = t.authErrorConnection;
+          errorDescription = t.authErrorConnectionDesc;
+        } else {
+          errorDescription = error.message || t.authErrorGenericDesc;
+        }
+        
+        setCoachSignupFeedback({
+          variant: "destructive",
+          title: errorTitle,
+          description: errorDescription,
+        });
+        toast({
+          title: errorTitle,
+          description: errorDescription,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        const isExistingUser = !data.user.identities || data.user.identities.length === 0;
+        
+        if (isExistingUser) {
+          console.log('📝 User already exists (fake success):', email);
+          setCoachSignupFeedback({
+            variant: "destructive",
+            title: t.authErrorEmailExists,
+            description: t.authErrorEmailExistsDesc,
+          });
+          toast({
+            title: t.authErrorEmailExists,
+            description: t.authErrorEmailExistsDesc,
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('📝 New coach user created:', data.user.id);
+        const okFeedback = {
+          variant: "default" as const,
+          title: language === 'el' ? 'Επιτυχής εγγραφή Coach!' : 'Coach Registration Successful!',
+          description: t.authSuccessSignupDesc,
+        };
+        setCoachSignupFeedback(okFeedback);
+        toast({
+          title: okFeedback.title,
+          description: okFeedback.description,
+        });
+      } else {
+        console.log('📝 No user returned, likely already exists');
+        setCoachSignupFeedback({
+          variant: "destructive",
+          title: t.authErrorSignupProblem,
+          description: t.authErrorSignupProblemDesc,
+        });
+        toast({
+          title: t.authErrorSignupProblem,
+          description: t.authErrorSignupProblemDesc,
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error('Coach signup error:', error);
+      setCoachSignupFeedback({
+        variant: "destructive",
+        title: t.authError,
+        description: error.message || t.authErrorGenericDesc,
+      });
+      toast({
+        title: t.authError,
+        description: error.message || t.authErrorGenericDesc,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -491,10 +663,10 @@ const Auth = () => {
         <Card className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))]">
           <CardHeader>
             <CardTitle className="text-center text-[hsl(var(--auth-gray))]">
-              {showForgotPassword ? t.authResetPassword : (activeTab === 'signup' ? t.authSignupTitle : t.authLoginTitle)}
+              {showForgotPassword ? t.authResetPassword : (activeTab === 'coach-signup' ? (language === 'el' ? 'Εγγραφή Coach' : 'Coach Sign Up') : (activeTab === 'signup' ? t.authSignupTitle : t.authLoginTitle))}
             </CardTitle>
             <CardDescription className="text-center text-[hsl(var(--auth-gray))]">
-              {showForgotPassword ? t.authResetPasswordSubtitle : (activeTab === 'signup' ? t.authSignupSubtitle : t.authLoginSubtitle)}
+              {showForgotPassword ? t.authResetPasswordSubtitle : (activeTab === 'coach-signup' ? (language === 'el' ? 'Δημιουργήστε λογαριασμό coach' : 'Create your coach account') : (activeTab === 'signup' ? t.authSignupSubtitle : t.authLoginSubtitle))}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -528,10 +700,11 @@ const Auth = () => {
                 </Button>
               </form>
             ) : (
-              <Tabs defaultValue="login" value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-[hsl(var(--auth-black))] border border-[hsl(var(--auth-gray))]">
-                  <TabsTrigger value="login" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black">{t.authLogin}</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black">{t.authSignup}</TabsTrigger>
+              <Tabs defaultValue="login" value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup' | 'coach-signup')} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 bg-[hsl(var(--auth-black))] border border-[hsl(var(--auth-gray))]">
+                  <TabsTrigger value="login" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black text-xs sm:text-sm">{t.authLogin}</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black text-xs sm:text-sm">{t.authSignup}</TabsTrigger>
+                  <TabsTrigger value="coach-signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[#00ffba] data-[state=active]:text-black text-xs sm:text-sm">{language === 'el' ? 'Coach' : 'Coach'}</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
@@ -630,6 +803,80 @@ const Auth = () => {
                        disabled={isLoading || !!passwordError || signupPassword.length === 0}
                      >
                       {isLoading ? t.authSigningUp : t.authSignup}
+                    </Button>
+                    <div className="text-xs text-[hsl(var(--auth-gray))] text-center">
+                      {t.authAfterSignup}
+                    </div>
+                  </form>
+                </TabsContent>
+                
+                <TabsContent value="coach-signup">
+                  <form onSubmit={handleCoachSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="coach-name" className="text-[hsl(var(--auth-gray))]">{t.authFullName}</Label>
+                      <Input id="coach-name" name="coach-name" type="text" placeholder={t.authFullNamePlaceholder} required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="coach-email" className="text-[hsl(var(--auth-gray))]">{t.authEmail}</Label>
+                      <Input id="coach-email" name="coach-email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="coach-password" className="text-[hsl(var(--auth-gray))]">{t.authPassword}</Label>
+                      <Input
+                        id="coach-password"
+                        name="coach-password"
+                        type="password"
+                        required
+                        minLength={8}
+                        value={coachSignupPassword}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCoachSignupPassword(val);
+
+                          // Live validation
+                          const lowerRe = /[a-zα-ωάέήίόύώϊϋΐΰ]/;
+                          const upperRe = /[A-ZΑ-ΩΆΈΉΊΌΎΏΪΫ]/;
+                          const numberRe = /[0-9]/;
+                          const specialRe = /[^A-Za-z0-9Α-ΩΆΈΉΊΌΎΏΪΫα-ωάέήίόύώϊϋΐΰ]/;
+
+                          const errors: string[] = [];
+                          if (val.length < 8) errors.push(t.authPasswordMinChars);
+                          if (!lowerRe.test(val)) errors.push(t.authPasswordLowercase);
+                          if (!upperRe.test(val)) errors.push(t.authPasswordUppercase);
+                          if (!numberRe.test(val)) errors.push(language === 'el' ? "αριθμούς" : "numbers");
+                          if (!specialRe.test(val)) errors.push(language === 'el' ? "ειδικούς χαρακτήρες" : "special characters");
+
+                          setCoachPasswordError(errors.length ? `${t.authPasswordRequirements} ${errors.join(', ')}.` : null);
+                        }}
+                        aria-invalid={!!coachPasswordError}
+                        aria-describedby="coach-password-help"
+                        className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]"
+                      />
+                      <p id="coach-password-help" className={`text-xs ${coachPasswordError ? 'text-red-600' : 'text-[hsl(var(--auth-gray))]'}`}>
+                        {t.authPasswordHint}
+                      </p>
+                    </div>
+
+                    {coachSignupFeedback && (
+                      <Alert
+                        variant={coachSignupFeedback.variant}
+                        className="rounded-none bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))]"
+                      >
+                        <AlertTitle className="text-[hsl(var(--auth-gray))]">{coachSignupFeedback.title}</AlertTitle>
+                        {coachSignupFeedback.description && (
+                          <AlertDescription className="text-[hsl(var(--auth-gray))]">
+                            {coachSignupFeedback.description}
+                          </AlertDescription>
+                        )}
+                      </Alert>
+                    )}
+
+                    <Button 
+                      type="submit" 
+                      className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 border-2 border-transparent transition-all duration-300" 
+                      disabled={isLoading || !!coachPasswordError || coachSignupPassword.length === 0}
+                    >
+                      {isLoading ? t.authSigningUp : (language === 'el' ? 'Εγγραφή ως Coach' : 'Sign Up as Coach')}
                     </Button>
                     <div className="text-xs text-[hsl(var(--auth-gray))] text-center">
                       {t.authAfterSignup}
