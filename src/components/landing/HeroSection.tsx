@@ -1,6 +1,4 @@
-
 import React from 'react';
-import { Button } from "@/components/ui/button";
 
 interface HeroSectionProps {
   translations: any;
@@ -8,64 +6,53 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
-  const handleContactClick = () => {
-    const footerSection = document.getElementById('footer');
-    if (footerSection) {
-      footerSection.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-  };
-
   return (
-    <section id="home" className="relative pt-16 min-h-screen flex items-center">
-      <style>{`
-        .get-started-btn {
-          background-color: #cf8d54 !important;
-          color: black !important;
-        }
-        .get-started-btn:hover {
-          background-color: #b5794a !important;
-        }
-        .contact-btn:hover {
-          border-color: #cf8d54 !important;
-          color: #cf8d54 !important;
-          background-color: transparent !important;
-        }
-      `}</style>
-      
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('/lovable-uploads/7d78ce26-3ce9-488f-9948-1cb90eac5b9e.png')`
-        }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-60"></div>
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Black background with diagonal split */}
+      <div className="absolute inset-0">
+        {/* Right side - pure black */}
+        <div className="absolute inset-0 bg-black" />
+        {/* Left side - dark gray diagonal */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #1a1a1a 50%, transparent 50%)',
+          }}
+        />
+      </div>
+
+      {/* Top logo - IIIIIII */}
+      <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="flex gap-1">
+          {[...Array(7)].map((_, i) => (
+            <div key={i} className="w-1 h-4 bg-gray-600" />
+          ))}
+        </div>
       </div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="text-left">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6" style={{ color: '#ACA097' }}>
-            {translations.heroTitle}<br />
-            <span style={{ color: '#cf8d54' }}>{translations.heroSubtitle}</span>
-          </h1>
-          <div className="flex flex-wrap gap-4">
-            <Button 
-              className="get-started-btn rounded-none transition-colors duration-200" 
-              onClick={onGetStarted}
-            >
-              {translations.getStarted}
-            </Button>
-            <Button 
-              variant="outline" 
-              className="contact-btn rounded-none bg-transparent"
-              style={{ color: '#ACA097', borderColor: '#ACA097' }}
-              onClick={handleContactClick}
-            >
-              {translations.contactBtn}
-            </Button>
-          </div>
+      {/* Center content - HYPER vertical text */}
+      <div className="relative z-10 flex items-center justify-center">
+        <h1 
+          className="text-white font-bold tracking-tighter"
+          style={{
+            writingMode: 'vertical-rl',
+            textOrientation: 'mixed',
+            fontSize: 'clamp(5rem, 15vw, 12rem)',
+            letterSpacing: '-0.02em',
+            fontFamily: 'Robert Pro, sans-serif',
+            transform: 'rotate(180deg)',
+          }}
+        >
+          HYPER
+        </h1>
+      </div>
+
+      {/* Bottom logo - IIIIIII */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="flex gap-1">
+          {[...Array(7)].map((_, i) => (
+            <div key={i} className="w-1 h-4 bg-gray-600" />
+          ))}
         </div>
       </div>
     </section>
