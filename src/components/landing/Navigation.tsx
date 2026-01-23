@@ -22,17 +22,7 @@ const Navigation: React.FC<NavigationProps> = ({
   onSignOut,
   translations
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      // Show header after scrolling 100px
-      setIsVisible(window.scrollY > 100);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const [isVisible] = useState(true);
 
   const handleNavigationClick = (href: string, event: React.MouseEvent) => {
     if (href.startsWith('#')) {
