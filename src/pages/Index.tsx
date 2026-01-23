@@ -6,7 +6,6 @@ import { useIsPWA } from "@/hooks/useIsPWA";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/landing/Navigation";
 import HeroSection from "@/components/landing/HeroSection";
-import ForKidsSection from "@/components/landing/ForKidsSection";
 import ProgramsSection from "@/components/landing/ProgramsSection";
 import AboutSection from "@/components/landing/AboutSection";
 import CertificatesSection from "@/components/landing/CertificatesSection";
@@ -136,10 +135,6 @@ const Index = () => {
       <HeroSection 
         translations={correctedTranslations}
         onGetStarted={handleGetStarted}
-      />
-
-      <ForKidsSection 
-        translations={correctedTranslations}
       />
 
       <ProgramsSection 
