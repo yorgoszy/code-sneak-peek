@@ -1,4 +1,5 @@
 import React from 'react';
+import heroBg from '@/assets/hero-bg.jpg';
 
 interface HeroSectionProps {
   translations: any;
@@ -8,18 +9,11 @@ interface HeroSectionProps {
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Black background with diagonal split */}
-      <div className="absolute inset-0">
-        {/* Right side - pure black */}
-        <div className="absolute inset-0 bg-black" />
-        {/* Left side - dark gray diagonal */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(135deg, #1a1a1a 0%, #1a1a1a 50%, transparent 50%)',
-          }}
-        />
-      </div>
+      {/* Background image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroBg})` }}
+      />
 
       {/* Top logo - IIIIIII */}
       <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-20">
