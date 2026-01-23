@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, RotateCcw, ArrowLeft, Play } from "lucide-react";
@@ -219,6 +219,11 @@ export const LogicPatternGame: React.FC<LogicPatternGameProps> = ({
     setQuestionStartTime(Date.now());
   }, [difficulty]);
 
+  // Auto-start game on mount
+  useEffect(() => {
+    startGame();
+  }, [startGame]);
+
   // Handle answer
   const handleAnswer = (selectedOption: PatternItem) => {
     if (!currentQuestion || gameOver) return;
@@ -321,20 +326,11 @@ export const LogicPatternGame: React.FC<LogicPatternGameProps> = ({
     );
   }
 
+  // Show loading state if not started yet
   if (!gameStarted) {
     return (
-      <div className="text-center space-y-4 py-8">
-        <h2 className="text-xl font-bold">Αναγνώριση Μοτίβου</h2>
-        <p className="text-muted-foreground">
-          Βρες ποιο σχήμα/χρώμα ακολουθεί στο μοτίβο
-        </p>
-        <Button
-          className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
-          onClick={startGame}
-        >
-          <Play className="w-4 h-4 mr-2" />
-          Ξεκίνα
-        </Button>
+      <div className="text-center py-4">
+        <div className="text-muted-foreground">Φόρτωση...</div>
       </div>
     );
   }
