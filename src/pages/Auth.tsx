@@ -704,7 +704,7 @@ const Auth = () => {
                 <TabsList className="grid w-full grid-cols-3 bg-[hsl(var(--auth-black))] border border-[hsl(var(--auth-gray))]">
                   <TabsTrigger value="login" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black text-xs sm:text-sm">{t.authLogin}</TabsTrigger>
                   <TabsTrigger value="signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black text-xs sm:text-sm">{t.authSignup}</TabsTrigger>
-                  <TabsTrigger value="coach-signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[#00ffba] data-[state=active]:text-black text-xs sm:text-sm">{language === 'el' ? 'Coach' : 'Coach'}</TabsTrigger>
+                  <TabsTrigger value="coach-signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[#00ffba] data-[state=active]:text-black text-xs sm:text-sm">For Coach</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
