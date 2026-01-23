@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
-import heroKids from '@/assets/hero-kids.png';
-import heroAthletes from '@/assets/hero-athletes.png';
+import heroSlide1 from '@/assets/hero-slide-1.svg';
+import heroSlide2 from '@/assets/hero-slide-2.svg';
+import heroSlide3 from '@/assets/hero-slide-3.svg';
 
 interface HeroSectionProps {
   translations: any;
@@ -10,8 +11,9 @@ interface HeroSectionProps {
 }
 
 const slides = [
-  { image: heroKids, alt: 'For Kids' },
-  { image: heroAthletes, alt: 'For Athletes' },
+  { image: heroSlide1, alt: 'Slide 1' },
+  { image: heroSlide2, alt: 'Slide 2' },
+  { image: heroSlide3, alt: 'Slide 3' },
 ];
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
