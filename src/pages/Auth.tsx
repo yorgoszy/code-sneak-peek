@@ -593,7 +593,9 @@ const Auth = () => {
     const email = formData.get("reset-email") as string;
 
     try {
-      const redirectUrl = 'https://www.hyperkids.gr/reset-password';
+      // Use current origin so preview environments generate working links too
+      // Production on hyperkids.gr will still resolve correctly.
+      const redirectUrl = `${window.location.origin}/reset-password`;
       console.log('🔗 Password reset redirect URL:', redirectUrl);
       
       // Use our custom edge function instead of Supabase built-in
