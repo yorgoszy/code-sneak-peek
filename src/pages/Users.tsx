@@ -1099,6 +1099,15 @@ const Users = () => {
                                       >
                                         <Edit className="h-3 w-3" />
                                       </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="rounded-none text-red-600 hover:text-red-700"
+                                        onClick={() => handleDeleteUser(user)}
+                                        title="Διαγραφή"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
                                     </div>
                                   </TableCell>
                                 </TableRow>
@@ -1161,6 +1170,15 @@ const Users = () => {
                                   title="Επεξεργασία"
                                 >
                                   <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none p-2 text-red-600 hover:text-red-700"
+                                  onClick={() => handleDeleteUser(user)}
+                                  title="Διαγραφή"
+                                >
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                               </div>
 
