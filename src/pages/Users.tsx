@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye, Mail, Menu, Users as UsersIcon } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye, Mail, Menu, Users as UsersIcon, UserCheck } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { matchesSearchTerm } from "@/lib/utils";
 import {
@@ -85,6 +85,9 @@ const Users = () => {
   // Coaches for filter
   const [coaches, setCoaches] = useState<Pick<AppUser, 'id' | 'name' | 'email' | 'avatar_url' | 'photo_url'>[]>([]);
   const [coachFilter, setCoachFilter] = useState<string>("all");
+  
+  // Coach role users state (χρήστες με role='coach')
+  const [coachRoleUsers, setCoachRoleUsers] = useState<UserWithSubscription[]>([]);
 
   // Check for tablet size
   useEffect(() => {
@@ -154,7 +157,7 @@ const Users = () => {
         return;
       }
       
-      // Fetch coaches (users with role = 'coach')
+      // Fetch coaches (users with role = 'coach') for dropdown filter
       const { data: coachesData, error: coachesError } = await supabase
         .from('app_users')
         .select('id, name, email, avatar_url, photo_url')
@@ -165,6 +168,21 @@ const Users = () => {
         console.error('❌ Error fetching coaches:', coachesError);
       } else {
         setCoaches(coachesData || []);
+      }
+      
+      // Fetch full coach data for the Coaches tab (users with role = 'coach')
+      const { data: coachRoleData, error: coachRoleError } = await supabase
+        .from('app_users')
+        .select('*')
+        .eq('role', 'coach')
+        .order('created_at', { ascending: false });
+      
+      if (coachRoleError) {
+        console.error('❌ Error fetching coach role users:', coachRoleError);
+      } else {
+        const coachRoleWithSubscription = await fetchSubscriptionStatuses(coachRoleData || []);
+        setCoachRoleUsers(coachRoleWithSubscription);
+        console.log('✅ Coach role users fetched:', coachRoleWithSubscription.length);
       }
 
       // Fetch subscription status for admin users
@@ -455,6 +473,15 @@ const Users = () => {
     return matchesSearch && matchesRole && matchesSubscription && matchesCoach;
   });
 
+  // Filter coach role users for the Coaches tab
+  const filteredCoachRoleUsers = coachRoleUsers.filter(user => {
+    const matchesSearch = matchesSearchTerm(user.name, searchTerm) ||
+                          matchesSearchTerm(user.email, searchTerm);
+    const matchesSubscription = subscriptionFilter === "all" || user.subscription_status === subscriptionFilter;
+    
+    return matchesSearch && matchesSubscription;
+  });
+
   // Helper to get coach info by id
   const getCoachInfo = (coachId: string | undefined) => {
     if (!coachId) return null;
@@ -616,6 +643,10 @@ const Users = () => {
                 <TabsTrigger value="admin-users" className="rounded-none flex items-center gap-2">
                   <UsersIcon className="h-4 w-4" />
                   Χρήστες ({allUsers.length})
+                </TabsTrigger>
+                <TabsTrigger value="coaches" className="rounded-none flex items-center gap-2">
+                  <UserCheck className="h-4 w-4" />
+                  Coaches ({coachRoleUsers.length})
                 </TabsTrigger>
                 <TabsTrigger value="coach-users" className="rounded-none flex items-center gap-2">
                   <UsersIcon className="h-4 w-4" />
@@ -934,6 +965,202 @@ const Users = () => {
                                   title="Διαγραφή χρήστη"
                                 >
                                   <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+
+                              {/* Additional Info on mobile */}
+                              <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-600">
+                                <div className="flex justify-between">
+                                  <span>Τηλέφωνο: {user.phone || '-'}</span>
+                                  <span>Εγγραφή: {formatDate(user.created_at)}</span>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Coaches Tab - Users with role='coach' */}
+              <TabsContent value="coaches" className="space-y-6 mt-4">
+                <Card>
+                  <CardHeader className="pb-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <CardTitle className="text-base lg:text-lg font-semibold">
+                        Coaches ({coachRoleUsers.length})
+                      </CardTitle>
+                    </div>
+                    
+                    {/* Search and Filters for Coaches */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-4 mt-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Αναζήτηση coaches..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10 text-sm"
+                        />
+                      </div>
+                      
+                      <Select value={subscriptionFilter} onValueChange={setSubscriptionFilter}>
+                        <SelectTrigger className="text-sm">
+                          <Filter className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Κατάσταση συνδρομής" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Όλες οι συνδρομές</SelectItem>
+                          <SelectItem value="Ενεργή">Ενεργή</SelectItem>
+                          <SelectItem value="Ανενεργή">Ανενεργή</SelectItem>
+                          <SelectItem value="Παύση">Παύση</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingUsers ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-600">Φόρτωση coaches...</p>
+                      </div>
+                    ) : filteredCoachRoleUsers.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-600">
+                          {searchTerm || subscriptionFilter !== "all"
+                            ? "Δεν βρέθηκαν coaches με τα επιλεγμένα κριτήρια" 
+                            : "Δεν υπάρχουν coaches"}
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Desktop Table */}
+                        <div className="hidden lg:block">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Όνομα</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Τηλέφωνο</TableHead>
+                                <TableHead>Κατάσταση</TableHead>
+                                <TableHead>Εγγραφή</TableHead>
+                                <TableHead>Ενέργειες</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {filteredCoachRoleUsers.map((user) => (
+                                <TableRow key={user.id}>
+                                  <TableCell className="font-medium">
+                                    <div className="flex items-center space-x-3">
+                                      <Avatar className="w-8 h-8">
+                                        <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
+                                        <AvatarFallback>
+                                          {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span>{user.name}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>{user.email}</TableCell>
+                                  <TableCell>{user.phone || '-'}</TableCell>
+                                  <TableCell>
+                                    <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
+                                      {user.subscription_status}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>{formatDate(user.created_at)}</TableCell>
+                                  <TableCell>
+                                    <div className="flex space-x-1">
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="rounded-none"
+                                        onClick={() => handleTestPasswordReset(user)}
+                                        title="Αποστολή κωδικού"
+                                      >
+                                        <Mail className="h-3 w-3" />
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="rounded-none"
+                                        onClick={() => handleViewUser(user)}
+                                        title="Προβολή προφίλ"
+                                      >
+                                        <Eye className="h-3 w-3" />
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="rounded-none"
+                                        onClick={() => handleEditUser(user)}
+                                        title="Επεξεργασία"
+                                      >
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="lg:hidden space-y-3">
+                          {filteredCoachRoleUsers.map((user) => (
+                            <Card key={user.id} className="p-4 border border-[#00ffba]/20">
+                              {/* User Info */}
+                              <div className="flex items-center space-x-3 mb-3">
+                                <Avatar className="w-10 h-10 flex-shrink-0">
+                                  <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
+                                  <AvatarFallback>
+                                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="font-medium text-sm text-gray-900 truncate">{user.name}</h3>
+                                  <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                    <span className="px-2 py-1 text-xs rounded bg-[#00ffba]/20 text-[#00ffba]">
+                                      Coach
+                                    </span>
+                                    <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
+                                      {user.subscription_status}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex space-x-2 justify-end">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none p-2"
+                                  onClick={() => handleTestPasswordReset(user)}
+                                  title="Αποστολή κωδικού"
+                                >
+                                  <Mail className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none p-2"
+                                  onClick={() => handleViewUser(user)}
+                                  title="Προβολή προφίλ"
+                                >
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-none p-2"
+                                  onClick={() => handleEditUser(user)}
+                                  title="Επεξεργασία"
+                                >
+                                  <Edit className="h-3 w-3" />
                                 </Button>
                               </div>
 
