@@ -409,6 +409,18 @@ const Auth = () => {
         }
 
         console.log('📝 New coach user created:', data.user.id);
+        
+        // Send coach welcome email with special coach offers info
+        try {
+          await supabase.functions.invoke('send-coach-welcome', {
+            body: { email, name }
+          });
+          console.log('📧 Coach welcome email sent');
+        } catch (emailError) {
+          console.error('📧 Failed to send coach welcome email:', emailError);
+          // Don't block signup if email fails
+        }
+        
         const okFeedback = {
           variant: "default" as const,
           title: language === 'el' ? 'Επιτυχής εγγραφή Coach!' : 'Coach Registration Successful!',
