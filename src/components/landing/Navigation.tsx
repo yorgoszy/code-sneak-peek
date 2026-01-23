@@ -44,6 +44,9 @@ const Navigation: React.FC<NavigationProps> = ({
       }`}
     >
       <style>{`
+        .nav-link {
+          color: white !important;
+        }
         .nav-link:hover {
           color: #cf8d54 !important;
         }
@@ -60,19 +63,19 @@ const Navigation: React.FC<NavigationProps> = ({
           border-color: transparent !important;
         }
         .language-btn svg, .dashboard-btn svg, .logout-btn svg {
-          color: #ACA097 !important;
+          color: white !important;
         }
         .language-btn:hover svg, .dashboard-btn:hover svg, .logout-btn:hover svg {
           color: #cf8d54 !important;
         }
         .login-btn {
-          background-color: #cb8954 !important;
-          border-color: #cb8954 !important;
-          color: black !important;
+          background-color: transparent !important;
+          border: 1px solid white !important;
+          color: white !important;
         }
         .login-btn:hover {
-          background-color: #b87849 !important;
-          border-color: #b87849 !important;
+          background-color: white !important;
+          color: black !important;
         }
       `}</style>
       
@@ -82,7 +85,7 @@ const Navigation: React.FC<NavigationProps> = ({
             <img 
               src={hyperkidsLogo} 
               alt="HyperKids Logo" 
-              className="h-10 w-auto"
+              className="h-7 w-auto"
             />
           </div>
           
@@ -91,8 +94,7 @@ const Navigation: React.FC<NavigationProps> = ({
               <a
                 key={item.name}
                 href={item.href}
-                className="nav-link transition-colors duration-200 text-sm font-medium"
-                style={{ color: '#ACA097' }}
+                className="nav-link transition-colors duration-200 text-sm font-medium text-white"
                 onClick={(e) => handleNavigationClick(item.href, e)}
               >
                 {item.name}
