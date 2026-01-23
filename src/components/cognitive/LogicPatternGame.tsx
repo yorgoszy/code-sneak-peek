@@ -33,22 +33,24 @@ interface PatternQuestion {
 
 // Generate pattern question
 const generatePattern = (difficulty: 'easy' | 'medium' | 'hard'): PatternQuestion => {
-  const patternTypes = ['shape', 'color', 'both'];
-  const type = difficulty === 'easy' 
-    ? patternTypes[0] 
+  const patternTypes = difficulty === 'easy' 
+    ? ['shape', 'color']
     : difficulty === 'medium'
-      ? patternTypes[Math.floor(Math.random() * 2)]
-      : patternTypes[Math.floor(Math.random() * patternTypes.length)];
+      ? ['shape', 'color', 'both', 'alternating']
+      : ['both', 'alternating', 'complex', 'nested'];
   
-  const patternLength = difficulty === 'easy' ? 4 : difficulty === 'medium' ? 5 : 6;
+  const type = patternTypes[Math.floor(Math.random() * patternTypes.length)];
+  
+  const patternLength = difficulty === 'easy' ? 4 : difficulty === 'medium' ? 5 : 7;
   const pattern: PatternItem[] = [];
   let answer: PatternItem;
   
   if (type === 'shape') {
     // Repeating shape pattern with same color
     const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-    const shapeCount = difficulty === 'easy' ? 2 : 3;
-    const selectedShapes = SHAPES.slice(0, shapeCount);
+    const shapeCount = difficulty === 'easy' ? 2 : difficulty === 'medium' ? 3 : 4;
+    const shuffledShapes = [...SHAPES].sort(() => Math.random() - 0.5);
+    const selectedShapes = shuffledShapes.slice(0, shapeCount);
     
     for (let i = 0; i < patternLength; i++) {
       pattern.push({
@@ -65,8 +67,9 @@ const generatePattern = (difficulty: 'easy' | 'medium' | 'hard'): PatternQuestio
   } else if (type === 'color') {
     // Same shape, repeating colors
     const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-    const colorCount = difficulty === 'easy' ? 2 : 3;
-    const selectedColors = COLORS.slice(0, colorCount);
+    const colorCount = difficulty === 'easy' ? 2 : difficulty === 'medium' ? 3 : 4;
+    const shuffledColors = [...COLORS].sort(() => Math.random() - 0.5);
+    const selectedColors = shuffledColors.slice(0, colorCount);
     
     for (let i = 0; i < patternLength; i++) {
       const color = selectedColors[i % colorCount];
@@ -82,12 +85,72 @@ const generatePattern = (difficulty: 'easy' | 'medium' | 'hard'): PatternQuestio
       color: answerColor.name,
       colorHex: answerColor.hex,
     };
+  } else if (type === 'alternating') {
+    // Alternating pattern: AB AB AB or ABC ABC
+    const shapeCount = difficulty === 'easy' ? 2 : 3;
+    const colorCount = difficulty === 'easy' ? 2 : 3;
+    const shuffledShapes = [...SHAPES].sort(() => Math.random() - 0.5);
+    const shuffledColors = [...COLORS].sort(() => Math.random() - 0.5);
+    const selectedShapes = shuffledShapes.slice(0, shapeCount);
+    const selectedColors = shuffledColors.slice(0, colorCount);
+    
+    for (let i = 0; i < patternLength; i++) {
+      pattern.push({
+        shape: selectedShapes[i % shapeCount],
+        color: selectedColors[i % colorCount].name,
+        colorHex: selectedColors[i % colorCount].hex,
+      });
+    }
+    answer = {
+      shape: selectedShapes[patternLength % shapeCount],
+      color: selectedColors[patternLength % colorCount].name,
+      colorHex: selectedColors[patternLength % colorCount].hex,
+    };
+  } else if (type === 'complex') {
+    // Complex: shapes cycle every 2, colors cycle every 3
+    const selectedShapes = [...SHAPES].sort(() => Math.random() - 0.5).slice(0, 3);
+    const selectedColors = [...COLORS].sort(() => Math.random() - 0.5).slice(0, 4);
+    
+    for (let i = 0; i < patternLength; i++) {
+      pattern.push({
+        shape: selectedShapes[Math.floor(i / 2) % selectedShapes.length],
+        color: selectedColors[i % selectedColors.length].name,
+        colorHex: selectedColors[i % selectedColors.length].hex,
+      });
+    }
+    answer = {
+      shape: selectedShapes[Math.floor(patternLength / 2) % selectedShapes.length],
+      color: selectedColors[patternLength % selectedColors.length].name,
+      colorHex: selectedColors[patternLength % selectedColors.length].hex,
+    };
+  } else if (type === 'nested') {
+    // Nested: color changes every shape cycle completion
+    const shapeCount = 3;
+    const selectedShapes = [...SHAPES].sort(() => Math.random() - 0.5).slice(0, shapeCount);
+    const selectedColors = [...COLORS].sort(() => Math.random() - 0.5).slice(0, 3);
+    
+    for (let i = 0; i < patternLength; i++) {
+      const colorIndex = Math.floor(i / shapeCount) % selectedColors.length;
+      pattern.push({
+        shape: selectedShapes[i % shapeCount],
+        color: selectedColors[colorIndex].name,
+        colorHex: selectedColors[colorIndex].hex,
+      });
+    }
+    const answerColorIndex = Math.floor(patternLength / shapeCount) % selectedColors.length;
+    answer = {
+      shape: selectedShapes[patternLength % shapeCount],
+      color: selectedColors[answerColorIndex].name,
+      colorHex: selectedColors[answerColorIndex].hex,
+    };
   } else {
-    // Both shape and color change
-    const shapeCount = 2;
-    const colorCount = 2;
-    const selectedShapes = SHAPES.slice(0, shapeCount);
-    const selectedColors = COLORS.slice(0, colorCount);
+    // Both shape and color change (default)
+    const shapeCount = difficulty === 'medium' ? 3 : 4;
+    const colorCount = difficulty === 'medium' ? 2 : 3;
+    const shuffledShapes = [...SHAPES].sort(() => Math.random() - 0.5);
+    const shuffledColors = [...COLORS].sort(() => Math.random() - 0.5);
+    const selectedShapes = shuffledShapes.slice(0, shapeCount);
+    const selectedColors = shuffledColors.slice(0, colorCount);
     
     for (let i = 0; i < patternLength; i++) {
       pattern.push({
