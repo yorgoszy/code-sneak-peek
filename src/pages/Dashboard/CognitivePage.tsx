@@ -759,27 +759,22 @@ const CognitivePage: React.FC = () => {
     if (!currentMathQuestion) return null;
     
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {renderGameHeader()}
         
         {/* Question display */}
-        <div className="p-8 rounded-none flex items-center justify-center min-h-[150px] bg-gradient-to-br from-[#1a1a2e] to-[#2d2d44]">
-          <span className="text-4xl sm:text-5xl font-bold tracking-wider text-white">
+        <div className="p-4 sm:p-6 rounded-none flex items-center justify-center min-h-[100px] bg-gradient-to-br from-[#1a1a2e] to-[#2d2d44]">
+          <span className="text-3xl sm:text-4xl font-bold tracking-wider text-white">
             {currentMathQuestion.display}
           </span>
         </div>
         
-        {/* Instruction */}
-        <p className="text-center text-sm text-muted-foreground">
-          Επίλεξε τη σωστή απάντηση
-        </p>
-        
         {/* Answer options */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           {currentMathQuestion.options.map((option, index) => (
             <Button
               key={index}
-              className="rounded-none h-16 text-2xl font-bold transition-transform hover:scale-105 bg-muted hover:bg-[#00ffba] hover:text-black"
+              className="rounded-none h-12 text-xl font-bold transition-transform hover:scale-105 bg-muted text-blue-900 hover:bg-[#00ffba] hover:text-black"
               onClick={() => handleMathAnswer(option)}
             >
               {option}
