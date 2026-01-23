@@ -2,8 +2,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { AppUser } from "./types";
 
+interface AppUserExtended extends AppUser {
+  auth_user_id?: string | null;
+}
+
 export class UserDeletionService {
-  static async deleteUserData(user: AppUser): Promise<void> {
+  static async deleteUserData(user: AppUserExtended): Promise<void> {
     console.log('🗑️ Ξεκινώ διαγραφή χρήστη:', user.name, user.id);
 
     // 1. Διαγραφή από exercise_results - πρώτα βρίσκουμε τα workout_completion_ids
@@ -57,10 +61,33 @@ export class UserDeletionService {
     // 15. Διαγραφή από exercise notes
     await this.deleteExerciseNotes(user.id);
 
-    // 16. Τέλος, διαγραφή του χρήστη
+    // 16. Διαγραφή του χρήστη από app_users
     await this.deleteUser(user.id);
 
+    // 17. Διαγραφή του auth user (αν υπάρχει)
+    if (user.auth_user_id) {
+      await this.deleteAuthUser(user.auth_user_id);
+    }
+
     console.log('✅ Χρήστης διαγράφηκε επιτυχώς');
+  }
+
+  private static async deleteAuthUser(authUserId: string): Promise<void> {
+    console.log('🗑️ Διαγραφή auth user:', authUserId);
+    
+    try {
+      const { error } = await supabase.functions.invoke('delete-auth-user', {
+        body: { authUserId }
+      });
+
+      if (error) {
+        console.log('⚠️ Auth user deletion error:', error);
+      } else {
+        console.log('✅ Auth user deleted');
+      }
+    } catch (err) {
+      console.log('⚠️ Auth user deletion error:', err);
+    }
   }
 
   private static async deleteExerciseResults(userId: string): Promise<void> {
