@@ -32,9 +32,9 @@ export const RootRedirect = () => {
     });
 
     if ((isRecoveryFromHash || hasAccessToken || hasCode || hasToken) && !hasErrorDescription) {
-      console.log('🔐 Recovery detected at root, redirecting to /auth/reset-password');
+      console.log('🔐 Recovery detected at root, redirecting to /reset-password');
       const suffix = `${search}${hash}`;
-      navigate(`/auth/reset-password${suffix}`, { replace: true });
+      navigate(`/reset-password${suffix}`, { replace: true });
     }
   }, [navigate]);
 

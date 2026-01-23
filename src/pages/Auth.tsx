@@ -76,9 +76,9 @@ const Auth = () => {
 
       // If there's a recovery signal, redirect to the reset password page
       if ((isRecoveryFromHash || hasAccessToken || hasCode || hasToken) && !hasErrorDescription) {
-        console.log('🔐 Recovery detected, redirecting to /auth/reset-password');
+        console.log('🔐 Recovery detected, redirecting to /reset-password');
         const suffix = `${search}${hash}`;
-        navigate(`/auth/reset-password${suffix}`, { replace: true });
+        navigate(`/reset-password${suffix}`, { replace: true });
         return true;
       }
 
