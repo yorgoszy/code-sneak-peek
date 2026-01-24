@@ -10,7 +10,10 @@ import {
   FileDown,
   FileUp,
   Plus,
-  Check
+  Check,
+  Monitor,
+  Tablet,
+  Smartphone
 } from 'lucide-react';
 import {
   Select,
@@ -37,9 +40,13 @@ interface Layout {
   is_active: boolean;
 }
 
+export type DeviceMode = 'desktop' | 'tablet' | 'mobile';
+
 interface LandingBuilderTopbarProps {
   previewMode: boolean;
   setPreviewMode: (preview: boolean) => void;
+  deviceMode: DeviceMode;
+  setDeviceMode: (mode: DeviceMode) => void;
   onSave: (name: string, layoutData: string) => Promise<void>;
   onLoad: (layoutId: string) => Promise<string | null>;
   layouts: Layout[];
@@ -50,6 +57,8 @@ interface LandingBuilderTopbarProps {
 export const LandingBuilderTopbar: React.FC<LandingBuilderTopbarProps> = ({
   previewMode,
   setPreviewMode,
+  deviceMode,
+  setDeviceMode,
   onSave,
   onLoad,
   layouts,
@@ -137,6 +146,37 @@ export const LandingBuilderTopbar: React.FC<LandingBuilderTopbarProps> = ({
             className="rounded-none"
           >
             <Redo2 className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Device Mode Selector */}
+        <div className="ml-4 flex items-center gap-1 border border-border rounded-none p-1">
+          <Button
+            variant={deviceMode === 'desktop' ? 'default' : 'ghost'}
+            size="icon"
+            onClick={() => setDeviceMode('desktop')}
+            className={`rounded-none h-7 w-7 ${deviceMode === 'desktop' ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' : ''}`}
+            title="Desktop"
+          >
+            <Monitor className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={deviceMode === 'tablet' ? 'default' : 'ghost'}
+            size="icon"
+            onClick={() => setDeviceMode('tablet')}
+            className={`rounded-none h-7 w-7 ${deviceMode === 'tablet' ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' : ''}`}
+            title="Tablet"
+          >
+            <Tablet className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={deviceMode === 'mobile' ? 'default' : 'ghost'}
+            size="icon"
+            onClick={() => setDeviceMode('mobile')}
+            className={`rounded-none h-7 w-7 ${deviceMode === 'mobile' ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' : ''}`}
+            title="Mobile"
+          >
+            <Smartphone className="w-4 h-4" />
           </Button>
         </div>
       </div>

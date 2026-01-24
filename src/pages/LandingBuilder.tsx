@@ -3,7 +3,7 @@ import { Editor, Frame, Element } from '@craftjs/core';
 import { Sidebar as AdminSidebar } from '@/components/Sidebar';
 import { LandingBuilderToolbox } from '@/components/landing-builder/LandingBuilderToolbox';
 import { LandingBuilderSettings } from '@/components/landing-builder/LandingBuilderSettings';
-import { LandingBuilderTopbar } from '@/components/landing-builder/LandingBuilderTopbar';
+import { LandingBuilderTopbar, type DeviceMode } from '@/components/landing-builder/LandingBuilderTopbar';
 import { LandingBuilderCanvas } from '@/components/landing-builder/LandingBuilderCanvas';
 import { 
   ContainerComponent, 
@@ -22,6 +22,7 @@ import { useLandingBuilderStore } from '@/hooks/useLandingBuilderStore';
 const LandingBuilder: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
   const { saveLayout, loadLayout, layouts, currentLayoutId, setCurrentLayoutId } = useLandingBuilderStore();
 
   const resolver = {
@@ -46,6 +47,8 @@ const LandingBuilder: React.FC = () => {
           <LandingBuilderTopbar 
             previewMode={previewMode}
             setPreviewMode={setPreviewMode}
+            deviceMode={deviceMode}
+            setDeviceMode={setDeviceMode}
             onSave={saveLayout}
             onLoad={loadLayout}
             layouts={layouts}
@@ -61,7 +64,7 @@ const LandingBuilder: React.FC = () => {
             )}
             
             <div className="flex-1 overflow-auto p-4 bg-muted/30">
-              <LandingBuilderCanvas previewMode={previewMode} />
+              <LandingBuilderCanvas previewMode={previewMode} deviceMode={deviceMode} />
             </div>
             
             {!previewMode && (
