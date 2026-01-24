@@ -10,7 +10,18 @@ import {
   Star,
   Palette,
   MousePointerClick,
-  Layout
+  Layout,
+  Navigation,
+  ImagePlay,
+  Users,
+  Info,
+  Award,
+  Zap,
+  Calendar,
+  BookOpen,
+  Trophy,
+  Megaphone,
+  Mail
 } from 'lucide-react';
 import { 
   ContainerComponent, 
@@ -24,6 +35,19 @@ import {
   IconComponent,
   GradientBoxComponent
 } from './components';
+import {
+  NavigationSectionComponent,
+  HeroSectionComponent,
+  ProgramsSectionComponent,
+  AboutSectionComponent,
+  CertificatesSectionComponent,
+  EliteTrainingSectionComponent,
+  LiveProgramSectionComponent,
+  BlogSectionComponent,
+  ResultsSectionComponent,
+  FooterSectionComponent,
+  CTASectionComponent
+} from './landing-sections';
 import { cn } from '@/lib/utils';
 
 interface ToolboxItemProps {
@@ -51,7 +75,7 @@ const ToolboxItem: React.FC<ToolboxItemProps> = ({ icon, label, create }) => {
 };
 
 export const LandingBuilderToolbox: React.FC = () => {
-  const items: ToolboxItemProps[] = [
+  const basicItems: ToolboxItemProps[] = [
     {
       icon: <Layout className="w-6 h-6" />,
       label: "Container",
@@ -104,13 +128,82 @@ export const LandingBuilderToolbox: React.FC = () => {
     }
   ];
 
+  const landingSections: ToolboxItemProps[] = [
+    {
+      icon: <Navigation className="w-6 h-6" />,
+      label: "Navigation",
+      create: () => <NavigationSectionComponent />
+    },
+    {
+      icon: <ImagePlay className="w-6 h-6" />,
+      label: "Hero",
+      create: () => <HeroSectionComponent />
+    },
+    {
+      icon: <Users className="w-6 h-6" />,
+      label: "Programs",
+      create: () => <ProgramsSectionComponent />
+    },
+    {
+      icon: <Info className="w-6 h-6" />,
+      label: "About",
+      create: () => <AboutSectionComponent />
+    },
+    {
+      icon: <Award className="w-6 h-6" />,
+      label: "Certificates",
+      create: () => <CertificatesSectionComponent />
+    },
+    {
+      icon: <Zap className="w-6 h-6" />,
+      label: "Elite Training",
+      create: () => <EliteTrainingSectionComponent />
+    },
+    {
+      icon: <Calendar className="w-6 h-6" />,
+      label: "Live Program",
+      create: () => <LiveProgramSectionComponent />
+    },
+    {
+      icon: <BookOpen className="w-6 h-6" />,
+      label: "Blog",
+      create: () => <BlogSectionComponent />
+    },
+    {
+      icon: <Trophy className="w-6 h-6" />,
+      label: "Results",
+      create: () => <ResultsSectionComponent />
+    },
+    {
+      icon: <Megaphone className="w-6 h-6" />,
+      label: "CTA",
+      create: () => <CTASectionComponent />
+    },
+    {
+      icon: <Mail className="w-6 h-6" />,
+      label: "Footer",
+      create: () => <FooterSectionComponent />
+    }
+  ];
+
   return (
-    <div className="p-4">
-      <h3 className="font-semibold text-lg mb-4 text-foreground">Components</h3>
-      <div className="grid grid-cols-2 gap-2">
-        {items.map((item, index) => (
-          <ToolboxItem key={index} {...item} />
-        ))}
+    <div className="p-4 space-y-6">
+      <div>
+        <h3 className="font-semibold text-lg mb-4 text-foreground">Landing Sections</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {landingSections.map((item, index) => (
+            <ToolboxItem key={`landing-${index}`} {...item} />
+          ))}
+        </div>
+      </div>
+      
+      <div className="border-t border-border pt-4">
+        <h3 className="font-semibold text-lg mb-4 text-foreground">Basic Components</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {basicItems.map((item, index) => (
+            <ToolboxItem key={`basic-${index}`} {...item} />
+          ))}
+        </div>
       </div>
     </div>
   );
