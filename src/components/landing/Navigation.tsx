@@ -85,7 +85,7 @@ const Navigation: React.FC<NavigationProps> = ({
             <img 
               src={hyperkidsLogo} 
               alt="HyperKids Logo" 
-              className="h-6 w-auto"
+              className="h-5 w-auto"
             />
           </div>
           
