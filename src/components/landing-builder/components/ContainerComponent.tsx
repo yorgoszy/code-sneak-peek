@@ -127,6 +127,12 @@ ContainerComponent.craft = {
     minHeight: 100
   },
   displayName: 'Container',
+  rules: {
+    canDrag: () => true,
+    canDrop: () => true,
+    canMoveIn: () => true,
+    canMoveOut: () => true
+  },
   related: {
     settings: ContainerSettings
   }
