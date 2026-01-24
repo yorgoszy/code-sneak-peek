@@ -1,6 +1,7 @@
 import React from 'react';
 import { Frame, Element } from '@craftjs/core';
 import { ContainerComponent } from './components';
+import { TextComponent } from './components';
 import type { DeviceMode } from './LandingBuilderTopbar';
 
 interface LandingBuilderCanvasProps {
@@ -32,8 +33,13 @@ export const LandingBuilderCanvas: React.FC<LandingBuilderCanvasProps> = ({ prev
         <Element 
           is={ContainerComponent} 
           canvas
+          background="transparent"
+          padding={20}
+          minHeight={600}
           custom={{ displayName: 'Root Container' }}
-        />
+        >
+          <Element is={TextComponent} text="Σύρε components από το Toolbox για να ξεκινήσεις!" fontSize={16} textAlign="center" color="#666" />
+        </Element>
       </Frame>
     </div>
   );
