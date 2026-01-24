@@ -22,11 +22,21 @@ const WelcomeScreen: React.FC = () => {
       className="fixed inset-0 z-[100] bg-black flex items-center justify-center transition-opacity duration-500"
       style={{ opacity: isVisible ? 1 : 0 }}
     >
-      <img 
-        src={welcomeImage} 
-        alt="Welcome to HyperKids" 
-        className="w-full h-full object-cover object-center sm:object-contain md:object-cover"
+      {/* Desktop */}
+      <div 
+        className="hidden md:block absolute inset-0 bg-center bg-cover bg-no-repeat"
+        style={{ backgroundImage: `url(${welcomeImage})` }}
       />
+      {/* Mobile - scale to fill height */}
+      <div 
+        className="md:hidden absolute inset-0 flex items-center justify-center overflow-hidden"
+      >
+        <img 
+          src={welcomeImage} 
+          alt="Welcome to HyperKids" 
+          className="min-w-full min-h-full object-cover"
+        />
+      </div>
     </div>
   );
 };
