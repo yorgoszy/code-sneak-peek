@@ -6,6 +6,7 @@ import { useIsPWA } from "@/hooks/useIsPWA";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/landing/Navigation";
 import HeroSection from "@/components/landing/HeroSection";
+import WelcomeScreen from "@/components/landing/WelcomeScreen";
 import ProgramsSection from "@/components/landing/ProgramsSection";
 import AboutSection from "@/components/landing/AboutSection";
 import CertificatesSection from "@/components/landing/CertificatesSection";
@@ -122,6 +123,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white font-robert">
+      <WelcomeScreen />
       <Navigation
         navigationItems={navigationItems}
         isAuthenticated={isAuthenticated}
