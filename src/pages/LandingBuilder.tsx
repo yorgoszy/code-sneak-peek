@@ -17,6 +17,19 @@ import {
   IconComponent,
   GradientBoxComponent
 } from '@/components/landing-builder/components';
+import {
+  NavigationSectionComponent,
+  HeroSectionComponent,
+  ProgramsSectionComponent,
+  AboutSectionComponent,
+  CertificatesSectionComponent,
+  EliteTrainingSectionComponent,
+  LiveProgramSectionComponent,
+  BlogSectionComponent,
+  ResultsSectionComponent,
+  FooterSectionComponent,
+  CTASectionComponent
+} from '@/components/landing-builder/landing-sections';
 import { useLandingBuilderStore } from '@/hooks/useLandingBuilderStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -45,6 +58,7 @@ const LandingBuilder: React.FC = () => {
   const showSidebarButton = isMobile || isTablet;
 
   const resolver = {
+    // Basic components
     ContainerComponent,
     TextComponent,
     ImageComponent,
@@ -54,7 +68,19 @@ const LandingBuilder: React.FC = () => {
     GridComponent,
     DividerComponent,
     IconComponent,
-    GradientBoxComponent
+    GradientBoxComponent,
+    // Landing page sections
+    NavigationSectionComponent,
+    HeroSectionComponent,
+    ProgramsSectionComponent,
+    AboutSectionComponent,
+    CertificatesSectionComponent,
+    EliteTrainingSectionComponent,
+    LiveProgramSectionComponent,
+    BlogSectionComponent,
+    ResultsSectionComponent,
+    FooterSectionComponent,
+    CTASectionComponent
   };
 
   const handleSignOut = async () => {
