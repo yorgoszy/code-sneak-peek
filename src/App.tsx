@@ -89,6 +89,7 @@ import VideoAnalysisPage from "@/pages/Dashboard/VideoAnalysisPage";
 import SprintTimerPage from "@/pages/Dashboard/SprintTimerPage";
 import ChangeDirectionPage from "@/pages/Dashboard/ChangeDirectionPage";
 import CognitivePage from "@/pages/Dashboard/CognitivePage";
+import LandingBuilder from "@/pages/LandingBuilder";
 const queryClient = new QueryClient();
 
 function App() {
@@ -191,6 +192,7 @@ function App() {
                       <Route path="/dashboard/nutrition" element={<ProtectedRoute><NutritionWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/annual-planning" element={<ProtectedRoute><AnnualPlanningWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/landing-builder" element={<ProtectedRoute requireAdmin><LandingBuilder /></ProtectedRoute>} />
                       <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
 
                       {/* Protected user routes */}
