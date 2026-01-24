@@ -23,8 +23,17 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
   return (
     <section id="home" className="relative min-h-screen overflow-hidden">
+      {/* Mobile: Use img tag for better control */}
+      <div className="absolute inset-0 md:hidden">
+        <img 
+          src={slides[currentSlide]} 
+          alt="Hero" 
+          className="w-full h-full object-cover object-center"
+        />
+      </div>
+      {/* Desktop: Use background-image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 hidden md:block bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${slides[currentSlide]})` }}
       />
     </section>

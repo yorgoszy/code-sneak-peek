@@ -25,7 +25,7 @@ const WelcomeScreen: React.FC = () => {
       <img 
         src={welcomeImage} 
         alt="Welcome to HyperKids" 
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover object-center sm:object-contain md:object-cover"
       />
     </div>
   );
