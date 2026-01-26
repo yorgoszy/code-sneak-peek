@@ -3,7 +3,7 @@ import trainingFighters from '@/assets/training-fighters.png';
 
 const TrainingSection: React.FC = () => {
   return (
-    <section className="relative bg-black min-h-[700px]">
+    <section className="relative bg-black min-h-[900px]">
       {/* Vertical line at X:1370, Y:0 */}
       <div 
         className="absolute bg-white"
