@@ -20,7 +20,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
           <img 
             src={servicesAlina} 
             alt="Alina Training" 
-            className="w-auto object-contain"
+            className="w-auto object-contain opacity-60"
             style={{ height: '500px' }}
           />
           {/* Intense bottom gradient */}
