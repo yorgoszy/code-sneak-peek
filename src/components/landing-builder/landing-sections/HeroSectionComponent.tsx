@@ -18,6 +18,13 @@ export const HeroSectionComponent: UserComponent = () => {
           className="w-full h-full object-cover absolute inset-0"
         />
         
+        {/* Tagline */}
+        <div className="absolute bottom-8 left-8">
+          <p className="text-white text-xl md:text-2xl font-roobert tracking-wide">
+            Το ταξίδι του πρωταθλητή ξεκινάει εδώ
+          </p>
+        </div>
+        
         {/* Slogan bottom-right */}
         <div className="absolute bottom-8 right-8">
           <img 
