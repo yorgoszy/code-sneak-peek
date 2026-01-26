@@ -23,7 +23,7 @@ const TrainingSection: React.FC = () => {
           top: '364px'
         }}
       >
-        <div className="relative">
+        <div className="relative" style={{ transform: 'skewX(-5deg)' }}>
           <img 
             src={trainingFighters} 
             alt="Fighters Training" 
