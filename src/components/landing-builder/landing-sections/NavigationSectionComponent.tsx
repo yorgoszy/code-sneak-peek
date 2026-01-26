@@ -2,7 +2,7 @@ import React from 'react';
 import { useNode, UserComponent } from '@craftjs/core';
 import { Button } from "@/components/ui/button";
 import { Globe, LogOut, LayoutDashboard } from "lucide-react";
-import hyperkidsLogo from '@/assets/hyperkids-logo.svg';
+import hyperkidsLogo from '@/assets/hyperkids-logo-new.png';
 
 const defaultNavItems = [
   { name: 'Αρχική', href: '#home' },
