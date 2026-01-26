@@ -16,7 +16,7 @@ export const HeroSectionComponent: UserComponent = () => {
         <img 
           src={heroWins} 
           alt="HyperKids" 
-          className="w-full h-full object-cover absolute inset-0"
+          className="w-full h-full object-cover absolute inset-0 opacity-50"
         />
         
         {/* Top gradient */}
