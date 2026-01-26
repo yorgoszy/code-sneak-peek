@@ -1,26 +1,6 @@
 import React from 'react';
 import { useNode, UserComponent } from '@craftjs/core';
-
-const defaultPrograms = [
-  {
-    id: 'hyperkids',
-    title: 'HyperKids',
-    description: 'Αθλητική ανάπτυξη για παιδιά 6-12 ετών',
-    color: '#00ffba'
-  },
-  {
-    id: 'hypergym',
-    title: 'HyperGym',
-    description: 'Προσωπική προπόνηση για ενήλικες',
-    color: '#cb8954'
-  },
-  {
-    id: 'hyperathletes',
-    title: 'HyperAthletes',
-    description: 'Εξειδικευμένη προπόνηση για αθλητές',
-    color: '#aca097'
-  }
-];
+import sessionServicesBg from '@/assets/session-services-bg.png';
 
 export const ProgramsSectionComponent: UserComponent = () => {
   const { connectors: { connect, drag } } = useNode();
@@ -30,24 +10,23 @@ export const ProgramsSectionComponent: UserComponent = () => {
       ref={(ref) => ref && connect(drag(ref))}
       className="relative"
     >
-      <section id="programs" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
-            Προγράμματα
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {defaultPrograms.map((program) => (
-              <div 
-                key={program.id}
-                className="bg-gray-50 rounded-none p-6 hover:shadow-lg transition-shadow"
-                style={{ borderTop: `4px solid ${program.color}` }}
-              >
-                <h3 className="text-xl font-semibold mb-2" style={{ color: program.color }}>
-                  {program.title}
-                </h3>
-                <p className="text-gray-600">{program.description}</p>
-              </div>
-            ))}
+      <section id="programs" className="relative">
+        <img 
+          src={sessionServicesBg} 
+          alt="Session Services" 
+          className="w-full h-auto"
+        />
+        <div className="absolute top-[252px] right-[132px] md:top-[252px] md:right-[148px]">
+          <div className="text-left text-white max-w-md">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              Δεξιότητες ή σπορ
+            </h2>
+            <p className="text-sm md:text-base leading-relaxed">
+              Τα παιδιά πρέπει να είναι επιδέξια. Η κίνηση είναι ένα φυσικό προβάδισμα που δεν πρέπει να χάσουν.
+            </p>
+            <p className="text-sm md:text-base mt-4 font-medium">
+              Εμείς τους δίνουμε τα εργαλεία να το αξιοποιήσουν.
+            </p>
           </div>
         </div>
       </section>
