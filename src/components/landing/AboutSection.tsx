@@ -1,6 +1,6 @@
 import React from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import coachPhoto from '@/assets/coach-photo.png';
+import aboutBg from '@/assets/about-bg.png';
 
 interface AboutSectionProps {
   translations: any;
@@ -97,33 +97,22 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   const activeSection = sections.find(s => s.id === activeAboutSection) || sections[0];
 
   return (
-    <section id="about" className="py-20 bg-black relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-12 text-center lg:text-left">
-          <p className="text-sm font-medium mb-4 text-white">
-            {translations.aboutSection?.toUpperCase() || 'ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ'}
-          </p>
-        </div>
-
-        {/* Main Content */}
-        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-8 lg:gap-12`}>
-          {/* Left - Photo */}
-          <div className={`${isMobile ? 'w-full' : 'w-1/2 lg:w-2/5'} flex-shrink-0`}>
-            <div className="relative">
-              <img
-                src={coachPhoto}
-                alt="Γεώργιος Ζυγούρης - Κύριος Προπονητής"
-                className="w-full h-auto object-cover"
-              />
-            </div>
-          </div>
-
-          {/* Right - Content (placeholder for future content) */}
-          <div className={`${isMobile ? 'w-full' : 'w-1/2 lg:w-3/5'} flex flex-col`}>
-            {/* Content will be added later */}
-          </div>
-        </div>
+    <section 
+      id="about" 
+      className="relative w-full min-h-screen bg-black"
+      style={{
+        backgroundImage: `url(${aboutBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Optional overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/20" />
+      
+      {/* Content container - currently empty as per request */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        {/* Content will be added later */}
       </div>
     </section>
   );
