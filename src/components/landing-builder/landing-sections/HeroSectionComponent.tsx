@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNode, UserComponent } from '@craftjs/core';
-import heroWins from '@/assets/hero-wins.jpg';
+import heroWins from '@/assets/hero-wins.png';
 import sloganTrust from '@/assets/slogan-trust.png';
 import hyperkidsIcon from '@/assets/hyperkids-icon-white.png';
 
