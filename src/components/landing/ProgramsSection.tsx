@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { ProgramCard } from './ProgramCard';
+import sessionServicesBg from '@/assets/session-services-bg.png';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Carousel,
@@ -57,26 +57,26 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
   };
 
   return (
-    <section id="programs" className="py-20 bg-black text-white" onClick={handleScreenClick}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section 
+      id="programs" 
+      className="py-20 text-white relative"
+      onClick={handleScreenClick}
+    >
+      {/* Background image */}
+      <img 
+        src={sessionServicesBg} 
+        alt="" 
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="relative">
           {/* Header with navigation */}
           <div className="flex justify-between items-center mb-8">
             <div className="text-left">
-              {translations.language === 'en' ? (
-                <>
-                  <h3 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Robert, sans-serif', color: '#ACA097' }}>
-                    Services
-                  </h3>
-                </>
-              ) : (
-                <>
-                   <h3 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Robert, sans-serif', color: '#ACA097' }}>
-                     {translations?.language === 'en' ? 'Services' : 'Υπηρεσίες'}
-                   </h3>
-                </>
-              )}
+              <h3 className="text-2xl font-bold mb-2 text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
+                {translations?.language === 'en' ? 'Services' : 'Υπηρεσίες'}
+              </h3>
             </div>
           </div>
 
