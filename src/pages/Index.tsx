@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/landing/Navigation";
 import HeroSection from "@/components/landing/HeroSection";
 import ProgramsSection from "@/components/landing/ProgramsSection";
+import TrainingSection from "@/components/landing/TrainingSection";
+import PlanningSection from "@/components/landing/PlanningSection";
 import AboutSection from "@/components/landing/AboutSection";
 import CertificatesSection from "@/components/landing/CertificatesSection";
 import EliteTrainingSection from "@/components/landing/EliteTrainingSection";
@@ -112,6 +114,10 @@ const Index = () => {
       />
 
       <ProgramsSection translations={correctedTranslations} />
+
+      <TrainingSection />
+
+      <PlanningSection />
 
       <AboutSection 
         translations={correctedTranslations}
