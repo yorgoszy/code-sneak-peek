@@ -149,21 +149,19 @@ const LandingBuilder: React.FC = () => {
           />
           
           <div className="flex flex-1">
+            {/* Left Panel - Toolbox + Settings */}
             {!previewMode && (
-              <div className="w-64 border-r border-border bg-card overflow-y-auto hidden md:block">
+              <div className="w-56 border-r border-border bg-card overflow-y-auto hidden md:block">
                 <LandingBuilderToolbox />
-              </div>
-            )}
-            
-            <div className="flex-1 overflow-auto p-4 bg-muted/30">
-              <LandingBuilderCanvas previewMode={previewMode} deviceMode={deviceMode} />
-            </div>
-            
-            {!previewMode && (
-              <div className="w-72 border-l border-border bg-card overflow-y-auto hidden lg:block">
+                <div className="border-t border-border" />
                 <LandingBuilderSettings />
               </div>
             )}
+            
+            {/* Canvas */}
+            <div className="flex-1 overflow-auto p-4 bg-muted/30">
+              <LandingBuilderCanvas previewMode={previewMode} deviceMode={deviceMode} />
+            </div>
           </div>
         </Editor>
       </div>

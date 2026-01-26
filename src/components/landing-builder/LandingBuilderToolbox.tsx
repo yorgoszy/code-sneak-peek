@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useEditor, Element } from '@craftjs/core';
 import { 
   Type, 
@@ -21,7 +21,8 @@ import {
   BookOpen,
   Trophy,
   Megaphone,
-  Mail
+  Mail,
+  ChevronDown
 } from 'lucide-react';
 import { 
   ContainerComponent, 
@@ -49,6 +50,7 @@ import {
   CTASectionComponent
 } from './landing-sections';
 import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface ToolboxItemProps {
   icon: React.ReactNode;
@@ -60,7 +62,6 @@ const ToolboxItem: React.FC<ToolboxItemProps> = ({ icon, label, create }) => {
   const { connectors, actions, query } = useEditor();
 
   const handleClick = () => {
-    // Get the ROOT node and add the component to it
     const nodeTree = query.parseReactElement(create()).toNodeTree();
     actions.addNodeTree(nodeTree, 'ROOT');
   };
@@ -70,66 +71,90 @@ const ToolboxItem: React.FC<ToolboxItemProps> = ({ icon, label, create }) => {
       ref={(ref) => ref && connectors.create(ref, create())}
       onClick={handleClick}
       className={cn(
-        "flex flex-col items-center justify-center p-3 border border-border rounded-none",
+        "flex items-center gap-2 p-2 border border-border rounded-none",
         "cursor-pointer hover:bg-accent hover:border-primary transition-colors",
-        "bg-card text-foreground"
+        "bg-card text-foreground text-xs"
       )}
     >
       {icon}
-      <span className="text-xs mt-1 text-center">{label}</span>
+      <span>{label}</span>
     </div>
+  );
+};
+
+interface CollapsibleSectionProps {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}
+
+const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, children, defaultOpen = true }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-1 hover:bg-accent/50 transition-colors">
+        <span className="font-semibold text-sm text-foreground">{title}</span>
+        <ChevronDown className={cn("w-4 h-4 transition-transform", isOpen && "rotate-180")} />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="py-2">
+          {children}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 
 export const LandingBuilderToolbox: React.FC = () => {
   const basicItems: ToolboxItemProps[] = [
     {
-      icon: <Layout className="w-6 h-6" />,
+      icon: <Layout className="w-4 h-4" />,
       label: "Container",
       create: () => <Element is={ContainerComponent} canvas />
     },
     {
-      icon: <Square className="w-6 h-6" />,
+      icon: <Square className="w-4 h-4" />,
       label: "Section",
       create: () => <Element is={SectionComponent} canvas />
     },
     {
-      icon: <Grid3X3 className="w-6 h-6" />,
+      icon: <Grid3X3 className="w-4 h-4" />,
       label: "Grid",
       create: () => <Element is={GridComponent} columns={2} canvas />
     },
     {
-      icon: <Heading1 className="w-6 h-6" />,
+      icon: <Heading1 className="w-4 h-4" />,
       label: "Heading",
       create: () => <HeadingComponent text="Επικεφαλίδα" level="h2" />
     },
     {
-      icon: <Type className="w-6 h-6" />,
+      icon: <Type className="w-4 h-4" />,
       label: "Text",
       create: () => <TextComponent text="Κείμενο εδώ..." />
     },
     {
-      icon: <Image className="w-6 h-6" />,
+      icon: <Image className="w-4 h-4" />,
       label: "Image",
       create: () => <ImageComponent src="" alt="Image" />
     },
     {
-      icon: <MousePointerClick className="w-6 h-6" />,
+      icon: <MousePointerClick className="w-4 h-4" />,
       label: "Button",
       create: () => <ButtonComponent text="Button" />
     },
     {
-      icon: <Minus className="w-6 h-6" />,
+      icon: <Minus className="w-4 h-4" />,
       label: "Divider",
       create: () => <DividerComponent />
     },
     {
-      icon: <Star className="w-6 h-6" />,
+      icon: <Star className="w-4 h-4" />,
       label: "Icon",
       create: () => <IconComponent icon="star" />
     },
     {
-      icon: <Palette className="w-6 h-6" />,
+      icon: <Palette className="w-4 h-4" />,
       label: "Gradient",
       create: () => <Element is={GradientBoxComponent} canvas />
     }
@@ -137,81 +162,81 @@ export const LandingBuilderToolbox: React.FC = () => {
 
   const landingSections: ToolboxItemProps[] = [
     {
-      icon: <Navigation className="w-6 h-6" />,
+      icon: <Navigation className="w-4 h-4" />,
       label: "Navigation",
       create: () => <NavigationSectionComponent />
     },
     {
-      icon: <ImagePlay className="w-6 h-6" />,
+      icon: <ImagePlay className="w-4 h-4" />,
       label: "Hero",
       create: () => <HeroSectionComponent />
     },
     {
-      icon: <Users className="w-6 h-6" />,
+      icon: <Users className="w-4 h-4" />,
       label: "Programs",
       create: () => <ProgramsSectionComponent />
     },
     {
-      icon: <Info className="w-6 h-6" />,
+      icon: <Info className="w-4 h-4" />,
       label: "About",
       create: () => <AboutSectionComponent />
     },
     {
-      icon: <Award className="w-6 h-6" />,
+      icon: <Award className="w-4 h-4" />,
       label: "Certificates",
       create: () => <CertificatesSectionComponent />
     },
     {
-      icon: <Zap className="w-6 h-6" />,
+      icon: <Zap className="w-4 h-4" />,
       label: "Elite Training",
       create: () => <EliteTrainingSectionComponent />
     },
     {
-      icon: <Calendar className="w-6 h-6" />,
+      icon: <Calendar className="w-4 h-4" />,
       label: "Live Program",
       create: () => <LiveProgramSectionComponent />
     },
     {
-      icon: <BookOpen className="w-6 h-6" />,
+      icon: <BookOpen className="w-4 h-4" />,
       label: "Blog",
       create: () => <BlogSectionComponent />
     },
     {
-      icon: <Trophy className="w-6 h-6" />,
+      icon: <Trophy className="w-4 h-4" />,
       label: "Results",
       create: () => <ResultsSectionComponent />
     },
     {
-      icon: <Megaphone className="w-6 h-6" />,
+      icon: <Megaphone className="w-4 h-4" />,
       label: "CTA",
       create: () => <CTASectionComponent />
     },
     {
-      icon: <Mail className="w-6 h-6" />,
+      icon: <Mail className="w-4 h-4" />,
       label: "Footer",
       create: () => <FooterSectionComponent />
     }
   ];
 
   return (
-    <div className="p-4 space-y-6">
-      <div>
-        <h3 className="font-semibold text-lg mb-4 text-foreground">Landing Sections</h3>
-        <div className="grid grid-cols-2 gap-2">
+    <div className="p-3 space-y-1">
+      <CollapsibleSection title="Landing Sections" defaultOpen={true}>
+        <div className="grid grid-cols-1 gap-1">
           {landingSections.map((item, index) => (
             <ToolboxItem key={`landing-${index}`} {...item} />
           ))}
         </div>
-      </div>
+      </CollapsibleSection>
       
-      <div className="border-t border-border pt-4">
-        <h3 className="font-semibold text-lg mb-4 text-foreground">Basic Components</h3>
-        <div className="grid grid-cols-2 gap-2">
+      <div className="border-t border-border" />
+      
+      <CollapsibleSection title="Basic Components" defaultOpen={false}>
+        <div className="grid grid-cols-1 gap-1">
           {basicItems.map((item, index) => (
             <ToolboxItem key={`basic-${index}`} {...item} />
           ))}
         </div>
-      </div>
+      </CollapsibleSection>
     </div>
   );
 };
