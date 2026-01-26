@@ -13,7 +13,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
         alt="Session Services" 
         className="w-full h-auto"
       />
-      <div className="absolute top-8 right-8 md:top-12 md:right-12">
+      <div className="absolute top-[52px] right-8 md:top-[52px] md:right-12">
         <div className="text-left text-white max-w-md">
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Δεξιότητες ή σπορ
