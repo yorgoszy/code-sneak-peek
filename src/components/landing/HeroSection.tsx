@@ -25,7 +25,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         <img 
           src={heroIcon} 
           alt="HyperKids Icon" 
-          className="w-48 md:w-64 lg:w-80 h-auto"
+          className="w-32 md:w-44 lg:w-56 h-auto"
         />
       </div>
       
