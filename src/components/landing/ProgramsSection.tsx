@@ -32,11 +32,11 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
         }}
       />
       
-      {/* Text content at X:200, Y:470 */}
+      {/* Text content at X:1200, Y:470 */}
       <div 
         className="absolute z-10"
         style={{ 
-          left: '200px', 
+          left: '1200px', 
           top: '470px'
         }}
       >
