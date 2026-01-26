@@ -1,5 +1,5 @@
 import React from 'react';
-import sessionServicesBg from '@/assets/session-services-bg.png';
+import sessionServicesBg from '@/assets/session-services-bg.jpg';
 
 interface ProgramsSectionProps {
   translations: any;
