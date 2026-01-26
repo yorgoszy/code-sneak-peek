@@ -20,7 +20,7 @@ const TrainingSection: React.FC = () => {
       <div 
         className="absolute z-10"
         style={{ 
-          left: '200px', 
+          left: '300px', 
           top: '402px'
         }}
       >
