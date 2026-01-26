@@ -17,7 +17,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
         style={{ 
           left: '320px', 
           top: '660px',
-          width: '10%'
+          width: '5%'
         }}
       />
       
