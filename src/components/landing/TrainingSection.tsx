@@ -37,6 +37,11 @@ const TrainingSection: React.FC = () => {
           />
         </div>
       </div>
+      {/* Bottom gradient for section */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent"
+        style={{ height: '150px' }}
+      />
     </section>
   );
 };
