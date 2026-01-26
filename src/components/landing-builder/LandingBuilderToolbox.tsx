@@ -174,7 +174,18 @@ export const LandingBuilderToolbox: React.FC = () => {
     {
       icon: <Users className="w-4 h-4" />,
       label: "Programs",
-      create: () => <ProgramsSectionComponent />
+      create: () => <ProgramsSectionComponent 
+        title="Δεξιότητες ή σπορ"
+        paragraph1="Τα παιδιά πρέπει να είναι επιδέξια. Η κίνηση είναι ένα φυσικό προβάδισμα που δεν πρέπει να χάσουν."
+        paragraph2="Εμείς τους δίνουμε τα εργαλεία να το αξιοποιήσουν."
+        textColor="#ffffff"
+        titleFontSize={30}
+        paragraphFontSize={14}
+        positionTop={252}
+        positionRight={148}
+        opacity={100}
+        fontFamily="inherit"
+      />
     },
     {
       icon: <Info className="w-4 h-4" />,
