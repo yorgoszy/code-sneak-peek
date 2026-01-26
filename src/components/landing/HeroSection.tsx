@@ -23,7 +23,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   }, []);
 
   return (
-    <section id="home" className="relative min-h-screen overflow-hidden bg-black">
+    <section id="home" className="relative min-h-screen overflow-hidden bg-black pt-16">
       {/* Desktop: Use background-image */}
       <div 
         className="hidden md:block absolute inset-0 bg-cover bg-center bg-no-repeat"
