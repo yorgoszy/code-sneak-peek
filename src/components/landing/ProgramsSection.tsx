@@ -25,8 +25,8 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
           />
           {/* Intense bottom gradient */}
           <div 
-            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black to-transparent"
-            style={{ height: '250px' }}
+            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent"
+            style={{ height: '150px' }}
           />
         </div>
       </div>
