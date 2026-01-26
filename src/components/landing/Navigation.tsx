@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import hyperkidsLogo from '@/assets/hyperkids-logo.svg';
+import headerBg from '@/assets/header-bg.png';
 interface NavigationProps {
   navigationItems: Array<{ name: string; href: string }>;
   isAuthenticated: boolean;
@@ -39,9 +40,15 @@ const Navigation: React.FC<NavigationProps> = ({
 
   return (
     <nav 
-      className={`fixed top-0 w-full bg-black z-50 transition-transform duration-300 ${
+      className={`fixed top-0 w-full z-50 transition-transform duration-300 ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
+      style={{ 
+        backgroundImage: `url(${headerBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundColor: 'black'
+      }}
     >
       <style>{`
         .nav-link {
