@@ -101,13 +101,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12 text-center lg:text-left">
-          <p className="text-sm font-medium mb-4" style={{ color: '#cb8954' }}>
+          <p className="text-sm font-medium mb-4 text-white">
             {translations.aboutSection?.toUpperCase() || 'ΣΧΕΤΙΚΑ ΜΕ ΕΜΑΣ'}
           </p>
-          <h2 className="text-4xl lg:text-5xl font-bold leading-tight">
-            <span style={{ color: '#aca097' }}>{translations.supportingYour}</span><br />
-            <span style={{ color: '#cb8954' }}>{translations.athleticJourney}</span>
-          </h2>
         </div>
 
         {/* Main Content */}
@@ -123,72 +119,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
             </div>
           </div>
 
-          {/* Right - Content */}
+          {/* Right - Content (placeholder for future content) */}
           <div className={`${isMobile ? 'w-full' : 'w-1/2 lg:w-3/5'} flex flex-col`}>
-            {/* Navigation Tabs */}
-            <div className="flex flex-wrap gap-4 lg:gap-8 mb-8">
-              {sections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => onSetActiveAboutSection(section.id)}
-                  className="flex items-center gap-3 transition-all duration-300 group"
-                >
-                  <span 
-                    className="text-lg lg:text-xl font-bold"
-                    style={{ color: activeAboutSection === section.id ? '#cb8954' : '#aca097' }}
-                  >
-                    {section.id.toString().padStart(2, '0')}
-                  </span>
-                  <span 
-                    className={`text-sm lg:text-base font-medium pb-1 border-b-2 transition-all duration-300`}
-                    style={{ 
-                      color: activeAboutSection === section.id ? 'white' : '#aca097',
-                      borderColor: activeAboutSection === section.id ? '#cb8954' : 'transparent'
-                    }}
-                  >
-                    {section.title}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Active Section Content */}
-            <div className="space-y-6">
-              {/* Title & Description */}
-              <div>
-                <h3 className="text-xl lg:text-2xl font-bold mb-4" style={{ color: '#cb8954' }}>
-                  {activeSection.title}
-                </h3>
-                <p className="text-sm lg:text-base leading-relaxed" style={{ color: '#aca097' }}>
-                  {activeSection.description}
-                </p>
-              </div>
-
-              {/* Cards */}
-              <div className="grid grid-cols-1 gap-4">
-                {activeSection.cards.map((card, index) => (
-                  <div 
-                    key={index}
-                    className="p-4 lg:p-5 border-l-2 transition-all duration-300"
-                    style={{ 
-                      borderColor: '#cb8954',
-                      backgroundColor: 'rgba(172, 160, 151, 0.1)'
-                    }}
-                  >
-                    <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>
-                      {card.title}
-                    </h4>
-                    {typeof card.description === 'string' ? (
-                      <p className="text-sm" style={{ color: '#aca097' }}>
-                        {card.description}
-                      </p>
-                    ) : (
-                      <div style={{ color: '#aca097' }}>{card.description}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Content will be added later */}
           </div>
         </div>
       </div>
