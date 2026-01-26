@@ -1,5 +1,6 @@
 import React from 'react';
 import heroRing from '@/assets/hero-ring.png';
+import heroIcon from '@/assets/hero-icon.png';
 
 interface HeroSectionProps {
   translations: any;
@@ -18,6 +19,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       
       {/* Intense bottom gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent z-[5]" />
+      
+      {/* Center icon */}
+      <div className="relative z-10 flex items-center justify-center">
+        <img 
+          src={heroIcon} 
+          alt="HyperKids Icon" 
+          className="w-48 md:w-64 lg:w-80 h-auto"
+        />
+      </div>
       
       {/* Trust the Process text */}
       <div className="absolute bottom-8 right-8 z-10">
