@@ -8,7 +8,7 @@ const TrainingSection: React.FC = () => {
         className="absolute bg-white"
         style={{ 
           left: '1370px',
-          top: '326px',
+          top: '0px',
           width: '2px',
           height: '200px'
         }}
