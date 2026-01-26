@@ -14,7 +14,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       <img 
         src={heroRing} 
         alt="Boxing Ring" 
-        className="w-full h-full object-cover absolute inset-0 opacity-[0.13]"
+        className="w-full h-full object-cover absolute inset-0 opacity-[0.07]"
       />
       
       {/* Intense bottom gradient */}
