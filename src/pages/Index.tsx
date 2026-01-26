@@ -10,6 +10,7 @@ import ProgramsSection from "@/components/landing/ProgramsSection";
 import TrainingSection from "@/components/landing/TrainingSection";
 import PlanningSection from "@/components/landing/PlanningSection";
 import AboutSection from "@/components/landing/AboutSection";
+import CoachCredentialsSection from "@/components/landing/CoachCredentialsSection";
 import CertificatesSection from "@/components/landing/CertificatesSection";
 import EliteTrainingSection from "@/components/landing/EliteTrainingSection";
 import LiveProgramSection from "@/components/landing/LiveProgramSection";
@@ -124,6 +125,8 @@ const Index = () => {
         activeAboutSection={activeAboutSection}
         onSetActiveAboutSection={setActiveAboutSection}
       />
+
+      <CoachCredentialsSection />
 
       <CertificatesSection translations={correctedTranslations} />
 
