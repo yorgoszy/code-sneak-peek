@@ -17,13 +17,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       />
       
       {/* Centered content */}
-      <div className="relative z-10 text-left px-8">
-        <p className="text-white text-2xl md:text-4xl font-roobert tracking-wide mb-6">
+      <div className="relative z-10 flex items-center gap-6 px-8">
+        <p className="text-white text-2xl md:text-4xl font-roobert tracking-wide">
           Το ταξίδι του πρωταθλητή ξεκινάει εδώ
         </p>
         <button 
           onClick={onGetStarted}
-          className="bg-[#00ffba] text-black px-8 py-3 font-semibold hover:bg-[#00ffba]/90 transition-colors rounded-none"
+          className="bg-[#00ffba] text-black px-8 py-3 font-semibold hover:bg-[#00ffba]/90 transition-colors rounded-none whitespace-nowrap"
         >
           Ξεκίνα τώρα
         </button>
