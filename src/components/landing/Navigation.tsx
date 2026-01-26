@@ -48,7 +48,7 @@ const Navigation: React.FC<NavigationProps> = ({
           color: white !important;
         }
         .nav-link:hover {
-          color: #cf8d54 !important;
+          color: #9fa0a4 !important;
         }
         .dashboard-btn:hover {
           background-color: black !important;
@@ -66,7 +66,7 @@ const Navigation: React.FC<NavigationProps> = ({
           color: white !important;
         }
         .language-btn:hover svg, .dashboard-btn:hover svg, .logout-btn:hover svg {
-          color: #cf8d54 !important;
+          color: #9fa0a4 !important;
         }
         .login-btn {
           background-color: transparent !important;
