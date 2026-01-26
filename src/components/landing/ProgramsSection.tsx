@@ -13,8 +13,8 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
         alt="Session Services" 
         className="w-full h-auto"
       />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center text-white max-w-2xl px-6">
+      <div className="absolute top-8 right-8 md:top-12 md:right-12">
+        <div className="text-left text-white max-w-md">
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Δεξιότητες ή σπορ
           </h2>
