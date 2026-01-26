@@ -37,7 +37,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
         className="absolute z-10"
         style={{ 
           left: '1200px', 
-          top: '300px'
+          top: '452px'
         }}
       >
         <h2 
