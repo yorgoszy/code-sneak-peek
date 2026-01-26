@@ -20,10 +20,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent z-[5]" />
       
       {/* Trust the Process text */}
-      <div className="absolute bottom-12 left-0 right-0 z-10 text-center">
+      <div className="absolute bottom-8 right-8 z-10">
         <h1 
-          className="text-4xl md:text-6xl lg:text-7xl text-white"
-          style={{ fontFamily: "'UnifrakturMaguntia', cursive" }}
+          className="text-white"
+          style={{ fontFamily: "'UnifrakturMaguntia', cursive", fontSize: '34px' }}
         >
           trust the process
         </h1>
