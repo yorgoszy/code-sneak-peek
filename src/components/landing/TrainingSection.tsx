@@ -1,5 +1,6 @@
 import React from 'react';
 import trainingFighters from '@/assets/training-fighters.png';
+import trainingLogo from '@/assets/training-logo.png';
 
 const TrainingSection: React.FC = () => {
   return (
@@ -37,6 +38,21 @@ const TrainingSection: React.FC = () => {
           />
         </div>
       </div>
+      {/* Logo at X:1320, Y:850 */}
+      <div 
+        className="absolute z-10"
+        style={{ 
+          left: '1320px',
+          top: '850px'
+        }}
+      >
+        <img 
+          src={trainingLogo} 
+          alt="Athletes Logo" 
+          style={{ width: '5%' }}
+        />
+      </div>
+
       {/* Bottom gradient for section */}
       <div 
         className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent"
