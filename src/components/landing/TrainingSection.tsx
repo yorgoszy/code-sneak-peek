@@ -16,7 +16,7 @@ const TrainingSection: React.FC = () => {
         }}
       />
       
-      {/* Fighters image at X:1200, Y:364 */}
+      {/* Grouped: Fighters image + Logo */}
       <div 
         className="absolute"
         style={{ 
@@ -24,6 +24,7 @@ const TrainingSection: React.FC = () => {
           top: '364px'
         }}
       >
+        {/* Fighters image */}
         <div className="relative">
           <img 
             src={trainingFighters} 
@@ -37,20 +38,21 @@ const TrainingSection: React.FC = () => {
             style={{ height: '150px' }}
           />
         </div>
-      </div>
-      {/* Logo at X:1320, Y:850 */}
-      <div 
-        className="absolute z-10"
-        style={{ 
-          left: '1320px',
-          top: '850px'
-        }}
-      >
-        <img 
-          src={trainingLogo} 
-          alt="Athletes Logo" 
-          style={{ width: '130px' }}
-        />
+        
+        {/* Logo - positioned relative to the group (offset 120px from left, 486px from top of image) */}
+        <div 
+          className="absolute z-10"
+          style={{ 
+            left: '120px',
+            top: '486px'
+          }}
+        >
+          <img 
+            src={trainingLogo} 
+            alt="Athletes Logo" 
+            style={{ width: '130px' }}
+          />
+        </div>
       </div>
 
       {/* Bottom gradient for section */}
