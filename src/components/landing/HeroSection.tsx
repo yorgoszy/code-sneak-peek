@@ -19,7 +19,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       {/* Intense bottom gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent z-[5]" />
       
-      {/* Content will be added here */}
+      {/* Trust the Process text */}
+      <div className="absolute bottom-12 left-0 right-0 z-10 text-center">
+        <h1 
+          className="text-4xl md:text-6xl lg:text-7xl text-white"
+          style={{ fontFamily: "'UnifrakturMaguntia', cursive" }}
+        >
+          trust the process
+        </h1>
+      </div>
     </section>
   );
 };
