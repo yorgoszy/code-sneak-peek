@@ -32,6 +32,38 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
         }}
       />
       
+      {/* Text content at X:200, Y:470 */}
+      <div 
+        className="absolute z-10"
+        style={{ 
+          left: '200px', 
+          top: '470px'
+        }}
+      >
+        <h2 
+          className="text-white mb-4"
+          style={{ 
+            fontFamily: "'Roobert Pro', sans-serif",
+            fontSize: '34px'
+          }}
+        >
+          Δεξιότητες ή σπορ;
+        </h2>
+        <p 
+          style={{ 
+            fontFamily: "'Roobert Pro', sans-serif",
+            fontSize: '15px',
+            color: '#9fa0a4',
+            maxWidth: '400px',
+            lineHeight: '1.5'
+          }}
+        >
+          Τα παιδιά πρέπει να είναι επιδέξια.<br />
+          Η κίνηση είναι ένα φυσικό προβάδισμα που δεν πρέπει να χάσουν.<br />
+          Εμείς τους δίνουμε τα εργαλεία να το αξιοποιήσουν.
+        </p>
+      </div>
+      
       {/* Image positioned at X:300, Y:232 */}
       <div 
         className="absolute"
