@@ -10,7 +10,8 @@ const TrainingSection: React.FC = () => {
         className="absolute flex flex-col items-center"
         style={{ 
           left: '1370px',
-          top: '0px'
+          top: '0px',
+          transform: 'translateX(-50%)'
         }}
       >
         {/* Top line segment */}
