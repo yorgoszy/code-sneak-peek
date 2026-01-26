@@ -9,6 +9,17 @@ interface ProgramsSectionProps {
 const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
   return (
     <section id="programs" className="relative bg-black min-h-[700px]">
+      {/* Logo positioned at X:320, Y:660 - first in order, above photo */}
+      <img 
+        src={programsLogo} 
+        alt="Programs Logo" 
+        className="absolute z-10"
+        style={{ 
+          left: '320px', 
+          top: '660px'
+        }}
+      />
+      
       {/* Image positioned at X:300, Y:232 */}
       <div 
         className="absolute"
@@ -31,17 +42,6 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
           />
         </div>
       </div>
-      
-      {/* Logo positioned at X:320, Y:660 */}
-      <img 
-        src={programsLogo} 
-        alt="Programs Logo" 
-        className="absolute"
-        style={{ 
-          left: '320px', 
-          top: '660px'
-        }}
-      />
     </section>
   );
 };
