@@ -13,6 +13,11 @@ interface HeroSectionProps {
 
 const logos = [heroKids, heroAthletes, heroSync];
 const slogans = [sloganTrust, sloganLimits, sloganExtraMile];
+const taglines = [
+  "Το ταξίδι του πρωταθλητή ξεκινάει εδώ",
+  "Χτίζουμε πρωταθλητές με αξίες",
+  "Σύνδεσε την ομάδα σου με το sync"
+];
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -27,11 +32,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
   return (
     <section id="home" className="relative min-h-screen overflow-hidden bg-black pt-[84px] pb-5 flex items-center justify-center">
-      <img 
-        src={logos[currentIndex]} 
-        alt="HyperKids" 
-        className="max-w-md w-full px-4"
-      />
+      <div className="flex flex-col items-center">
+        <img 
+          src={logos[currentIndex]} 
+          alt="HyperKids" 
+          className="max-w-md w-full px-4"
+        />
+        <p className="text-white text-xl md:text-2xl mt-6 font-roobert tracking-wide">
+          {taglines[currentIndex]}
+        </p>
+      </div>
       
       {/* Slogan bottom-right */}
       <div className="absolute bottom-8 right-8">
