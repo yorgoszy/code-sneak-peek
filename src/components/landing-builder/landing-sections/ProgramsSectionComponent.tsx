@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNode, UserComponent } from '@craftjs/core';
 import { Rnd } from 'react-rnd';
 import { Label } from '@/components/ui/label';
@@ -39,14 +39,34 @@ export const ProgramsSectionComponent: UserComponent<ProgramsSectionProps> = ({
   fontFamily,
   textAlign
 }) => {
-  const { connectors: { connect, drag }, actions: { setProp } } = useNode();
-  const [isSelected, setIsSelected] = useState(false);
+  const { connectors: { connect, drag }, actions: { setProp }, selected } = useNode((node) => ({
+    selected: node.events.selected
+  }));
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 1000, height: 600 });
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerSize({ width: rect.width, height: rect.height });
+      }
+    };
+
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    const timeout = setTimeout(updateSize, 100);
+
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      clearTimeout(timeout);
+    };
+  }, []);
 
   return (
     <div 
       ref={(ref) => ref && connect(drag(ref))}
       className="relative"
-      onClick={() => setIsSelected(true)}
     >
       <section id="programs" className="relative" style={{ minHeight: '400px' }}>
         <img 
@@ -54,7 +74,7 @@ export const ProgramsSectionComponent: UserComponent<ProgramsSectionProps> = ({
           alt="Session Services" 
           className="w-full h-auto"
         />
-        <div className="absolute inset-0">
+        <div ref={containerRef} className="absolute inset-0">
           <Rnd
             size={{ width: textWidth, height: textHeight }}
             position={{ x: textX, y: textY }}
@@ -75,8 +95,9 @@ export const ProgramsSectionComponent: UserComponent<ProgramsSectionProps> = ({
             bounds="parent"
             className="cursor-move"
             style={{
-              border: isSelected ? '2px dashed #00ffba' : '2px dashed transparent',
-              background: isSelected ? 'rgba(0, 255, 186, 0.05)' : 'transparent',
+              border: selected ? '2px dashed #00ffba' : '2px dashed rgba(0, 255, 186, 0.2)',
+              background: selected ? 'rgba(0, 255, 186, 0.05)' : 'transparent',
+              transition: 'border 0.2s ease'
             }}
             enableResizing={{
               top: true,
@@ -90,12 +111,13 @@ export const ProgramsSectionComponent: UserComponent<ProgramsSectionProps> = ({
             }}
           >
             <div 
-              className="w-full h-full p-4"
+              className="w-full h-full p-4 overflow-hidden"
               style={{ 
                 color: textColor,
                 fontFamily: fontFamily,
                 textAlign: textAlign,
-                opacity: opacity / 100
+                opacity: opacity / 100,
+                pointerEvents: selected ? 'auto' : 'none'
               }}
             >
               <h2 
@@ -132,7 +154,7 @@ const ProgramsSectionSettings = () => {
   return (
     <div className="space-y-4">
       <div className="bg-[#00ffba]/10 p-2 rounded-none text-xs text-center">
-        💡 Σύρε το κείμενο στον canvas για να το μετακινήσεις!
+        💡 Κάνε κλικ στο section και σύρε το κείμενο!
       </div>
 
       <div>
