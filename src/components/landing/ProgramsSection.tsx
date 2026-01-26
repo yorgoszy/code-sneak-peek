@@ -12,9 +12,9 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
       <div 
         className="absolute"
         style={{ 
-          left: '100px', 
+          left: '300px', 
           top: '232px', 
-          height: '356px',
+          height: '410px',
           width: 'auto'
         }}
       >
