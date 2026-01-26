@@ -20,7 +20,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % logos.length);
-    }, 1000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, []);
