@@ -21,6 +21,17 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
         }}
       />
       
+      {/* Horizontal line at X:750, Y:490 */}
+      <div 
+        className="absolute bg-white z-10"
+        style={{ 
+          left: '750px', 
+          top: '490px',
+          width: '200px',
+          height: '3px'
+        }}
+      />
+      
       {/* Image positioned at X:300, Y:232 */}
       <div 
         className="absolute"
