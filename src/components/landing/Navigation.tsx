@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
-import hyperkidsLogo from '@/assets/hyperkids-logo.svg';
+import hyperkidsLogo from '@/assets/hyperkids-logo-new.png';
 interface NavigationProps {
   navigationItems: Array<{ name: string; href: string }>;
   isAuthenticated: boolean;
