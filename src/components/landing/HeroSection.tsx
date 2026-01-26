@@ -38,7 +38,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
           alt="HyperKids" 
           className="max-w-md w-full px-4"
         />
-        <p className="text-white text-xl md:text-2xl mt-2 font-roobert tracking-wide">
+        <p className="text-white text-xl md:text-2xl font-roobert tracking-wide">
           {taglines[currentIndex]}
         </p>
       </div>
