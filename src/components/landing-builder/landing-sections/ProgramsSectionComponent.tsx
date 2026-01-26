@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNode, UserComponent } from '@craftjs/core';
+import { Rnd } from 'react-rnd';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,10 +15,10 @@ interface ProgramsSectionProps {
   textColor: string;
   titleFontSize: number;
   paragraphFontSize: number;
-  horizontalPosition: 'left' | 'center' | 'right';
-  verticalPosition: 'top' | 'center' | 'bottom';
-  offsetX: number;
-  offsetY: number;
+  textX: number;
+  textY: number;
+  textWidth: number;
+  textHeight: number;
   opacity: number;
   fontFamily: string;
   textAlign: 'left' | 'center' | 'right';
@@ -30,88 +31,93 @@ export const ProgramsSectionComponent: UserComponent<ProgramsSectionProps> = ({
   textColor,
   titleFontSize,
   paragraphFontSize,
-  horizontalPosition,
-  verticalPosition,
-  offsetX,
-  offsetY,
+  textX,
+  textY,
+  textWidth,
+  textHeight,
   opacity,
   fontFamily,
   textAlign
 }) => {
-  const { connectors: { connect, drag } } = useNode();
-
-  // Calculate position styles based on horizontal and vertical position
-  const getPositionStyles = () => {
-    const styles: React.CSSProperties = {
-      position: 'absolute',
-      opacity: opacity / 100,
-      maxWidth: '500px',
-      padding: '20px'
-    };
-
-    // Horizontal positioning
-    if (horizontalPosition === 'left') {
-      styles.left = `${offsetX}px`;
-    } else if (horizontalPosition === 'center') {
-      styles.left = '50%';
-      styles.transform = 'translateX(-50%)';
-    } else {
-      styles.right = `${offsetX}px`;
-    }
-
-    // Vertical positioning
-    if (verticalPosition === 'top') {
-      styles.top = `${offsetY}px`;
-    } else if (verticalPosition === 'center') {
-      styles.top = '50%';
-      styles.transform = horizontalPosition === 'center' 
-        ? 'translate(-50%, -50%)' 
-        : 'translateY(-50%)';
-    } else {
-      styles.bottom = `${offsetY}px`;
-    }
-
-    return styles;
-  };
+  const { connectors: { connect, drag }, actions: { setProp } } = useNode();
+  const [isSelected, setIsSelected] = useState(false);
 
   return (
     <div 
       ref={(ref) => ref && connect(drag(ref))}
       className="relative"
+      onClick={() => setIsSelected(true)}
     >
-      <section id="programs" className="relative">
+      <section id="programs" className="relative" style={{ minHeight: '400px' }}>
         <img 
           src={sessionServicesBg} 
           alt="Session Services" 
           className="w-full h-auto"
         />
-        <div style={getPositionStyles()}>
-          <div 
-            style={{ 
-              color: textColor,
-              fontFamily: fontFamily,
-              textAlign: textAlign
+        <div className="absolute inset-0">
+          <Rnd
+            size={{ width: textWidth, height: textHeight }}
+            position={{ x: textX, y: textY }}
+            onDragStop={(e, d) => {
+              setProp((props: ProgramsSectionProps) => {
+                props.textX = d.x;
+                props.textY = d.y;
+              });
+            }}
+            onResizeStop={(e, direction, ref, delta, position) => {
+              setProp((props: ProgramsSectionProps) => {
+                props.textWidth = parseInt(ref.style.width);
+                props.textHeight = parseInt(ref.style.height);
+                props.textX = position.x;
+                props.textY = position.y;
+              });
+            }}
+            bounds="parent"
+            className="cursor-move"
+            style={{
+              border: isSelected ? '2px dashed #00ffba' : '2px dashed transparent',
+              background: isSelected ? 'rgba(0, 255, 186, 0.05)' : 'transparent',
+            }}
+            enableResizing={{
+              top: true,
+              right: true,
+              bottom: true,
+              left: true,
+              topRight: true,
+              bottomRight: true,
+              bottomLeft: true,
+              topLeft: true
             }}
           >
-            <h2 
-              className="font-bold mb-4"
-              style={{ fontSize: `${titleFontSize}px` }}
+            <div 
+              className="w-full h-full p-4"
+              style={{ 
+                color: textColor,
+                fontFamily: fontFamily,
+                textAlign: textAlign,
+                opacity: opacity / 100
+              }}
             >
-              {title}
-            </h2>
-            <p 
-              className="leading-relaxed"
-              style={{ fontSize: `${paragraphFontSize}px` }}
-            >
-              {paragraph1}
-            </p>
-            <p 
-              className="mt-4 font-medium"
-              style={{ fontSize: `${paragraphFontSize}px` }}
-            >
-              {paragraph2}
-            </p>
-          </div>
+              <h2 
+                className="font-bold mb-4"
+                style={{ fontSize: `${titleFontSize}px` }}
+              >
+                {title}
+              </h2>
+              <p 
+                className="leading-relaxed"
+                style={{ fontSize: `${paragraphFontSize}px` }}
+              >
+                {paragraph1}
+              </p>
+              <p 
+                className="mt-4 font-medium"
+                style={{ fontSize: `${paragraphFontSize}px` }}
+              >
+                {paragraph2}
+              </p>
+            </div>
+          </Rnd>
         </div>
       </section>
     </div>
@@ -125,6 +131,10 @@ const ProgramsSectionSettings = () => {
 
   return (
     <div className="space-y-4">
+      <div className="bg-[#00ffba]/10 p-2 rounded-none text-xs text-center">
+        💡 Σύρε το κείμενο στον canvas για να το μετακινήσεις!
+      </div>
+
       <div>
         <Label className="text-sm font-bold">Κείμενο</Label>
       </div>
@@ -232,68 +242,6 @@ const ProgramsSectionSettings = () => {
         </Select>
       </div>
 
-      <div className="border-t pt-4">
-        <Label className="text-sm font-bold">Θέση Κειμένου</Label>
-      </div>
-
-      <div>
-        <Label className="text-sm">Οριζόντια θέση</Label>
-        <Select 
-          value={props.horizontalPosition} 
-          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.horizontalPosition = val as 'left' | 'center' | 'right')}
-        >
-          <SelectTrigger className="rounded-none mt-1">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="rounded-none">
-            <SelectItem value="left">Αριστερά</SelectItem>
-            <SelectItem value="center">Κέντρο</SelectItem>
-            <SelectItem value="right">Δεξιά</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label className="text-sm">Κάθετη θέση</Label>
-        <Select 
-          value={props.verticalPosition} 
-          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.verticalPosition = val as 'top' | 'center' | 'bottom')}
-        >
-          <SelectTrigger className="rounded-none mt-1">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="rounded-none">
-            <SelectItem value="top">Πάνω</SelectItem>
-            <SelectItem value="center">Κέντρο</SelectItem>
-            <SelectItem value="bottom">Κάτω</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label className="text-sm">Οριζόντια απόσταση: {props.offsetX}px</Label>
-        <Slider
-          value={[props.offsetX]}
-          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.offsetX = val[0])}
-          min={0}
-          max={300}
-          step={10}
-          className="mt-2"
-        />
-      </div>
-
-      <div>
-        <Label className="text-sm">Κάθετη απόσταση: {props.offsetY}px</Label>
-        <Slider
-          value={[props.offsetY]}
-          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.offsetY = val[0])}
-          min={0}
-          max={300}
-          step={10}
-          className="mt-2"
-        />
-      </div>
-
       <div>
         <Label className="text-sm">Διαφάνεια: {props.opacity}%</Label>
         <Slider
@@ -318,10 +266,10 @@ ProgramsSectionComponent.craft = {
     textColor: '#ffffff',
     titleFontSize: 30,
     paragraphFontSize: 14,
-    horizontalPosition: 'right',
-    verticalPosition: 'top',
-    offsetX: 148,
-    offsetY: 252,
+    textX: 500,
+    textY: 100,
+    textWidth: 400,
+    textHeight: 250,
     opacity: 100,
     fontFamily: 'inherit',
     textAlign: 'left'
