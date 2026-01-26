@@ -28,7 +28,7 @@ const TrainingSection: React.FC = () => {
             src={trainingFighters} 
             alt="Fighters Training" 
             className="w-auto object-contain opacity-60"
-            style={{ height: '500px' }}
+            style={{ height: '550px' }}
           />
           {/* Intense bottom gradient */}
           <div 
