@@ -13,6 +13,19 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
         alt="Session Services" 
         className="w-full h-auto"
       />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-center text-white max-w-2xl px-6">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">
+            Δεξιότητες ή σπορ
+          </h2>
+          <p className="text-base md:text-lg leading-relaxed">
+            Τα παιδιά πρέπει να είναι επιδέξια. Η κίνηση είναι ένα φυσικό προβάδισμα που δεν πρέπει να χάσουν.
+          </p>
+          <p className="text-base md:text-lg mt-4 font-medium">
+            Εμείς τους δίνουμε τα εργαλεία να το αξιοποιήσουν.
+          </p>
+        </div>
+      </div>
     </section>
   );
 };
