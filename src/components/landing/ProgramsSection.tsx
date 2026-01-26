@@ -18,10 +18,10 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Δεξιότητες ή σπορ
           </h2>
-          <p className="text-base md:text-lg leading-relaxed">
+          <p className="text-sm md:text-base leading-relaxed">
             Τα παιδιά πρέπει να είναι επιδέξια. Η κίνηση είναι ένα φυσικό προβάδισμα που δεν πρέπει να χάσουν.
           </p>
-          <p className="text-base md:text-lg mt-4 font-medium">
+          <p className="text-sm md:text-base mt-4 font-medium">
             Εμείς τους δίνουμε τα εργαλεία να το αξιοποιήσουν.
           </p>
         </div>
