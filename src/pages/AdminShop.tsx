@@ -59,10 +59,8 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
   const { isAdmin } = useRoleCheck();
 
   useEffect(() => {
-    if (userProfile?.id) {
-      fetchPurchases();
-    }
-  }, [userProfile?.id]);
+    fetchPurchases();
+  }, []);
 
   const fetchPurchases = async () => {
     try {
@@ -95,7 +93,7 @@ const AdminShop = ({ userProfile, userEmail, onSignOut }: AdminShopProps = {}) =
       const { data: acknowledgedData, error: acknowledgedError } = await supabase
         .from('acknowledged_payments')
         .select('payment_id')
-        .eq('admin_user_id', userProfile?.id ?? '');
+        .eq('admin_user_id', userProfile.id);
 
       if (acknowledgedError) throw acknowledgedError;
 

@@ -3597,50 +3597,6 @@ export type Database = {
           },
         ]
       }
-      landing_page_layouts: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          id: string
-          is_active: boolean
-          is_published: boolean
-          layout_data: Json
-          name: string
-          published_at: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          is_active?: boolean
-          is_published?: boolean
-          layout_data?: Json
-          name?: string
-          published_at?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          is_active?: boolean
-          is_published?: boolean
-          layout_data?: Json
-          name?: string
-          published_at?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "landing_page_layouts_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "app_users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       magic_box_campaigns: {
         Row: {
           created_at: string

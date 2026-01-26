@@ -1,89 +1,120 @@
-import React from 'react';
-import servicesAlina from '@/assets/services-alina.jpg';
-import programsLogo from '@/assets/programs-logo.png';
+
+import React, { useState, useEffect } from 'react';
+import { ProgramCard } from './ProgramCard';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+interface Program {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  color: string;
+}
 
 interface ProgramsSectionProps {
+  programs: Program[];
   translations: any;
 }
 
-const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
+const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translations }) => {
+  const [api, setApi] = useState<any>();
+  const [isAutoplayPaused, setIsAutoplayPaused] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Auto-rotate carousel on mobile
+  useEffect(() => {
+    if (!api || !isMobile || isAutoplayPaused) return;
+
+    const interval = setInterval(() => {
+      api.scrollNext();
+    }, 3000); // 3 δευτερόλεπτα
+
+    return () => clearInterval(interval);
+  }, [api, isMobile, isAutoplayPaused]);
+
+  const handleTouchStart = () => {
+    if (isMobile) {
+      setIsAutoplayPaused(true);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    // Δεν επανεκκινούμε το autoplay πια
+  };
+
+  const handleScreenClick = () => {
+    if (isMobile) {
+      setIsAutoplayPaused(true);
+    }
+  };
+
   return (
-    <section id="programs" className="relative bg-black min-h-[700px]">
-      {/* Logo positioned at X:320, Y:660 - first in order, above photo */}
-      <img 
-        src={programsLogo} 
-        alt="Programs Logo" 
-        className="absolute z-10"
-        style={{ 
-          left: '320px', 
-          top: '660px',
-          width: '5%'
-        }}
-      />
-      
-      {/* Horizontal line at X:750, Y:490 */}
-      <div 
-        className="absolute bg-white z-10"
-        style={{ 
-          left: '820px',
-          top: '490px',
-          width: '200px',
-          height: '2px'
-        }}
-      />
-      
-      {/* Text content at X:1200, Y:470 */}
-      <div 
-        className="absolute z-10"
-        style={{ 
-          left: '1200px', 
-          top: '402px'
-        }}
-      >
-        <h2 
-          className="text-white mb-4"
-          style={{ 
-            fontFamily: "'Roobert Pro', sans-serif",
-            fontSize: '34px'
-          }}
-        >
-          Δεξιότητες ή σπορ;
-        </h2>
-        <p 
-          style={{ 
-            fontFamily: "'Roobert Pro', sans-serif",
-            fontSize: '15px',
-            color: '#9fa0a4',
-            maxWidth: '400px',
-            lineHeight: '1.5'
-          }}
-        >
-          Τα παιδιά πρέπει να είναι επιδέξια. Η κίνηση είναι<br />
-          ένα φυσικό προβάδισμα που δεν πρέπει να χάσουν.<br />
-          Εμείς τους δίνουμε τα εργαλεία να το αξιοποιήσουν.
-        </p>
-      </div>
-      
-      {/* Image positioned at X:300, Y:232 */}
-      <div 
-        className="absolute"
-        style={{ 
-          left: '300px', 
-          top: '232px'
-        }}
-      >
+    <section id="programs" className="py-20 bg-black text-white" onClick={handleScreenClick}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
         <div className="relative">
-          <img 
-            src={servicesAlina} 
-            alt="Alina Training" 
-            className="w-auto object-contain opacity-60"
-            style={{ height: '500px' }}
-          />
-          {/* Intense bottom gradient */}
-          <div 
-            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent"
-            style={{ height: '150px' }}
-          />
+          {/* Header with navigation */}
+          <div className="flex justify-between items-center mb-8">
+            <div className="text-left">
+              {translations.language === 'en' ? (
+                <>
+                  <h3 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Robert, sans-serif', color: '#ACA097' }}>
+                    Services
+                  </h3>
+                </>
+              ) : (
+                <>
+                   <h3 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Robert, sans-serif', color: '#ACA097' }}>
+                     {translations?.language === 'en' ? 'Services' : 'Υπηρεσίες'}
+                   </h3>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile & Tablet: Carousel */}
+          <div className="lg:hidden">
+            <Carousel
+              setApi={setApi}
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent 
+                className="-ml-4"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onMouseDown={handleTouchStart}
+                onMouseUp={handleTouchEnd}
+              >
+                {programs.map((program) => (
+                  <CarouselItem 
+                    key={program.id} 
+                    className="pl-4 basis-full"
+                  >
+                    <ProgramCard program={program} translations={translations} />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </div>
+
+          {/* Desktop: Grid Layout */}
+          <div className="hidden lg:grid grid-cols-3 gap-6">
+            {programs.map((program) => (
+              <ProgramCard key={program.id} program={program} translations={translations} />
+            ))}
+          </div>
         </div>
       </div>
     </section>

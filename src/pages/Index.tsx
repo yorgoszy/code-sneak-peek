@@ -7,18 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/landing/Navigation";
 import HeroSection from "@/components/landing/HeroSection";
 import ProgramsSection from "@/components/landing/ProgramsSection";
-import TrainingSection from "@/components/landing/TrainingSection";
-import PlanningSection from "@/components/landing/PlanningSection";
 import AboutSection from "@/components/landing/AboutSection";
-import CoachCredentialsSection from "@/components/landing/CoachCredentialsSection";
 import CertificatesSection from "@/components/landing/CertificatesSection";
 import EliteTrainingSection from "@/components/landing/EliteTrainingSection";
 import LiveProgramSection from "@/components/landing/LiveProgramSection";
 import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
+
 import Footer from "@/components/landing/Footer";
-import { PublishedLandingRenderer } from "@/components/landing/PublishedLandingRenderer";
-import DevRulers from "@/components/dev/DevRulers";
 
 const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -42,6 +38,7 @@ const Index = () => {
 
         if (userProfile?.role) {
           setUserRole(userProfile.role);
+          // Redirect to appropriate dashboard based on role
           if (userProfile.role === 'admin') {
             navigate('/dashboard', { replace: true });
           } else {
@@ -68,6 +65,7 @@ const Index = () => {
     }
   };
 
+  // Override some translations with corrected capitalization
   const correctedTranslations = {
     ...translations,
     heroTitle: language === 'el' ? 'Το ταξίδι του πρωταθλητή' : 'The champion\'s journey',
@@ -78,6 +76,7 @@ const Index = () => {
     headCoach: language === 'el' ? 'Κύριος προπονητής' : 'Head coach',
     ourVision: language === 'el' ? 'Το όραμά μας' : 'Our vision',
     trainingMethodology: language === 'el' ? 'Μεθοδολογία προπόνησης' : 'Training methodology',
+    // Updated translations for About section
     academicBackground: language === 'el' ? 'Ακαδημαϊκό υπόβαθρο' : 'Academic background',
     professionalAthlete: language === 'el' ? 'Επαγγελματίας αθλητής' : 'Professional athlete',
     coreValues: language === 'el' ? 'Βασικές αξίες' : 'Core values',
@@ -97,11 +96,32 @@ const Index = () => {
     { name: correctedTranslations.contact, href: "#footer" }
   ];
 
-  // Static fallback content (shown if no published layout exists)
-  const staticContent = (
+  const programs = [
+    {
+      id: "10",
+      title: translations.hyperkids,
+      description: "Χτίζοντας αθλητικές βάσεις για όλα τα σπορ",
+      image: "/lovable-uploads/d049bee3-9df6-4a4b-8aff-88a05957d3ba.png",
+      color: "#00ffba"
+    },
+    {
+      id: "11", 
+      title: translations.hypergym,
+      description: translations.hypergymDesc,
+      image: "/lovable-uploads/b06a27cc-1f96-43d1-a89c-ea4330c70290.png",
+      color: "#00ffba"
+    },
+    {
+      id: "13", 
+      title: translations.hyperathletes,
+      description: translations.hyperathletesDesc,
+      image: "/lovable-uploads/b06a27cc-1f96-43d1-a89c-ea4330c70290.png",
+      color: "#00ffba"
+    }
+  ];
+
+  return (
     <div className="min-h-screen bg-white font-robert">
-      {/* Dev Rulers - remove in production */}
-      <DevRulers />
       <Navigation
         navigationItems={navigationItems}
         isAuthenticated={isAuthenticated}
@@ -117,11 +137,10 @@ const Index = () => {
         onGetStarted={handleGetStarted}
       />
 
-      <ProgramsSection translations={correctedTranslations} />
-
-      <TrainingSection />
-
-      <PlanningSection />
+      <ProgramsSection 
+        programs={programs}
+        translations={correctedTranslations}
+      />
 
       <AboutSection 
         translations={correctedTranslations}
@@ -129,18 +148,25 @@ const Index = () => {
         onSetActiveAboutSection={setActiveAboutSection}
       />
 
-      <CoachCredentialsSection />
-
       <CertificatesSection translations={correctedTranslations} />
 
-      <EliteTrainingSection translations={correctedTranslations} />
+      <EliteTrainingSection
+        translations={correctedTranslations}
+      />
 
-      <LiveProgramSection translations={correctedTranslations} />
+      <LiveProgramSection
+        translations={correctedTranslations}
+      />
 
-      <BlogSection translations={correctedTranslations} />
+      <BlogSection 
+        translations={correctedTranslations}
+      />
 
-      <ResultsSection translations={correctedTranslations} />
+      <ResultsSection 
+        translations={correctedTranslations}
+      />
 
+      {/* Green Section */}
       <section className="py-20" style={{ backgroundColor: '#cb8954' }}>
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-black mb-6">
@@ -150,8 +176,7 @@ const Index = () => {
             {correctedTranslations.journeyText}
           </p>
           <button 
-            className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors" 
-            style={{ color: '#cb8954' }}
+            className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors" style={{ color: '#cb8954' }}
             onClick={handleGetStarted}
           >
             {correctedTranslations.startNow}
@@ -159,11 +184,11 @@ const Index = () => {
         </div>
       </section>
 
-      <Footer translations={correctedTranslations} />
+      <Footer 
+        translations={correctedTranslations}
+      />
     </div>
   );
-
-  return <PublishedLandingRenderer fallback={staticContent} />;
 };
 
 export default Index;

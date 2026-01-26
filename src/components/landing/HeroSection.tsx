@@ -1,6 +1,6 @@
+
 import React from 'react';
-import heroRing from '@/assets/hero-ring.png';
-import heroIcon from '@/assets/hero-icon.png';
+import { Button } from "@/components/ui/button";
 
 interface HeroSectionProps {
   translations: any;
@@ -8,35 +8,65 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
+  const handleContactClick = () => {
+    const footerSection = document.getElementById('footer');
+    if (footerSection) {
+      footerSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   return (
-    <section id="home" className="relative min-h-screen overflow-hidden bg-black pt-[84px] flex items-center justify-center">
-      {/* Background image with 15% opacity */}
-      <img 
-        src={heroRing} 
-        alt="Boxing Ring" 
-        className="w-full h-full object-cover absolute inset-0 opacity-[0.07]"
-      />
+    <section id="home" className="relative pt-16 min-h-screen flex items-center">
+      <style>{`
+        .get-started-btn {
+          background-color: #cf8d54 !important;
+          color: black !important;
+        }
+        .get-started-btn:hover {
+          background-color: #b5794a !important;
+        }
+        .contact-btn:hover {
+          border-color: #cf8d54 !important;
+          color: #cf8d54 !important;
+          background-color: transparent !important;
+        }
+      `}</style>
       
-      {/* Intense bottom gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent z-[5]" />
-      
-      {/* Center icon */}
-      <div className="relative z-10 flex items-center justify-center">
-        <img 
-          src={heroIcon} 
-          alt="HyperKids Icon" 
-          className="w-32 md:w-44 lg:w-56 h-auto"
-        />
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/lovable-uploads/7d78ce26-3ce9-488f-9948-1cb90eac5b9e.png')`
+        }}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-60"></div>
       </div>
       
-      {/* Trust the Process text */}
-      <div className="absolute bottom-8 right-8 z-10">
-        <h1 
-          className="text-white"
-          style={{ fontFamily: "'UnifrakturMaguntia', cursive", fontSize: '34px' }}
-        >
-          trust the process
-        </h1>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="text-left">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6" style={{ color: '#ACA097' }}>
+            {translations.heroTitle}<br />
+            <span style={{ color: '#cf8d54' }}>{translations.heroSubtitle}</span>
+          </h1>
+          <div className="flex flex-wrap gap-4">
+            <Button 
+              className="get-started-btn rounded-none transition-colors duration-200" 
+              onClick={onGetStarted}
+            >
+              {translations.getStarted}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="contact-btn rounded-none bg-transparent"
+              style={{ color: '#ACA097', borderColor: '#ACA097' }}
+              onClick={handleContactClick}
+            >
+              {translations.contactBtn}
+            </Button>
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
-import hyperkidsLogo from '@/assets/hyperkids-logo-new.png';
+
 interface NavigationProps {
   navigationItems: Array<{ name: string; href: string }>;
   isAuthenticated: boolean;
@@ -22,12 +23,10 @@ const Navigation: React.FC<NavigationProps> = ({
   onSignOut,
   translations
 }) => {
-  const [isVisible] = useState(true);
-
   const handleNavigationClick = (href: string, event: React.MouseEvent) => {
     if (href.startsWith('#')) {
       event.preventDefault();
-      const targetId = href.substring(1);
+      const targetId = href.substring(1); // Remove the #
       const element = document.getElementById(targetId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
@@ -38,17 +37,10 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   return (
-    <nav 
-      className={`fixed top-0 w-full bg-black z-50 transition-transform duration-300 ${
-        isVisible ? 'translate-y-0' : '-translate-y-full'
-      }`}
-    >
+    <nav className="fixed top-0 w-full bg-black z-50">
       <style>{`
-        .nav-link {
-          color: white !important;
-        }
         .nav-link:hover {
-          color: #9fa0a4 !important;
+          color: #cf8d54 !important;
         }
         .dashboard-btn:hover {
           background-color: black !important;
@@ -63,19 +55,19 @@ const Navigation: React.FC<NavigationProps> = ({
           border-color: transparent !important;
         }
         .language-btn svg, .dashboard-btn svg, .logout-btn svg {
-          color: white !important;
+          color: #ACA097 !important;
         }
         .language-btn:hover svg, .dashboard-btn:hover svg, .logout-btn:hover svg {
-          color: #9fa0a4 !important;
+          color: #cf8d54 !important;
         }
         .login-btn {
-          background-color: transparent !important;
-          border: 1px solid white !important;
-          color: white !important;
+          background-color: #cb8954 !important;
+          border-color: #cb8954 !important;
+          color: black !important;
         }
         .login-btn:hover {
-          background-color: white !important;
-          color: black !important;
+          background-color: #b87849 !important;
+          border-color: #b87849 !important;
         }
       `}</style>
       
@@ -83,9 +75,9 @@ const Navigation: React.FC<NavigationProps> = ({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <img 
-              src={hyperkidsLogo} 
+              src="/assets/hyperkids-logo.png" 
               alt="HyperKids Logo" 
-              className="h-8 w-auto"
+              className="h-10 w-auto"
             />
           </div>
           
@@ -94,7 +86,8 @@ const Navigation: React.FC<NavigationProps> = ({
               <a
                 key={item.name}
                 href={item.href}
-                className="nav-link transition-colors duration-200 text-sm font-medium text-white"
+                className="nav-link transition-colors duration-200 text-sm font-medium"
+                style={{ color: '#ACA097' }}
                 onClick={(e) => handleNavigationClick(item.href, e)}
               >
                 {item.name}

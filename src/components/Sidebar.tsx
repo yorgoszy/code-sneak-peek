@@ -27,8 +27,7 @@ import {
   Utensils,
   Award,
   Swords,
-  Compass,
-  PanelTop
+  Compass
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -633,12 +632,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: BookOpen,
       label: "Σχολικές Σημειώσεις",
       path: "/dashboard/school-notes",
-      badge: null
-    },
-    {
-      icon: PanelTop,
-      label: "Landing Builder",
-      path: "/dashboard/landing-builder",
       badge: null
     },
     {
