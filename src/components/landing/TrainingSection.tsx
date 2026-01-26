@@ -49,7 +49,7 @@ const TrainingSection: React.FC = () => {
         <img 
           src={trainingLogo} 
           alt="Athletes Logo" 
-          style={{ width: '5%' }}
+          style={{ width: '10%' }}
         />
       </div>
 
