@@ -1,7 +1,5 @@
 import React from 'react';
-import heroWins from '@/assets/hero-wins.png';
-import sloganTrust from '@/assets/slogan-trust.png';
-
+import heroRing from '@/assets/hero-ring.png';
 
 interface HeroSectionProps {
   translations: any;
@@ -11,27 +9,14 @@ interface HeroSectionProps {
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
   return (
     <section id="home" className="relative min-h-screen overflow-hidden bg-black pt-[84px] flex items-center justify-center">
+      {/* Background image with 15% opacity */}
       <img 
-        src={heroWins} 
-        alt="HyperKids" 
-        className="w-full h-full object-cover absolute inset-0 opacity-50"
+        src={heroRing} 
+        alt="Boxing Ring" 
+        className="w-full h-full object-cover absolute inset-0 opacity-[0.15]"
       />
       
-      {/* Top gradient */}
-      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent z-[5]" />
-      
-      {/* Bottom gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-[5]" />
-      
-      
-      {/* Slogan bottom-right */}
-      <div className="absolute bottom-8 right-8 z-10">
-        <img 
-          src={sloganTrust} 
-          alt="Trust the Process" 
-          className="h-36 md:h-48 w-auto"
-        />
-      </div>
+      {/* Content will be added here */}
     </section>
   );
 };
