@@ -38,7 +38,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         <img 
           src={slogans[currentIndex]} 
           alt="Slogan" 
-          className="h-12 md:h-16 w-auto"
+          className="h-36 md:h-48 w-auto"
         />
       </div>
     </section>
