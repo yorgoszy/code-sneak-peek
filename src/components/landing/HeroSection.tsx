@@ -23,12 +23,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       {/* Bottom gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-[5]" />
       
-      {/* Center icon */}
       <div className="absolute inset-0 flex items-center justify-center z-10">
         <img 
           src={hyperkidsIcon} 
           alt="HyperKids Icon" 
-          className="h-32 md:h-48 w-auto"
+          className="h-24 md:h-40 w-auto"
         />
       </div>
       
