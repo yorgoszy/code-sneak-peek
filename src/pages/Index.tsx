@@ -138,7 +138,10 @@ const Index = () => {
         onGetStarted={handleGetStarted}
       />
 
-      <ProgramsSection translations={correctedTranslations} />
+      <ProgramsSection 
+        programs={programs}
+        translations={correctedTranslations}
+      />
 
       <AboutSection 
         translations={correctedTranslations}
