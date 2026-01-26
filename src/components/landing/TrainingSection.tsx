@@ -42,6 +42,40 @@ const TrainingSection: React.FC = () => {
         />
       </div>
       
+      {/* Text content - mirroring section #2 style but on the left */}
+      <div 
+        className="absolute z-10"
+        style={{ 
+          left: '200px', 
+          top: '402px'
+        }}
+      >
+        <h2 
+          className="text-white mb-4"
+          style={{ 
+            fontFamily: "'Roobert Pro', sans-serif",
+            fontSize: '34px'
+          }}
+        >
+          Δεν προπονούμε τυχαία
+        </h2>
+        <p 
+          style={{ 
+            fontFamily: "'Roobert Pro', sans-serif",
+            fontSize: '15px',
+            color: '#9fa0a4',
+            maxWidth: '400px',
+            lineHeight: '1.5'
+          }}
+        >
+          Στο γυμναστήριό μας δεν διδάσκουμε απλά ένα άθλημα -<br />
+          Επενδύουμε στη συνολική ανάπτυξη του παιδιού, καλλιεργώντας<br />
+          τη συναισθηματική του νοημοσύνη, τις κινητικές του ικανότητες<br />
+          και τις κοινωνικές του δεξιότητες. Στόχος μας να τους δώσουμε<br />
+          τα εφόδια που θα τους συνοδεύουν σε όλη τους τη ζωή.
+        </p>
+      </div>
+      
       {/* Grouped: Fighters image + Logo */}
       <div 
         className="absolute"
