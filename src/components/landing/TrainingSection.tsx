@@ -5,42 +5,6 @@ import trainingLogo from '@/assets/training-logo.png';
 const TrainingSection: React.FC = () => {
   return (
     <section className="relative bg-black min-h-[900px]">
-      {/* Vertical line with "road to" text in the middle */}
-      <div 
-        className="absolute flex flex-col items-center"
-        style={{ 
-          left: '1370px',
-          top: '0px',
-          transform: 'translateX(-50%)'
-        }}
-      >
-        {/* Top line segment */}
-        <div 
-          className="bg-white"
-          style={{ 
-            width: '2px',
-            height: '70px'
-          }}
-        />
-        {/* Text */}
-        <span 
-          className="text-white py-2"
-          style={{ 
-            fontFamily: 'UnifrakturMaguntia, cursive',
-            fontSize: '34px'
-          }}
-        >
-          road to
-        </span>
-        {/* Bottom line segment */}
-        <div 
-          className="bg-white"
-          style={{ 
-            width: '2px',
-            height: '70px'
-          }}
-        />
-      </div>
       
       {/* Text content - mirroring section #2 style but on the left */}
       <div 
