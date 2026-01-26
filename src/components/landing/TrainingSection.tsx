@@ -5,6 +5,16 @@ import trainingLogo from '@/assets/training-logo.png';
 const TrainingSection: React.FC = () => {
   return (
     <section className="relative bg-black min-h-[900px]">
+      {/* Vertical line */}
+      <div 
+        className="absolute bg-white"
+        style={{ 
+          left: '1370px',
+          top: '0px',
+          width: '2px',
+          height: '200px'
+        }}
+      />
       
       {/* Text content - mirroring section #2 style but on the left */}
       <div 
