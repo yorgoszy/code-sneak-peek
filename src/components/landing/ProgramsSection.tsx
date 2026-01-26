@@ -12,8 +12,8 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
       <div 
         className="absolute"
         style={{ 
-          left: '300px', 
-          top: '232px'
+          left: '320px', 
+          top: '660px'
         }}
       >
         <div className="relative">
