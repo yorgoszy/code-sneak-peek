@@ -1,5 +1,6 @@
 import React from 'react';
 import servicesAlina from '@/assets/services-alina.jpg';
+import programsLogo from '@/assets/programs-logo.png';
 
 interface ProgramsSectionProps {
   translations: any;
@@ -30,6 +31,17 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
           />
         </div>
       </div>
+      
+      {/* Logo positioned at X:320, Y:660 */}
+      <img 
+        src={programsLogo} 
+        alt="Programs Logo" 
+        className="absolute"
+        style={{ 
+          left: '320px', 
+          top: '660px'
+        }}
+      />
     </section>
   );
 };
