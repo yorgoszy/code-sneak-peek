@@ -46,7 +46,7 @@ export const NavigationSectionComponent: UserComponent = () => {
               <img 
                 src={hyperkidsLogo} 
                 alt="HyperKids Logo" 
-                className="h-5 w-auto"
+                className="h-8 w-auto"
               />
             </div>
             
