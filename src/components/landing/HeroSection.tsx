@@ -17,6 +17,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         className="w-full h-full object-cover absolute inset-0"
       />
       
+      {/* Top gradient */}
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent z-[5]" />
+      
+      {/* Bottom gradient */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-[5]" />
+      
       {/* Center icon */}
       <div className="absolute inset-0 flex items-center justify-center z-10">
         <img 
