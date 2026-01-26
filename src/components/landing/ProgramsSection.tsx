@@ -25,7 +25,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
       <div 
         className="absolute bg-white z-10"
         style={{ 
-          left: '800px',
+          left: '820px',
           top: '490px',
           width: '200px',
           height: '3px'
