@@ -2,14 +2,13 @@ import React, { useEffect, useState } from 'react';
 import heroSlide1 from '@/assets/hero-slide-1.svg';
 import heroSlide2 from '@/assets/hero-slide-2.svg';
 import heroSlide3 from '@/assets/hero-slide-3.svg';
-import heroSlide4 from '@/assets/hero-slide-4.svg';
 
 interface HeroSectionProps {
   translations: any;
   onGetStarted: () => void;
 }
 
-const slides = [heroSlide4, heroSlide1, heroSlide2, heroSlide3];
+const slides = [heroSlide1, heroSlide2, heroSlide3];
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
