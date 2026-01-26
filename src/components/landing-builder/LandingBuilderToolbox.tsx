@@ -57,14 +57,21 @@ interface ToolboxItemProps {
 }
 
 const ToolboxItem: React.FC<ToolboxItemProps> = ({ icon, label, create }) => {
-  const { connectors } = useEditor();
+  const { connectors, actions, query } = useEditor();
+
+  const handleClick = () => {
+    // Get the ROOT node and add the component to it
+    const nodeTree = query.parseReactElement(create()).toNodeTree();
+    actions.addNodeTree(nodeTree, 'ROOT');
+  };
 
   return (
     <div
       ref={(ref) => ref && connectors.create(ref, create())}
+      onClick={handleClick}
       className={cn(
         "flex flex-col items-center justify-center p-3 border border-border rounded-none",
-        "cursor-grab hover:bg-accent hover:border-primary transition-colors",
+        "cursor-pointer hover:bg-accent hover:border-primary transition-colors",
         "bg-card text-foreground"
       )}
     >
