@@ -181,10 +181,13 @@ export const LandingBuilderToolbox: React.FC = () => {
         textColor="#ffffff"
         titleFontSize={30}
         paragraphFontSize={14}
-        positionTop={252}
-        positionRight={148}
+        horizontalPosition="right"
+        verticalPosition="top"
+        offsetX={148}
+        offsetY={252}
         opacity={100}
         fontFamily="inherit"
+        textAlign="left"
       />
     },
     {
