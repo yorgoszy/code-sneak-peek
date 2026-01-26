@@ -1,5 +1,5 @@
 import React from 'react';
-import sessionServicesBg from '@/assets/session-services-bg.png';
+import servicesBg from '@/assets/services-bg.png';
 
 interface ProgramsSectionProps {
   translations: any;
@@ -9,23 +9,10 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ translations }) => {
   return (
     <section id="programs" className="relative">
       <img 
-        src={sessionServicesBg} 
-        alt="Session Services" 
+        src={servicesBg} 
+        alt="Services" 
         className="w-full h-auto"
       />
-      <div className="absolute top-[252px] right-[132px] md:top-[252px] md:right-[148px]">
-        <div className="text-left text-white max-w-md">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            Δεξιότητες ή σπορ
-          </h2>
-          <p className="text-sm md:text-base leading-relaxed">
-            Τα παιδιά πρέπει να είναι επιδέξια. Η κίνηση είναι ένα φυσικό προβάδισμα που δεν πρέπει να χάσουν.
-          </p>
-          <p className="text-sm md:text-base mt-4 font-medium">
-            Εμείς τους δίνουμε τα εργαλεία να το αξιοποιήσουν.
-          </p>
-        </div>
-      </div>
     </section>
   );
 };
