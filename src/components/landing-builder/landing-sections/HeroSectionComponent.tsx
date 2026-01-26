@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNode, UserComponent } from '@craftjs/core';
 import heroWins from '@/assets/hero-wins.jpg';
+import sloganTrust from '@/assets/slogan-trust.png';
 
 export const HeroSectionComponent: UserComponent = () => {
   const { connectors: { connect, drag } } = useNode();
@@ -16,6 +17,15 @@ export const HeroSectionComponent: UserComponent = () => {
           alt="HyperKids" 
           className="w-full h-full object-cover absolute inset-0"
         />
+        
+        {/* Slogan bottom-right */}
+        <div className="absolute bottom-8 right-8">
+          <img 
+            src={sloganTrust} 
+            alt="Trust the Process" 
+            className="h-36 md:h-48 w-auto"
+          />
+        </div>
       </section>
     </div>
   );
