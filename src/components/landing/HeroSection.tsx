@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import heroKids from '@/assets/hero-kids.png';
 import heroAthletes from '@/assets/hero-athletes.png';
 import heroSync from '@/assets/hero-sync.png';
+import sloganTrust from '@/assets/slogan-trust.png';
+import sloganLimits from '@/assets/slogan-limits.png';
+import sloganExtraMile from '@/assets/slogan-extra-mile.png';
 
 interface HeroSectionProps {
   translations: any;
@@ -9,6 +12,7 @@ interface HeroSectionProps {
 }
 
 const logos = [heroKids, heroAthletes, heroSync];
+const slogans = [sloganTrust, sloganLimits, sloganExtraMile];
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -28,6 +32,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         alt="HyperKids" 
         className="max-w-md w-full px-4"
       />
+      
+      {/* Slogan bottom-right */}
+      <div className="absolute bottom-8 right-8">
+        <img 
+          src={slogans[currentIndex]} 
+          alt="Slogan" 
+          className="h-12 md:h-16 w-auto"
+        />
+      </div>
     </section>
   );
 };
