@@ -14,10 +14,13 @@ interface ProgramsSectionProps {
   textColor: string;
   titleFontSize: number;
   paragraphFontSize: number;
-  positionTop: number;
-  positionRight: number;
+  horizontalPosition: 'left' | 'center' | 'right';
+  verticalPosition: 'top' | 'center' | 'bottom';
+  offsetX: number;
+  offsetY: number;
   opacity: number;
   fontFamily: string;
+  textAlign: 'left' | 'center' | 'right';
 }
 
 export const ProgramsSectionComponent: UserComponent<ProgramsSectionProps> = ({
@@ -27,12 +30,49 @@ export const ProgramsSectionComponent: UserComponent<ProgramsSectionProps> = ({
   textColor,
   titleFontSize,
   paragraphFontSize,
-  positionTop,
-  positionRight,
+  horizontalPosition,
+  verticalPosition,
+  offsetX,
+  offsetY,
   opacity,
-  fontFamily
+  fontFamily,
+  textAlign
 }) => {
   const { connectors: { connect, drag } } = useNode();
+
+  // Calculate position styles based on horizontal and vertical position
+  const getPositionStyles = () => {
+    const styles: React.CSSProperties = {
+      position: 'absolute',
+      opacity: opacity / 100,
+      maxWidth: '500px',
+      padding: '20px'
+    };
+
+    // Horizontal positioning
+    if (horizontalPosition === 'left') {
+      styles.left = `${offsetX}px`;
+    } else if (horizontalPosition === 'center') {
+      styles.left = '50%';
+      styles.transform = 'translateX(-50%)';
+    } else {
+      styles.right = `${offsetX}px`;
+    }
+
+    // Vertical positioning
+    if (verticalPosition === 'top') {
+      styles.top = `${offsetY}px`;
+    } else if (verticalPosition === 'center') {
+      styles.top = '50%';
+      styles.transform = horizontalPosition === 'center' 
+        ? 'translate(-50%, -50%)' 
+        : 'translateY(-50%)';
+    } else {
+      styles.bottom = `${offsetY}px`;
+    }
+
+    return styles;
+  };
 
   return (
     <div 
@@ -45,19 +85,12 @@ export const ProgramsSectionComponent: UserComponent<ProgramsSectionProps> = ({
           alt="Session Services" 
           className="w-full h-auto"
         />
-        <div 
-          className="absolute max-w-md"
-          style={{ 
-            top: `${positionTop}px`, 
-            right: `${positionRight}px`,
-            opacity: opacity / 100
-          }}
-        >
+        <div style={getPositionStyles()}>
           <div 
-            className="text-left"
             style={{ 
               color: textColor,
-              fontFamily: fontFamily
+              fontFamily: fontFamily,
+              textAlign: textAlign
             }}
           >
             <h2 
@@ -93,6 +126,10 @@ const ProgramsSectionSettings = () => {
   return (
     <div className="space-y-4">
       <div>
+        <Label className="text-sm font-bold">Κείμενο</Label>
+      </div>
+      
+      <div>
         <Label className="text-sm">Τίτλος</Label>
         <Input
           value={props.title}
@@ -119,6 +156,10 @@ const ProgramsSectionSettings = () => {
           className="rounded-none mt-1"
           rows={2}
         />
+      </div>
+
+      <div className="border-t pt-4">
+        <Label className="text-sm font-bold">Στυλ Κειμένου</Label>
       </div>
 
       <div>
@@ -156,39 +197,20 @@ const ProgramsSectionSettings = () => {
       </div>
 
       <div>
-        <Label className="text-sm">Θέση από πάνω: {props.positionTop}px</Label>
-        <Slider
-          value={[props.positionTop]}
-          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.positionTop = val[0])}
-          min={0}
-          max={500}
-          step={10}
-          className="mt-2"
-        />
-      </div>
-
-      <div>
-        <Label className="text-sm">Θέση από δεξιά: {props.positionRight}px</Label>
-        <Slider
-          value={[props.positionRight]}
-          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.positionRight = val[0])}
-          min={0}
-          max={500}
-          step={10}
-          className="mt-2"
-        />
-      </div>
-
-      <div>
-        <Label className="text-sm">Διαφάνεια: {props.opacity}%</Label>
-        <Slider
-          value={[props.opacity]}
-          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.opacity = val[0])}
-          min={0}
-          max={100}
-          step={5}
-          className="mt-2"
-        />
+        <Label className="text-sm">Στοίχιση κειμένου</Label>
+        <Select 
+          value={props.textAlign} 
+          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.textAlign = val as 'left' | 'center' | 'right')}
+        >
+          <SelectTrigger className="rounded-none mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="left">Αριστερά</SelectItem>
+            <SelectItem value="center">Κέντρο</SelectItem>
+            <SelectItem value="right">Δεξιά</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div>
@@ -209,6 +231,80 @@ const ProgramsSectionSettings = () => {
           </SelectContent>
         </Select>
       </div>
+
+      <div className="border-t pt-4">
+        <Label className="text-sm font-bold">Θέση Κειμένου</Label>
+      </div>
+
+      <div>
+        <Label className="text-sm">Οριζόντια θέση</Label>
+        <Select 
+          value={props.horizontalPosition} 
+          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.horizontalPosition = val as 'left' | 'center' | 'right')}
+        >
+          <SelectTrigger className="rounded-none mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="left">Αριστερά</SelectItem>
+            <SelectItem value="center">Κέντρο</SelectItem>
+            <SelectItem value="right">Δεξιά</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label className="text-sm">Κάθετη θέση</Label>
+        <Select 
+          value={props.verticalPosition} 
+          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.verticalPosition = val as 'top' | 'center' | 'bottom')}
+        >
+          <SelectTrigger className="rounded-none mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            <SelectItem value="top">Πάνω</SelectItem>
+            <SelectItem value="center">Κέντρο</SelectItem>
+            <SelectItem value="bottom">Κάτω</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label className="text-sm">Οριζόντια απόσταση: {props.offsetX}px</Label>
+        <Slider
+          value={[props.offsetX]}
+          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.offsetX = val[0])}
+          min={0}
+          max={300}
+          step={10}
+          className="mt-2"
+        />
+      </div>
+
+      <div>
+        <Label className="text-sm">Κάθετη απόσταση: {props.offsetY}px</Label>
+        <Slider
+          value={[props.offsetY]}
+          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.offsetY = val[0])}
+          min={0}
+          max={300}
+          step={10}
+          className="mt-2"
+        />
+      </div>
+
+      <div>
+        <Label className="text-sm">Διαφάνεια: {props.opacity}%</Label>
+        <Slider
+          value={[props.opacity]}
+          onValueChange={(val) => setProp((p: ProgramsSectionProps) => p.opacity = val[0])}
+          min={0}
+          max={100}
+          step={5}
+          className="mt-2"
+        />
+      </div>
     </div>
   );
 };
@@ -222,10 +318,13 @@ ProgramsSectionComponent.craft = {
     textColor: '#ffffff',
     titleFontSize: 30,
     paragraphFontSize: 14,
-    positionTop: 252,
-    positionRight: 148,
+    horizontalPosition: 'right',
+    verticalPosition: 'top',
+    offsetX: 148,
+    offsetY: 252,
     opacity: 100,
-    fontFamily: 'inherit'
+    fontFamily: 'inherit',
+    textAlign: 'left'
   },
   related: {
     settings: ProgramsSectionSettings
