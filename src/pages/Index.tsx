@@ -18,6 +18,7 @@ import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
 import Footer from "@/components/landing/Footer";
 import { PublishedLandingRenderer } from "@/components/landing/PublishedLandingRenderer";
+import DevRulers from "@/components/dev/DevRulers";
 
 const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -99,6 +100,8 @@ const Index = () => {
   // Static fallback content (shown if no published layout exists)
   const staticContent = (
     <div className="min-h-screen bg-white font-robert">
+      {/* Dev Rulers - remove in production */}
+      <DevRulers />
       <Navigation
         navigationItems={navigationItems}
         isAuthenticated={isAuthenticated}
