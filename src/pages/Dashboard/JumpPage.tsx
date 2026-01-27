@@ -313,7 +313,7 @@ const JumpPage = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => setIsMobileOpen(true)}
                   className="rounded-none"
