@@ -470,50 +470,67 @@ const BarVelocityPage = () => {
           {renderSidebar()}
         </div>
         
-        {/* Mobile/Tablet menu button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="fixed top-4 left-4 z-50 lg:hidden rounded-none bg-background/80 backdrop-blur-sm"
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-
         {/* Mobile/Tablet sidebar overlay */}
         {isMobileOpen && (
-          <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="fixed inset-0 z-50 lg:hidden">
             <div 
               className="absolute inset-0 bg-black/50" 
               onClick={() => setIsMobileOpen(false)}
             />
-            <div className="absolute left-0 top-0 h-full">
+            <div className="relative w-64 h-full">
               {renderSidebar()}
             </div>
           </div>
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">
-          <div className="max-w-6xl mx-auto space-y-4">
-            {/* Header */}
-            <div className="flex items-center justify-between pl-12 lg:pl-0">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-                  <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Mobile/Tablet Header with menu button */}
+          <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsMobileOpen(true)}
+                  className="rounded-none"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <h1 className="text-lg font-semibold flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-primary" />
                   Bar Velocity
                 </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Μέτρηση ταχύτητας μπάρας με color tracking
-                </p>
               </div>
               {results.length > 0 && (
                 <Button variant="outline" size="sm" onClick={resetResults} className="rounded-none">
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Reset
+                  <RotateCcw className="h-4 w-4" />
                 </Button>
               )}
             </div>
+          </div>
+
+          {/* Page Content */}
+          <main className="flex-1 p-4 lg:p-6 overflow-auto">
+            <div className="max-w-6xl mx-auto space-y-4">
+              {/* Header - Desktop only */}
+              <div className="hidden lg:flex items-center justify-between">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                    <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                    Bar Velocity
+                  </h1>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Μέτρηση ταχύτητας μπάρας με color tracking
+                  </p>
+                </div>
+                {results.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={resetResults} className="rounded-none">
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Reset
+                  </Button>
+                )}
+              </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Camera View */}
@@ -793,8 +810,9 @@ const BarVelocityPage = () => {
               )}
             </div>
           </div>
-          </div>
-        </main>
+            </div>
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );
