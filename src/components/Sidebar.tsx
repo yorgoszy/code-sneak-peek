@@ -196,7 +196,10 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   };
 
   const loadNewGymBookings = async () => {
-    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    if (!userProfile?.id || userProfile.role !== 'admin') {
+      setNewGymBookings(0);
+      return;
+    }
     
     try {
       // Φορτώνουμε όλες τις κρατήσεις γυμναστηρίου
@@ -224,10 +227,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         !acknowledgedBookingIds.has(booking.id)
       ).length;
       
-      console.log('Total bookings:', allBookings?.length || 0, 'New bookings:', newBookingsCount);
+      console.log('Total gym bookings:', allBookings?.length || 0, 'Acknowledged:', acknowledgedBookings?.length || 0, 'New:', newBookingsCount, 'Admin ID:', userProfile.id);
       setNewGymBookings(newBookingsCount);
     } catch (error) {
       console.error('Error loading new gym bookings:', error);
+      setNewGymBookings(0);
     }
   };
 
