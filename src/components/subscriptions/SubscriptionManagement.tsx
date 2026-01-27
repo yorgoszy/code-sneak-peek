@@ -1343,52 +1343,24 @@ export const SubscriptionManagement: React.FC = () => {
                 </Select>
               </div>
 
-              {/* Πολλαπλασιαστής Διάρκειας */}
-              {selectedSubscriptionType && (
-                <div>
-                  <label className="block text-xs font-medium mb-1">Πολλαπλασιαστής Διάρκειας</label>
-                  <div className="flex gap-1 flex-wrap">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
-                      <Button
-                        key={num}
-                        type="button"
-                        variant={durationMultiplier === num ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setDurationMultiplier(num)}
-                        className={`rounded-none min-w-[36px] h-7 text-xs px-2 ${
-                          durationMultiplier === num 
-                            ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' 
-                            : ''
-                        }`}
-                      >
-                        x{num}
-                      </Button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {(() => {
-                      const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
-                      const baseMonths = subscriptionType?.subscription_mode === 'visit_based' 
-                        ? (subscriptionType?.visit_expiry_months || 0) 
-                        : (subscriptionType?.duration_months || 0);
-                      const totalMonths = baseMonths * durationMultiplier;
-                      return `Διάρκεια: ${totalMonths} μήνες (${baseMonths} × ${durationMultiplier})`;
-                    })()}
-                  </p>
-                </div>
-              )}
 
               {selectedSubscriptionType && (
                 <div className="space-y-2">
                   <div className="grid grid-cols-3 gap-2">
                     <div>
                       <label className="block text-xs font-medium mb-1">Ποσότητα</label>
-                      <Input
-                        type="number"
-                        value={durationMultiplier}
-                        disabled
-                        className="rounded-none bg-gray-50 h-7 text-sm"
-                      />
+                      <Select value={durationMultiplier.toString()} onValueChange={(value) => setDurationMultiplier(parseInt(value))}>
+                        <SelectTrigger className="rounded-none h-7 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
+                            <SelectItem key={num} value={num.toString()} className="text-sm">
+                              x{num}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <label className="block text-xs font-medium mb-1">Τιμή μονάδας (€)</label>
@@ -1440,15 +1412,6 @@ export const SubscriptionManagement: React.FC = () => {
                 </div>
               )}
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Σημειώσεις</label>
-                <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Προσθέστε σημειώσεις..."
-                  className="rounded-none"
-                />
-              </div>
 
               <Button onClick={createSubscription} className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
                 <Receipt className="h-4 w-4 mr-2" />
