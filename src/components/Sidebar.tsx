@@ -236,7 +236,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   };
 
   const loadNewPurchases = async () => {
-    if (!userProfile?.id || userProfile.role !== 'admin') return;
+    // Αν δεν είναι admin, καθαρίζουμε το state και επιστρέφουμε
+    if (!userProfile?.id || userProfile.role !== 'admin') {
+      setNewPurchases(0);
+      return;
+    }
     
     try {
       // Παίρνουμε όλες τις ολοκληρωμένες πληρωμές
@@ -247,6 +251,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Αν δεν υπάρχουν πληρωμές, μηδενίζουμε
+      if (!allPayments || allPayments.length === 0) {
+        setNewPurchases(0);
+        return;
+      }
 
       // Φέρνουμε τα acknowledged payments από τη βάση δεδομένων για τον συγκεκριμένο admin
       const { data: acknowledgedPayments, error: ackError } = await supabase
@@ -261,13 +271,14 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       );
 
       // Υπολογίζουμε τις νέες αγορές (όσες δεν έχουν επισημανθεί ως "ενημερώθηκα")
-      const newPurchasesData = allPayments?.filter(payment => 
+      const newPurchasesData = allPayments.filter(payment => 
         !acknowledgedPaymentIds.has(payment.id)
-      ) || [];
+      );
       
       setNewPurchases(newPurchasesData.length);
     } catch (error) {
       console.error('Error loading new purchases:', error);
+      setNewPurchases(0);
     }
   };
 
