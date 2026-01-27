@@ -1238,72 +1238,72 @@ export const SubscriptionManagement: React.FC = () => {
               Νέα Συνδρομή
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-none max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Δημιουργία Νέας Συνδρομής</DialogTitle>
+          <DialogContent className="rounded-none max-w-2xl max-h-[85vh] overflow-y-auto p-4">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-base">Δημιουργία Νέας Συνδρομής</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <h4 className="font-semibold">Στοιχεία Συνδρομής</h4>
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold">Στοιχεία Συνδρομής</h4>
               
               <div>
-                <label className="block text-sm font-medium mb-2">Πελάτης *</label>
+                <label className="block text-xs font-medium mb-1">Πελάτης *</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
                   <Input
                     placeholder="Πληκτρολογήστε όνομα ή email χρήστη..."
                     value={userSearchTerm}
                     onChange={handleUserInputChange}
                     onFocus={handleInputFocus}
-                    className="pl-10 pr-10 rounded-none"
+                    className="pl-7 pr-7 rounded-none h-8 text-sm"
                   />
                   <ChevronDown 
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 cursor-pointer hover:text-gray-600" 
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3 cursor-pointer hover:text-gray-600" 
                     onClick={handleChevronClick}
                   />
                   
                   {showUserDropdown && filteredUsers.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-none shadow-lg max-h-48 overflow-y-auto">
                       {filteredUsers.map((user) => (
                         <div
                           key={user.id}
                           onClick={() => handleUserSelect(user)}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                          className="px-3 py-1.5 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
                         >
-                          <div className="font-medium">{user.name}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-sm font-medium">{user.name}</div>
+                          <div className="text-xs text-gray-500">{user.email}</div>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
                 {selectedUser && (
-                  <div className="mt-1 text-sm text-green-600">
+                  <div className="mt-0.5 text-xs text-green-600">
                     ✓ Επιλέχθηκε: {users.find(u => u.id === selectedUser)?.name}
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Έκδοση *</label>
+                  <label className="block text-xs font-medium mb-1">Έκδοση *</label>
                   <Input
                     type="date"
                     value={issueDate}
                     onChange={(e) => setIssueDate(e.target.value)}
-                    className="rounded-none"
+                    className="rounded-none h-8 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Έναρξης *</label>
+                  <label className="block text-xs font-medium mb-1">Έναρξης *</label>
                   <Input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="rounded-none"
+                    className="rounded-none h-8 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Λήξης</label>
+                  <label className="block text-xs font-medium mb-1">Λήξης</label>
                   <Input
                     type="date"
                     value={selectedSubscriptionType ? (() => {
@@ -1318,24 +1318,24 @@ export const SubscriptionManagement: React.FC = () => {
                       return endDateObj.toISOString().split('T')[0];
                     })() : ''}
                     disabled
-                    className="rounded-none bg-gray-50"
+                    className="rounded-none bg-gray-50 h-8 text-sm"
                   />
                 </div>
               </div>
               
-              <h4 className="font-semibold">ΤΥΠΟΣ Συνδρομής</h4>
+              <h4 className="text-sm font-semibold pt-1">ΤΥΠΟΣ Συνδρομής</h4>
               <div>
-                <label className="block text-sm font-medium mb-2">Περιγραφή *</label>
+                <label className="block text-xs font-medium mb-1">Περιγραφή *</label>
                 <Select value={selectedSubscriptionType} onValueChange={(value) => {
                   setSelectedSubscriptionType(value);
-                  setDurationMultiplier(1); // Reset multiplier όταν αλλάζει ο τύπος
+                  setDurationMultiplier(1);
                 }}>
-                  <SelectTrigger className="rounded-none">
+                  <SelectTrigger className="rounded-none h-8 text-sm">
                     <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
                   </SelectTrigger>
                   <SelectContent>
                     {subscriptionTypes.map((type) => (
-                      <SelectItem key={type.id} value={type.id}>
+                      <SelectItem key={type.id} value={type.id} className="text-sm">
                         {type.name} - €{type.price} ({type.duration_months} μήνες)
                       </SelectItem>
                     ))}
@@ -1346,8 +1346,8 @@ export const SubscriptionManagement: React.FC = () => {
               {/* Πολλαπλασιαστής Διάρκειας */}
               {selectedSubscriptionType && (
                 <div>
-                  <label className="block text-sm font-medium mb-2">Πολλαπλασιαστής Διάρκειας</label>
-                  <div className="flex gap-2 flex-wrap">
+                  <label className="block text-xs font-medium mb-1">Πολλαπλασιαστής Διάρκειας</label>
+                  <div className="flex gap-1 flex-wrap">
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
                       <Button
                         key={num}
@@ -1355,7 +1355,7 @@ export const SubscriptionManagement: React.FC = () => {
                         variant={durationMultiplier === num ? "default" : "outline"}
                         size="sm"
                         onClick={() => setDurationMultiplier(num)}
-                        className={`rounded-none min-w-[50px] ${
+                        className={`rounded-none min-w-[36px] h-7 text-xs px-2 ${
                           durationMultiplier === num 
                             ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' 
                             : ''
@@ -1365,7 +1365,7 @@ export const SubscriptionManagement: React.FC = () => {
                       </Button>
                     ))}
                   </div>
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-xs text-gray-500 mt-1">
                     {(() => {
                       const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
                       const baseMonths = subscriptionType?.subscription_mode === 'visit_based' 
@@ -1379,41 +1379,41 @@ export const SubscriptionManagement: React.FC = () => {
               )}
 
               {selectedSubscriptionType && (
-                  <div className="space-y-2">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Ποσότητα (μήνες)</label>
+                      <label className="block text-xs font-medium mb-1">Ποσότητα</label>
                       <Input
                         type="number"
                         value={durationMultiplier}
                         disabled
-                        className="rounded-none bg-gray-50"
+                        className="rounded-none bg-gray-50 h-7 text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Τιμή μονάδας (€)</label>
+                      <label className="block text-xs font-medium mb-1">Τιμή μονάδας (€)</label>
                       <Input
                         value={(() => {
                           const totalPrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
-                          const netPrice = totalPrice / 1.13; // Αποφορολόγηση από 13% ΦΠΑ
+                          const netPrice = totalPrice / 1.13;
                           return netPrice.toFixed(2);
                         })()}
                         disabled
-                        className="rounded-none bg-gray-50"
+                        className="rounded-none bg-gray-50 h-7 text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">ΦΠΑ (%)</label>
+                      <label className="block text-xs font-medium mb-1">ΦΠΑ (%)</label>
                       <Input
                         value="13"
                         disabled
-                        className="rounded-none bg-gray-50"
+                        className="rounded-none bg-gray-50 h-7 text-sm"
                       />
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 p-4 border-l-4 border-[#00ffba] space-y-2">
-                    <div className="flex justify-between">
+                  <div className="bg-gray-50 p-2 border-l-4 border-[#00ffba] space-y-1">
+                    <div className="flex justify-between text-sm">
                       <span className="font-medium">Αξία Συνδρομής:</span>
                       <span>€{(() => {
                         const totalPrice = (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier;
@@ -1421,7 +1421,7 @@ export const SubscriptionManagement: React.FC = () => {
                         return netPrice.toFixed(2);
                       })()}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-sm">
                       <span className="font-medium">ΦΠΑ:</span>
                       <span>€{(() => {
                         const totalPrice = (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier;
@@ -1430,8 +1430,8 @@ export const SubscriptionManagement: React.FC = () => {
                         return vatAmount.toFixed(2);
                       })()}</span>
                     </div>
-                    <div className="border-t-2 border-[#00ffba] pt-2">
-                      <div className="flex justify-between text-xl font-bold text-[#00ffba]">
+                    <div className="border-t border-[#00ffba] pt-1">
+                      <div className="flex justify-between text-base font-bold text-[#00ffba]">
                         <span>Σύνολο:</span>
                         <span>€{((subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier).toFixed(2)}</span>
                       </div>
