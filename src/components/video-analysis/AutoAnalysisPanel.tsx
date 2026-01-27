@@ -104,6 +104,17 @@ export const AutoAnalysisPanel: React.FC<AutoAnalysisPanelProps> = ({
       return;
     }
 
+    // Check if video is valid and playable
+    if (videoElement.readyState < 2) {
+      toast.error('Το βίντεο δεν έχει φορτωθεί ακόμα. Περιμένετε...');
+      return;
+    }
+
+    if (videoElement.error) {
+      toast.error('Σφάλμα στο βίντεο. Παρακαλώ ανεβάστε ξανά.');
+      return;
+    }
+
     // Create hidden canvas for analysis
     const canvas = canvasRef.current || document.createElement('canvas');
     canvasRef.current = canvas;
@@ -112,12 +123,17 @@ export const AutoAnalysisPanel: React.FC<AutoAnalysisPanelProps> = ({
       description: 'Παρακαλώ περιμένετε',
     });
 
-    await analyzeVideo(videoElement, canvas);
+    try {
+      await analyzeVideo(videoElement, canvas);
 
-    if (result) {
-      onStrikesDetected(result.strikes);
-      onAnalysisComplete(result);
-      toast.success(`Βρέθηκαν ${result.stats.totalStrikes} χτυπήματα!`);
+      if (result) {
+        onStrikesDetected(result.strikes);
+        onAnalysisComplete(result);
+        toast.success(`Βρέθηκαν ${result.stats.totalStrikes} χτυπήματα!`);
+      }
+    } catch (err) {
+      console.error('Analysis error:', err);
+      toast.error('Σφάλμα κατά την ανάλυση');
     }
   }, [videoElement, analyzeVideo, result, onStrikesDetected, onAnalysisComplete]);
 

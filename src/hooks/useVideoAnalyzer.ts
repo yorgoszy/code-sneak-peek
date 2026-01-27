@@ -137,6 +137,17 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
   ) => {
     if (isAnalyzingRef.current) return;
     
+    // Check if video is valid
+    if (!video || video.readyState < 2) {
+      setError('Το βίντεο δεν είναι έτοιμο');
+      return;
+    }
+
+    if (video.error) {
+      setError('Σφάλμα στο αρχείο βίντεο');
+      return;
+    }
+    
     videoRef.current = video;
     canvasRef.current = canvas;
     isAnalyzingRef.current = true;
@@ -158,8 +169,20 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
         progress: 0,
       });
 
-      // Initialize pose detection
-      await initPose();
+      // Initialize pose detection with timeout
+      const initTimeout = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout φόρτωσης AI - δοκιμάστε ξανά')), 30000)
+      );
+
+      try {
+        await Promise.race([initPose(), initTimeout]);
+      } catch (err) {
+        if (err instanceof Error && err.message.includes('Timeout')) {
+          throw err;
+        }
+        // Continue even if pose detection fails - might still work
+        console.warn('Pose detection init warning:', err);
+      }
       
       if (poseError) {
         throw new Error(poseError);
@@ -181,9 +204,22 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
 
       // Process video frame by frame
       video.currentTime = 0;
-      await new Promise(resolve => video.addEventListener('seeked', resolve, { once: true }));
+      
+      // Wait for initial seek with timeout
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Video seek timeout')), 5000);
+        video.addEventListener('seeked', () => {
+          clearTimeout(timeout);
+          resolve();
+        }, { once: true });
+      });
 
       while (video.currentTime < video.duration && isAnalyzingRef.current) {
+        // Check if video is still valid
+        if (video.error) {
+          throw new Error('Το βίντεο δεν είναι πλέον διαθέσιμο');
+        }
+
         // Draw frame to canvas
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
@@ -208,8 +244,16 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
         const nextTime = video.currentTime + frameInterval;
         if (nextTime < video.duration) {
           video.currentTime = nextTime;
-          await new Promise(resolve => {
-            video.addEventListener('seeked', resolve, { once: true });
+          // Wait for seek with timeout
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              console.warn('Frame seek timeout, continuing...');
+              resolve(); // Continue anyway
+            }, 2000);
+            video.addEventListener('seeked', () => {
+              clearTimeout(timeout);
+              resolve();
+            }, { once: true });
           });
         } else {
           break;
