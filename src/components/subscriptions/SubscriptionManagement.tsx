@@ -82,6 +82,7 @@ export const SubscriptionManagement: React.FC = () => {
   const [subscriptionToDelete, setSubscriptionToDelete] = useState<string | null>(null);
   const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
   const [selectedUserForSection, setSelectedUserForSection] = useState<{id: string, name: string, sectionId: string | null} | null>(null);
+  const [durationMultiplier, setDurationMultiplier] = useState(1);
 
   useEffect(() => {
     loadData();
@@ -552,11 +553,11 @@ export const SubscriptionManagement: React.FC = () => {
     const subscriptionStartDate = new Date(startDate);
     const endDate = new Date(subscriptionStartDate);
     
-    // Υπολογισμός ημερομηνίας λήξης ανάλογα με τον τύπο συνδρομής
+    // Υπολογισμός ημερομηνίας λήξης ανάλογα με τον τύπο συνδρομής και τον πολλαπλασιαστή
     if (subscriptionType.subscription_mode === 'visit_based') {
-      endDate.setMonth(subscriptionStartDate.getMonth() + (subscriptionType.visit_expiry_months || 0));
+      endDate.setMonth(subscriptionStartDate.getMonth() + ((subscriptionType.visit_expiry_months || 0) * durationMultiplier));
     } else {
-      endDate.setMonth(subscriptionStartDate.getMonth() + subscriptionType.duration_months);
+      endDate.setMonth(subscriptionStartDate.getMonth() + (subscriptionType.duration_months * durationMultiplier));
     }
     endDate.setDate(subscriptionStartDate.getDate() - 1);
 
@@ -565,7 +566,8 @@ export const SubscriptionManagement: React.FC = () => {
       subscriptionType,
       selectedUserData,
       subscriptionStartDate,
-      endDate
+      endDate,
+      durationMultiplier
     });
 
     // Εμφάνιση dialog για απόδειξη
@@ -678,6 +680,7 @@ export const SubscriptionManagement: React.FC = () => {
       setIssueDate(new Date().toISOString().split('T')[0]);
       setShowReceiptDialog(false);
       setPendingSubscriptionData(null);
+      setDurationMultiplier(1);
       await loadData();
 
     } catch (error) {
@@ -1306,8 +1309,11 @@ export const SubscriptionManagement: React.FC = () => {
                     value={selectedSubscriptionType ? (() => {
                       const startDateObj = new Date(startDate);
                       const endDateObj = new Date(startDateObj);
-                      const durationMonths = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.duration_months || 0;
-                      endDateObj.setMonth(startDateObj.getMonth() + durationMonths);
+                      const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
+                      const durationMonths = subscriptionType?.subscription_mode === 'visit_based' 
+                        ? (subscriptionType?.visit_expiry_months || 0) 
+                        : (subscriptionType?.duration_months || 0);
+                      endDateObj.setMonth(startDateObj.getMonth() + (durationMonths * durationMultiplier));
                       endDateObj.setDate(startDateObj.getDate() - 1);
                       return endDateObj.toISOString().split('T')[0];
                     })() : ''}
@@ -1320,7 +1326,10 @@ export const SubscriptionManagement: React.FC = () => {
               <h4 className="font-semibold">ΤΥΠΟΣ Συνδρομής</h4>
               <div>
                 <label className="block text-sm font-medium mb-2">Περιγραφή *</label>
-                <Select value={selectedSubscriptionType} onValueChange={setSelectedSubscriptionType}>
+                <Select value={selectedSubscriptionType} onValueChange={(value) => {
+                  setSelectedSubscriptionType(value);
+                  setDurationMultiplier(1); // Reset multiplier όταν αλλάζει ο τύπος
+                }}>
                   <SelectTrigger className="rounded-none">
                     <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
                   </SelectTrigger>
@@ -1334,14 +1343,49 @@ export const SubscriptionManagement: React.FC = () => {
                 </Select>
               </div>
 
+              {/* Πολλαπλασιαστής Διάρκειας */}
+              {selectedSubscriptionType && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Πολλαπλασιαστής Διάρκειας</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
+                      <Button
+                        key={num}
+                        type="button"
+                        variant={durationMultiplier === num ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setDurationMultiplier(num)}
+                        className={`rounded-none min-w-[50px] ${
+                          durationMultiplier === num 
+                            ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' 
+                            : ''
+                        }`}
+                      >
+                        x{num}
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    {(() => {
+                      const subscriptionType = subscriptionTypes.find(t => t.id === selectedSubscriptionType);
+                      const baseMonths = subscriptionType?.subscription_mode === 'visit_based' 
+                        ? (subscriptionType?.visit_expiry_months || 0) 
+                        : (subscriptionType?.duration_months || 0);
+                      const totalMonths = baseMonths * durationMultiplier;
+                      return `Διάρκεια: ${totalMonths} μήνες (${baseMonths} × ${durationMultiplier})`;
+                    })()}
+                  </p>
+                </div>
+              )}
+
               {selectedSubscriptionType && (
                   <div className="space-y-2">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Ποσότητα</label>
+                      <label className="block text-sm font-medium mb-2">Ποσότητα (μήνες)</label>
                       <Input
                         type="number"
-                        value="1"
+                        value={durationMultiplier}
                         disabled
                         className="rounded-none bg-gray-50"
                       />
@@ -1372,7 +1416,7 @@ export const SubscriptionManagement: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="font-medium">Αξία Συνδρομής:</span>
                       <span>€{(() => {
-                        const totalPrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
+                        const totalPrice = (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier;
                         const netPrice = totalPrice / 1.13;
                         return netPrice.toFixed(2);
                       })()}</span>
@@ -1380,7 +1424,7 @@ export const SubscriptionManagement: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="font-medium">ΦΠΑ:</span>
                       <span>€{(() => {
-                        const totalPrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
+                        const totalPrice = (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier;
                         const netPrice = totalPrice / 1.13;
                         const vatAmount = totalPrice - netPrice;
                         return vatAmount.toFixed(2);
@@ -1389,7 +1433,7 @@ export const SubscriptionManagement: React.FC = () => {
                     <div className="border-t-2 border-[#00ffba] pt-2">
                       <div className="flex justify-between text-xl font-bold text-[#00ffba]">
                         <span>Σύνολο:</span>
-                        <span>€{(subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0).toFixed(2)}</span>
+                        <span>€{((subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier).toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
