@@ -191,6 +191,40 @@ export function usePoseDetection(options: UsePoseDetectionOptions = {}) {
     }
   }, [isRunning, options]);
 
+  // Detect pose from a single video frame (for batch analysis)
+  const detectSingleFrame = useCallback((
+    video: HTMLVideoElement,
+    canvas: HTMLCanvasElement,
+    timestamp: number
+  ): PoseResult | null => {
+    if (!poseLandmarkerRef.current) {
+      console.warn("PoseLandmarker not initialized");
+      return null;
+    }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    // Draw current frame to canvas
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    try {
+      // Get pose results for this frame
+      const results = poseLandmarkerRef.current.detectForVideo(video, timestamp * 1000); // timestamp in ms
+
+      if (results.landmarks && results.landmarks.length > 0) {
+        return {
+          landmarks: results.landmarks[0],
+          worldLandmarks: results.worldLandmarks?.[0] || results.landmarks[0],
+        };
+      }
+    } catch (err) {
+      console.error("Pose detection error:", err);
+    }
+
+    return null;
+  }, []);
+
   // Start detection
   const start = useCallback((video: HTMLVideoElement, canvas: HTMLCanvasElement) => {
     videoRef.current = video;
@@ -231,6 +265,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions = {}) {
     initialize,
     start,
     stop,
+    detectSingleFrame,
     isLoading,
     isInitialized,
     isRunning,
