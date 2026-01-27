@@ -1585,11 +1585,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
             )}
             
             {/* YouTube notice */}
-            {activeVideo?.isYouTube && (
-              <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-none">
-                YouTube - Χρήση controls του player
-              </div>
-            )}
           </div>
           
           {/* AI Auto Analysis Toggle */}
