@@ -604,19 +604,23 @@ export const SubscriptionManagement: React.FC = () => {
       if (userError) throw userError;
 
       // Δημιουργία visit package αν είναι visit-based subscription
+      // Ο πολλαπλασιαστής εφαρμόζεται στις επισκέψεις, τη διάρκεια και την τιμή
       if (subscriptionType.subscription_mode === 'visit_based' && subscriptionType.visit_count) {
         const visitEndDate = new Date(subscriptionStartDate);
-        visitEndDate.setMonth(subscriptionStartDate.getMonth() + (subscriptionType.visit_expiry_months || 0));
+        visitEndDate.setMonth(subscriptionStartDate.getMonth() + ((subscriptionType.visit_expiry_months || 0) * durationMultiplier));
+        
+        const totalVisits = subscriptionType.visit_count * durationMultiplier;
+        const totalPrice = subscriptionType.price * durationMultiplier;
         
         const { error: visitPackageError } = await supabase
           .from('visit_packages')
           .insert({
             user_id: selectedUser,
-            total_visits: subscriptionType.visit_count,
-            remaining_visits: subscriptionType.visit_count,
+            total_visits: totalVisits,
+            remaining_visits: totalVisits,
             purchase_date: subscriptionStartDate.toISOString().split('T')[0],
             expiry_date: visitEndDate.toISOString().split('T')[0],
-            price: subscriptionType.price
+            price: totalPrice
           });
 
         if (visitPackageError) throw visitPackageError;
