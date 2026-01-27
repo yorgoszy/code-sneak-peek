@@ -36,12 +36,12 @@ export interface DetectedStrike {
   isVerified: boolean; // Has been verified by AI or user
 }
 
-// Threshold constants για ανίχνευση
+// Threshold constants για ανίχνευση - ΜΕΙΩΜΕΝΑ για πιο ευαίσθητη ανίχνευση
 const VELOCITY_THRESHOLD = {
-  PUNCH: 0.15, // Minimum velocity for punch detection
-  KICK: 0.12,
-  KNEE: 0.10,
-  ELBOW: 0.12,
+  PUNCH: 0.03, // Minimum velocity for punch detection (μειωμένο από 0.15)
+  KICK: 0.025,  // μειωμένο από 0.12
+  KNEE: 0.02,   // μειωμένο από 0.10
+  ELBOW: 0.025, // μειωμένο από 0.12
 };
 
 const ANGLE_THRESHOLDS = {
@@ -81,7 +81,8 @@ export function useStrikeDetection(options: UseStrikeDetectionOptions) {
   
   const poseHistoryRef = useRef<PoseHistory[]>([]);
   const lastStrikeTimeRef = useRef<number>(0);
-  const cooldownMs = sensitivity === 'high' ? 200 : sensitivity === 'medium' ? 300 : 400;
+  // Μειωμένα cooldowns για να ανιχνεύει περισσότερα χτυπήματα
+  const cooldownMs = sensitivity === 'high' ? 100 : sensitivity === 'medium' ? 150 : 200;
 
   // Υπολογισμός velocity ενός σημείου
   const calculateVelocity = useCallback((
