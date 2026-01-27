@@ -77,12 +77,13 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
   const isAnalyzingRef = useRef(false);
   const allStrikesRef = useRef<DetectedStrike[]>([]);
 
-  // Initialize pose detection
+  // Initialize pose detection with results callback
   const {
     initialize: initPose,
     isLoading: poseLoading,
     isInitialized: poseInitialized,
     error: poseError,
+    detectSingleFrame,
   } = usePoseDetection();
 
   // Strike detection
@@ -186,15 +187,12 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
         // Draw frame to canvas
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Get pose from frame
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // Get pose from MediaPipe PoseLandmarker
+        const poseResult = detectSingleFrame(video, canvas, video.currentTime);
         
-        // Analyze pose (simplified - in real implementation, use MediaPipe)
-        // For now, we simulate pose detection
-        const simulatedPose: PoseResult | null = null; // Would come from MediaPipe
-        
-        if (simulatedPose) {
-          analyzePoseFrame(simulatedPose.landmarks, video.currentTime);
+        if (poseResult && poseResult.landmarks && poseResult.landmarks.length > 0) {
+          // Analyze pose for strikes
+          analyzePoseFrame(poseResult.landmarks, video.currentTime);
         }
 
         frameCount++;
@@ -261,9 +259,9 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
       isAnalyzingRef.current = false;
     }
   }, [
-    config.enableAIVerification, getFrameInterval, initPose, poseError,
+    config.enableAIVerification, config.sport, getFrameInterval, initPose, poseError,
     analyzePoseFrame, startStrikeDetection, stopStrikeDetection, resetStrikes,
-    clearVerifications, analyzeVideoFrames, verificationResults
+    clearVerifications, analyzeVideoFrames, verificationResults, detectSingleFrame
   ]);
 
   // Calculate statistics
