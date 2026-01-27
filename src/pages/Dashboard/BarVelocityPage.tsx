@@ -466,23 +466,23 @@ const BarVelocityPage = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         {/* Desktop Sidebar */}
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           {renderSidebar()}
         </div>
         
-        {/* Mobile menu button */}
+        {/* Mobile/Tablet menu button */}
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 md:hidden rounded-none"
+          className="fixed top-4 left-4 z-50 lg:hidden rounded-none bg-background/80 backdrop-blur-sm"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
         >
           <Menu className="h-5 w-5" />
         </Button>
 
-        {/* Mobile sidebar overlay */}
+        {/* Mobile/Tablet sidebar overlay */}
         {isMobileOpen && (
-          <div className="fixed inset-0 z-40 md:hidden">
+          <div className="fixed inset-0 z-40 lg:hidden">
             <div 
               className="absolute inset-0 bg-black/50" 
               onClick={() => setIsMobileOpen(false)}
@@ -494,10 +494,10 @@ const BarVelocityPage = () => {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-auto">
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
           <div className="max-w-6xl mx-auto space-y-4">
             {/* Header */}
-            <div className="flex items-center justify-between pl-10 md:pl-0">
+            <div className="flex items-center justify-between pl-12 lg:pl-0">
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
                   <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />

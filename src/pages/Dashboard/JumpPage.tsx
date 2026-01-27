@@ -289,23 +289,23 @@ const JumpPage = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         {/* Desktop Sidebar */}
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           {renderSidebar()}
         </div>
         
-        {/* Mobile menu button */}
+        {/* Mobile/Tablet menu button */}
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 md:hidden rounded-none"
+          className="fixed top-4 left-4 z-50 lg:hidden rounded-none bg-background/80 backdrop-blur-sm"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
         >
           <Menu className="h-5 w-5" />
         </Button>
 
-        {/* Mobile sidebar overlay */}
+        {/* Mobile/Tablet sidebar overlay */}
         {isMobileOpen && (
-          <div className="fixed inset-0 z-40 md:hidden">
+          <div className="fixed inset-0 z-40 lg:hidden">
             <div 
               className="absolute inset-0 bg-black/50" 
               onClick={() => setIsMobileOpen(false)}
@@ -320,7 +320,7 @@ const JumpPage = () => {
         <main className="flex-1 p-4 sm:p-6 overflow-auto">
           <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pl-12 lg:pl-0">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
                   <ArrowUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
