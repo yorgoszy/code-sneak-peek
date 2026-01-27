@@ -592,8 +592,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     },
     {
       icon: ArrowUp,
-      label: "Jump Test",
-      path: "/dashboard/jump-test",
+      label: "Jump",
+      path: "/dashboard/jump",
       badge: null
     },
     { 

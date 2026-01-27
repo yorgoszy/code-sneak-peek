@@ -220,8 +220,8 @@ export const CoachSidebar = ({
     },
     {
       icon: ArrowUp,
-      label: "Jump Test",
-      path: effectiveCoachId ? `/dashboard/jump-test?coachId=${effectiveCoachId}` : "/dashboard/jump-test",
+      label: "Jump",
+      path: effectiveCoachId ? `/dashboard/jump?coachId=${effectiveCoachId}` : "/dashboard/jump",
       badge: null,
       requiresSubscription: true,
     },

@@ -89,7 +89,7 @@ import VideoAnalysisPage from "@/pages/Dashboard/VideoAnalysisPage";
 import SprintTimerPage from "@/pages/Dashboard/SprintTimerPage";
 import ChangeDirectionPage from "@/pages/Dashboard/ChangeDirectionPage";
 import CognitivePage from "@/pages/Dashboard/CognitivePage";
-import JumpTestPage from "@/pages/Dashboard/JumpTestPage";
+import JumpPage from "@/pages/Dashboard/JumpPage";
 const queryClient = new QueryClient();
 
 function App() {
@@ -159,7 +159,7 @@ function App() {
                       <Route path="/dashboard/sprint-timer" element={<ProtectedRoute><SprintTimerPage /></ProtectedRoute>} />
                       <Route path="/dashboard/change-direction" element={<ProtectedRoute><ChangeDirectionPage /></ProtectedRoute>} />
                       <Route path="/dashboard/cognitive" element={<ProtectedRoute><CognitivePage /></ProtectedRoute>} />
-                      <Route path="/dashboard/jump-test" element={<ProtectedRoute><JumpTestPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/jump" element={<ProtectedRoute><JumpPage /></ProtectedRoute>} />
                       {/* Admin-only routes */}
                       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
                       <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
