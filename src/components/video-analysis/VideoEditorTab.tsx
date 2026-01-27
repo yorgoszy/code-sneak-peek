@@ -62,12 +62,14 @@ interface TrimClip {
 // Multi-video support
 interface VideoSlot {
   id: string;
-  file: File;
+  file: File | null; // null for YouTube videos
   url: string;
   name: string;
   duration: number; // Duration in seconds
   startOffset: number; // Start time offset in the combined timeline
   mimeType: string; // File mime type (helps browser pick decoder)
+  isYouTube?: boolean; // Flag for YouTube videos
+  youtubeId?: string; // YouTube video ID
 }
 
 type ActionType = 'attack' | 'defense' | 'clinch';
@@ -186,9 +188,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   // Drag state for action flags
   const [draggingFlag, setDraggingFlag] = useState<{ id: string; edge: 'start' | 'end' } | null>(null);
   
+  // YouTube URL input state
+  const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
+  const [isLoadingYouTube, setIsLoadingYouTube] = useState(false);
+  
   // Refs
   const videoElsRef = useRef<(HTMLVideoElement | null)[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const youtubePlayerRef = useRef<any>(null);
 
   const getActiveVideoEl = () => videoElsRef.current[activeVideoIndex] ?? null;
 
@@ -286,6 +293,92 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     }
   };
 
+  // Extract YouTube video ID from URL
+  const extractYouTubeId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=)([^&\s]+)/,
+      /(?:youtu\.be\/)([^\?\s]+)/,
+      /(?:youtube\.com\/embed\/)([^\?\s]+)/,
+      /(?:youtube\.com\/v\/)([^\?\s]+)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    return null;
+  };
+
+  // Handle YouTube URL submission
+  const handleYouTubeUrl = async () => {
+    const url = youtubeUrlInput.trim();
+    if (!url) {
+      toast.error('Εισάγετε URL YouTube');
+      return;
+    }
+
+    const youtubeId = extractYouTubeId(url);
+    if (!youtubeId) {
+      toast.error('Μη έγκυρο YouTube URL');
+      return;
+    }
+
+    if (videos.length >= 3) {
+      toast.error('Μέγιστος αριθμός βίντεο: 3');
+      return;
+    }
+
+    setIsLoadingYouTube(true);
+
+    try {
+      // Calculate start offset based on existing videos
+      const currentTotalDuration = videos.reduce((sum, v) => sum + v.duration, 0);
+
+      // For YouTube videos, we'll set a default duration (can be updated later)
+      // Duration will be updated when the YouTube player loads
+      const newVideo: VideoSlot = {
+        id: `youtube-${Date.now()}`,
+        file: null,
+        url: url,
+        name: `YouTube: ${youtubeId}`,
+        duration: 0, // Will be set by YouTube player
+        startOffset: currentTotalDuration,
+        mimeType: 'video/youtube',
+        isYouTube: true,
+        youtubeId: youtubeId
+      };
+
+      const isFirstVideo = videos.length === 0;
+      setVideos(prev => [...prev, newVideo]);
+      
+      if (isFirstVideo) {
+        setActiveVideoIndex(0);
+        setClips([]);
+        setActionFlags([]);
+        setActiveFlag(null);
+        setRoundMarkers([]);
+        setActiveRound(null);
+        setStrikeMarkers([]);
+        setTrimStart(0);
+        setTrimEnd(0);
+        setCurrentTime(0);
+      } else {
+        setActiveVideoIndex(0);
+        setCurrentTime(0);
+      }
+
+      setYoutubeUrlInput('');
+      toast.success('YouTube βίντεο προστέθηκε επιτυχώς');
+    } catch (error) {
+      console.error('Error adding YouTube video:', error);
+      toast.error('Σφάλμα κατά την προσθήκη του βίντεο');
+    } finally {
+      setIsLoadingYouTube(false);
+    }
+  };
+
   // Recalculate video offsets when videos change
   const recalculateVideoOffsets = (videoList: VideoSlot[]): VideoSlot[] => {
     let offset = 0;
@@ -299,7 +392,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   // Remove a video from the list
   const removeVideo = (index: number) => {
     const videoToRemove = videos[index];
-    if (videoToRemove) {
+    // Only revoke object URL for file uploads, not YouTube videos
+    if (videoToRemove && !videoToRemove.isYouTube) {
       URL.revokeObjectURL(videoToRemove.url);
     }
     
@@ -319,7 +413,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Reset all videos
   const resetAllVideos = () => {
-    videos.forEach(v => URL.revokeObjectURL(v.url));
+    // Only revoke object URLs for file uploads
+    videos.forEach(v => {
+      if (!v.isYouTube) {
+        URL.revokeObjectURL(v.url);
+      }
+    });
     setVideos([]);
     setActiveVideoIndex(0);
     setClips([]);
@@ -1248,26 +1347,65 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     return (
       <Card className="rounded-none border-dashed border-2 border-gray-300">
         <CardContent className="py-6">
-          <div className="text-center">
+          <div className="text-center space-y-4">
             <Film className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-            <p className="text-gray-500 text-sm mb-3">
-              Ανεβάστε βίντεο για νέο αγώνα (έως 3 βίντεο)
+            <p className="text-gray-500 text-sm">
+              Ανεβάστε βίντεο ή επικολλήστε YouTube link (έως 3 βίντεο)
             </p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="video/mp4,video/webm,video/ogg,video/avi,video/mov,video/quicktime,video/x-msvideo,video/x-matroska,video/mkv,video/wmv,video/flv,video/3gpp,video/mpeg,video/x-m4v,.mp4,.webm,.ogg,.avi,.mov,.mkv,.wmv,.flv,.3gp,.mpeg,.m4v,.ts,.mts,.m2ts"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              size="sm"
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
-            >
-              <Upload className="w-4 h-4 mr-1" />
-              Επιλογή Βίντεο
-            </Button>
+            
+            {/* File Upload */}
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/ogg,video/avi,video/mov,video/quicktime,video/x-msvideo,video/x-matroska,video/mkv,video/wmv,video/flv,video/3gpp,video/mpeg,video/x-m4v,.mp4,.webm,.ogg,.avi,.mov,.mkv,.wmv,.flv,.3gp,.mpeg,.m4v,.ts,.mts,.m2ts"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                size="sm"
+                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              >
+                <Upload className="w-4 h-4 mr-1" />
+                Επιλογή Αρχείου
+              </Button>
+            </div>
+            
+            {/* Divider */}
+            <div className="flex items-center gap-3 px-8">
+              <div className="flex-1 border-t border-gray-300" />
+              <span className="text-xs text-gray-400">ή</span>
+              <div className="flex-1 border-t border-gray-300" />
+            </div>
+            
+            {/* YouTube URL Input */}
+            <div className="flex items-center gap-2 max-w-md mx-auto">
+              <Input
+                type="url"
+                placeholder="Επικόλληση YouTube URL..."
+                value={youtubeUrlInput}
+                onChange={(e) => setYoutubeUrlInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleYouTubeUrl()}
+                className="flex-1 rounded-none text-sm"
+              />
+              <Button
+                onClick={handleYouTubeUrl}
+                size="sm"
+                variant="outline"
+                className="rounded-none"
+                disabled={isLoadingYouTube || !youtubeUrlInput.trim()}
+              >
+                {isLoadingYouTube ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-1" />
+                    Προσθήκη
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -1311,15 +1449,60 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
             </div>
           ))}
           {videos.length < 3 && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-none h-7 px-2 text-xs"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Plus className="w-3 h-3 mr-1" />
-              Προσθήκη
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-none h-7 px-2 text-xs"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Προσθήκη
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-3 rounded-none" align="start">
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-gray-700">Προσθήκη Βίντεο</p>
+                  
+                  {/* File Upload Option */}
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    size="sm"
+                    variant="outline"
+                    className="w-full rounded-none justify-start"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Ανέβασμα αρχείου
+                  </Button>
+                  
+                  {/* YouTube URL Option */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="url"
+                        placeholder="YouTube URL..."
+                        value={youtubeUrlInput}
+                        onChange={(e) => setYoutubeUrlInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleYouTubeUrl()}
+                        className="flex-1 rounded-none text-xs h-8"
+                      />
+                      <Button
+                        onClick={handleYouTubeUrl}
+                        size="sm"
+                        className="rounded-none h-8 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                        disabled={isLoadingYouTube || !youtubeUrlInput.trim()}
+                      >
+                        {isLoadingYouTube ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Play className="w-3 h-3" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
         </div>
       )}
@@ -1327,48 +1510,70 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       {/* Video Player */}
       <Card className="rounded-none">
         <CardContent className="p-4">
-          <div className="relative bg-black rounded-none overflow-hidden">
-            {videos.map((v, idx) => (
-              <video
-                key={v.id}
-                ref={(el) => {
-                  videoElsRef.current[idx] = el;
-                }}
-                src={v.url}
-                className={`w-full max-h-[60vh] object-contain ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
-                onLoadedMetadata={() => {
-                  if (idx === activeVideoIndex) handleLoadedMetadata();
-                }}
-                onLoadedData={() => {
-                  if (idx === activeVideoIndex) handleLoadedData();
-                }}
-                onTimeUpdate={() => {
-                  if (idx === activeVideoIndex) handleTimeUpdate();
-                }}
-                onEnded={() => {
-                  if (idx === activeVideoIndex) handleEnded();
-                }}
-                onError={() => {
-                  const el = videoElsRef.current[idx];
-                  console.log('[VideoEditor] video element error', {
-                    activeVideoIndex,
-                    idx,
-                    videoId: v.id,
-                    url: v.url,
-                    readyState: el?.readyState,
-                    networkState: el?.networkState,
-                    currentSrc: el?.currentSrc,
-                    error: el?.error?.code,
-                  });
-                }}
-                onClick={togglePlay}
-                playsInline
-                preload="metadata"
-              />
-            ))}
+          <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: '300px' }}>
+            {videos.map((v, idx) => {
+              // YouTube video
+              if (v.isYouTube && v.youtubeId) {
+                return (
+                  <div
+                    key={v.id}
+                    className={`w-full aspect-video ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
+                  >
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${v.youtubeId}?enablejsapi=1&modestbranding=1&rel=0&showinfo=0&controls=1&fs=1`}
+                      title={v.name}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full"
+                    />
+                  </div>
+                );
+              }
+              
+              // Regular video file
+              return (
+                <video
+                  key={v.id}
+                  ref={(el) => {
+                    videoElsRef.current[idx] = el;
+                  }}
+                  src={v.url}
+                  className={`w-full max-h-[60vh] object-contain ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
+                  onLoadedMetadata={() => {
+                    if (idx === activeVideoIndex) handleLoadedMetadata();
+                  }}
+                  onLoadedData={() => {
+                    if (idx === activeVideoIndex) handleLoadedData();
+                  }}
+                  onTimeUpdate={() => {
+                    if (idx === activeVideoIndex) handleTimeUpdate();
+                  }}
+                  onEnded={() => {
+                    if (idx === activeVideoIndex) handleEnded();
+                  }}
+                  onError={() => {
+                    const el = videoElsRef.current[idx];
+                    console.log('[VideoEditor] video element error', {
+                      activeVideoIndex,
+                      idx,
+                      videoId: v.id,
+                      url: v.url,
+                      readyState: el?.readyState,
+                      networkState: el?.networkState,
+                      currentSrc: el?.currentSrc,
+                      error: el?.error?.code,
+                    });
+                  }}
+                  onClick={togglePlay}
+                  playsInline
+                  preload="metadata"
+                />
+              );
+            })}
             
-            {/* Play overlay */}
-            {!isPlaying && (
+            {/* Play overlay - only for non-YouTube videos */}
+            {!isPlaying && activeVideo && !activeVideo.isYouTube && (
               <div 
                 className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer"
                 onClick={togglePlay}
@@ -1376,6 +1581,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                 <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
                   <Play className="w-8 h-8 text-black ml-1" />
                 </div>
+              </div>
+            )}
+            
+            {/* YouTube notice */}
+            {activeVideo?.isYouTube && (
+              <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-none">
+                YouTube - Χρήση controls του player
               </div>
             )}
           </div>
