@@ -471,7 +471,7 @@ const BarVelocityPage = () => {
             {/* Camera View */}
             <Card className="lg:col-span-2 rounded-none">
               <CardContent className="p-2">
-                <div className="relative bg-black overflow-hidden" style={{ aspectRatio: '9/16' }}>
+                <div className="relative bg-black overflow-hidden mx-auto" style={{ aspectRatio: '9/16', maxHeight: '60vh' }}>
                   <video
                     ref={videoRef}
                     className="w-full h-full object-cover"
