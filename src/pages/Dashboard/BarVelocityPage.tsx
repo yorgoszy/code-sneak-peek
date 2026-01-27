@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, Play, Square, RotateCcw, Activity, TrendingUp, Zap, Target } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Camera, Play, Square, RotateCcw, Activity, TrendingUp, Zap, Target, Ruler, Check, X } from "lucide-react";
 import { CameraZoomControl } from "@/components/CameraZoomControl";
 import { toast } from "sonner";
 
@@ -24,11 +25,17 @@ interface MarkerPosition {
   timestamp: number;
 }
 
+interface CalibrationPoint {
+  x: number;
+  y: number;
+}
+
 const BarVelocityPage = () => {
   const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
+  const calibrationCanvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const positionsRef = useRef<MarkerPosition[]>([]);
@@ -40,9 +47,12 @@ const BarVelocityPage = () => {
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const [results, setResults] = useState<VelocityResult[]>([]);
   const [currentVelocity, setCurrentVelocity] = useState<number | null>(null);
-  const [calibrationCm, setCalibrationCm] = useState(45); // Default bar width in cm
-  const [calibrationPixels, setCalibrationPixels] = useState<number | null>(null);
   const [pixelsPerCm, setPixelsPerCm] = useState(5); // Default estimate
+  
+  // Calibration state
+  const [isCalibrating, setIsCalibrating] = useState(false);
+  const [calibrationPoints, setCalibrationPoints] = useState<CalibrationPoint[]>([]);
+  const [knownDistanceCm, setKnownDistanceCm] = useState<string>('220');
 
   const isCoach = user?.role === 'coach';
 
@@ -289,6 +299,124 @@ const BarVelocityPage = () => {
     setTimeout(startCamera, 100);
   };
 
+  // Calibration functions
+  const startCalibration = () => {
+    setIsCalibrating(true);
+    setCalibrationPoints([]);
+    toast.info('Κάνε κλικ σε 2 σημεία γνωστής απόστασης (π.χ. άκρες μπάρας)');
+  };
+
+  const cancelCalibration = () => {
+    setIsCalibrating(false);
+    setCalibrationPoints([]);
+    drawCalibrationOverlay([]);
+  };
+
+  const handleCalibrationClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isCalibrating || !videoRef.current || !calibrationCanvasRef.current) return;
+    
+    const canvas = calibrationCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    const newPoints = [...calibrationPoints, { x, y }];
+    setCalibrationPoints(newPoints);
+    
+    drawCalibrationOverlay(newPoints);
+    
+    if (newPoints.length === 1) {
+      toast.info('Κάνε κλικ στο 2ο σημείο');
+    }
+  };
+
+  const drawCalibrationOverlay = (points: CalibrationPoint[]) => {
+    if (!calibrationCanvasRef.current || !videoRef.current) return;
+    
+    const canvas = calibrationCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    canvas.width = videoRef.current.videoWidth || 1280;
+    canvas.height = videoRef.current.videoHeight || 720;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw points
+    points.forEach((point, index) => {
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 10, 0, Math.PI * 2);
+      ctx.fillStyle = '#00ffba';
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 15, 0, Math.PI * 2);
+      ctx.strokeStyle = '#00ffba';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // Label
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText(`${index + 1}`, point.x + 20, point.y + 5);
+    });
+    
+    // Draw line between points
+    if (points.length === 2) {
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      ctx.lineTo(points[1].x, points[1].y);
+      ctx.strokeStyle = '#00ffba';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([10, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Calculate and display pixel distance
+      const pixelDistance = Math.sqrt(
+        Math.pow(points[1].x - points[0].x, 2) + 
+        Math.pow(points[1].y - points[0].y, 2)
+      );
+      
+      const midX = (points[0].x + points[1].x) / 2;
+      const midY = (points[0].y + points[1].y) / 2;
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(midX - 50, midY - 25, 100, 30);
+      ctx.fillStyle = '#00ffba';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${pixelDistance.toFixed(0)} px`, midX, midY);
+    }
+  };
+
+  const confirmCalibration = () => {
+    if (calibrationPoints.length !== 2) return;
+    
+    const pixelDistance = Math.sqrt(
+      Math.pow(calibrationPoints[1].x - calibrationPoints[0].x, 2) + 
+      Math.pow(calibrationPoints[1].y - calibrationPoints[0].y, 2)
+    );
+    
+    const cmDistance = parseFloat(knownDistanceCm);
+    if (cmDistance <= 0 || isNaN(cmDistance)) {
+      toast.error('Εισάγετε έγκυρη απόσταση σε cm');
+      return;
+    }
+    
+    const newPixelsPerCm = pixelDistance / cmDistance;
+    setPixelsPerCm(parseFloat(newPixelsPerCm.toFixed(2)));
+    
+    setIsCalibrating(false);
+    setCalibrationPoints([]);
+    drawCalibrationOverlay([]);
+    
+    toast.success(`Βαθμονόμηση: ${newPixelsPerCm.toFixed(2)} pixels/cm`);
+  };
+
   useEffect(() => {
     if (isTracking) {
       animationFrameRef.current = requestAnimationFrame(trackFrame);
@@ -358,12 +486,62 @@ const BarVelocityPage = () => {
                     style={{ transform: `scale(${zoom})` }}
                   />
                   
+                  {/* Calibration canvas - clickable */}
+                  <canvas 
+                    ref={calibrationCanvasRef} 
+                    className={`absolute inset-0 w-full h-full ${isCalibrating ? 'cursor-crosshair' : 'pointer-events-none'}`}
+                    style={{ transform: `scale(${zoom})` }}
+                    onClick={handleCalibrationClick}
+                  />
+                  
                   {!isActive && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/80">
                       <Button onClick={startCamera} size="lg" className="rounded-none">
                         <Camera className="h-5 w-5 mr-2" />
                         Ενεργοποίηση Κάμερας
                       </Button>
+                    </div>
+                  )}
+                  
+                  {/* Calibration mode overlay */}
+                  {isCalibrating && (
+                    <div className="absolute top-4 left-4 right-4 bg-black/80 p-3 rounded-none">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                          <Ruler className="h-4 w-4 text-primary" />
+                          <span className="text-white text-sm">
+                            Βαθμονόμηση: {calibrationPoints.length}/2 σημεία
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            value={knownDistanceCm}
+                            onChange={(e) => setKnownDistanceCm(e.target.value)}
+                            placeholder="cm"
+                            className="w-20 h-7 rounded-none text-sm"
+                          />
+                          <span className="text-white text-sm">cm</span>
+                          {calibrationPoints.length === 2 && (
+                            <Button 
+                              size="sm" 
+                              onClick={confirmCalibration}
+                              className="rounded-none h-7 bg-primary"
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              OK
+                            </Button>
+                          )}
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={cancelCalibration}
+                            className="rounded-none h-7 text-white hover:text-white hover:bg-white/20"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -436,7 +614,18 @@ const BarVelocityPage = () => {
                       value={pixelsPerCm}
                       onChange={(e) => setPixelsPerCm(Number(e.target.value))}
                       className="w-16 h-8 px-2 bg-background border rounded-none text-sm"
+                      disabled={isCalibrating}
                     />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={startCalibration}
+                      disabled={!isActive || isTracking || isCalibrating}
+                      className="rounded-none h-8"
+                    >
+                      <Ruler className="h-3 w-3 mr-1" />
+                      Βαθμονόμηση
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -479,7 +668,7 @@ const BarVelocityPage = () => {
                         Avg: {results[results.length - 1].avgVelocity.toFixed(2)} m/s
                       </div>
                       {results[results.length - 1].peakVelocity === bestResult?.peakVelocity && (
-                        <Badge className="mt-2 rounded-none bg-amber-500">
+                        <Badge className="mt-2 rounded-none bg-[hsl(var(--auth-gold))]">
                           🏆 Best!
                         </Badge>
                       )}
