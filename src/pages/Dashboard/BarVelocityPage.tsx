@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Sidebar } from "@/components/Sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
-import { useAuth } from "@/hooks/useAuth";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Camera, Play, Square, RotateCcw, Activity, TrendingUp, Zap, Target, Ruler, Check, X } from "lucide-react";
+import { Camera, Play, Square, RotateCcw, Activity, TrendingUp, Zap, Target, Ruler, Check, X, Menu } from "lucide-react";
 import { CameraZoomControl } from "@/components/CameraZoomControl";
 import { toast } from "sonner";
 
@@ -31,7 +32,10 @@ interface CalibrationPoint {
 }
 
 const BarVelocityPage = () => {
-  const { user } = useAuth();
+  const { isAdmin } = useRoleCheck();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -53,8 +57,6 @@ const BarVelocityPage = () => {
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [calibrationPoints, setCalibrationPoints] = useState<CalibrationPoint[]>([]);
   const [knownDistanceCm, setKnownDistanceCm] = useState<string>('220');
-
-  const isCoach = user?.role === 'coach';
 
   // Color ranges for detection (HSV-like thresholds)
   const colorRanges: Record<string, { hMin: number; hMax: number; sMin: number; sMax: number; vMin: number; vMax: number; hMin2?: number; hMax2?: number }> = {
@@ -442,30 +444,76 @@ const BarVelocityPage = () => {
     ? results.reduce((sum, r) => sum + r.peakVelocity, 0) / results.length
     : 0;
 
+  // Render sidebar based on role
+  const renderSidebar = () => {
+    if (isAdmin) {
+      return (
+        <Sidebar
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+        />
+      );
+    }
+    return (
+      <CoachSidebar
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+      />
+    );
+  };
+
   return (
-    <div className="flex min-h-screen bg-background">
-      {isCoach ? <CoachSidebar isCollapsed={false} setIsCollapsed={() => {}} /> : <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />}
-      
-      <main className="flex-1 p-4 md:p-6 overflow-auto">
-        <div className="max-w-6xl mx-auto space-y-4">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Activity className="h-6 w-6 text-primary" />
-                Bar Velocity
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Μέτρηση ταχύτητας μπάρας με color tracking
-              </p>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block">
+          {renderSidebar()}
+        </div>
+        
+        {/* Mobile menu button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="fixed top-4 left-4 z-50 md:hidden rounded-none"
+          onClick={() => setIsMobileOpen(!isMobileOpen)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+
+        {/* Mobile sidebar overlay */}
+        {isMobileOpen && (
+          <div className="fixed inset-0 z-40 md:hidden">
+            <div 
+              className="absolute inset-0 bg-black/50" 
+              onClick={() => setIsMobileOpen(false)}
+            />
+            <div className="absolute left-0 top-0 h-full">
+              {renderSidebar()}
             </div>
-            {results.length > 0 && (
-              <Button variant="outline" size="sm" onClick={resetResults} className="rounded-none">
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Reset
-              </Button>
-            )}
           </div>
+        )}
+
+        {/* Main Content */}
+        <main className="flex-1 p-4 md:p-6 overflow-auto">
+          <div className="max-w-6xl mx-auto space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between pl-10 md:pl-0">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                  <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                  Bar Velocity
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Μέτρηση ταχύτητας μπάρας με color tracking
+                </p>
+              </div>
+              {results.length > 0 && (
+                <Button variant="outline" size="sm" onClick={resetResults} className="rounded-none">
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset
+                </Button>
+              )}
+            </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Camera View */}
@@ -745,9 +793,10 @@ const BarVelocityPage = () => {
               )}
             </div>
           </div>
-        </div>
-      </main>
-    </div>
+          </div>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 };
 
