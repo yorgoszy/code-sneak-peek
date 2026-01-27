@@ -81,6 +81,7 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
   const {
     initialize: initPose,
     isLoading: poseLoading,
+    isInitialized: poseInitialized,
     error: poseError,
   } = usePoseDetection();
 

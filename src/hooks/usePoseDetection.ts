@@ -77,7 +77,8 @@ interface UsePoseDetectionOptions {
 }
 
 export function usePoseDetection(options: UsePoseDetectionOptions = {}) {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [currentPose, setCurrentPose] = useState<PoseResult | null>(null);
@@ -90,6 +91,11 @@ export function usePoseDetection(options: UsePoseDetectionOptions = {}) {
 
   // Initialize PoseLandmarker
   const initialize = useCallback(async () => {
+    // Skip if already initialized
+    if (isInitialized && poseLandmarkerRef.current) {
+      return;
+    }
+    
     try {
       setIsLoading(true);
       setError(null);
@@ -111,6 +117,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions = {}) {
       });
 
       poseLandmarkerRef.current = poseLandmarker;
+      setIsInitialized(true);
       setIsLoading(false);
       console.log("✅ PoseLandmarker initialized successfully");
     } catch (err) {
@@ -118,7 +125,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions = {}) {
       setError(err instanceof Error ? err.message : "Failed to initialize pose detection");
       setIsLoading(false);
     }
-  }, []);
+  }, [isInitialized]);
 
   // Detect pose from video frame
   const detectPose = useCallback(() => {
@@ -225,6 +232,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions = {}) {
     start,
     stop,
     isLoading,
+    isInitialized,
     isRunning,
     error,
     currentPose,
