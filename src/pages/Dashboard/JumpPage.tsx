@@ -31,7 +31,7 @@ const calculateJumpHeight = (flightTimeMs: number): number => {
   return height * 100; // Convert to cm
 };
 
-const JumpTestPage = () => {
+const JumpPage = () => {
   const { toast } = useToast();
   const { isAdmin } = useRoleCheck();
   const { effectiveCoachId } = useEffectiveCoachId();
@@ -583,4 +583,4 @@ const JumpTestPage = () => {
   );
 };
 
-export default JumpTestPage;
+export default JumpPage;
