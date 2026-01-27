@@ -480,6 +480,61 @@ const JumpPage = () => {
 
               {/* Results Panel */}
               <div className="lg:col-span-1 space-y-4">
+                {/* Current Attempt - Always Visible */}
+                <Card className={`rounded-none border-2 transition-all duration-300 ${
+                  jumpPhase === 'airborne' 
+                    ? 'border-primary bg-primary/5 animate-pulse' 
+                    : results.length > 0 
+                      ? 'border-primary/50 bg-primary/5' 
+                      : 'border-muted'
+                }`}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      Τρέχουσα Προσπάθεια
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-4">
+                      {jumpPhase === 'airborne' ? (
+                        <>
+                          <p className="text-6xl font-bold text-primary font-mono animate-pulse">
+                            {currentFlightTime.toFixed(0)}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-2">milliseconds</p>
+                          <p className="text-2xl font-semibold mt-2">
+                            ≈ {calculateJumpHeight(currentFlightTime).toFixed(1)} cm
+                          </p>
+                        </>
+                      ) : results.length > 0 ? (
+                        <>
+                          <p className="text-6xl font-bold text-primary">
+                            {results[0].jumpHeight.toFixed(1)}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-2">εκατοστά (cm)</p>
+                          <p className="text-lg text-muted-foreground mt-1">
+                            Flight time: {results[0].flightTime.toFixed(0)} ms
+                          </p>
+                          <Badge className={`mt-2 rounded-none ${
+                            results[0].jumpHeight === bestJump && results.length > 1
+                              ? 'bg-amber-500'
+                              : 'bg-primary'
+                          }`}>
+                            {results[0].jumpHeight === bestJump && results.length > 1 ? '🏆 Νέο Ρεκόρ!' : `Άλμα #${results.length}`}
+                          </Badge>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-6xl font-bold text-muted-foreground">--</p>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {isDetecting ? 'Αναμονή για άλμα...' : 'Πατήστε Έναρξη'}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Stats Card */}
                 <Card className="rounded-none">
                   <CardHeader className="pb-2">
@@ -489,31 +544,25 @@ const JumpPage = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-muted p-3 rounded-none">
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-muted p-3 rounded-none text-center">
                         <p className="text-xs text-muted-foreground">Άλματα</p>
-                        <p className="text-2xl font-bold">{results.length}</p>
+                        <p className="text-xl font-bold">{results.length}</p>
                       </div>
-                      <div className="bg-muted p-3 rounded-none">
-                        <p className="text-xs text-muted-foreground">Μέσος όρος</p>
-                        <p className="text-2xl font-bold">
+                      <div className="bg-muted p-3 rounded-none text-center">
+                        <p className="text-xs text-muted-foreground">Μ.Ο.</p>
+                        <p className="text-xl font-bold">
                           {results.length > 0 
                             ? (results.reduce((sum, r) => sum + r.jumpHeight, 0) / results.length).toFixed(1)
                             : '-'
-                          } cm
+                          }
                         </p>
+                      </div>
+                      <div className="bg-amber-500/10 border border-amber-500/30 p-3 rounded-none text-center">
+                        <p className="text-xs text-muted-foreground">Best</p>
+                        <p className="text-xl font-bold text-amber-600">{bestJump > 0 ? bestJump.toFixed(1) : '-'}</p>
                       </div>
                     </div>
-                    
-                    {results.length > 0 && (
-                      <div className="bg-primary/10 border border-primary/30 p-3 rounded-none">
-                        <p className="text-xs text-muted-foreground">Καλύτερο Άλμα</p>
-                        <p className="text-3xl font-bold text-primary">{bestJump.toFixed(1)} cm</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Flight time: {results.find(r => r.jumpHeight === bestJump)?.flightTime.toFixed(0)} ms
-                        </p>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
 
