@@ -596,6 +596,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/jump",
       badge: null
     },
+    {
+      icon: Gauge,
+      label: "Bar Velocity",
+      path: "/dashboard/bar-velocity",
+      badge: null
+    },
     { 
       icon: Dumbbell, 
       label: "Ασκήσεις", 

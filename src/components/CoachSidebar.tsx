@@ -24,6 +24,7 @@ import {
   Compass,
   BookOpen,
   Download,
+  Gauge,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -222,6 +223,13 @@ export const CoachSidebar = ({
       icon: ArrowUp,
       label: "Jump",
       path: effectiveCoachId ? `/dashboard/jump?coachId=${effectiveCoachId}` : "/dashboard/jump",
+      badge: null,
+      requiresSubscription: true,
+    },
+    {
+      icon: Gauge,
+      label: "Bar Velocity",
+      path: effectiveCoachId ? `/dashboard/bar-velocity?coachId=${effectiveCoachId}` : "/dashboard/bar-velocity",
       badge: null,
       requiresSubscription: true,
     },
