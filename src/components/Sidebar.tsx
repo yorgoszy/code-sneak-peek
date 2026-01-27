@@ -11,6 +11,7 @@ import {
   UsersIcon,
   Mail,
   ArrowLeft,
+  ArrowUp,
   Crown,
   TrendingUp,
   BookOpen,
@@ -587,6 +588,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Brain,
       label: "Cognitive",
       path: "/dashboard/cognitive",
+      badge: null
+    },
+    {
+      icon: ArrowUp,
+      label: "Jump Test",
+      path: "/dashboard/jump-test",
       badge: null
     },
     { 
