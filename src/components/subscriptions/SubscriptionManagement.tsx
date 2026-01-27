@@ -24,9 +24,12 @@ interface SubscriptionType {
   duration_months: number;
   features: any;
   is_active: boolean;
-  subscription_mode: 'time_based' | 'visit_based';
+  subscription_mode: 'time_based' | 'visit_based' | 'videocall';
   visit_count?: number;
   visit_expiry_months?: number;
+  videocall_count?: number;
+  videocall_expiry_months?: number;
+  single_purchase?: boolean;
 }
 
 interface UserSubscription {
@@ -556,6 +559,8 @@ export const SubscriptionManagement: React.FC = () => {
     // Υπολογισμός ημερομηνίας λήξης ανάλογα με τον τύπο συνδρομής και τον πολλαπλασιαστή
     if (subscriptionType.subscription_mode === 'visit_based') {
       endDate.setMonth(subscriptionStartDate.getMonth() + ((subscriptionType.visit_expiry_months || 0) * durationMultiplier));
+    } else if (subscriptionType.subscription_mode === 'videocall') {
+      endDate.setMonth(subscriptionStartDate.getMonth() + ((subscriptionType.videocall_expiry_months || subscriptionType.duration_months || 3) * durationMultiplier));
     } else {
       endDate.setMonth(subscriptionStartDate.getMonth() + (subscriptionType.duration_months * durationMultiplier));
     }
@@ -624,6 +629,33 @@ export const SubscriptionManagement: React.FC = () => {
           });
 
         if (visitPackageError) throw visitPackageError;
+      }
+
+      // Δημιουργία videocall package αν είναι videocall subscription
+      // Ο πολλαπλασιαστής εφαρμόζεται στις βιντεοκλήσεις, τη διάρκεια και την τιμή
+      if (subscriptionType.subscription_mode === 'videocall') {
+        const videocallEndDate = new Date(subscriptionStartDate);
+        const baseExpiryMonths = subscriptionType.videocall_expiry_months || subscriptionType.duration_months || 3;
+        videocallEndDate.setMonth(subscriptionStartDate.getMonth() + (baseExpiryMonths * durationMultiplier));
+        
+        // Default videocall count: 1 για single purchase, 4 για μηνιαία
+        const baseVideocallCount = subscriptionType.videocall_count || (subscriptionType.single_purchase ? 1 : 4);
+        const totalVideocalls = baseVideocallCount * durationMultiplier;
+        const totalPrice = subscriptionType.price * durationMultiplier;
+        
+        const { error: videocallPackageError } = await supabase
+          .from('videocall_packages')
+          .insert({
+            user_id: selectedUser,
+            total_videocalls: totalVideocalls,
+            remaining_videocalls: totalVideocalls,
+            purchase_date: subscriptionStartDate.toISOString().split('T')[0],
+            expiry_date: videocallEndDate.toISOString().split('T')[0],
+            price: totalPrice,
+            status: 'active'
+          });
+
+        if (videocallPackageError) throw videocallPackageError;
       }
 
       // Δημιουργία απόδειξης αν επιλέχθηκε
