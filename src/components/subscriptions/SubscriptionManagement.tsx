@@ -481,10 +481,10 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const createReceiptForSubscription = async (userData: any, subscriptionType: SubscriptionType, startDate: string, endDate: Date) => {
+  const createReceiptForSubscription = async (userData: any, subscriptionType: SubscriptionType, startDate: string, endDate: Date, multiplier: number = 1) => {
     try {
       const receiptNumber = await generateReceiptNumber();
-      const totalPrice = subscriptionType.price;
+      const totalPrice = subscriptionType.price * multiplier;
       const netPrice = totalPrice / 1.13;
       const vatAmount = totalPrice - netPrice;
 
@@ -495,9 +495,9 @@ export const SubscriptionManagement: React.FC = () => {
         user_id: userData.id,
         items: [{
           id: "1",
-          description: subscriptionType.name,
-          quantity: 1,
-          unitPrice: netPrice,
+          description: multiplier > 1 ? `${subscriptionType.name} x${multiplier}` : subscriptionType.name,
+          quantity: multiplier,
+          unitPrice: subscriptionType.price / 1.13,
           total: totalPrice,
           vatRate: 13
         }],
@@ -660,18 +660,19 @@ export const SubscriptionManagement: React.FC = () => {
 
       // Δημιουργία απόδειξης αν επιλέχθηκε
       if (createReceipt) {
-        await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate);
+        await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier);
       }
 
       // Αποστολή απόδειξης με email
       try {
         const invoiceNumber = generateInvoiceNumber();
+        const totalPrice = subscriptionType.price * durationMultiplier;
         
         const receiptData = {
           userName: selectedUserData.name,
           userEmail: selectedUserData.email,
-          subscriptionType: subscriptionType.name,
-          price: subscriptionType.price,
+          subscriptionType: durationMultiplier > 1 ? `${subscriptionType.name} x${durationMultiplier}` : subscriptionType.name,
+          price: totalPrice,
           startDate: subscriptionStartDate.toISOString().split('T')[0],
           endDate: endDate.toISOString().split('T')[0],
           invoiceNumber: invoiceNumber
