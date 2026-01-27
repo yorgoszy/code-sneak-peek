@@ -324,7 +324,7 @@ const JumpTestPage = () => {
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
                   <ArrowUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-                  Jump Test
+                  Jump
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-base">
                   Μέτρηση ύψους άλματος με AI Pose Detection
