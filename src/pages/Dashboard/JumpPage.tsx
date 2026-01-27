@@ -363,7 +363,7 @@ const JumpPage = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-2 sm:p-4">
-                    <div className="relative aspect-video bg-black rounded-none overflow-hidden">
+                    <div className="relative bg-black rounded-none overflow-hidden" style={{ aspectRatio: '4/3' }}>
                       <video
                         ref={videoRef}
                         className="absolute inset-0 w-full h-full object-cover"
