@@ -348,11 +348,6 @@ const PPGHRVPage = () => {
       return;
     }
     
-    if (!fingerDetected) {
-      toast.warning('Τοποθετήστε το δάχτυλο στον φακό της κάμερας');
-      return;
-    }
-    
     setIsMeasuring(true);
     dataBuffer.current = [];
     measurementStartTime.current = performance.now();
@@ -393,7 +388,7 @@ const PPGHRVPage = () => {
     };
     
     animationFrameRef.current = requestAnimationFrame(processFrame);
-  }, [isActive, fingerDetected, processData]);
+  }, [isActive, processData]);
   
   // Stop measurement
   const stopMeasurement = () => {
@@ -501,7 +496,7 @@ const PPGHRVPage = () => {
                 </Button>
                 <h1 className="text-lg font-semibold flex items-center gap-2">
                   <Heart className="h-5 w-5 text-red-500" />
-                  PPG HRV
+                  HRV
                 </h1>
               </div>
               {currentBPM && (
@@ -521,10 +516,10 @@ const PPGHRVPage = () => {
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
                     <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
-                    PPG Heart Rate & HRV
+                    HRV
                   </h1>
                   <p className="text-muted-foreground text-sm sm:text-base">
-                    Μέτρηση καρδιακού παλμού και μεταβλητότητας με την κάμερα
+                    Μέτρηση καρδιακής μεταβλητότητας
                   </p>
                 </div>
                 
@@ -541,23 +536,6 @@ const PPGHRVPage = () => {
                 )}
               </div>
 
-              {/* Instructions Card */}
-              <Card className="rounded-none bg-amber-500/10 border-amber-500/30">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-start gap-3">
-                    <Lightbulb className="h-5 w-5 text-amber-500 mt-0.5" />
-                    <div className="text-sm">
-                      <p className="font-medium text-amber-600">Οδηγίες χρήσης:</p>
-                      <ol className="list-decimal list-inside mt-1 space-y-1 text-muted-foreground">
-                        <li>Τοποθετήστε το δάχτυλο στον φακό της πίσω κάμερας</li>
-                        <li>Καλύψτε εντελώς τον φακό και το flash</li>
-                        <li>Κρατήστε σταθερά για 30 δευτερόλεπτα</li>
-                        <li>Αποφύγετε κινήσεις κατά τη μέτρηση</li>
-                      </ol>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Camera View */}
@@ -666,7 +644,6 @@ const PPGHRVPage = () => {
                           <Button
                             onClick={startMeasurement}
                             className="rounded-none bg-red-500 text-white hover:bg-red-600 flex-1"
-                            disabled={!fingerDetected || signalQuality === 'poor'}
                           >
                             <Play className="mr-2 h-4 w-4" />
                             Έναρξη Μέτρησης

@@ -236,8 +236,8 @@ export const CoachSidebar = ({
     },
     {
       icon: Heart,
-      label: "PPG HRV",
-      path: effectiveCoachId ? `/dashboard/ppg-hrv?coachId=${effectiveCoachId}` : "/dashboard/ppg-hrv",
+      label: "HRV",
+      path: effectiveCoachId ? `/dashboard/hrv?coachId=${effectiveCoachId}` : "/dashboard/hrv",
       badge: null,
       requiresSubscription: true,
     },

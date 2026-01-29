@@ -91,7 +91,7 @@ import ChangeDirectionPage from "@/pages/Dashboard/ChangeDirectionPage";
 import CognitivePage from "@/pages/Dashboard/CognitivePage";
 import JumpPage from "@/pages/Dashboard/JumpPage";
 import BarVelocityPage from "@/pages/Dashboard/BarVelocityPage";
-import PPGHRVPage from "@/pages/Dashboard/PPGHRVPage";
+import HRVPage from "@/pages/Dashboard/HRVPage";
 const queryClient = new QueryClient();
 
 function App() {
@@ -163,7 +163,7 @@ function App() {
                       <Route path="/dashboard/cognitive" element={<ProtectedRoute><CognitivePage /></ProtectedRoute>} />
                       <Route path="/dashboard/jump" element={<ProtectedRoute><JumpPage /></ProtectedRoute>} />
                       <Route path="/dashboard/bar-velocity" element={<ProtectedRoute><BarVelocityPage /></ProtectedRoute>} />
-                      <Route path="/dashboard/ppg-hrv" element={<ProtectedRoute><PPGHRVPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/hrv" element={<ProtectedRoute><HRVPage /></ProtectedRoute>} />
                       {/* Admin-only routes */}
                       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
                       <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
