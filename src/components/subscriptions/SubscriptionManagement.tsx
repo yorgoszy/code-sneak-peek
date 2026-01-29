@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { matchesSearchTerm } from "@/lib/utils";
-import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard, Users } from "lucide-react";
+import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard, Users, FileText } from "lucide-react";
+import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
 import { ReceiptConfirmDialog } from './ReceiptConfirmDialog';
 import { SubscriptionDeleteDialog } from './SubscriptionDeleteDialog';
 import { SectionAssignmentDialog } from './SectionAssignmentDialog';
@@ -86,6 +87,8 @@ export const SubscriptionManagement: React.FC = () => {
   const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
   const [selectedUserForSection, setSelectedUserForSection] = useState<{id: string, name: string, sectionId: string | null} | null>(null);
   const [durationMultiplier, setDurationMultiplier] = useState(1);
+  const [receiptPreviewOpen, setReceiptPreviewOpen] = useState(false);
+  const [selectedReceiptData, setSelectedReceiptData] = useState<any>(null);
 
   useEffect(() => {
     loadData();
@@ -577,6 +580,86 @@ export const SubscriptionManagement: React.FC = () => {
 
     // Εμφάνιση dialog για απόδειξη
     setShowReceiptDialog(true);
+  };
+
+  const viewReceiptForSubscription = async (userId: string, userName: string, subscriptionTypeName: string, startDate: string) => {
+    try {
+      // Βρες την απόδειξη που αντιστοιχεί σε αυτή τη συνδρομή
+      const { data: receipts, error } = await supabase
+        .from('receipts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (!receipts || receipts.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Δεν βρέθηκε απόδειξη",
+          description: `Δεν υπάρχει απόδειξη για τη συνδρομή ${subscriptionTypeName}`,
+        });
+        return;
+      }
+
+      // Βρες την πιο κοντινή απόδειξη στην ημερομηνία έναρξης συνδρομής
+      const subscriptionStartDate = new Date(startDate);
+      let closestReceipt = receipts[0];
+      let minDiff = Math.abs(new Date(receipts[0].created_at).getTime() - subscriptionStartDate.getTime());
+
+      for (const receipt of receipts) {
+        const diff = Math.abs(new Date(receipt.created_at).getTime() - subscriptionStartDate.getTime());
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestReceipt = receipt;
+        }
+      }
+
+      // Μετατροπή στο format του ReceiptPreviewDialog
+      const previewData = {
+        id: closestReceipt.id,
+        receiptNumber: closestReceipt.receipt_number,
+        customerName: closestReceipt.customer_name || userName,
+        customerVat: closestReceipt.customer_vat,
+        customerEmail: closestReceipt.customer_email,
+        items: Array.isArray(closestReceipt.items) ? (closestReceipt.items as any[]).map((item: any, index: number) => ({
+          id: item.id || `item-${index}`,
+          description: item.description || subscriptionTypeName,
+          quantity: item.quantity || 1,
+          unitPrice: item.unitPrice || item.unit_price || closestReceipt.subtotal,
+          vatRate: item.vatRate || 13,
+          total: item.total || closestReceipt.total
+        })) : [{
+          id: '1',
+          description: subscriptionTypeName,
+          quantity: 1,
+          unitPrice: closestReceipt.subtotal,
+          vatRate: 13,
+          total: closestReceipt.total
+        }],
+        subtotal: closestReceipt.subtotal || 0,
+        vat: closestReceipt.vat || 0,
+        total: closestReceipt.total || 0,
+        date: closestReceipt.issue_date || closestReceipt.created_at,
+        startDate: startDate,
+        myDataStatus: closestReceipt.mydata_status || 'pending',
+        myDataId: closestReceipt.mydata_id,
+        invoiceMark: closestReceipt.invoice_mark,
+        invoiceUid: closestReceipt.invoice_uid,
+        qrUrl: closestReceipt.qr_url
+      };
+
+      setSelectedReceiptData(previewData);
+      setReceiptPreviewOpen(true);
+
+    } catch (error) {
+      console.error('Error loading receipt:', error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Σφάλμα κατά τη φόρτωση της απόδειξης",
+      });
+    }
   };
 
 
@@ -1810,6 +1893,22 @@ export const SubscriptionManagement: React.FC = () => {
                               <UserCheck className="w-3 h-3 md:w-4 md:h-4" />
                             </Button>
 
+                            {/* Receipt View Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => viewReceiptForSubscription(
+                                user.id, 
+                                user.name, 
+                                subscription.subscription_types?.name || '', 
+                                subscription.start_date
+                              )}
+                              className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0 border-purple-300 text-purple-600"
+                              title="Προβολή απόδειξης"
+                            >
+                              <FileText className="w-3 h-3 md:w-4 md:h-4" />
+                            </Button>
+
                             <Button
                               size="sm"
                               variant="outline"
@@ -1999,6 +2098,22 @@ export const SubscriptionManagement: React.FC = () => {
                               title="Ανανέωση συνδρομής"
                             >
                               <RotateCcw className="w-3 h-3" />
+                            </Button>
+
+                            {/* Receipt View Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => viewReceiptForSubscription(
+                                user.id, 
+                                user.name, 
+                                subscription.subscription_types?.name || '', 
+                                subscription.start_date
+                              )}
+                              className="rounded-none border-purple-300 text-purple-600 hover:bg-purple-50"
+                              title="Προβολή απόδειξης"
+                            >
+                              <FileText className="w-3 h-3" />
                             </Button>
 
                             {/* Edit Button */}
@@ -2234,6 +2349,13 @@ export const SubscriptionManagement: React.FC = () => {
           onSuccess={loadData}
         />
       )}
+
+      {/* Receipt Preview Dialog */}
+      <ReceiptPreviewDialog
+        isOpen={receiptPreviewOpen}
+        onClose={() => setReceiptPreviewOpen(false)}
+        receipt={selectedReceiptData}
+      />
     </div>
   );
 };
