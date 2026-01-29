@@ -28,7 +28,8 @@ import {
   Utensils,
   Award,
   Swords,
-  Compass
+  Compass,
+  Heart
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -600,6 +601,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Gauge,
       label: "Bar Velocity",
       path: "/dashboard/bar-velocity",
+      badge: null
+    },
+    {
+      icon: Heart,
+      label: "PPG HRV",
+      path: "/dashboard/ppg-hrv",
       badge: null
     },
     { 
