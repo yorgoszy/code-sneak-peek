@@ -605,8 +605,8 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     },
     {
       icon: Heart,
-      label: "PPG HRV",
-      path: "/dashboard/ppg-hrv",
+      label: "HRV",
+      path: "/dashboard/hrv",
       badge: null
     },
     { 
