@@ -656,10 +656,10 @@ const Auth = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--auth-black))] flex items-center justify-center">
+    <div className="min-h-screen bg-[hsl(var(--auth-black))] flex items-center justify-center">
         <div className="text-center">
-          <img src="/assets/hyperkids-auth-logo.png" alt="HYPERKIDS" className="h-12 mx-auto mb-4 animate-pulse" />
-          <p className="text-[hsl(var(--auth-gray))]">{t.authLoading}</p>
+          <img src="/auth-logo.png" alt="HYPERKIDS" className="h-12 mx-auto mb-4 animate-pulse" />
+          <p className="text-white">{t.authLoading}</p>
         </div>
       </div>
     );
@@ -670,16 +670,16 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center justify-center">
-            <img src="/assets/hyperkids-auth-logo.png" alt="HYPERKIDS" className="h-16" />
+            <img src="/auth-logo.png" alt="HYPERKIDS" className="h-16" />
           </Link>
         </div>
 
         <Card className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))]">
           <CardHeader>
-            <CardTitle className="text-center text-[hsl(var(--auth-gray))]">
+            <CardTitle className="text-center text-white">
               {showForgotPassword ? t.authResetPassword : (activeTab === 'coach-signup' ? (language === 'el' ? 'Εγγραφή Coach' : 'Coach Sign Up') : (activeTab === 'signup' ? t.authSignupTitle : t.authLoginTitle))}
             </CardTitle>
-            <CardDescription className="text-center text-[hsl(var(--auth-gray))]">
+            <CardDescription className="text-center text-white">
               {showForgotPassword ? t.authResetPasswordSubtitle : (activeTab === 'coach-signup' ? (language === 'el' ? 'Δημιουργήστε λογαριασμό coach' : 'Create your coach account') : (activeTab === 'signup' ? t.authSignupSubtitle : t.authLoginSubtitle))}
             </CardDescription>
           </CardHeader>
@@ -687,19 +687,19 @@ const Auth = () => {
             {showForgotPassword ? (
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="reset-email" className="text-[hsl(var(--auth-gray))]">Email</Label>
+                  <Label htmlFor="reset-email" className="text-white">Email</Label>
                   <Input 
                     id="reset-email" 
                     name="reset-email" 
                     type="email" 
                     placeholder="your@email.com" 
                     required 
-                    className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]"
+                    className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white placeholder:text-white/60"
                   />
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
+                  className="w-full rounded-none bg-[#aca097] text-black hover:bg-[#aca097]/90 border-2 border-transparent transition-all duration-300" 
                   disabled={isLoading}
                 >
                   {isLoading ? t.authSending : t.authSendResetEmail}
@@ -707,7 +707,7 @@ const Auth = () => {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  className="w-full rounded-none border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] hover:bg-[hsl(var(--auth-gray)/0.1)]"
+                  className="w-full rounded-none border-[hsl(var(--auth-gray))] text-[#aca097] hover:bg-[hsl(var(--auth-gray)/0.1)]"
                   onClick={() => setShowForgotPassword(false)}
                 >
                   {t.authBackToLogin}
@@ -716,24 +716,24 @@ const Auth = () => {
             ) : (
               <Tabs defaultValue="login" value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup' | 'coach-signup')} className="w-full">
                 <TabsList className="grid w-full grid-cols-3 bg-[hsl(var(--auth-black))] border border-[hsl(var(--auth-gray))]">
-                  <TabsTrigger value="login" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black text-xs sm:text-sm">{t.authLogin}</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[hsl(var(--auth-gray))] data-[state=active]:text-black text-xs sm:text-sm">{t.authSignup}</TabsTrigger>
-                  <TabsTrigger value="coach-signup" className="text-[hsl(var(--auth-gray))] data-[state=active]:bg-[#00ffba] data-[state=active]:text-black text-xs sm:text-sm">For Coach</TabsTrigger>
+                  <TabsTrigger value="login" className="text-white data-[state=active]:bg-[#aca097] data-[state=active]:text-black text-xs sm:text-sm">{t.authLogin}</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-white data-[state=active]:bg-[#aca097] data-[state=active]:text-black text-xs sm:text-sm">{t.authSignup}</TabsTrigger>
+                  <TabsTrigger value="coach-signup" className="text-white data-[state=active]:bg-[#00ffba] data-[state=active]:text-black text-xs sm:text-sm">For Coach</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-[hsl(var(--auth-gray))]">{t.authEmail}</Label>
-                      <Input id="email" name="email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
+                      <Label htmlFor="email" className="text-white">{t.authEmail}</Label>
+                      <Input id="email" name="email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white placeholder:text-white/60" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password" className="text-[hsl(var(--auth-gray))]">{t.authPassword}</Label>
-                      <Input id="password" name="password" type="password" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
+                      <Label htmlFor="password" className="text-white">{t.authPassword}</Label>
+                      <Input id="password" name="password" type="password" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white placeholder:text-white/60" />
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
+                      className="w-full rounded-none bg-[#aca097] text-black hover:bg-[#aca097]/90 border-2 border-transparent transition-all duration-300" 
                       disabled={isLoading}
                     >
                       {isLoading ? t.authLoggingIn : t.authLogin}
@@ -742,7 +742,7 @@ const Auth = () => {
                       <button
                         type="button"
                         onClick={() => setShowForgotPassword(true)}
-                        className="text-sm text-[#cb8954] hover:underline"
+                        className="text-sm text-[#aca097] hover:underline"
                       >
                         {t.authForgotPassword}
                       </button>
@@ -753,15 +753,15 @@ const Auth = () => {
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-[hsl(var(--auth-gray))]">{t.authFullName}</Label>
-                      <Input id="name" name="name" type="text" placeholder={t.authFullNamePlaceholder} required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
+                      <Label htmlFor="name" className="text-white">{t.authFullName}</Label>
+                      <Input id="name" name="name" type="text" placeholder={t.authFullNamePlaceholder} required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white placeholder:text-white/60" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-email" className="text-[hsl(var(--auth-gray))]">{t.authEmail}</Label>
-                      <Input id="signup-email" name="signup-email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
+                      <Label htmlFor="signup-email" className="text-white">{t.authEmail}</Label>
+                      <Input id="signup-email" name="signup-email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white placeholder:text-white/60" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password" className="text-[hsl(var(--auth-gray))]">{t.authPassword}</Label>
+                      <Label htmlFor="signup-password" className="text-white">{t.authPassword}</Label>
                       <Input
                         id="signup-password"
                         name="signup-password"
@@ -790,9 +790,9 @@ const Auth = () => {
                         }}
                         aria-invalid={!!passwordError}
                         aria-describedby="password-help"
-                        className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]"
+                        className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white placeholder:text-white/60"
                       />
-                      <p id="password-help" className={`text-xs ${passwordError ? 'text-red-600' : 'text-[hsl(var(--auth-gray))]'}`}>
+                      <p id="password-help" className={`text-xs ${passwordError ? 'text-red-600' : 'text-white/70'}`}>
                         {t.authPasswordHint}
                       </p>
                      </div>
@@ -800,11 +800,11 @@ const Auth = () => {
                      {signupFeedback && (
                        <Alert
                          variant={signupFeedback.variant}
-                         className="rounded-none bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))]"
+                         className="rounded-none bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white"
                        >
-                         <AlertTitle className="text-[hsl(var(--auth-gray))]">{signupFeedback.title}</AlertTitle>
+                         <AlertTitle className="text-white">{signupFeedback.title}</AlertTitle>
                          {signupFeedback.description && (
-                           <AlertDescription className="text-[hsl(var(--auth-gray))]">
+                           <AlertDescription className="text-white">
                              {signupFeedback.description}
                            </AlertDescription>
                          )}
@@ -813,12 +813,12 @@ const Auth = () => {
 
                      <Button 
                        type="submit" 
-                       className="w-full rounded-none bg-[#cb8954] text-black hover:bg-[#cb8954]/90 border-2 border-transparent transition-all duration-300" 
+                       className="w-full rounded-none bg-[#aca097] text-black hover:bg-[#aca097]/90 border-2 border-transparent transition-all duration-300" 
                        disabled={isLoading || !!passwordError || signupPassword.length === 0}
                      >
                       {isLoading ? t.authSigningUp : t.authSignup}
                     </Button>
-                    <div className="text-xs text-[hsl(var(--auth-gray))] text-center">
+                    <div className="text-xs text-white text-center">
                       {t.authAfterSignup}
                     </div>
                   </form>
@@ -827,15 +827,15 @@ const Auth = () => {
                 <TabsContent value="coach-signup">
                   <form onSubmit={handleCoachSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="coach-name" className="text-[hsl(var(--auth-gray))]">{t.authFullName}</Label>
-                      <Input id="coach-name" name="coach-name" type="text" placeholder={t.authFullNamePlaceholder} required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
+                      <Label htmlFor="coach-name" className="text-white">{t.authFullName}</Label>
+                      <Input id="coach-name" name="coach-name" type="text" placeholder={t.authFullNamePlaceholder} required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white placeholder:text-white/60" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="coach-email" className="text-[hsl(var(--auth-gray))]">{t.authEmail}</Label>
-                      <Input id="coach-email" name="coach-email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]" />
+                      <Label htmlFor="coach-email" className="text-white">{t.authEmail}</Label>
+                      <Input id="coach-email" name="coach-email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white placeholder:text-white/60" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="coach-password" className="text-[hsl(var(--auth-gray))]">{t.authPassword}</Label>
+                      <Label htmlFor="coach-password" className="text-white">{t.authPassword}</Label>
                       <Input
                         id="coach-password"
                         name="coach-password"
@@ -864,9 +864,9 @@ const Auth = () => {
                         }}
                         aria-invalid={!!coachPasswordError}
                         aria-describedby="coach-password-help"
-                        className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))] placeholder:text-[hsl(var(--auth-gray)/0.6)]"
+                        className="bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white placeholder:text-white/60"
                       />
-                      <p id="coach-password-help" className={`text-xs ${coachPasswordError ? 'text-red-600' : 'text-[hsl(var(--auth-gray))]'}`}>
+                      <p id="coach-password-help" className={`text-xs ${coachPasswordError ? 'text-red-600' : 'text-white/70'}`}>
                         {t.authPasswordHint}
                       </p>
                     </div>
@@ -874,11 +874,11 @@ const Auth = () => {
                     {coachSignupFeedback && (
                       <Alert
                         variant={coachSignupFeedback.variant}
-                        className="rounded-none bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-[hsl(var(--auth-gray))]"
+                        className="rounded-none bg-[hsl(var(--auth-black))] border-[hsl(var(--auth-gray))] text-white"
                       >
-                        <AlertTitle className="text-[hsl(var(--auth-gray))]">{coachSignupFeedback.title}</AlertTitle>
+                        <AlertTitle className="text-white">{coachSignupFeedback.title}</AlertTitle>
                         {coachSignupFeedback.description && (
-                          <AlertDescription className="text-[hsl(var(--auth-gray))]">
+                          <AlertDescription className="text-white">
                             {coachSignupFeedback.description}
                           </AlertDescription>
                         )}
@@ -892,7 +892,7 @@ const Auth = () => {
                     >
                       {isLoading ? t.authSigningUp : (language === 'el' ? 'Εγγραφή ως Coach' : 'Sign Up as Coach')}
                     </Button>
-                    <div className="text-xs text-[hsl(var(--auth-gray))] text-center">
+                    <div className="text-xs text-white text-center">
                       {t.authAfterSignup}
                     </div>
                   </form>
@@ -902,7 +902,7 @@ const Auth = () => {
 
 
             <div className="mt-6 text-center">
-              <Link to={`/?lang=${language}`} className="text-sm text-[#cb8954] hover:underline">
+              <Link to={`/?lang=${language}`} className="text-sm text-[#aca097] hover:underline">
                 {t.authBackToHome}
               </Link>
             </div>
