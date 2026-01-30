@@ -297,7 +297,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                         return (
                           <div 
                             key={section.id} 
-                            className={cn("space-y-0.5 p-0.5 rounded-none transition-all cursor-pointer", isHovered ? 'bg-[#cb8954]/20 border border-[#cb8954]' : 'bg-[#aca097]/20 border border-[#aca097]/30 hover:bg-[#aca097]/30')}
+                            className={cn("space-y-0.5 p-0.5 rounded-none transition-all cursor-pointer", isHovered ? 'bg-white/20 border border-white' : 'bg-[#aca097]/20 border border-[#aca097]/30 hover:bg-white/20 hover:border-white')}
                             onMouseEnter={() => setHoveredSection(section.id)}
                             onMouseLeave={() => setHoveredSection(null)}
                           >
