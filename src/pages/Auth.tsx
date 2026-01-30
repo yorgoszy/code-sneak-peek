@@ -31,6 +31,10 @@ const Auth = () => {
     | { variant: "default" | "destructive"; title: string; description?: string }
     | null
   >(null);
+  const [loginFeedback, setLoginFeedback] = useState<
+    | { variant: "default" | "destructive"; title: string; description?: string }
+    | null
+  >(null);
   const [activeTab, setActiveTab] = useState<'login' | 'signup' | 'coach-signup'>('login');
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -464,6 +468,7 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setLoginFeedback(null);
     
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
@@ -575,6 +580,11 @@ const Auth = () => {
       navigate(redirectPath);
     } catch (error: any) {
       console.error('🔐 Login process error:', error);
+      setLoginFeedback({
+        variant: "destructive",
+        title: t.authLoginError,
+        description: error.message || t.authLoginErrorGeneric,
+      });
       toast({
         title: t.authLoginError,
         description: error.message || t.authLoginErrorGeneric,
@@ -723,6 +733,16 @@ const Auth = () => {
                 
                 <TabsContent value="login">
                   <form onSubmit={handleSignIn} className="space-y-4">
+                    {loginFeedback && (
+                      <Alert variant={loginFeedback.variant} className="border-red-500 bg-red-500/20 text-white">
+                        <AlertTitle className="text-red-300">{loginFeedback.title}</AlertTitle>
+                        {loginFeedback.description && (
+                          <AlertDescription className="text-red-200">
+                            {loginFeedback.description}
+                          </AlertDescription>
+                        )}
+                      </Alert>
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-white">{t.authEmail}</Label>
                       <Input id="email" name="email" type="email" placeholder="your@email.com" required className="bg-[hsl(var(--auth-black))] border-white text-white placeholder:text-white/60" />
