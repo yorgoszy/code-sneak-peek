@@ -394,10 +394,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 {activeAboutSection === 3 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div 
-                      className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md bg-transparent border-white"
                     >
-                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.movementSkills}</h4>
+                      <h4 className="font-bold mb-2 text-white">{translations.movementSkills}</h4>
                       <div className="text-sm text-white">
                         <p className="mb-2">• Ανάπτυξη Αθλητικών Δεξιοτήτων</p>
                         <p className="mb-2">• Κατάλληλα για την Ηλικία</p>
@@ -405,10 +404,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                       </div>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md bg-transparent border-white"
                     >
-                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.assessment}</h4>
+                      <h4 className="font-bold mb-2 text-white">{translations.assessment}</h4>
                       <div className="text-sm text-white">
                         <p className="mb-2">• Κίνηση & Στάση</p>
                         <p className="mb-2">• Προφίλ φορτίου - ταχύτητας</p>
@@ -417,10 +415,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                       </div>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md bg-transparent border-white"
                     >
-                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.resultsFocused}</h4>
+                      <h4 className="font-bold mb-2 text-white">{translations.resultsFocused}</h4>
                       <div className="text-sm text-white">
                         <p className="mb-2">• Παρακολούθηση Αποτελεσμάτων</p>
                         <p className="mb-2">• Καθοδήγηση Απόδοσης</p>
