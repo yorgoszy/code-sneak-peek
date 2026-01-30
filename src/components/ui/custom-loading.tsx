@@ -1,5 +1,6 @@
 
 import React from 'react';
+import loadingLogo from '@/assets/loading-logo.png';
 
 interface CustomLoadingProps {
   size?: 'sm' | 'md' | 'lg';
@@ -20,7 +21,7 @@ export const CustomLoading: React.FC<CustomLoadingProps> = ({
     <div className={`flex items-center justify-center ${className}`}>
       <div className={`${sizeClasses[size]} animate-pulse`}>
         <img 
-          src="/loading-logo.png" 
+          src={loadingLogo} 
           alt="Loading..." 
           className="w-full h-full object-contain"
         />
