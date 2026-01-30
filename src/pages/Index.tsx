@@ -168,12 +168,12 @@ const Index = () => {
       />
 
       {/* CTA Section */}
-      <section className="py-20" style={{ backgroundColor: '#aca097' }}>
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
+          <h2 className="text-4xl font-bold text-black mb-6">
             {correctedTranslations.readyQuestion}
           </h2>
-          <p className="text-xl text-white max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-black max-w-3xl mx-auto mb-8">
             {correctedTranslations.journeyText}
           </p>
           <button 
