@@ -144,13 +144,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   )}
                   <div className={cn(
                     "text-[9px] font-medium", 
-                    isClosed ? "text-red-400" : isToday ? "text-[#cb8954]" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : "text-white"
                   )}>
                     {dayNames[index]}
                   </div>
                   <div className={cn(
                     "text-[11px] font-bold", 
-                    isClosed ? "text-red-400" : isToday ? "text-[#cb8954]" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : "text-white"
                   )}>
                     {format(day, 'dd')}
                   </div>
@@ -186,7 +186,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
                       return (
                         <div key={section.id} className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-[#aca097]/10 border border-[#aca097]/30">
-                          <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]")}>{time}</span>
+                          <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-white" : "text-[#aca097]")}>{time}</span>
                           <span className="text-[10px] font-medium text-[#aca097] truncate flex-1 min-w-0">{section.name}</span>
                           <div className="flex items-center gap-1 flex-shrink-0 w-20">
                             <div className="flex-1 h-1.5 bg-black rounded-none overflow-hidden">
@@ -243,13 +243,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   )}
                   <div className={cn(
                     "font-medium text-[10px]", 
-                    isClosed ? "text-red-400" : isToday ? "text-[#cb8954]" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : "text-white"
                   )}>
                     {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                   </div>
                   <div className={cn(
                     "text-xs font-bold", 
-                    isClosed ? "text-red-400" : isToday ? "text-[#cb8954]" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : "text-white"
                   )}>
                     {format(day, 'dd/MM')}
                   </div>
@@ -266,7 +266,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             return (
               <div key={time} className="grid grid-cols-8 gap-0.5 min-w-0">
                 <div className="bg-black border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
-                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]")}>{time}</span>
+                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-white" : "text-[#aca097]")}>{time}</span>
                 </div>
 
                 {weekDays.map((day) => {
