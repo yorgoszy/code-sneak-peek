@@ -1,5 +1,6 @@
 
 import React, { useRef, useEffect } from 'react';
+import sidebarLogo from '@/assets/sidebar-logo.png';
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocation } from "react-router-dom";
@@ -55,7 +56,7 @@ export const BaseSidebar: React.FC<BaseSidebarProps> = ({
           <div className={`flex items-center space-x-3 ${isCollapsed ? "md:hidden" : ""}`}>
             <div className="w-10 h-10 rounded-none flex items-center justify-center overflow-hidden bg-card">
               <img
-                src="/assets/sidebar-logo.png"
+                src={sidebarLogo}
                 alt="Hyperkids dashboard logo"
                 className="w-full h-full object-contain"
               />
@@ -67,7 +68,7 @@ export const BaseSidebar: React.FC<BaseSidebarProps> = ({
           {isCollapsed && (
             <div className="w-10 h-10 rounded-none flex items-center justify-center mx-auto overflow-hidden md:block hidden bg-card">
               <img
-                src="/assets/sidebar-logo.png"
+                src={sidebarLogo}
                 alt="Hyperkids dashboard logo"
                 className="w-full h-full object-contain"
               />
