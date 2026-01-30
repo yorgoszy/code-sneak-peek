@@ -116,7 +116,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
                       )}
                       
                       <div className="p-6 flex flex-col flex-grow">
-                        <div className="text-sm mb-2 text-white">
+                        <div className="text-sm mb-2" style={{ color: '#aca097' }}>
                           {format(new Date(result.result_date), 'dd MMM yyyy')}
                         </div>
                         
@@ -161,7 +161,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
                   )}
                   
                   <div className="p-6 flex flex-col flex-grow">
-                    <div className="text-sm mb-2 text-white">
+                    <div className="text-sm mb-2" style={{ color: '#aca097' }}>
                       {format(new Date(result.result_date), 'dd MMM yyyy')}
                     </div>
                     
