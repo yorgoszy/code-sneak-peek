@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
 import hyperkidsImage from '@/assets/hyperkids-session-services.png';
-import hypergymImage from '@/assets/hypergym-new-image.png';
+import hypergymImage from '@/assets/hypergym-service.png';
 import hyperathletesImage from '@/assets/hyperathletes-final-image.png';
 
 interface Program {
