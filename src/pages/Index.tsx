@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import hypergymImage from '@/assets/hypergym-service.png';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -108,7 +109,7 @@ const Index = () => {
       id: "11", 
       title: translations.hypergym,
       description: translations.hypergymDesc,
-      image: "/lovable-uploads/b06a27cc-1f96-43d1-a89c-ea4330c70290.png",
+      image: hypergymImage,
       color: "#00ffba"
     },
     {
