@@ -813,7 +813,7 @@ const Auth = () => {
 
                      <Button 
                        type="submit" 
-                       className="w-full rounded-none bg-white text-black hover:bg-white/90 border-2 border-transparent transition-all duration-300" 
+                       className="w-full rounded-none bg-white text-black hover:bg-white/90 border-2 border-transparent transition-all duration-300 disabled:bg-white disabled:opacity-100 disabled:cursor-not-allowed" 
                        disabled={isLoading || !!passwordError || signupPassword.length === 0}
                      >
                       {isLoading ? t.authSigningUp : t.authSignup}
@@ -887,7 +887,7 @@ const Auth = () => {
 
                     <Button 
                       type="submit" 
-                      className="w-full rounded-none bg-white text-black hover:bg-white/90 border-2 border-transparent transition-all duration-300" 
+                      className="w-full rounded-none bg-white text-black hover:bg-white/90 border-2 border-transparent transition-all duration-300 disabled:bg-white disabled:opacity-100 disabled:cursor-not-allowed" 
                       disabled={isLoading || !!coachPasswordError || coachSignupPassword.length === 0}
                     >
                       {isLoading ? t.authSigningUp : (language === 'el' ? 'Εγγραφή ως Coach' : 'Sign Up as Coach')}
