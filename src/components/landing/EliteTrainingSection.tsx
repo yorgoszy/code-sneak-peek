@@ -51,7 +51,7 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
             <img 
               src="/elite_tr.png"
               alt="Elite Training Technology"
-              className="w-full h-auto rounded-lg"
+              className="w-full h-auto rounded-lg grayscale"
               style={{ marginTop: '0px', marginBottom: '0px' }}
             />
             <div className="absolute bottom-2 -left-4 bg-white text-black p-6 max-w-xs -ml-4">
