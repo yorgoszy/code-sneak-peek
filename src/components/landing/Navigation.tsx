@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
+import headerLogo from '@/assets/header-logo.png';
 
 interface NavigationProps {
   navigationItems: Array<{ name: string; href: string }>;
@@ -75,9 +76,9 @@ const Navigation: React.FC<NavigationProps> = ({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <img 
-              src="/assets/hyperkids-logo.png" 
+              src={headerLogo} 
               alt="HyperKids Logo" 
-              className="h-10 w-auto"
+              className="h-8 w-auto"
             />
           </div>
           
