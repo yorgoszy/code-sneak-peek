@@ -32,14 +32,14 @@ const CertificatesSection: React.FC<CertificatesSectionProps> = ({ translations 
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-12">
-          {translations.language === 'el' ? 'Πιστοποιήσεις & Συνεργασίες' : 'Certifications & Partnerships'}
+          {translations.language === 'el' ? 'Πιστοποιήσεις' : 'Certifications'}
         </h3>
         
         <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-8 items-center justify-items-center">
           {certificates.map((cert) => (
             <div 
               key={cert.id} 
-              className="flex items-center justify-center p-2 grayscale hover:grayscale-0 transition-all duration-300"
+              className="flex items-center justify-center p-2 grayscale"
             >
               <img
                 src={cert.src}
