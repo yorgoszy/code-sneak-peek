@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Mail, Phone, Instagram, Youtube, MapPin, Facebook } from 'lucide-react';
+import footerLogo from '@/assets/footer-logo.png';
 
 interface FooterProps {
   translations: any;
@@ -46,9 +47,9 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
           {/* Logo/Center */}
           <div className="flex flex-col justify-center items-center">
             <img 
-              src="/assets/logo.png" 
-              alt="Performance Logo"
-              className="w-20 h-20 mb-6"
+              src={footerLogo} 
+              alt="Hyperkids Logo"
+              className="h-12 mb-6"
             />
             {/* Social Media Icons */}
             <div className="flex justify-center gap-6">
