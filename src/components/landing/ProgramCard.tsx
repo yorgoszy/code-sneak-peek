@@ -362,7 +362,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
                program.id === "13" ? currentImageIndex :
                program.image}
         />
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        {/* Removed dark overlay for full opacity images */}
       </div>
 
       {/* Program Title */}
