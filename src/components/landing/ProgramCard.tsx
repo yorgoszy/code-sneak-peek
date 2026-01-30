@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
-import hyperkidsImage from '@/assets/hyperkids-session-services.png';
+import hyperkidsImage from '@/assets/hyperkids-service.png';
 import hypergymImage from '@/assets/hypergym-service.png';
 import hyperathletesImage from '@/assets/hyperathletes-final-image.png';
 
