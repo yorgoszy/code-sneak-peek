@@ -144,13 +144,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   )}
                   <div className={cn(
                     "text-[9px] font-medium", 
-                    isClosed ? "text-red-400" : "text-white"
+                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-[#aca097]"
                   )}>
                     {dayNames[index]}
                   </div>
                   <div className={cn(
                     "text-[11px] font-bold", 
-                    isClosed ? "text-red-400" : "text-white"
+                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-[#aca097]"
                   )}>
                     {format(day, 'dd')}
                   </div>
@@ -243,13 +243,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   )}
                   <div className={cn(
                     "font-medium text-[10px]", 
-                    isClosed ? "text-red-400" : "text-white"
+                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-[#aca097]"
                   )}>
                     {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                   </div>
                   <div className={cn(
                     "text-xs font-bold", 
-                    isClosed ? "text-red-400" : "text-white"
+                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-[#aca097]"
                   )}>
                     {format(day, 'dd/MM')}
                   </div>
