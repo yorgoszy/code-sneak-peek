@@ -658,7 +658,7 @@ const Auth = () => {
     return (
     <div className="min-h-screen bg-[hsl(var(--auth-black))] flex items-center justify-center">
         <div className="text-center">
-          <img src="/auth-logo.png" alt="HYPERKIDS" className="h-12 mx-auto mb-4 animate-pulse" />
+          <img src="/loading-logo.png" alt="HYPERKIDS" className="h-12 mx-auto mb-4 animate-pulse" />
           <p className="text-white">{t.authLoading}</p>
         </div>
       </div>
