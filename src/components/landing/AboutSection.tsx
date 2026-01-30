@@ -398,9 +398,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     >
                       <h4 className="font-bold mb-2 text-white">{translations.movementSkills}</h4>
                       <div className="text-sm text-white">
-                        <p className="mb-2">• Ανάπτυξη Αθλητικών Δεξιοτήτων</p>
-                        <p className="mb-2">• Κατάλληλα για την Ηλικία</p>
-                        <p>• Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός</p>
+                        <p className="mb-2">• {translations.language === 'en' ? 'Athletic Skills Development' : 'Ανάπτυξη Αθλητικών Δεξιοτήτων'}</p>
+                        <p className="mb-2">• {translations.language === 'en' ? 'Age Appropriate' : 'Κατάλληλα για την Ηλικία'}</p>
+                        <p>• {translations.language === 'en' ? 'Throwing & Catching, Climbing Skills, Jumping & Landing, Agility, Running, Coordination' : 'Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός'}</p>
                       </div>
                     </div>
                     <div 
@@ -408,10 +408,10 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     >
                       <h4 className="font-bold mb-2 text-white">{translations.assessment}</h4>
                       <div className="text-sm text-white">
-                        <p className="mb-2">• Κίνηση & Στάση</p>
-                        <p className="mb-2">• Προφίλ φορτίου - ταχύτητας</p>
-                        <p className="mb-2">• Προφίλ άλματος</p>
-                        <p>• Αντοχή</p>
+                        <p className="mb-2">• {translations.language === 'en' ? 'Movement & Posture' : 'Κίνηση & Στάση'}</p>
+                        <p className="mb-2">• {translations.language === 'en' ? 'Load-velocity profile' : 'Προφίλ φορτίου - ταχύτητας'}</p>
+                        <p className="mb-2">• {translations.language === 'en' ? 'Jump profile' : 'Προφίλ άλματος'}</p>
+                        <p>• {translations.language === 'en' ? 'Endurance' : 'Αντοχή'}</p>
                       </div>
                     </div>
                     <div 
@@ -419,9 +419,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     >
                       <h4 className="font-bold mb-2 text-white">{translations.resultsFocused}</h4>
                       <div className="text-sm text-white">
-                        <p className="mb-2">• Παρακολούθηση Αποτελεσμάτων</p>
-                        <p className="mb-2">• Καθοδήγηση Απόδοσης</p>
-                        <p>• Ανάπτυξη Προσαρμοσμένου Προγράμματος</p>
+                        <p className="mb-2">• {translations.language === 'en' ? 'Results Tracking' : 'Παρακολούθηση Αποτελεσμάτων'}</p>
+                        <p className="mb-2">• {translations.language === 'en' ? 'Performance Guidance' : 'Καθοδήγηση Απόδοσης'}</p>
+                        <p>• {translations.language === 'en' ? 'Customized Program Development' : 'Ανάπτυξη Προσαρμοσμένου Προγράμματος'}</p>
                       </div>
                     </div>
                   </div>
