@@ -229,10 +229,10 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                 <div 
                   key={dateStr} 
                   className={cn(
-                    "text-center p-1 border rounded-none transition-all",
+                    "text-center p-1 border rounded-none",
                     isClosed 
                       ? "bg-red-500/20 border-red-500/50"
-                      : "bg-black border-[#aca097]/30 hover:bg-white/10 hover:border-white"
+                      : "bg-black border-[#aca097]/30"
                   )}
                 >
                   {isClosed && (
@@ -265,8 +265,8 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
             return (
               <div key={time} className="grid grid-cols-8 gap-0.5 min-w-0">
-                <div className="bg-black border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center transition-all hover:bg-white/10 hover:border-white group">
-                  <span className={cn("text-[10px] font-medium transition-colors group-hover:text-white", isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]")}>{time}</span>
+                <div className="bg-black border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
+                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-[#cb8954]" : "text-[#aca097]")}>{time}</span>
                 </div>
 
                 {weekDays.map((day) => {
