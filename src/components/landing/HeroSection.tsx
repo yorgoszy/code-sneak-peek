@@ -22,15 +22,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     <section id="home" className="relative pt-16 min-h-screen flex items-center">
       <style>{`
         .get-started-btn {
-          background-color: #cf8d54 !important;
+          background-color: #aca097 !important;
           color: black !important;
         }
         .get-started-btn:hover {
-          background-color: #b5794a !important;
+          background-color: #9a908a !important;
         }
         .contact-btn:hover {
-          border-color: #cf8d54 !important;
-          color: #cf8d54 !important;
+          border-color: #aca097 !important;
+          color: #aca097 !important;
           background-color: transparent !important;
         }
       `}</style>
@@ -46,9 +46,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-left">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6" style={{ color: '#ACA097' }}>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6 text-white">
             {translations.heroTitle}<br />
-            <span style={{ color: '#cf8d54' }}>{translations.heroSubtitle}</span>
+            <span className="text-white">{translations.heroSubtitle}</span>
           </h1>
           <div className="flex flex-wrap gap-4">
             <Button 
@@ -59,8 +59,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             </Button>
             <Button 
               variant="outline" 
-              className="contact-btn rounded-none bg-transparent"
-              style={{ color: '#ACA097', borderColor: '#ACA097' }}
+              className="contact-btn rounded-none bg-transparent text-white border-white"
               onClick={handleContactClick}
             >
               {translations.contactBtn}

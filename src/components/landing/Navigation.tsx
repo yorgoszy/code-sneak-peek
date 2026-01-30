@@ -40,7 +40,7 @@ const Navigation: React.FC<NavigationProps> = ({
     <nav className="fixed top-0 w-full bg-black z-50">
       <style>{`
         .nav-link:hover {
-          color: #cf8d54 !important;
+          color: #aca097 !important;
         }
         .dashboard-btn:hover {
           background-color: black !important;
@@ -55,19 +55,19 @@ const Navigation: React.FC<NavigationProps> = ({
           border-color: transparent !important;
         }
         .language-btn svg, .dashboard-btn svg, .logout-btn svg {
-          color: #ACA097 !important;
+          color: white !important;
         }
         .language-btn:hover svg, .dashboard-btn:hover svg, .logout-btn:hover svg {
-          color: #cf8d54 !important;
+          color: #aca097 !important;
         }
         .login-btn {
-          background-color: #cb8954 !important;
-          border-color: #cb8954 !important;
+          background-color: #aca097 !important;
+          border-color: #aca097 !important;
           color: black !important;
         }
         .login-btn:hover {
-          background-color: #b87849 !important;
-          border-color: #b87849 !important;
+          background-color: #9a908a !important;
+          border-color: #9a908a !important;
         }
       `}</style>
       
@@ -86,8 +86,7 @@ const Navigation: React.FC<NavigationProps> = ({
               <a
                 key={item.name}
                 href={item.href}
-                className="nav-link transition-colors duration-200 text-sm font-medium"
-                style={{ color: '#ACA097' }}
+                className="nav-link transition-colors duration-200 text-sm font-medium text-white"
                 onClick={(e) => handleNavigationClick(item.href, e)}
               >
                 {item.name}

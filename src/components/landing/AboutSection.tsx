@@ -138,12 +138,12 @@ const AboutSection: React.FC<AboutSectionProps> = ({
       <section id="about" className="py-20 bg-black relative overflow-hidden" onClick={handleScreenClick}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <p className="text-sm font-medium mb-4" style={{ color: '#cb8954' }}>
+            <p className="text-sm font-medium mb-4 text-white">
               {translations.aboutSection.toUpperCase()}
             </p>
             <h2 className="text-4xl font-bold text-white leading-tight">
-              <span style={{ color: '#aca097' }}>{translations.supportingYour}</span><br />
-              <span style={{ color: '#cb8954' }}>{translations.athleticJourney}</span>
+              <span className="text-white">{translations.supportingYour}</span><br />
+              <span className="text-white">{translations.athleticJourney}</span>
             </h2>
           </div>
 
@@ -178,7 +178,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     <div className="space-y-6">
                       {/* Section Header */}
                       <div className="flex items-center mb-6">
-                        <span className="text-2xl font-bold mr-6" style={{ color: '#cb8954' }}>
+                        <span className="text-2xl font-bold mr-6 text-white">
                           {section.id.toString().padStart(2, '0')}
                         </span>
                         <h3 className="text-xl text-white font-bold">{section.title}</h3>
@@ -192,19 +192,19 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                           className="w-full h-[300px] object-cover filter grayscale rounded-none"
                         />
                         <div className="absolute flex items-center" style={{ bottom: '20px', left: '20px', right: '20px' }}>
-                          <span className="text-2xl font-bold mr-4" style={{ color: '#cb8954' }}>
+                          <span className="text-2xl font-bold mr-4 text-white">
                             {section.id.toString().padStart(2, '0')}
                           </span>
                           <div 
-                            className="flex-1"
-                            style={{ backgroundColor: '#cb8954', height: '1px' }}
+                            className="flex-1 bg-white"
+                            style={{ height: '1px' }}
                           ></div>
                         </div>
                       </div>
 
                       {/* Description */}
                       <div className="mb-6">
-                        <p className="text-sm leading-relaxed" style={{ color: '#aca097' }}>
+                        <p className="text-sm leading-relaxed text-white">
                           {section.description}
                         </p>
                       </div>
@@ -214,14 +214,13 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                         {section.cards.map((card, index) => (
                           <div 
                             key={index}
-                            className="p-4 border-l-2 rounded-none"
-                            style={{ backgroundColor: '#aca097', borderColor: '#cb8954', opacity: 0.7 }}
+                            className="p-4 border-l-2 rounded-none bg-white/10 border-white"
                           >
-                            <h4 className="font-bold mb-2" style={{ color: 'black' }}>{card.title}</h4>
+                            <h4 className="font-bold mb-2 text-white">{card.title}</h4>
                             {typeof card.description === 'string' ? (
-                              <p className="text-sm" style={{ color: 'black' }}>{card.description}</p>
+                              <p className="text-sm text-white">{card.description}</p>
                             ) : (
-                              <div style={{ color: 'black' }}>{card.description}</div>
+                              <div className="text-white">{card.description}</div>
                             )}
                           </div>
                         ))}
@@ -251,10 +250,10 @@ const AboutSection: React.FC<AboutSectionProps> = ({
           display: inline-block;
         }
         .about-nav-item.active .about-nav-title {
-          border-bottom-color: #cb8954;
+          border-bottom-color: white;
         }
         .about-nav-item:hover .about-nav-title {
-          border-bottom-color: #cb8954;
+          border-bottom-color: white;
         }
       `}</style>
       
@@ -262,12 +261,12 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         <div className="flex flex-col lg:flex-row min-h-[56vh]">
           <div className="lg:w-2/5 flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="mb-12">
-              <p className="text-sm font-medium mb-4" style={{ color: '#cb8954' }}>
+              <p className="text-sm font-medium mb-4 text-white">
                 {translations.aboutSection.toUpperCase()}
               </p>
               <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
-                <span style={{ color: '#aca097' }}>{translations.supportingYour}</span><br />
-                <span style={{ color: '#cb8954' }}>{translations.athleticJourney}</span>
+                <span className="text-white">{translations.supportingYour}</span><br />
+                <span className="text-white">{translations.athleticJourney}</span>
               </h2>
             </div>
 
@@ -276,22 +275,22 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 className={`flex items-center about-nav-item ${activeAboutSection === 1 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(1)}
               >
-                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 1 ? '#cb8954' : '#aca097' }}>01</span>
-                <h3 className={`text-xl about-nav-title ${activeAboutSection === 1 ? 'text-white font-bold' : ''}`} style={{ color: activeAboutSection === 1 ? 'white' : '#aca097' }}>{translations.headCoach}</h3>
+                <span className="text-2xl font-bold mr-6 text-white">01</span>
+                <h3 className={`text-xl about-nav-title text-white ${activeAboutSection === 1 ? 'font-bold' : ''}`}>{translations.headCoach}</h3>
               </div>
               <div 
                 className={`flex items-center about-nav-item ${activeAboutSection === 2 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(2)}
               >
-                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 2 ? '#cb8954' : '#aca097' }}>02</span>
-                <h3 className={`text-xl about-nav-title ${activeAboutSection === 2 ? 'text-white font-bold' : ''}`} style={{ color: activeAboutSection === 2 ? 'white' : '#aca097' }}>{translations.ourVision}</h3>
+                <span className="text-2xl font-bold mr-6 text-white">02</span>
+                <h3 className={`text-xl about-nav-title text-white ${activeAboutSection === 2 ? 'font-bold' : ''}`}>{translations.ourVision}</h3>
               </div>
               <div 
                 className={`flex items-center about-nav-item ${activeAboutSection === 3 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(3)}
               >
-                <span className="text-2xl font-bold mr-6" style={{ color: activeAboutSection === 3 ? '#cb8954' : '#aca097' }}>03</span>
-                <h3 className={`text-xl about-nav-title ${activeAboutSection === 3 ? 'text-white font-bold' : ''}`} style={{ color: activeAboutSection === 3 ? 'white' : '#aca097' }}>{translations.trainingMethodology}</h3>
+                <span className="text-2xl font-bold mr-6 text-white">03</span>
+                <h3 className={`text-xl about-nav-title text-white ${activeAboutSection === 3 ? 'font-bold' : ''}`}>{translations.trainingMethodology}</h3>
               </div>
             </div>
           </div>
@@ -320,7 +319,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               
               {/* Content overlay for all sections */}
               <div className="absolute inset-0 p-8 flex flex-col justify-center">
-                <h3 className="text-xl font-bold mb-4" style={{ color: '#cb8954' }}>
+                <h3 className="text-xl font-bold mb-4 text-white">
                   {activeAboutSection === 1 && translations.headCoach}
                   {activeAboutSection === 2 && translations.ourVision}
                   {activeAboutSection === 3 && translations.trainingMethodology}
@@ -335,28 +334,25 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 {activeAboutSection === 1 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div 
-                      className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md bg-transparent border-white"
                     >
-                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.academicBackground}</h4>
+                      <h4 className="font-bold mb-2 text-white">{translations.academicBackground}</h4>
                       <p className="text-sm text-white">
                         {translations.academicDescription}
                       </p>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md bg-transparent border-white"
                     >
-                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.professionalAthlete}</h4>
+                      <h4 className="font-bold mb-2 text-white">{translations.professionalAthlete}</h4>
                       <p className="text-sm text-white">
                         {translations.professionalDescription}
                       </p>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md bg-transparent border-white"
                     >
-                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.coreValues}</h4>
+                      <h4 className="font-bold mb-2 text-white">{translations.coreValues}</h4>
                       <p className="text-sm text-white">
                         {translations.coreValuesDescription}
                       </p>
@@ -368,28 +364,25 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 {activeAboutSection === 2 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div 
-                      className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md bg-transparent border-white"
                     >
-                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.moreThanPhysical}</h4>
+                      <h4 className="font-bold mb-2 text-white">{translations.moreThanPhysical}</h4>
                       <p className="text-sm text-white">
                         {translations.moreThanPhysicalDesc}
                       </p>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md bg-transparent border-white"
                     >
-                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.buildingCharacter}</h4>
+                      <h4 className="font-bold mb-2 text-white">{translations.buildingCharacter}</h4>
                       <p className="text-sm text-white">
                         {translations.buildingCharacterDesc}
                       </p>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md"
-                      style={{ backgroundColor: 'transparent', borderColor: '#cb8954' }}
+                      className="p-4 border-2 rounded-md bg-transparent border-white"
                     >
-                      <h4 className="font-bold mb-2" style={{ color: '#cb8954' }}>{translations.trustTheProcess}</h4>
+                      <h4 className="font-bold mb-2 text-white">{translations.trustTheProcess}</h4>
                       <p className="text-sm text-white">
                         {translations.trustTheProcessDesc}
                       </p>
