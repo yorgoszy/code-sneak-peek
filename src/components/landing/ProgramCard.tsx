@@ -368,19 +368,19 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
       {/* Program Title */}
       {program.id === "10" ? (
         <div className="p-4 pb-2 bg-black">
-          <p className="text-xs leading-relaxed" style={{ color: '#aca097' }}>
+          <p className="text-xs leading-relaxed text-white">
             {translations?.language === 'en' ? 'Building multi-sport athletic fundamentals' : 'Χτίζοντας αθλητικές βάσεις για όλα τα σπορ'}
           </p>
         </div>
       ) : program.id === "11" ? (
         <div className="p-4 pb-2 bg-black">
-          <p className="text-xs leading-relaxed" style={{ color: '#aca097' }}>
+          <p className="text-xs leading-relaxed text-white">
             {translations?.language === 'en' ? 'Assessment based training plans' : 'Προπονητικά πλάνα βασισμένα στην αξιολόγηση'}
           </p>
         </div>
       ) : program.id === "13" ? (
         <div className="p-4 pb-2 bg-black">
-          <p className="text-xs leading-relaxed" style={{ color: '#aca097' }}>
+          <p className="text-xs leading-relaxed text-white">
             {translations?.language === 'en' ? 'New generation training methods' : 'Μέθοδοι Προπόνησης Νέας Γενιάς'}
           </p>
         </div>
@@ -421,26 +421,26 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
               {program.id === "10" ? (
                 <div className="text-sm space-y-3">
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
+                    <h5 className="font-semibold mb-1 text-white">
                       {translations?.language === 'en' ? 'Motor learning:' : 'Κινητική μάθηση:'}
                     </h5>
-                    <p style={{ color: '#aca097' }}>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Development of basic motor skills and coordination' : 'Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
+                    <h5 className="font-semibold mb-1 text-white">
                       {translations?.language === 'en' ? 'Motor development:' : 'Κινητική ανάπτυξη:'}
                     </h5>
-                    <p style={{ color: '#aca097' }}>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Development of specific athletic skills' : 'Ανάπτυξη ειδικών αθλητικών δεξιοτήτων'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
+                    <h5 className="font-semibold mb-1 text-white">
                       {translations?.language === 'en' ? 'Motor improvement:' : 'Κινητική βελτίωση:'}
                     </h5>
-                    <p style={{ color: '#aca097' }}>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Introductory strength techniques' : 'Εισαγωγικές τεχνικές δύναμης'}
                     </p>
                   </div>
@@ -448,30 +448,30 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
               ) : program.id === "11" ? (
                 <div className="text-sm space-y-3">
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
+                    <h5 className="font-semibold mb-1 text-white">
                       {translations?.language === 'en' ? 'Assessment:' : 'Αξιολόγηση:'}
                     </h5>
-                    <p style={{ color: '#aca097' }}>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Posture and movement' : 'Στάσης και κίνησης'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>
+                    <h5 className="font-semibold mb-1 text-white">
                       {translations?.language === 'en' ? 'Athletic performance:' : 'Αθλητική απόδοση:'}
                     </h5>
-                    <p style={{ color: '#aca097' }}>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Load-velocity profile' : 'Προφίλ φορτίου - ταχύτητα'}
                     </p>
-                    <p style={{ color: '#aca097' }}>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Jump profile' : 'Αλτικό προφίλ'}
                     </p>
-                    <p style={{ color: '#aca097' }}>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Results monitoring' : 'Παρακολούθηση αποτελεσμάτων'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Online coaching:</h5>
-                    <p style={{ color: '#aca097' }}>
+                    <h5 className="font-semibold mb-1 text-white">Online coaching:</h5>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Remote guidance' : 'Απομακρυσμένη καθοδήγηση'}
                     </p>
                   </div>
@@ -479,14 +479,14 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
               ) : program.id === "13" ? (
                 <div className="text-sm space-y-3">
                   <div>
-                    <h5 className="font-semibold mb-1" style={{ color: '#aca097' }}>Muay Thai</h5>
-                    <p style={{ color: '#aca097' }}>
+                    <h5 className="font-semibold mb-1 text-white">Muay Thai</h5>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Learning basic techniques' : 'Εκμάθηση βασικών τεχνικών'}
                     </p>
-                    <p style={{ color: '#aca097' }}>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Tactical training' : 'Προπόνηση τακτικής'}
                     </p>
-                    <p style={{ color: '#aca097' }}>
+                    <p className="text-white">
                       {translations?.language === 'en' ? 'Video analysis' : 'Βίντεο ανάλυση'}
                     </p>
                   </div>

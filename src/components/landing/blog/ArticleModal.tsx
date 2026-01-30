@@ -71,7 +71,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language,
           </button>
         </div>
         <div className="p-8">
-          <div className="text-sm mb-2" style={{ color: '#cb8954' }}>{article.date}</div>
+          <div className="text-sm mb-2 text-gray-600">{article.date}</div>
           <h2 className="text-3xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Robert, sans-serif' }}>
             {article.title}
           </h2>

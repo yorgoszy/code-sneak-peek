@@ -8,40 +8,40 @@ interface EliteTrainingSectionProps {
 
 const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translations }) => {
   return (
-    <section className="py-24" style={{ backgroundColor: '#aca097' }}>
+    <section className="py-24 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div>
-            <h2 className="text-4xl font-bold text-black mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+            <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
               {translations.eliteTrainingMethodology}
             </h2>
-            <div className="w-16 h-1 bg-[#cb8954] mb-8"></div>
+            <div className="w-16 h-1 bg-white mb-8"></div>
             
-            <p className="text-lg text-black mb-8">
+            <p className="text-lg text-white mb-8">
               {translations.eliteTrainingDesc}
             </p>
 
             <div className="space-y-4 mb-8">
               <div className="flex items-center gap-3">
-                <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-black">{translations.accentuatedEccentric}</span>
+                <Check className="w-5 h-5 text-white" />
+                <span className="text-white">{translations.accentuatedEccentric}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-black">{translations.accommodatingResistance}</span>
+                <Check className="w-5 h-5 text-white" />
+                <span className="text-white">{translations.accommodatingResistance}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-black">{translations.velocityBasedTraining}</span>
+                <Check className="w-5 h-5 text-white" />
+                <span className="text-white">{translations.velocityBasedTraining}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Check className="w-5 h-5 text-[#cb8954]" />
-                <span className="text-black">{translations.specificEnergySystem}</span>
+                <Check className="w-5 h-5 text-white" />
+                <span className="text-white">{translations.specificEnergySystem}</span>
               </div>
             </div>
 
-            <p className="text-black mb-6">
+            <p className="text-white mb-6">
               {translations.cuttingEdgeTech}
             </p>
           </div>
@@ -54,7 +54,7 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
               className="w-full h-auto rounded-lg"
               style={{ marginTop: '0px', marginBottom: '0px' }}
             />
-            <div className="absolute bottom-2 -left-4 bg-[#cb8954] text-black p-6 max-w-xs -ml-4">
+            <div className="absolute bottom-2 -left-4 bg-white text-black p-6 max-w-xs -ml-4">
               <h3 className="font-bold text-lg mb-2" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
                 {translations.advancedTechnology}
               </h3>
