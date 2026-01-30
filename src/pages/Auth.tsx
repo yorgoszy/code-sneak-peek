@@ -699,7 +699,7 @@ const Auth = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full rounded-none bg-[#aca097] text-black hover:bg-[#aca097]/90 border-2 border-transparent transition-all duration-300" 
+                  className="w-full rounded-none bg-white text-black hover:bg-white/90 border-2 border-transparent transition-all duration-300" 
                   disabled={isLoading}
                 >
                   {isLoading ? t.authSending : t.authSendResetEmail}
@@ -718,7 +718,7 @@ const Auth = () => {
                 <TabsList className="grid w-full grid-cols-3 bg-[hsl(var(--auth-black))] border border-white">
                   <TabsTrigger value="login" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-xs sm:text-sm">{t.authLogin}</TabsTrigger>
                   <TabsTrigger value="signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-xs sm:text-sm">{t.authSignup}</TabsTrigger>
-                  <TabsTrigger value="coach-signup" className="text-white data-[state=active]:bg-[#00ffba] data-[state=active]:text-black text-xs sm:text-sm">For Coach</TabsTrigger>
+                  <TabsTrigger value="coach-signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-xs sm:text-sm">For Coach</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
@@ -733,7 +733,7 @@ const Auth = () => {
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full rounded-none bg-[#aca097] text-black hover:bg-[#aca097]/90 border-2 border-transparent transition-all duration-300" 
+                      className="w-full rounded-none bg-white text-black hover:bg-white/90 border-2 border-transparent transition-all duration-300" 
                       disabled={isLoading}
                     >
                       {isLoading ? t.authLoggingIn : t.authLogin}
@@ -813,7 +813,7 @@ const Auth = () => {
 
                      <Button 
                        type="submit" 
-                       className="w-full rounded-none bg-[#aca097] text-black hover:bg-[#aca097]/90 border-2 border-transparent transition-all duration-300" 
+                       className="w-full rounded-none bg-white text-black hover:bg-white/90 border-2 border-transparent transition-all duration-300" 
                        disabled={isLoading || !!passwordError || signupPassword.length === 0}
                      >
                       {isLoading ? t.authSigningUp : t.authSignup}
@@ -887,7 +887,7 @@ const Auth = () => {
 
                     <Button 
                       type="submit" 
-                      className="w-full rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90 border-2 border-transparent transition-all duration-300" 
+                      className="w-full rounded-none bg-white text-black hover:bg-white/90 border-2 border-transparent transition-all duration-300" 
                       disabled={isLoading || !!coachPasswordError || coachSignupPassword.length === 0}
                     >
                       {isLoading ? t.authSigningUp : (language === 'el' ? 'Εγγραφή ως Coach' : 'Sign Up as Coach')}
