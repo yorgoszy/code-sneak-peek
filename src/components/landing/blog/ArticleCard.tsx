@@ -20,7 +20,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onReadMore, translat
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent"></div>
       </div>
       <div className="p-6 flex flex-col flex-grow">
-        <div className="text-sm mb-2 text-white">{article.date}</div>
+        <div className="text-sm mb-2" style={{ color: '#aca097' }}>{article.date}</div>
         <h3 className="text-xl font-bold mb-3 text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
           {article.title}
         </h3>
@@ -29,7 +29,8 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onReadMore, translat
         </p>
         <button 
           onClick={() => onReadMore(article)}
-          className="hover:opacity-80 font-semibold transition-colors mt-auto text-left text-white"
+          className="font-semibold transition-colors mt-auto text-left hover:text-white"
+          style={{ color: '#aca097' }}
         >
           {translations.blog?.readMore || 'Διαβάστε περισσότερα →'}
         </button>
