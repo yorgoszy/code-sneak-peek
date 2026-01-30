@@ -44,7 +44,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url(${heroRing})`,
-          opacity: 0.07
+          opacity: 0.15
         }}
       ></div>
       
