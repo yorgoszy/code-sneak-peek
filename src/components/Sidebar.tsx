@@ -774,7 +774,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
             key={item.path}
             onClick={() => handleMenuClick(item)}
             className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none ${
-              isActive ? 'bg-[#cb8954]/10 text-black border-r-2 border-[#cb8954]' : 'text-gray-700'
+              isActive ? 'bg-black/10 text-black border-r-2 border-black' : 'text-gray-700'
             }`}
           >
             <div className="flex items-center space-x-3">
