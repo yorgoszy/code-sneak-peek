@@ -476,6 +476,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: HeartPulse,
+      label: "Κάρτες Υγείας",
+      path: "/dashboard/health-cards",
+      badge: null
+    },
+    {
       icon: ShoppingCart,
       label: "Αγορές",
       path: "/dashboard/shop",
@@ -608,12 +614,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Heart,
       label: "HRV",
       path: "/dashboard/hrv",
-      badge: null
-    },
-    {
-      icon: HeartPulse,
-      label: "Κάρτες Υγείας",
-      path: "/dashboard/health-cards",
       badge: null
     },
     { 

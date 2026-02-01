@@ -32,6 +32,7 @@ interface UserSearchComboboxProps {
   placeholder?: string;
   coachId?: string;
   filterByCoach?: boolean;
+  disabled?: boolean;
 }
 
 // Normalize text for search (remove accents, lowercase)
@@ -55,6 +56,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
   placeholder = 'Αναζήτηση χρήστη...',
   coachId,
   filterByCoach = true,
+  disabled = false,
 }) => {
   const [open, setOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
@@ -99,13 +101,14 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
   });
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={disabled ? false : open} onOpenChange={disabled ? undefined : setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between rounded-none"
+          disabled={disabled}
+          className={cn("w-full justify-between rounded-none", disabled && "opacity-50 cursor-not-allowed")}
         >
           {selectedUser ? (
             <div className="flex items-center gap-2">

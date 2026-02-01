@@ -5,7 +5,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/Sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { Menu, HeartPulse, Upload, Trash2, Eye, Calendar } from "lucide-react";
+import { Menu, HeartPulse, Upload, Trash2, Eye, Calendar, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -64,6 +64,7 @@ export default function HealthCardsPage() {
 
   // Add/Edit dialog
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingCard, setEditingCard] = useState<HealthCard | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [startDate, setStartDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -129,8 +130,8 @@ export default function HealthCardsPage() {
   };
 
   const handleAddHealthCard = async () => {
-    if (!selectedUserId || !selectedFile) {
-      toast.error(t("healthCard.selectUserAndFile"));
+    if (!selectedUserId) {
+      toast.error(t("healthCard.selectUser"));
       return;
     }
 
@@ -144,27 +145,33 @@ export default function HealthCardsPage() {
         .eq("user_id", selectedUserId)
         .maybeSingle();
 
-      // If exists, delete old image
-      if (existingCard?.image_url) {
-        const oldPath = existingCard.image_url.split("/").pop();
-        if (oldPath) {
-          await supabase.storage.from("health-cards").remove([oldPath]);
+      let imageUrl = existingCard?.image_url || null;
+
+      // Upload new image if provided
+      if (selectedFile) {
+        // If exists, delete old image
+        if (existingCard?.image_url) {
+          const oldPath = existingCard.image_url.split("/").pop();
+          if (oldPath) {
+            await supabase.storage.from("health-cards").remove([oldPath]);
+          }
         }
+
+        const fileExt = selectedFile.name.split(".").pop();
+        const fileName = `${selectedUserId}-${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("health-cards")
+          .upload(fileName, selectedFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from("health-cards")
+          .getPublicUrl(fileName);
+
+        imageUrl = urlData.publicUrl;
       }
-
-      // Upload new image
-      const fileExt = selectedFile.name.split(".").pop();
-      const fileName = `${selectedUserId}-${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("health-cards")
-        .upload(fileName, selectedFile);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("health-cards")
-        .getPublicUrl(fileName);
 
       const startDateObj = new Date(startDate);
       const endDateObj = addYears(startDateObj, 1);
@@ -173,7 +180,7 @@ export default function HealthCardsPage() {
       const { error: upsertError } = await supabase.from("health_cards").upsert(
         {
           user_id: selectedUserId,
-          image_url: urlData.publicUrl,
+          image_url: imageUrl,
           start_date: startDate,
           end_date: format(endDateObj, "yyyy-MM-dd"),
           notification_sent: false,
@@ -183,11 +190,8 @@ export default function HealthCardsPage() {
 
       if (upsertError) throw upsertError;
 
-      toast.success(t("healthCard.uploadSuccess"));
-      setIsAddDialogOpen(false);
-      setSelectedUserId("");
-      setSelectedFile(null);
-      setStartDate(format(new Date(), "yyyy-MM-dd"));
+      toast.success(editingCard ? t("healthCard.updateSuccess") : t("healthCard.uploadSuccess"));
+      handleCloseDialog();
       loadHealthCards();
     } catch (error) {
       console.error("Error uploading health card:", error);
@@ -195,6 +199,22 @@ export default function HealthCardsPage() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleOpenEditDialog = (card: HealthCard) => {
+    setEditingCard(card);
+    setSelectedUserId(card.user_id);
+    setStartDate(card.start_date);
+    setSelectedFile(null);
+    setIsAddDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsAddDialogOpen(false);
+    setEditingCard(null);
+    setSelectedUserId("");
+    setSelectedFile(null);
+    setStartDate(format(new Date(), "yyyy-MM-dd"));
   };
 
   const handleDeleteHealthCard = async () => {
@@ -377,17 +397,27 @@ export default function HealthCardsPage() {
                         </div>
 
                         <div className="flex gap-2 mt-4">
+                          {card.image_url && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-none"
+                              onClick={() => {
+                                setViewingCard(card);
+                                setIsViewDialogOpen(true);
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
                             className="rounded-none flex-1"
-                            onClick={() => {
-                              setViewingCard(card);
-                              setIsViewDialogOpen(true);
-                            }}
+                            onClick={() => handleOpenEditDialog(card)}
                           >
-                            <Eye className="h-4 w-4 mr-1" />
-                            {t("healthCard.view")}
+                            <Pencil className="h-4 w-4 mr-1" />
+                            {t("common.edit")}
                           </Button>
                           <Button
                             variant="outline"
@@ -411,11 +441,16 @@ export default function HealthCardsPage() {
         </div>
       </div>
 
-      {/* Add Health Card Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      {/* Add/Edit Health Card Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+        if (!open) handleCloseDialog();
+        else setIsAddDialogOpen(true);
+      }}>
         <DialogContent className="rounded-none">
           <DialogHeader>
-            <DialogTitle>{t("healthCard.addNew")}</DialogTitle>
+            <DialogTitle>
+              {editingCard ? t("healthCard.edit") : t("healthCard.addNew")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -425,6 +460,7 @@ export default function HealthCardsPage() {
                 onValueChange={setSelectedUserId}
                 placeholder={t("healthCard.selectUserPlaceholder")}
                 coachId={effectiveCoachId || undefined}
+                disabled={!!editingCard}
               />
             </div>
             <div>
@@ -437,20 +473,28 @@ export default function HealthCardsPage() {
               />
             </div>
             <div>
-              <Label>{t("healthCard.certificate")}</Label>
+              <Label>
+                {t("healthCard.certificate")} 
+                {!editingCard && <span className="text-muted-foreground text-xs ml-1">({t("common.optional")})</span>}
+              </Label>
               <Input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                 className="rounded-none"
               />
+              {editingCard?.image_url && !selectedFile && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("healthCard.currentImageKept")}
+                </p>
+              )}
             </div>
             <Button
               onClick={handleAddHealthCard}
-              disabled={uploading || !selectedUserId || !selectedFile}
+              disabled={uploading || !selectedUserId}
               className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
             >
-              {uploading ? t("common.uploading") : t("healthCard.upload")}
+              {uploading ? t("common.uploading") : (editingCard ? t("common.save") : t("healthCard.upload"))}
             </Button>
           </div>
         </DialogContent>
