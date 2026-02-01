@@ -712,7 +712,7 @@ export default function HealthCardsPage() {
               </Label>
               <Input
                 type="file"
-                accept="image/*"
+                accept="image/*,application/pdf"
                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                 className="rounded-none"
               />
@@ -735,18 +735,26 @@ export default function HealthCardsPage() {
 
       {/* View Health Card Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="rounded-none max-w-2xl">
+        <DialogContent className="rounded-none max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>
               {t("healthCard.certificateOf")} {viewingCard?.user?.name}
             </DialogTitle>
           </DialogHeader>
           {viewingCard?.image_url && (
-            <img
-              src={viewingCard.image_url}
-              alt="Health Card"
-              className="w-full object-contain max-h-[70vh]"
-            />
+            viewingCard.image_url.toLowerCase().endsWith('.pdf') ? (
+              <iframe
+                src={viewingCard.image_url}
+                className="w-full h-[70vh] border-0"
+                title="Health Card PDF"
+              />
+            ) : (
+              <img
+                src={viewingCard.image_url}
+                alt="Health Card"
+                className="w-full object-contain max-h-[70vh]"
+              />
+            )
           )}
         </DialogContent>
       </Dialog>
