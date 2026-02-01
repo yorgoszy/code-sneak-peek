@@ -44,8 +44,8 @@ export const HealthCardWidget = ({ userId, setActiveTab }: HealthCardWidgetProps
   const getValueColor = () => {
     if (!healthCard || daysLeft === null) return 'text-gray-400';
     if (expired) return 'text-red-500';
-    if (daysLeft <= 7) return 'text-red-600';
-    if (daysLeft <= 30) return 'text-orange-600';
+    if (daysLeft < 30) return 'text-red-600'; // Κάτω από 1 μήνα = κόκκινο
+    if (daysLeft < 60) return 'text-orange-600'; // Κάτω από 2 μήνες = πορτοκαλί
     return 'text-green-600';
   };
 
