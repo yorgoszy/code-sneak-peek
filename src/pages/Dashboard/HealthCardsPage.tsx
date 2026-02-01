@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { useSearchParams } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/Sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
@@ -54,8 +53,6 @@ interface HealthCard {
 export default function HealthCardsPage() {
   const { t } = useTranslation();
   const { isAdmin, userProfile } = useRoleCheck();
-  const [searchParams] = useSearchParams();
-  const coachIdFromUrl = searchParams.get("coachId");
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -78,8 +75,9 @@ export default function HealthCardsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingCard, setDeletingCard] = useState<HealthCard | null>(null);
 
-  // For admin without coachId in URL, don't filter. For coach, use their ID.
-  const effectiveCoachId = isAdmin() && !coachIdFromUrl ? undefined : (coachIdFromUrl || userProfile?.id);
+  // Κανόνας: ο καθένας (Admin/Coach) βλέπει ΜΟΝΟ τους δικούς του χρήστες.
+  // Άρα πάντα φιλτράρουμε με το δικό του app_users.id (αγνοούμε coachId στο URL).
+  const effectiveCoachId = userProfile?.id ?? null;
 
   useEffect(() => {
     loadHealthCards();
