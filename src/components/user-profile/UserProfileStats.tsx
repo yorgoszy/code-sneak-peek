@@ -771,9 +771,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               {paymentStatus === null ? (
                 <span className="text-gray-400">-</span>
               ) : paymentStatus ? (
-                <Check className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                <Check className={`text-green-600 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               ) : (
-                <X className={`text-red-500 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                <X className={`text-red-600 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               )}
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
