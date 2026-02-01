@@ -1134,7 +1134,12 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </button>
           )}
 
-          {/* Προφίλ - Ενδέκατο (χωρίς emoji) */}
+          {/* Κάρτα Υγείας - Μόνο για αθλητές - Πριν το Προφίλ */}
+          {(user.is_athlete || user.role === 'athlete') && (
+            <HealthCardWidget userId={user.id} />
+          )}
+
+          {/* Προφίλ */}
           <button 
             onClick={() => {
               if (setActiveTab) {
@@ -1225,10 +1230,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </button>
           )}
 
-          {/* Κάρτα Υγείας - Μόνο για αθλητές - Τελευταίο */}
-          {(user.is_athlete || user.role === 'athlete') && (
-            <HealthCardWidget userId={user.id} setActiveTab={setActiveTab} />
-          )}
         </div>
       </CardContent>
     </Card>
