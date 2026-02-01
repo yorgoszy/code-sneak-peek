@@ -89,7 +89,7 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
             <CardTitle className={`${isMobile ? "text-[10px]" : "text-sm"} font-medium leading-tight`}>
               Συνολικοί Αθλητές
             </CardTitle>
-            <Users className={`${isMobile ? "h-3 w-3" : "h-4 w-4"} text-blue-600 flex-shrink-0`} />
+            <Users className={`${isMobile ? "h-3 w-3" : "h-4 w-4"} text-black flex-shrink-0`} />
           </CardHeader>
           <CardContent className={`${isMobile ? "pt-0 px-2 pb-2" : ""}`}>
             <div className={`${isMobile ? "text-base" : "text-2xl"} font-bold`}>{stats.totalAthletes}</div>
@@ -101,7 +101,7 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
             <CardTitle className={`${isMobile ? "text-[10px]" : "text-sm"} font-medium leading-tight`}>
               Ενεργοί Αθλητές
             </CardTitle>
-            <Activity className={`${isMobile ? "h-3 w-3" : "h-4 w-4"} text-[#00ffba] flex-shrink-0`} />
+            <Activity className={`${isMobile ? "h-3 w-3" : "h-4 w-4"} text-black flex-shrink-0`} />
           </CardHeader>
           <CardContent className={`${isMobile ? "pt-0 px-2 pb-2" : ""}`}>
             <div className={`${isMobile ? "text-base" : "text-2xl"} font-bold`}>{stats.activeAthletes}</div>
@@ -113,7 +113,7 @@ export const CoachOverview: React.FC<CoachOverviewProps> = ({ coachId }) => {
             <CardTitle className={`${isMobile ? "text-[10px]" : "text-sm"} font-medium leading-tight`}>
               Νέοι Αθλητές
             </CardTitle>
-            <Users className={`${isMobile ? "h-3 w-3" : "h-4 w-4"} text-green-600 flex-shrink-0`} />
+            <Users className={`${isMobile ? "h-3 w-3" : "h-4 w-4"} text-black flex-shrink-0`} />
           </CardHeader>
           <CardContent className={`${isMobile ? "pt-0 px-2 pb-2" : ""}`}>
             <div className={`${isMobile ? "text-base" : "text-2xl"} font-bold`}>{stats.newAthletesThisMonth}</div>
