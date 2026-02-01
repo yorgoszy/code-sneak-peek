@@ -23,6 +23,7 @@ import { UserProgressSection } from "./UserProgressSection";
 import { UserProfileHistory } from "./UserProfileHistory";
 import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
+import { UserProfileHealthCard } from "./UserProfileHealthCard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface UserProfileContentProps {
@@ -249,6 +250,14 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <UserProfileNutrition userId={userProfile?.id} userProfile={userProfile} />
+          </div>
+        );
+      case "health-card":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <h2 className="text-xl font-semibold">{t('healthCard.title')}</h2>
+            <UserProfileHealthCard userId={userProfile?.id} />
           </div>
         );
       default:

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { useTranslation } from 'react-i18next';
+import { HealthCardWidget } from "./HealthCardWidget";
 
 interface UserProfileStatsProps {
   user: any;
@@ -947,6 +948,11 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 Επερχόμενοι Αγώνες
               </div>
             </div>
+          )}
+
+          {/* Κάρτα Υγείας - Μόνο για αθλητές */}
+          {(user.is_athlete || user.role === 'athlete') && (
+            <HealthCardWidget userId={user.id} setActiveTab={setActiveTab} />
           )}
 
           {/* Πρόοδος - Έβδομο */}
