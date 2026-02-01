@@ -49,9 +49,9 @@ export const CoachSubscriptionDaysCard: React.FC<CoachSubscriptionDaysCardProps>
 
   const getColorClass = () => {
     if (remainingDays === null) return 'text-gray-500';
-    if (remainingDays <= 7) return 'text-red-600';
-    if (remainingDays <= 30) return 'text-yellow-600';
-    return 'text-[#00ffba]';
+    if (remainingDays < 30) return 'text-red-600'; // Κάτω από 1 μήνα = κόκκινο
+    if (remainingDays < 60) return 'text-orange-600'; // Κάτω από 2 μήνες = πορτοκαλί
+    return 'text-green-600';
   };
 
   if (loading) {
