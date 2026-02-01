@@ -611,6 +611,7 @@
     "currentCard": "Current Health Card",
     "startDate": "Issue Date",
     "endDate": "Expiry Date",
+    "expiryDate": "Expiry Date",
     "certificate": "Certificate",
     "view": "View",
     "preview": "Preview",
@@ -620,6 +621,7 @@
     "updateCard": "Update Health Card",
     "save": "Save",
     "update": "Update",
+    "upload": "Upload",
     "expired": "Expired",
     "valid": "Valid for {{days}} days",
     "expiringSoon": "Expires in {{days}} days",
@@ -627,6 +629,19 @@
     "expiringSoonWarning": "Your health card expires soon!",
     "renewMessage": "Please renew your health card.",
     "deleteConfirmTitle": "Delete Health Card",
-    "deleteConfirmMessage": "Are you sure you want to delete the health card? This action cannot be undone."
+    "deleteConfirmMessage": "Are you sure you want to delete the health card? This action cannot be undone.",
+    "deleteConfirmDescription": "This action cannot be undone.",
+    "addNew": "Add Health Card",
+    "selectUser": "Select User",
+    "selectUserPlaceholder": "Select athlete...",
+    "selectUserAndFile": "Please select user and file",
+    "noCards": "No health cards found",
+    "daysLeft": "days",
+    "certificateOf": "Certificate of",
+    "loadError": "Error loading data",
+    "uploadSuccess": "Health card uploaded successfully",
+    "uploadError": "Error uploading health card",
+    "deleteSuccess": "Health card deleted",
+    "deleteError": "Error deleting health card"
   }
 }
