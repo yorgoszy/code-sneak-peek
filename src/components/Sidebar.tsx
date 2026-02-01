@@ -41,6 +41,7 @@ import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog"
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { useExpiringHealthCards } from "@/hooks/useExpiringHealthCards";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -61,6 +62,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [newPurchases, setNewPurchases] = useState(0);
   const [newUsers, setNewUsers] = useState(0);
   const isMobile = useIsMobile();
+  const { expiringCount: expiringHealthCards } = useExpiringHealthCards(userProfile?.id);
 
   const loadAvailableOffers = async () => {
     if (!userProfile?.id) return;
@@ -479,7 +481,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: HeartPulse,
       label: "Κάρτες Υγείας",
       path: "/dashboard/health-cards",
-      badge: null
+      badge: expiringHealthCards > 0 ? expiringHealthCards.toString() : null
     },
     {
       icon: ShoppingCart,

@@ -39,6 +39,7 @@ import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { useTranslation } from 'react-i18next';
 import { useCoachSubscriptionStatus } from "@/hooks/useCoachSubscriptionStatus";
 import { toast } from "sonner";
+import { useExpiringHealthCards } from "@/hooks/useExpiringHealthCards";
 
 interface CoachSidebarProps {
   isCollapsed: boolean;
@@ -65,6 +66,8 @@ export const CoachSidebar = ({
 
   const effectiveCoachId =
     contextCoachId && isAdmin() ? contextCoachId : (userProfile?.id as string | undefined);
+
+  const { expiringCount: expiringHealthCards } = useExpiringHealthCards(effectiveCoachId);
 
   // Check coach subscription status
   const { isActive: isCoachActive, isLoading: isSubscriptionLoading } = useCoachSubscriptionStatus(effectiveCoachId);
@@ -118,7 +121,7 @@ export const CoachSidebar = ({
       icon: HeartPulse,
       label: t('healthCard.title'),
       path: effectiveCoachId ? `/dashboard/health-cards?coachId=${effectiveCoachId}` : "/dashboard/health-cards",
-      badge: null,
+      badge: expiringHealthCards > 0 ? expiringHealthCards.toString() : null,
       requiresSubscription: true,
     },
     {
