@@ -29,7 +29,8 @@ import {
   Award,
   Swords,
   Compass,
-  Heart
+  Heart,
+  HeartPulse
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -607,6 +608,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Heart,
       label: "HRV",
       path: "/dashboard/hrv",
+      badge: null
+    },
+    {
+      icon: HeartPulse,
+      label: "Κάρτες Υγείας",
+      path: "/dashboard/health-cards",
       badge: null
     },
     { 
