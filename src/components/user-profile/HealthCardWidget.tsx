@@ -50,9 +50,8 @@ export const HealthCardWidget = ({ userId, setActiveTab }: HealthCardWidgetProps
   };
 
   return (
-    <button 
-      onClick={handleClick}
-      className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+    <div 
+      className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0`}
     >
       <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
         <HeartPulse className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${getStatusColor()}`} />
@@ -63,6 +62,6 @@ export const HealthCardWidget = ({ userId, setActiveTab }: HealthCardWidgetProps
       <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
         {t('healthCard.widget')}
       </div>
-    </button>
+    </div>
   );
 };
