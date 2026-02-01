@@ -348,7 +348,7 @@ export const CoachSidebar = ({
               (isDisabled
                 ? "text-muted-foreground/50 cursor-not-allowed opacity-50"
                 : isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground border-r-2 border-r-[hsl(var(--auth-gold))]"
+                  ? "bg-black/10 text-black border-r-2 border-black"
                   : "text-sidebar-foreground hover:bg-sidebar-accent")
             }
           >
