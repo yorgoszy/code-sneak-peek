@@ -115,6 +115,13 @@ export const CoachSidebar = ({
       requiresSubscription: true,
     },
     {
+      icon: HeartPulse,
+      label: t('healthCard.title'),
+      path: effectiveCoachId ? `/dashboard/health-cards?coachId=${effectiveCoachId}` : "/dashboard/health-cards",
+      badge: null,
+      requiresSubscription: true,
+    },
+    {
       icon: ShoppingBag,
       label: "Shop",
       path: effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop",
@@ -239,13 +246,6 @@ export const CoachSidebar = ({
       icon: Heart,
       label: "HRV",
       path: effectiveCoachId ? `/dashboard/hrv?coachId=${effectiveCoachId}` : "/dashboard/hrv",
-      badge: null,
-      requiresSubscription: true,
-    },
-    {
-      icon: HeartPulse,
-      label: t('healthCard.title'),
-      path: effectiveCoachId ? `/dashboard/health-cards?coachId=${effectiveCoachId}` : "/dashboard/health-cards",
       badge: null,
       requiresSubscription: true,
     },
