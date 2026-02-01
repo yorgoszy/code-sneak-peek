@@ -805,7 +805,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         onClick={handleAIChatClick}
         className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none border-t border-gray-200 mt-2 pt-4`}
       >
-        <Brain className="h-5 w-5 flex-shrink-0 text-[#cb8954]" />
+        <Brain className="h-5 w-5 flex-shrink-0 text-black" />
         {(!isCollapsed || isMobile) && (
           <div className="flex flex-col items-start min-w-0">
             <span className="text-sm font-medium truncate">RidAI Προπονητής</span>
