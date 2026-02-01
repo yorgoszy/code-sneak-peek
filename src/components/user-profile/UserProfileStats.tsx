@@ -950,11 +950,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           )}
 
-          {/* Κάρτα Υγείας - Μόνο για αθλητές */}
-          {(user.is_athlete || user.role === 'athlete') && (
-            <HealthCardWidget userId={user.id} setActiveTab={setActiveTab} />
-          )}
-
           {/* Πρόοδος - Έβδομο */}
           <button 
             onClick={() => {
@@ -1228,6 +1223,11 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 {t('overview.athletes')}
               </div>
             </button>
+          )}
+
+          {/* Κάρτα Υγείας - Μόνο για αθλητές - Τελευταίο */}
+          {(user.is_athlete || user.role === 'athlete') && (
+            <HealthCardWidget userId={user.id} setActiveTab={setActiveTab} />
           )}
         </div>
       </CardContent>
