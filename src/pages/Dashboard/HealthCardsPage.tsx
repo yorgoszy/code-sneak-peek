@@ -353,7 +353,7 @@ export default function HealthCardsPage() {
     });
 
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), "dd MMM yyyy", { locale: el });
+    return format(new Date(dateString), "dd/MM/yy");
   };
 
   const renderSidebar = () => {
