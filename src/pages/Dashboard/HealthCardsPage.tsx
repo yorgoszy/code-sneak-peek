@@ -77,7 +77,7 @@ export default function HealthCardsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingCard, setDeletingCard] = useState<HealthCard | null>(null);
 
-  const effectiveCoachId = isAdmin() ? null : (coachIdFromUrl || userProfile?.id);
+  const effectiveCoachId = coachIdFromUrl || userProfile?.id;
 
   useEffect(() => {
     loadHealthCards();
