@@ -604,5 +604,29 @@
     "save": "Save",
     "saving": "Saving...",
     "noEditPermission": "You do not have permission to edit this profile"
+  },
+  "healthCard": {
+    "title": "Health Card",
+    "widget": "Health Card",
+    "currentCard": "Current Health Card",
+    "startDate": "Issue Date",
+    "endDate": "Expiry Date",
+    "certificate": "Certificate",
+    "view": "View",
+    "preview": "Preview",
+    "issueDate": "Issue Date",
+    "expiryCalculation": "Expiry (1 year)",
+    "uploadCard": "Upload Health Card",
+    "updateCard": "Update Health Card",
+    "save": "Save",
+    "update": "Update",
+    "expired": "Expired",
+    "valid": "Valid for {{days}} days",
+    "expiringSoon": "Expires in {{days}} days",
+    "expiredWarning": "Your health card has expired!",
+    "expiringSoonWarning": "Your health card expires soon!",
+    "renewMessage": "Please renew your health card.",
+    "deleteConfirmTitle": "Delete Health Card",
+    "deleteConfirmMessage": "Are you sure you want to delete the health card? This action cannot be undone."
   }
 }

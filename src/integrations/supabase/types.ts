@@ -3358,6 +3358,47 @@ export type Database = {
           },
         ]
       }
+      health_cards: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          image_url: string | null
+          notification_sent: boolean | null
+          start_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          image_url?: string | null
+          notification_sent?: boolean | null
+          start_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          image_url?: string | null
+          notification_sent?: boolean | null
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_cards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       home_page: {
         Row: {
           content: Json

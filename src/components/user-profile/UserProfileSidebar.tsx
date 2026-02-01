@@ -15,7 +15,8 @@ import {
   History,
   BookOpen,
   Download,
-  Utensils
+  Utensils,
+  HeartPulse
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -284,6 +285,13 @@ export const UserProfileSidebar = forwardRef<
       key: "online-booking",
       badge: null,
       visible: showAdminMenus
+    },
+    {
+      icon: HeartPulse,
+      label: t('healthCard.title'),
+      key: "health-card",
+      badge: null,
+      visible: userProfile?.role === 'athlete'
     },
     {
       icon: User,
