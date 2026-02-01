@@ -31,7 +31,7 @@ export const HealthCardWidget = ({ userId, setActiveTab }: HealthCardWidgetProps
     if (!healthCard) return 'text-gray-400';
     if (expired) return 'text-red-500';
     if (expiring) return 'text-orange-500';
-    return 'text-[#00ffba]';
+    return 'text-black';
   };
 
   const getDisplayValue = () => {

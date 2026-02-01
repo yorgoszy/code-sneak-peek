@@ -702,10 +702,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-                <ShoppingBag className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                <ShoppingBag className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               </div>
               <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} animate-click-me`}>
-                <MousePointer className={`text-[#00ffba] ${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
+                <MousePointer className={`text-black ${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
               </div>
               <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
                 {t('overview.shop')}
@@ -730,13 +730,13 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   offersData?.hasMagicBox 
                     ? 'animate-offer-blink' 
                     : offersData?.available > 0 
-                    ? 'text-[#00ffba]' 
+                    ? 'text-black' 
                     : 'text-gray-400'
                 } transition-all duration-300`} />
               </div>
               <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
                 {offersData?.available > 0 ? (
-                  <span className={`${offersData?.hasMagicBox ? 'animate-offer-blink' : 'text-[#00ffba]'}`}>
+                  <span className={`${offersData?.hasMagicBox ? 'animate-offer-blink' : 'text-black'}`}>
                     {offersData.available}
                   </span>
                 ) : offersData?.hasMagicBox ? (
@@ -764,14 +764,14 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <CreditCard className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                paymentStatus !== null ? 'text-orange-500' : 'text-gray-400'
+                paymentStatus !== null ? 'text-black' : 'text-gray-400'
               }`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               {paymentStatus === null ? (
                 <span className="text-gray-400">-</span>
               ) : paymentStatus ? (
-                <Check className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                <Check className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               ) : (
                 <X className={`text-red-500 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               )}
@@ -794,10 +794,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               {isPaused ? (
-                <Pause className={`text-yellow-500 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                <Pause className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               ) : (
                 <Clock className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                  subscriptionDays !== null ? 'text-[#00ffba]' : 'text-gray-400'
+                  subscriptionDays !== null ? 'text-black' : 'text-gray-400'
                 }`} />
               )}
             </div>
@@ -837,7 +837,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <Dumbbell className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                stats.programsCount > 0 ? 'text-green-500' : 'text-gray-400'
+                stats.programsCount > 0 ? 'text-black' : 'text-gray-400'
               }`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
@@ -884,10 +884,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <Utensils className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <Utensils className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-              <span className="text-[#00ffba]"> </span>
+              <span className="text-black"> </span>
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {t('overview.nutrition')}
@@ -900,7 +900,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <Calendar className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                upcomingTests ? 'text-yellow-500' : 'text-gray-400'
+                upcomingTests ? 'text-black' : 'text-gray-400'
               }`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} min-w-12`}>
@@ -928,7 +928,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <Trophy className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                  upcomingCompetitions ? 'text-purple-500' : 'text-gray-400'
+                  upcomingCompetitions ? 'text-black' : 'text-gray-400'
                 }`} />
               </div>
               <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} min-w-12`}>
@@ -967,10 +967,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <TrendingUp className={`text-[#cb8954] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <TrendingUp className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-              <span className="text-[#00ffba]"> </span>
+              <span className="text-black"> </span>
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {t('overview.progress')}
@@ -989,10 +989,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <History className={`text-[#cb8954] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <History className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-              <span className="text-[#cb8954]"> </span>
+              <span className="text-black"> </span>
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {t('overview.history')}
@@ -1013,7 +1013,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <MapPin className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                  visitsData && visitsData.total > 0 ? 'text-blue-500' : 'text-gray-400'
+                  visitsData && visitsData.total > 0 ? 'text-black' : 'text-gray-400'
                 }`} />
               </div>
               <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
@@ -1045,7 +1045,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <MapPin className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                  upcomingVisit ? 'text-purple-500' : 'text-gray-400'
+                  upcomingVisit ? 'text-black' : 'text-gray-400'
                 }`} />
               </div>
                <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
@@ -1082,7 +1082,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <Video className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                  videocallData && videocallData.total > 0 ? 'text-blue-500' : 'text-gray-400'
+                  videocallData && videocallData.total > 0 ? 'text-black' : 'text-gray-400'
                 }`} />
               </div>
               <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
@@ -1117,7 +1117,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <Video className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                  upcomingVideocall ? 'text-purple-500' : 'text-gray-400'
+                  upcomingVideocall ? 'text-black' : 'text-gray-400'
                 }`} />
               </div>
                <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
@@ -1151,10 +1151,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <User className={`text-blue-600 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <User className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-              <span className="text-blue-600"> </span>
+              <span className="text-black"> </span>
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {t('overview.profile')}
@@ -1173,10 +1173,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <MessageCircle className={`text-purple-600 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <MessageCircle className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-              <span className="text-purple-600"> </span>
+              <span className="text-black"> </span>
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {t('overview.aiCoach')}
@@ -1196,10 +1196,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-                <BookOpen className={`text-[#00ffba] ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                <BookOpen className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               </div>
               <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-                <span className="text-[#00ffba]"> </span>
+                <span className="text-black"> </span>
               </div>
               <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
                 {t('overview.schoolNotes')}
@@ -1219,7 +1219,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-                <Users className={`text-blue-500 ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+                <Users className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
               </div>
               <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
                 {stats.athletesCount}
