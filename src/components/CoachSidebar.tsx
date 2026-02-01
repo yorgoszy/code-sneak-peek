@@ -391,7 +391,7 @@ export const CoachSidebar = ({
         {!hasFullAccess ? (
           <Lock className="h-5 w-5 flex-shrink-0 text-muted-foreground/50" />
         ) : (
-          <Brain className="h-5 w-5 flex-shrink-0 text-[hsl(var(--auth-gold))]" />
+          <Brain className="h-5 w-5 flex-shrink-0 text-black" />
         )}
         {(!isCollapsed || isMobile) && (
           <div className="flex flex-col items-start min-w-0">
