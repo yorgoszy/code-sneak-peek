@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/Sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { Menu, HeartPulse, Upload, Trash2, Eye, Calendar, Pencil } from "lucide-react";
+import { Menu, HeartPulse, Upload, Trash2, Eye, Calendar, Pencil, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,7 +13,7 @@ import { format, differenceInDays, addYears } from "date-fns";
 import { el } from "date-fns/locale";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { UserSearchCombobox } from "@/components/users/UserSearchCombobox";
+import { matchesSearchTerm } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -50,6 +50,14 @@ interface HealthCard {
   };
 }
 
+interface UserOption {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url: string | null;
+  photo_url: string | null;
+}
+
 export default function HealthCardsPage() {
   const { t } = useTranslation();
   const { isAdmin, userProfile } = useRoleCheck();
@@ -62,10 +70,14 @@ export default function HealthCardsPage() {
   // Add/Edit dialog
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<HealthCard | null>(null);
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
   const [startDate, setStartDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // User search for dialog
+  const [userSearchTerm, setUserSearchTerm] = useState("");
+  const [allUsers, setAllUsers] = useState<UserOption[]>([]);
 
   // View dialog
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -78,6 +90,22 @@ export default function HealthCardsPage() {
   // Κανόνας: ο καθένας (Admin/Coach) βλέπει ΜΟΝΟ τους δικούς του χρήστες.
   // Άρα πάντα φιλτράρουμε με το δικό του app_users.id (αγνοούμε coachId στο URL).
   const effectiveCoachId = userProfile?.id ?? null;
+
+  // Load users for search dropdown
+  useEffect(() => {
+    const loadUsers = async () => {
+      if (!effectiveCoachId) return;
+      const { data, error } = await supabase
+        .from("app_users")
+        .select("id, name, email, avatar_url, photo_url")
+        .eq("coach_id", effectiveCoachId)
+        .order("name");
+      if (!error && data) {
+        setAllUsers(data);
+      }
+    };
+    loadUsers();
+  }, [effectiveCoachId]);
 
   useEffect(() => {
     loadHealthCards();
@@ -129,7 +157,7 @@ export default function HealthCardsPage() {
   };
 
   const handleAddHealthCard = async () => {
-    if (!selectedUserId) {
+    if (!selectedUser) {
       toast.error(t("healthCard.selectUser"));
       return;
     }
@@ -141,7 +169,7 @@ export default function HealthCardsPage() {
       const { data: existingCard } = await supabase
         .from("health_cards")
         .select("id, image_url")
-        .eq("user_id", selectedUserId)
+        .eq("user_id", selectedUser.id)
         .maybeSingle();
 
       let imageUrl = existingCard?.image_url || null;
@@ -157,7 +185,7 @@ export default function HealthCardsPage() {
         }
 
         const fileExt = selectedFile.name.split(".").pop();
-        const fileName = `${selectedUserId}-${Date.now()}.${fileExt}`;
+        const fileName = `${selectedUser.id}-${Date.now()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from("health-cards")
@@ -178,7 +206,7 @@ export default function HealthCardsPage() {
       // Upsert health card
       const { error: upsertError } = await supabase.from("health_cards").upsert(
         {
-          user_id: selectedUserId,
+          user_id: selectedUser.id,
           image_url: imageUrl,
           start_date: startDate,
           end_date: format(endDateObj, "yyyy-MM-dd"),
@@ -202,19 +230,35 @@ export default function HealthCardsPage() {
 
   const handleOpenEditDialog = (card: HealthCard) => {
     setEditingCard(card);
-    setSelectedUserId(card.user_id);
+    // Find user from allUsers or create a temp object
+    const user = allUsers.find(u => u.id === card.user_id) || {
+      id: card.user_id,
+      name: card.user?.name || '',
+      email: card.user?.email || '',
+      avatar_url: null,
+      photo_url: card.user?.photo_url || null,
+    };
+    setSelectedUser(user);
     setStartDate(card.start_date);
     setSelectedFile(null);
+    setUserSearchTerm('');
     setIsAddDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsAddDialogOpen(false);
     setEditingCard(null);
-    setSelectedUserId("");
+    setSelectedUser(null);
     setSelectedFile(null);
     setStartDate(format(new Date(), "yyyy-MM-dd"));
+    setUserSearchTerm('');
   };
+
+  // Filter users for search
+  const filteredUsers = allUsers.filter(u => 
+    matchesSearchTerm(u.name, userSearchTerm) || 
+    matchesSearchTerm(u.email, userSearchTerm)
+  );
 
   const handleDeleteHealthCard = async () => {
     if (!deletingCard) return;
@@ -452,16 +496,76 @@ export default function HealthCardsPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
+            {/* User Selection - same pattern as NewSubscriptionDialog */}
+            <div className="space-y-2">
               <Label>{t("healthCard.selectUser")}</Label>
-              <UserSearchCombobox
-                value={selectedUserId}
-                onValueChange={setSelectedUserId}
-                placeholder={t("healthCard.selectUserPlaceholder")}
-                coachId={effectiveCoachId || undefined}
-                disabled={!!editingCard}
-              />
+              {selectedUser ? (
+                <div className="flex items-center gap-3 p-3 border border-border bg-muted/50">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={selectedUser.photo_url || selectedUser.avatar_url || undefined} />
+                    <AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-medium">{selectedUser.name}</p>
+                    <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                  </div>
+                  {!editingCard && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setSelectedUser(null)}
+                      className="rounded-none"
+                    >
+                      Αλλαγή
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      value={userSearchTerm}
+                      onChange={(e) => setUserSearchTerm(e.target.value)}
+                      placeholder="Αναζήτηση με όνομα ή email..."
+                      className="pl-10 rounded-none"
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto border border-border bg-background">
+                    {userSearchTerm.trim().length === 0 ? (
+                      <div className="p-3 text-center text-muted-foreground text-sm">
+                        Πληκτρολογήστε για αναζήτηση...
+                      </div>
+                    ) : filteredUsers.length === 0 ? (
+                      <div className="p-3 text-center text-muted-foreground text-sm">
+                        Δεν βρέθηκαν χρήστες
+                      </div>
+                    ) : (
+                      filteredUsers.map(user => (
+                        <div
+                          key={user.id}
+                          className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setUserSearchTerm('');
+                          }}
+                        >
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user.photo_url || user.avatar_url || undefined} />
+                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-sm">{user.name}</p>
+                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
+
             <div>
               <Label>{t("healthCard.startDate")}</Label>
               <Input
@@ -490,7 +594,7 @@ export default function HealthCardsPage() {
             </div>
             <Button
               onClick={handleAddHealthCard}
-              disabled={uploading || !selectedUserId}
+              disabled={uploading || !selectedUser}
               className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
             >
               {uploading ? t("common.uploading") : (editingCard ? t("common.save") : t("healthCard.upload"))}
