@@ -69,6 +69,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
         return;
       }
 
+      // Coach managed user είναι μόνο αν ο coach_id δείχνει σε χρήστη με role='coach'
+      // (όχι admin που διαχειρίζεται αθλητές μέσω user_subscriptions)
       setIsCoachManagedUser(data?.role === 'coach');
     };
 
