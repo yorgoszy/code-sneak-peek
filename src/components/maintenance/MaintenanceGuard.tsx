@@ -41,7 +41,11 @@ export const MaintenanceGuard: React.FC<MaintenanceGuardProps> = ({ userRole, ch
   if (isMaintenanceActive) {
     return (
       <Dialog open={true}>
-        <DialogContent className="rounded-none max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogContent 
+          className="rounded-none max-w-md [&>button]:hidden" 
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
           <DialogHeader className="text-center">
             <div className="flex justify-center mb-4">
               <div className="p-4 bg-orange-100 rounded-full">
