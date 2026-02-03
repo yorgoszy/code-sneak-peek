@@ -15,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from 'react-i18next';
 import { useWorkoutStatsSync } from "@/hooks/useWorkoutStatsSync";
+import { MaintenanceGuard } from "@/components/maintenance/MaintenanceGuard";
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -160,8 +161,8 @@ const UserProfile = () => {
   };
 
   return (
+    <MaintenanceGuard userRole={userProfile?.role}>
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Desktop Sidebar - Large screens only */}
       <div className="hidden lg:block">
         {showCoachSidebar ? (
           <CoachSidebar
@@ -279,6 +280,7 @@ const UserProfile = () => {
         </div>
       </div>
     </div>
+    </MaintenanceGuard>
   );
 };
 
