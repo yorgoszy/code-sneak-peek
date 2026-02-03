@@ -53,19 +53,10 @@ export const MaintenanceGuard: React.FC<MaintenanceGuardProps> = ({ userRole, ch
               </div>
             </div>
             <DialogTitle className="text-xl text-center">Εργασίες Συντήρησης</DialogTitle>
-            <DialogDescription className="text-center space-y-3 pt-4">
+            <DialogDescription className="text-center pt-4">
               <div className="flex items-center justify-center gap-2 text-orange-600">
                 <AlertTriangle className="h-5 w-5" />
                 <span className="font-medium">Η πλατφόρμα είναι προσωρινά μη διαθέσιμη</span>
-              </div>
-              <p className="text-gray-600">
-                Γίνονται εργασίες αναβάθμισης και συντήρησης στο σύστημα.
-              </p>
-              <p className="text-gray-600">
-                Η πρόσβαση θα αποκατασταθεί σύντομα.
-              </p>
-              <div className="pt-4 text-sm text-gray-500">
-                Ευχαριστούμε για την κατανόησή σας!
               </div>
             </DialogDescription>
           </DialogHeader>
