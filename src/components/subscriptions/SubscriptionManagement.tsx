@@ -352,7 +352,7 @@ export const SubscriptionManagement: React.FC = () => {
       .from('receipts')
       .select('receipt_number')
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(50); // Get more to find the highest valid number
 
     if (error) {
       console.error('Error generating receipt number:', error);
@@ -363,9 +363,24 @@ export const SubscriptionManagement: React.FC = () => {
       return 'ΑΠΥ-0001';
     }
 
-    const lastNumber = data[0].receipt_number;
-    const numberPart = parseInt(lastNumber.split('-')[1]);
-    return `ΑΠΥ-${String(numberPart + 1).padStart(4, '0')}`;
+    // Find the highest valid sequential number (format ΑΠΥ-XXXX where XXXX is 4 digits)
+    let maxNumber = 0;
+    for (const receipt of data) {
+      const match = receipt.receipt_number.match(/^ΑΠΥ-(\d{4})$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNumber) {
+          maxNumber = num;
+        }
+      }
+    }
+
+    // If no valid numbers found, start from 0060 (after the last known good: 0059)
+    if (maxNumber === 0) {
+      maxNumber = 59; // Will become 0060
+    }
+
+    return `ΑΠΥ-${String(maxNumber + 1).padStart(4, '0')}`;
   };
 
   const getMyDataSettings = () => {
