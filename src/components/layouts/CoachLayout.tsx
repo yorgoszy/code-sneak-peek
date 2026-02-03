@@ -8,6 +8,7 @@ import { CoachSidebar } from '@/components/CoachSidebar';
 import { Button } from '@/components/ui/button';
 import { Menu, LogOut } from 'lucide-react';
 import { CustomLoadingScreen } from '@/components/ui/custom-loading';
+import { MaintenanceGuard } from '@/components/maintenance/MaintenanceGuard';
 
 interface CoachLayoutContentProps {
   children: React.ReactNode;
@@ -151,9 +152,11 @@ export const CoachLayout: React.FC<CoachLayoutProps> = ({
 
   return (
     <CoachProvider>
-      <CoachLayoutContent title={title} showHeader={showHeader}>
-        {ContentComponent ? <ContentComponent /> : children}
-      </CoachLayoutContent>
+      <MaintenanceGuard userRole="coach">
+        <CoachLayoutContent title={title} showHeader={showHeader}>
+          {ContentComponent ? <ContentComponent /> : children}
+        </CoachLayoutContent>
+      </MaintenanceGuard>
     </CoachProvider>
   );
 };
