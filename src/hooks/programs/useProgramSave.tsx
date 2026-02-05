@@ -108,6 +108,8 @@ export const useProgramSave = () => {
         description: programData.description || '',
         user_id: programData.user_id || null,
         is_template: programData.is_template || false,
+        is_sellable: programData.is_sellable || false,
+        price: programData.price || null,
         status: programData.status || 'draft',
         type: programData.type || 'strength',
         duration: weeks?.length || null,
