@@ -111,6 +111,8 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onMultipleAthleteChange={handleMultipleAthleteChange}
         onGroupChange={handleGroupChange}
         onToggleAssignmentMode={handleToggleAssignmentMode}
+        onSellableChange={(isSellable) => updateProgram({ is_sellable: isSellable })}
+        onPriceChange={(price) => updateProgram({ price })}
         onAddWeek={actions.addWeek}
         onRemoveWeek={actions.removeWeek}
         onDuplicateWeek={actions.duplicateWeek}

@@ -15,6 +15,8 @@ interface ProgramBuilderProps {
   onMultipleAthleteChange: (userIds: string[]) => void;
   onGroupChange: (groupId: string) => void;
   onToggleAssignmentMode: (isMultiple: boolean) => void;
+  onSellableChange?: (isSellable: boolean) => void;
+  onPriceChange?: (price: number | undefined) => void;
   onStartDateChange?: (date: Date | undefined) => void;
   onAddWeek: () => void;
   onRemoveWeek: (weekId: string) => void;
@@ -64,6 +66,8 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onMultipleAthleteChange,
   onGroupChange,
   onToggleAssignmentMode,
+  onSellableChange,
+  onPriceChange,
   onStartDateChange,
   onAddWeek,
   onRemoveWeek,
@@ -121,11 +125,15 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         selectedUserIds={program.user_ids || []}
         selectedGroupId={program.selected_group_id}
         users={users}
+        isSellable={program.is_sellable}
+        price={program.price}
         onNameChange={onNameChange}
         onDescriptionChange={onDescriptionChange}
         onAthleteChange={onAthleteChange}
         onMultipleAthleteChange={onMultipleAthleteChange}
         onGroupChange={onGroupChange}
+        onSellableChange={onSellableChange}
+        onPriceChange={onPriceChange}
         isMultipleMode={true}
         onToggleMode={onToggleAssignmentMode}
         onSave={onSave}

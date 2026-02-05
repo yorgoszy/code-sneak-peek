@@ -86,6 +86,8 @@ export interface ProgramStructure {
   selected_group_id?: string;
   is_multiple_assignment: boolean;
   is_template?: boolean;
+  is_sellable?: boolean;
+  price?: number;
   training_dates: Date[];
   weeks: Week[];
 }
@@ -98,6 +100,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     user_ids: [],
     selected_group_id: '',
     is_multiple_assignment: true,
+    is_sellable: false,
+    price: undefined,
     training_dates: [],
     weeks: []
   });
@@ -118,6 +122,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
       user_ids: [],
       selected_group_id: '',
       is_multiple_assignment: true,
+      is_sellable: false,
+      price: undefined,
       training_dates: [],
       weeks: []
     });
@@ -136,6 +142,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
       selected_group_id: programData.selected_group_id || '',
       is_multiple_assignment: programData.is_multiple_assignment || true,
       is_template: programData.is_template || false,
+      is_sellable: programData.is_sellable || false,
+      price: programData.price || undefined,
       training_dates: programData.training_dates?.map((date: string) => new Date(date)) || [],
       weeks: sourceWeeks.map((week: any) => ({
         id: week.id,

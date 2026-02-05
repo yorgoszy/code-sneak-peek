@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { User, Users, Save, Plus, Check, Search, X } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { User, Users, Save, Plus, Check, Search, X, ShoppingCart } from "lucide-react";
 import { matchesSearchTerm } from "@/lib/utils";
 import { SelectedUsersDisplay } from './SelectedUsersDisplay';
 import { GroupSelection } from './GroupSelection';
@@ -18,11 +19,15 @@ interface ProgramBasicInfoProps {
   selectedUserIds?: string[];
   selectedGroupId?: string;
   users: UserType[];
+  isSellable?: boolean;
+  price?: number;
   onNameChange: (name: string) => void;
   onDescriptionChange: (description: string) => void;
   onAthleteChange?: (userId: string) => void;
   onMultipleAthleteChange?: (userIds: string[]) => void;
   onGroupChange?: (groupId: string) => void;
+  onSellableChange?: (isSellable: boolean) => void;
+  onPriceChange?: (price: number | undefined) => void;
   isMultipleMode?: boolean;
   onToggleMode?: (isMultiple: boolean) => void;
   onSave?: () => Promise<void>;
@@ -37,9 +42,13 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   selectedUserIds = [],
   selectedGroupId = '',
   users,
+  isSellable = false,
+  price,
   onNameChange,
   onMultipleAthleteChange,
   onGroupChange,
+  onSellableChange,
+  onPriceChange,
   onSave,
   onAssignments,
   onClose,
@@ -228,6 +237,34 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             <Users className="w-3 h-3" />
           </button>
         </div>
+
+        {/* Sellable Toggle & Price */}
+        {onSellableChange && (
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 px-1 py-0.5 border border-gray-300 rounded-none">
+              <ShoppingCart className="w-3 h-3 text-[#cb8954]" />
+              <Switch
+                checked={isSellable}
+                onCheckedChange={onSellableChange}
+                className="data-[state=checked]:bg-[#cb8954] h-3 w-6"
+              />
+            </div>
+            {isSellable && onPriceChange && (
+              <div className="flex items-center gap-0.5">
+                <span className="text-[10px] text-gray-500">€</span>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={price || ''}
+                  onChange={(e) => onPriceChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                  placeholder="Τιμή"
+                  className="rounded-none h-5 text-[10px] w-14 border border-gray-300 px-1"
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex gap-0.5 flex-shrink-0 ml-auto">
