@@ -5259,6 +5259,70 @@ export type Database = {
           },
         ]
       }
+      program_purchases: {
+        Row: {
+          amount_paid: number
+          coach_id: string | null
+          created_at: string | null
+          id: string
+          program_id: string
+          purchased_at: string | null
+          status: string | null
+          stripe_session_id: string | null
+          training_days: string[]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_paid: number
+          coach_id?: string | null
+          created_at?: string | null
+          id?: string
+          program_id: string
+          purchased_at?: string | null
+          status?: string | null
+          stripe_session_id?: string | null
+          training_days: string[]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          coach_id?: string | null
+          created_at?: string | null
+          id?: string
+          program_id?: string
+          purchased_at?: string | null
+          status?: string | null
+          stripe_session_id?: string | null
+          training_days?: string[]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_purchases_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_purchases_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       program_types: {
         Row: {
           created_at: string | null
@@ -5333,8 +5397,10 @@ export type Database = {
           description: string | null
           duration: number | null
           id: string
+          is_sellable: boolean | null
           is_template: boolean | null
           name: string
+          price: number | null
           start_date: string | null
           status: string | null
           training_days: number | null
@@ -5349,8 +5415,10 @@ export type Database = {
           description?: string | null
           duration?: number | null
           id?: string
+          is_sellable?: boolean | null
           is_template?: boolean | null
           name: string
+          price?: number | null
           start_date?: string | null
           status?: string | null
           training_days?: number | null
@@ -5365,8 +5433,10 @@ export type Database = {
           description?: string | null
           duration?: number | null
           id?: string
+          is_sellable?: boolean | null
           is_template?: boolean | null
           name?: string
+          price?: number | null
           start_date?: string | null
           status?: string | null
           training_days?: number | null
