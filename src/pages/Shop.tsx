@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Clock, Users, MapPin, Calendar, Dumbbell, ArrowLeft, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { ShopProgramsSection } from "@/components/user-profile/shop/ShopProgramsSection";
 
 interface SubscriptionType {
   id: string;
@@ -33,11 +34,44 @@ const Shop = ({ userProfile, userEmail, onSignOut }: ShopProps = {}) => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const navigate = useNavigate();
   const { userId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isAdmin } = useRoleCheck();
 
   useEffect(() => {
     fetchProducts();
+    
+    // Handle payment success for program purchases
+    const paymentStatus = searchParams.get('payment');
+    const sessionId = searchParams.get('session_id');
+    
+    if (paymentStatus === 'success' && sessionId) {
+      processProgramPayment(sessionId);
+    } else if (paymentStatus === 'cancelled') {
+      toast.info('Η πληρωμή ακυρώθηκε');
+      // Clear search params
+      setSearchParams({});
+    }
   }, []);
+
+  const processProgramPayment = async (sessionId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('process-program-payment', {
+        body: { session_id: sessionId }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success('Η αγορά ολοκληρώθηκε! Το πρόγραμμα ανατέθηκε στο προφίλ σου.');
+      }
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      toast.error('Σφάλμα κατά την επεξεργασία της πληρωμής');
+    } finally {
+      // Clear search params
+      setSearchParams({});
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -140,6 +174,9 @@ const Shop = ({ userProfile, userEmail, onSignOut }: ShopProps = {}) => {
             </div>
           )}
         </div>
+
+        {/* Προγράμματα Προπόνησης */}
+        <ShopProgramsSection />
 
         {products.length === 0 ? (
           <Card className="rounded-none">

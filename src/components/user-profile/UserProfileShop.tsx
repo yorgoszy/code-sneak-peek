@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ShoppingCart, Clock, Users, MapPin, Calendar, Dumbbell, History, Video } from "lucide-react";
 import { UserProfileShopHistory } from "./UserProfileShopHistory";
+import { ShopProgramsSection } from "./shop/ShopProgramsSection";
 
 interface SubscriptionType {
   id: string;
@@ -118,6 +119,9 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
           <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('shop.availablePackages')}</h2>
           <p className="text-gray-600">{t('shop.selectPackage')}</p>
         </div>
+
+        {/* Προγράμματα Προπόνησης */}
+        <ShopProgramsSection />
 
         {products.length === 0 ? (
           <Card className="rounded-none">
