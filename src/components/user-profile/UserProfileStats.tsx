@@ -898,7 +898,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('nutrition') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <Utensils className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <Utensils className={`${isWidgetDisabled('nutrition') ? 'text-gray-400' : 'text-black'} ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               <span className="text-black"> </span>
@@ -977,7 +977,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('progress') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <TrendingUp className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <TrendingUp className={`${isWidgetDisabled('progress') ? 'text-gray-400' : 'text-black'} ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               <span className="text-black"> </span>
@@ -1000,7 +1000,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('history') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <History className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <History className={`${isWidgetDisabled('history') ? 'text-gray-400' : 'text-black'} ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               <span className="text-black"> </span>
