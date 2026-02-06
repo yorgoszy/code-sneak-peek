@@ -24,6 +24,7 @@ import { UserProfileHistory } from "./UserProfileHistory";
 import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -90,6 +91,12 @@ export const UserProfileContent = ({
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const { isAdmin } = useRoleCheck();
   const isCoachManagedUser = useIsCoachManagedUser(userProfile);
+  const { hasActiveSubscription } = useUserSubscriptionStatus(userProfile?.id);
+  
+  const hasSubscription = isAdmin() || hasActiveSubscription;
+  
+  // Allowed tabs without subscription
+  const allowedWithoutSubscription = ['shop', 'edit-profile', 'download-app'];
 
   // Άνοιγμα του AI chat dialog όταν το tab είναι "ai-trainer" - χρησιμοποιείται μόνο για άλλα components
   useEffect(() => {
@@ -97,6 +104,13 @@ export const UserProfileContent = ({
       setIsAIChatOpen(false);
     }
   }, [activeTab]);
+
+  // Redirect to shop if no subscription and restricted tab
+  useEffect(() => {
+    if (!hasSubscription && !allowedWithoutSubscription.includes(activeTab) && setActiveTab) {
+      setActiveTab('shop');
+    }
+  }, [hasSubscription, activeTab]);
 
   // Το βελάκι εμφανίζεται μόνο σε admin mode
   const BackButton = () => (
