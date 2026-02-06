@@ -210,8 +210,8 @@ export const UserProfileSidebar = forwardRef<
   const showAdminMenus = isAdmin || !isCoachCreatedUser;
   
   // Έλεγχος αν ο χρήστης έχει ενεργή συνδρομή
-  // Αν δεν έχει, εμφανίζονται μόνο: shop, edit-profile, download app
-  const hasSubscription = isAdmin() || hasActiveSubscription;
+  // Αν δεν έχει, τα μενού εμφανίζονται αλλά είναι disabled (εκτός: shop, edit-profile, download app)
+  const hasSubscription = hasActiveSubscription;
 
   const menuItems = [
     { 
@@ -219,91 +219,104 @@ export const UserProfileSidebar = forwardRef<
       label: t('sidebar.overview'), 
       key: "overview",
       badge: null,
-      visible: hasSubscription
+      visible: true,
+      disabled: !hasSubscription
     },
     { 
       icon: Activity, 
       label: t('sidebar.programs'), 
       key: "programs",
       badge: activePrograms > 0 ? activePrograms : null,
-      visible: hasSubscription
+      visible: true,
+      disabled: !hasSubscription
     },
     {
       icon: Utensils,
       label: t('sidebar.nutrition'),
       key: "nutrition",
       badge: null,
-      visible: hasSubscription
+      visible: true,
+      disabled: !hasSubscription
     },
     { 
       icon: Calendar, 
       label: t('sidebar.calendar'), 
       key: "calendar",
       badge: null,
-      visible: false // Κρύβουμε το ημερολόγιο
+      visible: false,
+      disabled: !hasSubscription
     },
     { 
       icon: TrendingUp, 
       label: t('sidebar.progress'), 
       key: "progress",
       badge: null,
-      visible: hasSubscription
+      visible: true,
+      disabled: !hasSubscription
     },
     { 
       icon: History, 
       label: t('sidebar.history'), 
       key: "history",
       badge: null,
-      visible: hasSubscription
+      visible: true,
+      disabled: !hasSubscription
     },
     { 
       icon: CreditCard, 
       label: t('sidebar.payments'), 
       key: "payments",
       badge: stats.paymentsCount > 0 ? stats.paymentsCount : null,
-      visible: hasSubscription
+      visible: true,
+      disabled: !hasSubscription
     },
     {
       icon: ShoppingCart,
       label: t('sidebar.shop'),
       key: "shop",
       badge: null,
-      visible: showAdminMenus
+      visible: showAdminMenus,
+      disabled: false
     },
     {
       icon: Tag,
       label: t('sidebar.offers'),
       key: "offers",
       badge: availableOffers > 0 ? availableOffers : null,
-      visible: showAdminMenus && hasSubscription
+      visible: showAdminMenus,
+      disabled: !hasSubscription
     },
     {
       icon: Video,
       label: t('sidebar.onlineCoaching'),
       key: "online-coaching",
       badge: null,
-      visible: showAdminMenus && hasSubscription
+      visible: showAdminMenus,
+      disabled: !hasSubscription
     },
     {
       icon: CalendarDays,
       label: t('sidebar.onlineBooking'),
       key: "online-booking",
       badge: null,
-      visible: showAdminMenus && hasSubscription
+      visible: showAdminMenus,
+      disabled: !hasSubscription
     },
     {
       icon: User,
       label: t('sidebar.editProfile'),
       key: "edit-profile",
       badge: null,
-      visible: true
+      visible: true,
+      disabled: false
     },
     {
       icon: BookOpen,
       label: t('sidebar.schoolNotes'),
       key: "school-notes",
       badge: null,
-      visible: isParentUser && hasSubscription
+      visible: isParentUser,
+      disabled: !hasSubscription
     },
   ].filter(item => item.visible);
 
@@ -330,19 +343,25 @@ export const UserProfileSidebar = forwardRef<
     <div className="space-y-1 md:space-y-2">
       {menuItems.map((item) => {
         const isActive = activeTab === item.key;
+        const isDisabled = item.disabled;
         return (
           <button
             key={item.key}
-            onClick={() => setActiveTab(item.key)}
-            className={`w-full flex items-center justify-between px-3 py-2 md:py-2 text-sm font-medium transition-colors hover:bg-gray-100 rounded-none ${
-              isActive ? 'bg-black/10 text-black border-r-2 border-black' : 'text-gray-700'
+            onClick={() => !isDisabled && setActiveTab(item.key)}
+            disabled={isDisabled}
+            className={`w-full flex items-center justify-between px-3 py-2 md:py-2 text-sm font-medium transition-colors rounded-none ${
+              isDisabled 
+                ? 'text-gray-300 cursor-not-allowed' 
+                : isActive 
+                  ? 'bg-black/10 text-black border-r-2 border-black' 
+                  : 'text-gray-700 hover:bg-gray-100'
             }`}
           >
             <div className="flex items-center space-x-3">
-              <item.icon className="h-5 w-5 flex-shrink-0" />
+              <item.icon className={`h-5 w-5 flex-shrink-0 ${isDisabled ? 'text-gray-300' : ''}`} />
               {(!isCollapsed || isMobile) && <span className="truncate">{item.label}</span>}
             </div>
-            {(!isCollapsed || isMobile) && item.badge && (
+            {(!isCollapsed || isMobile) && item.badge && !isDisabled && (
               <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
                 item.key === 'offers' ? 'bg-[#fa3055] text-white' : 'bg-gray-200 text-gray-700'
               }`}>
