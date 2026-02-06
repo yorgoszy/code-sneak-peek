@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     const authHeader = req.headers.get("Authorization");
@@ -53,15 +53,15 @@ serve(async (req) => {
     logStep("App user found", { appUserId: appUser.id });
 
     const body = await req.json();
-    const { program_id, training_days } = body;
-    logStep("Request body parsed", { program_id, training_days });
+    const { program_id, training_dates } = body;
+    logStep("Request body parsed", { program_id, training_dates });
 
     if (!program_id) {
       throw new Error("program_id is required");
     }
 
-    if (!training_days || !Array.isArray(training_days) || training_days.length === 0) {
-      throw new Error("training_days is required and must be a non-empty array");
+    if (!training_dates || !Array.isArray(training_dates) || training_dates.length === 0) {
+      throw new Error("training_dates is required and must be a non-empty array");
     }
 
     // Get program details
@@ -118,7 +118,7 @@ serve(async (req) => {
         user_id: appUser.id,
         auth_user_id: user.id,
         program_id: program.id,
-        training_days: JSON.stringify(training_days),
+        training_dates: JSON.stringify(training_dates),
         payment_type: "program_purchase"
       }
     });
