@@ -9,6 +9,7 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { useTranslation } from 'react-i18next';
 import { HealthCardWidget } from "./HealthCardWidget";
+import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
 
 interface UserProfileStatsProps {
   user: any;
@@ -44,8 +45,14 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const activePrograms = useMemo(() => {
     return allActivePrograms?.filter(p => p.user_id === user.id) || [];
   }, [allActivePrograms, user.id]);
+  const { hasActiveSubscription } = useUserSubscriptionStatus(user?.id);
 
   const [isCoachManagedUser, setIsCoachManagedUser] = useState(false);
+
+  // Widgets that are always enabled (even without subscription)
+  const enabledWithoutSub = new Set(['shop', 'edit-profile']);
+  const isWidgetDisabled = (tabKey: string) => !hasActiveSubscription && !enabledWithoutSub.has(tabKey);
+  const disabledClass = 'opacity-40 pointer-events-none cursor-not-allowed';
 
   useEffect(() => {
     let cancelled = false;
@@ -725,7 +732,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   navigate(`/dashboard/user-profile/${user.id}?tab=offers`);
                 }
               }}
-              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+              disabled={isWidgetDisabled('offers')}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('offers') ? disabledClass : ''}`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <Tag className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -762,7 +770,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=payments`);
               }
             }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            disabled={isWidgetDisabled('payments')}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('payments') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <CreditCard className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -792,7 +801,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=payments`);
               }
             }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            disabled={isWidgetDisabled('payments')}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('payments') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               {isPaused ? (
@@ -835,7 +845,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=programs`);
               }
             }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            disabled={isWidgetDisabled('programs')}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('programs') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <Dumbbell className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -883,7 +894,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=nutrition`);
               }
             }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            disabled={isWidgetDisabled('nutrition')}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('nutrition') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <Utensils className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
@@ -898,7 +910,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
 
           {/* Επερχόμενα Τεστ - ΚΙΤΡΙΝΟ - Μη clickable */}
           <div 
-            className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0`}
+            className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 ${isWidgetDisabled('tests') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <Calendar className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -926,7 +938,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           {/* Επερχόμενοι Αγώνες - Μόνο για αθλητές - ΜΟΒ - Μη clickable */}
           {(user.is_athlete || user.role === 'athlete') && (
             <div 
-              className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0`}
+              className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 ${isWidgetDisabled('tests') ? disabledClass : ''}`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <Trophy className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -961,7 +973,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=progress`);
               }
             }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            disabled={isWidgetDisabled('progress')}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('progress') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <TrendingUp className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
@@ -983,7 +996,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=history`);
               }
             }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            disabled={isWidgetDisabled('history')}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('history') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <History className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
@@ -1006,7 +1020,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`);
                 }
               }}
-              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+              disabled={isWidgetDisabled('online-booking')}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('online-booking') ? disabledClass : ''}`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <MapPin className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -1038,7 +1053,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   navigate(`/dashboard/user-profile/${user.id}?tab=online-booking`);
                 }
               }}
-              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+              disabled={isWidgetDisabled('online-booking')}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('online-booking') ? disabledClass : ''}`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <MapPin className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -1075,7 +1091,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   navigate(`/dashboard/user-profile/${user.id}?tab=online-coaching`);
                 }
               }}
-              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+              disabled={isWidgetDisabled('online-coaching')}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('online-coaching') ? disabledClass : ''}`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <Video className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -1109,8 +1126,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   }
                 }
               }}
-              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col min-w-0`}
-              disabled={!upcomingVideocall}
+              disabled={isWidgetDisabled('online-coaching') || !upcomingVideocall}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer disabled:cursor-not-allowed flex flex-col min-w-0 ${isWidgetDisabled('online-coaching') ? disabledClass : ''}`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <Video className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
@@ -1138,7 +1155,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
 
           {/* Κάρτα Υγείας - Μόνο για αθλητές - Πριν το Προφίλ */}
           {(user.is_athlete || user.role === 'athlete') && (
-            <HealthCardWidget userId={user.id} />
+            <div className={isWidgetDisabled('health') ? disabledClass : ''}>
+              <HealthCardWidget userId={user.id} />
+            </div>
           )}
 
           {/* Προφίλ */}
@@ -1172,7 +1191,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=ai-trainer`);
               }
             }}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+            disabled={isWidgetDisabled('ai-trainer')}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('ai-trainer') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               <MessageCircle className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
@@ -1195,7 +1215,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                   navigate(`/dashboard/user-profile/${user.id}?tab=school-notes`);
                 }
               }}
-              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
+              disabled={isWidgetDisabled('school-notes')}
+              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('school-notes') ? disabledClass : ''}`}
             >
               <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
                 <BookOpen className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
