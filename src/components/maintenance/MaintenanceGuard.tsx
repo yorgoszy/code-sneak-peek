@@ -13,8 +13,8 @@ interface MaintenanceGuardProps {
   children: React.ReactNode;
 }
 
-// Maintenance ends on Friday 2026-02-06 at 23:59 (Greece timezone UTC+2)
-const MAINTENANCE_END_DATE = new Date('2026-02-06T23:59:00+02:00');
+// Maintenance disabled
+const MAINTENANCE_END_DATE = new Date('2025-01-01T00:00:00+02:00');
 
 export const MaintenanceGuard: React.FC<MaintenanceGuardProps> = ({ userRole, children }) => {
   const [isMaintenanceActive, setIsMaintenanceActive] = useState(false);
