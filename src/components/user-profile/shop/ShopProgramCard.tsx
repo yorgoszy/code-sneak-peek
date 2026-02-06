@@ -42,7 +42,7 @@ export const ShopProgramCard: React.FC<ShopProgramCardProps> = ({ program }) => 
           id, name, description,
           program_weeks!program_weeks_program_id_fkey(
             id, week_number, name,
-            program_days(id, day_number, name, is_test_day, test_types, is_competition_day)
+            program_days!fk_program_days_week_id(id, day_number, name, is_test_day, test_types, is_competition_day)
           )
         `)
         .eq('id', program.id)
