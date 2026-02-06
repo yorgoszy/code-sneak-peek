@@ -49,9 +49,7 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
         <Calendar
           mode="multiple"
           selected={selectedDatesAsStrings.map(date => parseISO(date))}
-          onDayClick={onDateSelect}
-          disabled={isDateDisabled}
-          className="rounded-none border pointer-events-auto"
+          className="rounded-none border pointer-events-auto [&_.rdp-day]:pointer-events-none [&_.rdp-day]:cursor-default"
           locale={el}
           month={currentMonth}
           onMonthChange={setCurrentMonth}
