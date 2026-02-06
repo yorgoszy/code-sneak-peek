@@ -193,17 +193,17 @@ const Shop = ({ userProfile, userEmail, onSignOut }: ShopProps = {}) => {
                 <CardHeader className="text-center pb-4">
                   <div className="flex justify-center items-center mb-4">
                     {product.subscription_mode === 'visit_based' ? (
-                      <div className="bg-blue-100 p-3 rounded-full">
-                        <MapPin className="w-6 h-6 text-blue-600" />
+                      <div className="bg-gray-100 p-3 rounded-full">
+                        <MapPin className="w-6 h-6 text-gray-700" />
                       </div>
                     ) : (
-                      <div className="bg-green-100 p-3 rounded-full">
-                        <Calendar className="w-6 h-6 text-green-600" />
+                      <div className="bg-gray-100 p-3 rounded-full">
+                        <Calendar className="w-6 h-6 text-gray-700" />
                       </div>
                     )}
                   </div>
                   <CardTitle className="text-xl font-bold">{product.name}</CardTitle>
-                  <div className="text-3xl font-bold text-[#cb8954]">
+                  <div className="text-3xl font-bold text-gray-900">
                     €{product.price}
                     {product.subscription_mode === 'time_based' && (
                       <span className="text-sm text-gray-500 font-normal">/μήνα</span>
@@ -220,7 +220,7 @@ const Shop = ({ userProfile, userEmail, onSignOut }: ShopProps = {}) => {
                       <>
                         <div className="flex items-center justify-between py-2 border-b border-gray-100">
                           <span className="flex items-center text-sm">
-                            <Dumbbell className="w-4 h-4 mr-2 text-blue-500" />
+                            <Dumbbell className="w-4 h-4 mr-2 text-gray-500" />
                             Επισκέψεις
                           </span>
                           <Badge variant="secondary" className="rounded-none">
@@ -229,7 +229,7 @@ const Shop = ({ userProfile, userEmail, onSignOut }: ShopProps = {}) => {
                         </div>
                         <div className="flex items-center justify-between py-2 border-b border-gray-100">
                           <span className="flex items-center text-sm">
-                            <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                            <Clock className="w-4 h-4 mr-2 text-gray-500" />
                             Λήξη σε
                           </span>
                           <Badge variant="secondary" className="rounded-none">
@@ -240,7 +240,7 @@ const Shop = ({ userProfile, userEmail, onSignOut }: ShopProps = {}) => {
                     ) : (
                       <div className="flex items-center justify-between py-2 border-b border-gray-100">
                         <span className="flex items-center text-sm">
-                          <Calendar className="w-4 h-4 mr-2 text-green-500" />
+                          <Calendar className="w-4 h-4 mr-2 text-gray-500" />
                           Διάρκεια
                         </span>
                         <Badge variant="secondary" className="rounded-none">
@@ -254,7 +254,7 @@ const Shop = ({ userProfile, userEmail, onSignOut }: ShopProps = {}) => {
                     <Button 
                       onClick={() => handlePurchase(product)}
                       disabled={loading === product.id}
-                      className="w-full bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
+                      className="w-full bg-black hover:bg-gray-800 text-white rounded-none"
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       {loading === product.id ? 'Φόρτωση...' : 'Αγορά Τώρα'}

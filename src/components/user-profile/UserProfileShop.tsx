@@ -138,21 +138,21 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                 <CardHeader className="text-center pb-4">
                   <div className="flex justify-center items-center mb-4">
                     {product.subscription_mode === 'visit_based' ? (
-                      <div className="bg-blue-100 p-3 rounded-full">
-                        <MapPin className="w-6 h-6 text-blue-600" />
+                      <div className="bg-gray-100 p-3 rounded-full">
+                        <MapPin className="w-6 h-6 text-gray-700" />
                       </div>
                     ) : product.subscription_mode === 'videocall' ? (
-                      <div className="bg-purple-100 p-3 rounded-full">
-                        <Video className="w-6 h-6 text-purple-600" />
+                      <div className="bg-gray-100 p-3 rounded-full">
+                        <Video className="w-6 h-6 text-gray-700" />
                       </div>
                     ) : (
-                      <div className="bg-green-100 p-3 rounded-full">
-                        <Calendar className="w-6 h-6 text-green-600" />
+                      <div className="bg-gray-100 p-3 rounded-full">
+                        <Calendar className="w-6 h-6 text-gray-700" />
                       </div>
                     )}
                   </div>
                   <CardTitle className="text-xl font-bold">{product.name}</CardTitle>
-                  <div className="text-3xl font-bold text-[#cb8954]">
+                  <div className="text-3xl font-bold text-gray-900">
                     €{product.price}
                     {product.subscription_mode === 'time_based' && (
                       <span className="text-sm text-gray-500 font-normal">{t('shop.perMonth')}</span>
@@ -166,7 +166,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                       <>
                         <div className="flex items-center justify-between py-2 border-b border-gray-100">
                           <span className="flex items-center text-sm">
-                            <Dumbbell className="w-4 h-4 mr-2 text-blue-500" />
+                            <Dumbbell className="w-4 h-4 mr-2 text-gray-500" />
                             {t('shop.visits')}
                           </span>
                           <Badge variant="secondary" className="rounded-none">
@@ -176,7 +176,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                         {product.visit_expiry_months && (
                           <div className="flex items-center justify-between py-2 border-b border-gray-100">
                             <span className="flex items-center text-sm">
-                              <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                              <Clock className="w-4 h-4 mr-2 text-gray-500" />
                               {t('shop.expiresIn')}
                             </span>
                             <Badge variant="secondary" className="rounded-none">
@@ -189,7 +189,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                       <>
                         <div className="flex items-center justify-between py-2 border-b border-gray-100">
                           <span className="flex items-center text-sm">
-                            <Video className="w-4 h-4 mr-2 text-purple-500" />
+                            <Video className="w-4 h-4 mr-2 text-gray-500" />
                             {t('shop.calls')}
                           </span>
                           <Badge variant="secondary" className="rounded-none">
@@ -199,7 +199,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                         {product.visit_expiry_months && (
                           <div className="flex items-center justify-between py-2 border-b border-gray-100">
                             <span className="flex items-center text-sm">
-                              <Clock className="w-4 h-4 mr-2 text-purple-500" />
+                              <Clock className="w-4 h-4 mr-2 text-gray-500" />
                               {t('shop.expiresIn')}
                             </span>
                             <Badge variant="secondary" className="rounded-none">
@@ -211,7 +211,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                     ) : (
                       <div className="flex items-center justify-between py-2 border-b border-gray-100">
                         <span className="flex items-center text-sm">
-                          <Calendar className="w-4 h-4 mr-2 text-green-500" />
+                          <Calendar className="w-4 h-4 mr-2 text-gray-500" />
                           {t('shop.duration')}
                         </span>
                         <Badge variant="secondary" className="rounded-none">
@@ -225,7 +225,7 @@ export const UserProfileShop: React.FC<UserProfileShopProps> = ({ userProfile })
                     <Button 
                       onClick={() => handlePurchase(product)}
                       disabled={purchasing === product.id}
-                      className="w-full bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
+                      className="w-full bg-black hover:bg-gray-800 text-white rounded-none"
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       {purchasing === product.id ? t('shop.processing') : t('shop.buyNow')}
