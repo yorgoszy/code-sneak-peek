@@ -25,7 +25,7 @@ export const ShopProgramsSection: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('programs')
-        .select('id, name, description, price, created_by, program_weeks(id)')
+        .select('id, name, description, price, created_by, program_weeks!program_weeks_program_id_fkey(id)')
         .eq('is_sellable', true)
         .gt('price', 0)
         .order('name');
