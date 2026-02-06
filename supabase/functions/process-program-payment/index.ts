@@ -194,6 +194,85 @@ serve(async (req) => {
 
     logStep("Program assignment created", { assignmentId: assignment.id });
 
+    // Create subscription for the duration of the program + 1 day
+    const subscriptionEndDate = format(addDays(parseISO(endDate), 1), 'yyyy-MM-dd');
+    logStep("Creating subscription", { startDate, endDate: subscriptionEndDate });
+
+    // Check if user is coach-managed
+    const { data: userData } = await supabaseAdmin
+      .from('app_users')
+      .select('coach_id')
+      .eq('id', userId)
+      .single();
+
+    let isCoachManaged = false;
+    if (userData?.coach_id) {
+      const { data: coachData } = await supabaseAdmin
+        .from('app_users')
+        .select('role')
+        .eq('id', userData.coach_id)
+        .single();
+      isCoachManaged = coachData?.role === 'coach';
+    }
+
+    if (isCoachManaged && userData?.coach_id) {
+      // Create coach_subscription
+      // First find a suitable subscription_type or use a default
+      const { data: subType } = await supabaseAdmin
+        .from('subscription_types')
+        .select('id')
+        .limit(1)
+        .single();
+
+      if (subType) {
+        const { error: subError } = await supabaseAdmin
+          .from('coach_subscriptions')
+          .insert({
+            user_id: userId,
+            coach_id: userData.coach_id,
+            subscription_type_id: subType.id,
+            start_date: startDate,
+            end_date: subscriptionEndDate,
+            status: 'active',
+            is_paid: true,
+            notes: `Αυτόματη συνδρομή από αγορά προγράμματος: ${program.name}`
+          });
+
+        if (subError) {
+          logStep("Warning: Failed to create coach subscription", { error: subError.message });
+        } else {
+          logStep("Coach subscription created");
+        }
+      }
+    } else {
+      // Create user_subscription
+      const { data: subType } = await supabaseAdmin
+        .from('subscription_types')
+        .select('id')
+        .limit(1)
+        .single();
+
+      if (subType) {
+        const { error: subError } = await supabaseAdmin
+          .from('user_subscriptions')
+          .insert({
+            user_id: userId,
+            subscription_type_id: subType.id,
+            start_date: startDate,
+            end_date: subscriptionEndDate,
+            status: 'active',
+            is_paid: true,
+            notes: `Αυτόματη συνδρομή από αγορά προγράμματος: ${program.name}`
+          });
+
+        if (subError) {
+          logStep("Warning: Failed to create user subscription", { error: subError.message });
+        } else {
+          logStep("User subscription created");
+        }
+      }
+    }
+
     return new Response(JSON.stringify({ 
       success: true, 
       purchaseId: purchase.id,
