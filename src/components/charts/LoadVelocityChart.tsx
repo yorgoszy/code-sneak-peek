@@ -110,6 +110,7 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
               allowDecimals={false}
               axisLine={true}
               tickLine={true}
+              width={25}
             />
             <Tooltip 
               content={({ active, payload }) => {
