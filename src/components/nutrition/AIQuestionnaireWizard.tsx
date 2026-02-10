@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,10 +8,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Brain, Loader2, ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
+import { Brain, Loader2, ChevronRight, ChevronLeft, Sparkles, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffectiveCoachId } from "@/hooks/useEffectiveCoachId";
+import { matchesSearchTerm } from "@/lib/utils";
 
 interface AIQuestionnaireWizardProps {
   onComplete: (planData: any) => void;
@@ -60,6 +61,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [users, setUsers] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   const { effectiveCoachId, loading: rolesLoading } = useEffectiveCoachId();
 
@@ -75,6 +77,15 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
     weight: '',
     height: '',
     age: '',
+    bodyFatPercentage: '',
+    muscleMassPercentage: '',
+    visceralFatPercentage: '',
+    boneDensity: '',
+    waistCircumference: '',
+    hipCircumference: '',
+    chestCircumference: '',
+    armCircumference: '',
+    thighCircumference: '',
     activityLevel: 'moderate',
     trainingVolume: '',
     // Health data
@@ -108,17 +119,24 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
     }
   };
 
+  const filteredUsers = useMemo(() => {
+    if (!userSearchTerm.trim()) return users;
+    return users.filter(u =>
+      matchesSearchTerm(u.name || '', userSearchTerm) ||
+      matchesSearchTerm(u.email || '', userSearchTerm)
+    );
+  }, [users, userSearchTerm]);
+
   const fetchUserData = async (userId: string) => {
     try {
-      let weight = '';
-      let height = '';
+      let metrics: Record<string, string> = {};
 
       // First try regular anthropometric tables
       const { data: anthroData } = await supabase
         .from('anthropometric_test_sessions')
         .select(`
           *,
-          anthropometric_test_data (weight, height)
+          anthropometric_test_data (weight, height, body_fat_percentage, muscle_mass_percentage, visceral_fat_percentage, bone_density, waist_circumference, hip_circumference, chest_circumference, arm_circumference, thigh_circumference)
         `)
         .eq('user_id', userId)
         .order('test_date', { ascending: false })
@@ -126,18 +144,29 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
         .maybeSingle();
 
       if (anthroData?.anthropometric_test_data?.[0]) {
-        const data = anthroData.anthropometric_test_data[0];
-        weight = data.weight?.toString() || '';
-        height = data.height?.toString() || '';
+        const d = anthroData.anthropometric_test_data[0];
+        metrics = {
+          weight: d.weight?.toString() || '',
+          height: d.height?.toString() || '',
+          bodyFatPercentage: d.body_fat_percentage?.toString() || '',
+          muscleMassPercentage: d.muscle_mass_percentage?.toString() || '',
+          visceralFatPercentage: d.visceral_fat_percentage?.toString() || '',
+          boneDensity: d.bone_density?.toString() || '',
+          waistCircumference: d.waist_circumference?.toString() || '',
+          hipCircumference: d.hip_circumference?.toString() || '',
+          chestCircumference: d.chest_circumference?.toString() || '',
+          armCircumference: d.arm_circumference?.toString() || '',
+          thighCircumference: d.thigh_circumference?.toString() || '',
+        };
       }
 
       // If no data found, try coach anthropometric tables
-      if (!weight && !height && effectiveCoachId) {
+      if (!metrics.weight && !metrics.height && effectiveCoachId) {
         const { data: coachAnthroData } = await supabase
           .from('coach_anthropometric_test_sessions')
           .select(`
             *,
-            coach_anthropometric_test_data (weight, height)
+            coach_anthropometric_test_data (weight, height, body_fat_percentage, muscle_mass_percentage, visceral_fat_percentage, bone_density, waist_circumference, hip_circumference, chest_circumference, arm_circumference, thigh_circumference)
           `)
           .eq('user_id', userId)
           .eq('coach_id', effectiveCoachId)
@@ -146,9 +175,20 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
           .maybeSingle();
 
         if (coachAnthroData?.coach_anthropometric_test_data?.[0]) {
-          const data = coachAnthroData.coach_anthropometric_test_data[0];
-          weight = data.weight?.toString() || '';
-          height = data.height?.toString() || '';
+          const d = coachAnthroData.coach_anthropometric_test_data[0];
+          metrics = {
+            weight: d.weight?.toString() || '',
+            height: d.height?.toString() || '',
+            bodyFatPercentage: d.body_fat_percentage?.toString() || '',
+            muscleMassPercentage: d.muscle_mass_percentage?.toString() || '',
+            visceralFatPercentage: d.visceral_fat_percentage?.toString() || '',
+            boneDensity: d.bone_density?.toString() || '',
+            waistCircumference: d.waist_circumference?.toString() || '',
+            hipCircumference: d.hip_circumference?.toString() || '',
+            chestCircumference: d.chest_circumference?.toString() || '',
+            armCircumference: d.arm_circumference?.toString() || '',
+            thighCircumference: d.thigh_circumference?.toString() || '',
+          };
         }
       }
 
@@ -168,9 +208,18 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
 
       setFormData(prev => ({
         ...prev,
-        weight,
-        height,
-        age
+        weight: metrics.weight || '',
+        height: metrics.height || '',
+        age,
+        bodyFatPercentage: metrics.bodyFatPercentage || '',
+        muscleMassPercentage: metrics.muscleMassPercentage || '',
+        visceralFatPercentage: metrics.visceralFatPercentage || '',
+        boneDensity: metrics.boneDensity || '',
+        waistCircumference: metrics.waistCircumference || '',
+        hipCircumference: metrics.hipCircumference || '',
+        chestCircumference: metrics.chestCircumference || '',
+        armCircumference: metrics.armCircumference || '',
+        thighCircumference: metrics.thighCircumference || '',
       }));
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -267,6 +316,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
         onComplete({
           ...data.plan,
           coachId: effectiveCoachId,
+          assignToUserId: formData.userId,
         });
       } else {
         // Fallback: create a basic template
@@ -280,6 +330,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
           carbsTarget,
           fatTarget,
           coachId: effectiveCoachId,
+          assignToUserId: formData.userId,
           days: generateWeekTemplate(totalCalories, proteinTarget, carbsTarget, fatTarget)
         };
         onComplete(planData);
@@ -304,6 +355,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
         carbsTarget,
         fatTarget,
         coachId: effectiveCoachId,
+        assignToUserId: formData.userId,
         days: generateWeekTemplate(totalCalories, proteinTarget, carbsTarget, fatTarget)
       };
       onComplete(planData);
@@ -386,8 +438,20 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
         {currentStep === 0 && (
           <div className="space-y-4">
             <h3 className="font-medium">Επιλέξτε Χρήστη</h3>
-            <div className="grid gap-2 max-h-[40vh] sm:max-h-[300px] overflow-y-auto">
-              {users.map(user => (
+            
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                value={userSearchTerm}
+                onChange={(e) => setUserSearchTerm(e.target.value)}
+                placeholder="Αναζήτηση χρήστη..."
+                className="pl-9 rounded-none"
+              />
+            </div>
+
+            <div className="grid gap-2 max-h-[40vh] sm:max-h-[250px] overflow-y-auto">
+              {filteredUsers.map(user => (
                 <Card
                   key={user.id}
                   className={`rounded-none cursor-pointer transition-colors ${
@@ -404,40 +468,58 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
                         {user.name?.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm">{user.name}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm block truncate">{user.name}</span>
+                      <span className="text-[10px] text-gray-500 block truncate">{user.email}</span>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
+              {filteredUsers.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">Δεν βρέθηκαν χρήστες</p>
+              )}
             </div>
 
             {formData.userId && (
-              <div className="grid grid-cols-3 gap-2 pt-2">
-                <div className="space-y-2">
-                  <Label>Βάρος (kg)</Label>
-                  <Input
-                    type="number"
-                    value={formData.weight}
-                    onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
-                    className="rounded-none"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Ύψος (cm)</Label>
-                  <Input
-                    type="number"
-                    value={formData.height}
-                    onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
-                    className="rounded-none"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Ηλικία</Label>
-                  <Input
-                    type="number"
-                    value={formData.age}
-                    onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                    className="rounded-none"
-                  />
+              <div className="space-y-3 pt-2">
+                <h4 className="text-sm font-medium text-gray-700">Σωματομετρικά Δεδομένα</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Βάρος (kg)</Label>
+                    <Input type="number" value={formData.weight} onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))} className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Ύψος (cm)</Label>
+                    <Input type="number" value={formData.height} onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))} className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Ηλικία</Label>
+                    <Input type="number" value={formData.age} onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))} className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Λίπος (%)</Label>
+                    <Input type="number" value={formData.bodyFatPercentage} onChange={(e) => setFormData(prev => ({ ...prev, bodyFatPercentage: e.target.value }))} className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Μυϊκή Μάζα (%)</Label>
+                    <Input type="number" value={formData.muscleMassPercentage} onChange={(e) => setFormData(prev => ({ ...prev, muscleMassPercentage: e.target.value }))} className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Σπλαχνικό Λίπος (%)</Label>
+                    <Input type="number" value={formData.visceralFatPercentage} onChange={(e) => setFormData(prev => ({ ...prev, visceralFatPercentage: e.target.value }))} className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Οστική Πυκν.</Label>
+                    <Input type="number" value={formData.boneDensity} onChange={(e) => setFormData(prev => ({ ...prev, boneDensity: e.target.value }))} className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Μέση (cm)</Label>
+                    <Input type="number" value={formData.waistCircumference} onChange={(e) => setFormData(prev => ({ ...prev, waistCircumference: e.target.value }))} className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Γοφοί (cm)</Label>
+                    <Input type="number" value={formData.hipCircumference} onChange={(e) => setFormData(prev => ({ ...prev, hipCircumference: e.target.value }))} className="rounded-none h-8 text-sm" />
+                  </div>
                 </div>
               </div>
             )}

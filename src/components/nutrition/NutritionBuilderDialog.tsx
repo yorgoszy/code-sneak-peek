@@ -5,6 +5,7 @@ import { Brain, Loader2, Plus, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format, addDays } from "date-fns";
 import { AIQuestionnaireWizard } from "./AIQuestionnaireWizard";
 import { NutritionDayBuilder } from "./NutritionDayBuilder";
 
@@ -190,6 +191,36 @@ export const NutritionBuilderDialog: React.FC<NutritionBuilderDialogProps> = ({
 
             if (foodsError) throw foodsError;
           }
+        }
+      }
+
+      // Auto-assign to user if userId was provided
+      if (planData.assignToUserId && plan?.id) {
+        const startDate = new Date();
+        const endDate = addDays(startDate, 7);
+        const trainingDates: string[] = [];
+        let currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+          trainingDates.push(format(currentDate, 'yyyy-MM-dd'));
+          currentDate = addDays(currentDate, 1);
+        }
+
+        const { error: assignError } = await supabase
+          .from('nutrition_assignments')
+          .insert([{
+            plan_id: plan.id,
+            user_id: planData.assignToUserId,
+            start_date: format(startDate, 'yyyy-MM-dd'),
+            end_date: format(endDate, 'yyyy-MM-dd'),
+            training_dates: trainingDates,
+            status: 'active'
+          }]);
+
+        if (assignError) {
+          console.error('Error auto-assigning plan:', assignError);
+          toast.error('Το πρόγραμμα δημιουργήθηκε αλλά η ανάθεση απέτυχε');
+        } else {
+          toast.success('Το πρόγραμμα δημιουργήθηκε και ανατέθηκε επιτυχώς!');
         }
       }
 
