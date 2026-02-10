@@ -132,7 +132,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
       let metrics: Record<string, string> = {};
 
       // First try regular anthropometric tables
-      const { data: anthroData } = await supabase
+      const { data: anthroSessions } = await supabase
         .from('anthropometric_test_sessions')
         .select(`
           *,
@@ -140,9 +140,9 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
         `)
         .eq('user_id', userId)
         .order('test_date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
 
+      const anthroData = anthroSessions?.[0];
       if (anthroData?.anthropometric_test_data?.[0]) {
         const d = anthroData.anthropometric_test_data[0];
         metrics = {
@@ -162,7 +162,7 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
 
       // If no data found, try coach anthropometric tables
       if (!metrics.weight && !metrics.height && effectiveCoachId) {
-        const { data: coachAnthroData } = await supabase
+        const { data: coachAnthroSessions } = await supabase
           .from('coach_anthropometric_test_sessions')
           .select(`
             *,
@@ -171,9 +171,9 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
           .eq('user_id', userId)
           .eq('coach_id', effectiveCoachId)
           .order('test_date', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .limit(1);
 
+        const coachAnthroData = coachAnthroSessions?.[0];
         if (coachAnthroData?.coach_anthropometric_test_data?.[0]) {
           const d = coachAnthroData.coach_anthropometric_test_data[0];
           metrics = {
