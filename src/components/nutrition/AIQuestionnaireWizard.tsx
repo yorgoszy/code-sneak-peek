@@ -483,26 +483,28 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
             {formData.userId && (
               <div className="space-y-3 pt-2">
                 <h4 className="text-sm font-medium text-gray-700">Σωματομετρικά Δεδομένα</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Βάρος (kg)</Label>
-                    <Input type="number" value={formData.weight} onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))} className="rounded-none h-8 text-sm" />
-                  </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div className="space-y-1">
                     <Label className="text-xs">Ύψος (cm)</Label>
                     <Input type="number" value={formData.height} onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))} className="rounded-none h-8 text-sm" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Ηλικία</Label>
-                    <Input type="number" value={formData.age} onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))} className="rounded-none h-8 text-sm" />
+                    <Label className="text-xs">Βάρος (kg)</Label>
+                    <Input type="number" value={formData.weight} onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))} className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Μυϊκή Μάζα (%)</Label>
+                    <Input type="number" value={formData.muscleMassPercentage} onChange={(e) => setFormData(prev => ({ ...prev, muscleMassPercentage: e.target.value }))} className="rounded-none h-8 text-sm" />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">Λίπος (%)</Label>
                     <Input type="number" value={formData.bodyFatPercentage} onChange={(e) => setFormData(prev => ({ ...prev, bodyFatPercentage: e.target.value }))} className="rounded-none h-8 text-sm" />
                   </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Μυϊκή Μάζα (%)</Label>
-                    <Input type="number" value={formData.muscleMassPercentage} onChange={(e) => setFormData(prev => ({ ...prev, muscleMassPercentage: e.target.value }))} className="rounded-none h-8 text-sm" />
+                    <Label className="text-xs">Ηλικία</Label>
+                    <Input type="number" value={formData.age} onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))} className="rounded-none h-8 text-sm" />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">Σπλαχνικό Λίπος (%)</Label>
@@ -515,10 +517,6 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
                   <div className="space-y-1">
                     <Label className="text-xs">Μέση (cm)</Label>
                     <Input type="number" value={formData.waistCircumference} onChange={(e) => setFormData(prev => ({ ...prev, waistCircumference: e.target.value }))} className="rounded-none h-8 text-sm" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Γοφοί (cm)</Label>
-                    <Input type="number" value={formData.hipCircumference} onChange={(e) => setFormData(prev => ({ ...prev, hipCircumference: e.target.value }))} className="rounded-none h-8 text-sm" />
                   </div>
                 </div>
               </div>
