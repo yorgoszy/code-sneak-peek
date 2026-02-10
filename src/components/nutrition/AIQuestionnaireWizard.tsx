@@ -129,10 +129,11 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
 
   const fetchUserData = async (userId: string) => {
     try {
+      console.log('🔍 AI Wizard: Fetching anthropometric data for userId:', userId, 'coachId:', effectiveCoachId);
       let metrics: Record<string, string> = {};
 
       // First try regular anthropometric tables
-      const { data: anthroSessions } = await supabase
+      const { data: anthroSessions, error: anthroError } = await supabase
         .from('anthropometric_test_sessions')
         .select(`
           *,
@@ -141,8 +142,9 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
         .eq('user_id', userId)
         .order('test_date', { ascending: false })
         .limit(1);
-
+      console.log('🔍 AI Wizard: anthroSessions result:', anthroSessions, 'error:', anthroError);
       const anthroData = anthroSessions?.[0];
+      console.log('🔍 AI Wizard: anthroData:', anthroData);
       if (anthroData?.anthropometric_test_data?.[0]) {
         const d = anthroData.anthropometric_test_data[0];
         metrics = {
@@ -483,40 +485,54 @@ export const AIQuestionnaireWizard: React.FC<AIQuestionnaireWizardProps> = ({
             {formData.userId && (
               <div className="space-y-3 pt-2">
                 <h4 className="text-sm font-medium text-gray-700">Σωματομετρικά Δεδομένα</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Ύψος (cm)</Label>
-                    <Input type="number" value={formData.height} onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))} className="rounded-none h-8 text-sm" />
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Ύψος</Label>
+                    <Input type="number" value={formData.height} onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))} placeholder="cm" className="rounded-none h-8 text-sm" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Βάρος (kg)</Label>
-                    <Input type="number" value={formData.weight} onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))} className="rounded-none h-8 text-sm" />
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Βάρος</Label>
+                    <Input type="number" value={formData.weight} onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))} placeholder="kg" className="rounded-none h-8 text-sm" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Μυϊκή Μάζα (%)</Label>
-                    <Input type="number" value={formData.muscleMassPercentage} onChange={(e) => setFormData(prev => ({ ...prev, muscleMassPercentage: e.target.value }))} className="rounded-none h-8 text-sm" />
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Μυϊκή Μάζα</Label>
+                    <Input type="number" value={formData.muscleMassPercentage} onChange={(e) => setFormData(prev => ({ ...prev, muscleMassPercentage: e.target.value }))} placeholder="%" className="rounded-none h-8 text-sm" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Λίπος (%)</Label>
-                    <Input type="number" value={formData.bodyFatPercentage} onChange={(e) => setFormData(prev => ({ ...prev, bodyFatPercentage: e.target.value }))} className="rounded-none h-8 text-sm" />
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Λίπος</Label>
+                    <Input type="number" value={formData.bodyFatPercentage} onChange={(e) => setFormData(prev => ({ ...prev, bodyFatPercentage: e.target.value }))} placeholder="%" className="rounded-none h-8 text-sm" />
                   </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Ηλικία</Label>
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Σπλαχνικό Λίπος</Label>
+                    <Input type="number" value={formData.visceralFatPercentage} onChange={(e) => setFormData(prev => ({ ...prev, visceralFatPercentage: e.target.value }))} placeholder="%" className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Οστική Πυκνότητα</Label>
+                    <Input type="number" value={formData.boneDensity} onChange={(e) => setFormData(prev => ({ ...prev, boneDensity: e.target.value }))} placeholder="kg" className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Στήθος</Label>
+                    <Input type="number" value={formData.chestCircumference} onChange={(e) => setFormData(prev => ({ ...prev, chestCircumference: e.target.value }))} placeholder="cm" className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Μέση</Label>
+                    <Input type="number" value={formData.waistCircumference} onChange={(e) => setFormData(prev => ({ ...prev, waistCircumference: e.target.value }))} placeholder="cm" className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Ισχία</Label>
+                    <Input type="number" value={formData.hipCircumference} onChange={(e) => setFormData(prev => ({ ...prev, hipCircumference: e.target.value }))} placeholder="cm" className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Μηρός</Label>
+                    <Input type="number" value={formData.thighCircumference} onChange={(e) => setFormData(prev => ({ ...prev, thighCircumference: e.target.value }))} placeholder="cm" className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Βραχίονας</Label>
+                    <Input type="number" value={formData.armCircumference} onChange={(e) => setFormData(prev => ({ ...prev, armCircumference: e.target.value }))} placeholder="cm" className="rounded-none h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[9px] sm:text-xs text-muted-foreground">Ηλικία</Label>
                     <Input type="number" value={formData.age} onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))} className="rounded-none h-8 text-sm" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Σπλαχνικό Λίπος (%)</Label>
-                    <Input type="number" value={formData.visceralFatPercentage} onChange={(e) => setFormData(prev => ({ ...prev, visceralFatPercentage: e.target.value }))} className="rounded-none h-8 text-sm" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Οστική Πυκν.</Label>
-                    <Input type="number" value={formData.boneDensity} onChange={(e) => setFormData(prev => ({ ...prev, boneDensity: e.target.value }))} className="rounded-none h-8 text-sm" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Μέση (cm)</Label>
-                    <Input type="number" value={formData.waistCircumference} onChange={(e) => setFormData(prev => ({ ...prev, waistCircumference: e.target.value }))} className="rounded-none h-8 text-sm" />
                   </div>
                 </div>
               </div>
