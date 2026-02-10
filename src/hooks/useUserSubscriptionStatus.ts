@@ -46,21 +46,39 @@
              .gte('end_date', today)
              .limit(1);
  
-           if (coachSubError) throw coachSubError;
-           setHasActiveSubscription((coachSub?.length || 0) > 0);
-         } else {
-           // Έλεγχος στο user_subscriptions
-           const { data: userSub, error: userSubError } = await supabase
-             .from('user_subscriptions')
-             .select('id')
-             .eq('user_id', userId)
-             .eq('status', 'active')
-             .gte('end_date', today)
-             .limit(1);
- 
-           if (userSubError) throw userSubError;
-           setHasActiveSubscription((userSub?.length || 0) > 0);
-         }
+            if (coachSubError) throw coachSubError;
+            if ((coachSub?.length || 0) > 0) {
+              setHasActiveSubscription(true);
+              return;
+            }
+          } else {
+            // Έλεγχος στο user_subscriptions
+            const { data: userSub, error: userSubError } = await supabase
+              .from('user_subscriptions')
+              .select('id')
+              .eq('user_id', userId)
+              .eq('status', 'active')
+              .gte('end_date', today)
+              .limit(1);
+
+            if (userSubError) throw userSubError;
+            if ((userSub?.length || 0) > 0) {
+              setHasActiveSubscription(true);
+              return;
+            }
+          }
+
+          // Έλεγχος για ενεργό program assignment
+          const { data: activeAssignment, error: assignmentError } = await supabase
+            .from('program_assignments')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('status', 'active')
+            .gte('end_date', today)
+            .limit(1);
+
+          if (assignmentError) throw assignmentError;
+          setHasActiveSubscription((activeAssignment?.length || 0) > 0);
        } catch (error) {
          console.error('Error checking subscription status:', error);
          setHasActiveSubscription(false);
