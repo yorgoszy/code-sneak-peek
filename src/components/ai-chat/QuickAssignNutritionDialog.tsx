@@ -207,9 +207,21 @@ export const QuickAssignNutritionDialog: React.FC<QuickAssignNutritionDialogProp
 
       if (planError) throw planError;
 
-      // 2. Create days if provided
+      // 2. Create days if provided - expand to 7 days if AI only sent fewer
       if (nutritionData?.days && nutritionData.days.length > 0) {
-        for (const day of nutritionData.days) {
+        const dayNames = ["Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο", "Κυριακή"];
+        const sourceDays = nutritionData.days;
+        const expandedDays = [];
+        for (let i = 0; i < 7; i++) {
+          const sourceDay = sourceDays[i % sourceDays.length];
+          expandedDays.push({
+            ...sourceDay,
+            dayNumber: i + 1,
+            name: dayNames[i],
+          });
+        }
+
+        for (const day of expandedDays) {
           const { data: dayData, error: dayError } = await supabase
             .from('nutrition_plan_days')
             .insert([{
