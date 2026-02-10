@@ -94,7 +94,7 @@ export const LoadVelocityChart = ({ data, selectedExercises, exerciseSessions = 
     <Card className="rounded-none max-w-2xl">
       <CardContent className="p-0">
         <ResponsiveContainer width="100%" height={140}>
-          <LineChart data={chartData} margin={{ top: 1, right: 5, bottom: 1, left: 1 }}>
+          <LineChart data={chartData} margin={{ top: 1, right: 10, bottom: 1, left: 1 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="velocity"
