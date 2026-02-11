@@ -79,13 +79,34 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
 
   const fetchExercises = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: allExercises, error } = await supabase
         .from('exercises')
-        .select('id, name')
-        .order('name');
+        .select('id, name');
 
       if (error) throw error;
-      setExercises(data || []);
+
+      // Fetch usage counts from coach_strength_test_data
+      const { data: usageCounts } = await supabase
+        .from('coach_strength_test_data')
+        .select('exercise_id');
+
+      // Count frequency per exercise
+      const frequencyMap = new Map<string, number>();
+      (usageCounts || []).forEach(row => {
+        if (row.exercise_id) {
+          frequencyMap.set(row.exercise_id, (frequencyMap.get(row.exercise_id) || 0) + 1);
+        }
+      });
+
+      // Sort: most used first, then alphabetically
+      const sorted = (allExercises || []).sort((a, b) => {
+        const countA = frequencyMap.get(a.id) || 0;
+        const countB = frequencyMap.get(b.id) || 0;
+        if (countA !== countB) return countB - countA;
+        return a.name.localeCompare(b.name);
+      });
+
+      setExercises(sorted);
     } catch (error) {
       console.error('Error fetching exercises:', error);
     }
