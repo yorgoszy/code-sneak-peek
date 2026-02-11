@@ -85,17 +85,10 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
 
       if (error) throw error;
 
-      // Fetch usage counts from coach_strength_test_data
-      // Build query - if we have a coachId, filter by it; otherwise get all
-      let usageQuery = supabase
-        .from('coach_strength_test_data')
-        .select('exercise_id, coach_strength_test_sessions!inner(coach_id)');
-      
-      if (effectiveCoachId) {
-        usageQuery = usageQuery.eq('coach_strength_test_sessions.coach_id', effectiveCoachId);
-      }
-
-      const { data: usageCounts } = await usageQuery;
+      // Fetch usage counts from strength_test_attempts (main data source)
+      const { data: usageCounts } = await supabase
+        .from('strength_test_attempts')
+        .select('exercise_id');
 
       // Count frequency per exercise
       const frequencyMap = new Map<string, number>();
@@ -104,8 +97,6 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
           frequencyMap.set(row.exercise_id, (frequencyMap.get(row.exercise_id) || 0) + 1);
         }
       });
-
-      console.log('📊 Exercise frequency map:', Object.fromEntries(frequencyMap), 'Total entries:', usageCounts?.length || 0);
 
       // Sort: most used first, then alphabetically
       const sorted = (allExercises || []).sort((a, b) => {
