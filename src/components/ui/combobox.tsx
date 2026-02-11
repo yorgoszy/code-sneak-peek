@@ -96,7 +96,7 @@ export function Combobox({
         style={{ width: buttonWidth || 'auto' }}
         align="start"
       >
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput 
             placeholder="Αναζήτηση..." 
             value={searchValue}
