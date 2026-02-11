@@ -105,9 +105,10 @@ export function Combobox({
           <CommandList>
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {filteredOptions.map((option) => (
+              {filteredOptions.map((option, index) => (
                 <CommandItem
                   key={option.value}
+                  value={`item-${index}-${option.value}`}
                   onSelect={() => {
                     onValueChange(option.value)
                     setOpen(false)
