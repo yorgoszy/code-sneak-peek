@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Trash2, Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Exercise } from "./types";
+
+const normalizeText = (text: string) =>
+  text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 interface ExerciseSelectorProps {
   exercises: Exercise[];
@@ -24,6 +27,13 @@ export const ExerciseSelector = ({
   onRemove 
 }: ExerciseSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredExercises = useMemo(() => {
+    if (!searchQuery) return exercises;
+    const normalized = normalizeText(searchQuery);
+    return exercises.filter(e => normalizeText(e.name).includes(normalized));
+  }, [exercises, searchQuery]);
 
   return (
     <div className="flex justify-between items-start mb-3">
@@ -44,12 +54,17 @@ export const ExerciseSelector = ({
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[300px] p-0 rounded-none">
-            <Command>
-              <CommandInput placeholder="Αναζήτηση ασκήσεων..." className="h-9" />
+            <Command shouldFilter={false}>
+              <CommandInput 
+                placeholder="Αναζήτηση ασκήσεων..." 
+                className="h-9" 
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+              />
               <CommandEmpty>Δεν βρέθηκαν ασκήσεις.</CommandEmpty>
               <CommandGroup>
                 <CommandList>
-                  {exercises.map((exercise) => (
+                  {filteredExercises.map((exercise) => (
                     <CommandItem
                       key={exercise.id}
                       value={exercise.name}
