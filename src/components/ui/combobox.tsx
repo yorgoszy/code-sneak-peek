@@ -96,20 +96,27 @@ export function Combobox({
         style={{ width: buttonWidth || 'auto' }}
         align="start"
       >
-        <Command shouldFilter={false}>
-          <CommandInput 
-            placeholder="Αναζήτηση..." 
-            value={searchValue}
-            onValueChange={setSearchValue}
-          />
-          <CommandList>
-            <CommandEmpty>{emptyMessage}</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto">
-              {filteredOptions.map((option, index) => (
-                <CommandItem
+        <div className="flex flex-col">
+          <div className="flex items-center border-b px-3">
+            <input
+              className="flex h-10 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
+              placeholder="Αναζήτηση..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
+          </div>
+          <div className="max-h-64 overflow-auto">
+            {filteredOptions.length === 0 ? (
+              <div className="py-6 text-center text-sm text-muted-foreground">{emptyMessage}</div>
+            ) : (
+              filteredOptions.map((option) => (
+                <div
                   key={option.value}
-                  value={`item-${index}-${option.value}`}
-                  onSelect={() => {
+                  className={cn(
+                    "relative flex cursor-pointer select-none items-center px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground",
+                    value === option.value && "bg-accent"
+                  )}
+                  onClick={() => {
                     onValueChange(option.value)
                     setOpen(false)
                     setSearchValue("")
@@ -128,11 +135,11 @@ export function Combobox({
                     </Avatar>
                   )}
                   {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
   )
