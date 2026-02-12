@@ -5,28 +5,36 @@ import './index.css'
 import './i18n/config'
 import { registerSW } from 'virtual:pwa-register'
 
-// Register SW - update when page is hidden (tab not active) to avoid losing work
+// Register SW - auto update, reload when user returns to tab
 if ('serviceWorker' in navigator) {
   const updateSW = registerSW({
     immediate: true,
     onNeedRefresh() {
-      console.log('New content available - will update when tab is not active');
-      // Update only when user is not actively using the page
-      const tryUpdate = () => {
+      console.log('New content available - will reload when user returns to tab');
+      // If tab is already hidden, update immediately
+      if (document.hidden) {
+        updateSW(true);
+        return;
+      }
+      // Otherwise wait for user to leave and come back
+      const handleVisibility = () => {
         if (document.hidden) {
-          console.log('Tab hidden - applying update now');
+          // User left the tab - apply the update now
+          document.removeEventListener('visibilitychange', handleVisibility);
           updateSW(true);
         }
       };
-      // Try immediately if tab is already hidden
-      tryUpdate();
-      // Otherwise wait for user to switch away
-      document.addEventListener('visibilitychange', tryUpdate, { once: true });
+      document.addEventListener('visibilitychange', handleVisibility);
     },
     onOfflineReady() {
       console.log('App ready to work offline');
     },
   });
+
+  // Also check for updates periodically (every 5 minutes)
+  setInterval(() => {
+    updateSW();
+  }, 5 * 60 * 1000);
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
