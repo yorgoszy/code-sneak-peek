@@ -537,11 +537,16 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
               {exerciseGroup.sessions.length > 0 && (() => {
                 const lastSession = exerciseGroup.sessions[exerciseGroup.sessions.length - 1];
                 return (
-                  <div className="flex flex-col items-center shrink-0">
-                    <span className="text-[8px] font-bold text-destructive leading-none mb-0.5">
-                      {format(new Date(lastSession.test_date), 'MMM', { locale: el }).toUpperCase()}
+                  <div className="flex items-center shrink-0 gap-1">
+                    <div className="flex flex-col items-center shrink-0">
+                      <span className="text-[8px] font-bold text-destructive leading-none mb-0.5">
+                        {format(new Date(lastSession.test_date), 'MMM', { locale: el }).toUpperCase()}
+                      </span>
+                      <div className="w-0.5 flex-1 min-h-[20px] bg-destructive" />
+                    </div>
+                    <span className="text-[9px] font-bold text-muted-foreground shrink-0">
+                      {new Date(lastSession.test_date).getFullYear()}
                     </span>
-                    <div className="w-0.5 flex-1 min-h-[20px] bg-destructive" />
                   </div>
                 );
               })()}
