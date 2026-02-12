@@ -511,11 +511,21 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                       </Avatar>
                     </button>
                     {isLastInYear ? (
-                      <div className="flex flex-col items-center mx-1 shrink-0">
-                        <span className="text-[9px] font-bold text-destructive leading-none mb-0.5">
-                          {currentYear}
-                        </span>
-                        <div className="w-0.5 flex-1 min-h-[20px] bg-muted-foreground/40" />
+                      <div className="flex items-center mx-1 shrink-0 gap-1">
+                        {/* Month separator */}
+                        <div className="flex flex-col items-center shrink-0">
+                          <span className="text-[8px] font-bold text-destructive leading-none mb-0.5">
+                            {format(new Date(session.test_date), 'MMM', { locale: el }).toUpperCase()}
+                          </span>
+                          <div className="w-0.5 flex-1 min-h-[20px] bg-destructive" />
+                        </div>
+                        {/* Year separator */}
+                        <div className="flex flex-col items-center shrink-0">
+                          <span className="text-[9px] font-bold text-muted-foreground leading-none mb-0.5">
+                            {currentYear}
+                          </span>
+                          <div className="w-0.5 flex-1 min-h-[20px] bg-muted-foreground/40" />
+                        </div>
                       </div>
                     ) : isLastInMonth ? (
                       <div className="flex flex-col items-center mx-0.5 shrink-0">
