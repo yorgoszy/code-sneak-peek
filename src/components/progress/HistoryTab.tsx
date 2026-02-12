@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -126,12 +127,12 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
 
       const { data: usersData, error: usersError } = await supabase
         .from('app_users')
-        .select('id, name, email');
+        .select('id, name, email, avatar_url, photo_url');
         
       if (usersError) throw usersError;
 
       const map = new Map<string, any>();
-      (usersData || []).forEach(u => map.set(u.id, { name: u.name, email: u.email }));
+      (usersData || []).forEach(u => map.set(u.id, { name: u.name, email: u.email, avatar_url: u.photo_url || u.avatar_url }));
       setUsersMap(map);
 
       setSessions(sessionsData);
@@ -486,6 +487,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
             <div className="space-y-2">
               {exerciseGroup.sessions.map((session) => {
                 const userName = session.app_users?.name || usersMap.get(session.user_id)?.name || t('history.unknownUser');
+                const userAvatar = usersMap.get(session.user_id)?.avatar_url;
                 const sortedAttempts = session.exerciseAttempts
                   ?.sort((a: any, b: any) => a.attempt_number - b.attempt_number) || [];
                 const lastAttempt = sortedAttempts[sortedAttempts.length - 1];
@@ -496,6 +498,10 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                       <CollapsibleTrigger className="w-full text-left">
                         <div className="flex items-center justify-between p-2 hover:bg-muted/50 transition-colors">
                           <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <Avatar className="h-5 w-5 shrink-0">
+                              <AvatarImage src={userAvatar || ''} alt={userName} />
+                              <AvatarFallback className="text-[8px]">{userName?.charAt(0)}</AvatarFallback>
+                            </Avatar>
                             <span className="text-[10px] text-muted-foreground whitespace-nowrap">
                               {format(new Date(session.test_date), 'dd/MM/yy')}
                             </span>
