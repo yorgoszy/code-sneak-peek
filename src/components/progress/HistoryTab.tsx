@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -481,26 +481,36 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
         {sessionsByExercise.map((exerciseGroup) => (
           <div key={exerciseGroup.id} className="border-b border-border pb-3">
             <h3 className="text-sm font-semibold mb-2">{exerciseGroup.exerciseName}</h3>
-            <div className="flex flex-wrap gap-1.5">
-              {exerciseGroup.sessions.map((session) => {
+            <div className="flex flex-wrap items-center gap-1.5">
+              {exerciseGroup.sessions.map((session, idx) => {
                 const userName = session.app_users?.name || usersMap.get(session.user_id)?.name || '';
                 const userAvatar = usersMap.get(session.user_id)?.avatar_url;
                 const sortedAttempts = session.exerciseAttempts
                   ?.sort((a: any, b: any) => a.attempt_number - b.attempt_number) || [];
                 const lastAttempt = sortedAttempts[sortedAttempts.length - 1];
                 
+                // Check if next session is in a different month
+                const currentMonth = format(new Date(session.test_date), 'yyyy-MM');
+                const nextSession = exerciseGroup.sessions[idx + 1];
+                const nextMonth = nextSession ? format(new Date(nextSession.test_date), 'yyyy-MM') : currentMonth;
+                const isLastInMonth = nextSession && currentMonth !== nextMonth;
+                
                 return (
-                  <button
-                    key={session.id}
-                    onClick={() => { setSelectedSession(session); setSelectedExerciseGroup(exerciseGroup); }}
-                    className="relative group"
-                    title={`${userName} - ${format(new Date(session.test_date), 'dd/MM/yy')} - ${lastAttempt ? `${lastAttempt.weight_kg}kg @ ${lastAttempt.velocity_ms}m/s` : ''}`}
-                  >
-                    <Avatar className="h-8 w-8 border-2 border-transparent group-hover:border-foreground transition-colors">
-                      <AvatarImage src={userAvatar || ''} alt={userName} />
-                      <AvatarFallback className="text-[9px]">{userName?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                  </button>
+                  <React.Fragment key={session.id}>
+                    <button
+                      onClick={() => { setSelectedSession(session); setSelectedExerciseGroup(exerciseGroup); }}
+                      className="relative group"
+                      title={`${userName} - ${format(new Date(session.test_date), 'dd/MM/yy')} - ${lastAttempt ? `${lastAttempt.weight_kg}kg @ ${lastAttempt.velocity_ms}m/s` : ''}`}
+                    >
+                      <Avatar className="h-8 w-8 border-2 border-transparent group-hover:border-foreground transition-colors">
+                        <AvatarImage src={userAvatar || ''} alt={userName} />
+                        <AvatarFallback className="text-[9px]">{userName?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    </button>
+                    {isLastInMonth && (
+                      <div className="w-0.5 h-8 bg-destructive mx-0.5 shrink-0" />
+                    )}
+                  </React.Fragment>
                 );
               })}
             </div>
