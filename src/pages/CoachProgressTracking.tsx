@@ -44,9 +44,11 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
     if (effectiveCoachId) {
       fetchCoachAthletes();
     }
-    fetchExercises();
+    if (userProfile) {
+      fetchExercises();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveCoachId]);
+  }, [effectiveCoachId, userProfile?.role]);
 
   const fetchCoachAthletes = async () => {
     if (!effectiveCoachId) return;
@@ -130,6 +132,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
         return a.name.localeCompare(b.name);
       });
 
+      console.log('🏋️ Exercise order (first 10):', sorted.slice(0, 10).map((e, i) => `${i+1}. ${e.name} (freq: ${frequencyMap.get(e.id) || 0})`));
       setExercises(sorted);
     } catch (error) {
       console.error('Error fetching exercises:', error);
