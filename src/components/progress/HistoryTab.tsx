@@ -33,6 +33,8 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
   const [editVelocity, setEditVelocity] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [selectedExerciseGroup, setSelectedExerciseGroup] = useState<any>(null);
   
   // Filter states
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
@@ -475,123 +477,131 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
         </Button>
       </div>
 
-      <div className="flex gap-6 overflow-x-auto pb-4">
+      <div className="space-y-4">
         {sessionsByExercise.map((exerciseGroup) => (
-          <div key={exerciseGroup.id} className="flex-shrink-0 space-y-3">
-            {/* Exercise Title */}
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 whitespace-nowrap">
-              {exerciseGroup.exerciseName}
-            </h3>
-            
-            {/* Vertical cards for this exercise */}
-            <div className="space-y-2">
+          <div key={exerciseGroup.id} className="border-b border-border pb-3">
+            <h3 className="text-sm font-semibold mb-2">{exerciseGroup.exerciseName}</h3>
+            <div className="flex flex-wrap gap-1.5">
               {exerciseGroup.sessions.map((session) => {
-                const userName = session.app_users?.name || usersMap.get(session.user_id)?.name || t('history.unknownUser');
+                const userName = session.app_users?.name || usersMap.get(session.user_id)?.name || '';
                 const userAvatar = usersMap.get(session.user_id)?.avatar_url;
                 const sortedAttempts = session.exerciseAttempts
                   ?.sort((a: any, b: any) => a.attempt_number - b.attempt_number) || [];
                 const lastAttempt = sortedAttempts[sortedAttempts.length - 1];
                 
                 return (
-                  <Collapsible key={session.id}>
-                    <Card className="rounded-none min-w-[240px] shrink-0">
-                      <CollapsibleTrigger className="w-full text-left">
-                        <div className="flex items-center justify-between p-2 hover:bg-muted/50 transition-colors">
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <Avatar className="h-5 w-5 shrink-0">
-                              <AvatarImage src={userAvatar || ''} alt={userName} />
-                              <AvatarFallback className="text-[8px]">{userName?.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                              {format(new Date(session.test_date), 'dd/MM/yy')}
-                            </span>
-                            <span className="font-semibold text-xs truncate">
-                              {userName}
-                            </span>
-                            {lastAttempt && (
-                              <span className="text-[10px] text-[#cb8954] font-bold whitespace-nowrap">
-                                {lastAttempt.weight_kg}kg @ {lastAttempt.velocity_ms}m/s
-                              </span>
-                            )}
-                          </div>
-                          <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
-                        </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <CardContent className="p-2 pt-0">
-                          <div className="space-y-1.5">
-                            {/* Delete button */}
-                            {!readOnly && (
-                              <div className="flex justify-end">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleDeleteSessionClick(session.id)}
-                                  className="rounded-none h-6 w-6 p-0"
-                                >
-                                  <Trash2 className="w-3 h-3 text-red-500" />
-                                </Button>
-                              </div>
-                            )}
-                            
-                            {/* Attempts */}
-                            <div className="space-y-0.5">
-                              <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-0.5 text-[10px] font-medium text-gray-600">
-                                <span className="w-4">#</span>
-                                <span>{t('history.kg')}</span>
-                                <span>m/s</span>
-                                <span className="w-6"></span>
-                              </div>
-                              {sortedAttempts.map((attempt: any) => (
-                                <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-0.5">
-                                  <span className="text-[10px] font-medium w-4 flex items-center">#{attempt.attempt_number}</span>
-                                  <span className="text-[10px] border rounded-none p-0.5 bg-gray-50 flex items-center justify-center">
-                                    {attempt.weight_kg} kg
-                                  </span>
-                                  <span className="text-[10px] border rounded-none p-0.5 bg-gray-50 flex items-center justify-center">
-                                    {attempt.velocity_ms} m/s
-                                  </span>
-                                  {!readOnly && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleEditAttempt(attempt)}
-                                      className="rounded-none h-5 w-5 p-0"
-                                    >
-                                      <Pencil className="w-2.5 h-2.5" />
-                                    </Button>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-
-                            {/* Chart */}
-                            {sortedAttempts.length > 0 && (
-                              <div className="pt-1 border-t border-gray-200 -mx-2">
-                                <LoadVelocityChart 
-                                  data={sortedAttempts.map((attempt: any) => ({
-                                    exerciseName: exerciseGroup.exerciseName,
-                                    exerciseId: attempt.exercises?.id,
-                                    velocity: attempt.velocity_ms || 0,
-                                    weight: attempt.weight_kg,
-                                    date: session.test_date,
-                                    sessionId: session.id
-                                  }))}
-                                  selectedExercises={[exerciseGroup.exerciseName]}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </CollapsibleContent>
-                    </Card>
-                  </Collapsible>
+                  <button
+                    key={session.id}
+                    onClick={() => { setSelectedSession(session); setSelectedExerciseGroup(exerciseGroup); }}
+                    className="relative group"
+                    title={`${userName} - ${format(new Date(session.test_date), 'dd/MM/yy')} - ${lastAttempt ? `${lastAttempt.weight_kg}kg @ ${lastAttempt.velocity_ms}m/s` : ''}`}
+                  >
+                    <Avatar className="h-8 w-8 border-2 border-transparent group-hover:border-foreground transition-colors">
+                      <AvatarImage src={userAvatar || ''} alt={userName} />
+                      <AvatarFallback className="text-[9px]">{userName?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  </button>
                 );
               })}
             </div>
           </div>
         ))}
       </div>
+
+      {/* Session Detail Dialog */}
+      <Dialog open={!!selectedSession} onOpenChange={() => { setSelectedSession(null); setSelectedExerciseGroup(null); }}>
+        <DialogContent className="rounded-none max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              {selectedExerciseGroup?.exerciseName} - {selectedSession && format(new Date(selectedSession.test_date), 'dd/MM/yyyy', { locale: el })}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedSession && (() => {
+            const userName = selectedSession.app_users?.name || usersMap.get(selectedSession.user_id)?.name || t('history.unknownUser');
+            const userAvatar = usersMap.get(selectedSession.user_id)?.avatar_url;
+            const sortedAttempts = selectedSession.exerciseAttempts
+              ?.sort((a: any, b: any) => a.attempt_number - b.attempt_number) || [];
+
+            return (
+              <div className="space-y-3">
+                {/* User info */}
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={userAvatar || ''} alt={userName} />
+                    <AvatarFallback className="text-[9px]">{userName?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <span className="font-semibold text-sm">{userName}</span>
+                </div>
+
+                {/* Attempts table */}
+                <div className="space-y-0.5">
+                  <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 text-[10px] font-medium text-muted-foreground">
+                    <span className="w-5">#</span>
+                    <span>{t('history.kg')}</span>
+                    <span>m/s</span>
+                    <span className="w-6"></span>
+                  </div>
+                  {sortedAttempts.map((attempt: any) => (
+                    <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-1">
+                      <span className="text-[10px] font-medium w-5 flex items-center">#{attempt.attempt_number}</span>
+                      <span className="text-[10px] border rounded-none p-1 bg-muted/30 flex items-center justify-center">
+                        {attempt.weight_kg} kg
+                      </span>
+                      <span className="text-[10px] border rounded-none p-1 bg-muted/30 flex items-center justify-center">
+                        {attempt.velocity_ms} m/s
+                      </span>
+                      {!readOnly && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditAttempt(attempt)}
+                          className="rounded-none h-5 w-5 p-0"
+                        >
+                          <Pencil className="w-2.5 h-2.5" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Chart */}
+                {sortedAttempts.length > 0 && (
+                  <div className="border-t border-border pt-2">
+                    <LoadVelocityChart 
+                      data={sortedAttempts.map((attempt: any) => ({
+                        exerciseName: selectedExerciseGroup?.exerciseName,
+                        exerciseId: attempt.exercises?.id,
+                        velocity: attempt.velocity_ms || 0,
+                        weight: attempt.weight_kg,
+                        date: selectedSession.test_date,
+                        sessionId: selectedSession.id
+                      }))}
+                      selectedExercises={[selectedExerciseGroup?.exerciseName]}
+                    />
+                  </div>
+                )}
+
+                {/* Actions */}
+                {!readOnly && (
+                  <div className="flex justify-end pt-2 border-t border-border">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        handleDeleteSessionClick(selectedSession.id);
+                      }}
+                      className="rounded-none text-xs"
+                    >
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      Διαγραφή
+                    </Button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editingAttempt} onOpenChange={() => setEditingAttempt(null)}>
         <DialogContent className="rounded-none">
