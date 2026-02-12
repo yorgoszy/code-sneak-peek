@@ -491,9 +491,12 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                 
                 // Check if next session is in a different month
                 const currentMonth = format(new Date(session.test_date), 'yyyy-MM');
+                const currentYear = new Date(session.test_date).getFullYear();
                 const nextSession = exerciseGroup.sessions[idx + 1];
                 const nextMonth = nextSession ? format(new Date(nextSession.test_date), 'yyyy-MM') : currentMonth;
+                const nextYear = nextSession ? new Date(nextSession.test_date).getFullYear() : currentYear;
                 const isLastInMonth = nextSession && currentMonth !== nextMonth;
+                const isLastInYear = nextSession && currentYear !== nextYear;
                 
                 return (
                   <React.Fragment key={session.id}>
@@ -507,14 +510,21 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                         <AvatarFallback className="text-[9px]">{userName?.charAt(0)}</AvatarFallback>
                       </Avatar>
                     </button>
-                    {isLastInMonth && (
+                    {isLastInYear ? (
+                      <div className="flex flex-col items-center mx-1 shrink-0">
+                        <span className="text-[9px] font-bold text-destructive leading-none mb-0.5">
+                          {currentYear}
+                        </span>
+                        <div className="w-0.5 flex-1 min-h-[20px] bg-muted-foreground/40" />
+                      </div>
+                    ) : isLastInMonth ? (
                       <div className="flex flex-col items-center mx-0.5 shrink-0">
                         <span className="text-[8px] font-bold text-destructive leading-none mb-0.5">
                           {format(new Date(session.test_date), 'MMM', { locale: el }).toUpperCase()}
                         </span>
                         <div className="w-0.5 flex-1 min-h-[20px] bg-destructive" />
                       </div>
-                    )}
+                    ) : null}
                   </React.Fragment>
                 );
               })}
