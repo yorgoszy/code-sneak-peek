@@ -508,7 +508,12 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                       </Avatar>
                     </button>
                     {isLastInMonth && (
-                      <div className="w-0.5 h-8 bg-destructive mx-0.5 shrink-0" />
+                      <div className="flex flex-col items-center mx-0.5 shrink-0">
+                        <span className="text-[8px] font-bold text-destructive leading-none mb-0.5">
+                          {format(new Date(session.test_date), 'MMM', { locale: el }).toUpperCase()}
+                        </span>
+                        <div className="w-0.5 flex-1 min-h-[20px] bg-destructive" />
+                      </div>
                     )}
                   </React.Fragment>
                 );
