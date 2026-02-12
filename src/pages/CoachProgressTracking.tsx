@@ -85,18 +85,42 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
 
       if (error) throw error;
 
-      // Fetch usage counts from strength_test_attempts (main data source)
-      const { data: usageCounts } = await supabase
-        .from('strength_test_attempts')
-        .select('exercise_id');
-
-      // Count frequency per exercise
+      // Fetch usage counts based on role:
+      // Admin → strength_test_attempts (admin's own tests)
+      // Coach → coach_strength_test_data filtered by coach_id
       const frequencyMap = new Map<string, number>();
-      (usageCounts || []).forEach((row: any) => {
-        if (row.exercise_id) {
-          frequencyMap.set(row.exercise_id, (frequencyMap.get(row.exercise_id) || 0) + 1);
+
+      if (isAdmin()) {
+        const { data: usageCounts } = await supabase
+          .from('strength_test_attempts')
+          .select('exercise_id');
+
+        (usageCounts || []).forEach((row: any) => {
+          if (row.exercise_id) {
+            frequencyMap.set(row.exercise_id, (frequencyMap.get(row.exercise_id) || 0) + 1);
+          }
+        });
+      } else if (effectiveCoachId) {
+        // Coach: get frequency from coach_strength_test_data via sessions
+        const { data: coachSessions } = await supabase
+          .from('coach_strength_test_sessions')
+          .select('id')
+          .eq('coach_id', effectiveCoachId);
+
+        if (coachSessions && coachSessions.length > 0) {
+          const sessionIds = coachSessions.map(s => s.id);
+          const { data: coachData } = await supabase
+            .from('coach_strength_test_data')
+            .select('exercise_id')
+            .in('test_session_id', sessionIds);
+
+          (coachData || []).forEach((row: any) => {
+            if (row.exercise_id) {
+              frequencyMap.set(row.exercise_id, (frequencyMap.get(row.exercise_id) || 0) + 1);
+            }
+          });
         }
-      });
+      }
 
       // Sort: most used first, then alphabetically
       const sorted = (allExercises || []).sort((a, b) => {
