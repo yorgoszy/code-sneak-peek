@@ -483,90 +483,103 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
             </h3>
             
             {/* Vertical cards for this exercise */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               {exerciseGroup.sessions.map((session) => {
                 const userName = session.app_users?.name || usersMap.get(session.user_id)?.name || t('history.unknownUser');
+                const sortedAttempts = session.exerciseAttempts
+                  ?.sort((a: any, b: any) => a.attempt_number - b.attempt_number) || [];
+                const lastAttempt = sortedAttempts[sortedAttempts.length - 1];
                 
                 return (
-                  <Card key={session.id} className="rounded-none min-w-[240px] shrink-0">
-                    <CardContent className="p-2">
-                      <div className="space-y-1.5">
-                        {/* Header */}
-                        <div className="flex items-center justify-between gap-1.5">
-                          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-xs text-gray-900 truncate">
-                                {userName}
+                  <Collapsible key={session.id}>
+                    <Card className="rounded-none min-w-[240px] shrink-0">
+                      <CollapsibleTrigger className="w-full text-left">
+                        <div className="flex items-center justify-between p-2 hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                              {format(new Date(session.test_date), 'dd/MM/yy')}
+                            </span>
+                            <span className="font-semibold text-xs truncate">
+                              {userName}
+                            </span>
+                            {lastAttempt && (
+                              <span className="text-[10px] text-[#cb8954] font-bold whitespace-nowrap">
+                                {lastAttempt.weight_kg}kg @ {lastAttempt.velocity_ms}m/s
                               </span>
-                              <span className="text-[10px] text-gray-500 whitespace-nowrap">
-                                {format(new Date(session.test_date), 'dd/MM/yy')}
-                              </span>
-                            </div>
+                            )}
                           </div>
-                          {!readOnly && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDeleteSessionClick(session.id)}
-                              className="rounded-none h-6 w-6 p-0 shrink-0"
-                            >
-                              <Trash2 className="w-3 h-3 text-red-500" />
-                            </Button>
-                          )}
+                          <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
                         </div>
-                        
-                        {/* Attempts */}
-                        <div className="space-y-0.5">
-                          <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-0.5 text-[10px] font-medium text-gray-600">
-                            <span className="w-4">#</span>
-                            <span>{t('history.kg')}</span>
-                            <span>m/s</span>
-                            <span className="w-6"></span>
-                          </div>
-                          {session.exerciseAttempts
-                            ?.sort((a: any, b: any) => a.attempt_number - b.attempt_number)
-                            .map((attempt: any) => (
-                              <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-0.5">
-                                <span className="text-[10px] font-medium w-4 flex items-center">#{attempt.attempt_number}</span>
-                                <span className="text-[10px] border rounded-none p-0.5 bg-gray-50 flex items-center justify-center">
-                                  {attempt.weight_kg} kg
-                                </span>
-                                <span className="text-[10px] border rounded-none p-0.5 bg-gray-50 flex items-center justify-center">
-                                  {attempt.velocity_ms} m/s
-                                </span>
-                                {!readOnly && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleEditAttempt(attempt)}
-                                    className="rounded-none h-5 w-5 p-0"
-                                  >
-                                    <Pencil className="w-2.5 h-2.5" />
-                                  </Button>
-                                )}
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <CardContent className="p-2 pt-0">
+                          <div className="space-y-1.5">
+                            {/* Delete button */}
+                            {!readOnly && (
+                              <div className="flex justify-end">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteSessionClick(session.id)}
+                                  className="rounded-none h-6 w-6 p-0"
+                                >
+                                  <Trash2 className="w-3 h-3 text-red-500" />
+                                </Button>
                               </div>
-                            ))}
-                        </div>
+                            )}
+                            
+                            {/* Attempts */}
+                            <div className="space-y-0.5">
+                              <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-0.5 text-[10px] font-medium text-gray-600">
+                                <span className="w-4">#</span>
+                                <span>{t('history.kg')}</span>
+                                <span>m/s</span>
+                                <span className="w-6"></span>
+                              </div>
+                              {sortedAttempts.map((attempt: any) => (
+                                <div key={attempt.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-0.5">
+                                  <span className="text-[10px] font-medium w-4 flex items-center">#{attempt.attempt_number}</span>
+                                  <span className="text-[10px] border rounded-none p-0.5 bg-gray-50 flex items-center justify-center">
+                                    {attempt.weight_kg} kg
+                                  </span>
+                                  <span className="text-[10px] border rounded-none p-0.5 bg-gray-50 flex items-center justify-center">
+                                    {attempt.velocity_ms} m/s
+                                  </span>
+                                  {!readOnly && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleEditAttempt(attempt)}
+                                      className="rounded-none h-5 w-5 p-0"
+                                    >
+                                      <Pencil className="w-2.5 h-2.5" />
+                                    </Button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
 
-                        {/* Chart */}
-                        {session.exerciseAttempts && session.exerciseAttempts.length > 0 && (
-                          <div className="pt-1 border-t border-gray-200 -mx-2">
-                            <LoadVelocityChart 
-                              data={session.exerciseAttempts.map((attempt: any) => ({
-                                exerciseName: exerciseGroup.exerciseName,
-                                exerciseId: attempt.exercises?.id,
-                                velocity: attempt.velocity_ms || 0,
-                                weight: attempt.weight_kg,
-                                date: session.test_date,
-                                sessionId: session.id
-                              }))}
-                              selectedExercises={[exerciseGroup.exerciseName]}
-                            />
+                            {/* Chart */}
+                            {sortedAttempts.length > 0 && (
+                              <div className="pt-1 border-t border-gray-200 -mx-2">
+                                <LoadVelocityChart 
+                                  data={sortedAttempts.map((attempt: any) => ({
+                                    exerciseName: exerciseGroup.exerciseName,
+                                    exerciseId: attempt.exercises?.id,
+                                    velocity: attempt.velocity_ms || 0,
+                                    weight: attempt.weight_kg,
+                                    date: session.test_date,
+                                    sessionId: session.id
+                                  }))}
+                                  selectedExercises={[exerciseGroup.exerciseName]}
+                                />
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
                 );
               })}
             </div>
