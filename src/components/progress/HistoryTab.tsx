@@ -533,6 +533,15 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ selectedUserId, readOnly
                   </React.Fragment>
                 );
               })}
+              {/* Last month label at the end */}
+              {exerciseGroup.sessions.length > 0 && (() => {
+                const lastSession = exerciseGroup.sessions[exerciseGroup.sessions.length - 1];
+                return (
+                  <span className="text-[8px] font-bold text-destructive shrink-0 self-center">
+                    {format(new Date(lastSession.test_date), 'MMM', { locale: el }).toUpperCase()}
+                  </span>
+                );
+              })()}
             </div>
           </div>
         ))}
