@@ -93,7 +93,13 @@ import JumpPage from "@/pages/Dashboard/JumpPage";
 import BarVelocityPage from "@/pages/Dashboard/BarVelocityPage";
 import HRVPage from "@/pages/Dashboard/HRVPage";
 import HealthCardsPage from "@/pages/Dashboard/HealthCardsPage";
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
