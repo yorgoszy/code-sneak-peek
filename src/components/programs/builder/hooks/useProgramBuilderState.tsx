@@ -110,8 +110,11 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     return Math.random().toString(36).substr(2, 9);
   }, []);
 
-  const updateProgram = useCallback((updates: Partial<ProgramStructure>) => {
-    setProgram(prev => ({ ...prev, ...updates }));
+  const updateProgram = useCallback((updates: Partial<ProgramStructure> | ((prev: ProgramStructure) => Partial<ProgramStructure>)) => {
+    setProgram(prev => {
+      const resolvedUpdates = typeof updates === 'function' ? updates(prev) : updates;
+      return { ...prev, ...resolvedUpdates };
+    });
   }, []);
 
   const resetProgram = useCallback(() => {

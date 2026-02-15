@@ -8,23 +8,28 @@ import { useReorderActions } from './useReorderActions';
 
 export const useProgramBuilderActions = (
   program: ProgramStructure,
-  updateProgram: (updates: Partial<ProgramStructure>) => void,
+  updateProgram: (updates: Partial<ProgramStructure> | ((prev: ProgramStructure) => Partial<ProgramStructure>)) => void,
   generateId: () => string,
   exercises: any[],
   saveProgram?: (programData: any) => Promise<any>
 ) => {
   // Βελτιωμένη updateProgram που διατηρεί όλες τις βασικές πληροφορίες
-  const updateProgramWithPreservation = (updates: Partial<ProgramStructure>) => {
+  const updateProgramWithPreservation = (updates: Partial<ProgramStructure> | ((prev: ProgramStructure) => Partial<ProgramStructure>)) => {
+    if (typeof updates === 'function') {
+      // For functional updates, pass through directly (caller handles everything)
+      updateProgram(updates);
+      return;
+    }
     const preservedUpdates = {
       ...updates,
-      id: program.id, // ΚΡΙΤΙΚΟ: Διατήρηση του ID για editing
-      user_id: program.user_id, // Διατήρηση του επιλεγμένου χρήστη
-      user_ids: program.user_ids, // Διατήρηση των επιλεγμένων χρηστών
-      is_multiple_assignment: program.is_multiple_assignment, // Διατήρηση της λειτουργίας πολλαπλής ανάθεσης
-      name: program.name, // Διατήρηση του ονόματος
-      description: program.description, // Διατήρηση της περιγραφής
-      training_dates: program.training_dates, // Διατήρηση των επιλεγμένων ημερομηνιών
-      is_template: program.is_template // Διατήρηση του template flag
+      id: program.id,
+      user_id: program.user_id,
+      user_ids: program.user_ids,
+      is_multiple_assignment: program.is_multiple_assignment,
+      name: program.name,
+      description: program.description,
+      training_dates: program.training_dates,
+      is_template: program.is_template
     };
     updateProgram(preservedUpdates);
   };
