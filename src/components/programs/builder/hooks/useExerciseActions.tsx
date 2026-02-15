@@ -9,7 +9,7 @@ const RECOVERY_TYPE = 'recovery';
 
 export const useExerciseActions = (
   program: ProgramStructure,
-  updateProgram: (updates: Partial<ProgramStructure>) => void,
+  updateProgram: (updates: Partial<ProgramStructure> | ((prev: ProgramStructure) => Partial<ProgramStructure>)) => void,
   generateId: () => string,
   exercises: any[],
   saveProgram?: (programData: any) => Promise<any>
@@ -252,34 +252,36 @@ export const useExerciseActions = (
   };
 
   const updateExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string, field: string, value: any) => {
-    const updatedWeeks = (program.weeks || []).map(week => {
-      if (week.id === weekId) {
-        return {
-          ...week,
-          program_days: (week.program_days || []).map(day => {
-            if (day.id === dayId) {
-              return {
-                ...day,
-                program_blocks: (day.program_blocks || []).map(block => {
-                  if (block.id === blockId) {
-                    return {
-                      ...block,
-                      program_exercises: (block.program_exercises || []).map(exercise =>
-                        exercise.id === exerciseId ? { ...exercise, [field]: value } : exercise
-                      )
-                    };
-                  }
-                  return block;
-                })
-              };
-            }
-            return day;
-          })
-        };
-      }
-      return week;
+    updateProgram((prev) => {
+      const updatedWeeks = (prev.weeks || []).map(week => {
+        if (week.id === weekId) {
+          return {
+            ...week,
+            program_days: (week.program_days || []).map(day => {
+              if (day.id === dayId) {
+                return {
+                  ...day,
+                  program_blocks: (day.program_blocks || []).map(block => {
+                    if (block.id === blockId) {
+                      return {
+                        ...block,
+                        program_exercises: (block.program_exercises || []).map(exercise =>
+                          exercise.id === exerciseId ? { ...exercise, [field]: value } : exercise
+                        )
+                      };
+                    }
+                    return block;
+                  })
+                };
+              }
+              return day;
+            })
+          };
+        }
+        return week;
+      });
+      return { weeks: updatedWeeks };
     });
-    updateProgram({ weeks: updatedWeeks });
   };
 
   const duplicateExercise = async (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
