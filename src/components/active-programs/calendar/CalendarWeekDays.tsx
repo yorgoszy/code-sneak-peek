@@ -11,7 +11,7 @@ export const CalendarWeekDays: React.FC = () => {
           key={day}
           className={`
             min-w-0
-            h-6 sm:h-8 md:h-12 lg:h-20
+            h-5 sm:h-6 md:h-7
             flex items-center justify-center border-gray-200
             text-xs sm:text-sm font-medium text-gray-600 bg-white select-none
             ${idx < weekDays.length - 1 ? 'border-r' : ''} rounded-none
