@@ -186,8 +186,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   return (
     <>
-      <Card className="rounded-none h-full flex flex-col">
-        <CardContent className="p-2 sm:p-3 md:p-4 flex-1 flex flex-col min-h-0">
+      <Card className="rounded-none h-full flex flex-col border-0 shadow-none">
+        <CardContent className="p-1 sm:p-2 md:p-3 flex-1 flex flex-col min-h-0">
           <Tabs value={calendarView} onValueChange={(value) => setCalendarView(value as 'monthly' | 'weekly' | 'daily')} className="w-full flex-1 flex flex-col min-h-0">
             <TabsList className="grid w-full grid-cols-3 rounded-none text-xs sm:text-sm md:text-base h-8 sm:h-9 flex-shrink-0">
               <TabsTrigger value="monthly" className="rounded-none text-xs sm:text-sm">Μηνιαία</TabsTrigger>

@@ -15,25 +15,25 @@ export const CalendarNavigation: React.FC<CalendarNavigationProps> = ({
   setCurrentMonth
 }) => {
   return (
-    <div className="flex items-center justify-between mb-2 sm:mb-4">
+    <div className="flex items-center justify-between mb-1">
       <Button
         variant="outline"
         size="sm"
         onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-        className="rounded-none h-8 w-8 sm:h-10 sm:w-auto sm:px-3"
+        className="rounded-none h-7 w-7 sm:h-8 sm:w-auto sm:px-2 p-0"
       >
-        <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+        <ChevronLeft className="h-3 w-3" />
       </Button>
-      <h3 className="text-sm sm:text-lg font-semibold px-2">
+      <h3 className="text-xs sm:text-sm font-semibold px-2">
         {format(currentMonth, 'MMMM yyyy', { locale: el })}
       </h3>
       <Button
         variant="outline"
         size="sm"
         onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-        className="rounded-none h-8 w-8 sm:h-10 sm:w-auto sm:px-3"
+        className="rounded-none h-7 w-7 sm:h-8 sm:w-auto sm:px-2 p-0"
       >
-        <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+        <ChevronRight className="h-3 w-3" />
       </Button>
     </div>
   );
