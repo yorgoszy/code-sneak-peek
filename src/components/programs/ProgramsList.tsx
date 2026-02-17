@@ -3,7 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Trash2, Edit, Copy, Eye, User, Calendar, Play } from "lucide-react";
+import { Trash2, Edit, Copy, Eye, User, Calendar, Play, ShoppingCart } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Program } from './types';
 import { format } from 'date-fns';
@@ -51,6 +53,29 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   
   // State για workout completions - κρατάμε τα completed counts ανά assignment_id
   const [completionsMap, setCompletionsMap] = useState<Record<string, { completed: number; missed: number }>>({});
+  const [shopState, setShopState] = useState<Record<string, { is_sellable: boolean; price: number | null }>>({});
+
+  // Initialize shop state from programs
+  useEffect(() => {
+    if (isTemplateMode) {
+      const initial: Record<string, { is_sellable: boolean; price: number | null }> = {};
+      programs.forEach(p => {
+        initial[p.id] = { is_sellable: p.is_sellable || false, price: p.price ?? null };
+      });
+      setShopState(initial);
+    }
+  }, [programs, isTemplateMode]);
+
+  const handleToggleSellable = async (e: React.MouseEvent, programId: string, newValue: boolean) => {
+    e.stopPropagation();
+    setShopState(prev => ({ ...prev, [programId]: { ...prev[programId], is_sellable: newValue } }));
+    await supabase.from('programs').update({ is_sellable: newValue }).eq('id', programId);
+  };
+
+  const handlePriceChange = async (programId: string, newPrice: number | null) => {
+    setShopState(prev => ({ ...prev, [programId]: { ...prev[programId], price: newPrice } }));
+    await supabase.from('programs').update({ price: newPrice }).eq('id', programId);
+  };
 
   // Fetch workout completions για όλα τα assignments
   useEffect(() => {
@@ -242,6 +267,35 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
                           {weeksCount} εβδομάδες • {avgDaysPerWeek} ημέρες/εβδομάδα
                         </div>
                       </div>
+
+                      {/* Shop Controls - Template mode only */}
+                      {isTemplateMode && (
+                        <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1.5 px-2 py-1 border border-gray-300 rounded-none">
+                            <ShoppingCart className="w-3.5 h-3.5 text-[#cb8954]" />
+                            <Switch
+                              checked={shopState[program.id]?.is_sellable || false}
+                              onCheckedChange={(val) => handleToggleSellable({ stopPropagation: () => {} } as any, program.id, val)}
+                              className="data-[state=checked]:bg-[#cb8954] h-4 w-7"
+                            />
+                          </div>
+                          {shopState[program.id]?.is_sellable && (
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-gray-500">€</span>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={shopState[program.id]?.price || ''}
+                                onChange={(e) => handlePriceChange(program.id, e.target.value ? parseFloat(e.target.value) : null)}
+                                placeholder="Τιμή"
+                                className="rounded-none h-7 text-xs w-20 border border-gray-300 px-1"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
                       
                       {/* Status Badge - Mobile Top Right */}
                       {isMobile && isAssigned && (
