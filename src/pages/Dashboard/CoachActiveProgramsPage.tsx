@@ -226,7 +226,7 @@ const CoachActiveProgramsContent = () => {
           selectedDate={workout.selectedDate}
           workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
           onRefresh={handleCalendarRefresh}
-          onMinimize={() => handleMinimize(workout.id)}
+          onMinimize={() => { handleMinimize(workout.id); setActiveAssignmentId(null); }}
         />
       ))}
 
