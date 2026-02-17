@@ -101,6 +101,10 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
           const bubble = item.data as typeof bubbles[0];
           const assignmentId = bubble.id.replace('bubble-', '').replace(`-${todayStr}`, '');
           const isActive = isDialogOpen(assignmentId);
+          // Check completion status for this bubble's assignment
+          const bubbleAssignment = programsForToday.find(a => a.id === assignmentId);
+          const bubbleCompleted = bubbleAssignment ? getWorkoutStatus(bubbleAssignment) === 'completed' : false;
+          
           return (
             <MinimizedWorkoutBubble
               key={bubble.id}
@@ -109,6 +113,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
               workoutInProgress={bubble.workoutInProgress}
               elapsedTime={bubble.elapsedTime}
               size={isActive ? 'lg' : 'sm'}
+              isCompleted={bubbleCompleted}
               onRestore={() => {
                 bubble.onRestore();
                 removeBubble(bubble.id);

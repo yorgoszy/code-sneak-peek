@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { CheckCircle } from 'lucide-react';
 
 interface MinimizedWorkoutBubbleProps {
   athleteName: string;
@@ -11,6 +12,8 @@ interface MinimizedWorkoutBubbleProps {
   standalone?: boolean;
   /** Size variant: 'sm' (default, w-10), 'lg' (w-14, active dialog) */
   size?: 'sm' | 'lg';
+  /** Whether the workout is completed */
+  isCompleted?: boolean;
 }
 
 export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
@@ -21,6 +24,7 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
   onRestore,
   standalone = false,
   size = 'sm',
+  isCompleted = false,
 }) => {
   const [position, setPosition] = useState({ x: 16, y: typeof window !== 'undefined' ? window.innerHeight - 80 : 600 });
   const [isDragging, setIsDragging] = useState(false);
@@ -84,7 +88,7 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
       title={athleteName}
     >
       <Avatar className={`${sizeClass} border-2 shadow-lg transition-all hover:scale-110 ${
-        workoutInProgress ? 'border-[#00ffba]' : 'border-gray-400'
+        isCompleted ? 'border-[#00ffba]' : workoutInProgress ? 'border-[#00ffba]' : 'border-gray-400'
       }`}>
         {avatarUrl ? <AvatarImage src={avatarUrl} alt={athleteName} /> : null}
         <AvatarFallback className={`text-xs font-bold ${
@@ -93,6 +97,12 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
           {initials}
         </AvatarFallback>
       </Avatar>
+
+      {isCompleted && !workoutInProgress && (
+        <span className="absolute -top-1 -right-1 bg-[#00ffba] rounded-full p-0.5">
+          <CheckCircle className="w-3 h-3 text-black" />
+        </span>
+      )}
 
       {workoutInProgress && (
         <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-black text-[#00ffba] text-[8px] font-mono px-1 rounded-sm whitespace-nowrap">
