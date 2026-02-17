@@ -203,8 +203,25 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleMinimize(); }}>
-        <DialogContent className="max-w-md h-[85vh] overflow-hidden rounded-none p-3 flex flex-col">
+      <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleMinimize(); }} modal={false}>
+        <DialogContent 
+          className="max-w-md h-[85vh] overflow-hidden rounded-none p-3 flex flex-col fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-50"
+          onInteractOutside={(e) => {
+            // Don't minimize if clicking on a bubble
+            const target = e.target as HTMLElement;
+            if (target?.closest('[data-bubbles-container]')) {
+              e.preventDefault();
+              return;
+            }
+            handleMinimize();
+          }}
+          onPointerDownOutside={(e) => {
+            const target = e.target as HTMLElement;
+            if (target?.closest('[data-bubbles-container]')) {
+              e.preventDefault();
+            }
+          }}
+        >
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}

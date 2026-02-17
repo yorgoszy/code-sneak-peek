@@ -95,7 +95,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   };
 
   return (
-    <div className="fixed bottom-4 left-4 z-[9999] flex gap-2 items-end">
+    <div className="fixed bottom-4 left-4 z-[9999] flex gap-2 items-end" data-bubbles-container>
       {allItems.map(item => {
         if (item.type === 'bubble') {
           const bubble = item.data as typeof bubbles[0];
