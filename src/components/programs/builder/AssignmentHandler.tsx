@@ -89,7 +89,7 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
       const isTemplate = !!(program as any).is_template;
       
       if (program.is_multiple_assignment && program.user_ids) {
-        // Πολλαπλή ανάθεση
+        // Πολλαπλή ανάθεση - κάθε χρήστης παίρνει δικό του αντίγραφο
         console.log('👥 Δημιουργία πολλαπλών αναθέσεων...');
         toast.info(`Δημιουργία αναθέσεων για ${program.user_ids.length} αθλητές...`);
         
@@ -101,20 +101,19 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
           console.log(`🔄 Recalculating kg/m/s for user ${userId}...`);
           const userWeeks = await recalculateWeeksForUser(program.weeks, userId);
           
-          // Για templates: κάθε χρήστης χρειάζεται δικό του program
-          let programForUser = savedProgram;
-          if (isTemplate) {
-            console.log(`🎯 Creating unique program for user ${userId} (template mode)...`);
-            const userProgram = await programService.saveProgram({
-              ...program,
-              name: `${program.name} - ${userId.slice(0, 8)}`,
-            });
-            programForUser = userProgram;
-          }
+          // Κάθε χρήστης χρειάζεται δικό του program copy
+          // ώστε τα kg/velocity να αποθηκεύονται ανεξάρτητα
+          console.log(`📋 Creating unique program copy for user ${userId}...`);
+          const userProgram = await programService.saveProgram({
+            ...program,
+            id: undefined, // Force new creation
+            name: program.name,
+            weeks: userWeeks,
+          });
           
           const assignmentData = {
             program: {
-              ...programForUser,
+              ...userProgram,
               weeks: userWeeks
             },
             userId,
@@ -130,7 +129,7 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
             console.log('📊 Δημιουργία workout completions για χρήστη:', userId);
             await workoutCompletionService.createWorkoutCompletions(
               assignment[0],
-              programForUser,
+              userProgram,
               userId,
               trainingDatesStrings,
               program
