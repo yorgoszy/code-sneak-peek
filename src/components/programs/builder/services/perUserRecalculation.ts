@@ -62,19 +62,41 @@ export async function recalculateWeeksForUser(
     }
   }
 
-  // 3. Fetch velocity profiles
+  // 3. Fetch velocity profiles - only from the LATEST test session per exercise
   const { data: velocityData } = await supabase
     .from('strength_test_attempts')
-    .select(`exercise_id, weight_kg, velocity_ms, strength_test_sessions!inner (user_id)`)
+    .select(`exercise_id, weight_kg, velocity_ms, test_session_id, strength_test_sessions!inner (user_id, test_date)`)
     .eq('strength_test_sessions.user_id', userId)
     .not('velocity_ms', 'is', null)
     .gt('velocity_ms', 0);
 
   const velocityProfiles = new Map<string, VelocityProfile>();
   const exerciseIdsWithVelocity = new Set<string>();
+  const latestSessionPoints = new Map<string, LoadVelocityPoint[]>();
+
   if (velocityData) {
-    for (const v of velocityData) {
-      if (v.exercise_id) exerciseIdsWithVelocity.add(v.exercise_id);
+    // Group by exercise → session → points
+    const byExerciseSession = new Map<string, Map<string, { date: string; points: LoadVelocityPoint[] }>>();
+    for (const v of velocityData as any[]) {
+      if (!v.exercise_id) continue;
+      const exId = v.exercise_id;
+      const sessionId = v.test_session_id;
+      const testDate = v.strength_test_sessions?.test_date || '';
+      if (!byExerciseSession.has(exId)) byExerciseSession.set(exId, new Map());
+      const sessions = byExerciseSession.get(exId)!;
+      if (!sessions.has(sessionId)) sessions.set(sessionId, { date: testDate, points: [] });
+      sessions.get(sessionId)!.points.push({ weight_kg: v.weight_kg, velocity_ms: v.velocity_ms! });
+    }
+
+    // For each exercise, use the latest session with >= 2 points
+    for (const [exId, sessions] of byExerciseSession) {
+      const sortedSessions = Array.from(sessions.entries())
+        .filter(([_, s]) => s.points.length >= 2)
+        .sort((a, b) => b[1].date.localeCompare(a[1].date));
+      if (sortedSessions.length > 0) {
+        exerciseIdsWithVelocity.add(exId);
+        latestSessionPoints.set(exId, sortedSessions[0][1].points);
+      }
     }
   }
 
@@ -91,23 +113,11 @@ export async function recalculateWeeksForUser(
       }
     }
 
-    if (velocityData) {
-      const pointsByExercise = new Map<string, LoadVelocityPoint[]>();
-      for (const v of velocityData) {
-        if (!v.exercise_id) continue;
-        const pts = pointsByExercise.get(v.exercise_id) || [];
-        pts.push({ weight_kg: v.weight_kg, velocity_ms: v.velocity_ms! });
-        pointsByExercise.set(v.exercise_id, pts);
-      }
-
-      for (const [exId, points] of pointsByExercise) {
-        if (points.length >= 2) {
-          const tv = tvMap.get(exId);
-          const profile = buildVelocityProfile(points, tv ?? 0);
-          if (profile) {
-            velocityProfiles.set(exId, profile);
-          }
-        }
+    for (const [exId, points] of latestSessionPoints) {
+      const tv = tvMap.get(exId);
+      const profile = buildVelocityProfile(points, tv ?? 0);
+      if (profile) {
+        velocityProfiles.set(exId, profile);
       }
     }
   }
