@@ -4,7 +4,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
-import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
+import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { MinimizedBubblesContainer } from "@/components/active-programs/calendar/MinimizedBubblesContainer";
@@ -204,7 +204,7 @@ const CoachActiveProgramsContent = () => {
         onRefresh={handleCalendarRefresh}
       />
 
-      <TodaysProgramsSection
+      <TodaysBubbles
         programsForToday={programsForSelectedDate}
         workoutCompletions={workoutCompletions}
         todayStr={dayToShowStr}
