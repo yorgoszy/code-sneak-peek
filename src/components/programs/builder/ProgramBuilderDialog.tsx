@@ -204,6 +204,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onAssignments={handleAssign}
         onTrainingDatesChange={handleTrainingDatesChange}
         getTotalTrainingDays={getTotalTrainingDays}
+        updateProgram={updateProgram}
       />
     </Dialog>
   );

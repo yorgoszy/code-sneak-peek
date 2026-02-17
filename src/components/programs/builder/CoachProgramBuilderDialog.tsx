@@ -154,6 +154,7 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
         onTrainingDatesChange={handleTrainingDatesChange}
         getTotalTrainingDays={getTotalTrainingDays}
         coachId={coachId}
+        updateProgram={updateProgram}
       />
     </Dialog>
   );
