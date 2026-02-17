@@ -145,8 +145,11 @@ const CoachActiveProgramsContent = () => {
     setActiveAssignmentId(assignment.id);
   };
 
-  const handleDialogClose = () => {
-    setActiveAssignmentId(null);
+  const handleDialogClose = (assignmentId?: string) => {
+    setActiveAssignmentId(prev => {
+      if (assignmentId && prev !== assignmentId) return prev;
+      return null;
+    });
   };
 
   const getWorkoutStatus = (assignment: any, dateStr: string) => {
@@ -196,12 +199,12 @@ const CoachActiveProgramsContent = () => {
           <DayProgramDialog
             key={workout.id}
             isOpen={isThisOpen}
-            onClose={handleDialogClose}
+            onClose={() => handleDialogClose(workout.assignment.id)}
             program={workout.assignment}
             selectedDate={workout.selectedDate}
             workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
             onRefresh={handleCalendarRefresh}
-            onMinimize={handleDialogClose}
+            onMinimize={() => handleDialogClose(workout.assignment.id)}
           />
         );
       })}
