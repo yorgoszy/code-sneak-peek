@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
@@ -10,7 +10,7 @@ import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramBlocks } from './ProgramBlocks';
 import { RpeScoreDialog } from './RpeScoreDialog';
-import { MinimizedWorkoutBubble } from './MinimizedWorkoutBubble';
+import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -37,7 +37,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const [isRpeDialogOpen, setIsRpeDialogOpen] = useState(false);
   const [currentRpeScore, setCurrentRpeScore] = useState<number | null>(null);
   const [isMinimized, setIsMinimized] = useState(false);
+  const bubbleIdRef = useRef<string>('');
   
+  const { addBubble, removeBubble, updateBubble } = useMinimizedBubbles();
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
   const {
@@ -66,6 +68,22 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     
     fetchRpeScore();
   }, [program?.id, selectedDate, workoutStatus]);
+
+  // Keep bubble elapsed time in sync
+  useEffect(() => {
+    if (isMinimized && bubbleIdRef.current) {
+      updateBubble(bubbleIdRef.current, { elapsedTime, workoutInProgress });
+    }
+  }, [elapsedTime, workoutInProgress, isMinimized, updateBubble]);
+
+  // Cleanup bubble on unmount
+  useEffect(() => {
+    return () => {
+      if (bubbleIdRef.current) {
+        removeBubble(bubbleIdRef.current);
+      }
+    };
+  }, [removeBubble]);
 
   if (!program || !selectedDate) return null;
 
@@ -155,21 +173,28 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     if (onMinimize) {
       onMinimize();
     } else {
+      const id = `bubble-${program.id}-${format(selectedDate, 'yyyy-MM-dd')}`;
+      bubbleIdRef.current = id;
       setIsMinimized(true);
+      addBubble({
+        id,
+        athleteName: program.app_users?.name || 'Αθλητής',
+        avatarUrl: program.app_users?.avatar_url,
+        photoUrl: program.app_users?.photo_url,
+        workoutInProgress,
+        elapsedTime,
+        onRestore: () => {
+          setIsMinimized(false);
+          removeBubble(id);
+        },
+      });
     }
   };
+
 
   if (isMinimized) {
     return (
       <>
-        <MinimizedWorkoutBubble
-          athleteName={program.app_users?.name || 'Αθλητής'}
-          avatarUrl={program.app_users?.avatar_url}
-          workoutInProgress={workoutInProgress}
-          elapsedTime={elapsedTime}
-          onRestore={() => setIsMinimized(false)}
-          standalone
-        />
         <RpeScoreDialog
           isOpen={isRpeDialogOpen}
           onClose={() => setIsRpeDialogOpen(false)}
