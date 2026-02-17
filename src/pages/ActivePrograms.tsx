@@ -34,7 +34,6 @@ const ActivePrograms = () => {
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [openDialogs, setOpenDialogs] = useState<Set<string>>(new Set());
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
 
   // Authentication and redirect logic
@@ -214,41 +213,14 @@ const ActivePrograms = () => {
     };
   }, []); // stable - loadCompletions uses ref, runs once
 
-  const switchingRef = React.useRef(false);
-
-  // Χειρισμός κλικ σε πρόγραμμα - ανοίγει νέο dialog
+  // Χειρισμός κλικ σε πρόγραμμα - ανοίγει dialog
   const handleProgramClick = (assignment: EnrichedAssignment) => {
-    const workoutId = `${assignment.id}-${dayToShow.toISOString().split('T')[0]}`;
-    
-    // If another dialog is open, mark as switching
-    if (activeAssignmentId && activeAssignmentId !== assignment.id) {
-      switchingRef.current = true;
-      const currentWorkoutId = `${activeAssignmentId}-${dayToShow.toISOString().split('T')[0]}`;
-      setOpenDialogs(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(currentWorkoutId);
-        return newSet;
-      });
-      setTimeout(() => { switchingRef.current = false; }, 200);
-    }
-    
-    // Έναρξη προπόνησης
     startWorkout(assignment, dayToShow);
-    
-    // Άνοιγμα dialog
-    setOpenDialogs(prev => new Set(prev).add(workoutId));
     setActiveAssignmentId(assignment.id);
   };
 
-  const handleDialogClose = (workoutId: string) => {
-    if (!switchingRef.current && activeAssignmentId && workoutId.startsWith(activeAssignmentId)) {
-      setActiveAssignmentId(null);
-    }
-    setOpenDialogs(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(workoutId);
-      return newSet;
-    });
+  const handleDialogClose = () => {
+    setActiveAssignmentId(null);
   };
 
   const handleDeleteProgram = async (assignmentId: string) => {
@@ -417,18 +389,21 @@ const ActivePrograms = () => {
       </div>
 
       {/* Multiple Day Program Dialogs */}
-      {activeWorkouts.map(workout => (
-        <DayProgramDialog
-          key={workout.id}
-          isOpen={openDialogs.has(workout.id)}
-          onClose={() => handleDialogClose(workout.id)}
-          program={workout.assignment}
-          selectedDate={workout.selectedDate}
-          workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
-          onRefresh={handleCalendarRefresh}
-          onMinimize={() => { if (!switchingRef.current) setActiveAssignmentId(null); }}
-        />
-      ))}
+      {activeWorkouts.map(workout => {
+        const isThisOpen = activeAssignmentId === workout.assignment.id;
+        return (
+          <DayProgramDialog
+            key={workout.id}
+            isOpen={isThisOpen}
+            onClose={handleDialogClose}
+            program={workout.assignment}
+            selectedDate={workout.selectedDate}
+            workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
+            onRefresh={handleCalendarRefresh}
+            onMinimize={handleDialogClose}
+          />
+        );
+      })}
     </div>
   );
 };
