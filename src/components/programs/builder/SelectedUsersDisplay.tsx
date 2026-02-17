@@ -7,14 +7,18 @@ import type { User as UserType } from '../types';
 
 interface SelectedUsersDisplayProps {
   selectedUsers: UserType[];
+  activeUserId?: string | null;
   onClearAll: () => void;
   onRemoveUser: (userId: string, event: React.MouseEvent) => void;
+  onSelectActiveUser?: (userId: string) => void;
 }
 
 export const SelectedUsersDisplay: React.FC<SelectedUsersDisplayProps> = ({
   selectedUsers,
+  activeUserId,
   onClearAll,
-  onRemoveUser
+  onRemoveUser,
+  onSelectActiveUser
 }) => {
   const getUserInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -26,25 +30,39 @@ export const SelectedUsersDisplay: React.FC<SelectedUsersDisplayProps> = ({
         {selectedUsers.length === 0 ? (
           <span className="text-[10px] text-gray-500">Δεν έχουν επιλεγεί χρήστες</span>
         ) : (
-          selectedUsers.map((user) => (
-            <div
-              key={user.id}
-              className="flex items-center gap-1 bg-white border border-gray-200 px-1 py-0.5 hover:bg-gray-100 transition-colors"
-            >
-              <Avatar className="w-4 h-4">
-                <AvatarImage src={user.photo_url || user.avatar_url || ""} alt={user.name} />
-                <AvatarFallback className="text-[8px]">{getUserInitials(user.name)}</AvatarFallback>
-              </Avatar>
-              <span className="text-[10px] truncate max-w-[40px] md:max-w-[60px]">{user.name}</span>
-              <button
-                onClick={(e) => onRemoveUser(user.id, e)}
-                className="text-gray-400 hover:text-red-500 p-0"
-                aria-label={`Αφαίρεση ${user.name}`}
+          selectedUsers.map((user) => {
+            const isActive = activeUserId === user.id;
+            return (
+              <div
+                key={user.id}
+                className={`flex items-center gap-1 border px-1 py-0.5 transition-colors cursor-pointer ${
+                  isActive
+                    ? 'bg-[#00ffba]/20 border-[#00ffba] ring-1 ring-[#00ffba]'
+                    : 'bg-white border-gray-200 hover:bg-gray-100'
+                }`}
+                onClick={() => onSelectActiveUser?.(user.id)}
+                title={`Κλικ για προβολή δεδομένων: ${user.name}`}
               >
-                <X className="w-2.5 h-2.5" />
-              </button>
-            </div>
-          ))
+                <Avatar className="w-4 h-4">
+                  <AvatarImage src={user.photo_url || user.avatar_url || ""} alt={user.name} />
+                  <AvatarFallback className="text-[8px]">{getUserInitials(user.name)}</AvatarFallback>
+                </Avatar>
+                <span className={`text-[10px] truncate max-w-[40px] md:max-w-[60px] ${isActive ? 'font-semibold' : ''}`}>
+                  {user.name}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveUser(user.id, e);
+                  }}
+                  className="text-gray-400 hover:text-red-500 p-0"
+                  aria-label={`Αφαίρεση ${user.name}`}
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            );
+          })
         )}
       </div>
 

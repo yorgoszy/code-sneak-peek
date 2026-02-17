@@ -5,6 +5,7 @@ import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { programService } from './services/programService';
 import { assignmentService } from './services/assignmentService';
 import { workoutCompletionService } from './services/workoutCompletionService';
+import { recalculateWeeksForUser } from './services/perUserRecalculation';
 
 interface AssignmentHandlerProps {
   program: ProgramStructure;
@@ -96,6 +97,10 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
         for (let i = 0; i < program.user_ids.length; i++) {
           const userId = program.user_ids[i];
           
+          // 🔄 Recalculate kg/m/s based on this user's personal 1RM data
+          console.log(`🔄 Recalculating kg/m/s for user ${userId}...`);
+          const userWeeks = await recalculateWeeksForUser(program.weeks, userId);
+          
           // Για templates: κάθε χρήστης χρειάζεται δικό του program
           let programForUser = savedProgram;
           if (isTemplate) {
@@ -110,7 +115,7 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
           const assignmentData = {
             program: {
               ...programForUser,
-              weeks: program.weeks
+              weeks: userWeeks
             },
             userId,
             trainingDates: trainingDatesStrings,
@@ -138,10 +143,15 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
       } else {
         // Μονή ανάθεση
         console.log('👤 Δημιουργία ατομικής ανάθεσης...');
+        
+        // 🔄 Recalculate kg/m/s for this specific user
+        console.log(`🔄 Recalculating kg/m/s for user ${program.user_id}...`);
+        const userWeeks = await recalculateWeeksForUser(program.weeks, program.user_id!);
+        
         const assignmentData = {
           program: {
             ...savedProgram,
-            weeks: program.weeks
+            weeks: userWeeks
           },
           userId: program.user_id!,
           trainingDates: trainingDatesStrings

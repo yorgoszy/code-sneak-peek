@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { User, Exercise, EffortType } from '../types';
@@ -116,7 +116,29 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   updateProgram
 }) => {
   // Get selected user ID for FMS status
-  const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : null);
+  const defaultUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : null);
+  
+  // Active preview user - which user's 1RM/velocity data to display
+  const [activePreviewUserId, setActivePreviewUserId] = useState<string | null>(defaultUserId);
+  
+  // Sync activePreviewUserId when user_ids change
+  useEffect(() => {
+    const currentIds = program.user_ids || [];
+    if (activePreviewUserId && currentIds.includes(activePreviewUserId)) {
+      // Active user is still in the list, keep it
+      return;
+    }
+    // Reset to first user or user_id
+    setActivePreviewUserId(program.user_id || (currentIds.length > 0 ? currentIds[0] : null));
+  }, [program.user_id, program.user_ids]);
+  
+  const handleActivePreviewUserChange = useCallback((userId: string) => {
+    console.log('👤 Active preview user changed to:', userId);
+    setActivePreviewUserId(userId);
+  }, []);
+  
+  // The userId used for cache provider and FMS
+  const selectedUserId = activePreviewUserId || defaultUserId;
 
   return (
     <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none [&>button]:hidden">
@@ -173,6 +195,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
                 onAssignments={onAssignments}
                 onClose={onClose}
                 coachId={coachId}
+                activePreviewUserId={activePreviewUserId}
+                onActivePreviewUserChange={handleActivePreviewUserChange}
               />
 
               {getTotalTrainingDays() > 0 && (
