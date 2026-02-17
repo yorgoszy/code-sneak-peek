@@ -35,6 +35,7 @@ const ActivePrograms = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [openDialogs, setOpenDialogs] = useState<Set<string>>(new Set());
+  const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
 
   // Authentication and redirect logic
   useEffect(() => {
@@ -229,9 +230,14 @@ const ActivePrograms = () => {
     
     // Άνοιγμα dialog
     setOpenDialogs(prev => new Set(prev).add(workoutId));
+    setActiveAssignmentId(assignment.id);
   };
 
   const handleDialogClose = (workoutId: string) => {
+    const assignmentId = workoutId.split('-').slice(0, -3).join('-') || workoutId.substring(0, workoutId.lastIndexOf('-'));
+    if (activeAssignmentId && workoutId.startsWith(activeAssignmentId)) {
+      setActiveAssignmentId(null);
+    }
     setOpenDialogs(prev => {
       const newSet = new Set(prev);
       newSet.delete(workoutId);
@@ -398,7 +404,7 @@ const ActivePrograms = () => {
             workoutCompletions={workoutCompletions}
             todayStr={dayToShowStr}
             onProgramClick={handleProgramClick}
-            openAssignmentIds={openDialogs}
+            openAssignmentIds={activeAssignmentId ? new Set([activeAssignmentId]) : new Set()}
           />
         </div>
       </div>
