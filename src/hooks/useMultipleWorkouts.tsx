@@ -34,13 +34,9 @@ export const useMultipleWorkouts = () => {
     const workoutId = `${assignment.id}-${selectedDate.toISOString().split('T')[0]}`;
     
     setActiveWorkouts(prev => {
-      // Αν υπάρχει ήδη, δεν το προσθέτουμε ξανά
+      // Αν υπάρχει ήδη, ΔΕΝ το ξαναρχικοποιούμε - απλά το αφήνουμε ως έχει
       if (prev.some(w => w.id === workoutId)) {
-        return prev.map(w => 
-          w.id === workoutId 
-            ? { ...w, workoutInProgress: true, startTime: new Date(), elapsedTime: 0 }
-            : w
-        );
+        return prev;
       }
       
       return [...prev, {
@@ -49,7 +45,7 @@ export const useMultipleWorkouts = () => {
         selectedDate,
         startTime: new Date(),
         elapsedTime: 0,
-        workoutInProgress: true
+        workoutInProgress: false
       }];
     });
   }, []);
