@@ -170,25 +170,22 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   const dayProgram = getDayProgram();
   const handleMinimize = () => {
-    if (onMinimize) {
-      onMinimize();
-    } else {
-      const id = `bubble-${program.id}-${format(selectedDate, 'yyyy-MM-dd')}`;
-      bubbleIdRef.current = id;
-      setIsMinimized(true);
-      addBubble({
-        id,
-        athleteName: program.app_users?.name || 'Αθλητής',
-        avatarUrl: program.app_users?.avatar_url,
-        photoUrl: program.app_users?.photo_url,
-        workoutInProgress,
-        elapsedTime,
-        onRestore: () => {
-          setIsMinimized(false);
-          removeBubble(id);
-        },
-      });
-    }
+    const id = `bubble-${program.id}-${format(selectedDate, 'yyyy-MM-dd')}`;
+    bubbleIdRef.current = id;
+    setIsMinimized(true);
+    addBubble({
+      id,
+      athleteName: program.app_users?.name || 'Αθλητής',
+      avatarUrl: program.app_users?.avatar_url,
+      photoUrl: program.app_users?.photo_url,
+      workoutInProgress,
+      elapsedTime,
+      onRestore: () => {
+        setIsMinimized(false);
+        removeBubble(id);
+      },
+    });
+    onMinimize?.();
   };
 
 
