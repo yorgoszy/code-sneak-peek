@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 export interface ActiveWorkout {
@@ -13,6 +13,22 @@ export interface ActiveWorkout {
 
 export const useMultipleWorkouts = () => {
   const [activeWorkouts, setActiveWorkouts] = useState<ActiveWorkout[]>([]);
+
+  // Timer: update elapsedTime every second for all active workouts
+  useEffect(() => {
+    if (activeWorkouts.some(w => w.workoutInProgress)) {
+      const interval = setInterval(() => {
+        setActiveWorkouts(prev =>
+          prev.map(w =>
+            w.workoutInProgress
+              ? { ...w, elapsedTime: Math.floor((Date.now() - w.startTime.getTime()) / 1000) }
+              : w
+          )
+        );
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [activeWorkouts.length, activeWorkouts.some(w => w.workoutInProgress)]);
 
   const startWorkout = useCallback((assignment: EnrichedAssignment, selectedDate: Date) => {
     const workoutId = `${assignment.id}-${selectedDate.toISOString().split('T')[0]}`;
