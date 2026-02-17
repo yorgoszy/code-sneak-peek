@@ -44,6 +44,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = React.memo(({
     if (!userId || !exerciseId) return;
 
     const oneRM = getOneRM(exerciseId);
+    console.log(`🔍 ExerciseRow auto-fill: exerciseId=${exerciseId}, exercise=${selectedExercise?.name}, oneRM=${oneRM}, pct=${percentage}, userId=${userId}`);
     if (!oneRM) return;
 
     const pct = percentage ? parseFloat(percentage.toString().replace(',', '.')) : 0;
