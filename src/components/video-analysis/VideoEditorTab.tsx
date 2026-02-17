@@ -195,9 +195,146 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   // Refs
   const videoElsRef = useRef<(HTMLVideoElement | null)[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const youtubePlayerRef = useRef<any>(null);
+  const youtubePlayersRef = useRef<Record<string, any>>({});
+  const ytTimerRef = useRef<number | null>(null);
 
   const getActiveVideoEl = () => videoElsRef.current[activeVideoIndex] ?? null;
+
+  // --- YouTube IFrame API loader ---
+  useEffect(() => {
+    // Only load if we have YouTube videos
+    if (!videos.some(v => v.isYouTube)) return;
+    if ((window as any).YT && (window as any).YT.Player) return;
+
+    // Define callback before loading script
+    if (!(window as any).onYouTubeIframeAPIReady) {
+      (window as any)._ytReadyCallbacks = [];
+      (window as any).onYouTubeIframeAPIReady = () => {
+        ((window as any)._ytReadyCallbacks || []).forEach((cb: () => void) => cb());
+        (window as any)._ytReady = true;
+      };
+    }
+
+    if (!document.getElementById('yt-iframe-api')) {
+      const tag = document.createElement('script');
+      tag.id = 'yt-iframe-api';
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+  }, [videos]);
+
+  // Create/destroy YouTube players when videos change
+  useEffect(() => {
+    const createPlayer = (video: VideoSlot, index: number) => {
+      if (!video.isYouTube || !video.youtubeId) return;
+      const containerId = `yt-player-${video.id}`;
+      
+      // Check if already created
+      if (youtubePlayersRef.current[video.id]) return;
+
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      const initPlayer = () => {
+        try {
+          const player = new (window as any).YT.Player(containerId, {
+            videoId: video.youtubeId,
+            playerVars: {
+              modestbranding: 1,
+              rel: 0,
+              showinfo: 0,
+              controls: 1,
+              fs: 1,
+              enablejsapi: 1,
+              origin: window.location.origin,
+            },
+            events: {
+              onReady: (event: any) => {
+                const dur = event.target.getDuration();
+                if (dur > 0) {
+                  setVideos(prev => {
+                    const updated = prev.map((v, i) => 
+                      v.id === video.id ? { ...v, duration: dur } : v
+                    );
+                    // Recalculate offsets
+                    let offset = 0;
+                    return updated.map(v => {
+                      const u = { ...v, startOffset: offset };
+                      offset += v.duration;
+                      return u;
+                    });
+                  });
+                }
+              },
+              onStateChange: (event: any) => {
+                // YT.PlayerState: PLAYING=1, PAUSED=2, ENDED=0
+                if (event.data === 1) {
+                  setIsPlaying(true);
+                } else if (event.data === 2 || event.data === 0) {
+                  setIsPlaying(false);
+                }
+                if (event.data === 0 && index === activeVideoIndex) {
+                  handleEnded();
+                }
+              },
+            },
+          });
+          youtubePlayersRef.current[video.id] = player;
+        } catch (err) {
+          console.error('[YT] Failed to create player', err);
+        }
+      };
+
+      if ((window as any).YT && (window as any).YT.Player) {
+        initPlayer();
+      } else {
+        (window as any)._ytReadyCallbacks = (window as any)._ytReadyCallbacks || [];
+        (window as any)._ytReadyCallbacks.push(initPlayer);
+      }
+    };
+
+    // Small delay to ensure DOM containers are rendered
+    const timer = setTimeout(() => {
+      videos.forEach((v, i) => createPlayer(v, i));
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [videos.map(v => v.id).join(',')]);
+
+  // Poll YouTube currentTime when playing
+  useEffect(() => {
+    if (ytTimerRef.current) {
+      clearInterval(ytTimerRef.current);
+      ytTimerRef.current = null;
+    }
+
+    const av = activeVideo;
+    if (!av?.isYouTube || !isPlaying) return;
+
+    const player = youtubePlayersRef.current[av.id];
+    if (!player?.getCurrentTime) return;
+
+    ytTimerRef.current = window.setInterval(() => {
+      try {
+        const t = player.getCurrentTime();
+        if (typeof t === 'number') setCurrentTime(t);
+      } catch {}
+    }, 200);
+
+    return () => {
+      if (ytTimerRef.current) {
+        clearInterval(ytTimerRef.current);
+        ytTimerRef.current = null;
+      }
+    };
+  }, [activeVideo?.id, isPlaying]);
+
+  // Helper: get active YouTube player
+  const getActiveYTPlayer = () => {
+    const av = activeVideo;
+    if (!av?.isYouTube) return null;
+    return youtubePlayersRef.current[av.id] || null;
+  };
 
   // Supported video extensions
   const supportedVideoExtensions = [
@@ -413,6 +550,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Reset all videos
   const resetAllVideos = () => {
+    // Destroy YouTube players
+    Object.values(youtubePlayersRef.current).forEach((p: any) => {
+      try { p?.destroy(); } catch {}
+    });
+    youtubePlayersRef.current = {};
+    
     // Only revoke object URLs for file uploads
     videos.forEach(v => {
       if (!v.isYouTube) {
@@ -489,6 +632,22 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   // Playback controls
   const togglePlay = async () => {
+    // YouTube video
+    const ytPlayer = getActiveYTPlayer();
+    if (ytPlayer) {
+      try {
+        if (isPlaying) {
+          ytPlayer.pauseVideo();
+        } else {
+          ytPlayer.playVideo();
+        }
+      } catch (e) {
+        console.error('[YT] togglePlay error', e);
+      }
+      return;
+    }
+
+    // Regular video
     const el = getActiveVideoEl();
     if (!el) return;
     if (!videoUrl) {
@@ -535,7 +694,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
           await waitReady();
           await el.play();
         } catch (e) {
-          // One recovery attempt: force reload then retry
           console.log('[VideoEditor] play failed, retrying with load()', e);
           el.load();
           await waitReady();
@@ -545,7 +703,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
       }
     } catch (error) {
       console.error('Play/Pause failed:', error);
-      // Try to recover
       setIsPlaying(false);
     }
   };
@@ -553,13 +710,35 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   // When switching clips, reset local playback state and wait for the new source to become ready
   useEffect(() => {
     setIsPlaying(false);
-    setIsVideoReady(false);
     setCurrentTime(0);
-    // keep duration/trimEnd driven by onLoadedMetadata
+    
+    // For YouTube videos, set ready immediately and update duration
+    if (activeVideo?.isYouTube) {
+      setIsVideoReady(true);
+      const ytP = youtubePlayersRef.current[activeVideo.id];
+      if (ytP?.getDuration) {
+        const dur = ytP.getDuration();
+        if (dur > 0) {
+          setDuration(dur);
+          setTrimEnd(dur);
+        }
+      }
+    } else {
+      setIsVideoReady(false);
+    }
+    // keep duration/trimEnd driven by onLoadedMetadata for native video
   }, [activeVideo?.id]);
 
   // Seek within current video (local time)
   const seek = (time: number) => {
+    const ytPlayer = getActiveYTPlayer();
+    if (ytPlayer) {
+      try {
+        ytPlayer.seekTo(Math.max(0, Math.min(time, duration)), true);
+        setCurrentTime(time);
+      } catch {}
+      return;
+    }
     const el = getActiveVideoEl();
     if (el) {
       el.currentTime = Math.max(0, Math.min(time, duration));
@@ -579,7 +758,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
         targetVideoIndex = i;
         break;
       }
-      // If past all videos, use the last one
       if (i === videos.length - 1) {
         targetVideoIndex = i;
       }
@@ -588,25 +766,37 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
     const targetVideo = videos[targetVideoIndex];
     if (!targetVideo) return;
     
-    // Calculate local time within the target video
     const localTime = clampedTime - targetVideo.startOffset;
     
-    // Switch video if needed
     if (targetVideoIndex !== activeVideoIndex) {
       setActiveVideoIndex(targetVideoIndex);
-      // Seek after the target element exists
       requestAnimationFrame(() => {
-        const el = videoElsRef.current[targetVideoIndex];
-        if (!el) return;
-        el.currentTime = Math.max(0, Math.min(localTime, targetVideo.duration));
-        setCurrentTime(el.currentTime);
+        if (targetVideo.isYouTube) {
+          const ytP = youtubePlayersRef.current[targetVideo.id];
+          if (ytP?.seekTo) {
+            ytP.seekTo(Math.max(0, Math.min(localTime, targetVideo.duration)), true);
+            setCurrentTime(localTime);
+          }
+        } else {
+          const el = videoElsRef.current[targetVideoIndex];
+          if (!el) return;
+          el.currentTime = Math.max(0, Math.min(localTime, targetVideo.duration));
+          setCurrentTime(el.currentTime);
+        }
       });
     } else {
-      // Same video, just seek
-      const el = getActiveVideoEl();
-      if (el) {
-        el.currentTime = Math.max(0, Math.min(localTime, targetVideo.duration));
-        setCurrentTime(el.currentTime);
+      if (targetVideo.isYouTube) {
+        const ytP = getActiveYTPlayer();
+        if (ytP?.seekTo) {
+          ytP.seekTo(Math.max(0, Math.min(localTime, targetVideo.duration)), true);
+          setCurrentTime(localTime);
+        }
+      } else {
+        const el = getActiveVideoEl();
+        if (el) {
+          el.currentTime = Math.max(0, Math.min(localTime, targetVideo.duration));
+          setCurrentTime(el.currentTime);
+        }
       }
     }
   };
@@ -617,6 +807,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const frameForward = () => seek(currentTime + (1/30));
 
   const toggleMute = () => {
+    const ytP = getActiveYTPlayer();
+    if (ytP) {
+      try {
+        if (isMuted) { ytP.unMute(); } else { ytP.mute(); }
+      } catch {}
+      setIsMuted(!isMuted);
+      return;
+    }
     const el = getActiveVideoEl();
     if (el) {
       el.muted = !isMuted;
@@ -627,6 +825,11 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
   const changeVolume = (value: number[]) => {
     const vol = value[0];
     setVolume(vol);
+    const ytP = getActiveYTPlayer();
+    if (ytP) {
+      try { ytP.setVolume(vol * 100); } catch {}
+      return;
+    }
     const el = getActiveVideoEl();
     if (el) {
       el.volume = vol;
@@ -635,6 +838,11 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
 
   const changePlaybackRate = (rate: number) => {
     setPlaybackRate(rate);
+    const ytP = getActiveYTPlayer();
+    if (ytP) {
+      try { ytP.setPlaybackRate(rate); } catch {}
+      return;
+    }
     const el = getActiveVideoEl();
     if (el) {
       el.playbackRate = rate;
@@ -1519,12 +1727,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) 
                     key={v.id}
                     className={`w-full aspect-video ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
                   >
-                    <iframe
-                      src={`https://www.youtube-nocookie.com/embed/${v.youtubeId}?enablejsapi=1&modestbranding=1&rel=0&showinfo=0&controls=1&fs=1`}
-                      title={v.name}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
+                    {/* YouTube IFrame API will replace this div with an iframe */}
+                    <div
+                      id={`yt-player-${v.id}`}
                       className="w-full h-full"
                     />
                   </div>
