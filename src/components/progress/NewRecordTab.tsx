@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Save } from "lucide-react";
+import { Plus, Trash2, Save, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Combobox } from "@/components/ui/combobox";
@@ -28,6 +28,7 @@ interface RecordForm {
   attempts: Attempt[];
   historicalData: any[];
   loading: boolean;
+  terminalVelocity: string;
 }
 
 export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, onRecordSaved }) => {
@@ -39,7 +40,8 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
       selectedExerciseId: '',
       attempts: [{ attempt_number: 1, weight_kg: undefined as any, velocity_ms: undefined as any }],
       historicalData: [],
-      loading: false
+      loading: false,
+      terminalVelocity: ''
     }
   ]);
 
@@ -65,7 +67,8 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
       selectedExerciseId: '',
       attempts: [{ attempt_number: 1, weight_kg: undefined as any, velocity_ms: undefined as any }],
       historicalData: [],
-      loading: false
+      loading: false,
+      terminalVelocity: ''
     }]);
   };
 
@@ -112,6 +115,35 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
       updateForm(formId, { historicalData: chartData });
     } catch (error) {
       console.error('Error fetching historical data:', error);
+    }
+  };
+
+  const fetchTerminalVelocity = async (formId: string, exerciseId: string) => {
+    if (!exerciseId) return;
+    try {
+      const { data } = await supabase
+        .from('exercises')
+        .select('terminal_velocity')
+        .eq('id', exerciseId)
+        .single();
+      if (data?.terminal_velocity) {
+        updateForm(formId, { terminalVelocity: data.terminal_velocity.toString() });
+      }
+    } catch (error) {
+      console.error('Error fetching terminal velocity:', error);
+    }
+  };
+
+  const saveTerminalVelocity = async (exerciseId: string, value: string) => {
+    const numVal = parseFloat(value.replace(',', '.'));
+    if (isNaN(numVal) || numVal <= 0 || !exerciseId) return;
+    try {
+      await supabase
+        .from('exercises')
+        .update({ terminal_velocity: numVal })
+        .eq('id', exerciseId);
+    } catch (error) {
+      console.error('Error saving terminal velocity:', error);
     }
   };
 
@@ -196,6 +228,11 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
         .single();
 
       if (sessionError) throw sessionError;
+
+      // Save terminal velocity to exercise if provided
+      if (form.terminalVelocity) {
+        await saveTerminalVelocity(form.selectedExerciseId, form.terminalVelocity);
+      }
 
       const attemptsToInsert = form.attempts.map((attempt, index) => ({
         test_session_id: session.id,
@@ -306,7 +343,10 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
                       value={form.selectedExerciseId}
                       onValueChange={(val) => {
                         updateForm(form.id, { selectedExerciseId: val });
-                        if (val && form.selectedUserId) fetchHistoricalData(form.id, form.selectedUserId, val);
+                        if (val) {
+                          fetchTerminalVelocity(form.id, val);
+                          if (form.selectedUserId) fetchHistoricalData(form.id, form.selectedUserId, val);
+                        }
                       }}
                       placeholder="Επιλέξτε άσκηση"
                       emptyMessage="Δεν βρέθηκε άσκηση."
@@ -373,6 +413,20 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
                         </div>
                       ))}
                     </div>
+                  </div>
+                  {/* Terminal Velocity - compact inline */}
+                  <div className="flex items-center gap-2 p-1 border rounded-none bg-muted/30">
+                    <Zap className="w-3 h-3 text-muted-foreground shrink-0" />
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">TV (m/s)</span>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.28"
+                      value={form.terminalVelocity}
+                      onChange={(e) => updateForm(form.id, { terminalVelocity: e.target.value })}
+                      onBlur={() => saveTerminalVelocity(form.selectedExerciseId, form.terminalVelocity)}
+                      className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
+                    />
                   </div>
 
                   <Button 
