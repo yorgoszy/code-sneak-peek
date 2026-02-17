@@ -142,7 +142,7 @@ const CoachActiveProgramsContent = () => {
   // Χειρισμός κλικ σε πρόγραμμα
   const handleProgramClick = (assignment: EnrichedAssignment) => {
     startWorkout(assignment, dayToShow);
-    setActiveAssignmentId(assignment.id);
+    setActiveAssignmentId(prev => prev === assignment.id ? null : assignment.id);
   };
 
   const handleDialogClose = (assignmentId?: string) => {
