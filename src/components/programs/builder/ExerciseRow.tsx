@@ -76,7 +76,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = React.memo(({
       lastAutoKg.current = rmStr;
       onUpdate('kg', rmStr);
     }
-  }, [exerciseId, percentage, userId]); // intentionally minimal deps
+  }, [exerciseId, percentage, userId, getOneRM, getVelocityForPercentage]); // include cache fns so new user data triggers recalc
 
   const handleExerciseSelect = useCallback((exerciseId: string) => {
     // Reset auto-fill tracking for new exercise
