@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
+import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
+import { MinimizedWorkoutBubble } from '@/components/active-programs/calendar/MinimizedWorkoutBubble';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface TodaysBubblesProps {
@@ -16,7 +18,13 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   todayStr,
   onProgramClick
 }) => {
-  if (programsForToday.length === 0) return null;
+  const { bubbles, setSuppressRender, removeBubble } = useMinimizedBubbles();
+
+  // Suppress the context's built-in rendering - we handle it here
+  useEffect(() => {
+    setSuppressRender(true);
+    return () => setSuppressRender(false);
+  }, [setSuppressRender]);
 
   const getWorkoutStatus = (assignment: EnrichedAssignment) => {
     const completion = workoutCompletions.find(c =>
@@ -30,9 +38,39 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return currentStatus;
   };
 
+  // Filter out today's programs that already have a minimized bubble
+  const minimizedAssignmentIds = new Set(
+    bubbles.map(b => b.id.replace('bubble-', '').split('-').slice(0, -3).join('-'))
+  );
+
+  // Programs for today that are NOT already shown as minimized bubbles
+  const todayProgramsFiltered = programsForToday.filter(a => {
+    const bubbleId = `bubble-${a.id}-${todayStr}`;
+    return !bubbles.some(b => b.id === bubbleId);
+  });
+
+  const hasBubbles = todayProgramsFiltered.length > 0 || bubbles.length > 0;
+  if (!hasBubbles) return null;
+
   return (
     <div className="fixed bottom-4 left-4 z-[9999] flex gap-2 items-end">
-      {programsForToday.map(assignment => {
+      {/* Minimized workout bubbles from context */}
+      {bubbles.map(bubble => (
+        <MinimizedWorkoutBubble
+          key={bubble.id}
+          athleteName={bubble.athleteName}
+          avatarUrl={bubble.photoUrl || bubble.avatarUrl}
+          workoutInProgress={bubble.workoutInProgress}
+          elapsedTime={bubble.elapsedTime}
+          onRestore={() => {
+            bubble.onRestore();
+            removeBubble(bubble.id);
+          }}
+        />
+      ))}
+
+      {/* Today's scheduled programs (not minimized) */}
+      {todayProgramsFiltered.map(assignment => {
         const status = getWorkoutStatus(assignment);
         const name = assignment.app_users?.name || 'Άγνωστος';
         const avatarUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
@@ -61,7 +99,6 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
               </span>
             )}
 
-            {/* Name tooltip on hover */}
             <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-black text-white text-[9px] px-1.5 py-0.5 rounded-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
               {name.split(' ')[0]}
             </span>
