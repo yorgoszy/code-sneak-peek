@@ -54,6 +54,8 @@ interface ProgramBuilderProps {
   onAssignments?: () => void;
   onClose?: () => void;
   coachId?: string;
+  activePreviewUserId?: string | null;
+  onActivePreviewUserChange?: (userId: string) => void;
 }
 
 export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
@@ -104,7 +106,9 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onSave,
   onAssignments,
   onClose,
-  coachId
+  coachId,
+  activePreviewUserId,
+  onActivePreviewUserChange
 }) => {
   console.log('🔄 ProgramBuilder render - user_ids:', program.user_ids);
   
@@ -141,6 +145,8 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onClose={onClose}
         canAssign={!!canAssign}
         coachId={coachId}
+        activePreviewUserId={activePreviewUserId}
+        onActivePreviewUserChange={onActivePreviewUserChange}
       />
       
       <TrainingWeeks

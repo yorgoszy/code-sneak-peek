@@ -18,6 +18,7 @@ interface ProgramBasicInfoProps {
   selectedUserId?: string;
   selectedUserIds?: string[];
   selectedGroupId?: string;
+  activePreviewUserId?: string | null;
   users: UserType[];
   isSellable?: boolean;
   price?: number;
@@ -35,12 +36,14 @@ interface ProgramBasicInfoProps {
   onClose?: () => void;
   canAssign?: boolean;
   coachId?: string;
+  onActivePreviewUserChange?: (userId: string) => void;
 }
 
 export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   name,
   selectedUserIds = [],
   selectedGroupId = '',
+  activePreviewUserId,
   users,
   isSellable = false,
   price,
@@ -53,7 +56,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   onAssignments,
   onClose,
   canAssign = false,
-  coachId
+  coachId,
+  onActivePreviewUserChange
 }) => {
   const [assignmentMode, setAssignmentMode] = useState<'individual' | 'group'>('individual');
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -278,8 +282,10 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
       {/* Row 2: Selected Users Display - Always visible */}
       <SelectedUsersDisplay
         selectedUsers={selectedUsers}
+        activeUserId={activePreviewUserId}
         onClearAll={handleClearAll}
         onRemoveUser={handleRemoveUser}
+        onSelectActiveUser={onActivePreviewUserChange}
       />
     </div>
   );
