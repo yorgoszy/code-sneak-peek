@@ -67,11 +67,15 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
       items.push({ type: 'today', data: assignment });
     });
     
-    // Sort by a stable key (assignment id extracted from bubble id or assignment id)
+    // Sort by the underlying assignment ID (extracted from bubble id format: bubble-{assignmentId}-{date})
+    const extractAssignmentId = (item: typeof items[0]) => {
+      if (item.type === 'today') return (item.data as EnrichedAssignment).id;
+      const bubbleData = item.data as typeof bubbles[0];
+      // bubble id format: bubble-{assignmentId}-{date}
+      return bubbleData.id.replace('bubble-', '').replace(`-${todayStr}`, '');
+    };
     items.sort((a, b) => {
-      const keyA = a.type === 'bubble' ? a.data.id : a.data.id;
-      const keyB = b.type === 'bubble' ? b.data.id : b.data.id;
-      return keyA.localeCompare(keyB);
+      return extractAssignmentId(a).localeCompare(extractAssignmentId(b));
     });
     
     return items;
