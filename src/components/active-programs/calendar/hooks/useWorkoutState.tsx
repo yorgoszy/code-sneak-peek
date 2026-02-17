@@ -671,18 +671,17 @@ export const useWorkoutState = (
         }
       }
       
-      // ΑΜΕΣΗ ανανέωση
+      // ΑΜΕΣΗ ανανέωση - πρώτα refresh, μετά κλείσιμο
       if (onRefresh) {
         console.log('🔄 TRIGGERING IMMEDIATE REFRESH...');
-        setTimeout(() => {
-          onRefresh();
-        }, 100);
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await onRefresh();
       }
       
       // Κλείνουμε το dialog μετά από μικρή καθυστέρηση
       setTimeout(() => {
         if (onClose) onClose();
-      }, 1500);
+      }, 1200);
       
     } catch (error) {
       console.error('❌ Error completing workout:', error);
