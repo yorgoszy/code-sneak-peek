@@ -131,32 +131,36 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
 
         const newVelocityProfiles = new Map<string, VelocityProfile>();
         if (exerciseIdsWithVelocity.size > 0) {
+          // Fetch terminal velocities (may be null for some exercises)
           const { data: exercisesData } = await supabase
             .from('exercises')
             .select('id, terminal_velocity')
-            .in('id', Array.from(exerciseIdsWithVelocity))
-            .not('terminal_velocity', 'is', null);
+            .in('id', Array.from(exerciseIdsWithVelocity));
 
-          if (exercisesData && velocityData) {
-            const tvMap = new Map<string, number>();
+          const tvMap = new Map<string, number | null>();
+          if (exercisesData) {
             for (const ex of exercisesData) {
-              if (ex.terminal_velocity) tvMap.set(ex.id, ex.terminal_velocity);
+              tvMap.set(ex.id, ex.terminal_velocity);
             }
+          }
 
+          if (velocityData) {
             // Group velocity data by exercise
             const pointsByExercise = new Map<string, LoadVelocityPoint[]>();
             for (const v of velocityData) {
-              if (!v.exercise_id || !tvMap.has(v.exercise_id)) continue;
+              if (!v.exercise_id) continue;
               const pts = pointsByExercise.get(v.exercise_id) || [];
               pts.push({ weight_kg: v.weight_kg, velocity_ms: v.velocity_ms! });
               pointsByExercise.set(v.exercise_id, pts);
             }
 
             for (const [exId, points] of pointsByExercise) {
-              const tv = tvMap.get(exId);
-              if (tv && points.length >= 2) {
-                const profile = buildVelocityProfile(points, tv);
-                newVelocityProfiles.set(exId, profile);
+              if (points.length >= 2) {
+                const tv = tvMap.get(exId);
+                const profile = buildVelocityProfile(points, tv ?? 0);
+                if (profile) {
+                  newVelocityProfiles.set(exId, profile);
+                }
               }
             }
           }
