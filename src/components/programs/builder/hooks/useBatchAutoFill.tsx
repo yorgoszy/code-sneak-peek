@@ -1,12 +1,11 @@
 
-import { useEffect, useRef, startTransition } from 'react';
+import { useEffect, useRef } from 'react';
 import { useUserExerciseDataCacheContext } from '@/hooks/useUserExerciseDataCache';
 import type { ProgramStructure, Week } from './useProgramBuilderState';
 
 /**
  * Batch auto-fill: when user exercise data finishes loading,
  * iterate ALL exercises ONCE and update kg/velocity in a single state update.
- * Uses startTransition so the UI stays responsive during the update.
  */
 export const useBatchAutoFill = (
   updateProgram: (updates: Partial<ProgramStructure> | ((prev: ProgramStructure) => Partial<ProgramStructure>)) => void
@@ -28,19 +27,16 @@ export const useBatchAutoFill = (
     lastLoadingState.current = false;
     lastProcessedUserId.current = userId;
 
-    // Use startTransition so React won't block the UI during this heavy update
-    startTransition(() => {
-      if (!userId) {
-        updateProgram((prev) => ({
-          weeks: clearAllAutoFillData(prev.weeks)
-        }));
-        return;
-      }
-
+    if (!userId) {
       updateProgram((prev) => ({
-        weeks: batchFillWeeks(prev.weeks, getOneRM, getVelocityForPercentage)
+        weeks: clearAllAutoFillData(prev.weeks)
       }));
-    });
+      return;
+    }
+
+    updateProgram((prev) => ({
+      weeks: batchFillWeeks(prev.weeks, getOneRM, getVelocityForPercentage)
+    }));
   }, [loading, userId, getOneRM, getVelocityForPercentage, updateProgram]);
 };
 

@@ -35,14 +35,16 @@ export const ExerciseSelectionDialog: React.FC<ExerciseSelectionDialogProps> = (
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <ExerciseSelectionDialogContent
-        exercises={exercises}
-        onSelectExercise={onSelectExercise}
-        onClose={handleClose}
-        onExercisesUpdate={onExercisesUpdate}
-        onSelectBlockTemplate={onSelectBlockTemplate}
-        coachId={coachId}
-      />
+      {open && (
+        <ExerciseSelectionDialogContent
+          exercises={exercises}
+          onSelectExercise={onSelectExercise}
+          onClose={handleClose}
+          onExercisesUpdate={onExercisesUpdate}
+          onSelectBlockTemplate={onSelectBlockTemplate}
+          coachId={coachId}
+        />
+      )}
     </Dialog>
   );
 };

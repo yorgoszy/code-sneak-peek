@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Exercise {
@@ -14,17 +14,15 @@ export const useExerciseRealtime = (
   onExerciseAdded: (exercise: Exercise) => void
 ) => {
   const [currentExercises, setCurrentExercises] = useState<Exercise[]>(initialExercises);
+  const onExerciseAddedRef = useRef(onExerciseAdded);
+  onExerciseAddedRef.current = onExerciseAdded;
 
-  // Update current exercises when initial exercises change
   useEffect(() => {
-    console.log('📥 Initial exercises updated:', initialExercises.length);
     setCurrentExercises(initialExercises);
   }, [initialExercises]);
 
-  // Set up real-time subscription for exercises
+  // Single subscription - stable deps, no re-subscribe on callback change
   useEffect(() => {
-    console.log('🔄 Setting up real-time subscription for exercises...');
-    
     const exercisesSubscription = supabase
       .channel('exercises-realtime')
       .on(
@@ -35,36 +33,20 @@ export const useExerciseRealtime = (
           table: 'exercises'
         },
         async (payload) => {
-          console.log('✅ New exercise added via realtime:', payload.new);
-          
           const newExercise = payload.new as Exercise;
-          
-          // Add the new exercise to the current list immediately
           setCurrentExercises(prev => {
-            const exists = prev.some(ex => ex.id === newExercise.id);
-            if (exists) {
-              console.log('⚠️ Exercise already exists in list:', newExercise.id);
-              return prev;
-            }
-            console.log('➕ Adding new exercise to list:', newExercise.name);
+            if (prev.some(ex => ex.id === newExercise.id)) return prev;
             return [...prev, newExercise];
           });
-          
-          // Notify parent component about the new exercise
-          onExerciseAdded(newExercise);
+          onExerciseAddedRef.current(newExercise);
         }
       )
-      .subscribe((status) => {
-        console.log('🔗 Real-time subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      console.log('🔌 Cleaning up exercises subscription...');
       supabase.removeChannel(exercisesSubscription);
     };
-  }, [onExerciseAdded]);
+  }, []); // stable - no deps that change
 
-  return {
-    currentExercises
-  };
+  return { currentExercises };
 };
