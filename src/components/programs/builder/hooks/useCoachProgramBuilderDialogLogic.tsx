@@ -93,22 +93,18 @@ export const useCoachProgramBuilderDialogLogic = ({
         return;
       }
 
-      // Αποθήκευση/Ενημέρωση του προγράμματος πρώτα
-      let programToAssign = program;
-      
-      // Αν υπάρχει ID, ενημερώνουμε το υπάρχον πρόγραμμα
-      if (program.id) {
-        console.log('🔄 [Coach] Updating existing program:', program.id);
-        const savedProgram = await onCreateProgram(program);
-        programToAssign = { ...program, id: savedProgram?.id || program.id };
-      } else {
-        // Δημιουργία νέου προγράμματος
-        console.log('📋 [Coach] Creating new program...');
+      // Save base program first
+      let baseProgramId = program.id;
+      if (!baseProgramId) {
+        console.log('📋 [Coach] Creating base program...');
         const savedProgram = await onCreateProgram(program);
         if (!savedProgram || !savedProgram.id) {
           throw new Error('Αποτυχία αποθήκευσης προγράμματος');
         }
-        programToAssign = { ...program, id: savedProgram.id };
+        baseProgramId = savedProgram.id;
+      } else {
+        console.log('🔄 [Coach] Updating existing program:', program.id);
+        await onCreateProgram(program);
       }
 
       // Convert Date objects to strings
@@ -145,7 +141,6 @@ export const useCoachProgramBuilderDialogLogic = ({
         toast.success('Το πρόγραμμα ενημερώθηκε επιτυχώς!');
         handleClose();
 
-        // Redirect to coach active programs
         setTimeout(() => {
           window.location.href = `/dashboard/coach-active-programs?coachId=${coachId}`;
         }, 1500);
@@ -155,27 +150,42 @@ export const useCoachProgramBuilderDialogLogic = ({
 
       console.log('🎯 [Coach] Creating new assignments for coach_users:', program.user_ids);
 
-      // Create assignments for each selected coach_user - ΒΕΛΤΙΣΤΟΠΟΙΗΣΗ:
-      // Η δομή δημιουργείται μόνο μία φορά (στον πρώτο χρήστη), μετά μόνο assignments
-      let structureCreated = false;
-      
-      for (const coachUserId of program.user_ids) {
+      const isSingleUser = program.user_ids.length === 1;
+
+      for (let i = 0; i < program.user_ids.length; i++) {
+        const coachUserId = program.user_ids[i];
         console.log(`📝 [Coach] Creating assignment for coach_user: ${coachUserId}`);
         
         // 🔄 Recalculate kg/m/s based on this user's personal 1RM data
         console.log(`🔄 [Coach] Recalculating kg/m/s for user ${coachUserId}...`);
-        const userWeeks = await recalculateWeeksForUser(programToAssign.weeks || [], coachUserId);
-        
+        const userWeeks = await recalculateWeeksForUser(program.weeks || [], coachUserId);
+
+        let programIdForUser = baseProgramId;
+
+        // For multiple users: each user gets their OWN program copy
+        // so per-user kg/velocity values are stored independently
+        if (!isSingleUser) {
+          console.log(`📋 [Coach] Creating unique program copy for user ${coachUserId}...`);
+          const userProgramCopy = await onCreateProgram({
+            ...program,
+            id: undefined, // Force new creation
+            weeks: userWeeks,
+          });
+          if (!userProgramCopy || !userProgramCopy.id) {
+            throw new Error(`Αποτυχία δημιουργίας αντιγράφου για χρήστη ${coachUserId}`);
+          }
+          programIdForUser = userProgramCopy.id;
+        }
+
         const assignmentData = {
-          program: { ...programToAssign, weeks: userWeeks },
-          coachUserId, // ID από coach_users table
-          coachId, // ID του coach
+          program: { ...program, id: programIdForUser, weeks: userWeeks },
+          coachUserId,
+          coachId,
           trainingDates,
-          skipStructureRecreation: structureCreated // Skip recreation after first one
+          skipStructureRecreation: !isSingleUser, // For multi-user, structure already created by onCreateProgram
         };
 
         await coachAssignmentService.saveAssignment(assignmentData);
-        structureCreated = true; // After first assignment, skip structure recreation
         console.log(`✅ [Coach] Assignment created for coach_user: ${coachUserId}`);
       }
 

@@ -122,14 +122,14 @@ export const useProgramBuilderDialogLogic = ({
         return;
       }
 
-      // Ensure program is saved first
-      let programToAssign = program;
-      if (!program.id) {
+      // Ensure base program is saved first (as a "template" reference)
+      let baseProgramId = program.id;
+      if (!baseProgramId) {
         const savedProgram = await onCreateProgram(program);
         if (!savedProgram || !savedProgram.id) {
           throw new Error('Αποτυχία αποθήκευσης προγράμματος');
         }
-        programToAssign = { ...program, id: savedProgram.id };
+        baseProgramId = savedProgram.id;
       }
 
       // Convert Date objects to strings
@@ -143,27 +143,43 @@ export const useProgramBuilderDialogLogic = ({
       console.log('🎯 Creating assignments for users:', program.user_ids);
       console.log('🎯 Training dates:', trainingDates);
 
-      // Create assignments for each selected user - ΒΕΛΤΙΣΤΟΠΟΙΗΣΗ:
-      // Η δομή δημιουργείται μόνο μία φορά (στον πρώτο χρήστη), μετά μόνο assignments
-      let structureCreated = false;
-      
-      for (const userId of program.user_ids) {
+      const isSingleUser = program.user_ids.length === 1;
+
+      for (let i = 0; i < program.user_ids.length; i++) {
+        const userId = program.user_ids[i];
         console.log(`📝 Creating assignment for user: ${userId}`);
         
         // 🔄 Recalculate kg/m/s based on this user's personal 1RM data
         console.log(`🔄 Recalculating kg/m/s for user ${userId}...`);
-        const userWeeks = await recalculateWeeksForUser(programToAssign.weeks || [], userId);
-        
+        const userWeeks = await recalculateWeeksForUser(program.weeks || [], userId);
+
+        let programIdForUser = baseProgramId;
+
+        // For multiple users: each user gets their OWN program copy
+        // so per-user kg/velocity values are stored independently
+        if (!isSingleUser) {
+          console.log(`📋 Creating unique program copy for user ${userId}...`);
+          const userProgramCopy = await onCreateProgram({
+            ...program,
+            id: undefined, // Force new creation
+            name: program.user_ids.length > 1 ? `${program.name}` : program.name,
+            weeks: userWeeks,
+          });
+          if (!userProgramCopy || !userProgramCopy.id) {
+            throw new Error(`Αποτυχία δημιουργίας αντιγράφου προγράμματος για χρήστη ${userId}`);
+          }
+          programIdForUser = userProgramCopy.id;
+        }
+
         const assignmentData = {
-          program: { ...programToAssign, weeks: userWeeks },
+          program: { ...program, id: programIdForUser, weeks: userWeeks },
           userId,
           trainingDates,
           coachId,
-          skipStructureRecreation: structureCreated // Skip recreation after first one
+          skipStructureRecreation: !isSingleUser, // For multi-user, structure was already created by onCreateProgram
         };
 
         await assignmentService.saveAssignment(assignmentData);
-        structureCreated = true; // After first assignment, skip structure recreation
         console.log(`✅ Assignment created for user: ${userId}`);
       }
 
