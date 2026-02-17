@@ -34,9 +34,12 @@ export const useBatchAutoFill = (
       return;
     }
 
-    updateProgram((prev) => ({
-      weeks: batchFillWeeks(prev.weeks, getOneRM, getVelocityForPercentage)
-    }));
+    // When user changes, first clear old data then fill with new user's data
+    updateProgram((prev) => {
+      const clearedWeeks = clearAllAutoFillData(prev.weeks);
+      const filledWeeks = batchFillWeeks(clearedWeeks, getOneRM, getVelocityForPercentage);
+      return { weeks: filledWeeks };
+    });
   }, [loading, userId, getOneRM, getVelocityForPercentage, updateProgram]);
 };
 
