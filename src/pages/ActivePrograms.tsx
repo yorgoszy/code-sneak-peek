@@ -379,7 +379,7 @@ const ActivePrograms = () => {
         {/* Content */}
         <div className="flex-1 flex flex-col min-h-0">
           {/* Header - Compact */}
-          <div className="px-3 py-2 sm:px-4 md:px-6">
+          <div className="px-3 py-1 sm:px-4 md:px-6">
             <ActiveProgramsHeader />
           </div>
 
