@@ -136,17 +136,21 @@ const CoachActiveProgramsContent = () => {
     loadCompletions();
   }, [loadCompletions]);
 
+  const switchingRef = React.useRef(false);
+
   const handleProgramClick = (assignment: EnrichedAssignment) => {
     const workoutId = `${assignment.id}-${dayToShow.toISOString().split('T')[0]}`;
     
-    // Close any currently open dialog first
+    // If another dialog is open, mark as switching so onClose won't reset state
     if (activeAssignmentId && activeAssignmentId !== assignment.id) {
+      switchingRef.current = true;
       const currentWorkoutId = `${activeAssignmentId}-${dayToShow.toISOString().split('T')[0]}`;
       setOpenDialogs(prev => {
         const newSet = new Set(prev);
         newSet.delete(currentWorkoutId);
         return newSet;
       });
+      setTimeout(() => { switchingRef.current = false; }, 200);
     }
     
     startWorkout(assignment, dayToShow);
@@ -155,7 +159,8 @@ const CoachActiveProgramsContent = () => {
   };
 
   const handleDialogClose = (workoutId: string) => {
-    if (activeAssignmentId && workoutId.startsWith(activeAssignmentId)) {
+    // Don't reset activeAssignmentId if we're switching to another dialog
+    if (!switchingRef.current && activeAssignmentId && workoutId.startsWith(activeAssignmentId)) {
       setActiveAssignmentId(null);
     }
     setOpenDialogs(prev => {
