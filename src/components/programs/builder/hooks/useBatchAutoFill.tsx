@@ -1,12 +1,12 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, startTransition } from 'react';
 import { useUserExerciseDataCacheContext } from '@/hooks/useUserExerciseDataCache';
 import type { ProgramStructure, Week } from './useProgramBuilderState';
 
 /**
  * Batch auto-fill: when user exercise data finishes loading,
  * iterate ALL exercises ONCE and update kg/velocity in a single state update.
- * This replaces per-ExerciseRow useEffects that caused cascading re-renders.
+ * Uses startTransition so the UI stays responsive during the update.
  */
 export const useBatchAutoFill = (
   updateProgram: (updates: Partial<ProgramStructure> | ((prev: ProgramStructure) => Partial<ProgramStructure>)) => void
@@ -16,13 +16,11 @@ export const useBatchAutoFill = (
   const lastLoadingState = useRef<boolean>(true);
 
   useEffect(() => {
-    // Only run when loading transitions from true to false (data just loaded)
     if (loading) {
       lastLoadingState.current = true;
       return;
     }
 
-    // If we already processed this user, skip
     if (!lastLoadingState.current && lastProcessedUserId.current === userId) {
       return;
     }
@@ -30,18 +28,19 @@ export const useBatchAutoFill = (
     lastLoadingState.current = false;
     lastProcessedUserId.current = userId;
 
-    // If no user selected, clear all auto-filled data
-    if (!userId) {
-      updateProgram((prev) => ({
-        weeks: clearAllAutoFillData(prev.weeks)
-      }));
-      return;
-    }
+    // Use startTransition so React won't block the UI during this heavy update
+    startTransition(() => {
+      if (!userId) {
+        updateProgram((prev) => ({
+          weeks: clearAllAutoFillData(prev.weeks)
+        }));
+        return;
+      }
 
-    // Batch update all exercises with 1RM/velocity data
-    updateProgram((prev) => ({
-      weeks: batchFillWeeks(prev.weeks, getOneRM, getVelocityForPercentage)
-    }));
+      updateProgram((prev) => ({
+        weeks: batchFillWeeks(prev.weeks, getOneRM, getVelocityForPercentage)
+      }));
+    });
   }, [loading, userId, getOneRM, getVelocityForPercentage, updateProgram]);
 };
 
