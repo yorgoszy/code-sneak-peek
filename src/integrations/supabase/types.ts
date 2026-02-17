@@ -2730,6 +2730,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          terminal_velocity: number | null
           updated_at: string | null
           video_url: string | null
         }
@@ -2739,6 +2740,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          terminal_velocity?: number | null
           updated_at?: string | null
           video_url?: string | null
         }
@@ -2748,6 +2750,7 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          terminal_velocity?: number | null
           updated_at?: string | null
           video_url?: string | null
         }

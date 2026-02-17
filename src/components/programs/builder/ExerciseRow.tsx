@@ -6,6 +6,7 @@ import { ExerciseSelectionButton } from './ExerciseSelectionButton';
 import { ExerciseDetailsFormOptimized } from './ExerciseDetailsFormOptimized';
 import { calculateExerciseNumber } from './utils/exerciseNumberCalculator';
 import { useExercise1RM } from '@/hooks/useExercise1RM';
+import { useLoadVelocityProfile } from '@/hooks/useLoadVelocityProfile';
 
 interface ExerciseRowProps {
   exercise: ProgramExercise;
@@ -32,6 +33,12 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = React.memo(({
 
   // Fetch 1RM for selected user and exercise
   const { oneRM, loading: oneRMLoading } = useExercise1RM({
+    userId: selectedUserId || null,
+    exerciseId: exercise.exercise_id || null
+  });
+
+  // Fetch load-velocity profile for auto velocity calculation
+  const { getVelocityForPercentage } = useLoadVelocityProfile({
     userId: selectedUserId || null,
     exerciseId: exercise.exercise_id || null
   });
@@ -74,6 +81,19 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = React.memo(({
       }
     }
   }, [oneRM, oneRMLoading, exercise.percentage_1rm, selectedUserId]);
+
+  // Auto-calculate velocity from %1RM using load-velocity profile
+  useEffect(() => {
+    if (!exercise.percentage_1rm || !oneRM) return;
+    
+    const percentage = parseFloat(exercise.percentage_1rm.toString().replace(',', '.'));
+    if (isNaN(percentage) || percentage <= 0) return;
+
+    const predictedVelocity = getVelocityForPercentage(percentage, oneRM);
+    if (predictedVelocity !== null) {
+      onUpdate('velocity_ms', predictedVelocity.toString().replace('.', ','));
+    }
+  }, [exercise.percentage_1rm, oneRM, getVelocityForPercentage]);
 
   const handleExerciseSelect = useCallback((exerciseId: string) => {
     onUpdate('exercise_id', exerciseId);
