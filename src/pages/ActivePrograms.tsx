@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { Navigate, useNavigate } from "react-router-dom";
 import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid";
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
-import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
+import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
@@ -392,15 +392,13 @@ const ActivePrograms = () => {
             />
           </div>
 
-          {/* Today's Programs - Responsive */}
-          <div className="p-3 sm:p-4 md:p-6 pt-0">
-            <TodaysProgramsSection
-              programsForToday={programsForSelectedDate}
-              workoutCompletions={workoutCompletions}
-              todayStr={dayToShowStr}
-              onProgramClick={handleProgramClick}
-            />
-          </div>
+          {/* Today's Bubbles */}
+          <TodaysBubbles
+            programsForToday={programsForSelectedDate}
+            workoutCompletions={workoutCompletions}
+            todayStr={dayToShowStr}
+            onProgramClick={handleProgramClick}
+          />
         </div>
       </div>
 
