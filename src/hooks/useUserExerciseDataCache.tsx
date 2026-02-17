@@ -108,30 +108,56 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
           }
         }
 
-        // 3. Fetch ALL velocity data for this user in ONE query
+        // 3. Fetch ALL velocity data for this user with session info
         const { data: velocityData } = await supabase
           .from('strength_test_attempts')
           .select(`
             exercise_id,
             weight_kg,
             velocity_ms,
-            strength_test_sessions!inner (user_id)
+            test_session_id,
+            strength_test_sessions!inner (user_id, test_date)
           `)
           .eq('strength_test_sessions.user_id', userId)
           .not('velocity_ms', 'is', null)
           .gt('velocity_ms', 0);
 
-        // 4. Fetch terminal velocities for exercises that have velocity data
+        // 4. Group by exercise and session, keep only the LATEST session per exercise
         const exerciseIdsWithVelocity = new Set<string>();
+        const latestSessionPoints = new Map<string, LoadVelocityPoint[]>();
+
         if (velocityData) {
-          for (const v of velocityData) {
-            if (v.exercise_id) exerciseIdsWithVelocity.add(v.exercise_id);
+          // Group by exercise_id → session_id → points
+          const byExerciseSession = new Map<string, Map<string, { date: string; points: LoadVelocityPoint[] }>>();
+          
+          for (const v of velocityData as any[]) {
+            if (!v.exercise_id) continue;
+            const exId = v.exercise_id;
+            const sessionId = v.test_session_id;
+            const testDate = v.strength_test_sessions?.test_date || '';
+            
+            if (!byExerciseSession.has(exId)) byExerciseSession.set(exId, new Map());
+            const sessions = byExerciseSession.get(exId)!;
+            if (!sessions.has(sessionId)) sessions.set(sessionId, { date: testDate, points: [] });
+            sessions.get(sessionId)!.points.push({ weight_kg: v.weight_kg, velocity_ms: v.velocity_ms! });
+          }
+
+          // For each exercise, find the latest session with >= 2 points
+          for (const [exId, sessions] of byExerciseSession) {
+            const sortedSessions = Array.from(sessions.entries())
+              .filter(([_, s]) => s.points.length >= 2)
+              .sort((a, b) => b[1].date.localeCompare(a[1].date));
+
+            if (sortedSessions.length > 0) {
+              exerciseIdsWithVelocity.add(exId);
+              latestSessionPoints.set(exId, sortedSessions[0][1].points);
+            }
           }
         }
 
         const newVelocityProfiles = new Map<string, VelocityProfile>();
         if (exerciseIdsWithVelocity.size > 0) {
-          // Fetch terminal velocities (may be null for some exercises)
+          // Fetch terminal velocities
           const { data: exercisesData } = await supabase
             .from('exercises')
             .select('id, terminal_velocity')
@@ -144,24 +170,11 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
             }
           }
 
-          if (velocityData) {
-            // Group velocity data by exercise
-            const pointsByExercise = new Map<string, LoadVelocityPoint[]>();
-            for (const v of velocityData) {
-              if (!v.exercise_id) continue;
-              const pts = pointsByExercise.get(v.exercise_id) || [];
-              pts.push({ weight_kg: v.weight_kg, velocity_ms: v.velocity_ms! });
-              pointsByExercise.set(v.exercise_id, pts);
-            }
-
-            for (const [exId, points] of pointsByExercise) {
-              if (points.length >= 2) {
-                const tv = tvMap.get(exId);
-                const profile = buildVelocityProfile(points, tv ?? 0);
-                if (profile) {
-                  newVelocityProfiles.set(exId, profile);
-                }
-              }
+          for (const [exId, points] of latestSessionPoints) {
+            const tv = tvMap.get(exId);
+            const profile = buildVelocityProfile(points, tv ?? 0);
+            if (profile) {
+              newVelocityProfiles.set(exId, profile);
             }
           }
         }
