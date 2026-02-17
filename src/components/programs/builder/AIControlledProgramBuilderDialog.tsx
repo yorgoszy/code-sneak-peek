@@ -185,6 +185,7 @@ export const AIControlledProgramBuilderDialog: React.FC = () => {
         onAssignments={handleAssign}
         onTrainingDatesChange={handleTrainingDatesChange}
         getTotalTrainingDays={getTotalTrainingDays}
+        updateProgram={updateProgram}
       />
     </Dialog>
   );

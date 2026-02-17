@@ -8,6 +8,7 @@ import { CalendarSection } from './CalendarSection';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { FmsExerciseStatusProvider } from '@/contexts/FmsExerciseStatusContext';
 import { UserExerciseDataCacheProvider } from '@/hooks/useUserExerciseDataCache';
+import { useBatchAutoFill } from './hooks/useBatchAutoFill';
 
 interface ProgramBuilderDialogContentProps {
   program: ProgramStructure;
@@ -59,6 +60,7 @@ interface ProgramBuilderDialogContentProps {
   onTrainingDatesChange: (dates: Date[]) => void;
   getTotalTrainingDays: () => number;
   coachId?: string;
+  updateProgram: (updates: Partial<ProgramStructure> | ((prev: ProgramStructure) => Partial<ProgramStructure>)) => void;
 }
 
 export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentProps> = ({
@@ -110,7 +112,8 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onClose,
   onTrainingDatesChange,
   getTotalTrainingDays,
-  coachId
+  coachId,
+  updateProgram
 }) => {
   // Get selected user ID for FMS status
   const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : null);
@@ -118,6 +121,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   return (
     <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none [&>button]:hidden">
       <UserExerciseDataCacheProvider userId={selectedUserId}>
+        <BatchAutoFillBridge updateProgram={updateProgram} />
         <FmsExerciseStatusProvider userId={selectedUserId}>
           <ScrollArea className="flex-1 w-full h-full">
             <div className="space-y-2 p-2">
@@ -195,4 +199,12 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
       </UserExerciseDataCacheProvider>
     </DialogContent>
   );
+};
+
+/** Tiny bridge component that lives inside the CacheProvider so it can use the hook */
+const BatchAutoFillBridge: React.FC<{
+  updateProgram: (updates: Partial<ProgramStructure> | ((prev: ProgramStructure) => Partial<ProgramStructure>)) => void;
+}> = ({ updateProgram }) => {
+  useBatchAutoFill(updateProgram);
+  return null;
 };
