@@ -1,5 +1,5 @@
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { CardContent } from "@/components/ui/card";
 import { CollapsibleContent } from "@/components/ui/collapsible";
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -39,24 +39,51 @@ export const BlockCardContent: React.FC<BlockCardContentProps> = React.memo(({
   // Memoize exercise item ids for SortableContext
   const exerciseIds = React.useMemo(() => exercises.map(e => e.id), [exercises]);
 
+  // Stable callback refs to prevent re-renders
+  const onUpdateRef = useRef(onUpdateExercise);
+  onUpdateRef.current = onUpdateExercise;
+  const onRemoveRef = useRef(onRemoveExercise);
+  onRemoveRef.current = onRemoveExercise;
+  const onDuplicateRef = useRef(onDuplicateExercise);
+  onDuplicateRef.current = onDuplicateExercise;
+
+  // Memoize handlers per exercise ID to prevent re-creating on every render
+  const handlersCache = useRef<Map<string, { update: (f: string, v: any) => void; remove: () => void; duplicate: () => void }>>(new Map());
+  
+  const getHandlers = useCallback((exerciseId: string) => {
+    let handlers = handlersCache.current.get(exerciseId);
+    if (!handlers) {
+      handlers = {
+        update: (field: string, value: any) => onUpdateRef.current(exerciseId, field, value),
+        remove: () => onRemoveRef.current(exerciseId),
+        duplicate: () => onDuplicateRef.current(exerciseId),
+      };
+      handlersCache.current.set(exerciseId, handlers);
+    }
+    return handlers;
+  }, []);
+
   return (
     <CollapsibleContent>
       <CardContent className="p-0 m-0">
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={exerciseIds} strategy={verticalListSortingStrategy}>
             <div className="w-full h-full">
-              {exercises.map((exercise) => (
-                <SortableExercise
-                  key={exercise.id}
-                  exercise={exercise}
-                  exercises={availableExercises}
-                  allBlockExercises={exercises}
-                  selectedUserId={selectedUserId}
-                  onUpdate={(field, value) => onUpdateExercise(exercise.id, field, value)}
-                  onRemove={() => onRemoveExercise(exercise.id)}
-                  onDuplicate={() => onDuplicateExercise(exercise.id)}
-                />
-              ))}
+              {exercises.map((exercise) => {
+                const h = getHandlers(exercise.id);
+                return (
+                  <SortableExercise
+                    key={exercise.id}
+                    exercise={exercise}
+                    exercises={availableExercises}
+                    allBlockExercises={exercises}
+                    selectedUserId={selectedUserId}
+                    onUpdate={h.update}
+                    onRemove={h.remove}
+                    onDuplicate={h.duplicate}
+                  />
+                );
+              })}
             </div>
           </SortableContext>
         </DndContext>
