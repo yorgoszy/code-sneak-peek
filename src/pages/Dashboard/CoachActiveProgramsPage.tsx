@@ -7,7 +7,6 @@ import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgram
 import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
-import { MinimizedBubblesContainer } from "@/components/active-programs/calendar/MinimizedBubblesContainer";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
@@ -28,9 +27,7 @@ const CoachActiveProgramsContent = () => {
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [openDialogs, setOpenDialogs] = useState<Set<string>>(new Set());
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
-  const [minimizedDialogs, setMinimizedDialogs] = useState<Set<string>>(new Set());
 
   const { getWorkoutCompletions } = useWorkoutCompletions();
   const completionsCache = useWorkoutCompletionsCache();
@@ -142,61 +139,14 @@ const CoachActiveProgramsContent = () => {
     }
   }, [activePrograms.length, loadCompletions]);
 
-  const switchingRef = React.useRef(false);
-
+  // Χειρισμός κλικ σε πρόγραμμα
   const handleProgramClick = (assignment: EnrichedAssignment) => {
-    const workoutId = `${assignment.id}-${dayToShow.toISOString().split('T')[0]}`;
-    
-    // If another dialog is open, mark as switching so onClose won't reset state
-    if (activeAssignmentId && activeAssignmentId !== assignment.id) {
-      switchingRef.current = true;
-      const currentWorkoutId = `${activeAssignmentId}-${dayToShow.toISOString().split('T')[0]}`;
-      setOpenDialogs(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(currentWorkoutId);
-        return newSet;
-      });
-      setTimeout(() => { switchingRef.current = false; }, 200);
-    }
-    
     startWorkout(assignment, dayToShow);
-    setOpenDialogs(prev => new Set(prev).add(workoutId));
     setActiveAssignmentId(assignment.id);
   };
 
-  const handleDialogClose = (workoutId: string) => {
-    // Don't reset activeAssignmentId if we're switching to another dialog
-    if (!switchingRef.current && activeAssignmentId && workoutId.startsWith(activeAssignmentId)) {
-      setActiveAssignmentId(null);
-    }
-    setOpenDialogs(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(workoutId);
-      return newSet;
-    });
-    setMinimizedDialogs(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(workoutId);
-      return newSet;
-    });
-  };
-
-  const handleMinimize = (workoutId: string) => {
-    setOpenDialogs(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(workoutId);
-      return newSet;
-    });
-    setMinimizedDialogs(prev => new Set(prev).add(workoutId));
-  };
-
-  const handleRestore = (workoutId: string) => {
-    setMinimizedDialogs(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(workoutId);
-      return newSet;
-    });
-    setOpenDialogs(prev => new Set(prev).add(workoutId));
+  const handleDialogClose = () => {
+    setActiveAssignmentId(null);
   };
 
   const getWorkoutStatus = (assignment: any, dateStr: string) => {
@@ -240,31 +190,21 @@ const CoachActiveProgramsContent = () => {
         onBubbleRestore={(assignmentId) => setActiveAssignmentId(assignmentId)}
       />
 
-      {activeWorkouts.map(workout => (
-        <DayProgramDialog
-          key={workout.id}
-          isOpen={openDialogs.has(workout.id)}
-          onClose={() => handleDialogClose(workout.id)}
-          program={workout.assignment}
-          selectedDate={workout.selectedDate}
-          workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
-          onRefresh={handleCalendarRefresh}
-          onMinimize={() => { handleMinimize(workout.id); if (!switchingRef.current) setActiveAssignmentId(null); }}
-        />
-      ))}
-
-      <MinimizedBubblesContainer
-        bubbles={activeWorkouts
-          .filter(w => minimizedDialogs.has(w.id))
-          .map(w => ({
-            id: w.id,
-            athleteName: w.assignment.app_users?.name || 'Αθλητής',
-            avatarUrl: w.assignment.app_users?.avatar_url,
-            workoutInProgress: w.workoutInProgress,
-            elapsedTime: w.elapsedTime || 0,
-          }))}
-        onRestore={handleRestore}
-      />
+      {activeWorkouts.map(workout => {
+        const isThisOpen = activeAssignmentId === workout.assignment.id;
+        return (
+          <DayProgramDialog
+            key={workout.id}
+            isOpen={isThisOpen}
+            onClose={handleDialogClose}
+            program={workout.assignment}
+            selectedDate={workout.selectedDate}
+            workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
+            onRefresh={handleCalendarRefresh}
+            onMinimize={handleDialogClose}
+          />
+        );
+      })}
     </div>
   );
 };
