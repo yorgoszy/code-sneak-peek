@@ -7,6 +7,7 @@ import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgram
 import { TodaysProgramsSection } from "@/components/active-programs/TodaysProgramsSection";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
+import { MinimizedBubblesContainer } from "@/components/active-programs/calendar/MinimizedBubblesContainer";
 import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
@@ -28,6 +29,7 @@ const CoachActiveProgramsContent = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [openDialogs, setOpenDialogs] = useState<Set<string>>(new Set());
+  const [minimizedDialogs, setMinimizedDialogs] = useState<Set<string>>(new Set());
 
   const { getWorkoutCompletions } = useWorkoutCompletions();
   const completionsCache = useWorkoutCompletionsCache();
@@ -145,6 +147,29 @@ const CoachActiveProgramsContent = () => {
       newSet.delete(workoutId);
       return newSet;
     });
+    setMinimizedDialogs(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(workoutId);
+      return newSet;
+    });
+  };
+
+  const handleMinimize = (workoutId: string) => {
+    setOpenDialogs(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(workoutId);
+      return newSet;
+    });
+    setMinimizedDialogs(prev => new Set(prev).add(workoutId));
+  };
+
+  const handleRestore = (workoutId: string) => {
+    setMinimizedDialogs(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(workoutId);
+      return newSet;
+    });
+    setOpenDialogs(prev => new Set(prev).add(workoutId));
   };
 
   const getWorkoutStatus = (assignment: any, dateStr: string) => {
@@ -195,8 +220,22 @@ const CoachActiveProgramsContent = () => {
           selectedDate={workout.selectedDate}
           workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
           onRefresh={handleCalendarRefresh}
+          onMinimize={() => handleMinimize(workout.id)}
         />
       ))}
+
+      <MinimizedBubblesContainer
+        bubbles={activeWorkouts
+          .filter(w => minimizedDialogs.has(w.id))
+          .map(w => ({
+            id: w.id,
+            athleteName: w.assignment.app_users?.name || 'Αθλητής',
+            avatarUrl: w.assignment.app_users?.avatar_url,
+            workoutInProgress: w.workoutInProgress,
+            elapsedTime: w.elapsedTime || 0,
+          }))}
+        onRestore={handleRestore}
+      />
     </div>
   );
 };
