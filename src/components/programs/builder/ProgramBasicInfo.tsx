@@ -238,33 +238,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
           </button>
         </div>
 
-        {/* Sellable Toggle & Price */}
-        {onSellableChange && (
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <div className="flex items-center gap-1 px-1 py-0.5 border border-gray-300 rounded-none">
-              <ShoppingCart className="w-3 h-3 text-[#cb8954]" />
-              <Switch
-                checked={isSellable}
-                onCheckedChange={onSellableChange}
-                className="data-[state=checked]:bg-[#cb8954] h-3 w-6"
-              />
-            </div>
-            {isSellable && onPriceChange && (
-              <div className="flex items-center gap-0.5">
-                <span className="text-[10px] text-gray-500">€</span>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={price || ''}
-                  onChange={(e) => onPriceChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                  placeholder="Τιμή"
-                  className="rounded-none h-5 text-[10px] w-14 border border-gray-300 px-1"
-                />
-              </div>
-            )}
-          </div>
-        )}
+        {/* Sellable Toggle & Price removed - now on template card */}
 
         {/* Action Buttons */}
         <div className="flex gap-0.5 flex-shrink-0 ml-auto">

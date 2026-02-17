@@ -109,6 +109,8 @@ export interface Program {
   created_by?: string | null;
   coach_id?: string | null;
   is_template?: boolean;
+  is_sellable?: boolean;
+  price?: number | null;
   app_users?: { name: string } | null;
   program_weeks: Week[];
   program_assignments?: ProgramAssignment[];
