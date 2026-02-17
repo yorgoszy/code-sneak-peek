@@ -78,7 +78,7 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
       onClick={handleClick}
       title={athleteName}
     >
-      <Avatar className={`w-12 h-12 border-2 shadow-lg transition-transform hover:scale-110 ${
+      <Avatar className={`w-14 h-14 border-2 shadow-lg transition-transform hover:scale-110 ${
         workoutInProgress ? 'border-[#00ffba]' : 'border-gray-400'
       }`}>
         {avatarUrl ? <AvatarImage src={avatarUrl} alt={athleteName} /> : null}

@@ -82,7 +82,7 @@ export const TodaysProgramsSection: React.FC<TodaysProgramsSectionProps> = ({
                 <div
                   key={assignment.id}
                   onClick={() => onProgramClick(assignment)}
-                  className="relative p-3 bg-white border border-gray-200 rounded-none hover:shadow-md transition-shadow cursor-pointer"
+                  className="relative p-4 bg-white border border-gray-200 rounded-none hover:shadow-md transition-shadow cursor-pointer min-h-[56px]"
                 >
                   {/* Κουμπί play και τικ ολοκλήρωσης - πάνω δεξιά */}
                   <div className="absolute top-2 right-2 flex items-center gap-1">
