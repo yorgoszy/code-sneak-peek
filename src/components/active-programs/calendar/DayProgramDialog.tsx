@@ -1,4 +1,4 @@
-
+// DayProgramDialog - v2
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
