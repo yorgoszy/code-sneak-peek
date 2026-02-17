@@ -117,12 +117,16 @@ const CoachActiveProgramsContent = () => {
     return hasDateScheduled;
   });
 
+  const activeProgramsRef = React.useRef(activePrograms);
+  activeProgramsRef.current = activePrograms;
+
   const loadCompletions = useCallback(async () => {
-    if (activePrograms.length === 0) return;
+    const programs = activeProgramsRef.current;
+    if (programs.length === 0) return;
     
     try {
       const allCompletions = [];
-      for (const assignment of activePrograms) {
+      for (const assignment of programs) {
         const completions = await getWorkoutCompletions(assignment.id);
         allCompletions.push(...completions);
       }
@@ -130,11 +134,13 @@ const CoachActiveProgramsContent = () => {
     } catch (error) {
       console.error('❌ Error loading workout completions:', error);
     }
-  }, [activePrograms, getWorkoutCompletions]);
+  }, []);
 
   useEffect(() => {
-    loadCompletions();
-  }, [loadCompletions]);
+    if (activePrograms.length > 0) {
+      loadCompletions();
+    }
+  }, [activePrograms.length, loadCompletions]);
 
   const switchingRef = React.useRef(false);
 

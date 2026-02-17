@@ -121,14 +121,18 @@ const ActivePrograms = () => {
     return hasDateScheduled;
   });
 
-  // Φόρτωση workout completions
+  // Φόρτωση workout completions - χρησιμοποιούμε ref για σταθερή αναφορά
+  const activeProgramsRef = React.useRef(activePrograms);
+  activeProgramsRef.current = activePrograms;
+
   const loadCompletions = useCallback(async () => {
-    if (activePrograms.length === 0) return;
+    const programs = activeProgramsRef.current;
+    if (programs.length === 0) return;
     
     try {
-      console.log('📊 ActivePrograms: Loading completions for', activePrograms.length, 'assignments');
+      console.log('📊 ActivePrograms: Loading completions for', programs.length, 'assignments');
       const allCompletions = [];
-      for (const assignment of activePrograms) {
+      for (const assignment of programs) {
         const completions = await getWorkoutCompletions(assignment.id);
         allCompletions.push(...completions);
       }
@@ -137,19 +141,21 @@ const ActivePrograms = () => {
     } catch (error) {
       console.error('❌ ActivePrograms: Error loading workout completions:', error);
     }
-  }, [activePrograms, getWorkoutCompletions]);
+  }, []); // stable - uses ref
 
-  // Initial load
+  // Initial load when programs change
   useEffect(() => {
-    loadCompletions();
-  }, [loadCompletions]);
+    if (activePrograms.length > 0) {
+      loadCompletions();
+    }
+  }, [activePrograms.length, loadCompletions]);
 
   // Enhanced real-time subscription
   useEffect(() => {
     console.log('🔄 ActivePrograms: Setting up REAL-TIME subscriptions...');
     
     const completionsChannel = supabase
-      .channel(`workout-completions-${Date.now()}`)
+      .channel('workout-completions-active')
       .on(
         'postgres_changes',
         {
@@ -159,16 +165,12 @@ const ActivePrograms = () => {
         },
         async (payload) => {
           console.log('🔄 REALTIME: workout completion change:', payload);
-          
-          // ΑΜΕΣΗ ανανέωση του realtime key
           setRealtimeKey(Date.now());
           
-          // Clear cache for affected assignment
           if (payload.new && typeof payload.new === 'object' && 'assignment_id' in payload.new) {
             completionsCache.invalidateAssignmentCache(payload.new.assignment_id as string);
           }
           
-          // Έλεγχος για αυτόματη ολοκλήρωση προγραμμάτων
           try {
             const { programCompletionService } = await import('@/hooks/useWorkoutCompletions/programCompletionService');
             await programCompletionService.checkAndCompleteProgramAssignments();
@@ -176,10 +178,7 @@ const ActivePrograms = () => {
             console.error('Error checking program completions:', error);
           }
           
-          // Reload completions
           await loadCompletions();
-          
-          // Refetch active programs
           refetch();
         }
       )
@@ -188,7 +187,7 @@ const ActivePrograms = () => {
       });
 
     const assignmentsChannel = supabase
-      .channel(`assignments-${Date.now()}`)
+      .channel('assignments-active')
       .on(
         'postgres_changes',
         {
@@ -198,14 +197,8 @@ const ActivePrograms = () => {
         },
         async (payload) => {
           console.log('🔄 REALTIME: assignment change:', payload);
-          
-          // ΑΜΕΣΗ ανανέωση του realtime key
           setRealtimeKey(Date.now());
-          
-          // Clear completions cache
           completionsCache.clearCache();
-          
-          // Refetch active programs
           refetch();
           await loadCompletions();
         }
@@ -219,7 +212,7 @@ const ActivePrograms = () => {
       supabase.removeChannel(completionsChannel);
       supabase.removeChannel(assignmentsChannel);
     };
-  }, [loadCompletions, refetch]);
+  }, []); // stable - loadCompletions uses ref, runs once
 
   // Χειρισμός κλικ σε πρόγραμμα - ανοίγει νέο dialog
   const handleProgramClick = (assignment: EnrichedAssignment) => {
