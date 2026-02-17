@@ -118,17 +118,6 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
         
         {/* Κουμπιά ελέγχου */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Minimize button - always visible */}
-          {onMinimize && (
-            <button
-              onClick={onMinimize}
-              className="border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-none inline-flex items-center justify-center whitespace-nowrap text-xs font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-7 w-7 p-0"
-              title="Ελαχιστοποίηση"
-            >
-              <Minus className="w-4 h-4" />
-            </button>
-          )}
-
           {isCompleted ? (
             <>
               <Badge className="bg-green-100 text-green-800 border-green-200 rounded-none text-xs px-2 py-0.5">
