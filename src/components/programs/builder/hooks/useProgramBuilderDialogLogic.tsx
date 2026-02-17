@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import type { User, Exercise } from '../../types';
 import type { ProgramStructure } from './useProgramBuilderState';
 import { assignmentService } from '../services/assignmentService';
+import { recalculateWeeksForUser } from '../services/perUserRecalculation';
 
 interface UseProgramBuilderDialogLogicProps {
   users: User[];
@@ -149,8 +150,12 @@ export const useProgramBuilderDialogLogic = ({
       for (const userId of program.user_ids) {
         console.log(`📝 Creating assignment for user: ${userId}`);
         
+        // 🔄 Recalculate kg/m/s based on this user's personal 1RM data
+        console.log(`🔄 Recalculating kg/m/s for user ${userId}...`);
+        const userWeeks = await recalculateWeeksForUser(programToAssign.weeks || [], userId);
+        
         const assignmentData = {
-          program: programToAssign,
+          program: { ...programToAssign, weeks: userWeeks },
           userId,
           trainingDates,
           coachId,
