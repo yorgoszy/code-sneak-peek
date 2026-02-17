@@ -9,6 +9,8 @@ interface MinimizedWorkoutBubbleProps {
   onRestore: () => void;
   /** When true, renders as fixed-position draggable element (standalone mode) */
   standalone?: boolean;
+  /** Size variant: 'sm' (default, w-10), 'lg' (w-14, active dialog) */
+  size?: 'sm' | 'lg';
 }
 
 export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
@@ -18,6 +20,7 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
   elapsedTime,
   onRestore,
   standalone = false,
+  size = 'sm',
 }) => {
   const [position, setPosition] = useState({ x: 16, y: typeof window !== 'undefined' ? window.innerHeight - 80 : 600 });
   const [isDragging, setIsDragging] = useState(false);
@@ -72,13 +75,15 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
     if (!standalone) onRestore();
   };
 
+  const sizeClass = size === 'lg' ? 'w-14 h-14' : 'w-10 h-10';
+
   const bubble = (
     <div
       className="relative cursor-pointer group"
       onClick={handleClick}
       title={athleteName}
     >
-      <Avatar className={`w-12 h-12 border-2 shadow-lg transition-transform hover:scale-110 ${
+      <Avatar className={`${sizeClass} border-2 shadow-lg transition-all hover:scale-110 ${
         workoutInProgress ? 'border-[#00ffba]' : 'border-gray-400'
       }`}>
         {avatarUrl ? <AvatarImage src={avatarUrl} alt={athleteName} /> : null}
