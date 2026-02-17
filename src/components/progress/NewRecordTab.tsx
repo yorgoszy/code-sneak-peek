@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Save, Zap } from "lucide-react";
+import { Plus, Trash2, Save, Zap, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Combobox } from "@/components/ui/combobox";
 import { LoadVelocityChart } from "@/components/charts/LoadVelocityChart";
+import { linearRegression, type LoadVelocityPoint } from "@/utils/velocityPrediction";
 
 interface Attempt {
   attempt_number: number;
@@ -30,6 +31,17 @@ interface RecordForm {
   loading: boolean;
   terminalVelocity: string;
 }
+
+// Auto-suggest terminal velocity based on exercise name
+const suggestTerminalVelocity = (exerciseName: string): string => {
+  const name = exerciseName.toLowerCase();
+  if (name.includes('bench') || name.includes('press')) return '0.15';
+  if (name.includes('squat') || name.includes('σκουάτ')) return '0.30';
+  if (name.includes('deadlift') || name.includes('dead') || name.includes('trap')) return '0.27';
+  if (name.includes('clean') || name.includes('snatch')) return '0.20';
+  if (name.includes('row')) return '0.20';
+  return '';
+};
 
 export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, onRecordSaved }) => {
   const { toast } = useToast();
@@ -118,7 +130,7 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
     }
   };
 
-  const fetchTerminalVelocity = async (formId: string, exerciseId: string) => {
+  const fetchTerminalVelocity = async (formId: string, exerciseId: string, fallback?: string) => {
     if (!exerciseId) return;
     try {
       const { data } = await supabase
@@ -128,9 +140,14 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
         .single();
       if (data?.terminal_velocity) {
         updateForm(formId, { terminalVelocity: data.terminal_velocity.toString() });
+      } else if (fallback) {
+        updateForm(formId, { terminalVelocity: fallback });
       }
     } catch (error) {
       console.error('Error fetching terminal velocity:', error);
+      if (fallback) {
+        updateForm(formId, { terminalVelocity: fallback });
+      }
     }
   };
 
@@ -342,9 +359,11 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
                       options={exerciseOptions}
                       value={form.selectedExerciseId}
                       onValueChange={(val) => {
+                        const exerciseName = exercises.find(e => e.id === val)?.name || '';
+                        const suggestedTV = suggestTerminalVelocity(exerciseName);
                         updateForm(form.id, { selectedExerciseId: val });
                         if (val) {
-                          fetchTerminalVelocity(form.id, val);
+                          fetchTerminalVelocity(form.id, val, suggestedTV);
                           if (form.selectedUserId) fetchHistoricalData(form.id, form.selectedUserId, val);
                         }
                       }}
@@ -414,20 +433,50 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
                       ))}
                     </div>
                   </div>
-                  {/* Terminal Velocity - compact inline */}
-                  <div className="flex items-center gap-2 p-1 border rounded-none bg-muted/30">
-                    <Zap className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">TV (m/s)</span>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.28"
-                      value={form.terminalVelocity}
-                      onChange={(e) => updateForm(form.id, { terminalVelocity: e.target.value })}
-                      onBlur={() => saveTerminalVelocity(form.selectedExerciseId, form.terminalVelocity)}
-                      className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
-                    />
-                  </div>
+                  {/* Terminal Velocity + Live Stats */}
+                  {(() => {
+                    const validAttempts: LoadVelocityPoint[] = form.attempts
+                      .filter(a => a.weight_kg > 0 && a.velocity_ms > 0)
+                      .map(a => ({ weight_kg: a.weight_kg, velocity_ms: a.velocity_ms }));
+                    const tv = parseFloat(form.terminalVelocity?.replace(',', '.') || '0');
+                    const regression = validAttempts.length >= 2 ? linearRegression(validAttempts) : null;
+                    const estimated1RM = regression && regression.slope !== 0 && tv > 0
+                      ? Math.round(((tv - regression.intercept) / regression.slope) * 10) / 10
+                      : null;
+
+                    return (
+                      <div className="space-y-1">
+                        {/* TV input */}
+                        <div className="flex items-center gap-2 p-1 border rounded-none bg-muted/30">
+                          <Zap className="w-3 h-3 text-muted-foreground shrink-0" />
+                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">TV (m/s)</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.28"
+                            value={form.terminalVelocity}
+                            onChange={(e) => updateForm(form.id, { terminalVelocity: e.target.value })}
+                            onBlur={() => saveTerminalVelocity(form.selectedExerciseId, form.terminalVelocity)}
+                            className="rounded-none h-6 text-xs w-16 px-1 no-spinners"
+                          />
+                        </div>
+
+                        {/* Live estimated 1RM & R² */}
+                        {regression && (
+                          <div className="flex items-center gap-2 p-1 border rounded-none bg-muted/30">
+                            <TrendingUp className="w-3 h-3 text-muted-foreground shrink-0" />
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">Est. 1RM</span>
+                            <span className="text-xs font-bold text-foreground">
+                              {estimated1RM && estimated1RM > 0 ? `${estimated1RM} kg` : '—'}
+                            </span>
+                            <span className="text-[9px] text-muted-foreground ml-auto">
+                              R²={regression.r_squared.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   <Button 
                     onClick={() => handleSave(form.id)} 
