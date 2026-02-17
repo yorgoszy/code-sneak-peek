@@ -213,10 +213,10 @@ const ActivePrograms = () => {
     };
   }, []); // stable - loadCompletions uses ref, runs once
 
-  // Χειρισμός κλικ σε πρόγραμμα - ανοίγει dialog
+  // Χειρισμός κλικ σε πρόγραμμα - toggle dialog
   const handleProgramClick = (assignment: EnrichedAssignment) => {
     startWorkout(assignment, dayToShow);
-    setActiveAssignmentId(assignment.id);
+    setActiveAssignmentId(prev => prev === assignment.id ? null : assignment.id);
   };
 
   const handleDialogClose = (assignmentId?: string) => {
