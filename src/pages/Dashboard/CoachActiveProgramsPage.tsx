@@ -215,6 +215,7 @@ const CoachActiveProgramsContent = () => {
         todayStr={dayToShowStr}
         onProgramClick={handleProgramClick}
         openAssignmentIds={activeAssignmentId ? new Set([activeAssignmentId]) : new Set()}
+        onBubbleRestore={(assignmentId) => setActiveAssignmentId(assignmentId)}
       />
 
       {activeWorkouts.map(workout => (
