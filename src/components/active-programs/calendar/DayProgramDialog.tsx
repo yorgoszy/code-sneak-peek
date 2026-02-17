@@ -10,7 +10,7 @@ import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramBlocks } from './ProgramBlocks';
 import { RpeScoreDialog } from './RpeScoreDialog';
-
+import { MinimizedWorkoutBubble } from './MinimizedWorkoutBubble';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -36,6 +36,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
   const [isRpeDialogOpen, setIsRpeDialogOpen] = useState(false);
   const [currentRpeScore, setCurrentRpeScore] = useState<number | null>(null);
+  const [isMinimized, setIsMinimized] = useState(false);
   
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
@@ -150,8 +151,33 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   };
 
   const dayProgram = getDayProgram();
+  const handleMinimize = () => {
+    if (onMinimize) {
+      onMinimize();
+    } else {
+      setIsMinimized(true);
+    }
+  };
 
-
+  if (isMinimized) {
+    return (
+      <>
+        <MinimizedWorkoutBubble
+          athleteName={program.app_users?.name || 'Αθλητής'}
+          avatarUrl={program.app_users?.avatar_url}
+          workoutInProgress={workoutInProgress}
+          elapsedTime={elapsedTime}
+          onRestore={() => setIsMinimized(false)}
+          standalone
+        />
+        <RpeScoreDialog
+          isOpen={isRpeDialogOpen}
+          onClose={() => setIsRpeDialogOpen(false)}
+          onSubmit={handleRpeSubmit}
+        />
+      </>
+    );
+  }
 
   return (
     <>
@@ -166,7 +192,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onStartWorkout={handleStartWorkout}
             onCompleteWorkout={handleRequestComplete}
             onCancelWorkout={handleCancelWorkout}
-            onMinimize={onMinimize}
+            onMinimize={handleMinimize}
             program={program}
             onClose={onClose}
           />
