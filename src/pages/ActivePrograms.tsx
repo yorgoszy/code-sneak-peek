@@ -214,9 +214,23 @@ const ActivePrograms = () => {
     };
   }, []); // stable - loadCompletions uses ref, runs once
 
+  const switchingRef = React.useRef(false);
+
   // Χειρισμός κλικ σε πρόγραμμα - ανοίγει νέο dialog
   const handleProgramClick = (assignment: EnrichedAssignment) => {
     const workoutId = `${assignment.id}-${dayToShow.toISOString().split('T')[0]}`;
+    
+    // If another dialog is open, mark as switching
+    if (activeAssignmentId && activeAssignmentId !== assignment.id) {
+      switchingRef.current = true;
+      const currentWorkoutId = `${activeAssignmentId}-${dayToShow.toISOString().split('T')[0]}`;
+      setOpenDialogs(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(currentWorkoutId);
+        return newSet;
+      });
+      setTimeout(() => { switchingRef.current = false; }, 200);
+    }
     
     // Έναρξη προπόνησης
     startWorkout(assignment, dayToShow);
@@ -227,8 +241,7 @@ const ActivePrograms = () => {
   };
 
   const handleDialogClose = (workoutId: string) => {
-    const assignmentId = workoutId.split('-').slice(0, -3).join('-') || workoutId.substring(0, workoutId.lastIndexOf('-'));
-    if (activeAssignmentId && workoutId.startsWith(activeAssignmentId)) {
+    if (!switchingRef.current && activeAssignmentId && workoutId.startsWith(activeAssignmentId)) {
       setActiveAssignmentId(null);
     }
     setOpenDialogs(prev => {
@@ -413,7 +426,7 @@ const ActivePrograms = () => {
           selectedDate={workout.selectedDate}
           workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
           onRefresh={handleCalendarRefresh}
-          onMinimize={() => setActiveAssignmentId(null)}
+          onMinimize={() => { if (!switchingRef.current) setActiveAssignmentId(null); }}
         />
       ))}
     </div>
