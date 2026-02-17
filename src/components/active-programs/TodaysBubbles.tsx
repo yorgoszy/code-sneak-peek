@@ -10,13 +10,15 @@ interface TodaysBubblesProps {
   workoutCompletions: any[];
   todayStr: string;
   onProgramClick: (assignment: EnrichedAssignment) => void;
+  openAssignmentIds?: Set<string>;
 }
 
 export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   programsForToday,
   workoutCompletions,
   todayStr,
-  onProgramClick
+  onProgramClick,
+  openAssignmentIds = new Set()
 }) => {
   const { bubbles, setSuppressRender, removeBubble } = useMinimizedBubbles();
 
@@ -49,61 +51,102 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return !bubbles.some(b => b.id === bubbleId);
   });
 
-  const hasBubbles = todayProgramsFiltered.length > 0 || bubbles.length > 0;
-  if (!hasBubbles) return null;
+  // Build a unified, stable-ordered list of all items (bubbles + today's programs)
+  const allItems = React.useMemo(() => {
+    if (todayProgramsFiltered.length === 0 && bubbles.length === 0) return [];
+    
+    const items: Array<{ type: 'bubble'; data: typeof bubbles[0] } | { type: 'today'; data: EnrichedAssignment }> = [];
+    
+    // Add minimized bubbles
+    bubbles.forEach(bubble => {
+      items.push({ type: 'bubble', data: bubble });
+    });
+    
+    // Add today's programs (not already minimized)
+    todayProgramsFiltered.forEach(assignment => {
+      items.push({ type: 'today', data: assignment });
+    });
+    
+    // Sort by a stable key (assignment id extracted from bubble id or assignment id)
+    items.sort((a, b) => {
+      const keyA = a.type === 'bubble' ? a.data.id : a.data.id;
+      const keyB = b.type === 'bubble' ? b.data.id : b.data.id;
+      return keyA.localeCompare(keyB);
+    });
+    
+    return items;
+  }, [bubbles, todayProgramsFiltered]);
+
+  if (allItems.length === 0) return null;
+
+  // Helper to check if an assignment's dialog is currently open
+  const isDialogOpen = (assignmentId: string) => {
+    // openAssignmentIds contains workoutIds like "assignmentId-date"
+    for (const wid of openAssignmentIds) {
+      if (wid.startsWith(assignmentId)) return true;
+    }
+    return false;
+  };
 
   return (
     <div className="fixed bottom-4 left-4 z-[9999] flex gap-2 items-end">
-      {/* Minimized workout bubbles from context */}
-      {bubbles.map(bubble => (
-        <MinimizedWorkoutBubble
-          key={bubble.id}
-          athleteName={bubble.athleteName}
-          avatarUrl={bubble.photoUrl || bubble.avatarUrl}
-          workoutInProgress={bubble.workoutInProgress}
-          elapsedTime={bubble.elapsedTime}
-          onRestore={() => {
-            bubble.onRestore();
-            removeBubble(bubble.id);
-          }}
-        />
-      ))}
+      {allItems.map(item => {
+        if (item.type === 'bubble') {
+          const bubble = item.data as typeof bubbles[0];
+          const assignmentId = bubble.id.replace('bubble-', '').replace(`-${todayStr}`, '');
+          const isActive = isDialogOpen(assignmentId);
+          return (
+            <MinimizedWorkoutBubble
+              key={bubble.id}
+              athleteName={bubble.athleteName}
+              avatarUrl={bubble.photoUrl || bubble.avatarUrl}
+              workoutInProgress={bubble.workoutInProgress}
+              elapsedTime={bubble.elapsedTime}
+              size={isActive ? 'lg' : 'sm'}
+              onRestore={() => {
+                bubble.onRestore();
+                removeBubble(bubble.id);
+              }}
+            />
+          );
+        } else {
+          const assignment = item.data as EnrichedAssignment;
+          const status = getWorkoutStatus(assignment);
+          const name = assignment.app_users?.name || 'Άγνωστος';
+          const avatarUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
+          const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+          const isCompleted = status === 'completed';
+          const isActive = isDialogOpen(assignment.id);
+          const sizeClass = isActive ? 'w-14 h-14' : 'w-10 h-10';
 
-      {/* Today's scheduled programs (not minimized) */}
-      {todayProgramsFiltered.map(assignment => {
-        const status = getWorkoutStatus(assignment);
-        const name = assignment.app_users?.name || 'Άγνωστος';
-        const avatarUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
-        const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-        const isCompleted = status === 'completed';
+          return (
+            <div
+              key={assignment.id}
+              className="relative cursor-pointer group"
+              onClick={() => onProgramClick(assignment)}
+              title={`${name} - ${assignment.programs?.name || ''}`}
+            >
+              <Avatar className={`${sizeClass} border-2 shadow-lg transition-all hover:scale-110 ${
+                isCompleted ? 'border-[#00ffba]' : status === 'missed' ? 'border-red-400' : 'border-gray-300'
+              }`}>
+                {avatarUrl ? <AvatarImage src={avatarUrl} alt={name} className="object-cover" /> : null}
+                <AvatarFallback className="bg-gray-200 text-gray-700 text-[9px] font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
 
-        return (
-          <div
-            key={assignment.id}
-            className="relative cursor-pointer group"
-            onClick={() => onProgramClick(assignment)}
-            title={`${name} - ${assignment.programs?.name || ''}`}
-          >
-            <Avatar className={`w-14 h-14 border-2 shadow-lg transition-transform hover:scale-110 ${
-              isCompleted ? 'border-[#00ffba]' : status === 'missed' ? 'border-red-400' : 'border-gray-300'
-            }`}>
-              {avatarUrl ? <AvatarImage src={avatarUrl} alt={name} className="object-cover" /> : null}
-              <AvatarFallback className="bg-gray-200 text-gray-700 text-xs font-bold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+              {isCompleted && (
+                <span className="absolute -top-1 -right-1 bg-[#00ffba] rounded-full p-0.5">
+                  <CheckCircle className="w-3 h-3 text-black" />
+                </span>
+              )}
 
-            {isCompleted && (
-              <span className="absolute -top-1 -right-1 bg-[#00ffba] rounded-full p-0.5">
-                <CheckCircle className="w-3.5 h-3.5 text-black" />
+              <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-black text-white text-[9px] px-1.5 py-0.5 rounded-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                {name.split(' ')[0]}
               </span>
-            )}
-
-            <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-black text-white text-[9px] px-1.5 py-0.5 rounded-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              {name.split(' ')[0]}
-            </span>
-          </div>
-        );
+            </div>
+          );
+        }
       })}
     </div>
   );

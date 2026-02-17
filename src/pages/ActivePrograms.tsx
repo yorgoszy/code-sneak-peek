@@ -398,6 +398,7 @@ const ActivePrograms = () => {
             workoutCompletions={workoutCompletions}
             todayStr={dayToShowStr}
             onProgramClick={handleProgramClick}
+            openAssignmentIds={openDialogs}
           />
         </div>
       </div>

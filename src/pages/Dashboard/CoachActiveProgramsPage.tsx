@@ -209,6 +209,7 @@ const CoachActiveProgramsContent = () => {
         workoutCompletions={workoutCompletions}
         todayStr={dayToShowStr}
         onProgramClick={handleProgramClick}
+        openAssignmentIds={openDialogs}
       />
 
       {activeWorkouts.map(workout => (

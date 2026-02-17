@@ -206,7 +206,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleMinimize(); }}>
         <DialogContent className="max-w-md h-[85vh] overflow-hidden rounded-none p-3 flex flex-col">
           <DayProgramDialogHeader
             selectedDate={selectedDate}
