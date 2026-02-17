@@ -11,6 +11,7 @@ interface TodaysBubblesProps {
   todayStr: string;
   onProgramClick: (assignment: EnrichedAssignment) => void;
   openAssignmentIds?: Set<string>;
+  onBubbleRestore?: (assignmentId: string) => void;
 }
 
 export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
@@ -18,7 +19,8 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   workoutCompletions,
   todayStr,
   onProgramClick,
-  openAssignmentIds = new Set()
+  openAssignmentIds = new Set(),
+  onBubbleRestore
 }) => {
   const { bubbles, setSuppressRender, removeBubble } = useMinimizedBubbles();
 
@@ -110,6 +112,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
               onRestore={() => {
                 bubble.onRestore();
                 removeBubble(bubble.id);
+                onBubbleRestore?.(assignmentId);
               }}
             />
           );
