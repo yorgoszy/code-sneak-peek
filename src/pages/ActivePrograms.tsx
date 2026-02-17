@@ -324,7 +324,7 @@ const ActivePrograms = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex w-full">
+    <div className="h-screen bg-gray-50 flex w-full overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
@@ -341,7 +341,7 @@ const ActivePrograms = () => {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Mobile/Tablet Header */}
         <div className="lg:hidden bg-white border-b border-gray-200 p-3 sm:p-4">
           <div className="flex items-center justify-between">
@@ -377,14 +377,14 @@ const ActivePrograms = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 space-y-4 sm:space-y-6">
-          {/* Header - Responsive */}
-          <div className="p-3 sm:p-4 md:p-6 pb-0">
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Header - Compact */}
+          <div className="px-3 py-2 sm:px-4 md:px-6">
             <ActiveProgramsHeader />
           </div>
 
-          {/* Calendar - Full width without margins */}
-          <div className="w-full">
+          {/* Calendar - Fill remaining space */}
+          <div className="flex-1 min-h-0">
             <CalendarGrid
               currentMonth={currentMonth}
               setCurrentMonth={setCurrentMonth}
