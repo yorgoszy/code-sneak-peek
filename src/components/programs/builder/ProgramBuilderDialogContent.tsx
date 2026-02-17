@@ -7,6 +7,7 @@ import { ProgramBuilder } from './ProgramBuilder';
 import { CalendarSection } from './CalendarSection';
 import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { FmsExerciseStatusProvider } from '@/contexts/FmsExerciseStatusContext';
+import { UserExerciseDataCacheProvider } from '@/hooks/useUserExerciseDataCache';
 
 interface ProgramBuilderDialogContentProps {
   program: ProgramStructure;
@@ -116,80 +117,82 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
 
   return (
     <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none [&>button]:hidden">
-      <FmsExerciseStatusProvider userId={selectedUserId}>
-        <ScrollArea className="flex-1 w-full h-full">
-          <div className="space-y-2 p-2">
-            <ProgramBuilder
-              program={program}
-              users={users}
-              exercises={exercises}
-              onNameChange={onNameChange}
-              onDescriptionChange={onDescriptionChange}
-              onAthleteChange={onAthleteChange}
-              onMultipleAthleteChange={onMultipleAthleteChange}
-              onGroupChange={onGroupChange}
-              onToggleAssignmentMode={onToggleAssignmentMode}
-              onSellableChange={onSellableChange}
-              onPriceChange={onPriceChange}
-              onAddWeek={onAddWeek}
-              onRemoveWeek={onRemoveWeek}
-              onDuplicateWeek={onDuplicateWeek}
-              onUpdateWeekName={onUpdateWeekName}
-              onPasteWeek={onPasteWeek}
-              onAddDay={onAddDay}
-              onRemoveDay={onRemoveDay}
-              onUpdateDayName={onUpdateDayName}
-              onUpdateDayTestDay={onUpdateDayTestDay}
-              onUpdateDayCompetitionDay={onUpdateDayCompetitionDay}
-              onUpdateDayEsdRecovery={onUpdateDayEsdRecovery}
-              onUpdateDayEffort={onUpdateDayEffort}
-              onAddBlock={onAddBlock}
-              onRemoveBlock={onRemoveBlock}
-              onDuplicateBlock={onDuplicateBlock}
-              onUpdateBlockName={onUpdateBlockName}
-              onUpdateBlockTrainingType={onUpdateBlockTrainingType}
-              onUpdateBlockWorkoutFormat={onUpdateBlockWorkoutFormat}
-              onUpdateBlockWorkoutDuration={onUpdateBlockWorkoutDuration}
-              onUpdateBlockSets={onUpdateBlockSets}
-              onAddExercise={onAddExercise}
-              onRemoveExercise={onRemoveExercise}
-              onUpdateExercise={onUpdateExercise}
-              onDuplicateExercise={onDuplicateExercise}
-              onReorderWeeks={onReorderWeeks}
-              onReorderDays={onReorderDays}
-              onReorderBlocks={onReorderBlocks}
-              onReorderExercises={onReorderExercises}
-              onPasteBlock={onPasteBlock}
-              onPasteBlockAtBlock={onPasteBlockAtBlock}
-              onPasteDay={onPasteDay}
-              onLoadBlockTemplate={onLoadBlockTemplate}
-              onSave={onSave}
-              onAssignments={onAssignments}
-              onClose={onClose}
-              coachId={coachId}
-            />
-
-            {getTotalTrainingDays() > 0 && (
-              <CalendarSection
+      <UserExerciseDataCacheProvider userId={selectedUserId}>
+        <FmsExerciseStatusProvider userId={selectedUserId}>
+          <ScrollArea className="flex-1 w-full h-full">
+            <div className="space-y-2 p-2">
+              <ProgramBuilder
                 program={program}
-                totalDays={getTotalTrainingDays()}
-                onTrainingDatesChange={onTrainingDatesChange}
-                isCoach={!!coachId}
-                onAssign={onAssignments}
-                canAssign={
-                  !!(
-                    program.user_ids &&
-                    program.user_ids.length > 0 &&
-                    program.training_dates &&
-                    program.training_dates.length > 0 &&
-                    program.name?.trim()
-                  )
-                }
+                users={users}
+                exercises={exercises}
+                onNameChange={onNameChange}
+                onDescriptionChange={onDescriptionChange}
+                onAthleteChange={onAthleteChange}
+                onMultipleAthleteChange={onMultipleAthleteChange}
+                onGroupChange={onGroupChange}
+                onToggleAssignmentMode={onToggleAssignmentMode}
+                onSellableChange={onSellableChange}
+                onPriceChange={onPriceChange}
+                onAddWeek={onAddWeek}
+                onRemoveWeek={onRemoveWeek}
+                onDuplicateWeek={onDuplicateWeek}
+                onUpdateWeekName={onUpdateWeekName}
+                onPasteWeek={onPasteWeek}
+                onAddDay={onAddDay}
+                onRemoveDay={onRemoveDay}
+                onUpdateDayName={onUpdateDayName}
+                onUpdateDayTestDay={onUpdateDayTestDay}
+                onUpdateDayCompetitionDay={onUpdateDayCompetitionDay}
+                onUpdateDayEsdRecovery={onUpdateDayEsdRecovery}
+                onUpdateDayEffort={onUpdateDayEffort}
+                onAddBlock={onAddBlock}
+                onRemoveBlock={onRemoveBlock}
+                onDuplicateBlock={onDuplicateBlock}
+                onUpdateBlockName={onUpdateBlockName}
+                onUpdateBlockTrainingType={onUpdateBlockTrainingType}
+                onUpdateBlockWorkoutFormat={onUpdateBlockWorkoutFormat}
+                onUpdateBlockWorkoutDuration={onUpdateBlockWorkoutDuration}
+                onUpdateBlockSets={onUpdateBlockSets}
+                onAddExercise={onAddExercise}
+                onRemoveExercise={onRemoveExercise}
+                onUpdateExercise={onUpdateExercise}
+                onDuplicateExercise={onDuplicateExercise}
+                onReorderWeeks={onReorderWeeks}
+                onReorderDays={onReorderDays}
+                onReorderBlocks={onReorderBlocks}
+                onReorderExercises={onReorderExercises}
+                onPasteBlock={onPasteBlock}
+                onPasteBlockAtBlock={onPasteBlockAtBlock}
+                onPasteDay={onPasteDay}
+                onLoadBlockTemplate={onLoadBlockTemplate}
+                onSave={onSave}
+                onAssignments={onAssignments}
+                onClose={onClose}
+                coachId={coachId}
               />
-            )}
-          </div>
-        </ScrollArea>
-      </FmsExerciseStatusProvider>
+
+              {getTotalTrainingDays() > 0 && (
+                <CalendarSection
+                  program={program}
+                  totalDays={getTotalTrainingDays()}
+                  onTrainingDatesChange={onTrainingDatesChange}
+                  isCoach={!!coachId}
+                  onAssign={onAssignments}
+                  canAssign={
+                    !!(
+                      program.user_ids &&
+                      program.user_ids.length > 0 &&
+                      program.training_dates &&
+                      program.training_dates.length > 0 &&
+                      program.name?.trim()
+                    )
+                  }
+                />
+              )}
+            </div>
+          </ScrollArea>
+        </FmsExerciseStatusProvider>
+      </UserExerciseDataCacheProvider>
     </DialogContent>
   );
 };
