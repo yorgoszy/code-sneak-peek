@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Exercise, ProgramExercise } from '../types';
 import { ExerciseSelectionDialog } from './ExerciseSelectionDialog';
 import { ExerciseSelectionButton } from './ExerciseSelectionButton';
@@ -31,18 +31,36 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = React.memo(({
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   const { getOneRM, getVelocityForPercentage, loading: cacheLoading } = useUserExerciseDataCacheContext();
 
+  // Refs to track last auto-filled values and prevent redundant updates
+  const lastAutoFilledKg = useRef<string | null>(null);
+  const lastAutoFilledVelocity = useRef<string | null>(null);
+  const lastExerciseId = useRef<string | null>(null);
+
+  // Reset refs when exercise changes
+  if (exercise.exercise_id !== lastExerciseId.current) {
+    lastExerciseId.current = exercise.exercise_id || null;
+    lastAutoFilledKg.current = null;
+    lastAutoFilledVelocity.current = null;
+  }
+
   // Get 1RM from cache (no individual DB query!)
   const oneRM = exercise.exercise_id ? getOneRM(exercise.exercise_id) : null;
 
   // Auto-fill kg field with 1RM when exercise is selected and kg is empty
   useEffect(() => {
+    if (cacheLoading) return;
+    
     const hasPercentage = exercise.percentage_1rm && 
       parseFloat(exercise.percentage_1rm.toString().replace(',', '.')) > 0;
     
     if (oneRM && exercise.exercise_id && !exercise.kg && !hasPercentage) {
-      onUpdate('kg', oneRM.toString().replace('.', ','));
+      const newKg = oneRM.toString().replace('.', ',');
+      if (newKg !== lastAutoFilledKg.current) {
+        lastAutoFilledKg.current = newKg;
+        onUpdate('kg', newKg);
+      }
     }
-  }, [oneRM, exercise.exercise_id, exercise.kg, exercise.percentage_1rm]);
+  }, [oneRM, exercise.exercise_id, cacheLoading]); // removed exercise.kg and exercise.percentage_1rm to prevent loops
 
   // Auto-calculate kg based on %1RM
   useEffect(() => {
@@ -65,16 +83,19 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = React.memo(({
             }
           }
           
-          onUpdate('kg', roundedWeight.toString().replace('.', ','));
-        } else {
-          onUpdate('kg', '');
+          const newKg = roundedWeight.toString().replace('.', ',');
+          if (newKg !== lastAutoFilledKg.current) {
+            lastAutoFilledKg.current = newKg;
+            onUpdate('kg', newKg);
+          }
         }
       }
     }
-  }, [oneRM, cacheLoading, exercise.percentage_1rm, selectedUserId]);
+  }, [oneRM, cacheLoading, exercise.percentage_1rm]);
 
   // Auto-calculate velocity from %1RM using load-velocity profile
   useEffect(() => {
+    if (cacheLoading) return;
     if (!exercise.percentage_1rm || !oneRM || !exercise.exercise_id) return;
     
     const percentage = parseFloat(exercise.percentage_1rm.toString().replace(',', '.'));
@@ -82,9 +103,13 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = React.memo(({
 
     const predictedVelocity = getVelocityForPercentage(exercise.exercise_id, percentage, oneRM);
     if (predictedVelocity !== null) {
-      onUpdate('velocity_ms', predictedVelocity.toString().replace('.', ','));
+      const newVelocity = predictedVelocity.toString().replace('.', ',');
+      if (newVelocity !== lastAutoFilledVelocity.current) {
+        lastAutoFilledVelocity.current = newVelocity;
+        onUpdate('velocity_ms', newVelocity);
+      }
     }
-  }, [exercise.percentage_1rm, oneRM, exercise.exercise_id, getVelocityForPercentage]);
+  }, [exercise.percentage_1rm, oneRM, exercise.exercise_id, cacheLoading]);
 
   const handleExerciseSelect = useCallback((exerciseId: string) => {
     onUpdate('exercise_id', exerciseId);
