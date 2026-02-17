@@ -219,8 +219,12 @@ const ActivePrograms = () => {
     setActiveAssignmentId(assignment.id);
   };
 
-  const handleDialogClose = () => {
-    setActiveAssignmentId(null);
+  const handleDialogClose = (assignmentId?: string) => {
+    // Only clear if this is still the active assignment (prevents race condition when switching bubbles)
+    setActiveAssignmentId(prev => {
+      if (assignmentId && prev !== assignmentId) return prev;
+      return null;
+    });
   };
 
   const handleDeleteProgram = async (assignmentId: string) => {
@@ -395,12 +399,12 @@ const ActivePrograms = () => {
           <DayProgramDialog
             key={workout.id}
             isOpen={isThisOpen}
-            onClose={handleDialogClose}
+            onClose={() => handleDialogClose(workout.assignment.id)}
             program={workout.assignment}
             selectedDate={workout.selectedDate}
             workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
             onRefresh={handleCalendarRefresh}
-            onMinimize={handleDialogClose}
+            onMinimize={() => handleDialogClose(workout.assignment.id)}
           />
         );
       })}
