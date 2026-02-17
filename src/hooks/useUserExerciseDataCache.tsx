@@ -77,15 +77,34 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
 
         const newLinkMap = new Map<string, string[]>();
         if (relData) {
+          // Build adjacency list
+          const adj = new Map<string, Set<string>>();
           for (const rel of relData) {
-            // Bidirectional
-            const existing1 = newLinkMap.get(rel.exercise_id) || [];
-            existing1.push(rel.related_exercise_id);
-            newLinkMap.set(rel.exercise_id, existing1);
+            if (!adj.has(rel.exercise_id)) adj.set(rel.exercise_id, new Set());
+            if (!adj.has(rel.related_exercise_id)) adj.set(rel.related_exercise_id, new Set());
+            adj.get(rel.exercise_id)!.add(rel.related_exercise_id);
+            adj.get(rel.related_exercise_id)!.add(rel.exercise_id);
+          }
 
-            const existing2 = newLinkMap.get(rel.related_exercise_id) || [];
-            existing2.push(rel.exercise_id);
-            newLinkMap.set(rel.related_exercise_id, existing2);
+          // Build transitive groups using BFS so A→B→C means A is linked to both B and C
+          const visited = new Set<string>();
+          for (const startId of adj.keys()) {
+            if (visited.has(startId)) continue;
+            const group: string[] = [];
+            const queue = [startId];
+            while (queue.length > 0) {
+              const current = queue.pop()!;
+              if (visited.has(current)) continue;
+              visited.add(current);
+              group.push(current);
+              for (const neighbor of adj.get(current) || []) {
+                if (!visited.has(neighbor)) queue.push(neighbor);
+              }
+            }
+            // Each member of the group links to all OTHER members
+            for (const id of group) {
+              newLinkMap.set(id, group.filter(g => g !== id));
+            }
           }
         }
 
