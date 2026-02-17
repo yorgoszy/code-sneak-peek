@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { User, Exercise } from '../../types';
 import type { ProgramStructure } from './useProgramBuilderState';
 import { coachAssignmentService } from '../services/coachAssignmentService';
+import { recalculateWeeksForUser } from '../services/perUserRecalculation';
 
 interface UseCoachProgramBuilderDialogLogicProps {
   users: User[]; // Αυτοί είναι coach_users
@@ -161,8 +162,12 @@ export const useCoachProgramBuilderDialogLogic = ({
       for (const coachUserId of program.user_ids) {
         console.log(`📝 [Coach] Creating assignment for coach_user: ${coachUserId}`);
         
+        // 🔄 Recalculate kg/m/s based on this user's personal 1RM data
+        console.log(`🔄 [Coach] Recalculating kg/m/s for user ${coachUserId}...`);
+        const userWeeks = await recalculateWeeksForUser(programToAssign.weeks || [], coachUserId);
+        
         const assignmentData = {
-          program: programToAssign,
+          program: { ...programToAssign, weeks: userWeeks },
           coachUserId, // ID από coach_users table
           coachId, // ID του coach
           trainingDates,
