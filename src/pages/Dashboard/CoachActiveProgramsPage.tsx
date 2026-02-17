@@ -29,6 +29,7 @@ const CoachActiveProgramsContent = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [openDialogs, setOpenDialogs] = useState<Set<string>>(new Set());
+  const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
   const [minimizedDialogs, setMinimizedDialogs] = useState<Set<string>>(new Set());
 
   const { getWorkoutCompletions } = useWorkoutCompletions();
@@ -139,9 +140,13 @@ const CoachActiveProgramsContent = () => {
     const workoutId = `${assignment.id}-${dayToShow.toISOString().split('T')[0]}`;
     startWorkout(assignment, dayToShow);
     setOpenDialogs(prev => new Set(prev).add(workoutId));
+    setActiveAssignmentId(assignment.id);
   };
 
   const handleDialogClose = (workoutId: string) => {
+    if (activeAssignmentId && workoutId.startsWith(activeAssignmentId)) {
+      setActiveAssignmentId(null);
+    }
     setOpenDialogs(prev => {
       const newSet = new Set(prev);
       newSet.delete(workoutId);
@@ -209,7 +214,7 @@ const CoachActiveProgramsContent = () => {
         workoutCompletions={workoutCompletions}
         todayStr={dayToShowStr}
         onProgramClick={handleProgramClick}
-        openAssignmentIds={openDialogs}
+        openAssignmentIds={activeAssignmentId ? new Set([activeAssignmentId]) : new Set()}
       />
 
       {activeWorkouts.map(workout => (
