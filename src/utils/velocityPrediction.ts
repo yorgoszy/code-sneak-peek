@@ -99,18 +99,11 @@ export function predictVelocityFromPercentage(
   percentage1RM: number,
   actual1RM: number
 ): number | null {
-  if (!profile.regression || percentage1RM <= 0) return null;
+  if (!profile.regression || percentage1RM <= 0 || actual1RM <= 0) return null;
 
-  // Use the profile's own estimated 1RM for velocity prediction
-  // This keeps the velocity scale consistent with the regression line
-  // (the tested 1RM may differ from the profile's estimated 1RM)
-  const referenceRM = profile.estimated1RM && profile.estimated1RM > 0 
-    ? profile.estimated1RM 
-    : actual1RM;
-  
-  if (referenceRM <= 0) return null;
-
-  const targetLoad = (percentage1RM / 100) * referenceRM;
+  // Use the actual tested 1RM to calculate target load
+  // Velocity is predicted directly from the regression line at that load
+  const targetLoad = (percentage1RM / 100) * actual1RM;
   const velocity = profile.regression.slope * targetLoad + profile.regression.intercept;
 
   // Velocity should be positive and reasonable
