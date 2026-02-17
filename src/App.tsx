@@ -8,6 +8,7 @@ import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 import { BlockTimerProvider } from "@/contexts/BlockTimerContext";
 import { AIProgramBuilderProvider } from "@/contexts/AIProgramBuilderContext";
 import { ProgramClipboardProvider } from "@/contexts/ProgramClipboardContext";
+import { MinimizedBubblesProvider } from "@/contexts/MinimizedBubblesContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AIControlledProgramBuilderDialog } from "@/components/programs/builder/AIControlledProgramBuilderDialog";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -110,6 +111,7 @@ function App() {
             <AIProgramBuilderProvider>
               <ProgramClipboardProvider>
                 <BlockTimerProvider>
+                  <MinimizedBubblesProvider>
                   <div className="min-h-screen bg-gray-50">
                     <Toaster />
                     <AIControlledProgramBuilderDialog />
@@ -219,6 +221,7 @@ function App() {
                     </Routes>
                   </Suspense>
                 </div>
+                  </MinimizedBubblesProvider>
               </BlockTimerProvider>
             </ProgramClipboardProvider>
           </AIProgramBuilderProvider>
