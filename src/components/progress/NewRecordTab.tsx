@@ -436,13 +436,20 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
                   {/* Terminal Velocity + Live Stats */}
                   {(() => {
                     const validAttempts: LoadVelocityPoint[] = form.attempts
-                      .filter(a => a.weight_kg > 0 && a.velocity_ms > 0)
+                      .filter(a => a.weight_kg && a.velocity_ms && a.weight_kg > 0 && a.velocity_ms > 0)
                       .map(a => ({ weight_kg: a.weight_kg, velocity_ms: a.velocity_ms }));
-                    const tv = parseFloat(form.terminalVelocity?.replace(',', '.') || '0');
+                    const tvStr = (form.terminalVelocity || '').replace(',', '.');
+                    const tv = tvStr ? parseFloat(tvStr) : 0;
                     const regression = validAttempts.length >= 2 ? linearRegression(validAttempts) : null;
-                    const estimated1RM = regression && regression.slope !== 0 && tv > 0
-                      ? Math.round(((tv - regression.intercept) / regression.slope) * 10) / 10
-                      : null;
+                    let estimated1RM: number | null = null;
+                    if (regression && regression.slope < 0 && tv > 0) {
+                      const rm = (tv - regression.intercept) / regression.slope;
+                      if (rm > 0 && isFinite(rm)) {
+                        estimated1RM = Math.round(rm * 10) / 10;
+                      }
+                    }
+                    const r2 = regression?.r_squared ?? 0;
+                    const r2Color = r2 >= 0.9 ? 'text-green-600' : r2 >= 0.8 ? 'text-yellow-600' : 'text-red-500';
 
                     return (
                       <div className="space-y-1">
@@ -467,10 +474,10 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
                             <TrendingUp className="w-3 h-3 text-muted-foreground shrink-0" />
                             <span className="text-[10px] text-muted-foreground whitespace-nowrap">Est. 1RM</span>
                             <span className="text-xs font-bold text-foreground">
-                              {estimated1RM && estimated1RM > 0 ? `${estimated1RM} kg` : '—'}
+                              {estimated1RM !== null ? `${estimated1RM} kg` : (tv > 0 ? '—' : 'Βάλε TV')}
                             </span>
-                            <span className="text-[9px] text-muted-foreground ml-auto">
-                              R²={regression.r_squared.toFixed(2)}
+                            <span className={`text-[9px] font-medium ml-auto ${r2Color}`}>
+                              R²={r2.toFixed(2)}
                             </span>
                           </div>
                         )}
