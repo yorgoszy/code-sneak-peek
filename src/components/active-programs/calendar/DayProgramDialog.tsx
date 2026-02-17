@@ -10,7 +10,7 @@ import { DayProgramDialogHeader } from './DayProgramDialogHeader';
 import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramBlocks } from './ProgramBlocks';
 import { RpeScoreDialog } from './RpeScoreDialog';
-import { MinimizedWorkoutBubble } from './MinimizedWorkoutBubble';
+
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -20,6 +20,7 @@ interface DayProgramDialogProps {
   selectedDate: Date | null;
   workoutStatus: string;
   onRefresh?: () => void;
+  onMinimize?: () => void;
 }
 
 export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
@@ -28,13 +29,14 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   program,
   selectedDate,
   workoutStatus,
-  onRefresh
+  onRefresh,
+  onMinimize
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
   const [isRpeDialogOpen, setIsRpeDialogOpen] = useState(false);
   const [currentRpeScore, setCurrentRpeScore] = useState<number | null>(null);
-  const [isMinimized, setIsMinimized] = useState(false);
+  
   const { getWorkoutCompletions } = useWorkoutCompletions();
 
   const {
@@ -149,34 +151,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   const dayProgram = getDayProgram();
 
-  if (isMinimized) {
-    return (
-      <>
-        <MinimizedWorkoutBubble
-          athleteName={program.app_users?.name || 'Αθλητής'}
-          workoutInProgress={workoutInProgress}
-          elapsedTime={elapsedTime}
-          onRestore={() => setIsMinimized(false)}
-        />
-        <ExerciseVideoDialog
-          isOpen={isVideoDialogOpen}
-          onClose={() => setIsVideoDialogOpen(false)}
-          exercise={selectedExercise}
-          getNotes={exerciseCompletion.getNotes}
-          updateNotes={exerciseCompletion.updateNotes}
-          clearNotes={exerciseCompletion.clearNotes}
-          assignmentId={program?.id}
-          dayNumber={selectedExercise ? getDayNumber(selectedExercise.id) : undefined}
-          actualExerciseId={selectedExercise ? getActualExerciseId(selectedExercise) : undefined}
-        />
-        <RpeScoreDialog
-          isOpen={isRpeDialogOpen}
-          onClose={() => setIsRpeDialogOpen(false)}
-          onSubmit={handleRpeSubmit}
-        />
-      </>
-    );
-  }
+
 
   return (
     <>
@@ -191,7 +166,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onStartWorkout={handleStartWorkout}
             onCompleteWorkout={handleRequestComplete}
             onCancelWorkout={handleCancelWorkout}
-            onMinimize={() => setIsMinimized(true)}
+            onMinimize={onMinimize}
             program={program}
             onClose={onClose}
           />

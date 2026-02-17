@@ -1,9 +1,9 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { Play, Dumbbell } from 'lucide-react';
-import { WorkoutTimer } from './WorkoutTimer';
+import React from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface MinimizedWorkoutBubbleProps {
   athleteName: string;
+  avatarUrl?: string | null;
   workoutInProgress: boolean;
   elapsedTime: number;
   onRestore: () => void;
@@ -11,46 +11,17 @@ interface MinimizedWorkoutBubbleProps {
 
 export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
   athleteName,
+  avatarUrl,
   workoutInProgress,
   elapsedTime,
   onRestore,
 }) => {
-  const [position, setPosition] = useState({ x: 16, y: window.innerHeight - 80 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef<{ startX: number; startY: number; startPosX: number; startPosY: number } | null>(null);
-  const hasMoved = useRef(false);
-  const bubbleRef = useRef<HTMLDivElement>(null);
-
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    setIsDragging(true);
-    hasMoved.current = false;
-    dragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      startPosX: position.x,
-      startPosY: position.y,
-    };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  }, [position]);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging || !dragRef.current) return;
-    const dx = e.clientX - dragRef.current.startX;
-    const dy = e.clientY - dragRef.current.startY;
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hasMoved.current = true;
-
-    const newX = Math.max(0, Math.min(window.innerWidth - 200, dragRef.current.startPosX + dx));
-    const newY = Math.max(0, Math.min(window.innerHeight - 60, dragRef.current.startPosY + dy));
-    setPosition({ x: newX, y: newY });
-  }, [isDragging]);
-
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    setIsDragging(false);
-    if (!hasMoved.current) {
-      onRestore();
-    }
-    dragRef.current = null;
-  }, [onRestore]);
+  const initials = athleteName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -60,26 +31,34 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
 
   return (
     <div
-      ref={bubbleRef}
-      className="fixed z-[9999] select-none touch-none"
-      style={{ left: position.x, top: position.y }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
+      className="relative cursor-pointer group"
+      onClick={onRestore}
+      title={athleteName}
     >
-      <div className={`
-        flex items-center gap-2 px-3 py-2 rounded-none shadow-lg border border-gray-300 cursor-pointer
-        ${workoutInProgress ? 'bg-[#00ffba] text-black' : 'bg-gray-900 text-white'}
-        transition-shadow hover:shadow-xl
-      `}>
-        <Dumbbell className="w-4 h-4 flex-shrink-0" />
-        <div className="flex flex-col min-w-0">
-          <span className="text-xs font-semibold truncate max-w-[120px]">{athleteName}</span>
-          {workoutInProgress && (
-            <span className="text-[10px] font-mono">{formatTime(elapsedTime)}</span>
-          )}
-        </div>
-      </div>
+      <Avatar className={`w-12 h-12 border-2 shadow-lg transition-transform hover:scale-110 ${
+        workoutInProgress ? 'border-[#00ffba]' : 'border-gray-400'
+      }`}>
+        {avatarUrl ? (
+          <AvatarImage src={avatarUrl} alt={athleteName} />
+        ) : null}
+        <AvatarFallback className={`text-xs font-bold ${
+          workoutInProgress ? 'bg-[#00ffba]/20 text-black' : 'bg-gray-200 text-gray-700'
+        }`}>
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+
+      {/* Timer badge */}
+      {workoutInProgress && (
+        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-black text-[#00ffba] text-[8px] font-mono px-1 rounded-sm whitespace-nowrap">
+          {formatTime(elapsedTime)}
+        </span>
+      )}
+
+      {/* Pulse ring when workout in progress */}
+      {workoutInProgress && (
+        <span className="absolute inset-0 rounded-full border-2 border-[#00ffba] animate-ping opacity-30 pointer-events-none" />
+      )}
     </div>
   );
 };
