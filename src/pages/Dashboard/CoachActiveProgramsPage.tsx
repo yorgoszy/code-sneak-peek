@@ -138,6 +138,17 @@ const CoachActiveProgramsContent = () => {
 
   const handleProgramClick = (assignment: EnrichedAssignment) => {
     const workoutId = `${assignment.id}-${dayToShow.toISOString().split('T')[0]}`;
+    
+    // Close any currently open dialog first
+    if (activeAssignmentId && activeAssignmentId !== assignment.id) {
+      const currentWorkoutId = `${activeAssignmentId}-${dayToShow.toISOString().split('T')[0]}`;
+      setOpenDialogs(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(currentWorkoutId);
+        return newSet;
+      });
+    }
+    
     startWorkout(assignment, dayToShow);
     setOpenDialogs(prev => new Set(prev).add(workoutId));
     setActiveAssignmentId(assignment.id);
