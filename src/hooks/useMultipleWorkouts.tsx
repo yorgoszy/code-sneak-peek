@@ -45,7 +45,7 @@ export const useMultipleWorkouts = () => {
         selectedDate,
         startTime: new Date(),
         elapsedTime: 0,
-        workoutInProgress: false
+        workoutInProgress: true
       }];
     });
   }, []);
