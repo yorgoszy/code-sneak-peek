@@ -20,8 +20,7 @@ export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = fa
         let query = supabase
           .from('program_assignments')
           .select('*')
-          .in('status', ['active', 'completed'])
-          .gte('end_date', new Date().toISOString().split('T')[0]); // Only get assignments that haven't expired
+          .in('status', ['active', 'completed']);
 
         // Φιλτράρισμα με βάση το coach_id
         if (isAdmin && !coachId) {
