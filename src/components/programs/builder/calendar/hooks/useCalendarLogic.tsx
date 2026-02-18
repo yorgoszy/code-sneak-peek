@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { startOfWeek, format } from "date-fns";
 import { formatDateForStorage, createDateForDisplay } from '@/utils/dateUtils';
 import type { ProgramStructure } from '../../hooks/useProgramBuilderState';
@@ -93,27 +93,46 @@ export const useCalendarLogic = (
 
   const currentWeekInfo = useMemo(() => getCurrentWeekBeingFilled(), [selectedDatesAsStrings, weekStructure]);
 
+  // State για click-to-move
+  const [movingDateStr, setMovingDateStr] = useState<string | null>(null);
+
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
 
     const dateString = formatDateForStorage(date);
     const currentDates = selectedDatesAsStrings.slice();
 
-    console.log('📅 Date selection debug:', {
-      originalDate: date,
-      dateString,
-      currentDates,
-      totalDays
-    });
-
-    if (currentDates.includes(dateString)) {
-      const newDates = currentDates.filter(d => d !== dateString);
+    // Αν είμαστε σε move mode
+    if (movingDateStr) {
+      if (dateString === movingDateStr) {
+        // Κλικ στην ίδια ημέρα → ακύρωση move
+        setMovingDateStr(null);
+        return;
+      }
+      if (currentDates.includes(dateString)) {
+        // Κλικ σε άλλη επιλεγμένη ημέρα → αλλαγή moving target
+        setMovingDateStr(dateString);
+        return;
+      }
+      // Κλικ σε κενή ημέρα → μετακίνηση
+      const newDates = currentDates
+        .filter(d => d !== movingDateStr)
+        .concat(dateString)
+        .sort();
       const datesAsObjects = newDates.map(dateStr => createDateForDisplay(dateStr));
       onTrainingDatesChange(datesAsObjects);
+      setMovingDateStr(null);
       return;
     }
 
-    // επιτρέπουμε επιλογές μέχρι να συμπληρωθούν totalDays συνολικά
+    // Κανονική λειτουργία
+    if (currentDates.includes(dateString)) {
+      // Κλικ σε επιλεγμένη ημέρα → enter move mode (αντί για αφαίρεση)
+      setMovingDateStr(dateString);
+      return;
+    }
+
+    // Προσθήκη νέας ημέρας
     if (currentDates.length >= totalDays) return;
 
     const newDates = [...currentDates, dateString].sort();
@@ -121,7 +140,19 @@ export const useCalendarLogic = (
     onTrainingDatesChange(datesAsObjects);
   };
 
+  const cancelMove = useCallback(() => {
+    setMovingDateStr(null);
+  }, []);
+
+  const removeDate = useCallback((dateString: string) => {
+    const currentDates = selectedDatesAsStrings.filter(d => d !== dateString);
+    const datesAsObjects = currentDates.map(dateStr => createDateForDisplay(dateStr));
+    onTrainingDatesChange(datesAsObjects);
+    setMovingDateStr(null);
+  }, [selectedDatesAsStrings, onTrainingDatesChange]);
+
   const handleClearAllDates = () => {
+    setMovingDateStr(null);
     onTrainingDatesChange([]);
   };
 
@@ -132,8 +163,11 @@ export const useCalendarLogic = (
   };
 
   const isDateDisabled = (date: Date) => {
-    // If date is already selected, allow it (for deselection)
+    // If date is already selected, allow it (for move mode)
     if (isDateSelected(date)) return false;
+
+    // In move mode, allow clicking any date
+    if (movingDateStr) return false;
 
     // Μόνο όριο στο πλήθος συνολικών προπονήσεων
     return selectedDatesAsStrings.length >= totalDays;
@@ -189,8 +223,11 @@ export const useCalendarLogic = (
     selectedDatesAsStrings,
     currentWeekInfo,
     weekProgress,
+    movingDateStr,
     handleDateSelect,
     handleClearAllDates,
+    cancelMove,
+    removeDate,
     isDateSelected,
     isDateDisabled,
     getDayInfoForDate

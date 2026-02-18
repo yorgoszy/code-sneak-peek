@@ -68,8 +68,11 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     selectedDatesAsStrings,
     currentWeekInfo,
     weekProgress,
+    movingDateStr,
     handleDateSelect,
     handleClearAllDates,
+    cancelMove,
+    removeDate,
     isDateSelected,
     isDateDisabled,
     getDayInfoForDate
@@ -173,8 +176,11 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
               selectedDatesAsStrings={selectedDatesAsStrings}
               totalDays={computedTotalDays}
               currentWeekInfo={currentWeekInfo}
+              movingDateStr={movingDateStr}
               onDateSelect={handleDateSelect}
               onClearAllDates={handleClearAllDates}
+              onCancelMove={cancelMove}
+              onRemoveDate={removeDate}
               isDateSelected={isDateSelected}
               isDateDisabled={isDateDisabled}
               getDayInfoForDate={getDayInfoForDate}
