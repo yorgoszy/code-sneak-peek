@@ -13,16 +13,20 @@ export const useCalendarLogic = (
   // ΣΗΜΑΝΤΙΚΟ: Το totalDays αφορά το ΠΟΣΕΣ προπονήσεις θα ανατεθούν συνολικά (π.χ. 12),
   // και μπορεί να είναι μεγαλύτερο από τις ημέρες που υπάρχουν σε μία "template" εβδομάδα.
   const getWeekDaysStructure = () => {
-    const templateDaysPerWeek = program.weeks?.[0]?.program_days?.length || 0;
+    const weeks = program.weeks || [];
+    if (weeks.length === 0 || !totalDays || totalDays <= 0) return [];
+
+    // Χρησιμοποιούμε τις πραγματικές εβδομάδες του προγράμματος
+    const templateDaysPerWeek = weeks[0]?.program_days?.length || 0;
     const daysPerWeek = Math.max(1, templateDaysPerWeek);
+    const actualWeeksNeeded = Math.ceil(totalDays / daysPerWeek);
 
-    if (!totalDays || totalDays <= 0) return [];
-
-    const totalWeeks = Math.ceil(totalDays / daysPerWeek);
-
-    return Array.from({ length: totalWeeks }, (_, i) => {
+    return Array.from({ length: actualWeeksNeeded }, (_, i) => {
+      // Αν υπάρχει πραγματική εβδομάδα, χρησιμοποιούμε τις ημέρες της
+      const realWeek = weeks[i % weeks.length];
+      const realDaysCount = realWeek?.program_days?.length || daysPerWeek;
       const remaining = totalDays - i * daysPerWeek;
-      const weekDaysCount = Math.max(0, Math.min(daysPerWeek, remaining));
+      const weekDaysCount = Math.max(0, Math.min(realDaysCount, remaining));
 
       return {
         weekNumber: i + 1,
