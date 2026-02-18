@@ -32,21 +32,11 @@ export const useProgramBuilderDialogLogic = ({
   coachId
 }: UseProgramBuilderDialogLogicProps) => {
   const availableUsers = useMemo(() => {
-    console.log('🔍 useProgramBuilderDialogLogic - filtering users, coachId:', coachId);
-    console.log('🔍 Total users before filter:', users.length);
-    
-    // Δείχνουμε ΟΛΟΥΣ τους χρήστες (όλοι οι ρόλοι)
-    let filtered = [...users];
-    console.log('🔍 Total users (all roles):', filtered.length);
-    
-    // If coachId is provided, filter by coach_id
-    if (coachId) {
-      filtered = filtered.filter(user => user.coach_id === coachId);
-      console.log('🔍 After coachId filter:', filtered.length);
-    }
-    
-    return filtered;
-  }, [users, coachId]);
+    console.log('🔍 useProgramBuilderDialogLogic - users:', users.length, 'coachId:', coachId);
+    // Ο parent (Programs.tsx ή CoachProgramsPage.tsx) ήδη φιλτράρει τους χρήστες
+    // Δεν χρειάζεται επιπλέον φιλτράρισμα εδώ
+    return [...users];
+  }, [users]);
 
   const handleClose = () => {
     onOpenChange();
