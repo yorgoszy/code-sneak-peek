@@ -42,7 +42,14 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   canAssign = false,
   assignLoading = false
 }) => {
-  const [startDate, setStartDate] = useState<string>('');
+  const [startDate, setStartDate] = useState<string>(() => {
+    const today = new Date();
+    const day = today.getDay(); // 0=Sun, 1=Mon, ...
+    const diff = day === 0 ? -6 : 1 - day; // Monday of current week
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + diff);
+    return monday.toISOString().split('T')[0];
+  });
   const [weekdays, setWeekdays] = useState<number[]>([]);
 
   // Auto-calculate weeks based on program structure
