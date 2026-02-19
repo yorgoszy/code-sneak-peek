@@ -94,7 +94,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
   return (
     <>
       {weeks.map((week) => (
-        <TabsContent key={week.id} value={week.id} className="mt-0">
+        <TabsContent key={week.id} value={week.id} className="mt-0 min-w-0 overflow-hidden">
             {week.program_days && week.program_days.length > 0 ? (
               <DndContext 
                 collisionDetection={closestCenter} 
@@ -104,7 +104,7 @@ export const WeekTabsContent: React.FC<WeekTabsContentProps> = ({
                   items={week.program_days.map(d => d.id)} 
                   strategy={rectSortingStrategy}
                 >
-                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-gray-thin">
+                  <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-gray-thin" style={{ overflowX: 'auto' }}>
                     {week.program_days.map((day) => (
                       <SortableDay
                         key={day.id}
