@@ -47,179 +47,160 @@ export const useExerciseActions = (
     const relationships = await fetchExerciseRelationships(exerciseId);
     console.log('🔗 Found relationships:', relationships);
 
-    const updatedWeeks = (program.weeks || []).map(week => {
-      if (week.id === weekId) {
-        return {
-          ...week,
-          program_days: (week.program_days || []).map(day => {
-            if (day.id === dayId) {
-              let updatedBlocks = [...(day.program_blocks || [])];
+    // Use functional updater to avoid stale state
+    updateProgram((prev) => {
+      const updatedWeeks = (prev.weeks || []).map(week => {
+        if (week.id === weekId) {
+          return {
+            ...week,
+            program_days: (week.program_days || []).map(day => {
+              if (day.id === dayId) {
+                let updatedBlocks = [...(day.program_blocks || [])];
 
-              // Προσθήκη κύριας άσκησης στο στοχευμένο block
-              updatedBlocks = updatedBlocks.map(block => {
-                if (block.id === blockId) {
-                  const newExercise = {
-                    id: generateId(),
-                    exercise_id: exerciseId,
-                    sets: 1,
-                    reps: '',
-                    reps_mode: 'reps' as const,
-                    kg: '',
-                    kg_mode: 'kg' as const,
-                    percentage_1rm: 0,
-                    velocity_ms: 0,
-                    tempo: '',
-                    rest: '',
-                    notes: '',
-                    exercise_order: (block.program_exercises?.length || 0) + 1,
-                    exercises: {
-                      id: exerciseId,
-                      name: findExerciseName(exerciseId),
-                      description: ''
+                // Προσθήκη κύριας άσκησης στο στοχευμένο block
+                updatedBlocks = updatedBlocks.map(block => {
+                  if (block.id === blockId) {
+                    const newExercise = {
+                      id: generateId(),
+                      exercise_id: exerciseId,
+                      sets: 1,
+                      reps: '',
+                      reps_mode: 'reps' as const,
+                      kg: '',
+                      kg_mode: 'kg' as const,
+                      percentage_1rm: 0,
+                      velocity_ms: 0,
+                      tempo: '',
+                      rest: '',
+                      notes: '',
+                      exercise_order: (block.program_exercises?.length || 0) + 1,
+                      exercises: {
+                        id: exerciseId,
+                        name: findExerciseName(exerciseId),
+                        description: ''
+                      }
+                    };
+                    
+                    console.log('➕ Adding main exercise to block:', block.name);
+                    
+                    return {
+                      ...block,
+                      program_exercises: [...(block.program_exercises || []), newExercise]
+                    };
+                  }
+                  return block;
+                });
+
+                // Προσθήκη σχετικών ασκήσεων στο warm up block
+                const warmUpRelationships = relationships.filter(rel => WARM_UP_ORDER.includes(rel.relationship_type));
+                const recoveryRelationships = relationships.filter(rel => rel.relationship_type === RECOVERY_TYPE);
+
+                if (warmUpRelationships.length > 0) {
+                  updatedBlocks = updatedBlocks.map(block => {
+                    if (block.training_type === 'warm up') {
+                      const existingExerciseIds = new Set(
+                        (block.program_exercises || []).map(ex => ex.exercise_id)
+                      );
+
+                      const sortedRelationships = [...warmUpRelationships].sort((a, b) => {
+                        const orderA = WARM_UP_ORDER.indexOf(a.relationship_type);
+                        const orderB = WARM_UP_ORDER.indexOf(b.relationship_type);
+                        return (orderA === -1 ? 999 : orderA) - (orderB === -1 ? 999 : orderB);
+                      });
+
+                      const newRelationships = sortedRelationships.filter(
+                        rel => !existingExerciseIds.has(rel.related_exercise_id)
+                      );
+
+                      if (newRelationships.length === 0) return block;
+
+                      const newWarmUpExercises = newRelationships.map((rel, index) => ({
+                        id: generateId(),
+                        exercise_id: rel.related_exercise_id,
+                        sets: 1,
+                        reps: '',
+                        reps_mode: 'reps' as const,
+                        kg: '',
+                        kg_mode: 'kg' as const,
+                        percentage_1rm: 0,
+                        velocity_ms: 0,
+                        tempo: '',
+                        rest: '',
+                        notes: '',
+                        exercise_order: (block.program_exercises?.length || 0) + index + 1,
+                        exercises: {
+                          id: rel.related_exercise_id,
+                          name: findExerciseName(rel.related_exercise_id),
+                          description: ''
+                        }
+                      }));
+                      
+                      return {
+                        ...block,
+                        program_exercises: [...(block.program_exercises || []), ...newWarmUpExercises]
+                      };
                     }
-                  };
-                  
-                  console.log('➕ Adding main exercise to block:', block.name);
-                  
-                  return {
-                    ...block,
-                    program_exercises: [...(block.program_exercises || []), newExercise]
-                  };
+                    return block;
+                  });
                 }
-                return block;
-              });
 
-              // Προσθήκη σχετικών ασκήσεων στο warm up block (μόνο αν δεν υπάρχουν ήδη)
-              const warmUpRelationships = relationships.filter(rel => WARM_UP_ORDER.includes(rel.relationship_type));
-              const recoveryRelationships = relationships.filter(rel => rel.relationship_type === RECOVERY_TYPE);
+                if (recoveryRelationships.length > 0) {
+                  updatedBlocks = updatedBlocks.map(block => {
+                    if (block.training_type === 'recovery') {
+                      const existingExerciseIds = new Set(
+                        (block.program_exercises || []).map(ex => ex.exercise_id)
+                      );
 
-              if (warmUpRelationships.length > 0) {
-                updatedBlocks = updatedBlocks.map(block => {
-                  // Βρίσκουμε το warm up block
-                  if (block.training_type === 'warm up') {
-                    // Παίρνουμε τα υπάρχοντα exercise_ids στο warm up block
-                    const existingExerciseIds = new Set(
-                      (block.program_exercises || []).map(ex => ex.exercise_id)
-                    );
+                      const newRecoveryRelationships = recoveryRelationships.filter(
+                        rel => !existingExerciseIds.has(rel.related_exercise_id)
+                      );
 
-                    // Ταξινομούμε τα relationships με βάση τη σειρά WARM_UP_ORDER
-                    const sortedRelationships = [...warmUpRelationships].sort((a, b) => {
-                      const orderA = WARM_UP_ORDER.indexOf(a.relationship_type);
-                      const orderB = WARM_UP_ORDER.indexOf(b.relationship_type);
-                      const finalOrderA = orderA === -1 ? 999 : orderA;
-                      const finalOrderB = orderB === -1 ? 999 : orderB;
-                      return finalOrderA - finalOrderB;
-                    });
+                      if (newRecoveryRelationships.length === 0) return block;
 
-                    // Φιλτράρουμε μόνο τις ασκήσεις που ΔΕΝ υπάρχουν ήδη
-                    const newRelationships = sortedRelationships.filter(
-                      rel => !existingExerciseIds.has(rel.related_exercise_id)
-                    );
-
-                    if (newRelationships.length === 0) {
-                      console.log('⏭️ All warm up exercises already exist, skipping');
-                      return block;
+                      const newRecoveryExercises = newRecoveryRelationships.map((rel, index) => ({
+                        id: generateId(),
+                        exercise_id: rel.related_exercise_id,
+                        sets: 1,
+                        reps: '',
+                        reps_mode: 'reps' as const,
+                        kg: '',
+                        kg_mode: 'kg' as const,
+                        percentage_1rm: 0,
+                        velocity_ms: 0,
+                        tempo: '',
+                        rest: '',
+                        notes: '',
+                        exercise_order: (block.program_exercises?.length || 0) + index + 1,
+                        exercises: {
+                          id: rel.related_exercise_id,
+                          name: findExerciseName(rel.related_exercise_id),
+                          description: ''
+                        }
+                      }));
+                      
+                      return {
+                        ...block,
+                        program_exercises: [...(block.program_exercises || []), ...newRecoveryExercises]
+                      };
                     }
+                    return block;
+                  });
+                }
 
-                    const newWarmUpExercises = newRelationships.map((rel, index) => ({
-                      id: generateId(),
-                      exercise_id: rel.related_exercise_id,
-                      sets: 1,
-                      reps: '',
-                      reps_mode: 'reps' as const,
-                      kg: '',
-                      kg_mode: 'kg' as const,
-                      percentage_1rm: 0,
-                      velocity_ms: 0,
-                      tempo: '',
-                      rest: '',
-                      notes: '',
-                      exercise_order: (block.program_exercises?.length || 0) + index + 1,
-                      exercises: {
-                        id: rel.related_exercise_id,
-                        name: findExerciseName(rel.related_exercise_id),
-                        description: ''
-                      }
-                    }));
-                    
-                    console.log('➕ Adding warm up exercises:', newWarmUpExercises.length, '(skipped duplicates:', sortedRelationships.length - newRelationships.length, ')');
-                    
-                    return {
-                      ...block,
-                      program_exercises: [...(block.program_exercises || []), ...newWarmUpExercises]
-                    };
-                  }
-
-                  return block;
-                });
+                return {
+                  ...day,
+                  program_blocks: updatedBlocks
+                };
               }
-
-              // Προσθήκη σχετικών ασκήσεων στο recovery block (μόνο αν δεν υπάρχουν ήδη)
-              if (recoveryRelationships.length > 0) {
-                updatedBlocks = updatedBlocks.map(block => {
-                  // Βρίσκουμε το recovery block
-                  if (block.training_type === 'recovery') {
-                    // Παίρνουμε τα υπάρχοντα exercise_ids στο recovery block
-                    const existingExerciseIds = new Set(
-                      (block.program_exercises || []).map(ex => ex.exercise_id)
-                    );
-
-                    // Φιλτράρουμε μόνο τις ασκήσεις που ΔΕΝ υπάρχουν ήδη
-                    const newRecoveryRelationships = recoveryRelationships.filter(
-                      rel => !existingExerciseIds.has(rel.related_exercise_id)
-                    );
-
-                    if (newRecoveryRelationships.length === 0) {
-                      console.log('⏭️ All recovery exercises already exist, skipping');
-                      return block;
-                    }
-
-                    const newRecoveryExercises = newRecoveryRelationships.map((rel, index) => ({
-                      id: generateId(),
-                      exercise_id: rel.related_exercise_id,
-                      sets: 1,
-                      reps: '',
-                      reps_mode: 'reps' as const,
-                      kg: '',
-                      kg_mode: 'kg' as const,
-                      percentage_1rm: 0,
-                      velocity_ms: 0,
-                      tempo: '',
-                      rest: '',
-                      notes: '',
-                      exercise_order: (block.program_exercises?.length || 0) + index + 1,
-                      exercises: {
-                        id: rel.related_exercise_id,
-                        name: findExerciseName(rel.related_exercise_id),
-                        description: ''
-                      }
-                    }));
-                    
-                    console.log('➕ Adding recovery exercises:', newRecoveryExercises.length, '(skipped duplicates:', recoveryRelationships.length - newRecoveryRelationships.length, ')');
-                    
-                    return {
-                      ...block,
-                      program_exercises: [...(block.program_exercises || []), ...newRecoveryExercises]
-                    };
-                  }
-
-                  return block;
-                });
-              }
-
-              return {
-                ...day,
-                program_blocks: updatedBlocks
-              };
-            }
-            return day;
-          })
-        };
-      }
-      return week;
+              return day;
+            })
+          };
+        }
+        return week;
+      });
+      
+      return { weeks: updatedWeeks };
     });
-    
-    updateProgram({ weeks: updatedWeeks });
   };
 
   const removeExercise = (weekId: string, dayId: string, blockId: string, exerciseId: string) => {
