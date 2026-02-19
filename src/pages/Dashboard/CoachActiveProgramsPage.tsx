@@ -34,9 +34,10 @@ const CoachActiveProgramsContent = () => {
   
   const { 
     activeWorkouts, 
-    startWorkout,
+    openWorkout,
     updateElapsedTime,
     cancelWorkout,
+    removeWorkout,
   } = useMultipleWorkouts();
 
   useEffect(() => {
@@ -142,16 +143,16 @@ const CoachActiveProgramsContent = () => {
 
   // Χειρισμός κλικ σε πρόγραμμα
   const handleProgramClick = (assignment: EnrichedAssignment) => {
-    startWorkout(assignment, dayToShow);
+    openWorkout(assignment, dayToShow);
     setActiveAssignmentId(prev => prev === assignment.id ? null : assignment.id);
   };
 
   const handleDialogClose = (assignmentId?: string) => {
-    // Remove from activeWorkouts to stop the "in progress" state
+    // Remove from activeWorkouts tracking
     if (assignmentId) {
       const dateStr = format(dayToShow, 'yyyy-MM-dd');
       const workoutId = `${assignmentId}-${dateStr}`;
-      cancelWorkout(workoutId);
+      removeWorkout(workoutId);
     }
     setActiveAssignmentId(prev => {
       if (assignmentId && prev !== assignmentId) return prev;

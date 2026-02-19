@@ -63,13 +63,13 @@ export const MultiWorkoutManager: React.FC<MultiWorkoutManagerProps> = ({ onRefr
 
 // Export για χρήση από άλλα components
 export const useMultiWorkoutManager = () => {
-  const { activeWorkouts, startWorkout } = useMultipleWorkouts();
+  const { activeWorkouts, openWorkout } = useMultipleWorkouts();
   const [openDialogs, setOpenDialogs] = useState<Set<string>>(new Set());
 
   const openWorkoutDialog = (assignment: EnrichedAssignment, selectedDate: Date) => {
     const workoutId = `${assignment.id}-${selectedDate.toISOString().split('T')[0]}`;
     setOpenDialogs(prev => new Set(prev).add(workoutId));
-    startWorkout(assignment, selectedDate);
+    openWorkout(assignment, selectedDate);
   };
 
   const closeWorkoutDialog = (workoutId: string) => {

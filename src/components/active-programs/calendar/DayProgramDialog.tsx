@@ -204,7 +204,11 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !isClosingRef.current) handleMinimize(); }} modal={false}>
+      <Dialog open={isOpen} onOpenChange={(open) => { 
+        // Only minimize on Escape key (onOpenChange fires for Escape in non-modal)
+        // Don't minimize if we're in the process of closing via X button
+        if (!open && !isClosingRef.current) handleMinimize(); 
+      }} modal={false}>
         <DialogContent 
           hideCloseButton
           className="max-w-md h-[85vh] overflow-hidden rounded-none p-3 flex flex-col fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-50"
@@ -223,6 +227,10 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
               e.preventDefault();
             }
           }}
+          onEscapeKeyDown={(e) => {
+            // Prevent default escape behavior - we'll handle minimize via onOpenChange
+            // This ensures isClosingRef check works correctly
+          }}
         >
           <DayProgramDialogHeader
             selectedDate={selectedDate}
@@ -236,14 +244,20 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onMinimize={handleMinimize}
             program={program}
             onClose={() => {
+              // Set flag BEFORE any state changes
               isClosingRef.current = true;
+              // Clean up bubble
               if (bubbleIdRef.current) {
                 removeBubble(bubbleIdRef.current);
                 bubbleIdRef.current = '';
               }
               setIsMinimized(false);
+              // Tell parent to close and remove from tracking
               onClose();
-              setTimeout(() => { isClosingRef.current = false; }, 0);
+              // Reset flag after React has processed the close
+              requestAnimationFrame(() => { 
+                isClosingRef.current = false; 
+              });
             }}
           />
 
