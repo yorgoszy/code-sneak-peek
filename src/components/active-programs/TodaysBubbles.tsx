@@ -3,6 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CheckCircle } from "lucide-react";
 import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
 import { MinimizedWorkoutBubble } from '@/components/active-programs/calendar/MinimizedWorkoutBubble';
+import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface TodaysBubblesProps {
@@ -23,6 +24,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   onBubbleRestore
 }) => {
   const { bubbles, setSuppressRender, removeBubble } = useMinimizedBubbles();
+  const { activeWorkouts } = useMultipleWorkouts();
 
   // Suppress the context's built-in rendering - we handle it here
   useEffect(() => {
@@ -126,37 +128,26 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
           const status = getWorkoutStatus(assignment);
           const name = assignment.app_users?.name || 'Άγνωστος';
           const avatarUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
-          const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
           const isCompleted = status === 'completed';
           const isActive = isDialogOpen(assignment.id);
-          const sizeClass = isActive ? 'w-14 h-14' : 'w-10 h-10';
+          
+          // Check if this workout is currently in progress via MultipleWorkoutsContext
+          const workoutId = `${assignment.id}-${todayStr}`;
+          const activeWorkout = activeWorkouts.find(w => w.id === workoutId);
+          const isInProgress = activeWorkout?.workoutInProgress || false;
+          const elapsedTime = activeWorkout?.elapsedTime || 0;
 
           return (
-            <div
+            <MinimizedWorkoutBubble
               key={assignment.id}
-              className="relative cursor-pointer group"
-              onClick={() => onProgramClick(assignment)}
-              title={`${name} - ${assignment.programs?.name || ''}`}
-            >
-              <Avatar className={`${sizeClass} border-2 shadow-lg transition-all hover:scale-110 ${
-                isCompleted ? 'border-[#00ffba]' : status === 'missed' ? 'border-red-400' : 'border-gray-300'
-              }`}>
-                {avatarUrl ? <AvatarImage src={avatarUrl} alt={name} className="object-cover" /> : null}
-                <AvatarFallback className="bg-gray-200 text-gray-700 text-[9px] font-bold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-
-              {isCompleted && (
-                <span className="absolute -top-1 -right-1 bg-[#00ffba] rounded-full p-0.5">
-                  <CheckCircle className="w-3 h-3 text-black" />
-                </span>
-              )}
-
-              <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-black text-white text-[9px] px-1.5 py-0.5 rounded-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                {name.split(' ')[0]}
-              </span>
-            </div>
+              athleteName={name}
+              avatarUrl={avatarUrl}
+              workoutInProgress={isInProgress}
+              elapsedTime={elapsedTime}
+              size={isActive ? 'lg' : 'sm'}
+              isCompleted={isCompleted}
+              onRestore={() => onProgramClick(assignment)}
+            />
           );
         }
       })}
