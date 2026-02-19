@@ -411,7 +411,7 @@ const ActivePrograms = () => {
             selectedDate={workout.selectedDate}
             workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
             onRefresh={handleCalendarRefresh}
-            onMinimize={() => handleDialogClose(workout.assignment.id)}
+            onMinimize={() => setActiveAssignmentId(prev => prev === workout.assignment.id ? null : prev)}
           />
         );
       })}
