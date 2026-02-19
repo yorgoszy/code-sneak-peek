@@ -64,10 +64,11 @@ const ActivePrograms = () => {
   // Multi-workout management
   const { 
     activeWorkouts, 
-    startWorkout,
+    openWorkout,
     updateElapsedTime,
     completeWorkout,
     cancelWorkout,
+    removeWorkout,
     getWorkout,
     formatTime
   } = useMultipleWorkouts();
@@ -215,16 +216,16 @@ const ActivePrograms = () => {
 
   // Χειρισμός κλικ σε πρόγραμμα - toggle dialog
   const handleProgramClick = (assignment: EnrichedAssignment) => {
-    startWorkout(assignment, dayToShow);
+    openWorkout(assignment, dayToShow);
     setActiveAssignmentId(prev => prev === assignment.id ? null : assignment.id);
   };
 
   const handleDialogClose = (assignmentId?: string) => {
-    // Remove from activeWorkouts to stop the "in progress" state
+    // Remove from activeWorkouts tracking
     if (assignmentId) {
       const dateStr = format(dayToShow, 'yyyy-MM-dd');
       const workoutId = `${assignmentId}-${dateStr}`;
-      cancelWorkout(workoutId);
+      removeWorkout(workoutId);
     }
     // Only clear if this is still the active assignment (prevents race condition when switching bubbles)
     setActiveAssignmentId(prev => {

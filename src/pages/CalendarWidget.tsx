@@ -31,8 +31,9 @@ const CalendarWidget = () => {
   // Multi-workout management
   const { 
     activeWorkouts, 
-    startWorkout,
+    openWorkout,
     updateElapsedTime,
+    removeWorkout,
   } = useMultipleWorkouts();
 
   useEffect(() => {
@@ -181,11 +182,12 @@ const CalendarWidget = () => {
 
   const handleProgramClick = (assignment: EnrichedAssignment) => {
     const workoutId = `${assignment.id}-${dayToShow.toISOString().split('T')[0]}`;
-    startWorkout(assignment, dayToShow);
+    openWorkout(assignment, dayToShow);
     setOpenDialogs(prev => new Set(prev).add(workoutId));
   };
 
   const handleDialogClose = (workoutId: string) => {
+    removeWorkout(workoutId);
     setOpenDialogs(prev => {
       const newSet = new Set(prev);
       newSet.delete(workoutId);
