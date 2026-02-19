@@ -121,7 +121,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
                    program.name?.trim();
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 min-w-0 overflow-hidden">
       <ProgramBasicInfo
         name={program.name}
         description={program.description}

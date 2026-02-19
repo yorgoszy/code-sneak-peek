@@ -126,7 +126,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
         {weeks.length > 0 ? (
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <Tabs value={activeWeek} onValueChange={setActiveWeek} className="flex-1 min-w-0">
-              <div className="flex items-start gap-2 w-full">
+              <div className="flex items-start gap-2 w-full min-w-0">
                 {/* Scrollable weeks container */}
                 <div className="flex-1 min-w-0 overflow-x-auto">
                   <SortableContext items={weeks.map(week => week.id)} strategy={horizontalListSortingStrategy}>
