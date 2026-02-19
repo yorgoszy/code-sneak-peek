@@ -26,6 +26,7 @@ interface Exercise {
 interface ExerciseSelectionDialogContentProps {
   exercises: Exercise[];
   onSelectExercise: (exerciseId: string) => void;
+  onSelectMultipleExercises?: (exerciseIds: string[]) => Promise<void>;
   onClose: () => void;
   onExercisesUpdate?: (exercises: Exercise[]) => void;
   onSelectBlockTemplate?: (template: any) => void;
@@ -35,6 +36,7 @@ interface ExerciseSelectionDialogContentProps {
 export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogContentProps> = ({
   exercises: initialExercises,
   onSelectExercise,
+  onSelectMultipleExercises,
   onClose,
   onExercisesUpdate,
   onSelectBlockTemplate,
@@ -119,17 +121,20 @@ export const ExerciseSelectionDialogContent: React.FC<ExerciseSelectionDialogCon
   // Confirm multi-select: add all selected exercises
   const confirmMultiSelect = useCallback(async () => {
     const ids = Array.from(multiSelectedIds);
-    for (const id of ids) {
-      onSelectExercise(id);
-      // Small delay to allow async addExercise to process sequentially
-      await new Promise(r => setTimeout(r, 50));
+    if (onSelectMultipleExercises) {
+      await onSelectMultipleExercises(ids);
+    } else {
+      // Fallback: call one by one
+      for (const id of ids) {
+        onSelectExercise(id);
+      }
     }
     setMultiSelectedIds(new Set());
     setIsMultiSelectMode(false);
     onClose();
     setSearchTerm('');
     setSelectedCategories([]);
-  }, [multiSelectedIds, onSelectExercise, onClose]);
+  }, [multiSelectedIds, onSelectExercise, onSelectMultipleExercises, onClose]);
 
   // Cancel multi-select
   const cancelMultiSelect = useCallback(() => {

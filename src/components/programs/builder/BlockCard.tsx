@@ -39,7 +39,7 @@ interface BlockCardProps {
   block: Block;
   exercises: Exercise[];
   selectedUserId?: string;
-  onAddExercise: (exerciseId: string) => void;
+  onAddExercise: (exerciseId: string) => Promise<void> | void;
   onRemoveBlock: () => void;
   onDuplicateBlock: () => void;
   onUpdateBlockName: (name: string) => void;
@@ -117,6 +117,13 @@ export const BlockCard: React.FC<BlockCardProps> = React.memo(({
     setShowExerciseDialog(false);
   };
 
+  const handleMultipleExercisesSelect = async (exerciseIds: string[]) => {
+    for (const id of exerciseIds) {
+      await onAddExercise(id);
+    }
+    setShowExerciseDialog(false);
+  };
+
   // Όταν αλλάζει το training type, ενημερώνουμε ΜΟΝΟ το training type.
   // Το όνομα ενημερώνεται μέσα από το updateBlockTrainingType (στο state layer), αλλιώς γίνεται overwrite με stale state.
   const handleTrainingTypeChange = (trainingType: string) => {
@@ -175,6 +182,7 @@ export const BlockCard: React.FC<BlockCardProps> = React.memo(({
         onOpenChange={setShowExerciseDialog}
         exercises={exercises}
         onSelectExercise={handleExerciseSelect}
+        onSelectMultipleExercises={handleMultipleExercisesSelect}
         onSelectBlockTemplate={(template) => {
           if (onSelectBlockTemplate) {
             onSelectBlockTemplate(template);
