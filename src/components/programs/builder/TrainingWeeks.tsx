@@ -120,7 +120,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   };
 
   return (
-    <div className="border rounded-none">
+    <div className="border rounded-none min-w-0 overflow-hidden">
       {/* Compact header with week tabs inline */}
       <div className="flex items-start p-1 border-b bg-gray-50">
         {weeks.length > 0 ? (
