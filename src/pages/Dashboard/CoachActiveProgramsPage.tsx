@@ -36,6 +36,7 @@ const CoachActiveProgramsContent = () => {
     activeWorkouts, 
     startWorkout,
     updateElapsedTime,
+    cancelWorkout,
   } = useMultipleWorkouts();
 
   useEffect(() => {
@@ -146,6 +147,12 @@ const CoachActiveProgramsContent = () => {
   };
 
   const handleDialogClose = (assignmentId?: string) => {
+    // Remove from activeWorkouts to stop the "in progress" state
+    if (assignmentId) {
+      const dateStr = format(dayToShow, 'yyyy-MM-dd');
+      const workoutId = `${assignmentId}-${dateStr}`;
+      cancelWorkout(workoutId);
+    }
     setActiveAssignmentId(prev => {
       if (assignmentId && prev !== assignmentId) return prev;
       return null;
