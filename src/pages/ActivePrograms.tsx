@@ -406,7 +406,7 @@ const ActivePrograms = () => {
           <DayProgramDialog
             key={workout.id}
             isOpen={isThisOpen}
-            onClose={() => handleDialogClose(workout.assignment.id)}
+            onClose={() => setActiveAssignmentId(prev => prev === workout.assignment.id ? null : prev)}
             program={workout.assignment}
             selectedDate={workout.selectedDate}
             workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
