@@ -703,7 +703,10 @@ export const useWorkoutState = (
     clearBlockTimerStates();
     
     toast.info(`Προπόνηση ακυρώθηκε για ${program.app_users?.name}`);
-  }, [program, selectedDate, workoutId, removeFromActiveWorkouts, clearBlockTimerStates]);
+    
+    // Close the dialog so the bubble shrinks
+    onClose();
+  }, [program, selectedDate, workoutId, removeFromActiveWorkouts, clearBlockTimerStates, onClose]);
 
   // Exercise completion functions - FIXED signatures to match component expectations
   const exerciseCompletion = {
