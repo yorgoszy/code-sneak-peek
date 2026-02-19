@@ -38,6 +38,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const [currentRpeScore, setCurrentRpeScore] = useState<number | null>(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const bubbleIdRef = useRef<string>('');
+  const isClosingRef = useRef(false);
   
   const { addBubble, removeBubble, updateBubble } = useMinimizedBubbles();
   const { getWorkoutCompletions } = useWorkoutCompletions();
@@ -203,7 +204,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleMinimize(); }} modal={false}>
+      <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !isClosingRef.current) handleMinimize(); }} modal={false}>
         <DialogContent 
           className="max-w-md h-[85vh] overflow-hidden rounded-none p-3 flex flex-col fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-50"
           onInteractOutside={(e) => {
@@ -233,7 +234,16 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onCancelWorkout={handleCancelWorkout}
             onMinimize={handleMinimize}
             program={program}
-            onClose={onClose}
+            onClose={() => {
+              isClosingRef.current = true;
+              if (bubbleIdRef.current) {
+                removeBubble(bubbleIdRef.current);
+                bubbleIdRef.current = '';
+              }
+              setIsMinimized(false);
+              onClose();
+              setTimeout(() => { isClosingRef.current = false; }, 0);
+            }}
           />
 
           <div className="pt-12 pb-2 overflow-y-auto flex-1 space-y-2">
