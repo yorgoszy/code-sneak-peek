@@ -299,8 +299,8 @@ html, body {
   }
 
   .scrollbar-gray-thin::-webkit-scrollbar {
-    width: 1px;
-    height: 1px;
+    width: 6px;
+    height: 6px;
   }
 
   .scrollbar-gray-thin::-webkit-scrollbar-track {
