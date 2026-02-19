@@ -375,9 +375,9 @@ export const SubscriptionManagement: React.FC = () => {
       }
     }
 
-    // If no valid numbers found, start from 0060 (after the last known good: 0059)
-    if (maxNumber === 0) {
-      maxNumber = 59; // Will become 0060
+    // Minimum starting point: 82 (next will be 0083) to align with e-timologio numbering
+    if (maxNumber < 82) {
+      maxNumber = 82; // Will become 0083
     }
 
     return `ΑΠΥ-${String(maxNumber + 1).padStart(4, '0')}`;
