@@ -206,6 +206,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     <>
       <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !isClosingRef.current) handleMinimize(); }} modal={false}>
         <DialogContent 
+          hideCloseButton
           className="max-w-md h-[85vh] overflow-hidden rounded-none p-3 flex flex-col fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-50"
           onInteractOutside={(e) => {
             // Don't minimize if clicking on a bubble

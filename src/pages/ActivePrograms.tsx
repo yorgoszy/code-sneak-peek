@@ -220,6 +220,12 @@ const ActivePrograms = () => {
   };
 
   const handleDialogClose = (assignmentId?: string) => {
+    // Remove from activeWorkouts to stop the "in progress" state
+    if (assignmentId) {
+      const dateStr = format(dayToShow, 'yyyy-MM-dd');
+      const workoutId = `${assignmentId}-${dateStr}`;
+      cancelWorkout(workoutId);
+    }
     // Only clear if this is still the active assignment (prevents race condition when switching bubbles)
     setActiveAssignmentId(prev => {
       if (assignmentId && prev !== assignmentId) return prev;
