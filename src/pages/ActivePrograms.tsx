@@ -121,6 +121,12 @@ const ActivePrograms = () => {
     return hasDateScheduled;
   });
 
+  // Σημερινά προγράμματα - πάντα βάσει σημερινής ημερομηνίας για τα bubbles
+  const programsForToday = activePrograms.filter(assignment => {
+    if (!assignment.training_dates) return false;
+    return assignment.training_dates.includes(todayStr);
+  });
+
   // Φόρτωση workout completions - χρησιμοποιούμε ref για σταθερή αναφορά
   const activeProgramsRef = React.useRef(activePrograms);
   activeProgramsRef.current = activePrograms;
@@ -389,9 +395,9 @@ const ActivePrograms = () => {
 
           {/* Today's Bubbles */}
           <TodaysBubbles
-            programsForToday={programsForSelectedDate}
+            programsForToday={programsForToday}
             workoutCompletions={workoutCompletions}
-            todayStr={dayToShowStr}
+            todayStr={todayStr}
             onProgramClick={handleProgramClick}
             openAssignmentIds={activeAssignmentId ? new Set([activeAssignmentId]) : new Set()}
             onBubbleRestore={(assignmentId) => setActiveAssignmentId(assignmentId)}
