@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
@@ -38,13 +38,21 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   onVideoClick
 }) => {
   const [openBlocks, setOpenBlocks] = useState<Record<string, boolean>>(() => {
-    // Initialize all blocks as open by default
     const initial: Record<string, boolean> = {};
     blocks?.forEach(block => {
       initial[block.id] = true;
     });
     return initial;
   });
+
+  const [checkedExercises, setCheckedExercises] = useState<Record<string, boolean>>({});
+
+  const toggleExerciseCheck = useCallback((exerciseId: string) => {
+    setCheckedExercises(prev => ({
+      ...prev,
+      [exerciseId]: !prev[exerciseId]
+    }));
+  }, []);
 
   if (!blocks || blocks.length === 0) {
     return (
@@ -130,6 +138,9 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                         exercise={exercise}
                         exerciseNumber={exerciseIndex + 1}
                         onVideoClick={onVideoClick}
+                        workoutInProgress={workoutInProgress}
+                        isChecked={!!checkedExercises[exercise.id]}
+                        onToggleCheck={toggleExerciseCheck}
                       />
                     ))}
                   </div>
