@@ -1,15 +1,15 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { ProgramCard } from "../ProgramCard";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
-import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 
 interface ProgramsForDateCardProps {
   selectedDate: Date | undefined;
   programsForSelectedDate: EnrichedAssignment[];
+  workoutCompletions?: any[];
   onRefresh: () => void;
   onDelete: (assignmentId: string) => void;
 }
@@ -17,22 +17,10 @@ interface ProgramsForDateCardProps {
 export const ProgramsForDateCard: React.FC<ProgramsForDateCardProps> = ({
   selectedDate,
   programsForSelectedDate,
+  workoutCompletions = [],
   onRefresh,
   onDelete
 }) => {
-  const { getAllWorkoutCompletions } = useWorkoutCompletionsCache();
-  const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
-
-  useEffect(() => {
-    const loadCompletions = async () => {
-      if (programsForSelectedDate.length > 0) {
-        const allCompletions = await getAllWorkoutCompletions();
-        setWorkoutCompletions(allCompletions);
-      }
-    };
-    loadCompletions();
-  }, [programsForSelectedDate, getAllWorkoutCompletions]);
-
   const calculateProgramStats = (assignment: EnrichedAssignment) => {
     const trainingDates = assignment.training_dates || [];
     const assignmentCompletions = workoutCompletions.filter(c => c.assignment_id === assignment.id);

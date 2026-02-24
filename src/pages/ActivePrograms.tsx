@@ -8,7 +8,7 @@ import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
-import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,7 +58,7 @@ const ActivePrograms = () => {
   // Admin βλέπει μόνο assignments χρηστών που δημιουργήθηκαν από admin (coach_id = admin ID)
   const ADMIN_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
   const activePrograms = allPrograms.filter(p => p.app_users?.coach_id === ADMIN_ID);
-  const { getWorkoutCompletions } = useWorkoutCompletions();
+  // completionsCache kept for other uses
   const completionsCache = useWorkoutCompletionsCache();
   
   // Multi-workout management
@@ -136,14 +136,19 @@ const ActivePrograms = () => {
     if (programs.length === 0) return;
     
     try {
-      console.log('📊 ActivePrograms: Loading completions for', programs.length, 'assignments');
-      const allCompletions = [];
-      for (const assignment of programs) {
-        const completions = await getWorkoutCompletions(assignment.id);
-        allCompletions.push(...completions);
-      }
-      console.log('📊 ActivePrograms: Loaded completions:', allCompletions.length);
-      setWorkoutCompletions(allCompletions);
+      const assignmentIds = programs.map(p => p.id);
+      console.log('📊 ActivePrograms: Bulk loading completions for', assignmentIds.length, 'assignments');
+      
+      const { data, error } = await supabase
+        .from('workout_completions')
+        .select('*')
+        .in('assignment_id', assignmentIds)
+        .order('scheduled_date', { ascending: false });
+
+      if (error) throw error;
+      
+      console.log('📊 ActivePrograms: Loaded completions:', data?.length || 0);
+      setWorkoutCompletions(data || []);
     } catch (error) {
       console.error('❌ ActivePrograms: Error loading workout completions:', error);
     }
