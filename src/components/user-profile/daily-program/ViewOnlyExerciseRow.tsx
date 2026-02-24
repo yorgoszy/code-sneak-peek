@@ -93,7 +93,7 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
           {hasValidVideo && thumbnailUrl ? (
             <div 
               className="w-8 h-5 rounded-none overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer"
-              onClick={() => onVideoClick?.(exercise)}
+              onClick={(e) => { e.stopPropagation(); onVideoClick?.(exercise); }}
             >
               <img
                 src={thumbnailUrl}
@@ -108,7 +108,7 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
           ) : hasValidVideo ? (
             <div 
               className="w-8 h-5 rounded-none bg-gray-100 flex items-center justify-center flex-shrink-0 cursor-pointer"
-              onClick={() => onVideoClick?.(exercise)}
+              onClick={(e) => { e.stopPropagation(); onVideoClick?.(exercise); }}
             >
               <Play className="w-2 h-2 text-gray-400" />
             </div>
