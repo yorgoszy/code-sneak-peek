@@ -7,7 +7,7 @@ import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgram
 import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
-import { useWorkoutCompletions } from "@/hooks/useWorkoutCompletions";
+
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +29,6 @@ const CoachActiveProgramsContent = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
 
-  const { getWorkoutCompletions } = useWorkoutCompletions();
   const completionsCache = useWorkoutCompletionsCache();
   
   const { 
@@ -130,12 +129,16 @@ const CoachActiveProgramsContent = () => {
     if (programs.length === 0) return;
     
     try {
-      const allCompletions = [];
-      for (const assignment of programs) {
-        const completions = await getWorkoutCompletions(assignment.id);
-        allCompletions.push(...completions);
-      }
-      setWorkoutCompletions(allCompletions);
+      const assignmentIds = programs.map(p => p.id);
+      
+      const { data, error } = await supabase
+        .from('workout_completions')
+        .select('*')
+        .in('assignment_id', assignmentIds)
+        .order('scheduled_date', { ascending: false });
+
+      if (error) throw error;
+      setWorkoutCompletions(data || []);
     } catch (error) {
       console.error('❌ Error loading workout completions:', error);
     }
