@@ -213,9 +213,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
           hideCloseButton
           className="max-w-md h-[85vh] overflow-hidden rounded-none p-3 flex flex-col fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-50"
           onInteractOutside={(e) => {
-            // Don't minimize if clicking on a bubble
             const target = e.target as HTMLElement;
-            if (target?.closest('[data-bubbles-container]')) {
+            // Don't minimize if clicking on a bubble or another dialog (e.g. video dialog)
+            if (target?.closest('[data-bubbles-container]') || target?.closest('[role="dialog"]') || target?.closest('[data-radix-portal]')) {
               e.preventDefault();
               return;
             }
@@ -223,7 +223,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
           }}
           onPointerDownOutside={(e) => {
             const target = e.target as HTMLElement;
-            if (target?.closest('[data-bubbles-container]')) {
+            if (target?.closest('[data-bubbles-container]') || target?.closest('[role="dialog"]') || target?.closest('[data-radix-portal]')) {
               e.preventDefault();
             }
           }}
