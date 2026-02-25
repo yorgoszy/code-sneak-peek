@@ -225,10 +225,10 @@ const ActivePrograms = () => {
     };
   }, []); // stable - loadCompletions uses ref, runs once
 
-  // Χειρισμός κλικ σε πρόγραμμα - toggle dialog
+  // Χειρισμός κλικ σε πρόγραμμα - always show the clicked one
   const handleProgramClick = (assignment: EnrichedAssignment) => {
     openWorkout(assignment, dayToShow);
-    setActiveAssignmentId(prev => prev === assignment.id ? null : assignment.id);
+    setActiveAssignmentId(assignment.id);
   };
 
   const handleDialogClose = (assignmentId?: string) => {
