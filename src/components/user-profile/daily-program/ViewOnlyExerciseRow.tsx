@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Play } from "lucide-react";
+import { Play, Check } from "lucide-react";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 
 interface Exercise {
@@ -82,10 +82,15 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
 
   return (
     <div 
-      className={`bg-white border-0 border-b w-full transition-opacity ${workoutInProgress ? 'cursor-pointer hover:bg-gray-50' : ''} ${isChecked ? 'opacity-30' : ''}`}
+      className={`relative bg-white border-0 border-b w-full transition-opacity ${workoutInProgress ? 'cursor-pointer hover:bg-gray-50' : ''} ${isChecked ? 'opacity-30' : ''}`}
       style={{ fontSize: '12px' }}
       onClick={handleRowClick}
     >
+      {isChecked && (
+        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+          <Check className="w-10 h-10 text-[#00ffba] stroke-[3]" />
+        </div>
+      )}
       {/* Exercise Name Row - Same as ExerciseSelectionButton */}
       <div className="px-2 py-0 border-b bg-gray-100 flex items-center w-full" style={{ minHeight: '28px' }}>
         <div className="flex items-center gap-2 w-full h-6 px-2 bg-gray-200" style={{ borderRadius: '0px' }}>
