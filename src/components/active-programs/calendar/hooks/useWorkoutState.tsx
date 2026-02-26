@@ -312,7 +312,12 @@ export const useWorkoutState = (
     const userId = program.user_id || program.app_users?.id;
     const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
     if (userId) {
-      liveWorkoutSync.markInProgress(program.id, scheduledDate, userId);
+      console.log('🔴 Calling markInProgress:', { assignmentId: program.id, scheduledDate, userId });
+      liveWorkoutSync.markInProgress(program.id, scheduledDate, userId)
+        .then(() => console.log('✅ markInProgress completed'))
+        .catch(err => console.error('❌ markInProgress failed:', err));
+    } else {
+      console.error('❌ No userId found for markInProgress');
     }
   }, [program, selectedDate, startWorkout]);
 
