@@ -238,8 +238,36 @@ export const useWorkoutState = (
     if (!program || !selectedDate) return;
     const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
     
+    // Function to fetch current state from DB
+    const fetchCurrentState = async () => {
+      try {
+        const { data } = await supabase
+          .from('workout_completions')
+          .select('checked_exercises, status, start_time')
+          .eq('assignment_id', program.id)
+          .eq('scheduled_date', scheduledDate)
+          .maybeSingle();
+        
+        if (data?.status === 'in_progress') {
+          setRemoteInProgress(true);
+          setRemoteStartTime(data.start_time);
+        } else {
+          setRemoteInProgress(false);
+          setRemoteStartTime(null);
+        }
+        
+        if (data?.checked_exercises && Array.isArray(data.checked_exercises) && data.checked_exercises.length > 0) {
+          const loaded: Record<string, number> = {};
+          (data.checked_exercises as string[]).forEach((id: string) => { loaded[id] = 999; });
+          setExerciseCompletions(loaded);
+        }
+      } catch (error) {
+        console.error('Error re-fetching workout state:', error);
+      }
+    };
+    
     const channel = supabase
-      .channel(`live-exercises-${program.id}-${scheduledDate}`)
+      .channel(`live-exercises-${program.id}-${scheduledDate}-${Date.now()}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -263,7 +291,7 @@ export const useWorkoutState = (
           return;
         }
         
-        console.log('🟢 LIVE: workout_completions change detected', newData.status, newData.checked_exercises);
+        console.log('🟢 LIVE: workout_completions change detected', payload.eventType, newData.status, newData.checked_exercises);
         
         // Update remote status
         if (newData.status === 'in_progress') {
@@ -284,7 +312,13 @@ export const useWorkoutState = (
           setExerciseCompletions(live);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Realtime subscription status:', status, 'for', program.id);
+        if (status === 'SUBSCRIBED') {
+          // Re-fetch to catch any events between initial load and subscription becoming active
+          fetchCurrentState();
+        }
+      });
     return () => { 
       supabase.removeChannel(channel);
     };
