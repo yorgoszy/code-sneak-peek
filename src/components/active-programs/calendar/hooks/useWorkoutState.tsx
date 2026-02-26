@@ -803,26 +803,33 @@ export const useWorkoutState = (
   }, [program, selectedDate, currentWorkout, elapsedTime, onRefresh, onClose, removeFromActiveWorkouts, workoutId, calculateWorkoutStats, exerciseData]);
 
   const handleCancelWorkout = useCallback(() => {
-    if (!program || !selectedDate || !workoutId) return;
+    if (!program || !selectedDate) return;
     
     console.log('❌ Ακύρωση προπόνησης για:', program.app_users?.name);
     setExerciseCompletions({});
     setExerciseData({});
     
-    // Αφαίρεση από τις ενεργές προπονήσεις
-    removeFromActiveWorkouts(workoutId);
+    // Αφαίρεση από τις ενεργές προπονήσεις (if locally started)
+    if (workoutId) {
+      removeFromActiveWorkouts(workoutId);
+    }
+    
+    // Clear remote state
+    setRemoteInProgress(false);
+    setRemoteStartTime(null);
+    setRemoteElapsedTime(0);
     
     // Clear block timer states
     clearBlockTimerStates();
     
-    // Live sync: clear in_progress status
+    // Live sync: clear in_progress status in DB
     const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
     liveWorkoutSync.clearInProgress(program.id, scheduledDate);
     
     toast.info(`Προπόνηση ακυρώθηκε για ${program.app_users?.name}`);
     
     // Close the dialog so the bubble shrinks
-    onClose();
+    if (onClose) onClose();
   }, [program, selectedDate, workoutId, removeFromActiveWorkouts, clearBlockTimerStates, onClose]);
 
   // Exercise completion functions - FIXED signatures to match component expectations
