@@ -222,7 +222,8 @@ export const useWorkoutState = (
         
         if (data?.checked_exercises && Array.isArray(data.checked_exercises) && data.checked_exercises.length > 0) {
           const loaded: Record<string, number> = {};
-          (data.checked_exercises as string[]).forEach((id: string) => { loaded[id] = 1; });
+          // Use 999 as sentinel so isExerciseComplete (count >= totalSets) always returns true
+          (data.checked_exercises as string[]).forEach((id: string) => { loaded[id] = 999; });
           setExerciseCompletions(prev => Object.keys(prev).length === 0 ? loaded : prev);
         }
       } catch (error) {
@@ -259,7 +260,7 @@ export const useWorkoutState = (
           // Update checked exercises
           if (newData.checked_exercises) {
             const live: Record<string, number> = {};
-            (newData.checked_exercises as string[]).forEach((id: string) => { live[id] = 1; });
+            (newData.checked_exercises as string[]).forEach((id: string) => { live[id] = 999; });
             setExerciseCompletions(live);
           }
         }
