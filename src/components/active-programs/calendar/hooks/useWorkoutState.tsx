@@ -224,7 +224,7 @@ export const useWorkoutState = (
           const loaded: Record<string, number> = {};
           // Use 999 as sentinel so isExerciseComplete (count >= totalSets) always returns true
           (data.checked_exercises as string[]).forEach((id: string) => { loaded[id] = 999; });
-          setExerciseCompletions(prev => Object.keys(prev).length === 0 ? loaded : prev);
+          setExerciseCompletions(loaded);
         }
       } catch (error) {
         console.error('Error loading checked exercises:', error);
@@ -246,6 +246,18 @@ export const useWorkoutState = (
         table: 'workout_completions',
         filter: `assignment_id=eq.${program.id}`
       }, (payload) => {
+        // Handle DELETE events (e.g. cancellation clears the record)
+        if (payload.eventType === 'DELETE') {
+          const oldData = payload.old as any;
+          if (oldData?.scheduled_date === scheduledDate || oldData?.assignment_id === program.id) {
+            console.log('🔴 LIVE: Workout record deleted (cancelled)');
+            setRemoteInProgress(false);
+            setRemoteStartTime(null);
+            setExerciseCompletions({});
+          }
+          return;
+        }
+        
         const newData = payload.new as any;
         if (newData?.scheduled_date === scheduledDate) {
           // Update remote status
@@ -258,7 +270,7 @@ export const useWorkoutState = (
           }
           
           // Update checked exercises
-          if (newData.checked_exercises) {
+          if (newData.checked_exercises && Array.isArray(newData.checked_exercises)) {
             const live: Record<string, number> = {};
             (newData.checked_exercises as string[]).forEach((id: string) => { live[id] = 999; });
             setExerciseCompletions(live);
