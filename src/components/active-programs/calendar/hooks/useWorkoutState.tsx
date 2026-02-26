@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
@@ -7,6 +7,7 @@ import { useSharedExerciseNotes } from '@/hooks/useSharedExerciseNotes';
 import { useBlockTimer } from '@/contexts/BlockTimerContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { liveWorkoutSync } from '@/hooks/useLiveWorkoutSync';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface UseWorkoutStateProps {
@@ -177,12 +178,66 @@ export const useWorkoutState = (
     }
   }, [program, selectedDate, getCurrentDayNumber]);
 
+  // Load checked exercises from DB for live cross-device visibility
+  useEffect(() => {
+    if (!program || !selectedDate) return;
+    const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
+    const loadCheckedExercises = async () => {
+      try {
+        const { data } = await supabase
+          .from('workout_completions')
+          .select('checked_exercises, status, start_time')
+          .eq('assignment_id', program.id)
+          .eq('scheduled_date', scheduledDate)
+          .maybeSingle();
+        if (data?.checked_exercises && Array.isArray(data.checked_exercises) && data.checked_exercises.length > 0) {
+          const loaded: Record<string, number> = {};
+          (data.checked_exercises as string[]).forEach((id: string) => { loaded[id] = 1; });
+          setExerciseCompletions(prev => Object.keys(prev).length === 0 ? loaded : prev);
+        }
+      } catch (error) {
+        console.error('Error loading checked exercises:', error);
+      }
+    };
+    loadCheckedExercises();
+  }, [program?.id, selectedDate]);
+
+  // Subscribe to realtime changes for checked_exercises (admin sees user updates live)
+  useEffect(() => {
+    if (!program || !selectedDate) return;
+    const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
+    const channel = supabase
+      .channel(`live-exercises-${program.id}-${scheduledDate}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'workout_completions',
+        filter: `assignment_id=eq.${program.id}`
+      }, (payload) => {
+        const newData = payload.new as any;
+        if (newData.scheduled_date === scheduledDate && newData.checked_exercises) {
+          const live: Record<string, number> = {};
+          (newData.checked_exercises as string[]).forEach((id: string) => { live[id] = 1; });
+          setExerciseCompletions(live);
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [program?.id, selectedDate]);
+
   const handleStartWorkout = useCallback(() => {
     if (!program || !selectedDate) return;
     
     console.log('🏋️‍♂️ Έναρξη προπόνησης για:', program.app_users?.name);
     startWorkout(program, selectedDate);
     toast.success(`Προπόνηση ξεκίνησε για ${program.app_users?.name}!`);
+    
+    // Live sync: mark workout as in_progress in DB
+    const userId = program.user_id || program.app_users?.id;
+    const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
+    if (userId) {
+      liveWorkoutSync.markInProgress(program.id, scheduledDate, userId);
+    }
   }, [program, selectedDate, startWorkout]);
 
   // Helper function to map training_type to stats categories
@@ -702,6 +757,10 @@ export const useWorkoutState = (
     // Clear block timer states
     clearBlockTimerStates();
     
+    // Live sync: clear in_progress status
+    const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
+    liveWorkoutSync.clearInProgress(program.id, scheduledDate);
+    
     toast.info(`Προπόνηση ακυρώθηκε για ${program.app_users?.name}`);
     
     // Close the dialog so the bubble shrinks
@@ -715,7 +774,19 @@ export const useWorkoutState = (
         const current = prev[exerciseId] || 0;
         const newCount = Math.min(current + 1, totalSets);
         console.log(`Set completed for exercise ${exerciseId}: ${newCount}/${totalSets}`);
-        return { ...prev, [exerciseId]: newCount };
+        
+        const updated = { ...prev, [exerciseId]: newCount };
+        
+        // Live sync: send checked exercises to DB
+        if (program && selectedDate) {
+          const checkedIds = Object.entries(updated)
+            .filter(([_, count]) => count > 0)
+            .map(([id]) => id);
+          const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
+          liveWorkoutSync.updateCheckedExercises(program.id, scheduledDate, checkedIds);
+        }
+        
+        return updated;
       });
     },
 

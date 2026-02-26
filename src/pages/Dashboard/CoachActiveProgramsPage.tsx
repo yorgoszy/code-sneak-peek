@@ -8,6 +8,7 @@ import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useRealtimePrograms } from "@/hooks/useRealtimePrograms";
+import { useLiveWorkoutData } from "@/hooks/useLiveWorkoutData";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
@@ -157,6 +158,9 @@ const CoachActiveProgramsContent = () => {
     return assignment.training_dates.includes(todayStr);
   });
 
+  // Live workout data from DB for cross-device visibility
+  const todayAssignmentIds = React.useMemo(() => programsForToday.map(a => a.id), [programsForToday]);
+  const { liveWorkouts } = useLiveWorkoutData(todayAssignmentIds);
 
   useEffect(() => {
     if (activePrograms.length > 0) {
@@ -222,6 +226,7 @@ const CoachActiveProgramsContent = () => {
         onProgramClick={handleProgramClick}
         openAssignmentIds={activeAssignmentId ? new Set([activeAssignmentId]) : new Set()}
         onBubbleRestore={(assignmentId) => setActiveAssignmentId(assignmentId)}
+        liveWorkouts={liveWorkouts}
       />
 
       {activeWorkouts.map(workout => {
