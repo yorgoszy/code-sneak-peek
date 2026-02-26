@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
 import { isValidVideoUrl } from '@/utils/videoUtils';
 import { ExerciseVideoDialog } from '@/components/user-profile/daily-program/ExerciseVideoDialog';
@@ -53,37 +53,41 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
     handleCompleteWorkout(rpeScore);
   };
 
-  // Fetch current completion status and RPE when dialog opens or date/assignment changes
-  useEffect(() => {
-    const fetchStatusAndRpe = async () => {
-      setStatusLoading(true);
-      setDynamicStatus(workoutStatus);
-      setCurrentRpeScore(null);
-      if (!program?.id || !selectedDate) {
-        setStatusLoading(false);
-        return;
-      }
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const { data, error } = await supabase
-        .from('workout_completions')
-        .select('status, rpe_score')
-        .eq('assignment_id', program.id)
-        .eq('scheduled_date', dateStr)
-        .maybeSingle();
-
-      if (error) {
-        setDynamicStatus(workoutStatus);
-      } else if (data?.status) {
-        setDynamicStatus(data.status);
-        setCurrentRpeScore(data.rpe_score ?? null);
-      } else {
-        setDynamicStatus(workoutStatus);
-      }
+  // Fetch current completion status and RPE - poll every 3s for cross-device sync
+  const fetchStatusAndRpe = useCallback(async () => {
+    if (!program?.id || !selectedDate) {
       setStatusLoading(false);
-    };
+      return;
+    }
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    const { data, error } = await supabase
+      .from('workout_completions')
+      .select('status, rpe_score')
+      .eq('assignment_id', program.id)
+      .eq('scheduled_date', dateStr)
+      .maybeSingle();
 
-    fetchStatusAndRpe();
+    if (error) {
+      setDynamicStatus(workoutStatus);
+    } else if (data?.status) {
+      setDynamicStatus(data.status);
+      setCurrentRpeScore(data.rpe_score ?? null);
+    } else {
+      setDynamicStatus(workoutStatus);
+    }
+    setStatusLoading(false);
   }, [program?.id, selectedDate, workoutStatus]);
+
+  useEffect(() => {
+    setStatusLoading(true);
+    setDynamicStatus(workoutStatus);
+    setCurrentRpeScore(null);
+    fetchStatusAndRpe();
+
+    // Poll every 3 seconds for cross-device sync
+    const interval = setInterval(fetchStatusAndRpe, 3000);
+    return () => clearInterval(interval);
+  }, [program?.id, selectedDate, workoutStatus, fetchStatusAndRpe]);
 
   const handleVideoClick = (exercise: any) => {
     console.log('🎬 DayProgramDialogContent - Full exercise object:', exercise);
@@ -143,11 +147,14 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
     dayNumber = (dayProgram?.day_number as number) || (idx + 1);
   }
 
+  // Combine local workoutInProgress with remote dynamicStatus for cross-device detection
+  const effectiveInProgress = workoutInProgress || dynamicStatus === 'in_progress';
+
   return (
     <>
       <DayProgramDialogHeader
         selectedDate={selectedDate}
-        workoutInProgress={workoutInProgress}
+        workoutInProgress={effectiveInProgress}
         elapsedTime={elapsedTime}
         workoutStatus={dynamicStatus}
         rpeScore={currentRpeScore}
@@ -165,7 +172,7 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
         <DayProgramMainContent
           program={program}
           dayProgram={dayProgram}
-          workoutInProgress={workoutInProgress}
+          workoutInProgress={effectiveInProgress}
           dynamicStatus={dynamicStatus}
           selectedDate={selectedDate}
           exerciseCompletion={exerciseCompletion}
