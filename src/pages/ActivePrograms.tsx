@@ -12,6 +12,7 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimePrograms } from "@/hooks/useRealtimePrograms";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
@@ -161,69 +162,20 @@ const ActivePrograms = () => {
     }
   }, [activePrograms.length, loadCompletions]);
 
-  // Enhanced real-time subscription
-  useEffect(() => {
-    console.log('🔄 ActivePrograms: Setting up REAL-TIME subscriptions...');
-    
-    const completionsChannel = supabase
-      .channel('workout-completions-active')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'workout_completions'
-        },
-        async (payload) => {
-          console.log('🔄 REALTIME: workout completion change:', payload);
-          setRealtimeKey(Date.now());
-          
-          if (payload.new && typeof payload.new === 'object' && 'assignment_id' in payload.new) {
-            completionsCache.invalidateAssignmentCache(payload.new.assignment_id as string);
-          }
-          
-          try {
-            const { programCompletionService } = await import('@/hooks/useWorkoutCompletions/programCompletionService');
-            await programCompletionService.checkAndCompleteProgramAssignments();
-          } catch (error) {
-            console.error('Error checking program completions:', error);
-          }
-          
-          await loadCompletions();
-          refetch();
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 Completions subscription status:', status);
-      });
-
-    const assignmentsChannel = supabase
-      .channel('assignments-active')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'program_assignments'
-        },
-        async (payload) => {
-          console.log('🔄 REALTIME: assignment change:', payload);
-          setRealtimeKey(Date.now());
-          completionsCache.clearCache();
-          refetch();
-          await loadCompletions();
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 Assignments subscription status:', status);
-      });
-
-    return () => {
-      console.log('🔌 ActivePrograms: Cleaning up real-time subscriptions');
-      supabase.removeChannel(completionsChannel);
-      supabase.removeChannel(assignmentsChannel);
-    };
-  }, []); // stable - loadCompletions uses ref, runs once
+  // Enhanced real-time subscription via shared hook
+  useRealtimePrograms({
+    onProgramsChange: () => {
+      console.log('🔄 Admin ActivePrograms: Programs changed');
+      refetch();
+    },
+    onAssignmentsChange: async () => {
+      console.log('🔄 Admin ActivePrograms: Assignments/completions changed');
+      setRealtimeKey(Date.now() + Math.random());
+      completionsCache.clearCache();
+      await loadCompletions();
+      refetch();
+    },
+  });
 
   // Χειρισμός κλικ σε πρόγραμμα - always show the clicked one
   const handleProgramClick = (assignment: EnrichedAssignment) => {
