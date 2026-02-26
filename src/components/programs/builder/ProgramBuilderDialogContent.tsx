@@ -146,7 +146,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
         <BatchAutoFillBridge updateProgram={updateProgram} />
         <FmsExerciseStatusProvider userId={selectedUserId}>
           <ScrollArea className="flex-1 w-full h-full">
-            <div className="space-y-2 p-2 w-full max-w-full overflow-hidden">
+            <div className="space-y-2 p-2 w-full max-w-full min-w-0">
               <ProgramBuilder
                 program={program}
                 users={users}
