@@ -198,17 +198,26 @@ export const useWorkoutState = (
     }
   }, [program, selectedDate, getCurrentDayNumber]);
 
+  // Stabilize selectedDate as string to avoid Date object reference issues
+  const scheduledDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
+
   // Shared function to fetch workout state from DB
   const fetchWorkoutState = useCallback(async () => {
-    if (!program || !selectedDate) return;
-    const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
+    if (!program?.id || !scheduledDateStr) return;
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('workout_completions')
         .select('checked_exercises, status, start_time')
         .eq('assignment_id', program.id)
-        .eq('scheduled_date', scheduledDate)
+        .eq('scheduled_date', scheduledDateStr)
         .maybeSingle();
+      
+      if (error) {
+        console.error('❌ Poll: Error fetching workout state:', error);
+        return;
+      }
+
+      console.log('📊 Poll result:', program.id.slice(0,8), scheduledDateStr, 'status:', data?.status || 'none');
       
       if (data?.status === 'in_progress') {
         setRemoteInProgress(true);
@@ -228,11 +237,11 @@ export const useWorkoutState = (
     } catch (error) {
       console.error('Error fetching workout state:', error);
     }
-  }, [program?.id, selectedDate]);
+  }, [program?.id, scheduledDateStr]);
 
   // Initial load + polling every 3s for reliable cross-device sync
   useEffect(() => {
-    if (!program || !selectedDate) return;
+    if (!program?.id || !scheduledDateStr) return;
     
     // Initial fetch
     fetchWorkoutState();
@@ -243,7 +252,7 @@ export const useWorkoutState = (
     }, 3000);
     
     return () => clearInterval(pollInterval);
-  }, [program?.id, selectedDate, fetchWorkoutState]);
+  }, [program?.id, scheduledDateStr, fetchWorkoutState]);
 
   // Subscribe to realtime changes for instant updates (supplements polling)
   useEffect(() => {
