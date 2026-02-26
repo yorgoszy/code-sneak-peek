@@ -243,13 +243,12 @@ export const useWorkoutState = (
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'workout_completions',
-        filter: `assignment_id=eq.${program.id}`
+        table: 'workout_completions'
       }, (payload) => {
         // Handle DELETE events (e.g. cancellation clears the record)
         if (payload.eventType === 'DELETE') {
           const oldData = payload.old as any;
-          if (oldData?.scheduled_date === scheduledDate || oldData?.assignment_id === program.id) {
+          if (oldData?.assignment_id === program.id) {
             console.log('🔴 LIVE: Workout record deleted (cancelled)');
             setRemoteInProgress(false);
             setRemoteStartTime(null);
@@ -259,22 +258,30 @@ export const useWorkoutState = (
         }
         
         const newData = payload.new as any;
-        if (newData?.scheduled_date === scheduledDate) {
-          // Update remote status
-          if (newData.status === 'in_progress') {
-            setRemoteInProgress(true);
-            setRemoteStartTime(newData.start_time);
-          } else {
-            setRemoteInProgress(false);
-            setRemoteStartTime(null);
-          }
-          
-          // Update checked exercises
-          if (newData.checked_exercises && Array.isArray(newData.checked_exercises)) {
-            const live: Record<string, number> = {};
-            (newData.checked_exercises as string[]).forEach((id: string) => { live[id] = 999; });
-            setExerciseCompletions(live);
-          }
+        // Filter in callback: only process events for this assignment+date
+        if (newData?.assignment_id !== program.id || newData?.scheduled_date !== scheduledDate) {
+          return;
+        }
+        
+        console.log('🟢 LIVE: workout_completions change detected', newData.status, newData.checked_exercises);
+        
+        // Update remote status
+        if (newData.status === 'in_progress') {
+          setRemoteInProgress(true);
+          setRemoteStartTime(newData.start_time);
+        } else if (newData.status === 'completed') {
+          setRemoteInProgress(false);
+          setRemoteStartTime(null);
+        } else {
+          setRemoteInProgress(false);
+          setRemoteStartTime(null);
+        }
+        
+        // Update checked exercises
+        if (newData.checked_exercises && Array.isArray(newData.checked_exercises)) {
+          const live: Record<string, number> = {};
+          (newData.checked_exercises as string[]).forEach((id: string) => { live[id] = 999; });
+          setExerciseCompletions(live);
         }
       })
       .subscribe();
