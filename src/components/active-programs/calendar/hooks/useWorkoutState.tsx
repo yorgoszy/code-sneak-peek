@@ -25,6 +25,9 @@ export const useWorkoutState = (
 ) => {
   const [exerciseCompletions, setExerciseCompletions] = useState<Record<string, number>>({});
   const [exerciseData, setExerciseData] = useState<Record<string, any>>({});
+  const [remoteInProgress, setRemoteInProgress] = useState(false);
+  const [remoteStartTime, setRemoteStartTime] = useState<string | null>(null);
+  const [remoteElapsedTime, setRemoteElapsedTime] = useState(0);
 
   const { updateWorkoutStatus } = useWorkoutCompletions();
   const { startWorkout, completeWorkout: removeFromActiveWorkouts, getWorkout } = useMultipleWorkouts();
@@ -83,8 +86,25 @@ export const useWorkoutState = (
 
   // Παίρνουμε τα στοιχεία της προπόνησης από το multi-workout manager
   const currentWorkout = workoutId ? getWorkout(workoutId) : null;
-  const workoutInProgress = currentWorkout?.workoutInProgress || false;
-  const elapsedTime = currentWorkout?.elapsedTime || 0;
+  const localInProgress = currentWorkout?.workoutInProgress || false;
+  const localElapsedTime = currentWorkout?.elapsedTime || 0;
+  
+  // Combine local and remote state: workout is in progress if either local or remote says so
+  const workoutInProgress = localInProgress || remoteInProgress;
+  const elapsedTime = localInProgress ? localElapsedTime : remoteElapsedTime;
+  
+  // Timer for remote elapsed time
+  useEffect(() => {
+    if (!remoteInProgress || !remoteStartTime || localInProgress) {
+      return;
+    }
+    const updateElapsed = () => {
+      setRemoteElapsedTime(Math.floor((Date.now() - new Date(remoteStartTime).getTime()) / 1000));
+    };
+    updateElapsed();
+    const timer = setInterval(updateElapsed, 1000);
+    return () => clearInterval(timer);
+  }, [remoteInProgress, remoteStartTime, localInProgress]);
 
   // Helper function to get day index for current date
   const getCurrentDayIndex = useCallback(() => {
@@ -178,7 +198,7 @@ export const useWorkoutState = (
     }
   }, [program, selectedDate, getCurrentDayNumber]);
 
-  // Load checked exercises from DB for live cross-device visibility
+  // Load checked exercises and remote status from DB
   useEffect(() => {
     if (!program || !selectedDate) return;
     const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
@@ -190,6 +210,16 @@ export const useWorkoutState = (
           .eq('assignment_id', program.id)
           .eq('scheduled_date', scheduledDate)
           .maybeSingle();
+        
+        // Set remote workout status
+        if (data?.status === 'in_progress') {
+          setRemoteInProgress(true);
+          setRemoteStartTime(data.start_time);
+        } else {
+          setRemoteInProgress(false);
+          setRemoteStartTime(null);
+        }
+        
         if (data?.checked_exercises && Array.isArray(data.checked_exercises) && data.checked_exercises.length > 0) {
           const loaded: Record<string, number> = {};
           (data.checked_exercises as string[]).forEach((id: string) => { loaded[id] = 1; });
@@ -202,27 +232,42 @@ export const useWorkoutState = (
     loadCheckedExercises();
   }, [program?.id, selectedDate]);
 
-  // Subscribe to realtime changes for checked_exercises (admin sees user updates live)
+  // Subscribe to realtime changes for checked_exercises AND status (admin sees user updates live)
   useEffect(() => {
     if (!program || !selectedDate) return;
     const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
+    
     const channel = supabase
       .channel(`live-exercises-${program.id}-${scheduledDate}`)
       .on('postgres_changes', {
-        event: 'UPDATE',
+        event: '*',
         schema: 'public',
         table: 'workout_completions',
         filter: `assignment_id=eq.${program.id}`
       }, (payload) => {
         const newData = payload.new as any;
-        if (newData.scheduled_date === scheduledDate && newData.checked_exercises) {
-          const live: Record<string, number> = {};
-          (newData.checked_exercises as string[]).forEach((id: string) => { live[id] = 1; });
-          setExerciseCompletions(live);
+        if (newData?.scheduled_date === scheduledDate) {
+          // Update remote status
+          if (newData.status === 'in_progress') {
+            setRemoteInProgress(true);
+            setRemoteStartTime(newData.start_time);
+          } else {
+            setRemoteInProgress(false);
+            setRemoteStartTime(null);
+          }
+          
+          // Update checked exercises
+          if (newData.checked_exercises) {
+            const live: Record<string, number> = {};
+            (newData.checked_exercises as string[]).forEach((id: string) => { live[id] = 1; });
+            setExerciseCompletions(live);
+          }
         }
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { 
+      supabase.removeChannel(channel);
+    };
   }, [program?.id, selectedDate]);
 
   const handleStartWorkout = useCallback(() => {
