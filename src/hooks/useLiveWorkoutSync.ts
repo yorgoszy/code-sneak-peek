@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { calculateWeekAndDay } from "./useWorkoutCompletions/weekDayCalculator";
 
 /**
  * Service to sync workout state to DB for live cross-device visibility.
@@ -16,19 +15,24 @@ export const liveWorkoutSync = {
     console.log('🔴 LiveSync: markInProgress called', { assignmentId, scheduledDate, userId });
     try {
       // Check if record exists
-      const { data: existing } = await supabase
+      const { data: existing, error: fetchError } = await supabase
         .from('workout_completions')
         .select('id, status')
         .eq('assignment_id', assignmentId)
         .eq('scheduled_date', scheduledDate)
         .maybeSingle();
 
+      if (fetchError) {
+        console.error('❌ LiveSync: Error fetching existing record:', fetchError);
+        return;
+      }
+
       if (existing) {
         if (existing.status === 'completed') {
           console.log('⚠️ LiveSync: Workout already completed, skipping');
           return;
         }
-        await supabase
+        const { error: updateError } = await supabase
           .from('workout_completions')
           .update({
             status: 'in_progress',
@@ -37,15 +41,36 @@ export const liveWorkoutSync = {
             updated_at: new Date().toISOString()
           })
           .eq('id', existing.id);
-      } else {
-        const { weekNumber, dayNumber, programId } = await calculateWeekAndDay(assignmentId, scheduledDate);
         
-        await supabase
+        if (updateError) {
+          console.error('❌ LiveSync: Error updating to in_progress:', updateError);
+          return;
+        }
+      } else {
+        // Get program_id from assignment - simple query, no complex calculation needed
+        const { data: assignmentData, error: assignmentError } = await supabase
+          .from('program_assignments')
+          .select('program_id, training_dates')
+          .eq('id', assignmentId)
+          .single();
+
+        if (assignmentError || !assignmentData) {
+          console.error('❌ LiveSync: Error fetching assignment:', assignmentError);
+          return;
+        }
+
+        // Simple week/day calculation from training_dates position
+        const trainingDates = assignmentData.training_dates || [];
+        const dateIndex = trainingDates.findIndex((d: string) => d === scheduledDate);
+        const weekNumber = dateIndex >= 0 ? Math.floor(dateIndex / 7) + 1 : 1;
+        const dayNumber = dateIndex >= 0 ? (dateIndex % 7) + 1 : 1;
+        
+        const { error: insertError } = await supabase
           .from('workout_completions')
           .insert({
             assignment_id: assignmentId,
             user_id: userId,
-            program_id: programId,
+            program_id: assignmentData.program_id,
             week_number: weekNumber,
             day_number: dayNumber,
             scheduled_date: scheduledDate,
@@ -55,6 +80,11 @@ export const liveWorkoutSync = {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           });
+
+        if (insertError) {
+          console.error('❌ LiveSync: Error inserting in_progress record:', insertError);
+          return;
+        }
       }
       console.log('✅ LiveSync: Workout marked as in_progress');
     } catch (error) {
