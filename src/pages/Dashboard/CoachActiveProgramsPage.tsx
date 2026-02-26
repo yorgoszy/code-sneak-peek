@@ -7,7 +7,7 @@ import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgram
 import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
-
+import { useRealtimePrograms } from "@/hooks/useRealtimePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +39,45 @@ const CoachActiveProgramsContent = () => {
     removeWorkout,
   } = useMultipleWorkouts();
 
+  const fetchCoachPrograms = useCallback(async () => {
+    if (!coachId) return;
+
+    try {
+      const { data: assignments, error: assignError } = await supabase
+        .from('program_assignments')
+        .select(`
+          *,
+          programs!fk_program_assignments_program_id (
+            *,
+            program_weeks!fk_program_weeks_program_id (
+              *,
+              program_days!fk_program_days_week_id (
+                *,
+                program_blocks!fk_program_blocks_day_id (
+                  *,
+                  program_exercises!fk_program_exercises_block_id (
+                    *,
+                    exercises!fk_program_exercises_exercise_id (*)
+                  )
+                )
+              )
+            )
+          ),
+          app_users!fk_program_assignments_user_id (*)
+        `)
+        .eq('coach_id', coachId)
+        .in('status', ['active', 'completed']);
+
+      if (assignError) throw assignError;
+      setActivePrograms((assignments || []) as unknown as EnrichedAssignment[]);
+    } catch (error: any) {
+      console.error('Error fetching coach programs:', error);
+      toast.error(`Σφάλμα φόρτωσης προγραμμάτων coach`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [coachId]);
+
   useEffect(() => {
     if (isAdmin() && !coachId) {
       toast.info('Επιλέξτε coach (coachId) για να δείτε coach προγράμματα');
@@ -46,47 +85,44 @@ const CoachActiveProgramsContent = () => {
       return;
     }
 
-    const fetchCoachPrograms = async () => {
-      if (!coachId) return;
-
-      try {
-        const { data: assignments, error: assignError } = await supabase
-          .from('program_assignments')
-          .select(`
-            *,
-            programs!fk_program_assignments_program_id (
-              *,
-              program_weeks!fk_program_weeks_program_id (
-                *,
-                program_days!fk_program_days_week_id (
-                  *,
-                  program_blocks!fk_program_blocks_day_id (
-                    *,
-                    program_exercises!fk_program_exercises_block_id (
-                      *,
-                      exercises!fk_program_exercises_exercise_id (*)
-                    )
-                  )
-                )
-              )
-            ),
-            app_users!fk_program_assignments_user_id (*)
-          `)
-          .eq('coach_id', coachId)
-          .in('status', ['active', 'completed']);
-
-        if (assignError) throw assignError;
-        setActivePrograms((assignments || []) as unknown as EnrichedAssignment[]);
-      } catch (error: any) {
-        console.error('Error fetching coach programs:', error);
-        toast.error(`Σφάλμα φόρτωσης προγραμμάτων coach`);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchCoachPrograms();
-  }, [coachId, isAdmin, navigate]);
+  }, [coachId, isAdmin, navigate, fetchCoachPrograms]);
+
+  const activeProgramsRef = React.useRef(activePrograms);
+  activeProgramsRef.current = activePrograms;
+
+  const loadCompletions = useCallback(async () => {
+    const programs = activeProgramsRef.current;
+    if (programs.length === 0) return;
+    
+    try {
+      const assignmentIds = programs.map(p => p.id);
+      
+      const { data, error } = await supabase
+        .from('workout_completions')
+        .select('*')
+        .in('assignment_id', assignmentIds)
+        .order('scheduled_date', { ascending: false });
+
+      if (error) throw error;
+      setWorkoutCompletions(data || []);
+    } catch (error) {
+      console.error('❌ Error loading workout completions:', error);
+    }
+  }, []);
+
+  // Realtime subscriptions for live updates
+  useRealtimePrograms({
+    onProgramsChange: () => {
+      console.log('📡 CoachActivePrograms: Programs changed - refetching...');
+      fetchCoachPrograms();
+    },
+    onAssignmentsChange: () => {
+      console.log('📡 CoachActivePrograms: Assignments/completions changed - refreshing...');
+      loadCompletions();
+      setRealtimeKey(Date.now() + Math.random());
+    },
+  });
 
   useEffect(() => {
     workoutStatusService.markMissedWorkoutsForPastDates().catch(console.error);
@@ -121,28 +157,6 @@ const CoachActiveProgramsContent = () => {
     return assignment.training_dates.includes(todayStr);
   });
 
-  const activeProgramsRef = React.useRef(activePrograms);
-  activeProgramsRef.current = activePrograms;
-
-  const loadCompletions = useCallback(async () => {
-    const programs = activeProgramsRef.current;
-    if (programs.length === 0) return;
-    
-    try {
-      const assignmentIds = programs.map(p => p.id);
-      
-      const { data, error } = await supabase
-        .from('workout_completions')
-        .select('*')
-        .in('assignment_id', assignmentIds)
-        .order('scheduled_date', { ascending: false });
-
-      if (error) throw error;
-      setWorkoutCompletions(data || []);
-    } catch (error) {
-      console.error('❌ Error loading workout completions:', error);
-    }
-  }, []);
 
   useEffect(() => {
     if (activePrograms.length > 0) {
