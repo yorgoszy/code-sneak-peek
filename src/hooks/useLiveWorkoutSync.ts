@@ -13,6 +13,7 @@ export const liveWorkoutSync = {
     scheduledDate: string,
     userId: string
   ) {
+    console.log('🔴 LiveSync: markInProgress called', { assignmentId, scheduledDate, userId });
     try {
       // Check if record exists
       const { data: existing } = await supabase

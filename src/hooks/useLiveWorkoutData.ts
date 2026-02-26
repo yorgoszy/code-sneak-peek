@@ -45,10 +45,10 @@ export const useLiveWorkoutData = (assignmentIds: string[]) => {
     }
   }, []);
 
-  // Initial fetch
+  // Initial fetch + re-fetch when IDs change
   useEffect(() => {
     fetchLiveWorkouts();
-  }, [assignmentIds.length]);
+  }, [assignmentIds.join(',')]);
 
   // Realtime subscription for workout_completions changes
   useEffect(() => {
