@@ -198,73 +198,57 @@ export const useWorkoutState = (
     }
   }, [program, selectedDate, getCurrentDayNumber]);
 
-  // Load checked exercises and remote status from DB
-  useEffect(() => {
+  // Shared function to fetch workout state from DB
+  const fetchWorkoutState = useCallback(async () => {
     if (!program || !selectedDate) return;
     const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
-    const loadCheckedExercises = async () => {
-      try {
-        const { data } = await supabase
-          .from('workout_completions')
-          .select('checked_exercises, status, start_time')
-          .eq('assignment_id', program.id)
-          .eq('scheduled_date', scheduledDate)
-          .maybeSingle();
-        
-        // Set remote workout status
-        if (data?.status === 'in_progress') {
-          setRemoteInProgress(true);
-          setRemoteStartTime(data.start_time);
-        } else {
-          setRemoteInProgress(false);
-          setRemoteStartTime(null);
-        }
-        
-        if (data?.checked_exercises && Array.isArray(data.checked_exercises) && data.checked_exercises.length > 0) {
-          const loaded: Record<string, number> = {};
-          // Use 999 as sentinel so isExerciseComplete (count >= totalSets) always returns true
-          (data.checked_exercises as string[]).forEach((id: string) => { loaded[id] = 999; });
-          setExerciseCompletions(loaded);
-        }
-      } catch (error) {
-        console.error('Error loading checked exercises:', error);
+    try {
+      const { data } = await supabase
+        .from('workout_completions')
+        .select('checked_exercises, status, start_time')
+        .eq('assignment_id', program.id)
+        .eq('scheduled_date', scheduledDate)
+        .maybeSingle();
+      
+      if (data?.status === 'in_progress') {
+        setRemoteInProgress(true);
+        setRemoteStartTime(data.start_time);
+      } else {
+        setRemoteInProgress(false);
+        setRemoteStartTime(null);
       }
-    };
-    loadCheckedExercises();
+      
+      if (data?.checked_exercises && Array.isArray(data.checked_exercises) && data.checked_exercises.length > 0) {
+        const loaded: Record<string, number> = {};
+        (data.checked_exercises as string[]).forEach((id: string) => { loaded[id] = 999; });
+        setExerciseCompletions(loaded);
+      } else if (!data) {
+        setExerciseCompletions({});
+      }
+    } catch (error) {
+      console.error('Error fetching workout state:', error);
+    }
   }, [program?.id, selectedDate]);
 
-  // Subscribe to realtime changes for checked_exercises AND status (admin sees user updates live)
+  // Initial load + polling every 3s for reliable cross-device sync
+  useEffect(() => {
+    if (!program || !selectedDate) return;
+    
+    // Initial fetch
+    fetchWorkoutState();
+    
+    // Poll every 3 seconds as fallback for realtime failures
+    const pollInterval = setInterval(() => {
+      fetchWorkoutState();
+    }, 3000);
+    
+    return () => clearInterval(pollInterval);
+  }, [program?.id, selectedDate, fetchWorkoutState]);
+
+  // Subscribe to realtime changes for instant updates (supplements polling)
   useEffect(() => {
     if (!program || !selectedDate) return;
     const scheduledDate = format(selectedDate, 'yyyy-MM-dd');
-    
-    // Function to fetch current state from DB
-    const fetchCurrentState = async () => {
-      try {
-        const { data } = await supabase
-          .from('workout_completions')
-          .select('checked_exercises, status, start_time')
-          .eq('assignment_id', program.id)
-          .eq('scheduled_date', scheduledDate)
-          .maybeSingle();
-        
-        if (data?.status === 'in_progress') {
-          setRemoteInProgress(true);
-          setRemoteStartTime(data.start_time);
-        } else {
-          setRemoteInProgress(false);
-          setRemoteStartTime(null);
-        }
-        
-        if (data?.checked_exercises && Array.isArray(data.checked_exercises) && data.checked_exercises.length > 0) {
-          const loaded: Record<string, number> = {};
-          (data.checked_exercises as string[]).forEach((id: string) => { loaded[id] = 999; });
-          setExerciseCompletions(loaded);
-        }
-      } catch (error) {
-        console.error('Error re-fetching workout state:', error);
-      }
-    };
     
     const channel = supabase
       .channel(`live-exercises-${program.id}-${scheduledDate}-${Date.now()}`)
@@ -273,11 +257,9 @@ export const useWorkoutState = (
         schema: 'public',
         table: 'workout_completions'
       }, (payload) => {
-        // Handle DELETE events (e.g. cancellation clears the record)
         if (payload.eventType === 'DELETE') {
           const oldData = payload.old as any;
           if (oldData?.assignment_id === program.id) {
-            console.log('🔴 LIVE: Workout record deleted (cancelled)');
             setRemoteInProgress(false);
             setRemoteStartTime(null);
             setExerciseCompletions({});
@@ -286,39 +268,25 @@ export const useWorkoutState = (
         }
         
         const newData = payload.new as any;
-        // Filter in callback: only process events for this assignment+date
         if (newData?.assignment_id !== program.id || newData?.scheduled_date !== scheduledDate) {
           return;
         }
         
-        console.log('🟢 LIVE: workout_completions change detected', payload.eventType, newData.status, newData.checked_exercises);
-        
-        // Update remote status
         if (newData.status === 'in_progress') {
           setRemoteInProgress(true);
           setRemoteStartTime(newData.start_time);
-        } else if (newData.status === 'completed') {
-          setRemoteInProgress(false);
-          setRemoteStartTime(null);
         } else {
           setRemoteInProgress(false);
           setRemoteStartTime(null);
         }
         
-        // Update checked exercises
         if (newData.checked_exercises && Array.isArray(newData.checked_exercises)) {
           const live: Record<string, number> = {};
           (newData.checked_exercises as string[]).forEach((id: string) => { live[id] = 999; });
           setExerciseCompletions(live);
         }
       })
-      .subscribe((status) => {
-        console.log('📡 Realtime subscription status:', status, 'for', program.id);
-        if (status === 'SUBSCRIBED') {
-          // Re-fetch to catch any events between initial load and subscription becoming active
-          fetchCurrentState();
-        }
-      });
+      .subscribe();
     return () => { 
       supabase.removeChannel(channel);
     };
