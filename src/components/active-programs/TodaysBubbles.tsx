@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CheckCircle } from "lucide-react";
 import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
 import { MinimizedWorkoutBubble } from '@/components/active-programs/calendar/MinimizedWorkoutBubble';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+import type { LiveWorkoutData } from '@/hooks/useLiveWorkoutData';
 
 interface TodaysBubblesProps {
   programsForToday: EnrichedAssignment[];
@@ -13,6 +14,7 @@ interface TodaysBubblesProps {
   onProgramClick: (assignment: EnrichedAssignment) => void;
   openAssignmentIds?: Set<string>;
   onBubbleRestore?: (assignmentId: string) => void;
+  liveWorkouts?: LiveWorkoutData[];
 }
 
 export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
@@ -21,10 +23,19 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   todayStr,
   onProgramClick,
   openAssignmentIds = new Set(),
-  onBubbleRestore
+  onBubbleRestore,
+  liveWorkouts = []
 }) => {
   const { bubbles, setSuppressRender, removeBubble } = useMinimizedBubbles();
   const { activeWorkouts } = useMultipleWorkouts();
+  
+  // Timer for live elapsed time computation
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (liveWorkouts.length === 0) return;
+    const interval = setInterval(() => setTick(t => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, [liveWorkouts.length]);
 
   // Suppress the context's built-in rendering - we handle it here
   useEffect(() => {
@@ -131,11 +142,20 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
           const isCompleted = status === 'completed';
           const isActive = isDialogOpen(assignment.id);
           
-          // Check if this workout is currently in progress via MultipleWorkoutsContext
+          // Check if this workout is currently in progress via MultipleWorkoutsContext (local)
           const workoutId = `${assignment.id}-${todayStr}`;
           const activeWorkout = activeWorkouts.find(w => w.id === workoutId);
-          const isInProgress = activeWorkout?.workoutInProgress || false;
-          const elapsedTime = activeWorkout?.elapsedTime || 0;
+          let isInProgress = activeWorkout?.workoutInProgress || false;
+          let elapsedTime = activeWorkout?.elapsedTime || 0;
+          
+          // Also check live data from DB (cross-device)
+          const liveWorkout = liveWorkouts.find(
+            lw => lw.assignment_id === assignment.id && lw.scheduled_date === todayStr
+          );
+          if (liveWorkout && liveWorkout.start_time && !isInProgress) {
+            isInProgress = true;
+            elapsedTime = Math.floor((Date.now() - new Date(liveWorkout.start_time).getTime()) / 1000);
+          }
 
           return (
             <MinimizedWorkoutBubble

@@ -7614,6 +7614,7 @@ export type Database = {
         Row: {
           actual_duration_minutes: number | null
           assignment_id: string
+          checked_exercises: Json | null
           completed_date: string | null
           created_at: string
           day_number: number
@@ -7634,6 +7635,7 @@ export type Database = {
         Insert: {
           actual_duration_minutes?: number | null
           assignment_id: string
+          checked_exercises?: Json | null
           completed_date?: string | null
           created_at?: string
           day_number: number
@@ -7654,6 +7656,7 @@ export type Database = {
         Update: {
           actual_duration_minutes?: number | null
           assignment_id?: string
+          checked_exercises?: Json | null
           completed_date?: string | null
           created_at?: string
           day_number?: number
