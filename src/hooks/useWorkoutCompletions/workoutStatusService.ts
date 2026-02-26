@@ -104,10 +104,10 @@ export const workoutStatusService = {
             const weekNumber = Math.floor(dateIndex / 7) + 1;
             const dayNumber = (dateIndex % 7) + 1;
 
-            // Δημιούργησε νέο record - use upsert with ignoreDuplicates to avoid trigger conflicts
+            // Δημιούργησε νέο record - use plain insert, skip duplicates silently
             const { error: insertError } = await supabase
               .from('workout_completions')
-              .upsert({
+              .insert({
                 assignment_id: assignment.id,
                 user_id: assignment.user_id,
                 program_id: assignment.program_id,
@@ -118,14 +118,11 @@ export const workoutStatusService = {
                 status_color: 'red',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
-              }, {
-                onConflict: 'assignment_id,scheduled_date',
-                ignoreDuplicates: true
               });
 
             if (insertError) {
-              // Silently skip duplicate errors - they're expected
-              if (insertError.code !== '23505') {
+              // Silently skip duplicate/constraint errors - they're expected
+              if (insertError.code !== '23505' && insertError.code !== '21000') {
                 console.error('❌ Error creating missed workout:', insertError);
               }
             } else {
