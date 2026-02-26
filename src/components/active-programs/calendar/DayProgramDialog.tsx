@@ -39,6 +39,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const [isMinimized, setIsMinimized] = useState(false);
   const bubbleIdRef = useRef<string>('');
   const isClosingRef = useRef(false);
+  const scrollPositionRef = useRef<number>(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const { addBubble, removeBubble, updateBubble } = useMinimizedBubbles();
   const { getWorkoutCompletions } = useWorkoutCompletions();
@@ -171,6 +173,10 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   const dayProgram = getDayProgram();
   const handleMinimize = () => {
+    // Save scroll position before minimizing
+    if (scrollContainerRef.current) {
+      scrollPositionRef.current = scrollContainerRef.current.scrollTop;
+    }
     const id = `bubble-${program.id}-${format(selectedDate, 'yyyy-MM-dd')}`;
     bubbleIdRef.current = id;
     setIsMinimized(true);
@@ -184,6 +190,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
       onRestore: () => {
         setIsMinimized(false);
         removeBubble(id);
+        // Restore scroll position after React re-renders
+        requestAnimationFrame(() => {
+          if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollPositionRef.current;
+          }
+        });
       },
     });
     onMinimize?.();
@@ -261,7 +273,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             }}
           />
 
-          <div className="pt-12 pb-2 overflow-y-auto flex-1 space-y-2">
+          <div ref={scrollContainerRef} className="pt-12 pb-2 overflow-y-auto flex-1 space-y-2">
             {dayProgram ? (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
