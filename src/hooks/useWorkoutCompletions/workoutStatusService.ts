@@ -104,10 +104,10 @@ export const workoutStatusService = {
             const weekNumber = Math.floor(dateIndex / 7) + 1;
             const dayNumber = (dateIndex % 7) + 1;
 
-            // Δημιούργησε νέο record με upsert για να αποφύγουμε duplicates
+            // Δημιούργησε νέο record
             const { error: insertError } = await supabase
               .from('workout_completions')
-              .upsert({
+              .insert({
                 assignment_id: assignment.id,
                 user_id: assignment.user_id,
                 program_id: assignment.program_id,
@@ -118,9 +118,6 @@ export const workoutStatusService = {
                 status_color: 'red',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
-              }, {
-                onConflict: 'assignment_id,scheduled_date',
-                ignoreDuplicates: false
               });
 
             if (insertError) {
@@ -129,8 +126,8 @@ export const workoutStatusService = {
               createdCount++;
               console.log(`✅ Created missed workout for ${date}`);
             }
-          } else if (existingCompletion.status !== 'completed' && existingCompletion.status !== 'missed') {
-            // Ενημέρωση του υπάρχοντος record
+          } else if (existingCompletion.status !== 'completed' && existingCompletion.status !== 'missed' && existingCompletion.status !== 'in_progress') {
+            // Ενημέρωση του υπάρχοντος record (αλλά ΟΧΙ αν είναι in_progress)
             const { error: updateError } = await supabase
               .from('workout_completions')
               .update({
@@ -144,7 +141,6 @@ export const workoutStatusService = {
               console.error('❌ Error updating workout to missed:', updateError);
             } else {
               updatedCount++;
-              console.log(`✅ Updated workout ${existingCompletion.id} to missed`);
             }
           }
         }
