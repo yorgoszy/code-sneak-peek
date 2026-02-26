@@ -42,7 +42,7 @@ export const ExerciseInteractionHandler: React.FC<ExerciseInteractionHandlerProp
   };
 
   const handleSetClick = (exerciseId: string, totalSets: number, event: React.MouseEvent) => {
-    event.stopPropagation();
+    if (event?.stopPropagation) event.stopPropagation();
     
     if (!workoutInProgress) {
       console.log('⚠️ Πρέπει να ξεκινήσεις την προπόνηση πρώτα!');
