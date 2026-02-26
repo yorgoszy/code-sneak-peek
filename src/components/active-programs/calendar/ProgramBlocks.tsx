@@ -35,6 +35,8 @@ interface ProgramBlocksProps {
 export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   blocks,
   workoutInProgress,
+  isExerciseComplete,
+  onSetClick,
   onVideoClick
 }) => {
   const [openBlocks, setOpenBlocks] = useState<Record<string, boolean>>(() => {
@@ -45,14 +47,12 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
     return initial;
   });
 
-  const [checkedExercises, setCheckedExercises] = useState<Record<string, boolean>>({});
-
-  const toggleExerciseCheck = useCallback((exerciseId: string) => {
-    setCheckedExercises(prev => ({
-      ...prev,
-      [exerciseId]: !prev[exerciseId]
-    }));
-  }, []);
+  const handleToggleCheck = useCallback((exerciseId: string) => {
+    if (workoutInProgress && onSetClick) {
+      // Trigger a set click which syncs to DB via liveWorkoutSync
+      onSetClick(exerciseId, 1, {} as React.MouseEvent);
+    }
+  }, [workoutInProgress, onSetClick]);
 
   if (!blocks || blocks.length === 0) {
     return (
@@ -139,8 +139,8 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                         exerciseNumber={exerciseIndex + 1}
                         onVideoClick={onVideoClick}
                         workoutInProgress={workoutInProgress}
-                        isChecked={!!checkedExercises[exercise.id]}
-                        onToggleCheck={toggleExerciseCheck}
+                        isChecked={isExerciseComplete ? isExerciseComplete(exercise.id, exercise.sets || 1) : false}
+                        onToggleCheck={handleToggleCheck}
                       />
                     ))}
                   </div>
