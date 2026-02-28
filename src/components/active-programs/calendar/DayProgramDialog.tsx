@@ -88,6 +88,39 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     };
   }, [removeBubble]);
 
+  // Auto-minimize when isOpen becomes false (e.g. another bubble clicked)
+  const wasOpenRef = useRef(isOpen);
+  useEffect(() => {
+    if (wasOpenRef.current && !isOpen && !isMinimized && !isClosingRef.current && program && selectedDate) {
+      // Inline minimize logic (handleMinimize is defined after early return)
+      if (scrollContainerRef.current) {
+        scrollPositionRef.current = scrollContainerRef.current.scrollTop;
+      }
+      const id = `bubble-${program.id}-${format(selectedDate, 'yyyy-MM-dd')}`;
+      bubbleIdRef.current = id;
+      setIsMinimized(true);
+      addBubble({
+        id,
+        athleteName: program.app_users?.name || 'Αθλητής',
+        avatarUrl: program.app_users?.avatar_url,
+        photoUrl: program.app_users?.photo_url,
+        workoutInProgress,
+        elapsedTime,
+        onRestore: () => {
+          setIsMinimized(false);
+          removeBubble(id);
+          requestAnimationFrame(() => {
+            if (scrollContainerRef.current) {
+              scrollContainerRef.current.scrollTop = scrollPositionRef.current;
+            }
+          });
+        },
+      });
+      onMinimize?.();
+    }
+    wasOpenRef.current = isOpen;
+  }, [isOpen]);
+
   if (!program || !selectedDate) return null;
 
   const handleRequestComplete = () => {
