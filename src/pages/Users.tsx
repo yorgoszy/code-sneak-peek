@@ -136,7 +136,7 @@ const Users = () => {
       const { data: adminUsersData, error: adminError } = await supabase
         .from('app_users')
         .select('*')
-        .eq('coach_id', ADMIN_COACH_ID)
+        .or(`coach_id.eq.${ADMIN_COACH_ID},coach_id.is.null`)
         .order('created_at', { ascending: false });
       
       if (adminError) {
