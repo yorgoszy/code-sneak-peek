@@ -37,6 +37,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const [upcomingTests, setUpcomingTests] = useState<{count: number, daysLeft: number} | null>(null);
   const [upcomingCompetitions, setUpcomingCompetitions] = useState<{count: number, daysLeft: number} | null>(null);
   const [upcomingWorkouts, setUpcomingWorkouts] = useState<number>(0);
+  const [hasActiveNutrition, setHasActiveNutrition] = useState<boolean>(false);
   
   const { data: allActivePrograms } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletionsCache();
@@ -53,6 +54,23 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const enabledWithoutSub = new Set(['shop', 'edit-profile']);
   const isWidgetDisabled = (tabKey: string) => !hasActiveSubscription && !enabledWithoutSub.has(tabKey);
   const disabledClass = 'opacity-40 pointer-events-none cursor-not-allowed';
+
+  // Fetch active nutrition assignment
+  useEffect(() => {
+    const fetchNutrition = async () => {
+      if (!user?.id) return;
+      const today = new Date().toISOString().split('T')[0];
+      const { data } = await supabase
+        .from('nutrition_assignments')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .gte('end_date', today)
+        .limit(1);
+      setHasActiveNutrition((data?.length || 0) > 0);
+    };
+    fetchNutrition();
+  }, [user?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -885,7 +903,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </button>
 
-          {/* Διατροφή Widget - δίπλα από Ημέρες Προπόνησης */}
+          {/* Διατροφή Widget - αχνό αν δεν υπάρχει ενεργό διατροφικό πρόγραμμα */}
           <button 
             onClick={() => {
               if (setActiveTab) {
@@ -894,11 +912,11 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 navigate(`/dashboard/user-profile/${user.id}?tab=nutrition`);
               }
             }}
-            disabled={isWidgetDisabled('nutrition')}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('nutrition') ? disabledClass : ''}`}
+            disabled={isWidgetDisabled('nutrition') || !hasActiveNutrition}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${(isWidgetDisabled('nutrition') || !hasActiveNutrition) ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <Utensils className={`${isWidgetDisabled('nutrition') ? 'text-gray-400' : 'text-black'} ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <Utensils className={`${(isWidgetDisabled('nutrition') || !hasActiveNutrition) ? 'text-gray-400' : 'text-black'} ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               <span className="text-black"> </span>
