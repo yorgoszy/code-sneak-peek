@@ -906,17 +906,18 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           {/* Διατροφή Widget - αχνό αν δεν υπάρχει ενεργό διατροφικό πρόγραμμα */}
           <button 
             onClick={() => {
+              if (!hasActiveNutrition && !isWidgetDisabled('nutrition')) return;
               if (setActiveTab) {
                 setActiveTab('nutrition');
               } else {
                 navigate(`/dashboard/user-profile/${user.id}?tab=nutrition`);
               }
             }}
-            disabled={isWidgetDisabled('nutrition') || !hasActiveNutrition}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${(isWidgetDisabled('nutrition') || !hasActiveNutrition) ? disabledClass : ''}`}
+            disabled={isWidgetDisabled('nutrition')}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('nutrition') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <Utensils className={`${(isWidgetDisabled('nutrition') || !hasActiveNutrition) ? 'text-gray-400' : 'text-black'} ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+              <Utensils className={`${(!hasActiveNutrition || isWidgetDisabled('nutrition')) ? 'text-gray-300' : 'text-black'} ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
             </div>
             <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
               <span className="text-black"> </span>
