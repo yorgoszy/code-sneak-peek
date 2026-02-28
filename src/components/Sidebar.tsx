@@ -517,7 +517,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     { type: 'separator' },
     { 
       icon: Calendar, 
-      label: "Προγράμματα", 
+      label: "Program Builder", 
       path: "/dashboard/programs",
       badge: null
     },
