@@ -1151,56 +1151,58 @@ export const SubscriptionTypeManager: React.FC = () => {
               />
             </div>
             
-            {/* Booking Sections Selection */}
-            <div>
-              <Label htmlFor="bookingSections">Τμήματα (προαιρετικό)</Label>
-              <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-none p-2">
-                <div className="flex items-center space-x-2">
-                  <input
-                    id="allSections"
-                    type="checkbox"
-                    checked={selectedSections.length === 0}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedSections([]);
-                      }
-                    }}
-                    className="h-4 w-4 text-[#00ffba] focus:ring-[#00ffba] border-gray-300 rounded"
-                    disabled={saving}
-                  />
-                  <Label htmlFor="allSections" className="text-sm font-medium">
-                    Όλα τα τμήματα (προεπιλογή)
-                  </Label>
-                </div>
-                {bookingSections.map((section) => (
-                  <div key={section.id} className="flex items-center space-x-2">
+            {/* Booking Sections Selection - Hidden for coach_shop_only subscriptions */}
+            {!editingType?.coach_shop_only && (
+              <div>
+                <Label htmlFor="bookingSections">Τμήματα (προαιρετικό)</Label>
+                <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-none p-2">
+                  <div className="flex items-center space-x-2">
                     <input
-                      id={`section-${section.id}`}
+                      id="allSections"
                       type="checkbox"
-                      checked={selectedSections.includes(section.id)}
+                      checked={selectedSections.length === 0}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedSections([...selectedSections, section.id]);
-                        } else {
-                          setSelectedSections(selectedSections.filter(id => id !== section.id));
+                          setSelectedSections([]);
                         }
                       }}
                       className="h-4 w-4 text-[#00ffba] focus:ring-[#00ffba] border-gray-300 rounded"
                       disabled={saving}
                     />
-                    <Label htmlFor={`section-${section.id}`} className="text-sm">
-                      {section.name}
-                      {section.description && (
-                        <span className="text-gray-500 ml-1">- {section.description}</span>
-                      )}
+                    <Label htmlFor="allSections" className="text-sm font-medium">
+                      Όλα τα τμήματα (προεπιλογή)
                     </Label>
                   </div>
-                ))}
+                  {bookingSections.map((section) => (
+                    <div key={section.id} className="flex items-center space-x-2">
+                      <input
+                        id={`section-${section.id}`}
+                        type="checkbox"
+                        checked={selectedSections.includes(section.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedSections([...selectedSections, section.id]);
+                          } else {
+                            setSelectedSections(selectedSections.filter(id => id !== section.id));
+                          }
+                        }}
+                        className="h-4 w-4 text-[#00ffba] focus:ring-[#00ffba] border-gray-300 rounded"
+                        disabled={saving}
+                      />
+                      <Label htmlFor={`section-${section.id}`} className="text-sm">
+                        {section.name}
+                        {section.description && (
+                          <span className="text-gray-500 ml-1">- {section.description}</span>
+                        )}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Αν δεν επιλέξετε κανένα τμήμα, η συνδρομή θα ισχύει για όλα τα τμήματα
+                </p>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Αν δεν επιλέξετε κανένα τμήμα, η συνδρομή θα ισχύει για όλα τα τμήματα
-              </p>
-            </div>
+            )}
             
             <div className="flex items-center space-x-2">
               <input
