@@ -63,6 +63,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
+  // Federation users should never stay on generic user-profile routes
+  if (userProfile?.role === 'federation') {
+    const isUserProfileRoute =
+      location.pathname.startsWith('/dashboard/user-profile/') ||
+      location.pathname.startsWith('/user/');
+
+    if (isUserProfileRoute) {
+      console.log('🔒 ProtectedRoute: Federation user on profile route, redirecting to federation overview');
+      return <Navigate to="/dashboard/federation-overview" replace />;
+    }
+  }
+
   // If admin access is required but user is not admin, redirect appropriately
   if (requireAdmin && !isAdmin()) {
     console.log('🔒 ProtectedRoute: Not admin, redirecting based on role');
