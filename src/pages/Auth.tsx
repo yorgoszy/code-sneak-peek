@@ -40,7 +40,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
-  const { userProfile, isCoach, isAdmin, loading: roleLoading } = useRoleCheck();
+  const { userProfile, isCoach, isAdmin, isFederation, loading: roleLoading } = useRoleCheck();
   
   // Get language from URL or use translations hook
   const { language, translations: t, toggleLanguage } = useTranslations();
@@ -99,7 +99,10 @@ const Auth = () => {
       localStorage.setItem('preferredLanguage', language);
       
       // Redirect based on role
-      if (isCoach() && !isAdmin()) {
+      if (isFederation() && !isAdmin()) {
+        console.log('🔐 Auth: Federation detected, redirecting to federation-overview');
+        navigate("/dashboard/federation-overview", { replace: true });
+      } else if (isCoach() && !isAdmin()) {
         console.log('🔐 Auth: Coach detected, redirecting to coach-overview');
         navigate("/dashboard/coach-overview", { replace: true });
       } else {
@@ -107,7 +110,7 @@ const Auth = () => {
         navigate("/dashboard", { replace: true });
       }
     }
-  }, [isAuthenticated, loading, roleLoading, userProfile, isCoach, isAdmin, navigate, language]);
+  }, [isAuthenticated, loading, roleLoading, userProfile, isCoach, isAdmin, isFederation, navigate, language]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

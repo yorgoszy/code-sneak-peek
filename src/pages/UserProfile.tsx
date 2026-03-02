@@ -31,7 +31,7 @@ const UserProfile = () => {
   const isMobile = useIsMobile();
   const sidebarRef = useRef<{ refreshOffers: () => void }>(null);
 
-  const { isAdmin } = useRoleCheck();
+  const { isAdmin, isFederation, userProfile: loggedInProfile, loading: roleLoading } = useRoleCheck();
   const [isCoachManagedUser, setIsCoachManagedUser] = useState(false);
   
   // Εμφάνιση sidebar βάσει του ρόλου του ΠΡΟΒΑΛΛΟΜΕΝΟΥ χρήστη, όχι του logged-in user
@@ -133,6 +133,10 @@ const UserProfile = () => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
+  }
+
+  if (!roleLoading && isFederation() && loggedInProfile?.id === userId) {
+    return <Navigate to="/dashboard/federation-overview" replace />;
   }
 
   if (!userProfile) {
