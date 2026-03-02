@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye, Mail, Menu, Users as UsersIcon, UserCheck } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Search, Filter, Eye, Mail, Menu, Users as UsersIcon, UserCheck, Building2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { matchesSearchTerm } from "@/lib/utils";
 import {
@@ -88,6 +88,9 @@ const Users = () => {
   
   // Coach role users state (χρήστες με role='coach')
   const [coachRoleUsers, setCoachRoleUsers] = useState<UserWithSubscription[]>([]);
+  
+  // Federation users state (χρήστες με role='federation')
+  const [federationUsers, setFederationUsers] = useState<UserWithSubscription[]>([]);
 
   // Check for tablet size
   useEffect(() => {
@@ -183,6 +186,21 @@ const Users = () => {
         const coachRoleWithSubscription = await fetchSubscriptionStatuses(coachRoleData || []);
         setCoachRoleUsers(coachRoleWithSubscription);
         console.log('✅ Coach role users fetched:', coachRoleWithSubscription.length);
+      }
+
+      // Fetch federation users (users with role = 'federation')
+      const { data: federationData, error: federationError } = await supabase
+        .from('app_users')
+        .select('*')
+        .eq('role', 'federation')
+        .order('created_at', { ascending: false });
+      
+      if (federationError) {
+        console.error('❌ Error fetching federation users:', federationError);
+      } else {
+        const federationWithSubscription = await fetchSubscriptionStatuses(federationData || []);
+        setFederationUsers(federationWithSubscription);
+        console.log('✅ Federation users fetched:', federationWithSubscription.length);
       }
 
       // Fetch subscription status for admin users
@@ -510,6 +528,8 @@ const Users = () => {
         return 'bg-purple-100 text-purple-800';
       case 'parent':
         return 'bg-orange-100 text-orange-800';
+      case 'federation':
+        return 'bg-[#cb8954]/20 text-[#cb8954]';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -651,6 +671,10 @@ const Users = () => {
                 <TabsTrigger value="coach-users" className="rounded-none flex items-center gap-2">
                   <UsersIcon className="h-4 w-4" />
                   Coach Users ({coachUsers.length})
+                </TabsTrigger>
+                <TabsTrigger value="federation" className="rounded-none flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Federation ({federationUsers.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -1472,6 +1496,140 @@ const Users = () => {
                                   <span>Τηλέφωνο: {user.phone || '-'}</span>
                                   <span>Εγγραφή: {formatDate(user.created_at)}</span>
                                 </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Federation Tab */}
+              <TabsContent value="federation" className="space-y-6 mt-4">
+                <Card>
+                  <CardHeader className="pb-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <CardTitle className="text-base lg:text-lg font-semibold">
+                        Ομοσπονδίες ({federationUsers.length})
+                      </CardTitle>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-4 mt-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Αναζήτηση ομοσπονδιών..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingUsers ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-600">Φόρτωση...</p>
+                      </div>
+                    ) : federationUsers.filter(u => 
+                        matchesSearchTerm(u.name, searchTerm) || matchesSearchTerm(u.email, searchTerm)
+                      ).length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-600">
+                          {searchTerm ? "Δεν βρέθηκαν ομοσπονδίες" : "Δεν υπάρχουν ομοσπονδίες"}
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Desktop Table */}
+                        <div className="hidden lg:block">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Όνομα</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Τηλέφωνο</TableHead>
+                                <TableHead>Κατάσταση</TableHead>
+                                <TableHead>Εγγραφή</TableHead>
+                                <TableHead>Ενέργειες</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {federationUsers
+                                .filter(u => matchesSearchTerm(u.name, searchTerm) || matchesSearchTerm(u.email, searchTerm))
+                                .map((user) => (
+                                <TableRow key={user.id}>
+                                  <TableCell className="font-medium">
+                                    <div className="flex items-center space-x-3">
+                                      <Avatar className="w-8 h-8">
+                                        <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
+                                        <AvatarFallback>
+                                          {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span>{user.name}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>{user.email}</TableCell>
+                                  <TableCell>{user.phone || '-'}</TableCell>
+                                  <TableCell>
+                                    <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(user.subscription_status)}`}>
+                                      {user.subscription_status}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>{formatDate(user.created_at)}</TableCell>
+                                  <TableCell>
+                                    <div className="flex space-x-1">
+                                      <Button variant="outline" size="sm" className="rounded-none" onClick={() => handleViewUser(user)} title="Προβολή">
+                                        <Eye className="h-3 w-3" />
+                                      </Button>
+                                      <Button variant="outline" size="sm" className="rounded-none" onClick={() => handleEditUser(user)} title="Επεξεργασία">
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                      <Button variant="outline" size="sm" className="rounded-none text-red-600 hover:text-red-700" onClick={() => handleDeleteUser(user)} title="Διαγραφή">
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="lg:hidden space-y-3">
+                          {federationUsers
+                            .filter(u => matchesSearchTerm(u.name, searchTerm) || matchesSearchTerm(u.email, searchTerm))
+                            .map((user) => (
+                            <Card key={user.id} className="p-4 border border-gray-200">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <Avatar className="w-10 h-10 flex-shrink-0">
+                                  <AvatarImage src={user.photo_url || user.avatar_url} alt={user.name} />
+                                  <AvatarFallback>
+                                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="font-medium text-sm text-gray-900 truncate">{user.name}</h3>
+                                  <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                                  <span className="px-2 py-1 text-xs rounded bg-[#cb8954]/20 text-[#cb8954] mt-1 inline-block">
+                                    federation
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex space-x-2 justify-end">
+                                <Button variant="outline" size="sm" className="rounded-none p-2" onClick={() => handleViewUser(user)}>
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                                <Button variant="outline" size="sm" className="rounded-none p-2" onClick={() => handleEditUser(user)}>
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button variant="outline" size="sm" className="rounded-none text-red-600 hover:text-red-700 p-2" onClick={() => handleDeleteUser(user)}>
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
                               </div>
                             </Card>
                           ))}
