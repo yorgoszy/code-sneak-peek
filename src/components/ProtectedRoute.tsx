@@ -72,6 +72,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       return <Navigate to="/dashboard/coach-overview" replace />;
     }
 
+    // Federations should land on federation overview
+    if (userProfile?.role === 'federation') {
+      return <Navigate to="/dashboard/federation-overview" replace />;
+    }
+
     // Redirect other roles to user's own profile if they have one
     if (userProfile?.id) {
       return <Navigate to={`/dashboard/user-profile/${userProfile.id}`} replace />;

@@ -50,6 +50,7 @@ export const DashboardContainer = () => {
 
   // Check if user is coach
   const isCoach = userProfile?.role === 'coach';
+  const isFederation = userProfile?.role === 'federation';
 
   // Redirect non-admin and non-coach users to their personal profile
   useEffect(() => {
@@ -73,9 +74,12 @@ export const DashboardContainer = () => {
         console.log('🎭 DashboardContainer: Role check result - Admin:', adminStatus, 'Coach:', isCoach);
         
         // Allow admin to access dashboard, redirect coach to coach-overview, redirect others to profile
-        if (!adminStatus && !isCoach) {
+        if (!adminStatus && !isCoach && !isFederation) {
           console.log('🔄 DashboardContainer: Redirecting non-admin/non-coach user to profile:', userProfile.id);
           navigate(`/dashboard/user-profile/${userProfile.id}`);
+        } else if (isFederation && !adminStatus) {
+          console.log('🔄 DashboardContainer: Redirecting federation user to federation-overview');
+          navigate('/dashboard/federation-overview', { replace: true });
         } else if (isCoach && !adminStatus) {
           console.log('🔄 DashboardContainer: Redirecting coach user to coach-overview');
           navigate('/dashboard/coach-overview', { replace: true });
@@ -103,7 +107,7 @@ export const DashboardContainer = () => {
   }
 
   // If we're still checking for redirect or if user is not admin/coach and we have userProfile, don't render yet
-  if (!hasCheckedRedirect || (!isAdmin() && !isCoach && userProfile?.id)) {
+  if (!hasCheckedRedirect || (!isAdmin() && !isCoach && !isFederation && userProfile?.id)) {
     console.log('🔄 DashboardContainer: Waiting for redirect check or redirecting...');
     return <CustomLoadingScreen />;
   }

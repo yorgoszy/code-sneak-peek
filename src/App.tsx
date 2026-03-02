@@ -95,6 +95,10 @@ import JumpPage from "@/pages/Dashboard/JumpPage";
 import BarVelocityPage from "@/pages/Dashboard/BarVelocityPage";
 import HRVPage from "@/pages/Dashboard/HRVPage";
 import HealthCardsPage from "@/pages/Dashboard/HealthCardsPage";
+import FederationOverview from "@/pages/Dashboard/FederationOverview";
+import FederationClubs from "@/pages/Dashboard/FederationClubs";
+import FederationAthletes from "@/pages/Dashboard/FederationAthletes";
+import FederationAnalytics from "@/pages/Dashboard/FederationAnalytics";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -210,6 +214,12 @@ function App() {
                       <Route path="/dashboard/annual-planning" element={<ProtectedRoute><AnnualPlanningWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />
                       <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
+
+                      {/* Federation routes */}
+                      <Route path="/dashboard/federation-overview" element={<ProtectedRoute><FederationOverview /></ProtectedRoute>} />
+                      <Route path="/dashboard/federation-clubs" element={<ProtectedRoute><FederationClubs /></ProtectedRoute>} />
+                      <Route path="/dashboard/federation-athletes" element={<ProtectedRoute><FederationAthletes /></ProtectedRoute>} />
+                      <Route path="/dashboard/federation-analytics" element={<ProtectedRoute><FederationAnalytics /></ProtectedRoute>} />
 
                       {/* Protected user routes */}
                       <Route path="/meeting/:roomId" element={<ProtectedRoute><MeetingRoom /></ProtectedRoute>} />
