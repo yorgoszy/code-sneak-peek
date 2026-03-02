@@ -10,21 +10,9 @@ if ('serviceWorker' in navigator) {
   const updateSW = registerSW({
     immediate: true,
     onNeedRefresh() {
-      console.log('New content available - will reload when user returns to tab');
-      // If tab is already hidden, update immediately
-      if (document.hidden) {
-        updateSW(true);
-        return;
-      }
-      // Otherwise wait for user to leave and come back
-      const handleVisibility = () => {
-        if (document.hidden) {
-          // User left the tab - apply the update now
-          document.removeEventListener('visibilitychange', handleVisibility);
-          updateSW(true);
-        }
-      };
-      document.addEventListener('visibilitychange', handleVisibility);
+      console.log('New content available - applying update immediately');
+      // Apply updates immediately to avoid users being stuck on stale UI/roles
+      updateSW(true);
     },
     onOfflineReady() {
       console.log('App ready to work offline');
