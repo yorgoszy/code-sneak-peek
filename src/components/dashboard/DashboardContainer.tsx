@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
+import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu } from "lucide-react";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
@@ -51,6 +52,11 @@ export const DashboardContainer = () => {
   // Check if user is coach
   const isCoach = userProfile?.role === 'coach';
   const isFederation = userProfile?.role === 'federation';
+
+  // Re-check redirect whenever profile/role changes (e.g. role updated live)
+  useEffect(() => {
+    setHasCheckedRedirect(false);
+  }, [userProfile?.id, userProfile?.role]);
 
   // Redirect non-admin and non-coach users to their personal profile
   useEffect(() => {
@@ -116,10 +122,10 @@ export const DashboardContainer = () => {
     await signOut();
   };
 
-  console.log('✅ DashboardContainer: Rendering dashboard for', isCoach ? 'coach' : 'admin', 'user');
+  console.log('✅ DashboardContainer: Rendering dashboard for', isFederation ? 'federation' : isCoach ? 'coach' : 'admin', 'user');
 
   // Choose the appropriate sidebar based on role
-  const SidebarComponent = isCoach ? CoachSidebar : Sidebar;
+  const SidebarComponent = isFederation ? FederationSidebar : isCoach ? CoachSidebar : Sidebar;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
