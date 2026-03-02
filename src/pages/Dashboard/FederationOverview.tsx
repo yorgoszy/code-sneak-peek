@@ -92,7 +92,7 @@ const FederationOverview = () => {
               <Card className="rounded-none">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Σύλλογοι</CardTitle>
-                  <Building2 className="h-4 w-4 text-[#cb8954]" />
+                  <Building2 className="h-4 w-4 text-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.clubs}</div>
@@ -102,7 +102,7 @@ const FederationOverview = () => {
               <Card className="rounded-none">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Αθλητές</CardTitle>
-                  <Users className="h-4 w-4 text-[#00ffba]" />
+                  <Users className="h-4 w-4 text-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.athletes}</div>
@@ -112,7 +112,7 @@ const FederationOverview = () => {
               <Card className="rounded-none">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Ενεργά Προγράμματα</CardTitle>
-                  <Activity className="h-4 w-4 text-[#aca097]" />
+                  <Activity className="h-4 w-4 text-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.programs}</div>

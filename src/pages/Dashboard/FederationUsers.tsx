@@ -245,7 +245,7 @@ const FederationUsers = () => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input placeholder="Αναζήτηση συλλόγου..." value={clubSearch} onChange={(e) => setClubSearch(e.target.value)} className="pl-10 rounded-none" />
                   </div>
-                  <Button onClick={() => setAddDialogOpen(true)} className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black" size="sm">
+                  <Button onClick={() => setAddDialogOpen(true)} className="rounded-none bg-foreground hover:bg-foreground/90 text-background" size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Προσθήκη Συλλόγου
                   </Button>
@@ -268,7 +268,7 @@ const FederationUsers = () => {
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
                               <AvatarImage src={club.club?.photo_url || ""} />
-                              <AvatarFallback className="bg-[#cb8954]/20 text-[#cb8954] rounded-none">
+                              <AvatarFallback className="bg-muted text-foreground rounded-none">
                                 {club.club?.name?.charAt(0) || "S"}
                               </AvatarFallback>
                             </Avatar>
@@ -331,7 +331,7 @@ const FederationUsers = () => {
                           <div className="flex items-center gap-3">
                             <Avatar className="h-9 w-9">
                               <AvatarImage src={athlete.photo_url || athlete.avatar_url || ""} />
-                              <AvatarFallback className="rounded-full bg-[#00ffba]/20 text-[#00ffba] text-xs">
+                              <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">
                                 {athlete.name?.charAt(0) || "A"}
                               </AvatarFallback>
                             </Avatar>
@@ -374,7 +374,7 @@ const FederationUsers = () => {
                   className="w-full flex items-center gap-3 p-3 border border-border rounded-none hover:bg-muted transition-colors text-left">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={coach.photo_url || ""} />
-                    <AvatarFallback className="rounded-full bg-[#cb8954]/20 text-[#cb8954] text-xs">{coach.name?.charAt(0) || "C"}</AvatarFallback>
+                    <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{coach.name?.charAt(0) || "C"}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">{coach.name}</p>

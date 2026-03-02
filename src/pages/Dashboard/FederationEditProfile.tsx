@@ -130,7 +130,7 @@ const FederationEditProfile = () => {
                     <Label>Σημειώσεις / Περιγραφή</Label>
                     <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-none" rows={4} placeholder="Περιγραφή ομοσπονδίας, website, ΑΦΜ κτλ." />
                   </div>
-                  <Button onClick={handleSaveProfile} disabled={saving} className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black">
+                  <Button onClick={handleSaveProfile} disabled={saving} className="rounded-none bg-foreground hover:bg-foreground/90 text-background">
                     <Save className="h-4 w-4 mr-2" />
                     {saving ? "Αποθήκευση..." : "Αποθήκευση"}
                   </Button>

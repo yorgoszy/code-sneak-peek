@@ -189,21 +189,21 @@ const FederationProgress = () => {
               <Card className="rounded-none">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Σύνολο Συλλόγων</CardTitle>
-                  <Building2 className="h-4 w-4 text-[#cb8954]" />
+                  <Building2 className="h-4 w-4 text-foreground" />
                 </CardHeader>
                 <CardContent><div className="text-2xl font-bold">{clubStats.length}</div></CardContent>
               </Card>
               <Card className="rounded-none">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Σύνολο Αθλητών</CardTitle>
-                  <Users className="h-4 w-4 text-[#00ffba]" />
+                  <Users className="h-4 w-4 text-foreground" />
                 </CardHeader>
                 <CardContent><div className="text-2xl font-bold">{totalAthletes}</div></CardContent>
               </Card>
               <Card className="rounded-none">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Ενεργά Προγράμματα</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-[#aca097]" />
+                  <TrendingUp className="h-4 w-4 text-foreground" />
                 </CardHeader>
                 <CardContent><div className="text-2xl font-bold">{totalPrograms}</div></CardContent>
               </Card>
@@ -277,7 +277,7 @@ const FederationProgress = () => {
                         <div key={athlete.id} className="flex items-center gap-3 p-3 border border-border rounded-none hover:bg-muted/50 transition-colors">
                           <Avatar className="h-9 w-9">
                             <AvatarImage src={athlete.photo_url || athlete.avatar_url || ""} />
-                            <AvatarFallback className="rounded-full bg-[#00ffba]/20 text-[#00ffba] text-xs">
+                            <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">
                               {athlete.name?.charAt(0) || "A"}
                             </AvatarFallback>
                           </Avatar>
@@ -289,7 +289,7 @@ const FederationProgress = () => {
                             <div className="text-right hidden sm:block">
                               <p className="text-xs font-medium">{athlete.completedWorkouts}/{athlete.totalWorkouts}</p>
                               <div className="w-20 h-2 bg-muted rounded-full overflow-hidden mt-1">
-                                <div className="h-full bg-[#00ffba] transition-all" style={{ width: `${progressPct}%` }} />
+                                <div className="h-full bg-foreground transition-all" style={{ width: `${progressPct}%` }} />
                               </div>
                             </div>
                             <Button variant="outline" size="sm" className="rounded-none"
