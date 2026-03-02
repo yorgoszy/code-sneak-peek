@@ -52,9 +52,6 @@ export const FederationSidebar = ({
 
   const headerContent = (
     <div className="flex items-center space-x-3">
-      <div className="w-10 h-10 rounded-none flex items-center justify-center bg-[#cb8954]/20">
-        <Building2 className="w-6 h-6 text-[#cb8954]" />
-      </div>
       {!isCollapsed && (
         <div>
           <h2 className="font-bold text-sm text-foreground">Ομοσπονδία</h2>
@@ -74,7 +71,7 @@ export const FederationSidebar = ({
           onClick={() => navigate(item.path)}
           className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors rounded-none ${
             isActive(item.path)
-              ? "bg-[#00ffba]/10 text-[#00ffba] font-medium border-r-2 border-[#00ffba]"
+              ? "bg-black/10 text-foreground font-medium border-r-2 border-foreground"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
