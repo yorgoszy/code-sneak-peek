@@ -1,10 +1,10 @@
 import {
   Home,
-  Building2,
   Users,
-  BarChart3,
-  LogOut,
+  TrendingUp,
   Settings,
+  LogOut,
+  Building2,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -32,19 +32,19 @@ export const FederationSidebar = ({
       path: "/dashboard/federation-overview",
     },
     {
-      icon: Building2,
-      label: "Σύλλογοι",
-      path: "/dashboard/federation-clubs",
-    },
-    {
       icon: Users,
-      label: "Αθλητές",
-      path: "/dashboard/federation-athletes",
+      label: "Χρήστες",
+      path: "/dashboard/federation-users",
     },
     {
-      icon: BarChart3,
-      label: "Στατιστικά",
-      path: "/dashboard/federation-analytics",
+      icon: TrendingUp,
+      label: "Πρόοδος",
+      path: "/dashboard/federation-progress",
+    },
+    {
+      icon: Settings,
+      label: "Επεξεργασία Προφίλ",
+      path: "/dashboard/federation-profile",
     },
   ];
 

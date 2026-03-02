@@ -96,9 +96,9 @@ import BarVelocityPage from "@/pages/Dashboard/BarVelocityPage";
 import HRVPage from "@/pages/Dashboard/HRVPage";
 import HealthCardsPage from "@/pages/Dashboard/HealthCardsPage";
 import FederationOverview from "@/pages/Dashboard/FederationOverview";
-import FederationClubs from "@/pages/Dashboard/FederationClubs";
-import FederationAthletes from "@/pages/Dashboard/FederationAthletes";
-import FederationAnalytics from "@/pages/Dashboard/FederationAnalytics";
+import FederationUsers from "@/pages/Dashboard/FederationUsers";
+import FederationProgress from "@/pages/Dashboard/FederationProgress";
+import FederationEditProfile from "@/pages/Dashboard/FederationEditProfile";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -217,9 +217,9 @@ function App() {
 
                       {/* Federation routes */}
                       <Route path="/dashboard/federation-overview" element={<ProtectedRoute><FederationOverview /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-clubs" element={<ProtectedRoute><FederationClubs /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-athletes" element={<ProtectedRoute><FederationAthletes /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-analytics" element={<ProtectedRoute><FederationAnalytics /></ProtectedRoute>} />
+                      <Route path="/dashboard/federation-users" element={<ProtectedRoute><FederationUsers /></ProtectedRoute>} />
+                      <Route path="/dashboard/federation-progress" element={<ProtectedRoute><FederationProgress /></ProtectedRoute>} />
+                      <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
 
                       {/* Protected user routes */}
                       <Route path="/meeting/:roomId" element={<ProtectedRoute><MeetingRoom /></ProtectedRoute>} />
