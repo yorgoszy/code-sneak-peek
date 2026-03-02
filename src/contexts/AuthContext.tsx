@@ -99,8 +99,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(newSession?.user ?? null);
         setLoading(false);
 
-        if (event === 'SIGNED_IN' && newSession?.user?.id) {
-          // Re-fetch roles on sign in
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && newSession?.user?.id) {
+          // Re-fetch roles on sign in / token refresh / profile update
           setRolesLoading(true);
           fetchUserRole(newSession.user.id);
         } else if (event === 'SIGNED_OUT') {
@@ -115,6 +115,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, [fetchUserRole]);
+
+  // Keep role/profile in sync when app_users row changes or tab regains focus
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`app-users-role-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'app_users',
+          filter: `auth_user_id=eq.${user.id}`,
+        },
+        () => {
+          setRolesLoading(true);
+          fetchUserRole(user.id);
+        }
+      )
+      .subscribe();
+
+    const handleWindowFocus = () => {
+      fetchUserRole(user.id);
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, fetchUserRole]);
 
   const signOut = useCallback(async () => {
     setUser(null);
