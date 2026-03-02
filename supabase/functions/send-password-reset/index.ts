@@ -127,13 +127,18 @@ serve(async (req) => {
       }
       
       // If still no auth user, create one
+      // IMPORTANT: We generate a random password so Supabase does NOT trigger
+      // the default "confirm signup" / welcome email flow.
       if (!authUserId) {
         console.log("🔄 Creating new auth user for existing app_user...");
+        const randomPassword = crypto.randomUUID() + crypto.randomUUID();
         const { data: authUser, error: createError } = await supabase.auth.admin.createUser({
           email: normalizedEmail,
+          password: randomPassword,
           email_confirm: true,
           user_metadata: {
-            app_user_id: appUser.id
+            app_user_id: appUser.id,
+            created_via: 'password_reset_flow'
           }
         });
         
