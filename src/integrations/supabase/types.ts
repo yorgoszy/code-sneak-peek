@@ -2814,6 +2814,51 @@ export type Database = {
           },
         ]
       }
+      federation_clubs: {
+        Row: {
+          club_id: string
+          created_at: string
+          federation_id: string
+          id: string
+          joined_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          federation_id: string
+          id?: string
+          joined_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          federation_id?: string
+          id?: string
+          joined_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_clubs_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_clubs_federation_id_fkey"
+            columns: ["federation_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fms_exercise_alternatives: {
         Row: {
           alternative_exercise_id: string

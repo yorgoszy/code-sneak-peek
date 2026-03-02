@@ -36,6 +36,7 @@ export const RoleStatusFields = ({
             <SelectItem value="athlete">Athlete</SelectItem>
             <SelectItem value="general">General</SelectItem>
             <SelectItem value="parent">Parent</SelectItem>
+            <SelectItem value="federation">Federation</SelectItem>
           </SelectContent>
         </Select>
       </div>
