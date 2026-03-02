@@ -569,7 +569,12 @@ const Auth = () => {
 
       // Determine redirect based on role
       const isCoachUser = userProfileData.role === 'coach';
-      const redirectPath = isCoachUser ? "/dashboard/coach-overview" : "/dashboard";
+      const isFederationUser = userProfileData.role === 'federation';
+      const redirectPath = isFederationUser 
+        ? "/dashboard/federation-overview" 
+        : isCoachUser 
+          ? "/dashboard/coach-overview" 
+          : "/dashboard";
       
       console.log('🔐 Login successful, redirecting to:', redirectPath);
       
