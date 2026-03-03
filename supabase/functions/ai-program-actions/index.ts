@@ -486,6 +486,334 @@ serve(async (req) => {
       );
     }
 
+    // ===================== SUBSCRIPTION MANAGEMENT =====================
+    if (action === "create_subscription") {
+      const { user_id: rawUserId, subscription_type_id, start_date, notes } = body;
+      
+      if (!rawUserId || !subscription_type_id) {
+        throw new Error("Λείπουν απαραίτητα πεδία (user_id, subscription_type_id)");
+      }
+
+      const resolvedUserId = await resolveUserId(rawUserId);
+      if (!resolvedUserId) throw new Error(`Δεν βρέθηκε χρήστης: ${rawUserId}`);
+
+      // Get subscription type to calculate end_date
+      const { data: subType, error: stError } = await supabase
+        .from("subscription_types")
+        .select("*")
+        .eq("id", subscription_type_id)
+        .single();
+      
+      if (stError || !subType) throw new Error("Δεν βρέθηκε ο τύπος συνδρομής");
+
+      const startDate = start_date || new Date().toISOString().split('T')[0];
+      const startDateObj = new Date(startDate);
+      const endDateObj = new Date(startDateObj);
+      endDateObj.setMonth(endDateObj.getMonth() + (subType.duration_months || 1));
+      endDateObj.setDate(endDateObj.getDate() - 1);
+      const endDate = endDateObj.toISOString().split('T')[0];
+
+      // Check user's coach_id to determine which table to use
+      const { data: userData } = await supabase
+        .from("app_users")
+        .select("id, name, coach_id, role")
+        .eq("id", resolvedUserId)
+        .single();
+
+      // Check if the coach is a 'coach' role user
+      let useCoachSubscriptions = false;
+      if (userData?.coach_id) {
+        const { data: coachData } = await supabase
+          .from("app_users")
+          .select("role")
+          .eq("id", userData.coach_id)
+          .single();
+        useCoachSubscriptions = coachData?.role === 'coach';
+      }
+
+      let subscription;
+      if (useCoachSubscriptions) {
+        // Find the coach_user record
+        const { data: coachUser } = await supabase
+          .from("coach_users")
+          .select("id")
+          .eq("coach_id", userData!.coach_id!)
+          .eq("email", (await supabase.from("app_users").select("email").eq("id", resolvedUserId).single()).data?.email || '')
+          .maybeSingle();
+
+        const { data: sub, error: subError } = await supabase
+          .from("coach_subscriptions")
+          .insert({
+            coach_id: userData!.coach_id!,
+            coach_user_id: coachUser?.id || null,
+            user_id: resolvedUserId,
+            subscription_type_id,
+            start_date: startDate,
+            end_date: endDate,
+            status: "active",
+            is_paid: false,
+            notes: notes || "Δημιουργήθηκε από AI βοηθό",
+          })
+          .select("*")
+          .single();
+        
+        if (subError) throw new Error(`Σφάλμα δημιουργίας συνδρομής: ${subError.message}`);
+        subscription = sub;
+      } else {
+        const { data: sub, error: subError } = await supabase
+          .from("user_subscriptions")
+          .insert({
+            user_id: resolvedUserId,
+            subscription_type_id,
+            start_date: startDate,
+            end_date: endDate,
+            status: "active",
+            notes: notes || "Δημιουργήθηκε από AI βοηθό",
+          })
+          .select("*")
+          .single();
+        
+        if (subError) throw new Error(`Σφάλμα δημιουργίας συνδρομής: ${subError.message}`);
+        subscription = sub;
+      }
+
+      // Update user subscription status
+      await supabase
+        .from("app_users")
+        .update({ subscription_status: "active" })
+        .eq("id", resolvedUserId);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          subscription,
+          message: `Η συνδρομή "${subType.name}" δημιουργήθηκε για τον ${userData?.name || rawUserId}! (${startDate} - ${endDate})`,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (action === "pause_subscription") {
+      const { subscription_id, table } = body;
+      if (!subscription_id) throw new Error("Λείπει το subscription_id");
+
+      const tableName = table === 'coach_subscriptions' ? 'coach_subscriptions' : 'user_subscriptions';
+      
+      const { data: sub } = await supabase
+        .from(tableName)
+        .select("*")
+        .eq("id", subscription_id)
+        .single();
+      
+      if (!sub) throw new Error("Δεν βρέθηκε η συνδρομή");
+
+      const daysRemaining = Math.max(0, Math.ceil((new Date(sub.end_date).getTime() - Date.now()) / (1000 * 3600 * 24)));
+
+      const { error } = await supabase
+        .from(tableName)
+        .update({
+          is_paused: true,
+          paused_at: new Date().toISOString(),
+          paused_days_remaining: daysRemaining,
+        })
+        .eq("id", subscription_id);
+
+      if (error) throw new Error(`Σφάλμα παύσης: ${error.message}`);
+
+      // Update user status
+      await supabase
+        .from("app_users")
+        .update({ subscription_status: "inactive" })
+        .eq("id", sub.user_id);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: `Η συνδρομή τέθηκε σε παύση! (${daysRemaining} ημέρες υπόλοιπο)`,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (action === "resume_subscription") {
+      const { subscription_id, table } = body;
+      if (!subscription_id) throw new Error("Λείπει το subscription_id");
+
+      const tableName = table === 'coach_subscriptions' ? 'coach_subscriptions' : 'user_subscriptions';
+      
+      const { data: sub } = await supabase
+        .from(tableName)
+        .select("*")
+        .eq("id", subscription_id)
+        .single();
+      
+      if (!sub) throw new Error("Δεν βρέθηκε η συνδρομή");
+
+      const newEndDate = new Date();
+      newEndDate.setDate(newEndDate.getDate() + (sub.paused_days_remaining || 0));
+
+      const { error } = await supabase
+        .from(tableName)
+        .update({
+          is_paused: false,
+          paused_at: null,
+          end_date: newEndDate.toISOString().split('T')[0],
+          paused_days_remaining: null,
+        })
+        .eq("id", subscription_id);
+
+      if (error) throw new Error(`Σφάλμα επαναφοράς: ${error.message}`);
+
+      await supabase
+        .from("app_users")
+        .update({ subscription_status: "active" })
+        .eq("id", sub.user_id);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: `Η συνδρομή επαναφέρθηκε! Νέα λήξη: ${newEndDate.toISOString().split('T')[0]}`,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (action === "renew_subscription") {
+      const { subscription_id, table } = body;
+      if (!subscription_id) throw new Error("Λείπει το subscription_id");
+
+      const tableName = table === 'coach_subscriptions' ? 'coach_subscriptions' : 'user_subscriptions';
+      
+      const { data: sub } = await supabase
+        .from(tableName)
+        .select("*, subscription_types(*)")
+        .eq("id", subscription_id)
+        .single();
+      
+      if (!sub) throw new Error("Δεν βρέθηκε η συνδρομή");
+
+      const newStartDate = new Date(sub.end_date);
+      newStartDate.setDate(newStartDate.getDate() + 1);
+      const newEndDate = new Date(newStartDate);
+      newEndDate.setMonth(newEndDate.getMonth() + (sub.subscription_types?.duration_months || 1));
+      newEndDate.setDate(newEndDate.getDate() - 1);
+
+      const insertData: any = {
+        user_id: sub.user_id,
+        subscription_type_id: sub.subscription_type_id,
+        start_date: newStartDate.toISOString().split('T')[0],
+        end_date: newEndDate.toISOString().split('T')[0],
+        status: "active",
+        is_paid: false,
+      };
+
+      if (tableName === 'coach_subscriptions') {
+        insertData.coach_id = sub.coach_id;
+        insertData.coach_user_id = sub.coach_user_id;
+      }
+
+      const { data: newSub, error } = await supabase
+        .from(tableName)
+        .insert(insertData)
+        .select("*")
+        .single();
+
+      if (error) throw new Error(`Σφάλμα ανανέωσης: ${error.message}`);
+
+      await supabase
+        .from("app_users")
+        .update({ subscription_status: "active" })
+        .eq("id", sub.user_id);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          subscription: newSub,
+          message: `Η συνδρομή ανανεώθηκε! (${newStartDate.toISOString().split('T')[0]} - ${newEndDate.toISOString().split('T')[0]})`,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ===================== BOOKING MANAGEMENT =====================
+    if (action === "create_booking") {
+      const { user_id: rawUserId, section_id, booking_date, booking_time, booking_type, notes } = body;
+      
+      if (!rawUserId || !section_id || !booking_date || !booking_time) {
+        throw new Error("Λείπουν απαραίτητα πεδία (user_id, section_id, booking_date, booking_time)");
+      }
+
+      const resolvedUserId = await resolveUserId(rawUserId);
+      if (!resolvedUserId) throw new Error(`Δεν βρέθηκε χρήστης: ${rawUserId}`);
+
+      // Check capacity
+      const { data: section } = await supabase
+        .from("booking_sections")
+        .select("max_capacity, name")
+        .eq("id", section_id)
+        .single();
+
+      const { count: existingBookings } = await supabase
+        .from("booking_sessions")
+        .select("*", { count: "exact", head: true })
+        .eq("section_id", section_id)
+        .eq("booking_date", booking_date)
+        .eq("booking_time", booking_time)
+        .neq("status", "cancelled");
+
+      if (section && existingBookings !== null && existingBookings >= section.max_capacity) {
+        throw new Error(`Η ώρα ${booking_time} στο ${section.name} είναι πλήρης (${existingBookings}/${section.max_capacity})`);
+      }
+
+      const { data: booking, error: bookError } = await supabase
+        .from("booking_sessions")
+        .insert({
+          user_id: resolvedUserId,
+          section_id,
+          booking_date,
+          booking_time,
+          booking_type: booking_type || "gym_visit",
+          status: "confirmed",
+          notes: notes || "Κράτηση από AI βοηθό",
+        })
+        .select("*")
+        .single();
+
+      if (bookError) throw new Error(`Σφάλμα κράτησης: ${bookError.message}`);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          booking,
+          message: `Η κράτηση δημιουργήθηκε! ${section?.name || ''} - ${booking_date} ${booking_time}`,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (action === "cancel_booking") {
+      const { booking_id } = body;
+      if (!booking_id) throw new Error("Λείπει το booking_id");
+
+      const { error } = await supabase
+        .from("booking_sessions")
+        .update({
+          status: "cancelled",
+          cancelled_at: new Date().toISOString(),
+        })
+        .eq("id", booking_id);
+
+      if (error) throw new Error(`Σφάλμα ακύρωσης: ${error.message}`);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Η κράτηση ακυρώθηκε!",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     throw new Error(`Άγνωστη ενέργεια: ${action}`);
   } catch (error) {
     console.error("AI Program Action error:", error);

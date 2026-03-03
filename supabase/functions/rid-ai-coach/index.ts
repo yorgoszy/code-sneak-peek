@@ -4696,6 +4696,69 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
 - Δώσε συγκεκριμένες συμβουλές βασισμένες στα δεδομένα
 - Χρησιμοποίησε percentages και trends για clarity
 
+💳 ΔΥΝΑΤΟΤΗΤΑ ΔΙΑΧΕΙΡΙΣΗΣ ΣΥΝΔΡΟΜΩΝ:
+Μπορείς να δημιουργείς, παύεις, επαναφέρεις και ανανεώνεις συνδρομές!
+
+ΔΙΑΘΕΣΙΜΟΙ ΤΥΠΟΙ ΣΥΝΔΡΟΜΩΝ:
+- HYPERATHLETES (1μ): ef18bb03-4981-4a8e-a02c-62f19e9e5a6f - €70
+- HYPERATHLETES (3μ): 5f7f13a1-70ea-445a-a819-edb8020a6f15 - €210
+- HYPERATHLETES (12μ): 7d2f00cd-56ec-45a2-9d9c-82ce9b767fcd - €650
+- HYPERGYM (1μ): 7f3a1c02-437d-4b24-93bb-3a6676870d49 - €120
+- HYPERGYM (12μ): 643e51f3-2837-400d-ae89-a0e8e13ec988 - €750
+- HYPERGYM 25% (1μ): a6a27586-bc1e-446a-b276-779b6c3b95c0 - €90
+- HYPERKIDS (1μ): 9c90c778-bcb2-4b46-9aaf-402e8deb9d85 - €60
+- HYPERsync (12μ): 9c46ca26-9837-4eb8-8ced-11e25ecf8388 - €690
+- 1 επίσκεψη: f5220303-1181-4e76-b4e0-eab1ddde1085 - €15
+- Personal training: b1b801de-b274-4e45-983d-d0829f10868f - €25
+- Videocall Session: 0d66f626-6584-46d2-ae46-0bbcc4c6b38b - €25
+
+ΠΑΡΑΔΕΙΓΜΑ - Δημιουργία συνδρομής:
+\`\`\`ai-action
+{"action":"create_subscription","user_id":"Γιάννης","subscription_type_id":"ef18bb03-4981-4a8e-a02c-62f19e9e5a6f","subscription_type_name":"HYPERATHLETES","start_date":"2026-03-03"}
+\`\`\`
+
+ΠΑΡΑΔΕΙΓΜΑ - Παύση συνδρομής (χρειάζεται subscription_id από τα δεδομένα):
+\`\`\`ai-action
+{"action":"pause_subscription","subscription_id":"uuid-here","table":"user_subscriptions","user_name":"Γιάννης"}
+\`\`\`
+
+ΠΑΡΑΔΕΙΓΜΑ - Επαναφορά συνδρομής:
+\`\`\`ai-action
+{"action":"resume_subscription","subscription_id":"uuid-here","table":"user_subscriptions","user_name":"Γιάννης"}
+\`\`\`
+
+ΠΑΡΑΔΕΙΓΜΑ - Ανανέωση συνδρομής:
+\`\`\`ai-action
+{"action":"renew_subscription","subscription_id":"uuid-here","table":"user_subscriptions","user_name":"Γιάννης"}
+\`\`\`
+
+📅 ΔΥΝΑΤΟΤΗΤΑ ΔΙΑΧΕΙΡΙΣΗΣ ΚΡΑΤΗΣΕΩΝ:
+Μπορείς να δημιουργείς και να ακυρώνεις κρατήσεις!
+
+ΔΙΑΘΕΣΙΜΑ ΤΜΗΜΑΤΑ:
+- Open Gym: c7cf36ab-47be-4727-94b7-dfbd25bb1d95
+- Small Group: bf6b085e-5dd4-4b31-969f-d3e3316e4e7a
+- Muay Thai 10+: e5001894-cccd-4c09-8fe8-d120c59a0727
+- Muay Thai αγωνιστικό: a51af86a-9a92-4479-8ee1-d16aa8a58819
+- Sport Support 10+: 65b64d67-aac4-4c82-8aff-81f50eff2fff
+- HYPERKIDS 7-10: ba89af8c-1990-45b3-8ab2-bacef14cacc5
+- HYPERKIDS 4-7: 5d4f36ef-cca6-4090-8b79-748b19de19c1
+- Muay Thai hybrid: 83b57acf-5997-43b2-8aed-c45d0efc1171
+- Βιντεοκλήσεις: 2c1198ed-baad-4d68-b1ed-fd00fa5a68d8
+
+ΠΑΡΑΔΕΙΓΜΑ - Δημιουργία κράτησης:
+\`\`\`ai-action
+{"action":"create_booking","user_id":"Γιάννης","section_id":"c7cf36ab-47be-4727-94b7-dfbd25bb1d95","section_name":"Open Gym","booking_date":"2026-03-05","booking_time":"10:00","booking_type":"gym_visit"}
+\`\`\`
+
+ΠΑΡΑΔΕΙΓΜΑ - Ακύρωση κράτησης:
+\`\`\`ai-action
+{"action":"cancel_booking","booking_id":"uuid-here"}
+\`\`\`
+
+⚠️ ΣΗΜΑΝΤΙΚΟ: Ο χρήστης θα πρέπει ΠΑΝΤΑ να επιβεβαιώσει κάθε ενέργεια πριν εκτελεστεί!
+Όταν θέλεις να εκτελέσεις ενέργεια, ΠΑΝΤΑ εξήγησε στον χρήστη ΤΙ θα κάνεις πριν βάλεις το ai-action block.
+
 🏋️ ΔΥΝΑΤΟΤΗΤΑ ΔΗΜΙΟΥΡΓΙΑΣ & ΑΝΑΘΕΣΗΣ ΠΡΟΓΡΑΜΜΑΤΩΝ:
 ${isAdmin ? `
 🔴 ADMIN MODE - ΠΛΗΡΗΣ ΕΛΕΓΧΟΣ ΑΝΑΘΕΣΕΩΝ:
