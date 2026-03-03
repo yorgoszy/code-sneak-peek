@@ -282,6 +282,13 @@ export const RidAiCoach = () => {
 
       // ✅ ΔΕΝ χρειάζεται reload - τα messages είναι ήδη στο state και αποθηκεύονται στη βάση από το edge function
       // Το reload προκαλούσε διπλασιασμό των μηνυμάτων
+      // 🔔 Notification αν ο χρήστης δεν βλέπει το component
+      if (document.hidden && assistantMessage.trim()) {
+        toast('💬 Ο RidAI απάντησε!', {
+          description: assistantMessage.substring(0, 100) + (assistantMessage.length > 100 ? '...' : ''),
+          duration: 8000,
+        });
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Σφάλμα κατά την αποστολή μηνύματος');

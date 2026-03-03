@@ -59,7 +59,13 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   const [isExecutingAction, setIsExecutingAction] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isOpenRef = useRef(isOpen);
   const { openDialog: openProgramBuilder, queueAction, executeAction } = useAIProgramBuilder();
+
+  // Keep ref in sync with prop
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -1076,6 +1082,14 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           msg.id === assistantMessageId ? { ...msg, content: finalVisibleResponse } : msg
         )
       );
+
+      // 🔔 Αν το dialog είναι κλειστό, δείξε notification
+      if (!isOpenRef.current && finalVisibleResponse.trim()) {
+        toast('💬 Ο RidAI απάντησε!', {
+          description: finalVisibleResponse.substring(0, 100) + (finalVisibleResponse.length > 100 ? '...' : ''),
+          duration: 8000,
+        });
+      }
 
       // Έλεγχος για AI actions στην πλήρη απάντηση
       await processAIActions(fullResponse);
