@@ -109,11 +109,19 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     }
   }, [isOpen, athleteId]);
 
+  const hasLoadedRef = useRef(false);
+  
   useEffect(() => {
-    if (isOpen && athleteId) {
+    if (isOpen && athleteId && !hasLoadedRef.current && !isLoading) {
+      hasLoadedRef.current = true;
       loadConversationHistory();
     }
   }, [isOpen, athleteId]);
+
+  // Reset loaded flag when athleteId changes
+  useEffect(() => {
+    hasLoadedRef.current = false;
+  }, [athleteId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
