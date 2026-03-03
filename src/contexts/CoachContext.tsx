@@ -11,14 +11,20 @@ const CoachContext = createContext<CoachContextType | undefined>(undefined);
 
 interface CoachProviderProps {
   children: React.ReactNode;
+  /** When provided, this coachId is used instead of the auto-detected one */
+  overrideCoachId?: string;
 }
 
-export const CoachProvider: React.FC<CoachProviderProps> = ({ children }) => {
+export const CoachProvider: React.FC<CoachProviderProps> = ({ children, overrideCoachId }) => {
   const { userProfile, isAdmin, isCoach, loading } = useRoleCheck();
   const [searchParams] = useSearchParams();
   const coachIdFromUrl = searchParams.get('coachId');
 
   const coachId = useMemo(() => {
+    // If an override is provided (e.g. from Federation), use it directly
+    if (overrideCoachId) {
+      return overrideCoachId;
+    }
     // Admin με coachId στο URL -> χρησιμοποιεί αυτό το coachId
     if (isAdmin() && coachIdFromUrl) {
       return coachIdFromUrl;
@@ -33,7 +39,7 @@ export const CoachProvider: React.FC<CoachProviderProps> = ({ children }) => {
     }
     // Fallback
     return null;
-  }, [isAdmin, isCoach, coachIdFromUrl, userProfile?.id]);
+  }, [overrideCoachId, isAdmin, isCoach, coachIdFromUrl, userProfile?.id]);
 
   const value = useMemo(() => ({
     coachId,
