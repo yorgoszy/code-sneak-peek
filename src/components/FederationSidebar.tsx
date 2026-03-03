@@ -5,11 +5,15 @@ import {
   Settings,
   LogOut,
   Building2,
+  MonitorPlay,
+  Brain,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useAuth } from "@/hooks/useAuth";
+import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 
 interface FederationSidebarProps {
   isCollapsed: boolean;
@@ -24,6 +28,7 @@ export const FederationSidebar = ({
   const location = useLocation();
   const { userProfile } = useRoleCheck();
   const { signOut } = useAuth();
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const menuItems = [
     {
@@ -40,6 +45,11 @@ export const FederationSidebar = ({
       icon: TrendingUp,
       label: "Πρόοδος",
       path: "/dashboard/federation-progress",
+    },
+    {
+      icon: MonitorPlay,
+      label: "Video Analysis",
+      path: "/dashboard/federation-video-analysis",
     },
     {
       icon: Settings,
@@ -79,6 +89,21 @@ export const FederationSidebar = ({
           {!isCollapsed && <span>{item.label}</span>}
         </button>
       ))}
+
+      {/* RidAI Βοηθός Button */}
+      <div className="my-2 h-px bg-border" />
+      <button
+        onClick={() => setIsAIChatOpen(true)}
+        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors rounded-none"
+      >
+        <Brain className="w-5 h-5 flex-shrink-0" />
+        {!isCollapsed && (
+          <div className="flex flex-col items-start min-w-0">
+            <span className="text-sm font-medium truncate">RidAI Βοηθός</span>
+            <span className="text-xs text-muted-foreground truncate">powered by hyperteam</span>
+          </div>
+        )}
+      </button>
     </div>
   );
 
@@ -95,12 +120,22 @@ export const FederationSidebar = ({
   );
 
   return (
-    <BaseSidebar
-      isCollapsed={isCollapsed}
-      setIsCollapsed={setIsCollapsed}
-      headerContent={headerContent}
-      navigationContent={navigationContent}
-      bottomContent={bottomContent}
-    />
+    <>
+      <BaseSidebar
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+        headerContent={headerContent}
+        navigationContent={navigationContent}
+        bottomContent={bottomContent}
+      />
+
+      <EnhancedAIChatDialog
+        isOpen={isAIChatOpen}
+        onClose={() => setIsAIChatOpen(false)}
+        athleteId={userProfile?.id}
+        athleteName={userProfile?.name}
+        athletePhotoUrl={userProfile?.photo_url}
+      />
+    </>
   );
 };
