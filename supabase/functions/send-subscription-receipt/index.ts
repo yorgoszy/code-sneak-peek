@@ -202,7 +202,7 @@ const generateGeneralReceiptHTML = (data: any) => {
         <div class="container">
             <div class="header">
                 <div class="header-left">
-                    <p><strong>HYPERKIDS</strong></p>
+                    <img src="https://hyperkids.lovable.app/images/hyperkids-logo-email.png" alt="HYPERKIDS" style="height: 40px; width: auto; margin-bottom: 8px; display: block;" />
                     <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
                     <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
                     <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
@@ -333,7 +333,7 @@ const generateReceiptHTML = (data: ReceiptData) => {
     <body>
         <div class="container">
             <div class="header">
-                <div class="logo">HYPERKIDS</div>
+                <img src="https://hyperkids.lovable.app/images/hyperkids-logo-email.png" alt="HYPERKIDS" style="height: 45px; width: auto; margin-bottom: 10px;" />
                 <p>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</p>
                 <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
                 <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
@@ -413,6 +413,38 @@ serve(async (req) => {
     const requestBody = await req.json()
     if (requestBody.type === 'receipt_notification') {
       return await handleReceiptNotification(requestBody)
+    }
+
+    // Test email endpoint
+    if (requestBody.type === 'test_email') {
+      const resendApiKey = Deno.env.get('RESEND_API_KEY')
+      if (!resendApiKey) {
+        return new Response(JSON.stringify({ error: 'Resend API key not configured' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      const resend = new Resend(resendApiKey)
+      const testHTML = generateGeneralReceiptHTML({
+        receiptNumber: 'TEST-001',
+        userName: 'Test User',
+        userEmail: requestBody.to,
+        customerName: 'Test User',
+        customerVat: null,
+        total: 5.00,
+        subtotal: 4.42,
+        vatAmount: 0.58,
+        issueDate: new Date().toISOString(),
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() + 30*24*60*60*1000).toISOString(),
+        invoiceMark: null,
+        description: 'ΔΟΚΙΜΑΣΤΙΚΟ',
+        items: []
+      })
+      const emailResponse = await resend.emails.send({
+        from: 'HYPERKIDS <noreply@hyperkids.gr>',
+        to: [requestBody.to],
+        subject: 'Δοκιμαστική Απόδειξη - HYPERKIDS',
+        html: testHTML,
+      })
+      return new Response(JSON.stringify({ success: true, emailId: emailResponse.id }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
