@@ -51,7 +51,8 @@ serve(async (req) => {
     const callerUserData = await callerUserResponse.json();
     const isAdmin = callerUserData[0]?.role === 'admin';
     const isCoach = callerUserData[0]?.role === 'coach';
-    const isAdminOrCoach = isAdmin || isCoach;
+    const isFederation = callerUserData[0]?.role === 'federation';
+    const isAdminOrCoach = isAdmin || isCoach || isFederation;
 
     // 🏋️ ΦΟΡΤΩΣΗ COACH DATA (Αθλητές και Συνδρομές Coach)
     let coachAthletesContext = '';
@@ -224,7 +225,277 @@ serve(async (req) => {
       }
     }
 
-    // 📦 ΦΟΡΤΩΣΗ SUBSCRIPTION STATUS ΤΟΥ ΧΡΗΣΤΗ
+    // 🏋️ COACH PROGRESS: Φόρτωση test data για τους αθλητές του coach (app_users)
+    let coachProgressContext = '';
+    if (isCoach && !targetUserId) {
+      console.log('📊 Coach mode: Loading progress data for coach athletes...');
+      
+      // Φόρτωση αθλητών του coach (app_users with coach_id)
+      const coachAthletesResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/app_users?coach_id=eq.${userId}&select=id,name,email&order=name.asc`,
+        {
+          headers: {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          }
+        }
+      );
+      const coachAthletes = await coachAthletesResponse.json();
+      
+      if (Array.isArray(coachAthletes) && coachAthletes.length > 0) {
+        const athleteIds = coachAthletes.map((a: any) => a.id);
+        coachProgressContext = `\n\n📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ COACH:\n`;
+        
+        for (const athlete of coachAthletes) {
+          coachProgressContext += `\n👤 ${athlete.name} (${athlete.email}):\n`;
+          
+          // Strength tests
+          try {
+            const strengthRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/strength_test_attempts?select=id,weight_kg,velocity_ms,exercise_id,exercises(name),strength_test_sessions!inner(user_id,test_date)&strength_test_sessions.user_id=eq.${athlete.id}&order=strength_test_sessions.test_date.desc&limit=20`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const strengthData = await strengthRes.json();
+            if (Array.isArray(strengthData) && strengthData.length > 0) {
+              coachProgressContext += '  🏋️ Force/Velocity:\n';
+              strengthData.slice(0, 10).forEach((t: any) => {
+                const date = t.strength_test_sessions?.[0]?.test_date || '';
+                coachProgressContext += `    - ${t.exercises?.name || '?'}: ${t.weight_kg}kg @ ${t.velocity_ms}m/s (${date})\n`;
+              });
+            }
+          } catch(e) { console.log('⚠️ Strength error for', athlete.name); }
+          
+          // Endurance tests
+          try {
+            const endRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/endurance_test_data?select=*,endurance_test_sessions!inner(user_id,test_date)&endurance_test_sessions.user_id=eq.${athlete.id}&order=created_at.desc&limit=5`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const endData = await endRes.json();
+            if (Array.isArray(endData) && endData.length > 0) {
+              coachProgressContext += '  🏃 Αντοχή:\n';
+              endData.forEach((t: any) => {
+                const parts = [];
+                if (t.vo2_max) parts.push(`VO2max: ${t.vo2_max}`);
+                if (t.mas_kmh) parts.push(`MAS: ${t.mas_kmh} km/h`);
+                if (t.push_ups) parts.push(`Push-ups: ${t.push_ups}`);
+                if (t.pull_ups) parts.push(`Pull-ups: ${t.pull_ups}`);
+                const date = t.endurance_test_sessions?.[0]?.test_date || t.created_at;
+                coachProgressContext += `    - ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})\n`;
+              });
+            }
+          } catch(e) { console.log('⚠️ Endurance error for', athlete.name); }
+          
+          // Jump tests
+          try {
+            const jumpRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/jump_test_data?select=*,jump_test_sessions!inner(user_id,test_date)&jump_test_sessions.user_id=eq.${athlete.id}&order=created_at.desc&limit=5`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const jumpData = await jumpRes.json();
+            if (Array.isArray(jumpData) && jumpData.length > 0) {
+              coachProgressContext += '  ⬆️ Άλματα:\n';
+              jumpData.forEach((t: any) => {
+                const parts = [];
+                if (t.counter_movement_jump) parts.push(`CMJ: ${t.counter_movement_jump}cm`);
+                if (t.non_counter_movement_jump) parts.push(`NCMJ: ${t.non_counter_movement_jump}cm`);
+                if (t.broad_jump) parts.push(`Broad: ${t.broad_jump}cm`);
+                const date = t.jump_test_sessions?.[0]?.test_date || t.created_at;
+                coachProgressContext += `    - ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})\n`;
+              });
+            }
+          } catch(e) { console.log('⚠️ Jump error for', athlete.name); }
+          
+          // Anthropometric tests
+          try {
+            const anthRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/anthropometric_test_data?select=*,anthropometric_test_sessions!inner(user_id,test_date)&anthropometric_test_sessions.user_id=eq.${athlete.id}&order=created_at.desc&limit=5`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const anthData = await anthRes.json();
+            if (Array.isArray(anthData) && anthData.length > 0) {
+              coachProgressContext += '  📏 Ανθρωπομετρικά:\n';
+              anthData.forEach((t: any) => {
+                const parts = [];
+                if (t.weight) parts.push(`Βάρος: ${t.weight}kg`);
+                if (t.body_fat_percentage) parts.push(`Λίπος: ${t.body_fat_percentage}%`);
+                if (t.muscle_mass_percentage) parts.push(`Μυϊκή: ${t.muscle_mass_percentage}%`);
+                const date = t.anthropometric_test_sessions?.[0]?.test_date || t.created_at;
+                coachProgressContext += `    - ${parts.join(', ')} (${new Date(date).toLocaleDateString('el-GR')})\n`;
+              });
+            }
+          } catch(e) { console.log('⚠️ Anthropometric error for', athlete.name); }
+          
+          // Coach-specific test sessions (coach_strength, coach_endurance, etc.)
+          try {
+            const cStrRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/coach_strength_test_data?select=*,exercises(name),coach_strength_test_sessions!inner(coach_id,user_id,test_date)&coach_strength_test_sessions.user_id=eq.${athlete.id}&coach_strength_test_sessions.coach_id=eq.${userId}&order=created_at.desc&limit=10`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const cStrData = await cStrRes.json();
+            if (Array.isArray(cStrData) && cStrData.length > 0) {
+              coachProgressContext += '  🏋️ Coach Strength Tests:\n';
+              cStrData.forEach((t: any) => {
+                coachProgressContext += `    - ${t.exercises?.name || '?'}: ${t.weight_kg}kg${t.velocity_ms ? ` @ ${t.velocity_ms}m/s` : ''}${t.is_1rm ? ' (1RM)' : ''} (${t.coach_strength_test_sessions?.[0]?.test_date || ''})\n`;
+              });
+            }
+          } catch(e) {}
+          
+          // 1RM data
+          try {
+            const rmRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/user_exercise_1rm?user_id=eq.${athlete.id}&select=*,exercises(name)&order=weight.desc`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const rmData = await rmRes.json();
+            if (Array.isArray(rmData) && rmData.length > 0) {
+              coachProgressContext += '  💪 1RM:\n';
+              rmData.forEach((r: any) => {
+                coachProgressContext += `    - ${r.exercises?.name || '?'}: ${r.weight}kg (${r.recorded_date})\n`;
+              });
+            }
+          } catch(e) {}
+          
+          // Program assignments
+          try {
+            const progRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/program_assignments?user_id=eq.${athlete.id}&select=id,status,training_dates,programs!fk_program_assignments_program_id(name)&order=created_at.desc&limit=3`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const progData = await progRes.json();
+            if (Array.isArray(progData) && progData.length > 0) {
+              coachProgressContext += '  📋 Προγράμματα:\n';
+              progData.forEach((p: any) => {
+                const total = p.training_dates?.length || 0;
+                coachProgressContext += `    - ${p.programs?.name || '?'} (${p.status}) - ${total} ημέρες\n`;
+              });
+            }
+          } catch(e) {}
+        }
+        
+        console.log(`✅ Coach progress context: ${coachProgressContext.length} chars for ${coachAthletes.length} athletes`);
+      }
+    }
+
+    // 🏛️ FEDERATION DATA: Φόρτωση δεδομένων για ομοσπονδία
+    let federationContext = '';
+    if (isFederation && !targetUserId) {
+      console.log('🏛️ Federation mode: Loading clubs and athletes data...');
+      
+      // Φόρτωση συνδεδεμένων συλλόγων
+      const clubsRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/federation_clubs?federation_id=eq.${userId}&select=club_id,app_users!federation_clubs_club_id_fkey(id,name,email)`,
+        { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+      );
+      const clubsData = await clubsRes.json();
+      
+      if (Array.isArray(clubsData) && clubsData.length > 0) {
+        const clubs = clubsData.map((c: any) => ({ id: c.club_id, name: c.app_users?.name || 'Σύλλογος', email: c.app_users?.email || '' }));
+        
+        federationContext = `\n\n🏛️ ΟΜΟΣΠΟΝΔΙΑ - ΔΕΔΟΜΕΝΑ:\n\n📋 ΣΥΝΔΕΔΕΜΕΝΟΙ ΣΥΛΛΟΓΟΙ (${clubs.length}):\n`;
+        
+        for (const club of clubs) {
+          federationContext += `\n🏠 ${club.name} (${club.email}):\n`;
+          
+          // Αθλητές κάθε συλλόγου
+          const athletesRes = await fetch(
+            `${SUPABASE_URL}/rest/v1/app_users?coach_id=eq.${club.id}&select=id,name,email&order=name.asc`,
+            { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+          );
+          const athletes = await athletesRes.json();
+          
+          if (Array.isArray(athletes) && athletes.length > 0) {
+            federationContext += `  👥 Αθλητές (${athletes.length}):\n`;
+            
+            for (const athlete of athletes) {
+              federationContext += `    👤 ${athlete.name} (${athlete.email}):\n`;
+              
+              // Strength tests
+              try {
+                const sRes = await fetch(
+                  `${SUPABASE_URL}/rest/v1/strength_test_attempts?select=weight_kg,velocity_ms,exercises(name),strength_test_sessions!inner(test_date)&strength_test_sessions.user_id=eq.${athlete.id}&order=strength_test_sessions.test_date.desc&limit=5`,
+                  { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+                );
+                const sData = await sRes.json();
+                if (Array.isArray(sData) && sData.length > 0) {
+                  federationContext += '      🏋️ Δύναμη: ';
+                  federationContext += sData.map((t: any) => `${t.exercises?.name}: ${t.weight_kg}kg`).join(', ') + '\n';
+                }
+              } catch(e) {}
+              
+              // Endurance
+              try {
+                const eRes = await fetch(
+                  `${SUPABASE_URL}/rest/v1/endurance_test_data?select=vo2_max,mas_kmh,push_ups,pull_ups,endurance_test_sessions!inner(test_date)&endurance_test_sessions.user_id=eq.${athlete.id}&order=created_at.desc&limit=3`,
+                  { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+                );
+                const eData = await eRes.json();
+                if (Array.isArray(eData) && eData.length > 0) {
+                  const latest = eData[0];
+                  const parts = [];
+                  if (latest.vo2_max) parts.push(`VO2max: ${latest.vo2_max}`);
+                  if (latest.mas_kmh) parts.push(`MAS: ${latest.mas_kmh}`);
+                  if (latest.push_ups) parts.push(`Push-ups: ${latest.push_ups}`);
+                  if (parts.length > 0) federationContext += `      🏃 Αντοχή: ${parts.join(', ')}\n`;
+                }
+              } catch(e) {}
+              
+              // Jump
+              try {
+                const jRes = await fetch(
+                  `${SUPABASE_URL}/rest/v1/jump_test_data?select=counter_movement_jump,broad_jump,jump_test_sessions!inner(test_date)&jump_test_sessions.user_id=eq.${athlete.id}&order=created_at.desc&limit=3`,
+                  { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+                );
+                const jData = await jRes.json();
+                if (Array.isArray(jData) && jData.length > 0) {
+                  const latest = jData[0];
+                  const parts = [];
+                  if (latest.counter_movement_jump) parts.push(`CMJ: ${latest.counter_movement_jump}cm`);
+                  if (latest.broad_jump) parts.push(`Broad: ${latest.broad_jump}cm`);
+                  if (parts.length > 0) federationContext += `      ⬆️ Άλματα: ${parts.join(', ')}\n`;
+                }
+              } catch(e) {}
+              
+              // Anthropometric
+              try {
+                const aRes = await fetch(
+                  `${SUPABASE_URL}/rest/v1/anthropometric_test_data?select=weight,body_fat_percentage,muscle_mass_percentage,anthropometric_test_sessions!inner(test_date)&anthropometric_test_sessions.user_id=eq.${athlete.id}&order=created_at.desc&limit=3`,
+                  { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+                );
+                const aData = await aRes.json();
+                if (Array.isArray(aData) && aData.length > 0) {
+                  const latest = aData[0];
+                  const parts = [];
+                  if (latest.weight) parts.push(`Βάρος: ${latest.weight}kg`);
+                  if (latest.body_fat_percentage) parts.push(`Λίπος: ${latest.body_fat_percentage}%`);
+                  if (parts.length > 0) federationContext += `      📏 Σωματομετρικά: ${parts.join(', ')}\n`;
+                }
+              } catch(e) {}
+              
+              // 1RM
+              try {
+                const rmRes = await fetch(
+                  `${SUPABASE_URL}/rest/v1/user_exercise_1rm?user_id=eq.${athlete.id}&select=weight,exercises(name)&order=weight.desc&limit=5`,
+                  { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+                );
+                const rmData = await rmRes.json();
+                if (Array.isArray(rmData) && rmData.length > 0) {
+                  federationContext += '      💪 1RM: ';
+                  federationContext += rmData.map((r: any) => `${r.exercises?.name}: ${r.weight}kg`).join(', ') + '\n';
+                }
+              } catch(e) {}
+            }
+          } else {
+            federationContext += `  ⚠️ Δεν υπάρχουν αθλητές\n`;
+          }
+        }
+        
+        console.log(`✅ Federation context: ${federationContext.length} chars for ${clubs.length} clubs`);
+      } else {
+        federationContext = '\n\n🏛️ ΟΜΟΣΠΟΝΔΙΑ: Δεν βρέθηκαν συνδεδεμένοι σύλλογοι.\n';
+      }
+    }
+
     let userSubscriptionStatus = 'inactive';
     let hasActiveSubscription = false;
     let subscriptionsContext = '';
@@ -3932,18 +4203,37 @@ COACH DATA - Έχεις πρόσβαση σε:
 ✅ Λίστα των αθλητών σου (coach_users)
 ✅ Συνδρομές των αθλητών σου (coach_subscriptions)
 ✅ Κατάσταση κάθε αθλητή (ενεργός, ανενεργός, απλήρωτη, σε παύση)
-✅ Ημερομηνίες λήξης συνδρομών
-✅ Ποιες συνδρομές λήγουν σύντομα
+✅ Πρόοδο αθλητών (tests, 1RM, σωματομετρικά)
+✅ Προγράμματα αθλητών
 
 ΣΗΜΑΝΤΙΚΟ: Μπορείς να απαντήσεις ερωτήσεις όπως:
 - "Πόσους αθλητές έχω;"
 - "Ποιοι αθλητές έχουν απλήρωτες συνδρομές;"
-- "Ποιες συνδρομές λήγουν σύντομα;"
-- "Ποιοι αθλητές είναι ανενεργοί;"
+- "Ποιος έχει το μεγαλύτερο άλμα;"
+- "Πως πάει ο Γιώργος στα βάρη;"
 
 Το context που έχεις περιλαμβάνει:
-- 🏋️ ΑΘΛΗΤΕΣ COACH με κατάσταση συνδρομής κάθε αθλητή
-- 💳 ΣΥΝΔΡΟΜΕΣ COACH με λίστα ενεργών, απλήρωτων, σε παύση συνδρομών` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
+- 🏋️ ΑΘΛΗΤΕΣ COACH με κατάσταση συνδρομής
+- 💳 ΣΥΝΔΡΟΜΕΣ COACH με οικονομικά στοιχεία
+- 📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ COACH με αναλυτικά αποτελέσματα τεστ (Force/Velocity, Endurance, Jump, Anthropometric, 1RM)` : isFederation && !targetUserId ? `
+
+🏛️ ΛΕΙΤΟΥΡΓΙΑ FEDERATION MODE 🏛️
+Είσαι σε FEDERATION MODE και έχεις εποπτικό ρόλο σε συλλόγους και αθλητές!
+
+FEDERATION DATA - Έχεις πρόσβαση σε:
+✅ Λίστα συνδεδεμένων συλλόγων (coaches)
+✅ Λίστα αθλητών ανά σύλλογο
+✅ Αποτελέσματα τεστ (δύναμη, αντοχή, άλματα, σωματομετρικά) για ΟΛΟΥΣ τους αθλητές
+✅ 1RM δεδομένα αθλητών
+
+ΣΗΜΑΝΤΙΚΟ: Μπορείς να απαντήσεις ερωτήσεις όπως:
+- "Πόσους συλλόγους έχω;"
+- "Πόσους αθλητές έχει ο ΑΟ Αθηνών;"
+- "Ποιος αθλητής έχει το καλύτερο VO2max;"
+- "Δείξε μου τα αποτελέσματα του Παπαδόπουλου"
+
+Το context που έχεις περιλαμβάνει:
+- 🏛️ ΟΜΟΣΠΟΝΔΙΑ - ΔΕΔΟΜΕΝΑ με λίστα συλλόγων, αθλητών και αναλυτικά τεστ` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
@@ -3989,7 +4279,7 @@ COACH DATA - Έχεις πρόσβαση σε:
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${coachAthletesContext}${coachSubscriptionsContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${coachAthletesContext}${coachSubscriptionsContext}${coachProgressContext}${federationContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
