@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { QuickAssignProgramDialog, AIProgramData } from "@/components/ai-chat/QuickAssignProgramDialog";
 import { QuickAssignNutritionDialog, AINutritionData } from "@/components/ai-chat/QuickAssignNutritionDialog";
 import { AICoachDialog } from "@/components/ai-coach";
+import { AIActionConfirmDialog, AIAction } from "@/components/ai-chat/AIActionConfirmDialog";
 
 interface Message {
   id: string;
@@ -51,6 +52,11 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
   
   // AI Coach Camera state
   const [showAICoach, setShowAICoach] = useState(false);
+  
+  // AI Action Confirmation state
+  const [pendingAction, setPendingAction] = useState<AIAction | null>(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [isExecutingAction, setIsExecutingAction] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { openDialog: openProgramBuilder, queueAction, executeAction } = useAIProgramBuilder();
@@ -272,23 +278,35 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         return;
       }
 
+      // For ALL other actions, show confirmation dialog first
+      setPendingAction(actionData);
+      setConfirmDialogOpen(true);
+    } catch (error) {
+      console.error('Error processing AI action:', error, 'JSON:', jsonStr);
+      toast.error('Σφάλμα επεξεργασίας AI action');
+    }
+  };
+
+  // Execute action after confirmation
+  const executeConfirmedAction = async () => {
+    if (!pendingAction) return;
+    
+    setIsExecutingAction(true);
+    const actionData = pendingAction;
+    
+    try {
       if (actionData.action === 'create_program') {
         setLastAIProgramData({
           name: actionData.name || 'Πρόγραμμα AI',
           description: actionData.description,
           training_dates: actionData.training_dates || [new Date().toISOString().split('T')[0]],
           weeks: actionData.weeks || [],
-          // ✅ κρατάμε ΠΑΝΤΑ τον/τους παραλήπτες που έδωσε το AI (admin mode)
           user_id: actionData.user_id,
           user_ids: actionData.user_ids,
           group_id: actionData.group_id,
         });
-
-        console.log('📋 AI Program Data saved for QuickAssign:', actionData.name);
-      }
-
-      // Handle nutrition plan creation
-      if (actionData.action === 'create_nutrition_plan') {
+        toast.success('Πρόγραμμα έτοιμο για ανάθεση!');
+      } else if (actionData.action === 'create_nutrition_plan') {
         setLastAINutritionData({
           name: actionData.name || 'Πρόγραμμα Διατροφής AI',
           description: actionData.description,
@@ -301,21 +319,38 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           targetUserId: actionData.target_user_id || actionData.targetUserId || actionData.user_id,
           targetUserName: actionData.target_user_name || actionData.targetUserName || actionData.user_name,
         });
-        console.log('🥗 AI Nutrition Data saved for QuickAssign:', actionData.name, 'Target user:', actionData.target_user_id || actionData.targetUserId);
-      }
-
-      // Handle annual plan creation/assignment
-      if (actionData.action === 'create_annual_plan') {
+        toast.success('Διατροφή έτοιμη για ανάθεση!');
+      } else if (actionData.action === 'create_annual_plan') {
         await handleCreateAnnualPlan(actionData);
-      }
-
-      // Handle annual plan deletion
-      if (actionData.action === 'delete_annual_plan') {
+      } else if (actionData.action === 'delete_annual_plan') {
         await handleDeleteAnnualPlan(actionData);
+      } else if (['create_subscription', 'pause_subscription', 'resume_subscription', 'renew_subscription', 'create_booking', 'cancel_booking'].includes(actionData.action)) {
+        // Execute via ai-program-actions edge function
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-program-actions`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify(actionData),
+          }
+        );
+        const result = await response.json();
+        if (result.success) {
+          toast.success(result.message || 'Η ενέργεια εκτελέστηκε!');
+        } else {
+          toast.error(result.error || 'Σφάλμα εκτέλεσης');
+        }
       }
     } catch (error) {
-      console.error('Error processing AI action:', error, 'JSON:', jsonStr);
-      toast.error('Σφάλμα επεξεργασίας AI action');
+      console.error('Error executing confirmed action:', error);
+      toast.error('Σφάλμα εκτέλεσης ενέργειας');
+    } finally {
+      setIsExecutingAction(false);
+      setConfirmDialogOpen(false);
+      setPendingAction(null);
     }
   };
 
@@ -903,7 +938,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     // Remove ```ai-action...``` blocks
     let filtered = content.replace(/```ai-action[\s\S]*?```/g, '');
     // Also remove any raw JSON action blocks that might not be in code blocks
-    filtered = filtered.replace(/\{[\s\S]*?"action"\s*:\s*"(create_program|open_program_builder|create_nutrition_plan|create_annual_plan|delete_annual_plan)"[\s\S]*?\}(?:\s*\})*\s*/g, '');
+    filtered = filtered.replace(/\{[\s\S]*?"action"\s*:\s*"(create_program|open_program_builder|create_nutrition_plan|create_annual_plan|delete_annual_plan|create_subscription|pause_subscription|resume_subscription|renew_subscription|create_booking|cancel_booking)"[\s\S]*?\}(?:\s*\})*\s*/g, '');
     return filtered.trim();
   };
 
@@ -1285,6 +1320,17 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     />
     
     <AICoachDialog isOpen={showAICoach} onClose={() => setShowAICoach(false)} />
+    
+    <AIActionConfirmDialog
+      isOpen={confirmDialogOpen}
+      onClose={() => {
+        setConfirmDialogOpen(false);
+        setPendingAction(null);
+      }}
+      onConfirm={executeConfirmedAction}
+      action={pendingAction}
+      isExecuting={isExecutingAction}
+    />
     </>
   );
 };
