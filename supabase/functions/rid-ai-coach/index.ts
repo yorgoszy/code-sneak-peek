@@ -484,7 +484,83 @@ serve(async (req) => {
                   federationContext += rmData.map((r: any) => `${r.exercises?.name}: ${r.weight}kg`).join(', ') + '\n';
                 }
               } catch(e) {}
+
+            // Subscriptions for each athlete (user_subscriptions)
+            try {
+              const subRes = await fetch(
+                `${SUPABASE_URL}/rest/v1/user_subscriptions?user_id=eq.${athlete.id}&select=*,subscription_types(name,price,duration_months)&order=end_date.desc&limit=5`,
+                { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+              );
+              const subData = await subRes.json();
+              if (Array.isArray(subData) && subData.length > 0) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const activeSub = subData.find((s: any) => {
+                  const endDate = new Date(s.end_date);
+                  endDate.setHours(23, 59, 59, 999);
+                  return endDate >= today && s.status === 'active';
+                });
+                if (activeSub) {
+                  const endDate = new Date(activeSub.end_date);
+                  const daysUntil = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                  federationContext += `      💳 Συνδρομή: ${activeSub.subscription_types?.name || '?'} | λήγει ${activeSub.end_date} (${daysUntil > 0 ? `σε ${daysUntil} ημέρες` : 'ΛΗΓΜΕΝΗ'})${activeSub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\n`;
+                } else {
+                  federationContext += `      💳 Συνδρομή: Ανενεργός\n`;
+                }
+              } else {
+                federationContext += `      💳 Συνδρομή: Καμία\n`;
+              }
+            } catch(e) {}
+          } // end for (athlete)
+          
+          // Club-level subscription summary
+          try {
+            const clubSubsRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/user_subscriptions?select=*,subscription_types(name),app_users!user_subscriptions_user_id_fkey(name,coach_id)&app_users.coach_id=eq.${club.id}&order=end_date.desc&limit=50`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const clubSubsData = await clubSubsRes.json();
+            if (Array.isArray(clubSubsData) && clubSubsData.length > 0) {
+              const today2 = new Date();
+              today2.setHours(0, 0, 0, 0);
+              const activeCount = clubSubsData.filter((s: any) => {
+                const endDate = new Date(s.end_date);
+                endDate.setHours(23, 59, 59, 999);
+                return endDate >= today2 && s.status === 'active';
+              }).length;
+              const pausedCount = clubSubsData.filter((s: any) => s.is_paused).length;
+              federationContext += `  📊 Σύνοψη Συνδρομών: ${activeCount} ενεργές, ${pausedCount} σε παύση, ${clubSubsData.length} συνολικά\n`;
             }
+          } catch(e) {}
+          
+          // Coach subscriptions (coach_subscriptions for coach_users)
+          try {
+            const coachUsersRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/coach_users?coach_id=eq.${club.id}&select=id,name`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const coachUsersData2 = await coachUsersRes.json();
+            if (Array.isArray(coachUsersData2) && coachUsersData2.length > 0) {
+              const cuIds = coachUsersData2.map((u: any) => u.id);
+              const cSubsRes = await fetch(
+                `${SUPABASE_URL}/rest/v1/coach_subscriptions?coach_user_id=in.(${cuIds.join(',')})&select=*,subscription_types(name)&order=end_date.desc&limit=50`,
+                { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+              );
+              const cSubsData = await cSubsRes.json();
+              if (Array.isArray(cSubsData) && cSubsData.length > 0) {
+                const today3 = new Date();
+                today3.setHours(0, 0, 0, 0);
+                const activeCount2 = cSubsData.filter((s: any) => {
+                  const endDate = new Date(s.end_date);
+                  endDate.setHours(23, 59, 59, 999);
+                  return endDate >= today3 && s.status === 'active';
+                }).length;
+                const unpaidCount = cSubsData.filter((s: any) => s.is_paid === false).length;
+                federationContext += `  📊 Coach Συνδρομές: ${activeCount2} ενεργές, ${unpaidCount} απλήρωτες, ${cSubsData.length} συνολικά\n`;
+              }
+            }
+          } catch(e) {}
+
           } else {
             federationContext += `  ⚠️ Δεν υπάρχουν αθλητές\n`;
           }
