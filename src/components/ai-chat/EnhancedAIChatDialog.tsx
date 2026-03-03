@@ -127,6 +127,15 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Scroll to bottom when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+      }, 100);
+    }
+  }, [isOpen]);
+
   const loadConversationHistory = async () => {
     if (!athleteId) return;
     
