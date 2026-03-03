@@ -100,10 +100,17 @@ const handleReceiptNotification = async (requestBody: any) => {
       items: receiptItems || []
     })
 
+    // Αποστολή σε χρήστη + admin
+    const recipients = [user.email]
+    const adminEmail = 'info@hyperkids.gr'
+    if (user.email !== adminEmail) {
+      recipients.push(adminEmail)
+    }
+
     // Δημιουργία email με ή χωρίς PDF attachment
     const emailOptions: any = {
       from: 'HYPERKIDS <noreply@hyperkids.gr>',
-      to: [user.email],
+      to: recipients,
       subject: `Απόδειξη #${receipt.receipt_number} - HYPERKIDS`,
       html: receiptHTML,
     }
@@ -372,16 +379,16 @@ const generateReceiptHTML = (data: ReceiptData) => {
             
             <div class="total-section">
                 <div class="info-row">
-                    <span class="label">Αξία Συνδρομής:</span>
-                    <span class="value">€${data.price.toFixed(2)}</span>
+                    <span class="label">Καθαρή Αξία:</span>
+                    <span class="value">€${(data.price / 1.13).toFixed(2)}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">ΦΠΑ (24%):</span>
-                    <span class="value">€${(data.price * 0.24).toFixed(2)}</span>
+                    <span class="label">ΦΠΑ (13%):</span>
+                    <span class="value">€${(data.price - data.price / 1.13).toFixed(2)}</span>
                 </div>
                 <div style="margin-top: 10px; border-top: 2px solid #00ffba; padding-top: 10px;">
                     <div class="total-amount">
-                        Σύνολο: €${(data.price * 1.24).toFixed(2)}
+                        Σύνολο: €${data.price.toFixed(2)}
                     </div>
                 </div>
             </div>
@@ -426,9 +433,16 @@ serve(async (req) => {
 
     const receiptHTML = generateReceiptHTML(receiptData)
 
+    // Αποστολή σε χρήστη + admin
+    const recipients = [receiptData.userEmail]
+    const adminEmail = 'info@hyperkids.gr'
+    if (receiptData.userEmail !== adminEmail) {
+      recipients.push(adminEmail)
+    }
+
     const emailResponse = await resend.emails.send({
       from: 'HYPERKIDS <noreply@hyperkids.gr>',
-      to: [receiptData.userEmail],
+      to: recipients,
       subject: `Απόδειξη Συνδρομής #${receiptData.invoiceNumber} - HYPERKIDS`,
       html: receiptHTML,
     })
