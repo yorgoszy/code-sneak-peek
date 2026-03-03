@@ -100,6 +100,7 @@ import FederationUsers from "@/pages/Dashboard/FederationUsers";
 import FederationProgress from "@/pages/Dashboard/FederationProgress";
 import FederationEditProfile from "@/pages/Dashboard/FederationEditProfile";
 import FederationVideoAnalysis from "@/pages/Dashboard/FederationVideoAnalysis";
+import FederationSubscriptions from "@/pages/Dashboard/FederationSubscriptions";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -221,6 +222,7 @@ function App() {
                       <Route path="/dashboard/federation-users" element={<ProtectedRoute><FederationUsers /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-progress" element={<ProtectedRoute><FederationProgress /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-video-analysis" element={<ProtectedRoute><FederationVideoAnalysis /></ProtectedRoute>} />
+                      <Route path="/dashboard/federation-subscriptions" element={<ProtectedRoute><FederationSubscriptions /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
 
                       {/* Protected user routes */}

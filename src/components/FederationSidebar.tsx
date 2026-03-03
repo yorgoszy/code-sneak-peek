@@ -7,6 +7,7 @@ import {
   Building2,
   MonitorPlay,
   Brain,
+  CreditCard,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -50,6 +51,11 @@ export const FederationSidebar = ({
       icon: MonitorPlay,
       label: "Video Analysis",
       path: "/dashboard/federation-video-analysis",
+    },
+    {
+      icon: CreditCard,
+      label: "Συνδρομές",
+      path: "/dashboard/federation-subscriptions",
     },
     {
       icon: Settings,
