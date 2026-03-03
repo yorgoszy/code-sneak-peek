@@ -814,6 +814,155 @@ serve(async (req) => {
       );
     }
 
+    // ===================== UPDATE SUBSCRIPTION END DATE =====================
+    if (action === "update_subscription_end_date") {
+      const { subscription_id, new_end_date, table } = body;
+      if (!subscription_id || !new_end_date) throw new Error("Λείπουν subscription_id ή new_end_date");
+
+      const tableName = table === 'coach_subscriptions' ? 'coach_subscriptions' : 'user_subscriptions';
+
+      const { error } = await supabase
+        .from(tableName)
+        .update({ end_date: new_end_date })
+        .eq("id", subscription_id);
+
+      if (error) throw new Error(`Σφάλμα ενημέρωσης ημ. λήξης: ${error.message}`);
+
+      return new Response(
+        JSON.stringify({ success: true, message: `Η ημερομηνία λήξης ενημερώθηκε σε ${new_end_date}` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ===================== TOGGLE PAYMENT STATUS =====================
+    if (action === "toggle_payment") {
+      const { subscription_id, is_paid, table } = body;
+      if (!subscription_id) throw new Error("Λείπει το subscription_id");
+
+      const tableName = table === 'coach_subscriptions' ? 'coach_subscriptions' : 'user_subscriptions';
+
+      const { error } = await supabase
+        .from(tableName)
+        .update({ is_paid: !!is_paid })
+        .eq("id", subscription_id);
+
+      if (error) throw new Error(`Σφάλμα ενημέρωσης πληρωμής: ${error.message}`);
+
+      return new Response(
+        JSON.stringify({ success: true, message: is_paid ? "Η συνδρομή σημειώθηκε ως πληρωμένη ✅" : "Η συνδρομή σημειώθηκε ως απλήρωτη ❌" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ===================== RECORD VISIT =====================
+    if (action === "record_visit") {
+      const { user_id: rawUserId, visit_type, notes } = body;
+      if (!rawUserId) throw new Error("Λείπει το user_id");
+
+      const resolvedUserId = await resolveUserId(rawUserId);
+      if (!resolvedUserId) throw new Error(`Δεν βρέθηκε χρήστης: ${rawUserId}`);
+
+      const now = new Date();
+      const visitDate = now.toISOString().split('T')[0];
+      const visitTime = now.toTimeString().split(' ')[0].slice(0, 5);
+
+      const { data: visit, error } = await supabase
+        .from("user_visits")
+        .insert({
+          user_id: resolvedUserId,
+          visit_type: visit_type || "manual",
+          visit_date: visitDate,
+          visit_time: visitTime,
+          notes: notes || "Καταγραφή από AI βοηθό",
+        })
+        .select("*")
+        .single();
+
+      if (error) throw new Error(`Σφάλμα καταγραφής επίσκεψης: ${error.message}`);
+
+      // Update visit package if exists
+      const { data: pkg } = await supabase
+        .from("visit_packages")
+        .select("id, remaining_visits")
+        .eq("user_id", resolvedUserId)
+        .eq("status", "active")
+        .gt("remaining_visits", 0)
+        .order("purchase_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (pkg) {
+        const newRemaining = pkg.remaining_visits - 1;
+        await supabase
+          .from("visit_packages")
+          .update({
+            remaining_visits: newRemaining,
+            status: newRemaining <= 0 ? "used" : "active",
+          })
+          .eq("id", pkg.id);
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, visit, message: `Η επίσκεψη καταγράφηκε! (${visitDate} ${visitTime})` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ===================== UPDATE USER SECTION =====================
+    if (action === "update_user_section") {
+      const { user_id: rawUserId, section_id } = body;
+      if (!rawUserId || !section_id) throw new Error("Λείπουν user_id ή section_id");
+
+      const resolvedUserId = await resolveUserId(rawUserId);
+      if (!resolvedUserId) throw new Error(`Δεν βρέθηκε χρήστης: ${rawUserId}`);
+
+      const { data: section } = await supabase
+        .from("booking_sections")
+        .select("name")
+        .eq("id", section_id)
+        .single();
+
+      const { error } = await supabase
+        .from("app_users")
+        .update({ section_id })
+        .eq("id", resolvedUserId);
+
+      if (error) throw new Error(`Σφάλμα ενημέρωσης τμήματος: ${error.message}`);
+
+      return new Response(
+        JSON.stringify({ success: true, message: `Ο χρήστης μεταφέρθηκε στο τμήμα "${section?.name || section_id}"` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ===================== CONFIRM RECEIPT MARK =====================
+    if (action === "confirm_receipt_mark") {
+      const { receipt_id, mark, table } = body;
+      if (!receipt_id) throw new Error("Λείπει το receipt_id");
+
+      const tableName = table === 'coach_receipts' ? 'coach_receipts' : 'receipts';
+      const updateData: any = {};
+
+      if (tableName === 'coach_receipts') {
+        updateData.mark = mark || "confirmed";
+      } else {
+        updateData.invoice_mark = mark || "confirmed";
+        updateData.mydata_status = "sent";
+      }
+
+      const { error } = await supabase
+        .from(tableName)
+        .update(updateData)
+        .eq("id", receipt_id);
+
+      if (error) throw new Error(`Σφάλμα ενημέρωσης απόδειξης: ${error.message}`);
+
+      return new Response(
+        JSON.stringify({ success: true, message: `Η απόδειξη ενημερώθηκε με mark: ${mark || "confirmed"} ✅` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     throw new Error(`Άγνωστη ενέργεια: ${action}`);
   } catch (error) {
     console.error("AI Program Action error:", error);

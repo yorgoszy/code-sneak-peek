@@ -4732,6 +4732,56 @@ ${userContext.upcomingTests?.length > 0 ? `\n📋 ΕΠΕΡΧΟΜΕΝΑ ΤΕΣΤ:
 {"action":"renew_subscription","subscription_id":"uuid-here","table":"user_subscriptions","user_name":"Γιάννης"}
 \`\`\`
 
+ΠΑΡΑΔΕΙΓΜΑ - Αλλαγή ημερομηνίας λήξης:
+\`\`\`ai-action
+{"action":"update_subscription_end_date","subscription_id":"uuid-here","new_end_date":"2026-06-30","table":"user_subscriptions","user_name":"Γιάννης"}
+\`\`\`
+
+ΠΑΡΑΔΕΙΓΜΑ - Σήμανση ως πληρωμένη:
+\`\`\`ai-action
+{"action":"toggle_payment","subscription_id":"uuid-here","is_paid":true,"table":"user_subscriptions","user_name":"Γιάννης"}
+\`\`\`
+
+ΠΑΡΑΔΕΙΓΜΑ - Σήμανση ως απλήρωτη:
+\`\`\`ai-action
+{"action":"toggle_payment","subscription_id":"uuid-here","is_paid":false,"table":"user_subscriptions","user_name":"Γιάννης"}
+\`\`\`
+
+👁️ ΔΥΝΑΤΟΤΗΤΑ ΚΑΤΑΓΡΑΦΗΣ ΠΑΡΟΥΣΙΑΣ:
+Μπορείς να καταγράφεις επισκέψεις/παρουσίες χρηστών!
+
+ΠΑΡΑΔΕΙΓΜΑ - Καταγραφή παρουσίας:
+\`\`\`ai-action
+{"action":"record_visit","user_id":"Γιάννης","visit_type":"manual","notes":"Παρουσία από AI","user_name":"Γιάννης"}
+\`\`\`
+
+🏷️ ΔΥΝΑΤΟΤΗΤΑ ΑΛΛΑΓΗΣ ΤΜΗΜΑΤΟΣ:
+Μπορείς να αλλάξεις τμήμα σε χρήστη!
+
+ΔΙΑΘΕΣΙΜΑ ΤΜΗΜΑΤΑ (section_id):
+- Open Gym: c7cf36ab-47be-4727-94b7-dfbd25bb1d95
+- Small Group: bf6b085e-5dd4-4b31-969f-d3e3316e4e7a
+- Muay Thai 10+: e5001894-cccd-4c09-8fe8-d120c59a0727
+- Muay Thai αγωνιστικό: a51af86a-9a92-4479-8ee1-d16aa8a58819
+- Sport Support 10+: 65b64d67-aac4-4c82-8aff-81f50eff2fff
+- HYPERKIDS 7-10: ba89af8c-1990-45b3-8ab2-bacef14cacc5
+- HYPERKIDS 4-7: 5d4f36ef-cca6-4090-8b79-748b19de19c1
+- Muay Thai hybrid: 83b57acf-5997-43b2-8aed-c45d0efc1171
+- Βιντεοκλήσεις: 2c1198ed-baad-4d68-b1ed-fd00fa5a68d8
+
+ΠΑΡΑΔΕΙΓΜΑ - Αλλαγή τμήματος:
+\`\`\`ai-action
+{"action":"update_user_section","user_id":"Γιάννης","section_id":"c7cf36ab-47be-4727-94b7-dfbd25bb1d95","section_name":"Open Gym","user_name":"Γιάννης"}
+\`\`\`
+
+📄 ΔΥΝΑΤΟΤΗΤΑ ΕΠΙΒΕΒΑΙΩΣΗΣ MARK ΑΠΟΔΕΙΞΗΣ:
+Μπορείς να επιβεβαιώσεις ότι μια απόδειξη πήρε mark!
+
+ΠΑΡΑΔΕΙΓΜΑ - Επιβεβαίωση mark:
+\`\`\`ai-action
+{"action":"confirm_receipt_mark","receipt_id":"uuid-here","mark":"400001234567890","receipt_number":"RCP-001","table":"receipts"}
+\`\`\`
+
 📅 ΔΥΝΑΤΟΤΗΤΑ ΔΙΑΧΕΙΡΙΣΗΣ ΚΡΑΤΗΣΕΩΝ:
 Μπορείς να δημιουργείς και να ακυρώνεις κρατήσεις!
 

@@ -324,7 +324,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
         await handleCreateAnnualPlan(actionData);
       } else if (actionData.action === 'delete_annual_plan') {
         await handleDeleteAnnualPlan(actionData);
-      } else if (['create_subscription', 'pause_subscription', 'resume_subscription', 'renew_subscription', 'create_booking', 'cancel_booking'].includes(actionData.action)) {
+      } else if (['create_subscription', 'pause_subscription', 'resume_subscription', 'renew_subscription', 'create_booking', 'cancel_booking', 'update_subscription_end_date', 'toggle_payment', 'record_visit', 'update_user_section', 'confirm_receipt_mark'].includes(actionData.action)) {
         // Execute via ai-program-actions edge function
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-program-actions`,

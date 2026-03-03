@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Dumbbell, CreditCard, Calendar, Utensils, CalendarDays, Trash2, Play, Pause, RefreshCw, X } from "lucide-react";
+import { Dumbbell, CreditCard, Calendar, Utensils, CalendarDays, Trash2, Play, Pause, RefreshCw, X, Clock, DollarSign, MapPin, FileCheck, UserCheck } from "lucide-react";
 
 export interface AIAction {
   action: string;
@@ -98,6 +98,41 @@ const getActionInfo = (action: AIAction | null) => {
         description: `Ακύρωση κράτησης ${action.booking_id ? `#${action.booking_id.slice(0, 8)}` : ''}`,
         icon: X,
         color: 'bg-destructive',
+      };
+    case 'update_subscription_end_date':
+      return {
+        title: 'Αλλαγή Ημ. Λήξης',
+        description: `Νέα ημ. λήξης: ${action.new_end_date || '?'} ${action.user_name ? `για ${action.user_name}` : ''}`,
+        icon: Clock,
+        color: 'bg-orange-500',
+      };
+    case 'toggle_payment':
+      return {
+        title: action.is_paid ? 'Σήμανση ως Πληρωμένη' : 'Σήμανση ως Απλήρωτη',
+        description: `${action.user_name ? `Συνδρομή ${action.user_name}` : 'Συνδρομή'} → ${action.is_paid ? 'Πληρωμένη ✅' : 'Απλήρωτη ❌'}`,
+        icon: DollarSign,
+        color: action.is_paid ? 'bg-[#00ffba]' : 'bg-red-500',
+      };
+    case 'record_visit':
+      return {
+        title: 'Καταγραφή Επίσκεψης',
+        description: `Παρουσία ${action.user_name || action.user_id || '?'} ${action.visit_type ? `(${action.visit_type})` : ''}`,
+        icon: UserCheck,
+        color: 'bg-[#00ffba]',
+      };
+    case 'update_user_section':
+      return {
+        title: 'Αλλαγή Τμήματος',
+        description: `${action.user_name || action.user_id || '?'} → ${action.section_name || '?'}`,
+        icon: MapPin,
+        color: 'bg-blue-500',
+      };
+    case 'confirm_receipt_mark':
+      return {
+        title: 'Επιβεβαίωση Mark Απόδειξης',
+        description: `Απόδειξη ${action.receipt_number ? `#${action.receipt_number}` : ''} → Mark: ${action.mark || 'confirmed'}`,
+        icon: FileCheck,
+        color: 'bg-[#cb8954]',
       };
     default:
       return {
