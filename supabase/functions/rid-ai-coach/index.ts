@@ -1723,23 +1723,31 @@ ${drafts.map((p: any, i: number) => {
         allUsersFull.forEach((u: any) => {
           userNameById[u.id] = u.name;
         });
+        adminUserNameById = userNameById;
 
         const unpaidSubscriptionsList = Array.isArray(allSubscriptions)
           ? allSubscriptions.filter((s: any) => s.is_paid === false)
           : [];
 
-        if (unpaidSubscriptionsList.length > 0) {
+        adminGlobalUnpaidSubscriptions = unpaidSubscriptionsList
+          .map((sub: any) => {
+            const subType = Array.isArray(allSubTypes)
+              ? allSubTypes.find((st: any) => st.id === sub.subscription_type_id)
+              : null;
+
+            return {
+              ...sub,
+              user_name: userNameById[sub.user_id] || `Χρήστης ${sub.user_id}`,
+              subscription_type_name: subType?.name || 'Άγνωστος τύπος',
+            };
+          })
+          .sort((a: any, b: any) => new Date(b.start_date || 0).getTime() - new Date(a.start_date || 0).getTime());
+
+        if (adminGlobalUnpaidSubscriptions.length > 0) {
           adminAllUsersContext += '🚨 ΑΝΑΛΥΤΙΚΗ ΛΙΣΤΑ ΑΠΛΗΡΩΤΩΝ ΣΥΝΔΡΟΜΩΝ (GLOBAL):\n';
-          unpaidSubscriptionsList
-            .sort((a: any, b: any) => new Date(b.start_date || 0).getTime() - new Date(a.start_date || 0).getTime())
-            .forEach((sub: any, index: number) => {
-              const userName = userNameById[sub.user_id] || `Χρήστης ${sub.user_id}`;
-              const subType = Array.isArray(allSubTypes)
-                ? allSubTypes.find((st: any) => st.id === sub.subscription_type_id)
-                : null;
-              const subName = subType?.name || 'Άγνωστος τύπος';
-              adminAllUsersContext += `  ${index + 1}. ${userName} | ${subName} | subscription_id: ${sub.id} | ${sub.start_date || '-'} → ${sub.end_date || '-'}${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\n`;
-            });
+          adminGlobalUnpaidSubscriptions.forEach((sub: any, index: number) => {
+            adminAllUsersContext += `  ${index + 1}. ${sub.user_name} | ${sub.subscription_type_name} | subscription_id: ${sub.id} | ${sub.start_date || '-'} → ${sub.end_date || '-'}${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\n`;
+          });
           adminAllUsersContext += '\n';
         } else {
           adminAllUsersContext += '✅ Δεν υπάρχουν απλήρωτες συνδρομές αυτή τη στιγμή.\n\n';
@@ -5437,20 +5445,73 @@ ${isAdmin ? `
         }
       : null;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: conversationGuard
-          ? [systemPrompt, conversationGuard, ...mergedMessages]
-          : [systemPrompt, ...mergedMessages],
-        stream: true,
-      }),
-    });
+    const latestUserMessage = [...requestMessages]
+      .reverse()
+      .find((m: any) => m?.role === "user")?.content || "";
+
+    const normalizeText = (text: string) =>
+      text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    const normalizedLatestUserMessage = normalizeText(latestUserMessage);
+    const asksForUnpaidSubscriptions =
+      normalizedLatestUserMessage.includes("απληρωτ") &&
+      normalizedLatestUserMessage.includes("συνδρομ");
+
+    const directAdminUnpaidReply = isAdmin && !targetUserId && asksForUnpaidSubscriptions
+      ? (adminGlobalUnpaidSubscriptions.length === 0
+          ? "Δεν υπάρχουν απλήρωτες συνδρομές αυτή τη στιγμή."
+          : `Βρήκα ${adminGlobalUnpaidSubscriptions.length} απλήρωτες συνδρομές:\n` +
+            adminGlobalUnpaidSubscriptions
+              .map(
+                (sub: any, index: number) =>
+                  `${index + 1}. ${sub.user_name || adminUserNameById[sub.user_id] || `Χρήστης ${sub.user_id}`} | ${sub.subscription_type_name || 'Άγνωστος τύπος'} | id: ${sub.id} | ${sub.start_date || '-'} → ${sub.end_date || '-'}${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}`
+              )
+              .join("\n"))
+      : null;
+
+    const createSyntheticSseResponse = (text: string) => {
+      const syntheticEncoder = new TextEncoder();
+      const syntheticStream = new ReadableStream({
+        start(controller) {
+          const payload = JSON.stringify({ choices: [{ delta: { content: text } }] });
+          controller.enqueue(syntheticEncoder.encode(`data: ${payload}\n\n`));
+          controller.enqueue(syntheticEncoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      return new Response(syntheticStream, {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/event-stream",
+        },
+      });
+    };
+
+    if (directAdminUnpaidReply) {
+      console.log(`[ADMIN] Using deterministic global unpaid subscriptions reply. Count: ${adminGlobalUnpaidSubscriptions.length}`);
+    }
+
+    const response = directAdminUnpaidReply
+      ? createSyntheticSseResponse(directAdminUnpaidReply)
+      : await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: conversationGuard
+              ? [systemPrompt, conversationGuard, ...mergedMessages]
+              : [systemPrompt, ...mergedMessages],
+            stream: true,
+          }),
+        });
 
     if (!response.ok) {
       if (response.status === 429) {
