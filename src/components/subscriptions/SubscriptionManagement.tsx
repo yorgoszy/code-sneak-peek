@@ -576,7 +576,8 @@ export const SubscriptionManagement: React.FC = () => {
     
     // Υπολογισμός ημερομηνίας λήξης ανάλογα με τον τύπο συνδρομής και τον πολλαπλασιαστή
     if (subscriptionType.subscription_mode === 'visit_based') {
-      endDate.setMonth(subscriptionStartDate.getMonth() + ((subscriptionType.visit_expiry_months || 0) * durationMultiplier));
+      const visitExpiryMonths = subscriptionType.visit_expiry_months || subscriptionType.duration_months || 1;
+      endDate.setMonth(subscriptionStartDate.getMonth() + (visitExpiryMonths * durationMultiplier));
     } else if (subscriptionType.subscription_mode === 'videocall') {
       endDate.setMonth(subscriptionStartDate.getMonth() + ((subscriptionType.videocall_expiry_months || subscriptionType.duration_months || 3) * durationMultiplier));
     } else {
