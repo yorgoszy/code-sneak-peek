@@ -1592,6 +1592,8 @@ ${drafts.map((p: any, i: number) => {
 
     // 👥 ADMIN MODE: Φόρτωση ΟΛΩΝ των χρηστών με εγγραφή και συνδρομές
     let adminAllUsersContext = '';
+    let adminGlobalUnpaidSubscriptions: any[] = [];
+    let adminUserNameById: Record<string, string> = {};
     if (isAdmin && !targetUserId) {
       console.log('📊 Admin mode: Loading ALL users with registration dates and subscriptions...');
       
@@ -1650,11 +1652,19 @@ ${drafts.map((p: any, i: number) => {
         let expiringSoonCount = 0; // λήγουν σε 7 ημέρες
         let expiredCount = 0;
         let futureCount = 0;
+        let paidCount = 0;
+        let unpaidCount = 0;
+        let unknownPaymentCount = 0;
+        let activeUnpaidCount = 0;
         
         if (Array.isArray(allSubscriptions)) {
           allSubscriptions.forEach((sub: any) => {
             const endDateObj = sub.end_date ? new Date(sub.end_date) : null;
             const startDateObj = sub.start_date ? new Date(sub.start_date) : null;
+
+            if (sub.is_paid === true) paidCount++;
+            else if (sub.is_paid === false) unpaidCount++;
+            else unknownPaymentCount++;
             
             if (endDateObj && startDateObj) {
               endDateObj.setHours(0, 0, 0, 0);
@@ -1667,6 +1677,9 @@ ${drafts.map((p: any, i: number) => {
               // Ενεργή (status=active, start<=today<=end)
               else if (sub.status === 'active' && startDateObj <= today && endDateObj >= today) {
                 activeCount++;
+                if (sub.is_paid === false) {
+                  activeUnpaidCount++;
+                }
                 // Λήγει σύντομα (σε 7 ημέρες ή λιγότερο)
                 const daysUntilExpiry = Math.ceil((endDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
                 if (daysUntilExpiry <= 7) {
@@ -1694,6 +1707,10 @@ ${drafts.map((p: any, i: number) => {
         adminAllUsersContext += `   ⏸️ Σε παύση: ${pausedCount}\n`;
         adminAllUsersContext += `   ⏰ Ληγμένες: ${expiredCount}\n`;
         adminAllUsersContext += `   📅 Μελλοντικές: ${futureCount}\n`;
+        adminAllUsersContext += `   💸 Απλήρωτες: ${unpaidCount}\n`;
+        adminAllUsersContext += `   💰 Πληρωμένες: ${paidCount}\n`;
+        adminAllUsersContext += `   ❓ Άγνωστη κατάσταση πληρωμής: ${unknownPaymentCount}\n`;
+        adminAllUsersContext += `   🚨 Ενεργές αλλά ΑΠΛΗΡΩΤΕΣ: ${activeUnpaidCount}\n`;
         adminAllUsersContext += '═══════════════════════════════════════════════════\n\n';
         adminAllUsersContext += '⚠️ ΣΗΜΑΝΤΙΚΟ: start_date = ΕΝΑΡΞΗ συνδρομής, end_date = ΛΗΞΗ συνδρομής\n\n';
         
@@ -1701,6 +1718,32 @@ ${drafts.map((p: any, i: number) => {
           if (!Array.isArray(allSubscriptions)) return false;
           return allSubscriptions.some((s: any) => s.user_id === user.id);
         });
+
+        const userNameById: Record<string, string> = {};
+        allUsersFull.forEach((u: any) => {
+          userNameById[u.id] = u.name;
+        });
+
+        const unpaidSubscriptionsList = Array.isArray(allSubscriptions)
+          ? allSubscriptions.filter((s: any) => s.is_paid === false)
+          : [];
+
+        if (unpaidSubscriptionsList.length > 0) {
+          adminAllUsersContext += '🚨 ΑΝΑΛΥΤΙΚΗ ΛΙΣΤΑ ΑΠΛΗΡΩΤΩΝ ΣΥΝΔΡΟΜΩΝ (GLOBAL):\n';
+          unpaidSubscriptionsList
+            .sort((a: any, b: any) => new Date(b.start_date || 0).getTime() - new Date(a.start_date || 0).getTime())
+            .forEach((sub: any, index: number) => {
+              const userName = userNameById[sub.user_id] || `Χρήστης ${sub.user_id}`;
+              const subType = Array.isArray(allSubTypes)
+                ? allSubTypes.find((st: any) => st.id === sub.subscription_type_id)
+                : null;
+              const subName = subType?.name || 'Άγνωστος τύπος';
+              adminAllUsersContext += `  ${index + 1}. ${userName} | ${subName} | subscription_id: ${sub.id} | ${sub.start_date || '-'} → ${sub.end_date || '-'}${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\n`;
+            });
+          adminAllUsersContext += '\n';
+        } else {
+          adminAllUsersContext += '✅ Δεν υπάρχουν απλήρωτες συνδρομές αυτή τη στιγμή.\n\n';
+        }
         
         usersWithSubs.forEach((user: any) => {
           const userSubs = Array.isArray(allSubscriptions) 
@@ -1758,8 +1801,10 @@ ${drafts.map((p: any, i: number) => {
               }
               
               adminAllUsersContext += `  ${index + 1}. ${statusEmoji} ${subName}\n`;
+              adminAllUsersContext += `     🆔 subscription_id: ${sub.id}\n`;
               adminAllUsersContext += `     📆 Έναρξη: ${startDate} | Λήξη: ${endDate}\n`;
               adminAllUsersContext += `     📊 Κατάσταση: ${statusText}\n`;
+              adminAllUsersContext += `     💳 Πληρωμή: ${sub.is_paid === false ? 'ΑΠΛΗΡΩΤΗ' : sub.is_paid === true ? 'ΠΛΗΡΩΜΕΝΗ' : 'ΑΓΝΩΣΤΟ'}\n`;
               if (sub.status) {
                 adminAllUsersContext += `     🏷️ DB Status: ${sub.status}\n`;
               }
@@ -4236,6 +4281,7 @@ ${isAdmin && !targetUserId ? `
 ✅ Πρόοδο και στατιστικά όλων των αθλητών
 ✅ 📊 ΔΕΔΟΜΕΝΑ ΠΡΟΟΔΟΥ ΑΘΛΗΤΩΝ: Ανθρωπομετρικά, Αντοχή (VO2max, MAS, push-ups, κλπ), Άλματα
 ✅ 🏋️ COACH DATA: Αθλητές coach (coach_users) και συνδρομές coach (coach_subscriptions)
+✅ 💸 GLOBAL ΛΙΣΤΑ ΑΠΛΗΡΩΤΩΝ συνδρομών με ονόματα και subscription_id
 
 ⚠️ ΚΡΙΤΙΚΟ ΓΙΑ ΑΝΑΘΕΣΕΙΣ (ASSIGNMENTS) ΣΕ ADMIN MODE:
 - Όταν ο χρήστης λέει «βρες την προπόνηση του Α και ανάθεσέ την στον Β», τότε:
@@ -4256,6 +4302,12 @@ ${isAdmin && !targetUserId ? `
 - Τις πιο πρόσφατες μετρήσεις κάθε αθλητή (ανθρωπομετρικά, αντοχή, άλματα)
 - Ποσοστά μεταβολής σε σχέση με προηγούμενες μετρήσεις
 - Ημερομηνίες κάθε μέτρησης
+
+ΣΗΜΑΝΤΙΚΟ ΓΙΑ ΑΠΛΗΡΩΤΕΣ ΣΥΝΔΡΟΜΕΣ (ADMIN):
+1. ✅ Για ερώτηση τύπου "ποιες συνδρομές είναι απλήρωτες", χρησιμοποιείς ΑΠΕΥΘΕΙΑΣ το section "🚨 ΑΝΑΛΥΤΙΚΗ ΛΙΣΤΑ ΑΠΛΗΡΩΤΩΝ ΣΥΝΔΡΟΜΩΝ (GLOBAL)"
+2. ✅ Αν η λίστα είναι κενή, απαντάς ξεκάθαρα: "Δεν υπάρχουν απλήρωτες συνδρομές αυτή τη στιγμή"
+3. ❌ ΠΟΤΕ μην ζητάς όνομα χρήστη για global unpaid list όταν είσαι σε admin mode
+4. ❌ ΠΟΤΕ μην λες ότι "δεν έχεις πρόσβαση" ή "δεν μπορείς να φιλτράρεις" σε admin mode
 
 Όταν σε ρωτούν για κάποιον συγκεκριμένο αθλητή (π.χ. "πως πάει ο Θωμάς;" ή "τι αποτελέσματα έχει η Αγγελική στα τεστ αντοχής;"):
 1. ✅ ΚΟΙΤΑ στο section "📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ" για να βρεις τα δεδομένα του
@@ -5356,9 +5408,9 @@ ${isAdmin ? `
           .reverse();
 
         dbConversationMessages = filtered
-          .filter((m: any) => m?.content && (m.message_type === "user" || m.message_type === "assistant"))
+          .filter((m: any) => m?.content && m.message_type === "user")
           .map((m: any) => ({
-            role: m.message_type === "user" ? ("user" as const) : ("assistant" as const),
+            role: "user" as const,
             content: String(m.content),
           }));
       }
@@ -5378,7 +5430,10 @@ ${isAdmin ? `
       ? {
           role: "system",
           content:
-            "ΥΠΑΡΧΕΙ ΗΔΗ ΙΣΤΟΡΙΚΟ ΣΥΝΟΜΙΛΙΑΣ. ΜΗΝ δώσεις welcome message, ΜΗΝ συστηθείς, ΜΗΝ αλλάξεις θέμα. Απάντησε ΑΚΡΙΒΩΣ στο τελευταίο ερώτημα/αίτημα του χρήστη, σαν συνέχεια της συζήτησης.",
+            "ΥΠΑΡΧΕΙ ΗΔΗ ΙΣΤΟΡΙΚΟ ΣΥΝΟΜΙΛΙΑΣ. ΜΗΝ δώσεις welcome message, ΜΗΝ συστηθείς, ΜΗΝ αλλάξεις θέμα. Απάντησε ΑΚΡΙΒΩΣ στο τελευταίο ερώτημα/αίτημα του χρήστη, σαν συνέχεια της συζήτησης." +
+            ((isAdmin && !targetUserId)
+              ? " ΕΙΣΑΙ ΣΕ ADMIN MODE ΜΕ ΠΛΗΡΗ ΠΡΟΣΒΑΣΗ. Αγνόησε παλιότερες απαντήσεις που έλεγαν ότι δεν έχεις πρόσβαση σε global unpaid subscriptions."
+              : ""),
         }
       : null;
 
