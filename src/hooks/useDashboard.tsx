@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDateToLocalString } from "@/utils/dateUtils";
 
@@ -13,7 +14,7 @@ interface DashboardStats {
 
 export const useDashboard = () => {
   const { user } = useAuth();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const { userProfile } = useRoleCheck();
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     activeUsers: 0,
@@ -109,21 +110,8 @@ export const useDashboard = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      // Fetch user profile
-      const fetchUserProfile = async () => {
-        const { data } = await supabase
-          .from('app_users')
-          .select('id, name, email, role')
-          .eq('auth_user_id', user.id)
-          .single();
-        
-        setUserProfile(data);
-      };
-      
-      fetchUserProfile();
-      fetchDashboardStats();
-    }
+    if (!user) return;
+    fetchDashboardStats();
   }, [user]);
 
   return {
