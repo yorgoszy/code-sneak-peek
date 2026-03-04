@@ -9,15 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Menu, Save, Lock } from "lucide-react";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const FederationEditProfile = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { userProfile } = useRoleCheck();
-  const { user } = useAuth();
+  const { userProfile, refreshUserProfile } = useRoleCheck();
   const { t } = useTranslation();
 
   const [name, setName] = useState("");
@@ -50,6 +48,7 @@ const FederationEditProfile = () => {
     if (error) {
       toast.error(t("federation.editProfile.saveError"));
     } else {
+      await refreshUserProfile();
       toast.success(t("federation.editProfile.saveSuccess"));
     }
     setSaving(false);

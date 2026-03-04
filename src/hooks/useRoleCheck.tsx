@@ -21,6 +21,7 @@ export const useRoleCheck = () => {
     isGeneral: context.isGeneral,
     isParent: context.isParent,
     isFederation: context.isFederation,
+    refreshUserProfile: context.refreshUserProfile,
     loading: context.rolesLoading,
   };
 };
