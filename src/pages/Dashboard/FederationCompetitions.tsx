@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Plus, Swords, Calendar, MapPin, Users, Upload, Trash2, Edit, Eye, FileText } from "lucide-react";
+import { Menu, Plus, Swords, Calendar, MapPin, Users, Upload, Trash2, Edit, Eye, FileText, Settings } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
