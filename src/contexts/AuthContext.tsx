@@ -188,6 +188,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const refreshUserProfile = useCallback(async () => {
+    if (!user?.id) return;
+    setRolesLoading(true);
+    await fetchUserRole(user.id);
+  }, [user?.id, fetchUserRole]);
+
   const hasRole = useCallback((role: UserRole): boolean => {
     return userRoles.includes(role);
   }, [userRoles]);
@@ -208,6 +214,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userProfile,
     rolesLoading: rolesLoading || !initializedRoles,
     signOut,
+    refreshUserProfile,
     isAuthenticated: !!user,
     hasRole,
     isAdmin,
@@ -227,6 +234,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     rolesLoading,
     initializedRoles,
     signOut,
+    refreshUserProfile,
     hasRole,
     isAdmin,
     isCoach,

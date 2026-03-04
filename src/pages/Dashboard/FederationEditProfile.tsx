@@ -48,6 +48,7 @@ const FederationEditProfile = () => {
     if (error) {
       toast.error(t("federation.editProfile.saveError"));
     } else {
+      await refreshUserProfile();
       toast.success(t("federation.editProfile.saveSuccess"));
     }
     setSaving(false);
