@@ -367,33 +367,64 @@ const FederationUsers = () => {
         </div>
       </div>
 
-      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+      <Dialog open={addDialogOpen} onOpenChange={(open) => { setAddDialogOpen(open); if (!open) { setAddMode("search"); setCoachSearch(""); setNewClubName(""); setNewClubEmail(""); setNewClubPhone(""); } }}>
         <DialogContent className="rounded-none">
           <DialogHeader><DialogTitle>{t("federation.users.addClubDialog")}</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder={t("federation.users.searchCoach")} value={coachSearch} onChange={(e) => searchCoaches(e.target.value)} className="pl-10 rounded-none" />
-            </div>
-            <div className="max-h-60 overflow-y-auto space-y-2">
-              {availableCoaches.map((coach) => (
-                <button key={coach.id} onClick={() => handleAddClub(coach.id)}
-                  className="w-full flex items-center gap-3 p-3 border border-border rounded-none hover:bg-muted transition-colors text-left">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={coach.photo_url || ""} />
-                    <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{coach.name?.charAt(0) || "C"}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">{coach.name}</p>
-                    <p className="text-xs text-muted-foreground">{coach.email}</p>
-                  </div>
-                </button>
-              ))}
-              {coachSearch.length >= 2 && availableCoaches.length === 0 && (
-                <p className="text-center text-sm text-muted-foreground py-4">{t("federation.users.noCoachesFound")}</p>
-              )}
-            </div>
+          
+          <div className="flex gap-2 mb-2">
+            <Button variant={addMode === 'search' ? 'default' : 'outline'} size="sm" className="rounded-none" onClick={() => setAddMode('search')}>
+              <Search className="h-4 w-4 mr-1" /> {t("federation.users.searchCoach")}
+            </Button>
+            <Button variant={addMode === 'create' ? 'default' : 'outline'} size="sm" className="rounded-none" onClick={() => setAddMode('create')}>
+              <UserPlus className="h-4 w-4 mr-1" /> {language === 'el' ? 'Νέος Σύλλογος' : 'New Club'}
+            </Button>
           </div>
+
+          {addMode === 'search' ? (
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder={t("federation.users.searchCoach")} value={coachSearch} onChange={(e) => searchCoaches(e.target.value)} className="pl-10 rounded-none" />
+              </div>
+              <div className="max-h-60 overflow-y-auto space-y-2">
+                {availableCoaches.map((coach) => (
+                  <button key={coach.id} onClick={() => handleAddClub(coach.id)}
+                    className="w-full flex items-center gap-3 p-3 border border-border rounded-none hover:bg-muted transition-colors text-left">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={coach.photo_url || ""} />
+                      <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{coach.name?.charAt(0) || "C"}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{coach.name}</p>
+                      <p className="text-xs text-muted-foreground">{coach.email}</p>
+                    </div>
+                  </button>
+                ))}
+                {coachSearch.length >= 2 && availableCoaches.length === 0 && (
+                  <p className="text-center text-sm text-muted-foreground py-4">{t("federation.users.noCoachesFound")}</p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>{language === 'el' ? 'Όνομα Συλλόγου' : 'Club Name'} *</Label>
+                <Input value={newClubName} onChange={(e) => setNewClubName(e.target.value)} className="rounded-none" placeholder={language === 'el' ? 'π.χ. Α.Σ. Ολυμπιακός' : 'e.g. Olympic Club'} />
+              </div>
+              <div className="space-y-2">
+                <Label>Email *</Label>
+                <Input type="email" value={newClubEmail} onChange={(e) => setNewClubEmail(e.target.value)} className="rounded-none" placeholder="club@email.com" />
+              </div>
+              <div className="space-y-2">
+                <Label>{language === 'el' ? 'Τηλέφωνο' : 'Phone'}</Label>
+                <Input value={newClubPhone} onChange={(e) => setNewClubPhone(e.target.value)} className="rounded-none" placeholder={language === 'el' ? 'Προαιρετικό' : 'Optional'} />
+              </div>
+              <Button onClick={handleCreateClub} disabled={creatingClub || !newClubName.trim() || !newClubEmail.trim()} className="w-full rounded-none bg-foreground hover:bg-foreground/90 text-background">
+                <Plus className="h-4 w-4 mr-2" />
+                {creatingClub ? (language === 'el' ? 'Δημιουργία...' : 'Creating...') : (language === 'el' ? 'Δημιουργία Συλλόγου' : 'Create Club')}
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
