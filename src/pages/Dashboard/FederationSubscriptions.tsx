@@ -46,6 +46,7 @@ const FederationSubscriptions = () => {
   const language = i18n.language;
 
   const [subscriptions, setSubscriptions] = useState<FederationSubscription[]>([]);
+  const [subscriptionTypes, setSubscriptionTypes] = useState<{ id: string; name: string; price: number; duration_months: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("subscriptions");
