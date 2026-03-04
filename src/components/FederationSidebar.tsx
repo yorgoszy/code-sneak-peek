@@ -92,17 +92,17 @@ export const FederationSidebar = ({
         )}
       </button>
 
+    </div>
+  );
+
+  const bottomContent = (
+    <div className="space-y-1">
       {/* Language Switcher */}
       {!isCollapsed && (
         <div className="px-3 py-1">
           <LanguageSwitcher />
         </div>
       )}
-    </div>
-  );
-
-  const bottomContent = (
-    <div className="space-y-1">
       <button
         onClick={() => signOut()}
         className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors rounded-none"
