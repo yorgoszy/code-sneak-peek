@@ -77,16 +77,6 @@ export const FederationSidebar = ({
         </button>
       ))}
 
-      {/* Language Switcher */}
-      {!isCollapsed && (
-        <>
-          <div className="my-2 h-px bg-border" />
-          <div className="px-3 py-1">
-            <LanguageSwitcher />
-          </div>
-        </>
-      )}
-
       {/* RidAI Βοηθός Button */}
       <div className="my-2 h-px bg-border" />
       <button
@@ -101,6 +91,13 @@ export const FederationSidebar = ({
           </div>
         )}
       </button>
+
+      {/* Language Switcher */}
+      {!isCollapsed && (
+        <div className="px-3 py-1">
+          <LanguageSwitcher />
+        </div>
+      )}
     </div>
   );
 
