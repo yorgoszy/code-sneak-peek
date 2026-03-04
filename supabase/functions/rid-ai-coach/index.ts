@@ -572,6 +572,109 @@ serve(async (req) => {
       }
     }
 
+    // 🏛️ FEDERATION SUBSCRIPTIONS & RECEIPTS
+    let federationSubscriptionsContext = '';
+    let federationReceiptsContext = '';
+    if (isFederation && !targetUserId) {
+      console.log('🏛️ Federation mode: Loading subscriptions and receipts...');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Federation's own subscriptions (coach_subscriptions where coach_id = federationId)
+      try {
+        const fedSubsRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/coach_subscriptions?coach_id=eq.${userId}&select=*,subscription_types(name,price,duration_months),app_users!coach_subscriptions_user_id_fkey(name,email)&order=end_date.desc`,
+          { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+        );
+        const fedSubsData = await fedSubsRes.json();
+
+        if (Array.isArray(fedSubsData) && fedSubsData.length > 0) {
+          const activeCount = fedSubsData.filter((s: any) => {
+            const endDate = new Date(s.end_date);
+            endDate.setHours(23, 59, 59, 999);
+            return endDate >= today && s.status === 'active' && !s.is_paused;
+          }).length;
+          const unpaidCount = fedSubsData.filter((s: any) => s.is_paid === false).length;
+          const pausedCount = fedSubsData.filter((s: any) => s.is_paused).length;
+          const expiredCount = fedSubsData.filter((s: any) => {
+            const endDate = new Date(s.end_date);
+            endDate.setHours(23, 59, 59, 999);
+            return endDate < today;
+          }).length;
+
+          const totalRevenue = fedSubsData.reduce((sum: number, s: any) => sum + (s.subscription_types?.price || 0), 0);
+          const paidRevenue = fedSubsData.filter((s: any) => s.is_paid !== false).reduce((sum: number, s: any) => sum + (s.subscription_types?.price || 0), 0);
+          const unpaidRevenue = fedSubsData.filter((s: any) => s.is_paid === false).reduce((sum: number, s: any) => sum + (s.subscription_types?.price || 0), 0);
+
+          federationSubscriptionsContext = \`\\n\\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ (δικοί της τύποι):
+📊 ΣΤΑΤΙΣΤΙΚΑ:
+- Συνολικές συνδρομές: \${fedSubsData.length}
+- Ενεργές: \${activeCount}
+- Απλήρωτες: \${unpaidCount}
+- Σε παύση: \${pausedCount}
+- Ληγμένες: \${expiredCount}
+
+💰 ΟΙΚΟΝΟΜΙΚΑ:
+- Συνολικά έσοδα: \${totalRevenue}€
+- Εισπραχθέντα: \${paidRevenue}€
+- Απλήρωτα: \${unpaidRevenue}€
+
+📋 ΛΙΣΤΑ ΣΥΝΔΡΟΜΩΝ:
+\`;
+          fedSubsData.forEach((sub: any) => {
+            const clubName = sub.app_users?.name || 'Άγνωστο';
+            const typeName = sub.subscription_types?.name || '?';
+            const price = sub.subscription_types?.price || 0;
+            const endDate = new Date(sub.end_date);
+            const daysUntil = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+
+            let statusEmoji = '✅';
+            if (sub.is_paid === false) statusEmoji = '💰';
+            else if (sub.is_paused) statusEmoji = '⏸️';
+            else if (daysUntil < 0) statusEmoji = '❌';
+            else if (daysUntil <= 7) statusEmoji = '⚠️';
+
+            federationSubscriptionsContext += \`  \${statusEmoji} \${clubName}: \${typeName} (\${price}€) | \${sub.start_date} - \${sub.end_date} (\${daysUntil > 0 ? \`σε \${daysUntil} ημέρες\` : \`ΛΗΓΜΕΝΗ πριν \${Math.abs(daysUntil)} ημέρες\`})\${sub.is_paid === false ? ' [ΑΠΛΗΡΩΤΗ]' : ''}\${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\\n\`;
+          });
+        } else {
+          federationSubscriptionsContext = '\\n\\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν συνδρομές.\\n';
+        }
+      } catch(e) { console.log('⚠️ Error loading federation subscriptions:', e); }
+
+      // Federation receipts
+      try {
+        const fedReceiptsRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/coach_receipts?coach_id=eq.${userId}&select=*,app_users!coach_receipts_user_id_fkey(name,email),subscription_types(name)&order=created_at.desc&limit=50`,
+          { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+        );
+        const fedReceiptsData = await fedReceiptsRes.json();
+
+        if (Array.isArray(fedReceiptsData) && fedReceiptsData.length > 0) {
+          const totalAmount = fedReceiptsData.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
+          const markedCount = fedReceiptsData.filter((r: any) => r.mark).length;
+
+          federationReceiptsContext = \`\\n\\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ:
+📊 ΣΤΑΤΙΣΤΙΚΑ:
+- Συνολικές αποδείξεις: \${fedReceiptsData.length}
+- Συνολικό ποσό: \${totalAmount}€
+- Μαρκαρισμένες: \${markedCount}
+
+📋 ΛΙΣΤΑ ΑΠΟΔΕΙΞΕΩΝ (πρόσφατες):
+\`;
+          fedReceiptsData.slice(0, 30).forEach((r: any) => {
+            const clubName = r.app_users?.name || 'Άγνωστο';
+            const typeName = r.subscription_types?.name || r.receipt_type || '?';
+            const date = new Date(r.created_at).toLocaleDateString('el-GR');
+            federationReceiptsContext += \`  🧾 \${r.receipt_number}: \${clubName} - \${typeName} - \${r.amount}€ (\${date})\${r.mark ? \` [\${r.mark}]\` : ''}\${r.notes ? \` | \${r.notes}\` : ''}\\n\`;
+          });
+        } else {
+          federationReceiptsContext = '\\n\\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν αποδείξεις.\\n';
+        }
+      } catch(e) { console.log('⚠️ Error loading federation receipts:', e); }
+
+      console.log(\`✅ Federation subscriptions context: \${federationSubscriptionsContext.length} chars, receipts: \${federationReceiptsContext.length} chars\`);
+    }
+
     let userSubscriptionStatus = 'inactive';
     let hasActiveSubscription = false;
     let subscriptionsContext = '';
@@ -4361,15 +4464,24 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 ✅ Λίστα αθλητών ανά σύλλογο
 ✅ Αποτελέσματα τεστ (δύναμη, αντοχή, άλματα, σωματομετρικά) για ΟΛΟΥΣ τους αθλητές
 ✅ 1RM δεδομένα αθλητών
+✅ Συνδρομές της ομοσπονδίας (δικοί της τύποι, κατάσταση, πληρωμές)
+✅ Αποδείξεις της ομοσπονδίας (ποσά, ημερομηνίες, σωματεία)
 
 ΣΗΜΑΝΤΙΚΟ: Μπορείς να απαντήσεις ερωτήσεις όπως:
 - "Πόσους συλλόγους έχω;"
 - "Πόσους αθλητές έχει ο ΑΟ Αθηνών;"
 - "Ποιος αθλητής έχει το καλύτερο VO2max;"
 - "Δείξε μου τα αποτελέσματα του Παπαδόπουλου"
+- "Πόσες ενεργές συνδρομές έχω;"
+- "Ποιες συνδρομές είναι απλήρωτες;"
+- "Σύνοψη εσόδων/εξόδων"
+- "Πόσα έσοδα είχα αυτόν τον μήνα;"
+- "Δείξε μου τις αποδείξεις"
 
 Το context που έχεις περιλαμβάνει:
-- 🏛️ ΟΜΟΣΠΟΝΔΙΑ - ΔΕΔΟΜΕΝΑ με λίστα συλλόγων, αθλητών και αναλυτικά τεστ` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
+- 🏛️ ΟΜΟΣΠΟΝΔΙΑ - ΔΕΔΟΜΕΝΑ με λίστα συλλόγων, αθλητών και αναλυτικά τεστ
+- 💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ με στατιστικά, οικονομικά και λίστα
+- 🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ με ποσά και λεπτομέρειες` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
@@ -4415,7 +4527,7 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${coachAthletesContext}${coachSubscriptionsContext}${coachProgressContext}${federationContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${coachAthletesContext}${coachSubscriptionsContext}${coachProgressContext}${federationContext}${federationSubscriptionsContext}${federationReceiptsContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
