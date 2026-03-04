@@ -48,14 +48,17 @@ export const FederationSidebar = ({
   const isActive = (path: string) => location.pathname === path;
 
   const headerContent = (
-    <div className="flex items-center space-x-3">
+    <div className="flex items-center justify-between">
       {!isCollapsed && (
-        <div>
-          <h2 className="font-bold text-sm text-foreground">{t("federation.title")}</h2>
-          <p className="text-xs text-muted-foreground truncate max-w-[160px]">
-            {userProfile?.name || t("federation.panel")}
-          </p>
-        </div>
+        <>
+          <div>
+            <h2 className="font-bold text-sm text-foreground">{t("federation.title")}</h2>
+            <p className="text-xs text-muted-foreground truncate max-w-[130px]">
+              {userProfile?.name || t("federation.panel")}
+            </p>
+          </div>
+          <LanguageSwitcher />
+        </>
       )}
     </div>
   );
@@ -97,12 +100,6 @@ export const FederationSidebar = ({
 
   const bottomContent = (
     <div className="space-y-1">
-      {/* Language Switcher */}
-      {!isCollapsed && (
-        <div className="px-3 py-1">
-          <LanguageSwitcher />
-        </div>
-      )}
       <button
         onClick={() => signOut()}
         className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors rounded-none"
