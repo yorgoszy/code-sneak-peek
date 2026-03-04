@@ -328,6 +328,10 @@ const FederationSubscriptions = () => {
                   </Card>
                 </TabsContent>
 
+                <TabsContent value="receipts" className="mt-4">
+                  <CoachReceiptsManagement coachId={federationId} />
+                </TabsContent>
+
                 <TabsContent value="types" className="mt-4">
                   <SubscriptionTypesTab coachId={federationId} />
                 </TabsContent>
