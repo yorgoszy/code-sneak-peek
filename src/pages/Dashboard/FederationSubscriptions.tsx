@@ -349,7 +349,7 @@ const FederationSubscriptions = () => {
                                       onTogglePayment={togglePaymentStatus}
                                       onEdit={(id) => { setSubscriptionToEdit(sub); setEditDialogOpen(true); }}
                                       onDelete={(id) => { setSubscriptionToDelete(sub.id); setDeleteDialogOpen(true); }}
-                                    />
+                                      onViewReceipt={handleViewReceipt}
                                   </TableCell>
                                 </TableRow>
                               ))}
