@@ -475,7 +475,103 @@ const Auth = () => {
     }
   };
 
-  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFederationSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setFedSignupFeedback(null);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("fed-email") as string;
+    const password = fedSignupPassword;
+    const name = formData.get("fed-name") as string;
+
+    const validatePassword = (pwd: string) => {
+      const errors: string[] = [];
+      if (pwd.length < 8) errors.push(t.authPasswordMinChars);
+      const lowerRe = /[a-zα-ωάέήίόύώϊϋΐΰ]/;
+      const upperRe = /[A-ZΑ-ΩΆΈΉΊΌΎΏΪΫ]/;
+      const numberRe = /[0-9]/;
+      const specialRe = /[^A-Za-z0-9Α-ΩΆΈΉΊΌΎΏΪΫα-ωάέήίόύώϊϋΐΰ]/;
+      if (!lowerRe.test(pwd)) errors.push(t.authPasswordLowercase);
+      if (!upperRe.test(pwd)) errors.push(t.authPasswordUppercase);
+      if (!numberRe.test(pwd)) errors.push(language === 'el' ? "αριθμούς" : "numbers");
+      if (!specialRe.test(pwd)) errors.push(language === 'el' ? "ειδικούς χαρακτήρες" : "special characters");
+      return errors;
+    };
+
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      const msg = `${t.authPasswordRequirements} ${passwordErrors.join(', ')}.`;
+      setFedPasswordError(msg);
+      setFedSignupFeedback({ variant: "destructive", title: t.authErrorInvalidPassword, description: msg });
+      toast({ title: t.authErrorInvalidPassword, description: msg, variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      console.log('📝 Federation sign up start for:', email);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+          data: { name, role: 'federation' }
+        }
+      });
+
+      if (error) {
+        let errorTitle = t.authErrorGeneric;
+        let errorDescription = t.authErrorGenericDesc;
+        if (error.message.includes('already registered') || error.message.includes('already exists')) {
+          errorTitle = t.authErrorEmailExists;
+          errorDescription = t.authErrorEmailExistsDesc;
+        } else if (error.message.includes('password') || error.message.includes('weak')) {
+          errorTitle = t.authErrorWeakPassword;
+          errorDescription = t.authErrorWeakPasswordDesc;
+        } else if (error.message.includes('Invalid email')) {
+          errorTitle = t.authErrorInvalidEmail;
+          errorDescription = t.authErrorInvalidEmailDesc;
+        } else if (error.message.includes('rate limit') || error.message.includes('Too many')) {
+          errorTitle = t.authErrorTooManyRequests;
+          errorDescription = t.authErrorTooManyRequestsDesc;
+        } else {
+          errorDescription = error.message || t.authErrorGenericDesc;
+        }
+        setFedSignupFeedback({ variant: "destructive", title: errorTitle, description: errorDescription });
+        toast({ title: errorTitle, description: errorDescription, variant: "destructive" });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        const isExistingUser = !data.user.identities || data.user.identities.length === 0;
+        if (isExistingUser) {
+          setFedSignupFeedback({ variant: "destructive", title: t.authErrorEmailExists, description: t.authErrorEmailExistsDesc });
+          toast({ title: t.authErrorEmailExists, description: t.authErrorEmailExistsDesc, variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
+        const okFeedback = {
+          variant: "default" as const,
+          title: language === 'el' ? 'Επιτυχής εγγραφή Ομοσπονδίας!' : 'Federation Registration Successful!',
+          description: t.authSuccessSignupDesc,
+        };
+        setFedSignupFeedback(okFeedback);
+        toast({ title: okFeedback.title, description: okFeedback.description });
+      } else {
+        setFedSignupFeedback({ variant: "destructive", title: t.authErrorSignupProblem, description: t.authErrorSignupProblemDesc });
+        toast({ title: t.authErrorSignupProblem, description: t.authErrorSignupProblemDesc, variant: "destructive" });
+      }
+    } catch (error: any) {
+      setFedSignupFeedback({ variant: "destructive", title: t.authError, description: error.message || t.authErrorGenericDesc });
+      toast({ title: t.authError, description: error.message || t.authErrorGenericDesc, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
     e.preventDefault();
     setIsLoading(true);
     setLoginFeedback(null);
