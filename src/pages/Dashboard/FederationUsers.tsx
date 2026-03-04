@@ -402,7 +402,7 @@ const FederationUsers = () => {
                   </button>
                 ))}
                 {coachSearch.length >= 2 && availableCoaches.length === 0 && (
-                  <p className="text-center text-sm text-muted-foreground py-4">{t("federation.users.noCoachesFound")}</p>
+                  <p className="text-center text-sm text-muted-foreground py-4">{language === 'el' ? 'Δεν βρέθηκαν χρήστες.' : 'No users found.'}</p>
                 )}
               </div>
             </div>
