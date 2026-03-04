@@ -339,9 +339,10 @@ const FederationSubscriptions = () => {
       />
 
       <CoachSubscriptionEditDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
+        isOpen={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
         subscription={subscriptionToEdit as any}
+        subscriptionTypes={subscriptionTypes}
         onSuccess={fetchSubscriptions}
       />
 
