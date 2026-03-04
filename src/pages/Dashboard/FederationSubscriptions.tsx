@@ -332,10 +332,10 @@ const FederationSubscriptions = () => {
         </div>
       </div>
 
-      <NewSubscriptionDialog
+      <NewFederationSubscriptionDialog
         open={newSubscriptionOpen}
         onOpenChange={setNewSubscriptionOpen}
-        coachId={federationId || ""}
+        federationId={federationId || ""}
         onSuccess={fetchSubscriptions}
       />
 
