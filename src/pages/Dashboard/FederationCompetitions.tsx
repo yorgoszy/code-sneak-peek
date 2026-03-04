@@ -345,9 +345,14 @@ const FederationCompetitions = () => {
                 </h1>
                 <p className="text-sm text-muted-foreground">Διαχείριση αγώνων και δηλώσεων αθλητών</p>
               </div>
-              <Button onClick={() => { resetForm(); setCreateDialogOpen(true); }} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
-                <Plus className="h-4 w-4 mr-2" /> Νέος Αγώνας
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="rounded-none">
+                  <Settings className="h-4 w-4 mr-2" /> Διαχείριση Κατηγοριών
+                </Button>
+                <Button onClick={() => { resetForm(); setCreateDialogOpen(true); }} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
+                  <Plus className="h-4 w-4 mr-2" /> Νέος Αγώνας
+                </Button>
+              </div>
             </div>
 
             {/* Mobile add button */}
