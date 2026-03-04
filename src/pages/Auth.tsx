@@ -24,6 +24,8 @@ const Auth = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [coachSignupPassword, setCoachSignupPassword] = useState("");
   const [coachPasswordError, setCoachPasswordError] = useState<string | null>(null);
+  const [fedSignupPassword, setFedSignupPassword] = useState("");
+  const [fedPasswordError, setFedPasswordError] = useState<string | null>(null);
   const [signupFeedback, setSignupFeedback] = useState<
     | { variant: "default" | "destructive"; title: string; description?: string }
     | null
@@ -32,11 +34,15 @@ const Auth = () => {
     | { variant: "default" | "destructive"; title: string; description?: string }
     | null
   >(null);
+  const [fedSignupFeedback, setFedSignupFeedback] = useState<
+    | { variant: "default" | "destructive"; title: string; description?: string }
+    | null
+  >(null);
   const [loginFeedback, setLoginFeedback] = useState<
     | { variant: "default" | "destructive"; title: string; description?: string }
     | null
   >(null);
-  const [activeTab, setActiveTab] = useState<'login' | 'signup' | 'coach-signup'>('login');
+  const [activeTab, setActiveTab] = useState<'login' | 'signup' | 'coach-signup' | 'fed-signup'>('login');
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
@@ -469,6 +475,103 @@ const Auth = () => {
     }
   };
 
+  const handleFederationSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setFedSignupFeedback(null);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("fed-email") as string;
+    const password = fedSignupPassword;
+    const name = formData.get("fed-name") as string;
+
+    const validatePassword = (pwd: string) => {
+      const errors: string[] = [];
+      if (pwd.length < 8) errors.push(t.authPasswordMinChars);
+      const lowerRe = /[a-zα-ωάέήίόύώϊϋΐΰ]/;
+      const upperRe = /[A-ZΑ-ΩΆΈΉΊΌΎΏΪΫ]/;
+      const numberRe = /[0-9]/;
+      const specialRe = /[^A-Za-z0-9Α-ΩΆΈΉΊΌΎΏΪΫα-ωάέήίόύώϊϋΐΰ]/;
+      if (!lowerRe.test(pwd)) errors.push(t.authPasswordLowercase);
+      if (!upperRe.test(pwd)) errors.push(t.authPasswordUppercase);
+      if (!numberRe.test(pwd)) errors.push(language === 'el' ? "αριθμούς" : "numbers");
+      if (!specialRe.test(pwd)) errors.push(language === 'el' ? "ειδικούς χαρακτήρες" : "special characters");
+      return errors;
+    };
+
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      const msg = `${t.authPasswordRequirements} ${passwordErrors.join(', ')}.`;
+      setFedPasswordError(msg);
+      setFedSignupFeedback({ variant: "destructive", title: t.authErrorInvalidPassword, description: msg });
+      toast({ title: t.authErrorInvalidPassword, description: msg, variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      console.log('📝 Federation sign up start for:', email);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+          data: { name, role: 'federation' }
+        }
+      });
+
+      if (error) {
+        let errorTitle = t.authErrorGeneric;
+        let errorDescription = t.authErrorGenericDesc;
+        if (error.message.includes('already registered') || error.message.includes('already exists')) {
+          errorTitle = t.authErrorEmailExists;
+          errorDescription = t.authErrorEmailExistsDesc;
+        } else if (error.message.includes('password') || error.message.includes('weak')) {
+          errorTitle = t.authErrorWeakPassword;
+          errorDescription = t.authErrorWeakPasswordDesc;
+        } else if (error.message.includes('Invalid email')) {
+          errorTitle = t.authErrorInvalidEmail;
+          errorDescription = t.authErrorInvalidEmailDesc;
+        } else if (error.message.includes('rate limit') || error.message.includes('Too many')) {
+          errorTitle = t.authErrorTooManyRequests;
+          errorDescription = t.authErrorTooManyRequestsDesc;
+        } else {
+          errorDescription = error.message || t.authErrorGenericDesc;
+        }
+        setFedSignupFeedback({ variant: "destructive", title: errorTitle, description: errorDescription });
+        toast({ title: errorTitle, description: errorDescription, variant: "destructive" });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        const isExistingUser = !data.user.identities || data.user.identities.length === 0;
+        if (isExistingUser) {
+          setFedSignupFeedback({ variant: "destructive", title: t.authErrorEmailExists, description: t.authErrorEmailExistsDesc });
+          toast({ title: t.authErrorEmailExists, description: t.authErrorEmailExistsDesc, variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
+        const okFeedback = {
+          variant: "default" as const,
+          title: language === 'el' ? 'Επιτυχής εγγραφή Ομοσπονδίας!' : 'Federation Registration Successful!',
+          description: t.authSuccessSignupDesc,
+        };
+        setFedSignupFeedback(okFeedback);
+        toast({ title: okFeedback.title, description: okFeedback.description });
+      } else {
+        setFedSignupFeedback({ variant: "destructive", title: t.authErrorSignupProblem, description: t.authErrorSignupProblemDesc });
+        toast({ title: t.authErrorSignupProblem, description: t.authErrorSignupProblemDesc, variant: "destructive" });
+      }
+    } catch (error: any) {
+      setFedSignupFeedback({ variant: "destructive", title: t.authError, description: error.message || t.authErrorGenericDesc });
+      toast({ title: t.authError, description: error.message || t.authErrorGenericDesc, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -696,10 +799,10 @@ const Auth = () => {
         <Card className="bg-[hsl(var(--auth-black))] border-white">
           <CardHeader>
             <CardTitle className="text-center text-white">
-              {showForgotPassword ? t.authResetPassword : (activeTab === 'coach-signup' ? (language === 'el' ? 'Εγγραφή Coach' : 'Coach Sign Up') : (activeTab === 'signup' ? t.authSignupTitle : t.authLoginTitle))}
+              {showForgotPassword ? t.authResetPassword : (activeTab === 'coach-signup' ? (language === 'el' ? 'Εγγραφή Coach' : 'Coach Sign Up') : (activeTab === 'fed-signup' ? (language === 'el' ? 'Εγγραφή Ομοσπονδίας' : 'Federation Sign Up') : (activeTab === 'signup' ? t.authSignupTitle : t.authLoginTitle)))}
             </CardTitle>
             <CardDescription className="text-center text-white">
-              {showForgotPassword ? t.authResetPasswordSubtitle : (activeTab === 'coach-signup' ? (language === 'el' ? 'Δημιουργήστε λογαριασμό coach' : 'Create your coach account') : (activeTab === 'signup' ? t.authSignupSubtitle : t.authLoginSubtitle))}
+              {showForgotPassword ? t.authResetPasswordSubtitle : (activeTab === 'coach-signup' ? (language === 'el' ? 'Δημιουργήστε λογαριασμό coach' : 'Create your coach account') : (activeTab === 'fed-signup' ? (language === 'el' ? 'Δημιουργήστε λογαριασμό ομοσπονδίας' : 'Create your federation account') : (activeTab === 'signup' ? t.authSignupSubtitle : t.authLoginSubtitle)))}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -733,11 +836,12 @@ const Auth = () => {
                 </Button>
               </form>
             ) : (
-              <Tabs defaultValue="login" value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup' | 'coach-signup')} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-[hsl(var(--auth-black))] border border-white">
-                  <TabsTrigger value="login" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-xs sm:text-sm">{t.authLogin}</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-xs sm:text-sm">{t.authSignup}</TabsTrigger>
-                  <TabsTrigger value="coach-signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-xs sm:text-sm">For Coach</TabsTrigger>
+              <Tabs defaultValue="login" value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+                <TabsList className="grid w-full grid-cols-4 bg-[hsl(var(--auth-black))] border border-white">
+                  <TabsTrigger value="login" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-[10px] sm:text-xs">{t.authLogin}</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-[10px] sm:text-xs">{t.authSignup}</TabsTrigger>
+                  <TabsTrigger value="coach-signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-[10px] sm:text-xs">Coach</TabsTrigger>
+                  <TabsTrigger value="fed-signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-[10px] sm:text-xs">{language === 'el' ? 'Ομοσπονδία' : 'Federation'}</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
@@ -920,6 +1024,70 @@ const Auth = () => {
                       disabled={isLoading || !!coachPasswordError || coachSignupPassword.length === 0}
                     >
                       {isLoading ? t.authSigningUp : (language === 'el' ? 'Εγγραφή ως Coach' : 'Sign Up as Coach')}
+                    </Button>
+                    <div className="text-xs text-white text-center">
+                      {t.authAfterSignup}
+                    </div>
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="fed-signup">
+                  <form onSubmit={handleFederationSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="fed-name" className="text-white">{language === 'el' ? 'Όνομα Ομοσπονδίας' : 'Federation Name'}</Label>
+                      <Input id="fed-name" name="fed-name" type="text" placeholder={language === 'el' ? 'π.χ. Ελληνική Ομοσπονδία' : 'e.g. Greek Federation'} required className="bg-[hsl(var(--auth-black))] border-white text-white placeholder:text-white/60" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fed-email" className="text-white">{t.authEmail}</Label>
+                      <Input id="fed-email" name="fed-email" type="email" placeholder="federation@email.com" required className="bg-[hsl(var(--auth-black))] border-white text-white placeholder:text-white/60" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fed-password" className="text-white">{t.authPassword}</Label>
+                      <Input
+                        id="fed-password"
+                        name="fed-password"
+                        type="password"
+                        required
+                        minLength={8}
+                        value={fedSignupPassword}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFedSignupPassword(val);
+                          const lowerRe = /[a-zα-ωάέήίόύώϊϋΐΰ]/;
+                          const upperRe = /[A-ZΑ-ΩΆΈΉΊΌΎΏΪΫ]/;
+                          const numberRe = /[0-9]/;
+                          const specialRe = /[^A-Za-z0-9Α-ΩΆΈΉΊΌΎΏΪΫα-ωάέήίόύώϊϋΐΰ]/;
+                          const errors: string[] = [];
+                          if (val.length < 8) errors.push(t.authPasswordMinChars);
+                          if (!lowerRe.test(val)) errors.push(t.authPasswordLowercase);
+                          if (!upperRe.test(val)) errors.push(t.authPasswordUppercase);
+                          if (!numberRe.test(val)) errors.push(language === 'el' ? "αριθμούς" : "numbers");
+                          if (!specialRe.test(val)) errors.push(language === 'el' ? "ειδικούς χαρακτήρες" : "special characters");
+                          setFedPasswordError(errors.length ? `${t.authPasswordRequirements} ${errors.join(', ')}.` : null);
+                        }}
+                        aria-invalid={!!fedPasswordError}
+                        className="bg-[hsl(var(--auth-black))] border-white text-white placeholder:text-white/60"
+                      />
+                      <p className={`text-xs ${fedPasswordError ? 'text-red-600' : 'text-white/70'}`}>
+                        {t.authPasswordHint}
+                      </p>
+                    </div>
+
+                    {fedSignupFeedback && (
+                      <Alert variant={fedSignupFeedback.variant} className="rounded-none bg-[hsl(var(--auth-black))] border-white text-white">
+                        <AlertTitle className="text-white">{fedSignupFeedback.title}</AlertTitle>
+                        {fedSignupFeedback.description && (
+                          <AlertDescription className="text-white">{fedSignupFeedback.description}</AlertDescription>
+                        )}
+                      </Alert>
+                    )}
+
+                    <Button 
+                      type="submit" 
+                      className="w-full rounded-none bg-white text-black hover:bg-white/90 border-2 border-transparent transition-all duration-300 disabled:bg-white disabled:opacity-100 disabled:cursor-not-allowed" 
+                      disabled={isLoading || !!fedPasswordError || fedSignupPassword.length === 0}
+                    >
+                      {isLoading ? t.authSigningUp : (language === 'el' ? 'Εγγραφή Ομοσπονδίας' : 'Sign Up as Federation')}
                     </Button>
                     <div className="text-xs text-white text-center">
                       {t.authAfterSignup}
