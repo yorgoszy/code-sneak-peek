@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
@@ -12,15 +13,14 @@ const FederationProgress = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
+  const { t } = useTranslation();
 
   const [clubsList, setClubsList] = useState<{ id: string; name: string }[]>([]);
   const [selectedClub, setSelectedClub] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (userProfile?.id) {
-      fetchClubsList();
-    }
+    if (userProfile?.id) fetchClubsList();
   }, [userProfile?.id]);
 
   const fetchClubsList = async () => {
@@ -37,9 +37,7 @@ const FederationProgress = () => {
     }).filter((c: any) => c.id);
 
     setClubsList(list);
-    if (list.length > 0 && !selectedClub) {
-      setSelectedClub(list[0].id);
-    }
+    if (list.length > 0 && !selectedClub) setSelectedClub(list[0].id);
     setLoading(false);
   };
 
@@ -65,7 +63,7 @@ const FederationProgress = () => {
                 <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-lg font-semibold">Πρόοδος</h1>
+                <h1 className="text-lg font-semibold">{t("federation.progress.title")}</h1>
               </div>
             </div>
           </div>
@@ -73,16 +71,15 @@ const FederationProgress = () => {
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
             <div className="hidden lg:flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Πρόοδος</h1>
-                <p className="text-muted-foreground text-sm">Αποτελέσματα τεστ αθλητών ανά σύλλογο</p>
+                <h1 className="text-2xl font-bold text-foreground">{t("federation.progress.title")}</h1>
+                <p className="text-muted-foreground text-sm">{t("federation.progress.subtitle")}</p>
               </div>
             </div>
 
-            {/* Club Selector */}
             <div className="mb-6">
               <Select value={selectedClub} onValueChange={setSelectedClub}>
                 <SelectTrigger className="w-full sm:w-[300px] rounded-none">
-                  <SelectValue placeholder="Επιλέξτε σύλλογο..." />
+                  <SelectValue placeholder={t("federation.progress.selectClub")} />
                 </SelectTrigger>
                 <SelectContent>
                   {clubsList.map((club) => (
@@ -93,9 +90,9 @@ const FederationProgress = () => {
             </div>
 
             {loading ? (
-              <p className="text-muted-foreground text-center py-8">Φόρτωση...</p>
+              <p className="text-muted-foreground text-center py-8">{t("federation.common.loading")}</p>
             ) : clubsList.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">Δεν υπάρχουν σύλλογοι.</p>
+              <p className="text-muted-foreground text-center py-8">{t("federation.progress.noClubs")}</p>
             ) : selectedClub ? (
               <CoachProgressTracking contextCoachId={selectedClub} />
             ) : null}

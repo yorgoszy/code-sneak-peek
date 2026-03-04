@@ -11,10 +11,12 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useAuth } from "@/hooks/useAuth";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface FederationSidebarProps {
   isCollapsed: boolean;
@@ -30,38 +32,15 @@ export const FederationSidebar = ({
   const { userProfile } = useRoleCheck();
   const { signOut } = useAuth();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const { t } = useTranslation();
 
   const menuItems = [
-    {
-      icon: Home,
-      label: "Επισκόπηση",
-      path: "/dashboard/federation-overview",
-    },
-    {
-      icon: Users,
-      label: "Χρήστες",
-      path: "/dashboard/federation-users",
-    },
-    {
-      icon: TrendingUp,
-      label: "Πρόοδος",
-      path: "/dashboard/federation-progress",
-    },
-    {
-      icon: MonitorPlay,
-      label: "Video Analysis",
-      path: "/dashboard/federation-video-analysis",
-    },
-    {
-      icon: CreditCard,
-      label: "Συνδρομές",
-      path: "/dashboard/federation-subscriptions",
-    },
-    {
-      icon: Settings,
-      label: "Επεξεργασία Προφίλ",
-      path: "/dashboard/federation-profile",
-    },
+    { icon: Home, label: t("federation.sidebar.overview"), path: "/dashboard/federation-overview" },
+    { icon: Users, label: t("federation.sidebar.users"), path: "/dashboard/federation-users" },
+    { icon: TrendingUp, label: t("federation.sidebar.progress"), path: "/dashboard/federation-progress" },
+    { icon: MonitorPlay, label: t("federation.sidebar.videoAnalysis"), path: "/dashboard/federation-video-analysis" },
+    { icon: CreditCard, label: t("federation.sidebar.subscriptions"), path: "/dashboard/federation-subscriptions" },
+    { icon: Settings, label: t("federation.sidebar.editProfile"), path: "/dashboard/federation-profile" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -70,9 +49,9 @@ export const FederationSidebar = ({
     <div className="flex items-center space-x-3">
       {!isCollapsed && (
         <div>
-          <h2 className="font-bold text-sm text-foreground">Ομοσπονδία</h2>
+          <h2 className="font-bold text-sm text-foreground">{t("federation.title")}</h2>
           <p className="text-xs text-muted-foreground truncate max-w-[160px]">
-            {userProfile?.name || "Federation Panel"}
+            {userProfile?.name || t("federation.panel")}
           </p>
         </div>
       )}
@@ -95,6 +74,16 @@ export const FederationSidebar = ({
           {!isCollapsed && <span>{item.label}</span>}
         </button>
       ))}
+
+      {/* Language Switcher */}
+      {!isCollapsed && (
+        <>
+          <div className="my-2 h-px bg-border" />
+          <div className="px-3 py-1">
+            <LanguageSwitcher />
+          </div>
+        </>
+      )}
 
       {/* RidAI Βοηθός Button */}
       <div className="my-2 h-px bg-border" />
@@ -120,7 +109,7 @@ export const FederationSidebar = ({
         className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors rounded-none"
       >
         <LogOut className="w-5 h-5 flex-shrink-0" />
-        {!isCollapsed && <span>Αποσύνδεση</span>}
+        {!isCollapsed && <span>{t("federation.sidebar.signOut")}</span>}
       </button>
     </div>
   );

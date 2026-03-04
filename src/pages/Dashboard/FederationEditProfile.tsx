@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ const FederationEditProfile = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,7 +26,6 @@ const FederationEditProfile = () => {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Password change
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
@@ -47,28 +48,28 @@ const FederationEditProfile = () => {
       .eq("id", userProfile.id);
 
     if (error) {
-      toast.error("Σφάλμα κατά την αποθήκευση");
+      toast.error(t("federation.editProfile.saveError"));
     } else {
-      toast.success("Το προφίλ ενημερώθηκε");
+      toast.success(t("federation.editProfile.saveSuccess"));
     }
     setSaving(false);
   };
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
-      toast.error("Ο κωδικός πρέπει να είναι τουλάχιστον 6 χαρακτήρες");
+      toast.error(t("federation.editProfile.passwordMinLength"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("Οι κωδικοί δεν ταιριάζουν");
+      toast.error(t("federation.editProfile.passwordMismatch"));
       return;
     }
     setChangingPassword(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
-      toast.error("Σφάλμα κατά την αλλαγή κωδικού");
+      toast.error(t("federation.editProfile.passwordChangeError"));
     } else {
-      toast.success("Ο κωδικός άλλαξε επιτυχώς");
+      toast.success(t("federation.editProfile.passwordChanged"));
       setNewPassword("");
       setConfirmPassword("");
     }
@@ -96,67 +97,65 @@ const FederationEditProfile = () => {
               <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                 <Menu className="h-5 w-5" />
               </Button>
-              <h1 className="text-lg font-semibold">Επεξεργασία Προφίλ</h1>
+              <h1 className="text-lg font-semibold">{t("federation.editProfile.title")}</h1>
             </div>
           </div>
 
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
             <div className="hidden lg:block mb-6">
-              <h1 className="text-2xl font-bold text-foreground">Επεξεργασία Προφίλ</h1>
-              <p className="text-muted-foreground text-sm">Διαχείριση στοιχείων ομοσπονδίας</p>
+              <h1 className="text-2xl font-bold text-foreground">{t("federation.editProfile.title")}</h1>
+              <p className="text-muted-foreground text-sm">{t("federation.editProfile.subtitle")}</p>
             </div>
 
             <div className="max-w-2xl space-y-6">
-              {/* Basic Info */}
               <Card className="rounded-none">
                 <CardHeader>
-                  <CardTitle className="text-lg">Βασικά Στοιχεία</CardTitle>
+                  <CardTitle className="text-lg">{t("federation.editProfile.basicInfo")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Όνομα Ομοσπονδίας</Label>
+                    <Label>{t("federation.editProfile.federationName")}</Label>
                     <Input value={name} onChange={(e) => setName(e.target.value)} className="rounded-none" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Email</Label>
+                    <Label>{t("federation.editProfile.email")}</Label>
                     <Input value={email} disabled className="rounded-none bg-muted" />
-                    <p className="text-xs text-muted-foreground">Το email δεν μπορεί να αλλάξει</p>
+                    <p className="text-xs text-muted-foreground">{t("federation.editProfile.emailCantChange")}</p>
                   </div>
                   <div className="space-y-2">
-                    <Label>Τηλέφωνο</Label>
-                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-none" placeholder="Τηλέφωνο επικοινωνίας" />
+                    <Label>{t("federation.editProfile.phone")}</Label>
+                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-none" placeholder={t("federation.editProfile.phonePlaceholder")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Σημειώσεις / Περιγραφή</Label>
-                    <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-none" rows={4} placeholder="Περιγραφή ομοσπονδίας, website, ΑΦΜ κτλ." />
+                    <Label>{t("federation.editProfile.notes")}</Label>
+                    <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-none" rows={4} placeholder={t("federation.editProfile.notesPlaceholder")} />
                   </div>
                   <Button onClick={handleSaveProfile} disabled={saving} className="rounded-none bg-foreground hover:bg-foreground/90 text-background">
                     <Save className="h-4 w-4 mr-2" />
-                    {saving ? "Αποθήκευση..." : "Αποθήκευση"}
+                    {saving ? t("federation.editProfile.saving") : t("federation.editProfile.save")}
                   </Button>
                 </CardContent>
               </Card>
 
-              {/* Password Change */}
               <Card className="rounded-none">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Lock className="h-5 w-5" />
-                    Αλλαγή Κωδικού
+                    {t("federation.editProfile.changePassword")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Νέος Κωδικός</Label>
-                    <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="rounded-none" placeholder="Τουλάχιστον 6 χαρακτήρες" />
+                    <Label>{t("federation.editProfile.newPassword")}</Label>
+                    <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="rounded-none" placeholder={t("federation.editProfile.newPasswordPlaceholder")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Επιβεβαίωση Κωδικού</Label>
-                    <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="rounded-none" placeholder="Επαναλάβετε τον κωδικό" />
+                    <Label>{t("federation.editProfile.confirmPassword")}</Label>
+                    <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="rounded-none" placeholder={t("federation.editProfile.confirmPasswordPlaceholder")} />
                   </div>
                   <Button onClick={handleChangePassword} disabled={changingPassword || !newPassword} variant="outline" className="rounded-none">
                     <Lock className="h-4 w-4 mr-2" />
-                    {changingPassword ? "Αλλαγή..." : "Αλλαγή Κωδικού"}
+                    {changingPassword ? t("federation.editProfile.changingPassword") : t("federation.editProfile.changePasswordBtn")}
                   </Button>
                 </CardContent>
               </Card>

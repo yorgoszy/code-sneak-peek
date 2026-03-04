@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from "react-i18next";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
@@ -23,11 +24,10 @@ const FederationSubscriptions = () => {
   const [selectedClub, setSelectedClub] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const { userProfile } = useRoleCheck();
+  const { t } = useTranslation();
 
   useEffect(() => {
-    if (userProfile?.id) {
-      fetchClubs();
-    }
+    if (userProfile?.id) fetchClubs();
   }, [userProfile?.id]);
 
   const fetchClubs = async () => {
@@ -41,18 +41,13 @@ const FederationSubscriptions = () => {
 
       const clubsList: Club[] = (data || [])
         .filter((item: any) => item.club)
-        .map((item: any) => ({
-          id: item.club.id,
-          name: item.club.name,
-        }));
+        .map((item: any) => ({ id: item.club.id, name: item.club.name }));
 
       setClubs(clubsList);
-      if (clubsList.length > 0) {
-        setSelectedClub(clubsList[0].id);
-      }
+      if (clubsList.length > 0) setSelectedClub(clubsList[0].id);
     } catch (error) {
       console.error("Error fetching clubs:", error);
-      toast.error("Σφάλμα φόρτωσης συλλόγων");
+      toast.error(t("federation.subscriptions.loadError"));
     } finally {
       setLoading(false);
     }
@@ -65,16 +60,11 @@ const FederationSubscriptions = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        <div className="hidden lg:block">
-          {renderSidebar()}
-        </div>
-
+        <div className="hidden lg:block">{renderSidebar()}</div>
         {isMobileOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileOpen(false)} />
-            <div className="relative w-64 h-full">
-              {renderSidebar()}
-            </div>
+            <div className="relative w-64 h-full">{renderSidebar()}</div>
           </div>
         )}
 
@@ -85,7 +75,7 @@ const FederationSubscriptions = () => {
                 <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-lg font-semibold">Συνδρομές</h1>
+                <h1 className="text-lg font-semibold">{t("federation.subscriptions.title")}</h1>
               </div>
             </div>
           </div>
@@ -93,22 +83,20 @@ const FederationSubscriptions = () => {
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
             <div className="hidden lg:flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Συνδρομές</h1>
-                <p className="text-muted-foreground">Εποπτεία συνδρομών των συλλόγων σας</p>
+                <h1 className="text-2xl font-bold text-foreground">{t("federation.subscriptions.title")}</h1>
+                <p className="text-muted-foreground">{t("federation.subscriptions.subtitle")}</p>
               </div>
             </div>
 
             <div className="mb-6">
-              <label className="text-sm font-medium text-foreground mb-2 block">Επιλογή Συλλόγου</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">{t("federation.subscriptions.selectClub")}</label>
               <Select value={selectedClub} onValueChange={setSelectedClub}>
                 <SelectTrigger className="w-full max-w-sm rounded-none">
-                  <SelectValue placeholder="Επιλέξτε σύλλογο..." />
+                  <SelectValue placeholder={t("federation.subscriptions.selectClubPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent className="rounded-none">
                   {clubs.map((club) => (
-                    <SelectItem key={club.id} value={club.id} className="rounded-none">
-                      {club.name}
-                    </SelectItem>
+                    <SelectItem key={club.id} value={club.id} className="rounded-none">{club.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -117,17 +105,17 @@ const FederationSubscriptions = () => {
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto" />
-                <p className="mt-2 text-muted-foreground">Φόρτωση...</p>
+                <p className="mt-2 text-muted-foreground">{t("federation.common.loading")}</p>
               </div>
             ) : !selectedClub ? (
               <div className="text-center py-12 text-muted-foreground">
-                Επιλέξτε σύλλογο για να δείτε τις συνδρομές
+                {t("federation.subscriptions.selectClubToView")}
               </div>
             ) : (
               <Tabs defaultValue="active" className="w-full">
                 <TabsList className="flex w-full justify-start mb-6 rounded-none h-auto flex-wrap gap-2">
-                  <TabsTrigger value="active" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ενεργές Συνδρομές</TabsTrigger>
-                  <TabsTrigger value="history" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ιστορικό</TabsTrigger>
+                  <TabsTrigger value="active" className="rounded-none whitespace-nowrap text-xs sm:text-sm">{t("federation.subscriptions.activeSubscriptions")}</TabsTrigger>
+                  <TabsTrigger value="history" className="rounded-none whitespace-nowrap text-xs sm:text-sm">{t("federation.subscriptions.history")}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="active">
