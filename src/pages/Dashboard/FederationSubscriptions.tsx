@@ -20,6 +20,7 @@ import { NewFederationSubscriptionDialog } from "@/components/federation/NewFede
 import { CoachSubscriptionEditDialog } from "@/components/coach/subscriptions/CoachSubscriptionEditDialog";
 import { CoachSubscriptionDeleteDialog } from "@/components/coach/subscriptions/CoachSubscriptionDeleteDialog";
 import { CoachSubscriptionActions } from "@/components/coach/subscriptions/CoachSubscriptionActions";
+import { CoachReceiptsManagement } from "@/components/coach/CoachReceiptsManagement";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
