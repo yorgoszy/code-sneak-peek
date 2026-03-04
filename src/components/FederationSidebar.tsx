@@ -37,9 +37,9 @@ export const FederationSidebar = ({
   const menuItems = [
     { icon: Home, label: t("federation.sidebar.overview"), path: "/dashboard/federation-overview" },
     { icon: Users, label: t("federation.sidebar.users"), path: "/dashboard/federation-users" },
+    { icon: CreditCard, label: t("federation.sidebar.subscriptions"), path: "/dashboard/federation-subscriptions" },
     { icon: TrendingUp, label: t("federation.sidebar.progress"), path: "/dashboard/federation-progress" },
     { icon: MonitorPlay, label: t("federation.sidebar.videoAnalysis"), path: "/dashboard/federation-video-analysis" },
-    { icon: CreditCard, label: t("federation.sidebar.subscriptions"), path: "/dashboard/federation-subscriptions" },
     { icon: Settings, label: t("federation.sidebar.editProfile"), path: "/dashboard/federation-profile" },
   ];
 
