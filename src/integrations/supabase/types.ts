@@ -2814,6 +2814,59 @@ export type Database = {
           },
         ]
       }
+      federation_category_templates: {
+        Row: {
+          category_type: string
+          created_at: string | null
+          federation_id: string
+          gender: string | null
+          id: string
+          max_age: number | null
+          max_weight: number | null
+          min_age: number | null
+          min_weight: number | null
+          name: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category_type?: string
+          created_at?: string | null
+          federation_id: string
+          gender?: string | null
+          id?: string
+          max_age?: number | null
+          max_weight?: number | null
+          min_age?: number | null
+          min_weight?: number | null
+          name: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category_type?: string
+          created_at?: string | null
+          federation_id?: string
+          gender?: string | null
+          id?: string
+          max_age?: number | null
+          max_weight?: number | null
+          min_age?: number | null
+          min_weight?: number | null
+          name?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_category_templates_federation_id_fkey"
+            columns: ["federation_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       federation_clubs: {
         Row: {
           club_id: string
