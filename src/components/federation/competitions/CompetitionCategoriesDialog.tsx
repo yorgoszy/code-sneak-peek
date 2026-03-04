@@ -46,16 +46,16 @@ const getAgeGroup = (name: string): string => {
   if (name.startsWith('U23')) return 'U23 (18-23)';
   if (name.startsWith('Νέοι 16-17')) return 'Νέοι 16-17';
   if (name.startsWith('Νέοι 14-15')) return 'Νέοι 14-15';
-  if (name.startsWith('Παίδες 12-13')) return 'Παίδες 12-13';
-  if (name.startsWith('Παίδες 10-11')) return 'Παίδες 10-11';
-  if (name.startsWith('Παίδες 8-9')) return 'Παίδες 8-9';
-  if (name.startsWith('Mini')) return 'Mini 5-7';
+  if (name.startsWith('Νέοι 12-13')) return 'Νέοι 12-13';
+  if (name.startsWith('Νέοι 10-11')) return 'Νέοι 10-11';
+  if (name.startsWith('Νέοι 8-9')) return 'Νέοι 8-9';
+  if (name.startsWith('Νέοι 5-7')) return 'Νέοι 5-7';
   return 'Άλλες';
 };
 
 const AGE_GROUP_ORDER = [
   'Ενήλικοι 18+', 'U23 (18-23)', 'Νέοι 16-17', 'Νέοι 14-15',
-  'Παίδες 12-13', 'Παίδες 10-11', 'Παίδες 8-9', 'Mini 5-7', 'Άλλες'
+  'Νέοι 12-13', 'Νέοι 10-11', 'Νέοι 8-9', 'Νέοι 5-7', 'Άλλες'
 ];
 
 export const CompetitionCategoriesDialog: React.FC<CompetitionCategoriesDialogProps> = ({
