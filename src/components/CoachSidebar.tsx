@@ -1,4 +1,5 @@
 import {
+  Swords,
   Home,
   Users,
   UsersRound,
