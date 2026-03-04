@@ -397,7 +397,7 @@ const FederationUsers = () => {
                     </Avatar>
                     <div>
                       <p className="text-sm font-medium">{coach.name}</p>
-                      <p className="text-xs text-muted-foreground">{coach.email}</p>
+                      <p className="text-xs text-muted-foreground">{coach.email} · {coach.role}</p>
                     </div>
                   </button>
                 ))}
