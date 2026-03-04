@@ -303,17 +303,15 @@ const FederationSubscriptions = () => {
                                   <TableCell>
                                     <CoachSubscriptionActions
                                       subscriptionId={sub.id}
-                                      status={sub.status}
                                       isPaused={sub.is_paused}
                                       isPaid={sub.is_paid || false}
                                       onPause={pauseSubscription}
                                       onResume={resumeSubscription}
                                       onRenew={renewSubscription}
                                       onTogglePayment={togglePaymentStatus}
-                                      onEdit={() => { setSubscriptionToEdit(sub); setEditDialogOpen(true); }}
-                                      onDelete={() => { setSubscriptionToDelete(sub.id); setDeleteDialogOpen(true); }}
+                                      onEdit={(id) => { setSubscriptionToEdit(sub); setEditDialogOpen(true); }}
+                                      onDelete={(id) => { setSubscriptionToDelete(sub.id); setDeleteDialogOpen(true); }}
                                     />
-                                  </TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
