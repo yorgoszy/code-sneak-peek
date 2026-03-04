@@ -59,8 +59,14 @@ const FederationSubscriptions = () => {
   const federationId = userProfile?.id;
 
   useEffect(() => {
-    if (federationId) fetchSubscriptions();
+    if (federationId) { fetchSubscriptions(); fetchSubscriptionTypes(); }
   }, [federationId]);
+
+  const fetchSubscriptionTypes = async () => {
+    if (!federationId) return;
+    const { data } = await supabase.from("subscription_types").select("id, name, price, duration_months").eq("coach_id", federationId);
+    setSubscriptionTypes(data || []);
+  };
 
   const fetchSubscriptions = async () => {
     if (!federationId) return;
