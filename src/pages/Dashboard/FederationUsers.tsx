@@ -189,8 +189,8 @@ const FederationUsers = () => {
   const searchCoaches = async (query: string) => {
     setCoachSearch(query);
     if (query.length < 2) { setAvailableCoaches([]); return; }
-    const { data } = await supabase.from("app_users").select("id, name, email, photo_url")
-      .eq("role", "coach").or(`name.ilike.%${query}%,email.ilike.%${query}%`).limit(10);
+    const { data } = await supabase.from("app_users").select("id, name, email, photo_url, role")
+      .or(`name.ilike.%${query}%,email.ilike.%${query}%`).limit(10);
     const existingClubIds = clubs.map((c) => c.club_id);
     setAvailableCoaches((data || []).filter((c: any) => !existingClubIds.includes(c.id)));
   };
