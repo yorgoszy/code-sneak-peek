@@ -66,12 +66,12 @@ export const NewFederationSubscriptionDialog: React.FC<NewFederationSubscription
       // Fetch federation's linked clubs via junction table
       const { data: clubLinks, error: linksError } = await supabase
         .from('federation_clubs')
-        .select('coach_id')
+        .select('club_id')
         .eq('federation_id', federationId);
 
       if (linksError) throw linksError;
 
-      const clubIds = (clubLinks || []).map(l => l.coach_id);
+      const clubIds = (clubLinks || []).map(l => l.club_id);
 
       if (clubIds.length > 0) {
         const { data: clubsData, error: clubsError } = await supabase
