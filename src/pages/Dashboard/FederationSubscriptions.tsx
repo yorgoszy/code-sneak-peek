@@ -56,6 +56,8 @@ const FederationSubscriptions = () => {
   const [subscriptionToDelete, setSubscriptionToDelete] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [subscriptionToEdit, setSubscriptionToEdit] = useState<FederationSubscription | null>(null);
+  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [selectedReceiptData, setSelectedReceiptData] = useState<any>(null);
 
   const federationId = userProfile?.id;
 
