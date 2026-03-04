@@ -54,6 +54,7 @@ const FederationCompetitions = () => {
   const [registrationsDialogOpen, setRegistrationsDialogOpen] = useState(false);
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [competitionToDelete, setCompetitionToDelete] = useState<string | null>(null);
+  const [templatesDialogOpen, setTemplatesDialogOpen] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState('');
