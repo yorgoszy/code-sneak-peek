@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Check, X, Pause, Play, RotateCcw, Edit2, Trash2 } from "lucide-react";
+import { Check, X, Pause, Play, RotateCcw, Edit2, Trash2, Receipt } from "lucide-react";
 
 interface CoachSubscriptionActionsProps {
   subscriptionId: string;
@@ -12,6 +12,7 @@ interface CoachSubscriptionActionsProps {
   onRenew: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onViewReceipt?: (id: string) => void;
 }
 
 export const CoachSubscriptionActions: React.FC<CoachSubscriptionActionsProps> = ({
@@ -23,7 +24,8 @@ export const CoachSubscriptionActions: React.FC<CoachSubscriptionActionsProps> =
   onResume,
   onRenew,
   onEdit,
-  onDelete
+  onDelete,
+  onViewReceipt
 }) => {
   return (
     <div className="flex gap-1">
@@ -83,6 +85,19 @@ export const CoachSubscriptionActions: React.FC<CoachSubscriptionActionsProps> =
       >
         <Edit2 className="w-3 h-3 md:w-4 md:h-4" />
       </Button>
+
+      {/* Receipt Button */}
+      {onViewReceipt && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onViewReceipt(subscriptionId)}
+          className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0 border-[#cb8954] text-[#cb8954] hover:bg-[#cb8954]/10"
+          title="Απόδειξη συνδρομής"
+        >
+          <Receipt className="w-3 h-3 md:w-4 md:h-4" />
+        </Button>
+      )}
 
       {/* Delete Button */}
       <Button

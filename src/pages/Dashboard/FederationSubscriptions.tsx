@@ -5,6 +5,7 @@ import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Menu, Search, Plus, CreditCard, Receipt } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +57,8 @@ const FederationSubscriptions = () => {
   const [subscriptionToDelete, setSubscriptionToDelete] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [subscriptionToEdit, setSubscriptionToEdit] = useState<FederationSubscription | null>(null);
+  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [selectedReceiptData, setSelectedReceiptData] = useState<any>(null);
 
   const federationId = userProfile?.id;
 
@@ -178,6 +181,36 @@ const FederationSubscriptions = () => {
     if (status === 'active') return <Badge className="bg-green-100 text-green-800 rounded-none">{language === 'el' ? 'Ενεργή' : 'Active'}</Badge>;
     if (status === 'expired') return <Badge className="bg-red-100 text-red-800 rounded-none">{language === 'el' ? 'Ληγμένη' : 'Expired'}</Badge>;
     return <Badge className="bg-muted text-muted-foreground rounded-none">{status}</Badge>;
+  };
+
+  const handleViewReceipt = async (subscriptionId: string) => {
+    const sub = subscriptions.find(s => s.id === subscriptionId);
+    if (!sub) return;
+
+    try {
+      const { data: receipts, error } = await supabase
+        .from('coach_receipts')
+        .select('*, app_users!coach_receipts_user_id_fkey(name, email, avatar_url), subscription_types(name)')
+        .eq('coach_id', federationId!)
+        .eq('user_id', sub.user_id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Find the closest receipt to the subscription
+      const receipt = receipts?.find(r => r.subscription_id === subscriptionId) || receipts?.[0];
+
+      if (!receipt) {
+        toast.error(language === 'el' ? 'Δεν βρέθηκε απόδειξη για αυτή τη συνδρομή' : 'No receipt found for this subscription');
+        return;
+      }
+
+      setSelectedReceiptData(receipt);
+      setReceiptDialogOpen(true);
+    } catch (error) {
+      console.error('Error loading receipt:', error);
+      toast.error(language === 'el' ? 'Σφάλμα κατά τη φόρτωση της απόδειξης' : 'Error loading receipt');
+    }
   };
 
   const filtered = subscriptions
@@ -316,6 +349,7 @@ const FederationSubscriptions = () => {
                                       onTogglePayment={togglePaymentStatus}
                                       onEdit={(id) => { setSubscriptionToEdit(sub); setEditDialogOpen(true); }}
                                       onDelete={(id) => { setSubscriptionToDelete(sub.id); setDeleteDialogOpen(true); }}
+                                      onViewReceipt={handleViewReceipt}
                                     />
                                   </TableCell>
                                 </TableRow>
@@ -361,6 +395,55 @@ const FederationSubscriptions = () => {
         onClose={() => setDeleteDialogOpen(false)}
         onDelete={deleteSubscription}
       />
+
+      {/* Receipt Preview Dialog */}
+      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
+        <DialogContent className="rounded-none max-w-md">
+          <DialogHeader>
+            <DialogTitle>Απόδειξη {selectedReceiptData?.receipt_number}</DialogTitle>
+          </DialogHeader>
+          {selectedReceiptData && (
+            <div className="space-y-4 text-sm">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={selectedReceiptData.app_users?.avatar_url || undefined} />
+                  <AvatarFallback>
+                    {selectedReceiptData.app_users?.name?.charAt(0) || 'Α'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{selectedReceiptData.app_users?.name || '-'}</p>
+                  <p className="text-xs text-muted-foreground">{selectedReceiptData.app_users?.email || '-'}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-muted-foreground">Ημερομηνία:</span>
+                  <p>{format(new Date(selectedReceiptData.created_at), 'dd/MM/yyyy', { locale: el })}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Τύπος:</span>
+                  <p>{selectedReceiptData.subscription_types?.name || '-'}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Είδος:</span>
+                  <p>{selectedReceiptData.receipt_type === 'subscription' ? 'Συνδρομή' : selectedReceiptData.receipt_type}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">ΜΑΡΚ ΑΑΔΕ:</span>
+                  <p>{selectedReceiptData.mark || '-'}</p>
+                </div>
+              </div>
+              
+              <div className="pt-2 border-t">
+                <span className="text-muted-foreground text-xs">Ποσό:</span>
+                <p className="text-xl font-bold text-[#00ffba]">€{Number(selectedReceiptData.amount).toFixed(2)}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 };
