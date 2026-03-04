@@ -120,7 +120,61 @@ const FederationUsers = () => {
     const { error } = await supabase.from("federation_clubs").insert({ federation_id: userProfile.id, club_id: coachId });
     if (error) { toast({ variant: "destructive", title: t("federation.common.error"), description: t("federation.users.clubExists") }); return; }
     toast({ title: t("federation.common.success"), description: t("federation.users.clubAdded") });
-    setAddDialogOpen(false); setCoachSearch(""); fetchClubs(); fetchClubsList();
+    setAddDialogOpen(false); setCoachSearch(""); setAddMode("search"); fetchClubs(); fetchClubsList();
+  };
+
+  const handleCreateClub = async () => {
+    if (!userProfile?.id || !newClubName.trim() || !newClubEmail.trim()) return;
+    setCreatingClub(true);
+    try {
+      // Check if coach with this email already exists
+      const { data: existing } = await supabase.from("app_users")
+        .select("id").eq("email", newClubEmail.trim()).eq("role", "coach").single();
+      
+      if (existing) {
+        await handleAddClub(existing.id);
+        setCreatingClub(false);
+        return;
+      }
+
+      // Create new coach user in app_users
+      const { data: newCoach, error: createError } = await supabase.from("app_users")
+        .insert({
+          name: newClubName.trim(),
+          email: newClubEmail.trim(),
+          phone: newClubPhone.trim() || null,
+          role: "coach",
+          user_status: "active",
+        })
+        .select("id")
+        .single();
+
+      if (createError) {
+        toast({ variant: "destructive", title: t("federation.common.error"), description: createError.message });
+        setCreatingClub(false);
+        return;
+      }
+
+      // Link to federation
+      const { error: linkError } = await supabase.from("federation_clubs")
+        .insert({ federation_id: userProfile.id, club_id: newCoach.id });
+
+      if (linkError) {
+        toast({ variant: "destructive", title: t("federation.common.error"), description: linkError.message });
+        setCreatingClub(false);
+        return;
+      }
+
+      toast({ title: t("federation.common.success"), description: t("federation.users.clubAdded") });
+      setAddDialogOpen(false);
+      setNewClubName(""); setNewClubEmail(""); setNewClubPhone("");
+      setAddMode("search");
+      fetchClubs(); fetchClubsList();
+    } catch (err: any) {
+      toast({ variant: "destructive", title: t("federation.common.error"), description: err.message });
+    } finally {
+      setCreatingClub(false);
+    }
   };
 
   const handleDeleteClub = async () => {
