@@ -643,5 +643,104 @@
     "uploadError": "Error uploading health card",
     "deleteSuccess": "Health card deleted",
     "deleteError": "Error deleting health card"
+  },
+  "federation": {
+    "title": "Federation",
+    "panel": "Federation Panel",
+    "sidebar": {
+      "overview": "Overview",
+      "users": "Users",
+      "progress": "Progress",
+      "videoAnalysis": "Video Analysis",
+      "subscriptions": "Subscriptions",
+      "editProfile": "Edit Profile",
+      "signOut": "Sign Out"
+    },
+    "overview": {
+      "title": "Federation Overview",
+      "welcome": "Welcome",
+      "clubs": "Clubs",
+      "athletes": "Athletes",
+      "activePrograms": "Active Programs",
+      "recentActivity": "Recent Activity",
+      "noRecentActivity": "No recent activity."
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Clubs and athletes of the federation",
+      "clubsTab": "Clubs",
+      "athletesTab": "Athletes",
+      "searchClub": "Search club...",
+      "searchAthlete": "Search athlete...",
+      "addClub": "Add Club",
+      "allClubs": "All clubs",
+      "noClubsFound": "No clubs found.",
+      "noAthletesFound": "No athletes found.",
+      "athletesCount": "athletes",
+      "total": "Total",
+      "addClubDialog": "Add Club",
+      "searchCoach": "Search coach/club...",
+      "noCoachesFound": "No coaches found.",
+      "deleteConfirmTitle": "Are you sure?",
+      "deleteConfirmDesc": "This action will remove the club from your federation.",
+      "remove": "Remove",
+      "clubExists": "Club already exists.",
+      "clubAdded": "Club added.",
+      "clubRemoved": "Club removed."
+    },
+    "progress": {
+      "title": "Progress",
+      "subtitle": "Athlete test results per club",
+      "selectClub": "Select club...",
+      "noClubs": "No clubs found."
+    },
+    "videoAnalysis": {
+      "title": "Video Analysis",
+      "subtitle": "Video analysis of athletes per club",
+      "selectClub": "Select club..."
+    },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "subtitle": "Subscription oversight of your clubs",
+      "selectClub": "Select Club",
+      "selectClubPlaceholder": "Select club...",
+      "selectClubToView": "Select a club to view subscriptions",
+      "activeSubscriptions": "Active Subscriptions",
+      "history": "History",
+      "loadError": "Error loading clubs"
+    },
+    "editProfile": {
+      "title": "Edit Profile",
+      "subtitle": "Manage federation details",
+      "basicInfo": "Basic Information",
+      "federationName": "Federation Name",
+      "email": "Email",
+      "emailCantChange": "Email cannot be changed",
+      "phone": "Phone",
+      "phonePlaceholder": "Contact phone",
+      "notes": "Notes / Description",
+      "notesPlaceholder": "Federation description, website, VAT number etc.",
+      "save": "Save",
+      "saving": "Saving...",
+      "saveSuccess": "Profile updated",
+      "saveError": "Error saving profile",
+      "changePassword": "Change Password",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "At least 6 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Repeat password",
+      "changePasswordBtn": "Change Password",
+      "changingPassword": "Changing...",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords don't match",
+      "passwordChanged": "Password changed successfully",
+      "passwordChangeError": "Error changing password"
+    },
+    "common": {
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "cancel": "Cancel"
+    }
   }
 }

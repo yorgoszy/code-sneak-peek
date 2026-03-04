@@ -8000,8 +8000,8 @@ export type Database = {
       send_videocall_reminders: {
         Args: {
           reminder_type: string
-          time_window_end: unknown
-          time_window_start: unknown
+          time_window_end: string
+          time_window_start: string
         }
         Returns: undefined
       }

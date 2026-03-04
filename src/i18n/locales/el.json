@@ -643,5 +643,104 @@
     "uploadError": "Σφάλμα κατά το ανέβασμα",
     "deleteSuccess": "Η κάρτα υγείας διαγράφηκε",
     "deleteError": "Σφάλμα κατά τη διαγραφή"
+  },
+  "federation": {
+    "title": "Ομοσπονδία",
+    "panel": "Federation Panel",
+    "sidebar": {
+      "overview": "Επισκόπηση",
+      "users": "Χρήστες",
+      "progress": "Πρόοδος",
+      "videoAnalysis": "Video Analysis",
+      "subscriptions": "Συνδρομές",
+      "editProfile": "Επεξεργασία Προφίλ",
+      "signOut": "Αποσύνδεση"
+    },
+    "overview": {
+      "title": "Επισκόπηση Ομοσπονδίας",
+      "welcome": "Καλώς ήρθατε",
+      "clubs": "Σύλλογοι",
+      "athletes": "Αθλητές",
+      "activePrograms": "Ενεργά Προγράμματα",
+      "recentActivity": "Πρόσφατη Δραστηριότητα",
+      "noRecentActivity": "Δεν υπάρχει πρόσφατη δραστηριότητα."
+    },
+    "users": {
+      "title": "Χρήστες",
+      "subtitle": "Σύλλογοι και αθλητές της ομοσπονδίας",
+      "clubsTab": "Σύλλογοι",
+      "athletesTab": "Αθλητές",
+      "searchClub": "Αναζήτηση συλλόγου...",
+      "searchAthlete": "Αναζήτηση αθλητή...",
+      "addClub": "Προσθήκη Συλλόγου",
+      "allClubs": "Όλοι οι σύλλογοι",
+      "noClubsFound": "Δεν βρέθηκαν σύλλογοι.",
+      "noAthletesFound": "Δεν βρέθηκαν αθλητές.",
+      "athletesCount": "αθλητές",
+      "total": "Σύνολο",
+      "addClubDialog": "Προσθήκη Συλλόγου",
+      "searchCoach": "Αναζήτηση coach/συλλόγου...",
+      "noCoachesFound": "Δεν βρέθηκαν coaches.",
+      "deleteConfirmTitle": "Είστε σίγουροι;",
+      "deleteConfirmDesc": "Αυτή η ενέργεια θα αφαιρέσει τον σύλλογο από την ομοσπονδία σας.",
+      "remove": "Αφαίρεση",
+      "clubExists": "Ο σύλλογος υπάρχει ήδη.",
+      "clubAdded": "Ο σύλλογος προστέθηκε.",
+      "clubRemoved": "Ο σύλλογος αφαιρέθηκε."
+    },
+    "progress": {
+      "title": "Πρόοδος",
+      "subtitle": "Αποτελέσματα τεστ αθλητών ανά σύλλογο",
+      "selectClub": "Επιλέξτε σύλλογο...",
+      "noClubs": "Δεν υπάρχουν σύλλογοι."
+    },
+    "videoAnalysis": {
+      "title": "Video Analysis",
+      "subtitle": "Ανάλυση βίντεο αθλητών ανά σύλλογο",
+      "selectClub": "Επιλέξτε σύλλογο..."
+    },
+    "subscriptions": {
+      "title": "Συνδρομές",
+      "subtitle": "Εποπτεία συνδρομών των συλλόγων σας",
+      "selectClub": "Επιλογή Συλλόγου",
+      "selectClubPlaceholder": "Επιλέξτε σύλλογο...",
+      "selectClubToView": "Επιλέξτε σύλλογο για να δείτε τις συνδρομές",
+      "activeSubscriptions": "Ενεργές Συνδρομές",
+      "history": "Ιστορικό",
+      "loadError": "Σφάλμα φόρτωσης συλλόγων"
+    },
+    "editProfile": {
+      "title": "Επεξεργασία Προφίλ",
+      "subtitle": "Διαχείριση στοιχείων ομοσπονδίας",
+      "basicInfo": "Βασικά Στοιχεία",
+      "federationName": "Όνομα Ομοσπονδίας",
+      "email": "Email",
+      "emailCantChange": "Το email δεν μπορεί να αλλάξει",
+      "phone": "Τηλέφωνο",
+      "phonePlaceholder": "Τηλέφωνο επικοινωνίας",
+      "notes": "Σημειώσεις / Περιγραφή",
+      "notesPlaceholder": "Περιγραφή ομοσπονδίας, website, ΑΦΜ κτλ.",
+      "save": "Αποθήκευση",
+      "saving": "Αποθήκευση...",
+      "saveSuccess": "Το προφίλ ενημερώθηκε",
+      "saveError": "Σφάλμα κατά την αποθήκευση",
+      "changePassword": "Αλλαγή Κωδικού",
+      "newPassword": "Νέος Κωδικός",
+      "newPasswordPlaceholder": "Τουλάχιστον 6 χαρακτήρες",
+      "confirmPassword": "Επιβεβαίωση Κωδικού",
+      "confirmPasswordPlaceholder": "Επαναλάβετε τον κωδικό",
+      "changePasswordBtn": "Αλλαγή Κωδικού",
+      "changingPassword": "Αλλαγή...",
+      "passwordMinLength": "Ο κωδικός πρέπει να είναι τουλάχιστον 6 χαρακτήρες",
+      "passwordMismatch": "Οι κωδικοί δεν ταιριάζουν",
+      "passwordChanged": "Ο κωδικός άλλαξε επιτυχώς",
+      "passwordChangeError": "Σφάλμα κατά την αλλαγή κωδικού"
+    },
+    "common": {
+      "loading": "Φόρτωση...",
+      "error": "Σφάλμα",
+      "success": "Επιτυχία",
+      "cancel": "Ακύρωση"
+    }
   }
 }
