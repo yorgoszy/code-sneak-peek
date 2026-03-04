@@ -51,8 +51,13 @@ const FederationUsers = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clubToDelete, setClubToDelete] = useState<string | null>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addMode, setAddMode] = useState<'search' | 'create'>('search');
   const [coachSearch, setCoachSearch] = useState("");
   const [availableCoaches, setAvailableCoaches] = useState<any[]>([]);
+  const [newClubName, setNewClubName] = useState("");
+  const [newClubEmail, setNewClubEmail] = useState("");
+  const [newClubPhone, setNewClubPhone] = useState("");
+  const [creatingClub, setCreatingClub] = useState(false);
   const [clubsList, setClubsList] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
