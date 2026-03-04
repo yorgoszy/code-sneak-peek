@@ -38,7 +38,8 @@ const FederationUsers = () => {
   const { userProfile } = useRoleCheck();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
 
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [athletesLoading, setAthletesLoading] = useState(true);
