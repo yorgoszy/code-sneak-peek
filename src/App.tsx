@@ -224,6 +224,7 @@ function App() {
                       <Route path="/dashboard/federation-progress" element={<ProtectedRoute><FederationProgress /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-video-analysis" element={<ProtectedRoute><FederationVideoAnalysis /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-subscriptions" element={<ProtectedRoute><FederationSubscriptions /></ProtectedRoute>} />
+                      <Route path="/dashboard/federation-competitions" element={<ProtectedRoute><FederationCompetitions /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
 
                       {/* Protected user routes */}
