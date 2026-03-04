@@ -572,6 +572,7 @@ const Auth = () => {
     }
   };
 
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setLoginFeedback(null);
