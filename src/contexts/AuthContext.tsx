@@ -12,6 +12,7 @@ interface AuthContextType {
   userProfile: any;
   rolesLoading: boolean;
   signOut: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
   isAuthenticated: boolean;
   hasRole: (role: UserRole) => boolean;
   isAdmin: () => boolean;
