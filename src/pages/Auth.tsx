@@ -933,6 +933,70 @@ const Auth = () => {
                     </div>
                   </form>
                 </TabsContent>
+
+                <TabsContent value="fed-signup">
+                  <form onSubmit={handleFederationSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="fed-name" className="text-white">{language === 'el' ? 'Όνομα Ομοσπονδίας' : 'Federation Name'}</Label>
+                      <Input id="fed-name" name="fed-name" type="text" placeholder={language === 'el' ? 'π.χ. Ελληνική Ομοσπονδία' : 'e.g. Greek Federation'} required className="bg-[hsl(var(--auth-black))] border-white text-white placeholder:text-white/60" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fed-email" className="text-white">{t.authEmail}</Label>
+                      <Input id="fed-email" name="fed-email" type="email" placeholder="federation@email.com" required className="bg-[hsl(var(--auth-black))] border-white text-white placeholder:text-white/60" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fed-password" className="text-white">{t.authPassword}</Label>
+                      <Input
+                        id="fed-password"
+                        name="fed-password"
+                        type="password"
+                        required
+                        minLength={8}
+                        value={fedSignupPassword}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFedSignupPassword(val);
+                          const lowerRe = /[a-zα-ωάέήίόύώϊϋΐΰ]/;
+                          const upperRe = /[A-ZΑ-ΩΆΈΉΊΌΎΏΪΫ]/;
+                          const numberRe = /[0-9]/;
+                          const specialRe = /[^A-Za-z0-9Α-ΩΆΈΉΊΌΎΏΪΫα-ωάέήίόύώϊϋΐΰ]/;
+                          const errors: string[] = [];
+                          if (val.length < 8) errors.push(t.authPasswordMinChars);
+                          if (!lowerRe.test(val)) errors.push(t.authPasswordLowercase);
+                          if (!upperRe.test(val)) errors.push(t.authPasswordUppercase);
+                          if (!numberRe.test(val)) errors.push(language === 'el' ? "αριθμούς" : "numbers");
+                          if (!specialRe.test(val)) errors.push(language === 'el' ? "ειδικούς χαρακτήρες" : "special characters");
+                          setFedPasswordError(errors.length ? `${t.authPasswordRequirements} ${errors.join(', ')}.` : null);
+                        }}
+                        aria-invalid={!!fedPasswordError}
+                        className="bg-[hsl(var(--auth-black))] border-white text-white placeholder:text-white/60"
+                      />
+                      <p className={`text-xs ${fedPasswordError ? 'text-red-600' : 'text-white/70'}`}>
+                        {t.authPasswordHint}
+                      </p>
+                    </div>
+
+                    {fedSignupFeedback && (
+                      <Alert variant={fedSignupFeedback.variant} className="rounded-none bg-[hsl(var(--auth-black))] border-white text-white">
+                        <AlertTitle className="text-white">{fedSignupFeedback.title}</AlertTitle>
+                        {fedSignupFeedback.description && (
+                          <AlertDescription className="text-white">{fedSignupFeedback.description}</AlertDescription>
+                        )}
+                      </Alert>
+                    )}
+
+                    <Button 
+                      type="submit" 
+                      className="w-full rounded-none bg-white text-black hover:bg-white/90 border-2 border-transparent transition-all duration-300 disabled:bg-white disabled:opacity-100 disabled:cursor-not-allowed" 
+                      disabled={isLoading || !!fedPasswordError || fedSignupPassword.length === 0}
+                    >
+                      {isLoading ? t.authSigningUp : (language === 'el' ? 'Εγγραφή Ομοσπονδίας' : 'Sign Up as Federation')}
+                    </Button>
+                    <div className="text-xs text-white text-center">
+                      {t.authAfterSignup}
+                    </div>
+                  </form>
+                </TabsContent>
               </Tabs>
             )}
 
