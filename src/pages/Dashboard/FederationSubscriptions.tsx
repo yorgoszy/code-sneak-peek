@@ -267,7 +267,7 @@ const FederationSubscriptions = () => {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>{language === 'el' ? 'Χρήστης' : 'User'}</TableHead>
+                                <TableHead>{language === 'el' ? 'Σωματείο' : 'Club'}</TableHead>
                                 <TableHead>{language === 'el' ? 'Τύπος' : 'Type'}</TableHead>
                                 <TableHead>{language === 'el' ? 'Κατάσταση' : 'Status'}</TableHead>
                                 <TableHead>{language === 'el' ? 'Λήξη' : 'Expiry'}</TableHead>
