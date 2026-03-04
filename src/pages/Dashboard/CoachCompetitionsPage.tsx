@@ -276,102 +276,107 @@ const CoachCompetitionsContent: React.FC = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
           {competitions.map(comp => (
-            <Card key={comp.id} className="rounded-none">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-base">{comp.name}</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">{comp.federation_name}</p>
+            <Card key={comp.id} className="rounded-none flex flex-col">
+              <CardHeader className="pb-2 px-3 md:px-6 pt-3 md:pt-6">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-sm md:text-base truncate">{comp.name}</CardTitle>
+                    <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5 truncate">{comp.federation_name}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(comp.status)}
-                  </div>
+                  {getStatusBadge(comp.status)}
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <CardContent className="space-y-2 md:space-y-3 px-3 md:px-6 pb-3 md:pb-6 flex-1 flex flex-col">
+                {/* Info rows */}
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs md:text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {format(new Date(comp.competition_date), 'd MMMM yyyy', { locale: el })}
+                    <Calendar className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{format(new Date(comp.competition_date), 'd MMM yyyy', { locale: el })}</span>
                   </span>
                   {comp.location && (
                     <span className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {comp.location}
+                      <MapPin className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{comp.location}</span>
                     </span>
                   )}
                   <span className="flex items-center gap-1">
-                    <Swords className="h-3 w-3" /> {comp.categories_count} κατηγορίες
+                    <Swords className="h-3 w-3 shrink-0" />
+                    {comp.categories_count} κατηγορίες
                   </span>
                   <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" /> {comp.my_registrations_count} δηλώσεις μου
+                    <Users className="h-3 w-3 shrink-0" />
+                    {comp.my_registrations_count} δηλώσεις
                   </span>
                 </div>
 
                 {comp.registration_deadline && (
-                  <p className={`text-xs ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive' : 'text-muted-foreground'}`}>
-                    Deadline δηλώσεων: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
+                  <p className={`text-[11px] md:text-xs ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                    Deadline: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
                     {isDeadlinePassed(comp.registration_deadline) && ' (Έληξε)'}
                   </p>
                 )}
 
                 {comp.description && (
-                  <p className="text-sm text-muted-foreground">{comp.description}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{comp.description}</p>
                 )}
 
-                <div className="flex items-center gap-2 pt-2 border-t">
+                {/* Actions */}
+                <div className="flex flex-wrap items-center gap-1.5 md:gap-2 pt-2 border-t mt-auto">
                   {!isDeadlinePassed(comp.registration_deadline) && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="rounded-none"
+                      className="rounded-none text-xs h-8"
                       onClick={() => handleOpenRegister(comp)}
                     >
-                      <UserPlus className="h-4 w-4 mr-1" /> Δήλωση Αθλητή
+                      <UserPlus className="h-3.5 w-3.5 mr-1" />
+                      <span className="hidden sm:inline">Δήλωση</span>
+                      <span className="sm:hidden">+</span>
                     </Button>
                   )}
                   {comp.regulations_pdf_url && (
                     <a href={comp.regulations_pdf_url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="rounded-none">
-                        <FileText className="h-4 w-4 mr-1" /> Κανονισμοί
+                      <Button variant="outline" size="sm" className="rounded-none text-xs h-8">
+                        <FileText className="h-3.5 w-3.5 sm:mr-1" />
+                        <span className="hidden sm:inline">PDF</span>
                       </Button>
                     </a>
                   )}
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="rounded-none ml-auto"
+                    className="rounded-none ml-auto text-xs h-8"
                     onClick={() => toggleExpand(comp.id)}
                   >
-                    {expandedComp === comp.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    <span className="ml-1 text-xs">Οι δηλώσεις μου</span>
+                    {expandedComp === comp.id ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                    <span className="ml-1 hidden sm:inline">Δηλώσεις</span>
                   </Button>
                 </div>
 
                 {/* Expanded registrations */}
                 {expandedComp === comp.id && (
-                  <div className="mt-3 space-y-2">
+                  <div className="mt-2 space-y-1.5">
                     {(compRegistrations[comp.id] || []).length === 0 ? (
-                      <p className="text-xs text-muted-foreground text-center py-3">Δεν υπάρχουν δηλώσεις ακόμα</p>
+                      <p className="text-xs text-muted-foreground text-center py-3">Δεν υπάρχουν δηλώσεις</p>
                     ) : (
                       (compRegistrations[comp.id] || []).map(reg => (
-                        <div key={reg.id} className="flex items-center justify-between p-2 border rounded-none text-sm">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-7 w-7">
+                        <div key={reg.id} className="flex items-center justify-between p-1.5 md:p-2 border rounded-none text-xs md:text-sm gap-1">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <Avatar className="h-6 w-6 shrink-0">
                               <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
-                              <AvatarFallback className="text-xs">{reg.athlete?.name?.charAt(0) || '?'}</AvatarFallback>
+                              <AvatarFallback className="text-[10px]">{reg.athlete?.name?.charAt(0) || '?'}</AvatarFallback>
                             </Avatar>
-                            <span className="font-medium">{reg.athlete?.name}</span>
+                            <span className="font-medium truncate">{reg.athlete?.name}</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="rounded-none text-xs">{reg.category?.name}</Badge>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Badge variant="outline" className="rounded-none text-[10px] md:text-xs max-w-[100px] truncate">{reg.category?.name}</Badge>
                             {!isDeadlinePassed(competitions.find(c => c.id === comp.id)?.registration_deadline || null) && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="rounded-none h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                className="rounded-none h-6 w-6 p-0 text-destructive hover:text-destructive"
                                 onClick={() => { setRegToDelete(reg.id); setDeleteDialogOpen(true); }}
                               >
                                 <Trash2 className="h-3 w-3" />
