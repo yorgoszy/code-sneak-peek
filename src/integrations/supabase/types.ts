@@ -2859,6 +2859,180 @@ export type Database = {
           },
         ]
       }
+      federation_competition_categories: {
+        Row: {
+          category_type: string
+          competition_id: string
+          created_at: string
+          gender: string | null
+          id: string
+          max_age: number | null
+          max_weight: number | null
+          min_age: number | null
+          min_weight: number | null
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          category_type: string
+          competition_id: string
+          created_at?: string
+          gender?: string | null
+          id?: string
+          max_age?: number | null
+          max_weight?: number | null
+          min_age?: number | null
+          min_weight?: number | null
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          category_type?: string
+          competition_id?: string
+          created_at?: string
+          gender?: string | null
+          id?: string
+          max_age?: number | null
+          max_weight?: number | null
+          min_age?: number | null
+          min_weight?: number | null
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_competition_categories_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      federation_competition_registrations: {
+        Row: {
+          athlete_id: string
+          category_id: string
+          club_id: string
+          competition_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          registration_status: string
+          updated_at: string
+          weigh_in_date: string | null
+          weigh_in_status: string | null
+          weigh_in_weight: number | null
+        }
+        Insert: {
+          athlete_id: string
+          category_id: string
+          club_id: string
+          competition_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          registration_status?: string
+          updated_at?: string
+          weigh_in_date?: string | null
+          weigh_in_status?: string | null
+          weigh_in_weight?: number | null
+        }
+        Update: {
+          athlete_id?: string
+          category_id?: string
+          club_id?: string
+          competition_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          registration_status?: string
+          updated_at?: string
+          weigh_in_date?: string | null
+          weigh_in_status?: string | null
+          weigh_in_weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_competition_registrations_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_competition_registrations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competition_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_competition_registrations_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_competition_registrations_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      federation_competitions: {
+        Row: {
+          competition_date: string
+          created_at: string
+          description: string | null
+          federation_id: string
+          id: string
+          location: string | null
+          name: string
+          registration_deadline: string | null
+          regulations_pdf_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          competition_date: string
+          created_at?: string
+          description?: string | null
+          federation_id: string
+          id?: string
+          location?: string | null
+          name: string
+          registration_deadline?: string | null
+          regulations_pdf_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          competition_date?: string
+          created_at?: string
+          description?: string | null
+          federation_id?: string
+          id?: string
+          location?: string | null
+          name?: string
+          registration_deadline?: string | null
+          regulations_pdf_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_competitions_federation_id_fkey"
+            columns: ["federation_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fms_exercise_alternatives: {
         Row: {
           alternative_exercise_id: string
