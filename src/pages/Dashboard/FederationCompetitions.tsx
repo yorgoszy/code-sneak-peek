@@ -355,9 +355,12 @@ const FederationCompetitions = () => {
               </div>
             </div>
 
-            {/* Mobile add button */}
-            <div className="lg:hidden mb-4">
-              <Button onClick={() => { resetForm(); setCreateDialogOpen(true); }} className="w-full rounded-none bg-foreground text-background hover:bg-foreground/90">
+            {/* Mobile buttons */}
+            <div className="lg:hidden mb-4 flex gap-2">
+              <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="flex-1 rounded-none">
+                <Settings className="h-4 w-4 mr-2" /> Κατηγορίες
+              </Button>
+              <Button onClick={() => { resetForm(); setCreateDialogOpen(true); }} className="flex-1 rounded-none bg-foreground text-background hover:bg-foreground/90">
                 <Plus className="h-4 w-4 mr-2" /> Νέος Αγώνας
               </Button>
             </div>
