@@ -48,14 +48,17 @@ export const FederationSidebar = ({
   const isActive = (path: string) => location.pathname === path;
 
   const headerContent = (
-    <div className="flex items-center space-x-3">
+    <div className="flex items-center justify-between">
       {!isCollapsed && (
-        <div>
-          <h2 className="font-bold text-sm text-foreground">{t("federation.title")}</h2>
-          <p className="text-xs text-muted-foreground truncate max-w-[160px]">
-            {userProfile?.name || t("federation.panel")}
-          </p>
-        </div>
+        <>
+          <div>
+            <h2 className="font-bold text-sm text-foreground">{t("federation.title")}</h2>
+            <p className="text-xs text-muted-foreground truncate max-w-[130px]">
+              {userProfile?.name || t("federation.panel")}
+            </p>
+          </div>
+          <LanguageSwitcher />
+        </>
       )}
     </div>
   );
