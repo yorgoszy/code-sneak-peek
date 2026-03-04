@@ -24,6 +24,8 @@ const Auth = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [coachSignupPassword, setCoachSignupPassword] = useState("");
   const [coachPasswordError, setCoachPasswordError] = useState<string | null>(null);
+  const [fedSignupPassword, setFedSignupPassword] = useState("");
+  const [fedPasswordError, setFedPasswordError] = useState<string | null>(null);
   const [signupFeedback, setSignupFeedback] = useState<
     | { variant: "default" | "destructive"; title: string; description?: string }
     | null
@@ -32,11 +34,15 @@ const Auth = () => {
     | { variant: "default" | "destructive"; title: string; description?: string }
     | null
   >(null);
+  const [fedSignupFeedback, setFedSignupFeedback] = useState<
+    | { variant: "default" | "destructive"; title: string; description?: string }
+    | null
+  >(null);
   const [loginFeedback, setLoginFeedback] = useState<
     | { variant: "default" | "destructive"; title: string; description?: string }
     | null
   >(null);
-  const [activeTab, setActiveTab] = useState<'login' | 'signup' | 'coach-signup'>('login');
+  const [activeTab, setActiveTab] = useState<'login' | 'signup' | 'coach-signup' | 'fed-signup'>('login');
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
