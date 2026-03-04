@@ -183,6 +183,36 @@ const FederationSubscriptions = () => {
     return <Badge className="bg-muted text-muted-foreground rounded-none">{status}</Badge>;
   };
 
+  const handleViewReceipt = async (subscriptionId: string) => {
+    const sub = subscriptions.find(s => s.id === subscriptionId);
+    if (!sub) return;
+
+    try {
+      const { data: receipts, error } = await supabase
+        .from('coach_receipts')
+        .select('*, app_users!coach_receipts_user_id_fkey(name, email, avatar_url), subscription_types(name)')
+        .eq('coach_id', federationId!)
+        .eq('user_id', sub.user_id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Find the closest receipt to the subscription
+      const receipt = receipts?.find(r => r.subscription_id === subscriptionId) || receipts?.[0];
+
+      if (!receipt) {
+        toast.error(language === 'el' ? 'Δεν βρέθηκε απόδειξη για αυτή τη συνδρομή' : 'No receipt found for this subscription');
+        return;
+      }
+
+      setSelectedReceiptData(receipt);
+      setReceiptDialogOpen(true);
+    } catch (error) {
+      console.error('Error loading receipt:', error);
+      toast.error(language === 'el' ? 'Σφάλμα κατά τη φόρτωση της απόδειξης' : 'Error loading receipt');
+    }
+  };
+
   const filtered = subscriptions
     .filter(s => {
       const name = s.app_users?.name || "";
