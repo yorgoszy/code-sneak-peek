@@ -95,6 +95,7 @@ import JumpPage from "@/pages/Dashboard/JumpPage";
 import BarVelocityPage from "@/pages/Dashboard/BarVelocityPage";
 import HRVPage from "@/pages/Dashboard/HRVPage";
 import HealthCardsPage from "@/pages/Dashboard/HealthCardsPage";
+import CoachCompetitionsPage from "@/pages/Dashboard/CoachCompetitionsPage";
 import FederationOverview from "@/pages/Dashboard/FederationOverview";
 import FederationUsers from "@/pages/Dashboard/FederationUsers";
 import FederationProgress from "@/pages/Dashboard/FederationProgress";
@@ -183,6 +184,7 @@ function App() {
                       <Route path="/dashboard/bar-velocity" element={<ProtectedRoute><BarVelocityPage /></ProtectedRoute>} />
                       <Route path="/dashboard/hrv" element={<ProtectedRoute><HRVPage /></ProtectedRoute>} />
                       <Route path="/dashboard/health-cards" element={<ProtectedRoute><HealthCardsPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-competitions" element={<ProtectedRoute><CoachCompetitionsPage /></ProtectedRoute>} />
                       {/* Admin-only routes */}
                       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
                       <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />

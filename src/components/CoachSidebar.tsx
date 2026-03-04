@@ -1,4 +1,5 @@
 import {
+  Swords,
   Home,
   Users,
   UsersRound,
@@ -249,6 +250,13 @@ export const CoachSidebar = ({
       icon: Heart,
       label: "HRV",
       path: effectiveCoachId ? `/dashboard/hrv?coachId=${effectiveCoachId}` : "/dashboard/hrv",
+      badge: null,
+      requiresSubscription: true,
+    },
+    {
+      icon: Swords,
+      label: "Αγώνες",
+      path: effectiveCoachId ? `/dashboard/coach-competitions?coachId=${effectiveCoachId}` : "/dashboard/coach-competitions",
       badge: null,
       requiresSubscription: true,
     },
