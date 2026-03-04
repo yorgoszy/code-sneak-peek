@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { SubscriptionTypesTab } from "@/components/coach/subscriptions/SubscriptionTypesTab";
-import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
+import { NewFederationSubscriptionDialog } from "@/components/federation/NewFederationSubscriptionDialog";
 import { CoachSubscriptionEditDialog } from "@/components/coach/subscriptions/CoachSubscriptionEditDialog";
 import { CoachSubscriptionDeleteDialog } from "@/components/coach/subscriptions/CoachSubscriptionDeleteDialog";
 import { CoachSubscriptionActions } from "@/components/coach/subscriptions/CoachSubscriptionActions";
@@ -267,7 +267,7 @@ const FederationSubscriptions = () => {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>{language === 'el' ? 'Χρήστης' : 'User'}</TableHead>
+                                <TableHead>{language === 'el' ? 'Σωματείο' : 'Club'}</TableHead>
                                 <TableHead>{language === 'el' ? 'Τύπος' : 'Type'}</TableHead>
                                 <TableHead>{language === 'el' ? 'Κατάσταση' : 'Status'}</TableHead>
                                 <TableHead>{language === 'el' ? 'Λήξη' : 'Expiry'}</TableHead>
@@ -332,10 +332,10 @@ const FederationSubscriptions = () => {
         </div>
       </div>
 
-      <NewSubscriptionDialog
+      <NewFederationSubscriptionDialog
         open={newSubscriptionOpen}
         onOpenChange={setNewSubscriptionOpen}
-        coachId={federationId || ""}
+        federationId={federationId || ""}
         onSuccess={fetchSubscriptions}
       />
 
