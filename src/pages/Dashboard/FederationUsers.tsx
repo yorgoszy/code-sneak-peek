@@ -130,7 +130,7 @@ const FederationUsers = () => {
   const searchByField = async (field: 'email' | 'name', value: string) => {
     if (value.trim().length < 2) { setMatchedUsers([]); setShowMatchPopup(false); return; }
     const { data } = await supabase.from("app_users")
-      .select("id, name, email, photo_url, role")
+      .select("id, name, email, phone, photo_url, role")
       .ilike(field, `%${value.trim()}%`)
       .limit(5);
     const existingClubIds = clubs.map((c) => c.club_id);
@@ -152,6 +152,7 @@ const FederationUsers = () => {
   const handleSelectMatch = (user: any) => {
     setNewClubName(user.name);
     setNewClubEmail(user.email);
+    setNewClubPhone(user.phone || "");
     setMatchedUsers([]);
     setShowMatchPopup(false);
   };
