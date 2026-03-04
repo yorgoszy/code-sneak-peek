@@ -253,6 +253,13 @@ export const CoachSidebar = ({
       requiresSubscription: true,
     },
     {
+      icon: Swords,
+      label: "Αγώνες",
+      path: effectiveCoachId ? `/dashboard/coach-competitions?coachId=${effectiveCoachId}` : "/dashboard/coach-competitions",
+      badge: null,
+      requiresSubscription: true,
+    },
+    {
       icon: BookOpen,
       label: "Knowledge",
       path: effectiveCoachId ? `/dashboard/knowledge?coachId=${effectiveCoachId}` : "/dashboard/knowledge",
