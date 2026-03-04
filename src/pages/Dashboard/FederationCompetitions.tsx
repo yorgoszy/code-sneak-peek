@@ -505,6 +505,7 @@ const FederationCompetitions = () => {
           onClose={() => { setCategoriesDialogOpen(false); fetchCompetitions(); }}
           competitionId={selectedCompetition.id}
           competitionName={selectedCompetition.name}
+          federationId={userProfile?.id || ''}
         />
       )}
 
