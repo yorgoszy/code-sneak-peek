@@ -518,6 +518,15 @@ const FederationCompetitions = () => {
           competitionName={selectedCompetition.name}
         />
       )}
+
+      {/* Category Templates Dialog */}
+      {userProfile?.id && (
+        <CategoryTemplatesDialog
+          isOpen={templatesDialogOpen}
+          onClose={() => setTemplatesDialogOpen(false)}
+          federationId={userProfile.id}
+        />
+      )}
     </SidebarProvider>
   );
 };
