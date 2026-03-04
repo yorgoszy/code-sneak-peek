@@ -312,6 +312,7 @@ const FederationSubscriptions = () => {
                                       onEdit={(id) => { setSubscriptionToEdit(sub); setEditDialogOpen(true); }}
                                       onDelete={(id) => { setSubscriptionToDelete(sub.id); setDeleteDialogOpen(true); }}
                                     />
+                                  </TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
