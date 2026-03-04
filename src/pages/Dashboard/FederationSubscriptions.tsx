@@ -347,9 +347,9 @@ const FederationSubscriptions = () => {
       />
 
       <CoachSubscriptionDeleteDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={deleteSubscription}
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onDelete={deleteSubscription}
       />
     </SidebarProvider>
   );
