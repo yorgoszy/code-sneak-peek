@@ -739,11 +739,12 @@ const Auth = () => {
                 </Button>
               </form>
             ) : (
-              <Tabs defaultValue="login" value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup' | 'coach-signup')} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-[hsl(var(--auth-black))] border border-white">
-                  <TabsTrigger value="login" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-xs sm:text-sm">{t.authLogin}</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-xs sm:text-sm">{t.authSignup}</TabsTrigger>
-                  <TabsTrigger value="coach-signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-xs sm:text-sm">For Coach</TabsTrigger>
+              <Tabs defaultValue="login" value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+                <TabsList className="grid w-full grid-cols-4 bg-[hsl(var(--auth-black))] border border-white">
+                  <TabsTrigger value="login" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-[10px] sm:text-xs">{t.authLogin}</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-[10px] sm:text-xs">{t.authSignup}</TabsTrigger>
+                  <TabsTrigger value="coach-signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-[10px] sm:text-xs">Coach</TabsTrigger>
+                  <TabsTrigger value="fed-signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-black text-[10px] sm:text-xs">{language === 'el' ? 'Ομοσπονδία' : 'Federation'}</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
