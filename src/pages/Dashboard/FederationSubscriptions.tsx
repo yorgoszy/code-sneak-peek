@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Search, Plus, CreditCard } from "lucide-react";
+import { Menu, Search, Plus, CreditCard, Receipt } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ import { NewFederationSubscriptionDialog } from "@/components/federation/NewFede
 import { CoachSubscriptionEditDialog } from "@/components/coach/subscriptions/CoachSubscriptionEditDialog";
 import { CoachSubscriptionDeleteDialog } from "@/components/coach/subscriptions/CoachSubscriptionDeleteDialog";
 import { CoachSubscriptionActions } from "@/components/coach/subscriptions/CoachSubscriptionActions";
+import { CoachReceiptsManagement } from "@/components/coach/CoachReceiptsManagement";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -228,10 +229,14 @@ const FederationSubscriptions = () => {
               <div className="text-center py-8 text-muted-foreground">{t("federation.common.loading")}</div>
             ) : (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 rounded-none">
+                <TabsList className="grid w-full grid-cols-3 rounded-none">
                   <TabsTrigger value="subscriptions" className="rounded-none">
                     <CreditCard className="h-4 w-4 mr-2" />
                     {language === 'el' ? 'Συνδρομές' : 'Subscriptions'}
+                  </TabsTrigger>
+                  <TabsTrigger value="receipts" className="rounded-none">
+                    <Receipt className="h-4 w-4 mr-2" />
+                    {language === 'el' ? 'Αποδείξεις' : 'Receipts'}
                   </TabsTrigger>
                   <TabsTrigger value="types" className="rounded-none">
                     {language === 'el' ? 'Τύποι Συνδρομών' : 'Subscription Types'}
@@ -321,6 +326,10 @@ const FederationSubscriptions = () => {
                       )}
                     </CardContent>
                   </Card>
+                </TabsContent>
+
+                <TabsContent value="receipts" className="mt-4">
+                  <CoachReceiptsManagement coachId={federationId} />
                 </TabsContent>
 
                 <TabsContent value="types" className="mt-4">
