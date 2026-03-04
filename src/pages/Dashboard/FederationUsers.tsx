@@ -152,6 +152,7 @@ const FederationUsers = () => {
   const handleSelectMatch = (user: any) => {
     setNewClubName(user.name);
     setNewClubEmail(user.email);
+    setNewClubPhone(user.phone || "");
     setMatchedUsers([]);
     setShowMatchPopup(false);
   };
