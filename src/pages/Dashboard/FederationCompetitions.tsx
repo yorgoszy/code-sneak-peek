@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Plus, Swords, Calendar, MapPin, Users, Upload, Trash2, Edit, Eye, FileText } from "lucide-react";
+import { Menu, Plus, Swords, Calendar, MapPin, Users, Upload, Trash2, Edit, Eye, FileText, Settings } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { CompetitionCategoriesDialog } from "@/components/federation/competitions/CompetitionCategoriesDialog";
 import { CompetitionRegistrationsDialog } from "@/components/federation/competitions/CompetitionRegistrationsDialog";
+import { CategoryTemplatesDialog } from "@/components/federation/competitions/CategoryTemplatesDialog";
+
 
 interface Competition {
   id: string;
@@ -52,6 +54,7 @@ const FederationCompetitions = () => {
   const [registrationsDialogOpen, setRegistrationsDialogOpen] = useState(false);
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [competitionToDelete, setCompetitionToDelete] = useState<string | null>(null);
+  const [templatesDialogOpen, setTemplatesDialogOpen] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -342,14 +345,22 @@ const FederationCompetitions = () => {
                 </h1>
                 <p className="text-sm text-muted-foreground">Διαχείριση αγώνων και δηλώσεων αθλητών</p>
               </div>
-              <Button onClick={() => { resetForm(); setCreateDialogOpen(true); }} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
-                <Plus className="h-4 w-4 mr-2" /> Νέος Αγώνας
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="rounded-none">
+                  <Settings className="h-4 w-4 mr-2" /> Διαχείριση Κατηγοριών
+                </Button>
+                <Button onClick={() => { resetForm(); setCreateDialogOpen(true); }} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
+                  <Plus className="h-4 w-4 mr-2" /> Νέος Αγώνας
+                </Button>
+              </div>
             </div>
 
-            {/* Mobile add button */}
-            <div className="lg:hidden mb-4">
-              <Button onClick={() => { resetForm(); setCreateDialogOpen(true); }} className="w-full rounded-none bg-foreground text-background hover:bg-foreground/90">
+            {/* Mobile buttons */}
+            <div className="lg:hidden mb-4 flex gap-2">
+              <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="flex-1 rounded-none">
+                <Settings className="h-4 w-4 mr-2" /> Κατηγορίες
+              </Button>
+              <Button onClick={() => { resetForm(); setCreateDialogOpen(true); }} className="flex-1 rounded-none bg-foreground text-background hover:bg-foreground/90">
                 <Plus className="h-4 w-4 mr-2" /> Νέος Αγώνας
               </Button>
             </div>
@@ -497,6 +508,7 @@ const FederationCompetitions = () => {
           onClose={() => { setCategoriesDialogOpen(false); fetchCompetitions(); }}
           competitionId={selectedCompetition.id}
           competitionName={selectedCompetition.name}
+          federationId={userProfile?.id || ''}
         />
       )}
 
@@ -507,6 +519,15 @@ const FederationCompetitions = () => {
           onClose={() => { setRegistrationsDialogOpen(false); fetchCompetitions(); }}
           competitionId={selectedCompetition.id}
           competitionName={selectedCompetition.name}
+        />
+      )}
+
+      {/* Category Templates Dialog */}
+      {userProfile?.id && (
+        <CategoryTemplatesDialog
+          isOpen={templatesDialogOpen}
+          onClose={() => setTemplatesDialogOpen(false)}
+          federationId={userProfile.id}
         />
       )}
     </SidebarProvider>
