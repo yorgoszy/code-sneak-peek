@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Check } from "lucide-react";
+import { Plus, Trash2, Check, ChevronDown, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -20,7 +20,6 @@ interface Category {
   max_weight: number | null;
   gender: string | null;
   sort_order: number;
-  template_id?: string | null;
 }
 
 interface CategoryTemplate {
@@ -42,6 +41,23 @@ interface CompetitionCategoriesDialogProps {
   federationId: string;
 }
 
+const getAgeGroup = (name: string): string => {
+  if (name.startsWith('Ενήλικοι')) return 'Ενήλικοι 18+';
+  if (name.startsWith('U23')) return 'U23 (18-23)';
+  if (name.startsWith('Νέοι 16-17')) return 'Νέοι 16-17';
+  if (name.startsWith('Νέοι 14-15')) return 'Νέοι 14-15';
+  if (name.startsWith('Παίδες 12-13')) return 'Παίδες 12-13';
+  if (name.startsWith('Παίδες 10-11')) return 'Παίδες 10-11';
+  if (name.startsWith('Παίδες 8-9')) return 'Παίδες 8-9';
+  if (name.startsWith('Mini')) return 'Mini 5-7';
+  return 'Άλλες';
+};
+
+const AGE_GROUP_ORDER = [
+  'Ενήλικοι 18+', 'U23 (18-23)', 'Νέοι 16-17', 'Νέοι 14-15',
+  'Παίδες 12-13', 'Παίδες 10-11', 'Παίδες 8-9', 'Mini 5-7', 'Άλλες'
+];
+
 export const CompetitionCategoriesDialog: React.FC<CompetitionCategoriesDialogProps> = ({
   isOpen, onClose, competitionId, competitionName, federationId,
 }) => {
@@ -52,22 +68,18 @@ export const CompetitionCategoriesDialog: React.FC<CompetitionCategoriesDialogPr
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [expandedTemplateGroups, setExpandedTemplateGroups] = useState<Set<string>>(new Set());
+  const [expandedCategoryGroups, setExpandedCategoryGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (isOpen) {
-      fetchCategories();
-      fetchTemplates();
-    }
+    if (isOpen) { fetchCategories(); fetchTemplates(); }
   }, [isOpen, competitionId]);
 
   const fetchCategories = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('federation_competition_categories')
-      .select('*')
-      .eq('competition_id', competitionId)
-      .order('sort_order');
-
+      .select('*').eq('competition_id', competitionId).order('sort_order');
     if (error) { console.error(error); toast.error('Σφάλμα φόρτωσης'); }
     setCategories((data as Category[]) || []);
     setLoading(false);
@@ -76,10 +88,7 @@ export const CompetitionCategoriesDialog: React.FC<CompetitionCategoriesDialogPr
   const fetchTemplates = async () => {
     const { data, error } = await supabase
       .from('federation_category_templates')
-      .select('*')
-      .eq('federation_id', federationId)
-      .order('sort_order');
-
+      .select('*').eq('federation_id', federationId).order('sort_order');
     if (error) console.error(error);
     setTemplates((data as CategoryTemplate[]) || []);
   };
@@ -92,56 +101,51 @@ export const CompetitionCategoriesDialog: React.FC<CompetitionCategoriesDialogPr
     setSaving(true);
     try {
       const { error } = await supabase.from('federation_competition_categories').insert({
-        competition_id: competitionId,
-        name: template.name,
-        category_type: template.category_type,
-        min_age: template.min_age,
-        max_age: template.max_age,
-        min_weight: template.min_weight,
-        max_weight: template.max_weight,
-        gender: template.gender,
-        sort_order: categories.length,
+        competition_id: competitionId, name: template.name, category_type: template.category_type,
+        min_age: template.min_age, max_age: template.max_age, min_weight: template.min_weight,
+        max_weight: template.max_weight, gender: template.gender, sort_order: categories.length,
       });
       if (error) throw error;
       toast.success(`Η κατηγορία "${template.name}" προστέθηκε`);
       fetchCategories();
-    } catch (error) {
-      console.error(error);
-      toast.error('Σφάλμα');
-    } finally {
-      setSaving(false);
-    }
+    } catch (error) { console.error(error); toast.error('Σφάλμα'); }
+    finally { setSaving(false); }
   };
 
-  const handleAddAll = async () => {
-    const toAdd = templates.filter(t => !isTemplateAdded(t.id));
-    if (toAdd.length === 0) {
-      toast.info('Όλες οι κατηγορίες έχουν ήδη προστεθεί');
-      return;
-    }
+  const handleAddGroupFromTemplates = async (groupTemplates: CategoryTemplate[]) => {
+    const toAdd = groupTemplates.filter(t => !isTemplateAdded(t.id));
+    if (toAdd.length === 0) { toast.info('Όλες οι κατηγορίες αυτής της ομάδας έχουν ήδη προστεθεί'); return; }
     setSaving(true);
     try {
       const inserts = toAdd.map((t, i) => ({
-        competition_id: competitionId,
-        name: t.name,
-        category_type: t.category_type,
-        min_age: t.min_age,
-        max_age: t.max_age,
-        min_weight: t.min_weight,
-        max_weight: t.max_weight,
-        gender: t.gender,
-        sort_order: categories.length + i,
+        competition_id: competitionId, name: t.name, category_type: t.category_type,
+        min_age: t.min_age, max_age: t.max_age, min_weight: t.min_weight,
+        max_weight: t.max_weight, gender: t.gender, sort_order: categories.length + i,
       }));
       const { error } = await supabase.from('federation_competition_categories').insert(inserts);
       if (error) throw error;
       toast.success(`Προστέθηκαν ${toAdd.length} κατηγορίες`);
       fetchCategories();
-    } catch (error) {
-      console.error(error);
-      toast.error('Σφάλμα');
-    } finally {
-      setSaving(false);
-    }
+    } catch (error) { console.error(error); toast.error('Σφάλμα'); }
+    finally { setSaving(false); }
+  };
+
+  const handleAddAll = async () => {
+    const toAdd = templates.filter(t => !isTemplateAdded(t.id));
+    if (toAdd.length === 0) { toast.info('Όλες οι κατηγορίες έχουν ήδη προστεθεί'); return; }
+    setSaving(true);
+    try {
+      const inserts = toAdd.map((t, i) => ({
+        competition_id: competitionId, name: t.name, category_type: t.category_type,
+        min_age: t.min_age, max_age: t.max_age, min_weight: t.min_weight,
+        max_weight: t.max_weight, gender: t.gender, sort_order: categories.length + i,
+      }));
+      const { error } = await supabase.from('federation_competition_categories').insert(inserts);
+      if (error) throw error;
+      toast.success(`Προστέθηκαν ${toAdd.length} κατηγορίες`);
+      fetchCategories();
+    } catch (error) { console.error(error); toast.error('Σφάλμα'); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
@@ -150,24 +154,47 @@ export const CompetitionCategoriesDialog: React.FC<CompetitionCategoriesDialogPr
       const { error } = await supabase.from('federation_competition_categories').delete().eq('id', categoryToDelete);
       if (error) throw error;
       toast.success('Η κατηγορία αφαιρέθηκε');
-      setDeleteDialogOpen(false);
-      setCategoryToDelete(null);
-      fetchCategories();
-    } catch (error) {
-      console.error(error);
-      toast.error('Σφάλμα');
-    }
+      setDeleteDialogOpen(false); setCategoryToDelete(null); fetchCategories();
+    } catch (error) { console.error(error); toast.error('Σφάλμα'); }
   };
 
-  const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = { age: 'Ηλικίας', weight: 'Κιλών', combined: 'Ηλικίας/Κιλών' };
-    return labels[type] || type;
+  const toggleTemplateGroup = (group: string) => {
+    setExpandedTemplateGroups(prev => {
+      const next = new Set(prev);
+      next.has(group) ? next.delete(group) : next.add(group);
+      return next;
+    });
+  };
+
+  const toggleCategoryGroup = (group: string) => {
+    setExpandedCategoryGroups(prev => {
+      const next = new Set(prev);
+      next.has(group) ? next.delete(group) : next.add(group);
+      return next;
+    });
   };
 
   const getGenderLabel = (g: string | null) => {
     const labels: Record<string, string> = { male: 'Άνδρες', female: 'Γυναίκες', mixed: 'Μικτή' };
     return labels[g || 'mixed'] || g;
   };
+
+  // Group templates
+  const groupedTemplates = templates.reduce<Record<string, CategoryTemplate[]>>((acc, t) => {
+    const group = getAgeGroup(t.name);
+    (acc[group] = acc[group] || []).push(t);
+    return acc;
+  }, {});
+
+  // Group categories
+  const groupedCategories = categories.reduce<Record<string, Category[]>>((acc, c) => {
+    const group = getAgeGroup(c.name);
+    (acc[group] = acc[group] || []).push(c);
+    return acc;
+  }, {});
+
+  const sortedTemplateGroups = AGE_GROUP_ORDER.filter(g => groupedTemplates[g]?.length > 0);
+  const sortedCategoryGroups = AGE_GROUP_ORDER.filter(g => groupedCategories[g]?.length > 0);
 
   return (
     <>
@@ -178,7 +205,6 @@ export const CompetitionCategoriesDialog: React.FC<CompetitionCategoriesDialogPr
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Επιλογή από templates */}
             {!addMode && (
               <Button onClick={() => setAddMode(true)} variant="outline" className="rounded-none">
                 <Plus className="h-4 w-4 mr-2" /> Προσθήκη Κατηγοριών
@@ -205,21 +231,59 @@ export const CompetitionCategoriesDialog: React.FC<CompetitionCategoriesDialogPr
                   </p>
                 ) : (
                   <div className="space-y-1">
-                    {templates.map(t => {
-                      const added = isTemplateAdded(t.id);
+                    {sortedTemplateGroups.map(group => {
+                      const items = groupedTemplates[group];
+                      const isExpanded = expandedTemplateGroups.has(group);
+                      const allAdded = items.every(t => isTemplateAdded(t.id));
+                      const addedCount = items.filter(t => isTemplateAdded(t.id)).length;
+
                       return (
-                        <div key={t.id}
-                          className={`flex items-center justify-between p-2 border rounded-none cursor-pointer transition-colors ${added ? 'bg-muted opacity-60' : 'hover:bg-muted/50'}`}
-                          onClick={() => !added && !saving && handleAddFromTemplate(t)}
-                        >
-                          <div className="flex items-center gap-2">
-                            {added && <Check className="h-4 w-4 text-green-600" />}
-                            <span className="text-sm font-medium">{t.name}</span>
-                            <Badge variant="outline" className="rounded-none text-xs">{getTypeLabel(t.category_type)}</Badge>
-                            <Badge variant="outline" className="rounded-none text-xs">{getGenderLabel(t.gender)}</Badge>
+                        <div key={group} className="border rounded-none">
+                          <div className="flex items-center justify-between p-2 hover:bg-muted/50">
+                            <button onClick={() => toggleTemplateGroup(group)} className="flex items-center gap-2 flex-1">
+                              {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                              <span className="text-sm font-medium">{group}</span>
+                              <Badge variant="outline" className="rounded-none text-xs">
+                                {addedCount}/{items.length}
+                              </Badge>
+                            </button>
+                            {!allAdded && (
+                              <Button size="sm" variant="ghost" className="rounded-none text-xs h-7"
+                                onClick={() => handleAddGroupFromTemplates(items)} disabled={saving}>
+                                <Plus className="h-3 w-3 mr-1" /> Όλη η ομάδα
+                              </Button>
+                            )}
+                            {allAdded && <Check className="h-4 w-4 text-green-600 mr-2" />}
                           </div>
-                          {!added && (
-                            <Plus className="h-4 w-4 text-muted-foreground" />
+
+                          {isExpanded && (
+                            <div className="border-t p-2">
+                              {['male', 'female'].map(g => {
+                                const genderItems = items.filter(t => t.gender === g);
+                                if (genderItems.length === 0) return null;
+                                return (
+                                  <div key={g} className="mb-2">
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">
+                                      {g === 'male' ? '♂ Άνδρες' : '♀ Γυναίκες'}
+                                    </p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {genderItems.map(t => {
+                                        const added = isTemplateAdded(t.id);
+                                        return (
+                                          <Badge key={t.id} variant={added ? "secondary" : "outline"}
+                                            className={`rounded-none text-xs cursor-pointer transition-colors ${added ? 'opacity-60' : 'hover:bg-muted'}`}
+                                            onClick={() => !added && !saving && handleAddFromTemplate(t)}
+                                          >
+                                            {added && <Check className="h-3 w-3 mr-1" />}
+                                            {t.max_weight ? `-${t.max_weight}kg` : `+${t.min_weight}kg`}
+                                          </Badge>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           )}
                         </div>
                       );
@@ -237,34 +301,73 @@ export const CompetitionCategoriesDialog: React.FC<CompetitionCategoriesDialogPr
               ) : categories.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">Δεν υπάρχουν κατηγορίες στον αγώνα</p>
               ) : (
-                <div className="space-y-2">
-                  {categories.map(cat => (
-                    <div key={cat.id} className="flex items-center justify-between p-3 border rounded-none">
-                      <div>
-                        <span className="font-medium text-sm">{cat.name}</span>
-                        <div className="flex gap-2 mt-1">
-                          <Badge variant="outline" className="rounded-none text-xs">{getTypeLabel(cat.category_type)}</Badge>
-                          <Badge variant="outline" className="rounded-none text-xs">{getGenderLabel(cat.gender)}</Badge>
-                          {(cat.min_age != null || cat.max_age != null) && (
-                            <Badge variant="outline" className="rounded-none text-xs">
-                              {cat.min_age ?? '?'}-{cat.max_age ?? '?'} ετών
-                            </Badge>
-                          )}
-                          {(cat.min_weight != null || cat.max_weight != null) && (
-                            <Badge variant="outline" className="rounded-none text-xs">
-                              {cat.min_weight ?? '?'}-{cat.max_weight ?? '?'} kg
-                            </Badge>
-                          )}
-                        </div>
+                <div className="space-y-1">
+                  {sortedCategoryGroups.map(group => {
+                    const items = groupedCategories[group];
+                    const isExpanded = expandedCategoryGroups.has(group);
+
+                    return (
+                      <div key={group} className="border rounded-none">
+                        <button onClick={() => toggleCategoryGroup(group)}
+                          className="w-full flex items-center justify-between p-2 hover:bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                            <span className="text-sm font-medium">{group}</span>
+                            <Badge variant="outline" className="rounded-none text-xs">{items.length}</Badge>
+                          </div>
+                        </button>
+
+                        {isExpanded && (
+                          <div className="border-t p-2">
+                            {['male', 'female'].map(g => {
+                              const genderItems = items.filter(c => c.gender === g);
+                              if (genderItems.length === 0) return null;
+                              return (
+                                <div key={g} className="mb-2">
+                                  <p className="text-xs font-medium text-muted-foreground mb-1">
+                                    {g === 'male' ? '♂ Άνδρες' : '♀ Γυναίκες'}
+                                  </p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {genderItems.map(cat => (
+                                      <div key={cat.id} className="group relative">
+                                        <Badge variant="outline" className="rounded-none text-xs pr-6">
+                                          {cat.max_weight ? `-${cat.max_weight}kg` : `+${cat.min_weight}kg`}
+                                        </Badge>
+                                        <button
+                                          onClick={() => { setCategoryToDelete(cat.id); setDeleteDialogOpen(true); }}
+                                          className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                          <Trash2 className="h-3 w-3 text-destructive" />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {items.filter(c => c.gender !== 'male' && c.gender !== 'female').length > 0 && (
+                              <div className="mb-2">
+                                <p className="text-xs font-medium text-muted-foreground mb-1">Μικτή</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {items.filter(c => c.gender !== 'male' && c.gender !== 'female').map(cat => (
+                                    <div key={cat.id} className="group relative">
+                                      <Badge variant="outline" className="rounded-none text-xs pr-6">{cat.name}</Badge>
+                                      <button
+                                        onClick={() => { setCategoryToDelete(cat.id); setDeleteDialogOpen(true); }}
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <Trash2 className="h-3 w-3 text-destructive" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <Button variant="outline" size="sm" className="rounded-none text-destructive" onClick={() => {
-                        setCategoryToDelete(cat.id);
-                        setDeleteDialogOpen(true);
-                      }}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

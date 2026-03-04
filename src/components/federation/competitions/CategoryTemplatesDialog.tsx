@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Settings } from "lucide-react";
+import { Plus, Trash2, Settings, ChevronDown, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -31,6 +31,23 @@ interface CategoryTemplatesDialogProps {
   federationId: string;
 }
 
+const getAgeGroup = (t: CategoryTemplate): string => {
+  if (t.name.startsWith('Ενήλικοι')) return 'Ενήλικοι 18+';
+  if (t.name.startsWith('U23')) return 'U23 (18-23)';
+  if (t.name.startsWith('Νέοι 16-17')) return 'Νέοι 16-17';
+  if (t.name.startsWith('Νέοι 14-15')) return 'Νέοι 14-15';
+  if (t.name.startsWith('Παίδες 12-13')) return 'Παίδες 12-13';
+  if (t.name.startsWith('Παίδες 10-11')) return 'Παίδες 10-11';
+  if (t.name.startsWith('Παίδες 8-9')) return 'Παίδες 8-9';
+  if (t.name.startsWith('Mini')) return 'Mini 5-7';
+  return 'Άλλες';
+};
+
+const AGE_GROUP_ORDER = [
+  'Ενήλικοι 18+', 'U23 (18-23)', 'Νέοι 16-17', 'Νέοι 14-15',
+  'Παίδες 12-13', 'Παίδες 10-11', 'Παίδες 8-9', 'Mini 5-7', 'Άλλες'
+];
+
 export const CategoryTemplatesDialog: React.FC<CategoryTemplatesDialogProps> = ({
   isOpen, onClose, federationId,
 }) => {
@@ -39,6 +56,7 @@ export const CategoryTemplatesDialog: React.FC<CategoryTemplatesDialogProps> = (
   const [addMode, setAddMode] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const [name, setName] = useState('');
   const [categoryType, setCategoryType] = useState('combined');
@@ -78,26 +96,16 @@ export const CategoryTemplatesDialog: React.FC<CategoryTemplatesDialogProps> = (
     setSaving(true);
     try {
       const { error } = await supabase.from('federation_category_templates').insert({
-        federation_id: federationId,
-        name,
-        category_type: categoryType,
-        min_age: minAge ? parseInt(minAge) : null,
-        max_age: maxAge ? parseInt(maxAge) : null,
-        min_weight: minWeight ? parseFloat(minWeight) : null,
-        max_weight: maxWeight ? parseFloat(maxWeight) : null,
-        gender,
-        sort_order: templates.length,
+        federation_id: federationId, name, category_type: categoryType,
+        min_age: minAge ? parseInt(minAge) : null, max_age: maxAge ? parseInt(maxAge) : null,
+        min_weight: minWeight ? parseFloat(minWeight) : null, max_weight: maxWeight ? parseFloat(maxWeight) : null,
+        gender, sort_order: templates.length,
       });
       if (error) throw error;
       toast.success('Η κατηγορία προστέθηκε');
-      resetForm();
-      fetchTemplates();
-    } catch (error) {
-      console.error(error);
-      toast.error('Σφάλμα');
-    } finally {
-      setSaving(false);
-    }
+      resetForm(); fetchTemplates();
+    } catch (error) { console.error(error); toast.error('Σφάλμα'); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
@@ -106,24 +114,31 @@ export const CategoryTemplatesDialog: React.FC<CategoryTemplatesDialogProps> = (
       const { error } = await supabase.from('federation_category_templates').delete().eq('id', templateToDelete);
       if (error) throw error;
       toast.success('Η κατηγορία διαγράφηκε');
-      setDeleteDialogOpen(false);
-      setTemplateToDelete(null);
-      fetchTemplates();
-    } catch (error) {
-      console.error(error);
-      toast.error('Σφάλμα');
-    }
+      setDeleteDialogOpen(false); setTemplateToDelete(null); fetchTemplates();
+    } catch (error) { console.error(error); toast.error('Σφάλμα'); }
   };
 
-  const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = { age: 'Ηλικίας', weight: 'Κιλών', combined: 'Ηλικίας/Κιλών' };
-    return labels[type] || type;
+  const toggleGroup = (group: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      next.has(group) ? next.delete(group) : next.add(group);
+      return next;
+    });
   };
 
   const getGenderLabel = (g: string | null) => {
     const labels: Record<string, string> = { male: 'Άνδρες', female: 'Γυναίκες', mixed: 'Μικτή' };
     return labels[g || 'mixed'] || g;
   };
+
+  // Group templates
+  const grouped = templates.reduce<Record<string, CategoryTemplate[]>>((acc, t) => {
+    const group = getAgeGroup(t);
+    (acc[group] = acc[group] || []).push(t);
+    return acc;
+  }, {});
+
+  const sortedGroups = AGE_GROUP_ORDER.filter(g => grouped[g]?.length > 0);
 
   return (
     <>
@@ -178,26 +193,14 @@ export const CategoryTemplatesDialog: React.FC<CategoryTemplatesDialogProps> = (
                 </div>
                 {(categoryType === 'age' || categoryType === 'combined') && (
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Ηλικία από</Label>
-                      <Input type="number" value={minAge} onChange={e => setMinAge(e.target.value)} className="rounded-none" />
-                    </div>
-                    <div>
-                      <Label>Ηλικία έως</Label>
-                      <Input type="number" value={maxAge} onChange={e => setMaxAge(e.target.value)} className="rounded-none" />
-                    </div>
+                    <div><Label>Ηλικία από</Label><Input type="number" value={minAge} onChange={e => setMinAge(e.target.value)} className="rounded-none" /></div>
+                    <div><Label>Ηλικία έως</Label><Input type="number" value={maxAge} onChange={e => setMaxAge(e.target.value)} className="rounded-none" /></div>
                   </div>
                 )}
                 {(categoryType === 'weight' || categoryType === 'combined') && (
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Βάρος από (kg)</Label>
-                      <Input type="number" step="0.1" value={minWeight} onChange={e => setMinWeight(e.target.value)} className="rounded-none" />
-                    </div>
-                    <div>
-                      <Label>Βάρος έως (kg)</Label>
-                      <Input type="number" step="0.1" value={maxWeight} onChange={e => setMaxWeight(e.target.value)} className="rounded-none" />
-                    </div>
+                    <div><Label>Βάρος από (kg)</Label><Input type="number" step="0.1" value={minWeight} onChange={e => setMinWeight(e.target.value)} className="rounded-none" /></div>
+                    <div><Label>Βάρος έως (kg)</Label><Input type="number" step="0.1" value={maxWeight} onChange={e => setMaxWeight(e.target.value)} className="rounded-none" /></div>
                   </div>
                 )}
                 <div className="flex gap-2">
@@ -212,36 +215,85 @@ export const CategoryTemplatesDialog: React.FC<CategoryTemplatesDialogProps> = (
             {loading ? (
               <p className="text-muted-foreground text-center py-4">Φόρτωση...</p>
             ) : templates.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">Δεν υπάρχουν κατηγορίες. Δημιουργήστε κατηγορίες για να τις χρησιμοποιήσετε στους αγώνες.</p>
+              <p className="text-muted-foreground text-center py-4">Δεν υπάρχουν κατηγορίες.</p>
             ) : (
               <div className="space-y-2">
-                {templates.map(t => (
-                  <div key={t.id} className="flex items-center justify-between p-3 border rounded-none">
-                    <div>
-                      <span className="font-medium text-sm">{t.name}</span>
-                      <div className="flex gap-2 mt-1">
-                        <Badge variant="outline" className="rounded-none text-xs">{getTypeLabel(t.category_type)}</Badge>
-                        <Badge variant="outline" className="rounded-none text-xs">{getGenderLabel(t.gender)}</Badge>
-                        {(t.min_age != null || t.max_age != null) && (
-                          <Badge variant="outline" className="rounded-none text-xs">
-                            {t.min_age ?? '?'}-{t.max_age ?? '?'} ετών
-                          </Badge>
-                        )}
-                        {(t.min_weight != null || t.max_weight != null) && (
-                          <Badge variant="outline" className="rounded-none text-xs">
-                            {t.min_weight ?? '?'}-{t.max_weight ?? '?'} kg
-                          </Badge>
-                        )}
-                      </div>
+                {sortedGroups.map(group => {
+                  const items = grouped[group];
+                  const isExpanded = expandedGroups.has(group);
+                  const maleCount = items.filter(t => t.gender === 'male').length;
+                  const femaleCount = items.filter(t => t.gender === 'female').length;
+
+                  return (
+                    <div key={group} className="border rounded-none">
+                      <button
+                        onClick={() => toggleGroup(group)}
+                        className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                          <span className="font-semibold text-sm">{group}</span>
+                          <Badge variant="outline" className="rounded-none text-xs">{items.length} κατηγορίες</Badge>
+                        </div>
+                        <div className="flex gap-1">
+                          {maleCount > 0 && <Badge variant="outline" className="rounded-none text-xs">♂ {maleCount}</Badge>}
+                          {femaleCount > 0 && <Badge variant="outline" className="rounded-none text-xs">♀ {femaleCount}</Badge>}
+                        </div>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="border-t">
+                          {['male', 'female'].map(g => {
+                            const genderItems = items.filter(t => t.gender === g);
+                            if (genderItems.length === 0) return null;
+                            return (
+                              <div key={g} className="p-3">
+                                <p className="text-xs font-medium text-muted-foreground mb-2">
+                                  {g === 'male' ? '♂ Άνδρες' : '♀ Γυναίκες'}
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                  {genderItems.map(t => (
+                                    <div key={t.id} className="group relative">
+                                      <Badge variant="outline" className="rounded-none text-xs pr-6">
+                                        {t.max_weight ? `-${t.max_weight}kg` : `+${t.min_weight}kg`}
+                                      </Badge>
+                                      <button
+                                        onClick={() => { setTemplateToDelete(t.id); setDeleteDialogOpen(true); }}
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <Trash2 className="h-3 w-3 text-destructive" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {items.filter(t => t.gender !== 'male' && t.gender !== 'female').length > 0 && (
+                            <div className="p-3">
+                              <p className="text-xs font-medium text-muted-foreground mb-2">Μικτή</p>
+                              <div className="flex flex-wrap gap-1">
+                                {items.filter(t => t.gender !== 'male' && t.gender !== 'female').map(t => (
+                                  <div key={t.id} className="group relative">
+                                    <Badge variant="outline" className="rounded-none text-xs pr-6">
+                                      {t.name}
+                                    </Badge>
+                                    <button
+                                      onClick={() => { setTemplateToDelete(t.id); setDeleteDialogOpen(true); }}
+                                      className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <Trash2 className="h-3 w-3 text-destructive" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <Button variant="outline" size="sm" className="rounded-none text-destructive" onClick={() => {
-                      setTemplateToDelete(t.id);
-                      setDeleteDialogOpen(true);
-                    }}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
