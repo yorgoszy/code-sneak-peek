@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { CompetitionCategoriesDialog } from "@/components/federation/competitions/CompetitionCategoriesDialog";
 import { CompetitionRegistrationsDialog } from "@/components/federation/competitions/CompetitionRegistrationsDialog";
+import { CategoryTemplatesDialog } from "@/components/federation/competitions/CategoryTemplatesDialog";
+import { Settings } from "lucide-react";
 
 interface Competition {
   id: string;
