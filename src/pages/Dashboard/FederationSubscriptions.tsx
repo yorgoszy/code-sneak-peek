@@ -394,6 +394,55 @@ const FederationSubscriptions = () => {
         onClose={() => setDeleteDialogOpen(false)}
         onDelete={deleteSubscription}
       />
+
+      {/* Receipt Preview Dialog */}
+      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
+        <DialogContent className="rounded-none max-w-md">
+          <DialogHeader>
+            <DialogTitle>Απόδειξη {selectedReceiptData?.receipt_number}</DialogTitle>
+          </DialogHeader>
+          {selectedReceiptData && (
+            <div className="space-y-4 text-sm">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={selectedReceiptData.app_users?.avatar_url || undefined} />
+                  <AvatarFallback>
+                    {selectedReceiptData.app_users?.name?.charAt(0) || 'Α'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{selectedReceiptData.app_users?.name || '-'}</p>
+                  <p className="text-xs text-muted-foreground">{selectedReceiptData.app_users?.email || '-'}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-muted-foreground">Ημερομηνία:</span>
+                  <p>{format(new Date(selectedReceiptData.created_at), 'dd/MM/yyyy', { locale: el })}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Τύπος:</span>
+                  <p>{selectedReceiptData.subscription_types?.name || '-'}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Είδος:</span>
+                  <p>{selectedReceiptData.receipt_type === 'subscription' ? 'Συνδρομή' : selectedReceiptData.receipt_type}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">ΜΑΡΚ ΑΑΔΕ:</span>
+                  <p>{selectedReceiptData.mark || '-'}</p>
+                </div>
+              </div>
+              
+              <div className="pt-2 border-t">
+                <span className="text-muted-foreground text-xs">Ποσό:</span>
+                <p className="text-xl font-bold text-[#00ffba]">€{Number(selectedReceiptData.amount).toFixed(2)}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 };
