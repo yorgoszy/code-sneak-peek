@@ -702,10 +702,10 @@ const Auth = () => {
         <Card className="bg-[hsl(var(--auth-black))] border-white">
           <CardHeader>
             <CardTitle className="text-center text-white">
-              {showForgotPassword ? t.authResetPassword : (activeTab === 'coach-signup' ? (language === 'el' ? 'Εγγραφή Coach' : 'Coach Sign Up') : (activeTab === 'signup' ? t.authSignupTitle : t.authLoginTitle))}
+              {showForgotPassword ? t.authResetPassword : (activeTab === 'coach-signup' ? (language === 'el' ? 'Εγγραφή Coach' : 'Coach Sign Up') : (activeTab === 'fed-signup' ? (language === 'el' ? 'Εγγραφή Ομοσπονδίας' : 'Federation Sign Up') : (activeTab === 'signup' ? t.authSignupTitle : t.authLoginTitle)))}
             </CardTitle>
             <CardDescription className="text-center text-white">
-              {showForgotPassword ? t.authResetPasswordSubtitle : (activeTab === 'coach-signup' ? (language === 'el' ? 'Δημιουργήστε λογαριασμό coach' : 'Create your coach account') : (activeTab === 'signup' ? t.authSignupSubtitle : t.authLoginSubtitle))}
+              {showForgotPassword ? t.authResetPasswordSubtitle : (activeTab === 'coach-signup' ? (language === 'el' ? 'Δημιουργήστε λογαριασμό coach' : 'Create your coach account') : (activeTab === 'fed-signup' ? (language === 'el' ? 'Δημιουργήστε λογαριασμό ομοσπονδίας' : 'Create your federation account') : (activeTab === 'signup' ? t.authSignupSubtitle : t.authLoginSubtitle)))}
             </CardDescription>
           </CardHeader>
           <CardContent>
