@@ -1067,10 +1067,8 @@ export const SubscriptionManagement: React.FC = () => {
           .eq('id', newSubscriptionId);
       }
 
-      // Δημιουργία απόδειξης αν είναι πληρωμένη
-      if (isPaid) {
-        await createReceiptForSubscription(userData, subscriptionType, newStartDate, newEndDate);
-      }
+      // Δημιουργία απόδειξης πάντα
+      await createReceiptForSubscription(userData, subscriptionType, newStartDate, newEndDate);
 
       toast({
         title: "Επιτυχία",
