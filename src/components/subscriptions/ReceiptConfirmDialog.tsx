@@ -15,10 +15,10 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleConfirm = (createReceipt: boolean) => {
+  const handleConfirm = (isPaid: boolean) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-    onConfirm(createReceipt);
+    onConfirm(isPaid);
     onClose();
   };
 
