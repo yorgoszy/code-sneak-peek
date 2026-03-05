@@ -758,8 +758,8 @@ export const SubscriptionManagement: React.FC = () => {
         if (videocallPackageError) throw videocallPackageError;
       }
 
-      // Δημιουργία απόδειξης αν επιλέχθηκε
-      if (createReceipt) {
+      // Δημιουργία απόδειξης αν είναι πληρωμένη
+      if (isPaid) {
         await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier);
       }
 
