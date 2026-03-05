@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 interface ReceiptConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (createReceipt: boolean) => void;
+  onConfirm: (isPaid: boolean) => void;
 }
 
 export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
@@ -15,10 +15,10 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleConfirm = (createReceipt: boolean) => {
+  const handleConfirm = (isPaid: boolean) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-    onConfirm(createReceipt);
+    onConfirm(isPaid);
     onClose();
   };
 
@@ -31,10 +31,10 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="rounded-none max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center">Απόδειξη</DialogTitle>
+          <DialogTitle className="text-center">Πληρωμή</DialogTitle>
         </DialogHeader>
         <div className="text-center py-4">
-          <p className="text-lg mb-6">Θέλετε να κοπεί απόδειξη για αυτή τη συνδρομή;</p>
+          <p className="text-lg mb-6">Είναι πληρωμένη η συνδρομή;</p>
           <div className="flex justify-center gap-3">
             <Button
               onClick={() => handleConfirm(true)}
@@ -47,7 +47,7 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
               onClick={() => handleConfirm(false)}
               disabled={isSubmitting}
               variant="outline"
-              className="rounded-none px-6"
+              className="rounded-none px-6 border-red-300 text-red-600 hover:bg-red-50"
             >
               Όχι
             </Button>

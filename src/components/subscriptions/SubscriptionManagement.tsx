@@ -679,7 +679,7 @@ export const SubscriptionManagement: React.FC = () => {
   };
 
 
-  const handleCreateSubscription = async (createReceipt: boolean) => {
+  const handleCreateSubscription = async (isPaid: boolean) => {
     if (!pendingSubscriptionData) return;
 
     const { subscriptionType, selectedUserData, subscriptionStartDate, endDate } = pendingSubscriptionData;
@@ -694,7 +694,8 @@ export const SubscriptionManagement: React.FC = () => {
           start_date: subscriptionStartDate.toISOString().split('T')[0],
           end_date: endDate.toISOString().split('T')[0],
           status: 'active',
-          notes: notes
+          notes: notes,
+          is_paid: isPaid
         });
 
       if (subscriptionError) throw subscriptionError;
@@ -757,8 +758,8 @@ export const SubscriptionManagement: React.FC = () => {
         if (videocallPackageError) throw videocallPackageError;
       }
 
-      // Δημιουργία απόδειξης αν επιλέχθηκε
-      if (createReceipt) {
+      // Δημιουργία απόδειξης αν είναι πληρωμένη
+      if (isPaid) {
         await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier);
       }
 
@@ -1047,7 +1048,7 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const handleRenewSubscription = async (createReceipt: boolean) => {
+  const handleRenewSubscription = async (isPaid: boolean) => {
     if (!pendingSubscriptionData || !pendingSubscriptionData.isRenewal) return;
 
     const { subscriptionId, userData, subscriptionType, newStartDate, newEndDate } = pendingSubscriptionData;
@@ -1060,8 +1061,16 @@ export const SubscriptionManagement: React.FC = () => {
 
       if (renewError) throw renewError;
 
-      // Δημιουργία απόδειξης αν επιλέχθηκε
-      if (createReceipt) {
+      // Ενημέρωση is_paid στη νέα συνδρομή
+      if (newSubscriptionId) {
+        await supabase
+          .from('user_subscriptions')
+          .update({ is_paid: isPaid })
+          .eq('id', newSubscriptionId);
+      }
+
+      // Δημιουργία απόδειξης αν είναι πληρωμένη
+      if (isPaid) {
         await createReceiptForSubscription(userData, subscriptionType, newStartDate, newEndDate);
       }
 
@@ -1635,18 +1644,18 @@ export const SubscriptionManagement: React.FC = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Receipt Creation Dialog */}
+        {/* Payment Status Dialog */}
         <ReceiptConfirmDialog
           isOpen={showReceiptDialog}
           onClose={() => {
             setShowReceiptDialog(false);
             setPendingSubscriptionData(null);
           }}
-          onConfirm={(createReceipt) => {
+          onConfirm={(isPaid) => {
             if (pendingSubscriptionData?.isRenewal) {
-              handleRenewSubscription(createReceipt);
+              handleRenewSubscription(isPaid);
             } else {
-              handleCreateSubscription(createReceipt);
+              handleCreateSubscription(isPaid);
             }
           }}
         />
