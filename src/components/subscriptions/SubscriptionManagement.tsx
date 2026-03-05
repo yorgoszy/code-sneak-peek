@@ -1048,7 +1048,7 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const handleRenewSubscription = async (createReceipt: boolean) => {
+  const handleRenewSubscription = async (isPaid: boolean) => {
     if (!pendingSubscriptionData || !pendingSubscriptionData.isRenewal) return;
 
     const { subscriptionId, userData, subscriptionType, newStartDate, newEndDate } = pendingSubscriptionData;
@@ -1061,8 +1061,16 @@ export const SubscriptionManagement: React.FC = () => {
 
       if (renewError) throw renewError;
 
-      // Δημιουργία απόδειξης αν επιλέχθηκε
-      if (createReceipt) {
+      // Ενημέρωση is_paid στη νέα συνδρομή
+      if (newSubscriptionId) {
+        await supabase
+          .from('user_subscriptions')
+          .update({ is_paid: isPaid })
+          .eq('id', newSubscriptionId);
+      }
+
+      // Δημιουργία απόδειξης αν είναι πληρωμένη
+      if (isPaid) {
         await createReceiptForSubscription(userData, subscriptionType, newStartDate, newEndDate);
       }
 
