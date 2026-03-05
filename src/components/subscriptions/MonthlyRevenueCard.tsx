@@ -30,34 +30,32 @@ export const MonthlyRevenueCard: React.FC = () => {
   const fetchMonthlyRevenue = async () => {
     setLoading(true);
     try {
-      // Current month revenue
+      // Current month revenue from receipts
       const { data: currentData, error: currentError } = await supabase
-        .from('payments')
-        .select('amount')
-        .eq('status', 'completed')
-        .gte('payment_date', `${selectedMonth}-01`)
-        .lt('payment_date', `${selectedMonth}-31`);
+        .from('receipts')
+        .select('total')
+        .gte('issue_date', `${selectedMonth}-01`)
+        .lt('issue_date', `${selectedMonth}-31`);
 
       if (currentError) throw currentError;
 
-      const currentTotal = currentData?.reduce((sum, payment) => sum + Number(payment.amount), 0) || 0;
+      const currentTotal = currentData?.reduce((sum, r) => sum + Number(r.total), 0) || 0;
       setCurrentRevenue(currentTotal);
 
       // Previous month revenue for comparison
       const [year, month] = selectedMonth.split('-').map(Number);
-      const prevDate = new Date(year, month - 2, 1); // month - 2 because month is 1-indexed
+      const prevDate = new Date(year, month - 2, 1);
       const prevMonthStr = format(prevDate, 'yyyy-MM');
 
       const { data: prevData, error: prevError } = await supabase
-        .from('payments')
-        .select('amount')
-        .eq('status', 'completed')
-        .gte('payment_date', `${prevMonthStr}-01`)
-        .lt('payment_date', `${prevMonthStr}-31`);
+        .from('receipts')
+        .select('total')
+        .gte('issue_date', `${prevMonthStr}-01`)
+        .lt('issue_date', `${prevMonthStr}-31`);
 
       if (prevError) throw prevError;
 
-      const prevTotal = prevData?.reduce((sum, payment) => sum + Number(payment.amount), 0) || 0;
+      const prevTotal = prevData?.reduce((sum, r) => sum + Number(r.total), 0) || 0;
       setPreviousRevenue(prevTotal);
 
     } catch (error) {
