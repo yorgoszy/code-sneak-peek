@@ -679,7 +679,7 @@ export const SubscriptionManagement: React.FC = () => {
   };
 
 
-  const handleCreateSubscription = async (createReceipt: boolean) => {
+  const handleCreateSubscription = async (isPaid: boolean) => {
     if (!pendingSubscriptionData) return;
 
     const { subscriptionType, selectedUserData, subscriptionStartDate, endDate } = pendingSubscriptionData;
@@ -694,7 +694,8 @@ export const SubscriptionManagement: React.FC = () => {
           start_date: subscriptionStartDate.toISOString().split('T')[0],
           end_date: endDate.toISOString().split('T')[0],
           status: 'active',
-          notes: notes
+          notes: notes,
+          is_paid: isPaid
         });
 
       if (subscriptionError) throw subscriptionError;
