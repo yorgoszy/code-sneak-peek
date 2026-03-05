@@ -1635,18 +1635,18 @@ export const SubscriptionManagement: React.FC = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Receipt Creation Dialog */}
+        {/* Payment Status Dialog */}
         <ReceiptConfirmDialog
           isOpen={showReceiptDialog}
           onClose={() => {
             setShowReceiptDialog(false);
             setPendingSubscriptionData(null);
           }}
-          onConfirm={(createReceipt) => {
+          onConfirm={(isPaid) => {
             if (pendingSubscriptionData?.isRenewal) {
-              handleRenewSubscription(createReceipt);
+              handleRenewSubscription(isPaid);
             } else {
-              handleCreateSubscription(createReceipt);
+              handleCreateSubscription(isPaid);
             }
           }}
         />
