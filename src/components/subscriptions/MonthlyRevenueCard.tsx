@@ -30,12 +30,18 @@ export const MonthlyRevenueCard: React.FC = () => {
   const fetchMonthlyRevenue = async () => {
     setLoading(true);
     try {
-      // Current month revenue from receipts
+      const [year, month] = selectedMonth.split('-').map(Number);
+      
+      // Current month: from 1st of selected month to 1st of next month
+      const currentStart = `${selectedMonth}-01`;
+      const nextMonthDate = new Date(year, month, 1); // month is already 1-based, so this gives next month
+      const currentEnd = format(nextMonthDate, 'yyyy-MM-dd');
+
       const { data: currentData, error: currentError } = await supabase
         .from('receipts')
         .select('total')
-        .gte('issue_date', `${selectedMonth}-01`)
-        .lt('issue_date', `${selectedMonth}-31`);
+        .gte('issue_date', currentStart)
+        .lt('issue_date', currentEnd);
 
       if (currentError) throw currentError;
 
@@ -43,15 +49,14 @@ export const MonthlyRevenueCard: React.FC = () => {
       setCurrentRevenue(currentTotal);
 
       // Previous month revenue for comparison
-      const [year, month] = selectedMonth.split('-').map(Number);
-      const prevDate = new Date(year, month - 2, 1);
-      const prevMonthStr = format(prevDate, 'yyyy-MM');
+      const prevStart = format(new Date(year, month - 2, 1), 'yyyy-MM-dd');
+      const prevEnd = currentStart;
 
       const { data: prevData, error: prevError } = await supabase
         .from('receipts')
         .select('total')
-        .gte('issue_date', `${prevMonthStr}-01`)
-        .lt('issue_date', `${prevMonthStr}-31`);
+        .gte('issue_date', prevStart)
+        .lt('issue_date', prevEnd);
 
       if (prevError) throw prevError;
 
