@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 interface ReceiptConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (createReceipt: boolean) => void;
+  onConfirm: (isPaid: boolean) => void;
 }
 
 export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
