@@ -758,10 +758,8 @@ export const SubscriptionManagement: React.FC = () => {
         if (videocallPackageError) throw videocallPackageError;
       }
 
-      // Δημιουργία απόδειξης αν είναι πληρωμένη
-      if (isPaid) {
-        await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier);
-      }
+      // Δημιουργία απόδειξης πάντα
+      await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier);
 
       // Αποστολή απόδειξης με email
       try {
@@ -1069,10 +1067,8 @@ export const SubscriptionManagement: React.FC = () => {
           .eq('id', newSubscriptionId);
       }
 
-      // Δημιουργία απόδειξης αν είναι πληρωμένη
-      if (isPaid) {
-        await createReceiptForSubscription(userData, subscriptionType, newStartDate, newEndDate);
-      }
+      // Δημιουργία απόδειξης πάντα
+      await createReceiptForSubscription(userData, subscriptionType, newStartDate, newEndDate);
 
       toast({
         title: "Επιτυχία",
