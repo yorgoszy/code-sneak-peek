@@ -132,9 +132,11 @@ const FederationUsers = () => {
     const { data } = await supabase.from("app_users")
       .select("id, name, email, phone, photo_url, role")
       .ilike(field, `%${value.trim()}%`)
+      .eq("role", "coach")
       .limit(5);
     const existingClubIds = clubs.map((c) => c.club_id);
-    const filtered = (data || []).filter((u: any) => !existingClubIds.includes(u.id));
+    // Exclude already-linked clubs and the federation's own account
+    const filtered = (data || []).filter((u: any) => !existingClubIds.includes(u.id) && u.id !== userProfile?.id);
     setMatchedUsers(filtered);
     setShowMatchPopup(filtered.length > 0);
   };
