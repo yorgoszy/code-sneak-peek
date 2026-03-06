@@ -74,7 +74,7 @@ const Auth = () => {
       const isRecoveryFromHash = hash.includes('type=recovery') || hash.includes('type=magiclink');
       const hasAccessToken = hash.includes('access_token');
       const hasCode = searchParams.has('code');
-      const hasToken = searchParams.has('token');
+      const hasToken = searchParams.has('token') || searchParams.has('token_hash');
       const hasErrorDescription = hash.includes('error_description') || searchParams.has('error_description');
 
       console.log('🔐 Auth page - Checking for recovery:', {
