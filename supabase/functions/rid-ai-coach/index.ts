@@ -665,7 +665,7 @@ serve(async (req) => {
             const clubName = r.app_users?.name || 'Άγνωστο';
             const typeName = r.subscription_types?.name || r.receipt_type || '?';
             const date = new Date(r.created_at).toLocaleDateString('el-GR');
-            federationReceiptsContext += \`  🧾 \${r.receipt_number}: \${clubName} - \${typeName} - \${r.amount}€ (\${date})\${r.mark ? \` [\${r.mark}]\` : ''}\${r.notes ? \` | \${r.notes}\` : ''}\\n\`;
+            federationReceiptsContext += `  🧾 ${r.receipt_number}: ${clubName} - ${typeName} - ${r.amount}€ (${date})${r.mark ? ` [${r.mark}]` : ''}${r.notes ? ` | ${r.notes}` : ''}\n`;
           });
         } else {
           federationReceiptsContext = '\\n\\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν αποδείξεις.\\n';
