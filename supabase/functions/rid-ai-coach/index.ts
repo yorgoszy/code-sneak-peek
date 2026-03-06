@@ -653,14 +653,14 @@ serve(async (req) => {
           const totalAmount = fedReceiptsData.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
           const markedCount = fedReceiptsData.filter((r: any) => r.mark).length;
 
-          federationReceiptsContext = \`\\n\\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ:
+          federationReceiptsContext = `\n\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ:
 📊 ΣΤΑΤΙΣΤΙΚΑ:
-- Συνολικές αποδείξεις: \${fedReceiptsData.length}
-- Συνολικό ποσό: \${totalAmount}€
-- Μαρκαρισμένες: \${markedCount}
+- Συνολικές αποδείξεις: ${fedReceiptsData.length}
+- Συνολικό ποσό: ${totalAmount}€
+- Μαρκαρισμένες: ${markedCount}
 
 📋 ΛΙΣΤΑ ΑΠΟΔΕΙΞΕΩΝ (πρόσφατες):
-\`;
+`;
           fedReceiptsData.slice(0, 30).forEach((r: any) => {
             const clubName = r.app_users?.name || 'Άγνωστο';
             const typeName = r.subscription_types?.name || r.receipt_type || '?';
