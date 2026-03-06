@@ -385,15 +385,15 @@ const generateReceiptHTML = (data: ReceiptData) => {
                     <span class="label">ΦΠΑ (13%):</span>
                     <span class="value">€${(data.price - data.price / 1.13).toFixed(2)}</span>
                 </div>
-                <div style="margin-top: 10px; border-top: 2px solid #00ffba; padding-top: 10px;">
+                <div style="margin-top: 10px; border-top: 2px solid #000000; padding-top: 10px;">
                     <div class="total-amount">
                         Σύνολο: €${data.price.toFixed(2)}
                     </div>
                 </div>
             </div>
             
-            <div class="footer" style="text-align: right;">
-                <img src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" alt="HYPERKIDS Logo" style="width: 80px; height: auto; margin-left: auto; display: block; margin-bottom: 10px;" />
+            <div class="footer">
+                <img src="https://www.hyperkids.gr/images/hyperkids-logo-email.png" alt="HYPERKIDS Logo" style="height: 30px; width: auto; display: block; margin-left: auto; margin-bottom: 10px;" />
                 <p><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά και θα αποσταλεί στο MyData της AADE</em></p>
             </div>
         </div>
