@@ -248,17 +248,17 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Hyperkids</h1>
+          <img src={hyperkidsLogo} alt="HYPERKIDS" className="h-10 mx-auto mb-4" />
           <p className="text-gray-600">Δημιουργία νέου κωδικού</p>
         </div>
 
         <Card className="rounded-none shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-              <Key className="w-6 h-6 text-[#00ffba]" />
+              <Key className="w-6 h-6 text-black" />
               Νέος Κωδικός
             </CardTitle>
           </CardHeader>
