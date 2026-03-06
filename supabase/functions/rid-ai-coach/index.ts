@@ -606,21 +606,21 @@ serve(async (req) => {
           const paidRevenue = fedSubsData.filter((s: any) => s.is_paid !== false).reduce((sum: number, s: any) => sum + (s.subscription_types?.price || 0), 0);
           const unpaidRevenue = fedSubsData.filter((s: any) => s.is_paid === false).reduce((sum: number, s: any) => sum + (s.subscription_types?.price || 0), 0);
 
-          federationSubscriptionsContext = \`\\n\\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ (δικοί της τύποι):
+          federationSubscriptionsContext = `\n\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ (δικοί της τύποι):
 📊 ΣΤΑΤΙΣΤΙΚΑ:
-- Συνολικές συνδρομές: \${fedSubsData.length}
-- Ενεργές: \${activeCount}
-- Απλήρωτες: \${unpaidCount}
-- Σε παύση: \${pausedCount}
-- Ληγμένες: \${expiredCount}
+- Συνολικές συνδρομές: ${fedSubsData.length}
+- Ενεργές: ${activeCount}
+- Απλήρωτες: ${unpaidCount}
+- Σε παύση: ${pausedCount}
+- Ληγμένες: ${expiredCount}
 
 💰 ΟΙΚΟΝΟΜΙΚΑ:
-- Συνολικά έσοδα: \${totalRevenue}€
-- Εισπραχθέντα: \${paidRevenue}€
-- Απλήρωτα: \${unpaidRevenue}€
+- Συνολικά έσοδα: ${totalRevenue}€
+- Εισπραχθέντα: ${paidRevenue}€
+- Απλήρωτα: ${unpaidRevenue}€
 
 📋 ΛΙΣΤΑ ΣΥΝΔΡΟΜΩΝ:
-\`;
+`;
           fedSubsData.forEach((sub: any) => {
             const clubName = sub.app_users?.name || 'Άγνωστο';
             const typeName = sub.subscription_types?.name || '?';
@@ -634,10 +634,10 @@ serve(async (req) => {
             else if (daysUntil < 0) statusEmoji = '❌';
             else if (daysUntil <= 7) statusEmoji = '⚠️';
 
-            federationSubscriptionsContext += \`  \${statusEmoji} \${clubName}: \${typeName} (\${price}€) | \${sub.start_date} - \${sub.end_date} (\${daysUntil > 0 ? \`σε \${daysUntil} ημέρες\` : \`ΛΗΓΜΕΝΗ πριν \${Math.abs(daysUntil)} ημέρες\`})\${sub.is_paid === false ? ' [ΑΠΛΗΡΩΤΗ]' : ''}\${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\\n\`;
+            federationSubscriptionsContext += `  ${statusEmoji} ${clubName}: ${typeName} (${price}€) | ${sub.start_date} - ${sub.end_date} (${daysUntil > 0 ? `σε ${daysUntil} ημέρες` : `ΛΗΓΜΕΝΗ πριν ${Math.abs(daysUntil)} ημέρες`})${sub.is_paid === false ? ' [ΑΠΛΗΡΩΤΗ]' : ''}${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\n`;
           });
         } else {
-          federationSubscriptionsContext = '\\n\\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν συνδρομές.\\n';
+          federationSubscriptionsContext = '\n\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν συνδρομές.\n';
         }
       } catch(e) { console.log('⚠️ Error loading federation subscriptions:', e); }
 
@@ -653,26 +653,26 @@ serve(async (req) => {
           const totalAmount = fedReceiptsData.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
           const markedCount = fedReceiptsData.filter((r: any) => r.mark).length;
 
-          federationReceiptsContext = \`\\n\\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ:
+          federationReceiptsContext = `\n\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ:
 📊 ΣΤΑΤΙΣΤΙΚΑ:
-- Συνολικές αποδείξεις: \${fedReceiptsData.length}
-- Συνολικό ποσό: \${totalAmount}€
-- Μαρκαρισμένες: \${markedCount}
+- Συνολικές αποδείξεις: ${fedReceiptsData.length}
+- Συνολικό ποσό: ${totalAmount}€
+- Μαρκαρισμένες: ${markedCount}
 
 📋 ΛΙΣΤΑ ΑΠΟΔΕΙΞΕΩΝ (πρόσφατες):
-\`;
+`;
           fedReceiptsData.slice(0, 30).forEach((r: any) => {
             const clubName = r.app_users?.name || 'Άγνωστο';
             const typeName = r.subscription_types?.name || r.receipt_type || '?';
             const date = new Date(r.created_at).toLocaleDateString('el-GR');
-            federationReceiptsContext += \`  🧾 \${r.receipt_number}: \${clubName} - \${typeName} - \${r.amount}€ (\${date})\${r.mark ? \` [\${r.mark}]\` : ''}\${r.notes ? \` | \${r.notes}\` : ''}\\n\`;
+            federationReceiptsContext += `  🧾 ${r.receipt_number}: ${clubName} - ${typeName} - ${r.amount}€ (${date})${r.mark ? ` [${r.mark}]` : ''}${r.notes ? ` | ${r.notes}` : ''}\n`;
           });
         } else {
-          federationReceiptsContext = '\\n\\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν αποδείξεις.\\n';
+          federationReceiptsContext = '\n\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν αποδείξεις.\n';
         }
       } catch(e) { console.log('⚠️ Error loading federation receipts:', e); }
 
-      console.log(\`✅ Federation subscriptions context: \${federationSubscriptionsContext.length} chars, receipts: \${federationReceiptsContext.length} chars\`);
+      console.log(`✅ Federation subscriptions context: ${federationSubscriptionsContext.length} chars, receipts: ${federationReceiptsContext.length} chars`);
     }
 
     let userSubscriptionStatus = 'inactive';
