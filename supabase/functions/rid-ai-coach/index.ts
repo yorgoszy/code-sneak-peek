@@ -637,7 +637,7 @@ serve(async (req) => {
             federationSubscriptionsContext += `  ${statusEmoji} ${clubName}: ${typeName} (${price}€) | ${sub.start_date} - ${sub.end_date} (${daysUntil > 0 ? `σε ${daysUntil} ημέρες` : `ΛΗΓΜΕΝΗ πριν ${Math.abs(daysUntil)} ημέρες`})${sub.is_paid === false ? ' [ΑΠΛΗΡΩΤΗ]' : ''}${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\n`;
           });
         } else {
-          federationSubscriptionsContext = '\\n\\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν συνδρομές.\\n';
+          federationSubscriptionsContext = '\n\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν συνδρομές.\n';
         }
       } catch(e) { console.log('⚠️ Error loading federation subscriptions:', e); }
 
