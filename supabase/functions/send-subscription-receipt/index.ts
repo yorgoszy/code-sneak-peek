@@ -202,7 +202,7 @@ const generateGeneralReceiptHTML = (data: any) => {
         <div class="container">
             <div class="header">
                 <div class="header-left">
-                    <img src="https://hyperkids.lovable.app/images/hyperkids-logo-email.png" alt="HYPERKIDS" style="height: 40px; width: auto; margin-bottom: 8px; display: block;" />
+                    <img src="https://www.hyperkids.gr/images/hyperkids-logo-email.png" alt="HYPERKIDS" style="height: 40px; width: auto; margin-bottom: 8px; display: block;" />
                     <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
                     <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
                     <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
