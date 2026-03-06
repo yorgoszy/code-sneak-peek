@@ -318,16 +318,15 @@ const generateReceiptHTML = (data: ReceiptData) => {
         <style>
             body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
             .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-            .header { text-align: center; border-bottom: 2px solid #00ffba; padding-bottom: 20px; margin-bottom: 30px; }
-            .logo { font-size: 28px; font-weight: bold; color: #333; margin-bottom: 10px; }
-            .receipt-title { font-size: 24px; color: #00ffba; margin: 20px 0; }
+            .header { text-align: left; border-bottom: 2px solid #000000; padding-bottom: 20px; margin-bottom: 30px; }
+            .receipt-title { font-size: 24px; color: #000000; margin: 20px 0; }
             .info-section { margin: 20px 0; }
             .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
             .label { font-weight: bold; color: #333; }
             .value { color: #666; }
-            .total-section { background: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #00ffba; }
-            .total-amount { font-size: 24px; font-weight: bold; color: #00ffba; text-align: right; }
-            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
+            .total-section { background: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #000000; }
+            .total-amount { font-size: 24px; font-weight: bold; color: #000000; text-align: right; }
+            .footer { text-align: right; margin-top: 30px; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
         </style>
     </head>
     <body>
