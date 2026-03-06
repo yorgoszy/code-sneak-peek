@@ -668,7 +668,7 @@ serve(async (req) => {
             federationReceiptsContext += `  🧾 ${r.receipt_number}: ${clubName} - ${typeName} - ${r.amount}€ (${date})${r.mark ? ` [${r.mark}]` : ''}${r.notes ? ` | ${r.notes}` : ''}\n`;
           });
         } else {
-          federationReceiptsContext = '\\n\\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν αποδείξεις.\\n';
+          federationReceiptsContext = '\n\n🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν αποδείξεις.\n';
         }
       } catch(e) { console.log('⚠️ Error loading federation receipts:', e); }
 
