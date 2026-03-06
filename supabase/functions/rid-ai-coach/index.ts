@@ -606,21 +606,21 @@ serve(async (req) => {
           const paidRevenue = fedSubsData.filter((s: any) => s.is_paid !== false).reduce((sum: number, s: any) => sum + (s.subscription_types?.price || 0), 0);
           const unpaidRevenue = fedSubsData.filter((s: any) => s.is_paid === false).reduce((sum: number, s: any) => sum + (s.subscription_types?.price || 0), 0);
 
-          federationSubscriptionsContext = \`\\n\\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ (δικοί της τύποι):
+          federationSubscriptionsContext = `\n\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ (δικοί της τύποι):
 📊 ΣΤΑΤΙΣΤΙΚΑ:
-- Συνολικές συνδρομές: \${fedSubsData.length}
-- Ενεργές: \${activeCount}
-- Απλήρωτες: \${unpaidCount}
-- Σε παύση: \${pausedCount}
-- Ληγμένες: \${expiredCount}
+- Συνολικές συνδρομές: ${fedSubsData.length}
+- Ενεργές: ${activeCount}
+- Απλήρωτες: ${unpaidCount}
+- Σε παύση: ${pausedCount}
+- Ληγμένες: ${expiredCount}
 
 💰 ΟΙΚΟΝΟΜΙΚΑ:
-- Συνολικά έσοδα: \${totalRevenue}€
-- Εισπραχθέντα: \${paidRevenue}€
-- Απλήρωτα: \${unpaidRevenue}€
+- Συνολικά έσοδα: ${totalRevenue}€
+- Εισπραχθέντα: ${paidRevenue}€
+- Απλήρωτα: ${unpaidRevenue}€
 
 📋 ΛΙΣΤΑ ΣΥΝΔΡΟΜΩΝ:
-\`;
+`;
           fedSubsData.forEach((sub: any) => {
             const clubName = sub.app_users?.name || 'Άγνωστο';
             const typeName = sub.subscription_types?.name || '?';
