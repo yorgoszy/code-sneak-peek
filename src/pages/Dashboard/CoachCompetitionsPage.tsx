@@ -418,11 +418,9 @@ const CoachCompetitionsContent: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent className="rounded-none max-h-60">
                   {(() => {
-                    // Group categories by age group prefix (e.g., "Ενήλικες Άνδρες", "Νέοι 16-17 Άνδρες")
                     const grouped = new Map<string, Category[]>();
                     categories.forEach(cat => {
-                      // Extract group: everything before the last weight part (e.g., "-57kg" or "+91kg")
-                      const match = cat.name.match(/^(.+?)\s+[-+]?\d+/);
+                      const match = cat.name.match(/^(.+?)\s+[-+]?\d/);
                       const groupName = match ? match[1].trim() : 'Άλλα';
                       if (!grouped.has(groupName)) grouped.set(groupName, []);
                       grouped.get(groupName)!.push(cat);
@@ -430,9 +428,11 @@ const CoachCompetitionsContent: React.FC = () => {
                     
                     return Array.from(grouped.entries()).map(([group, cats]) => (
                       <SelectGroup key={group}>
-                        <SelectLabel className="text-xs font-bold text-foreground bg-muted px-2 py-1.5">{group}</SelectLabel>
+                        <SelectLabel className="text-xs font-bold text-foreground bg-muted/80 pl-2 pr-2 py-2 border-b border-t border-border sticky top-0">
+                          {group} ({cats.length})
+                        </SelectLabel>
                         {cats.map(cat => (
-                          <SelectItem key={cat.id} value={cat.id}>
+                          <SelectItem key={cat.id} value={cat.id} className="text-xs">
                             {cat.name}
                           </SelectItem>
                         ))}
