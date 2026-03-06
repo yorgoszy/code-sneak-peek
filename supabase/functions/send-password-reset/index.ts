@@ -298,10 +298,11 @@ serve(async (req) => {
         <style>
           body { font-family: 'Robert Pro', Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
           .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 0; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-          .header { background: #00ffba; color: black; padding: 30px; text-align: center; }
-          .logo { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+          .header { background: #000000; color: white; padding: 30px; text-align: center; }
+          .logo { margin-bottom: 10px; }
+          .logo img { height: 40px; }
           .content { padding: 30px; }
-          .button { background: #00ffba; color: black; padding: 15px 30px; text-decoration: none; border-radius: 0; display: inline-block; margin: 20px 0; font-weight: bold; }
+          .button { background: #000000; color: white; padding: 15px 30px; text-decoration: none; border-radius: 0; display: inline-block; margin: 20px 0; font-weight: bold; }
           .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
           .warning { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; margin: 20px 0; border-radius: 4px; }
         </style>
