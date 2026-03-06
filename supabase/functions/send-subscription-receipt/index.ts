@@ -170,11 +170,11 @@ const generateGeneralReceiptHTML = (data: any) => {
             * { box-sizing: border-box; margin: 0; padding: 0; }
             body { font-family: Arial, sans-serif; background-color: #ffffff; }
             .container { max-width: 800px; margin: 0 auto; background: white; padding: 16px; border: 1px solid #e5e7eb; }
-            .header { display: flex; align-items: start; justify-content: space-between; border-bottom: 2px solid #00ffba; padding-bottom: 12px; margin-bottom: 16px; }
+            .header { display: flex; align-items: start; justify-content: space-between; border-bottom: 2px solid #000000; padding-bottom: 12px; margin-bottom: 16px; }
             .header-left { flex: 1; text-align: left; }
             .header-left p { font-size: 12px; color: #374151; line-height: 1.4; }
             .header-left strong { font-weight: bold; }
-            .receipt-title { font-size: 18px; color: #00ffba; text-align: center; margin-bottom: 12px; font-weight: 600; }
+            .receipt-title { font-size: 18px; color: #000000; text-align: center; margin-bottom: 12px; font-weight: 600; }
             .info-section { margin-bottom: 16px; }
             .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
             .info-row.two-cols { display: flex; justify-content: space-between; }
@@ -189,13 +189,13 @@ const generateGeneralReceiptHTML = (data: any) => {
             .item-name { font-weight: 500; color: #111827; font-size: 12px; }
             .item-quantity { color: #4b5563; font-size: 12px; }
             .item-details { display: flex; justify-content: space-between; font-size: 12px; color: #4b5563; }
-            .total-section { background: #f9fafb; padding: 12px; border-left: 4px solid #00ffba; }
+            .total-section { background: #f9fafb; padding: 12px; border-left: 4px solid #000000; }
             .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 12px; }
-            .total-row.final { border-top: 2px solid #00ffba; padding-top: 8px; margin-top: 12px; }
-            .total-row.final .label { font-size: 18px; font-weight: bold; color: #00ffba; }
-            .total-row.final .value { font-size: 18px; font-weight: bold; color: #00ffba; }
-            .footer { display: flex; justify-content: center; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
-            .footer img { width: 50%; height: auto; object-fit: contain; filter: grayscale(100%) brightness(0.9); opacity: 0.4; }
+            .total-row.final { border-top: 2px solid #000000; padding-top: 8px; margin-top: 12px; }
+            .total-row.final .label { font-size: 18px; font-weight: bold; color: #000000; }
+            .total-row.final .value { font-size: 18px; font-weight: bold; color: #000000; }
+            .footer { display: flex; justify-content: flex-end; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
+            .footer img { height: 30px; width: auto; object-fit: contain; }
         </style>
     </head>
     <body>
