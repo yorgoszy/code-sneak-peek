@@ -325,7 +325,7 @@ export default function ResetPassword() {
 
               <Button
                 type="submit"
-                className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                className="w-full bg-black hover:bg-black/90 text-white rounded-none"
                 disabled={loading || !password || !confirmPassword}
               >
                 {loading ? "Ενημέρωση..." : "Ενημέρωση Κωδικού"}
