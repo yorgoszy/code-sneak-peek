@@ -310,8 +310,8 @@ serve(async (req) => {
       <body>
         <div class="container">
           <div class="header">
-            <div class="logo">HYPERKIDS</div>
-            <p>Επαναφορά Κωδικού Πρόσβασης</p>
+            <div class="logo"><img src="https://www.hyperkids.gr/images/hyperkids-logo-email.png" alt="HYPERKIDS" style="height: 40px; filter: invert(1);" /></div>
+            <p style="color: white;">Επαναφορά Κωδικού Πρόσβασης</p>
           </div>
           
           <div class="content">
