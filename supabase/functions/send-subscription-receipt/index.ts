@@ -300,7 +300,7 @@ const generateGeneralReceiptHTML = (data: any) => {
             </div>
             
             <div class="footer">
-                <img src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" alt="HYPERKIDS Logo" />
+                <img src="https://www.hyperkids.gr/images/hyperkids-logo-email.png" alt="HYPERKIDS Logo" />
             </div>
         </div>
     </body>
