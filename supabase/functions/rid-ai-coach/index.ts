@@ -672,7 +672,7 @@ serve(async (req) => {
         }
       } catch(e) { console.log('⚠️ Error loading federation receipts:', e); }
 
-      console.log(\`✅ Federation subscriptions context: \${federationSubscriptionsContext.length} chars, receipts: \${federationReceiptsContext.length} chars\`);
+      console.log(`✅ Federation subscriptions context: ${federationSubscriptionsContext.length} chars, receipts: ${federationReceiptsContext.length} chars`);
     }
 
     let userSubscriptionStatus = 'inactive';
