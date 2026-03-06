@@ -634,7 +634,7 @@ serve(async (req) => {
             else if (daysUntil < 0) statusEmoji = '❌';
             else if (daysUntil <= 7) statusEmoji = '⚠️';
 
-            federationSubscriptionsContext += \`  \${statusEmoji} \${clubName}: \${typeName} (\${price}€) | \${sub.start_date} - \${sub.end_date} (\${daysUntil > 0 ? \`σε \${daysUntil} ημέρες\` : \`ΛΗΓΜΕΝΗ πριν \${Math.abs(daysUntil)} ημέρες\`})\${sub.is_paid === false ? ' [ΑΠΛΗΡΩΤΗ]' : ''}\${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\\n\`;
+            federationSubscriptionsContext += `  ${statusEmoji} ${clubName}: ${typeName} (${price}€) | ${sub.start_date} - ${sub.end_date} (${daysUntil > 0 ? `σε ${daysUntil} ημέρες` : `ΛΗΓΜΕΝΗ πριν ${Math.abs(daysUntil)} ημέρες`})${sub.is_paid === false ? ' [ΑΠΛΗΡΩΤΗ]' : ''}${sub.is_paused ? ' [ΠΑΥΣΗ]' : ''}\n`;
           });
         } else {
           federationSubscriptionsContext = '\\n\\n💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ: Δεν υπάρχουν συνδρομές.\\n';
