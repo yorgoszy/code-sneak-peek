@@ -416,23 +416,27 @@ const CoachCompetitionsContent: React.FC = () => {
                 <SelectTrigger className="rounded-none">
                   <SelectValue placeholder="Επιλέξτε κατηγορία..." />
                 </SelectTrigger>
-                <SelectContent className="rounded-none max-h-60">
+                <SelectContent className="rounded-none max-h-72">
                   {(() => {
+                    // Group categories by age group + gender prefix (remove weight suffix)
                     const grouped = new Map<string, Category[]>();
                     categories.forEach(cat => {
-                      const match = cat.name.match(/^(.+?)\s+[-+]?\d/);
-                      const groupName = match ? match[1].trim() : 'Άλλα';
+                      // Remove weight part at the end: "-45", "+91", "(±) 75", "-45kg" etc.
+                      const groupName = cat.name
+                        .replace(/\s+[-+±(].*$/, '')
+                        .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
+                        .trim() || 'Άλλα';
                       if (!grouped.has(groupName)) grouped.set(groupName, []);
                       grouped.get(groupName)!.push(cat);
                     });
                     
                     return Array.from(grouped.entries()).map(([group, cats]) => (
                       <SelectGroup key={group}>
-                        <SelectLabel className="text-xs font-bold text-foreground bg-muted/80 pl-2 pr-2 py-2 border-b border-t border-border sticky top-0">
+                        <SelectLabel className="text-[11px] font-bold text-foreground bg-muted pl-2 pr-2 py-1.5 border-b border-border">
                           {group} ({cats.length})
                         </SelectLabel>
                         {cats.map(cat => (
-                          <SelectItem key={cat.id} value={cat.id} className="text-xs">
+                          <SelectItem key={cat.id} value={cat.id} className="text-xs pl-4">
                             {cat.name}
                           </SelectItem>
                         ))}
