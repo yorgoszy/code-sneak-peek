@@ -28,7 +28,7 @@ export default function ResetPassword() {
     const hash = window.location.hash;
     const searchParams = new URLSearchParams(window.location.search);
     const hasCode = searchParams.has('code');
-    const hasToken = searchParams.has('token');
+    const hasToken = searchParams.has('token') || searchParams.has('token_hash');
     const hasAccessToken = hash.includes('access_token');
     const hasRecoveryType = hash.includes('type=recovery') || hash.includes('type=magiclink');
 
