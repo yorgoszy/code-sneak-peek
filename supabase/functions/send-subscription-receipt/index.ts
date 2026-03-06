@@ -170,11 +170,11 @@ const generateGeneralReceiptHTML = (data: any) => {
             * { box-sizing: border-box; margin: 0; padding: 0; }
             body { font-family: Arial, sans-serif; background-color: #ffffff; }
             .container { max-width: 800px; margin: 0 auto; background: white; padding: 16px; border: 1px solid #e5e7eb; }
-            .header { display: flex; align-items: start; justify-content: space-between; border-bottom: 2px solid #00ffba; padding-bottom: 12px; margin-bottom: 16px; }
+            .header { display: flex; align-items: start; justify-content: space-between; border-bottom: 2px solid #000000; padding-bottom: 12px; margin-bottom: 16px; }
             .header-left { flex: 1; text-align: left; }
             .header-left p { font-size: 12px; color: #374151; line-height: 1.4; }
             .header-left strong { font-weight: bold; }
-            .receipt-title { font-size: 18px; color: #00ffba; text-align: center; margin-bottom: 12px; font-weight: 600; }
+            .receipt-title { font-size: 18px; color: #000000; text-align: center; margin-bottom: 12px; font-weight: 600; }
             .info-section { margin-bottom: 16px; }
             .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
             .info-row.two-cols { display: flex; justify-content: space-between; }
@@ -189,20 +189,20 @@ const generateGeneralReceiptHTML = (data: any) => {
             .item-name { font-weight: 500; color: #111827; font-size: 12px; }
             .item-quantity { color: #4b5563; font-size: 12px; }
             .item-details { display: flex; justify-content: space-between; font-size: 12px; color: #4b5563; }
-            .total-section { background: #f9fafb; padding: 12px; border-left: 4px solid #00ffba; }
+            .total-section { background: #f9fafb; padding: 12px; border-left: 4px solid #000000; }
             .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 12px; }
-            .total-row.final { border-top: 2px solid #00ffba; padding-top: 8px; margin-top: 12px; }
-            .total-row.final .label { font-size: 18px; font-weight: bold; color: #00ffba; }
-            .total-row.final .value { font-size: 18px; font-weight: bold; color: #00ffba; }
-            .footer { display: flex; justify-content: center; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
-            .footer img { width: 50%; height: auto; object-fit: contain; filter: grayscale(100%) brightness(0.9); opacity: 0.4; }
+            .total-row.final { border-top: 2px solid #000000; padding-top: 8px; margin-top: 12px; }
+            .total-row.final .label { font-size: 18px; font-weight: bold; color: #000000; }
+            .total-row.final .value { font-size: 18px; font-weight: bold; color: #000000; }
+            .footer { display: flex; justify-content: flex-end; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
+            .footer img { height: 30px; width: auto; object-fit: contain; }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
                 <div class="header-left">
-                    <img src="https://hyperkids.lovable.app/images/hyperkids-logo-email.png" alt="HYPERKIDS" style="height: 40px; width: auto; margin-bottom: 8px; display: block;" />
+                    <img src="https://www.hyperkids.gr/images/hyperkids-logo-email.png" alt="HYPERKIDS" style="height: 40px; width: auto; margin-bottom: 8px; display: block;" />
                     <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
                     <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
                     <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
@@ -300,7 +300,7 @@ const generateGeneralReceiptHTML = (data: any) => {
             </div>
             
             <div class="footer">
-                <img src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" alt="HYPERKIDS Logo" />
+                <img src="https://www.hyperkids.gr/images/hyperkids-logo-email.png" alt="HYPERKIDS Logo" />
             </div>
         </div>
     </body>
@@ -318,22 +318,21 @@ const generateReceiptHTML = (data: ReceiptData) => {
         <style>
             body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
             .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-            .header { text-align: center; border-bottom: 2px solid #00ffba; padding-bottom: 20px; margin-bottom: 30px; }
-            .logo { font-size: 28px; font-weight: bold; color: #333; margin-bottom: 10px; }
-            .receipt-title { font-size: 24px; color: #00ffba; margin: 20px 0; }
+            .header { text-align: left; border-bottom: 2px solid #000000; padding-bottom: 20px; margin-bottom: 30px; }
+            .receipt-title { font-size: 24px; color: #000000; margin: 20px 0; }
             .info-section { margin: 20px 0; }
             .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
             .label { font-weight: bold; color: #333; }
             .value { color: #666; }
-            .total-section { background: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #00ffba; }
-            .total-amount { font-size: 24px; font-weight: bold; color: #00ffba; text-align: right; }
-            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
+            .total-section { background: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #000000; }
+            .total-amount { font-size: 24px; font-weight: bold; color: #000000; text-align: right; }
+            .footer { text-align: right; margin-top: 30px; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <img src="https://hyperkids.lovable.app/images/hyperkids-logo-email.png" alt="HYPERKIDS" style="height: 45px; width: auto; margin-bottom: 10px;" />
+                <img src="https://www.hyperkids.gr/images/hyperkids-logo-email.png" alt="HYPERKIDS" style="height: 45px; width: auto; margin-bottom: 10px; display: block;" />
                 <p>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</p>
                 <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
                 <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
@@ -386,15 +385,15 @@ const generateReceiptHTML = (data: ReceiptData) => {
                     <span class="label">ΦΠΑ (13%):</span>
                     <span class="value">€${(data.price - data.price / 1.13).toFixed(2)}</span>
                 </div>
-                <div style="margin-top: 10px; border-top: 2px solid #00ffba; padding-top: 10px;">
+                <div style="margin-top: 10px; border-top: 2px solid #000000; padding-top: 10px;">
                     <div class="total-amount">
                         Σύνολο: €${data.price.toFixed(2)}
                     </div>
                 </div>
             </div>
             
-            <div class="footer" style="text-align: right;">
-                <img src="/lovable-uploads/4b47c4bc-34e4-4cd0-8f07-f32a26fabdd8.png" alt="HYPERKIDS Logo" style="width: 80px; height: auto; margin-left: auto; display: block; margin-bottom: 10px;" />
+            <div class="footer">
+                <img src="https://www.hyperkids.gr/images/hyperkids-logo-email.png" alt="HYPERKIDS Logo" style="height: 30px; width: auto; display: block; margin-left: auto; margin-bottom: 10px;" />
                 <p><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά και θα αποσταλεί στο MyData της AADE</em></p>
             </div>
         </div>
