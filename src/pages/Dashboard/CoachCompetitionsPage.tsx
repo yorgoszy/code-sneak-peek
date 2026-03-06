@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Swords, Calendar, MapPin, Users, FileText, UserPlus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -417,11 +417,28 @@ const CoachCompetitionsContent: React.FC = () => {
                   <SelectValue placeholder="Επιλέξτε κατηγορία..." />
                 </SelectTrigger>
                 <SelectContent className="rounded-none max-h-60">
-                  {categories.map(cat => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
+                  {(() => {
+                    // Group categories by age group prefix (e.g., "Ενήλικες Άνδρες", "Νέοι 16-17 Άνδρες")
+                    const grouped = new Map<string, Category[]>();
+                    categories.forEach(cat => {
+                      // Extract group: everything before the last weight part (e.g., "-57kg" or "+91kg")
+                      const match = cat.name.match(/^(.+?)\s+[-+]?\d+/);
+                      const groupName = match ? match[1].trim() : 'Άλλα';
+                      if (!grouped.has(groupName)) grouped.set(groupName, []);
+                      grouped.get(groupName)!.push(cat);
+                    });
+                    
+                    return Array.from(grouped.entries()).map(([group, cats]) => (
+                      <SelectGroup key={group}>
+                        <SelectLabel className="text-xs font-bold text-foreground bg-muted px-2 py-1.5">{group}</SelectLabel>
+                        {cats.map(cat => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ));
+                  })()}
                 </SelectContent>
               </Select>
             </div>
