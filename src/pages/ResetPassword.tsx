@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Key, Eye, EyeOff, Loader2 } from "lucide-react";
+import hyperkidsLogo from "@/assets/hyperkids-logo-black.png";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -237,9 +238,9 @@ export default function ResetPassword() {
   // Show loading while checking session
   if (isValidSession === null) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#00ffba]" />
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-black" />
           <p className="text-gray-600">Επαλήθευση συνδέσμου...</p>
         </div>
       </div>
@@ -247,17 +248,17 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Hyperkids</h1>
+          <img src={hyperkidsLogo} alt="HYPERKIDS" className="h-10 mx-auto mb-4" />
           <p className="text-gray-600">Δημιουργία νέου κωδικού</p>
         </div>
 
         <Card className="rounded-none shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-              <Key className="w-6 h-6 text-[#00ffba]" />
+              <Key className="w-6 h-6 text-black" />
               Νέος Κωδικός
             </CardTitle>
           </CardHeader>
@@ -324,7 +325,7 @@ export default function ResetPassword() {
 
               <Button
                 type="submit"
-                className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                className="w-full bg-black hover:bg-black/90 text-white rounded-none"
                 disabled={loading || !password || !confirmPassword}
               >
                 {loading ? "Ενημέρωση..." : "Ενημέρωση Κωδικού"}
@@ -335,7 +336,7 @@ export default function ResetPassword() {
               <Button
                 variant="link"
                 onClick={() => navigate('/auth')}
-                className="text-[#00ffba] hover:text-[#00ffba]/90"
+                className="text-black hover:text-black/70"
               >
                 Επιστροφή στη σύνδεση
               </Button>
