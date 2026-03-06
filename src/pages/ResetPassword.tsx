@@ -336,7 +336,7 @@ export default function ResetPassword() {
               <Button
                 variant="link"
                 onClick={() => navigate('/auth')}
-                className="text-[#00ffba] hover:text-[#00ffba]/90"
+                className="text-black hover:text-black/70"
               >
                 Επιστροφή στη σύνδεση
               </Button>
