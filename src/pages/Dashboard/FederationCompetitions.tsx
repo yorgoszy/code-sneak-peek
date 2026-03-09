@@ -115,6 +115,7 @@ const FederationCompetitions = () => {
     setFormDeadline('');
     setFormStatus('upcoming');
     setFormPdfUrl('');
+    setFormCountsForRanking(false);
   };
 
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
