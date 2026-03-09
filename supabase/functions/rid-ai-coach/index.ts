@@ -2510,7 +2510,7 @@ ${drafts.map((p: any, i: number) => {
         }
       }
     );
-    const strengthHistory = await strengthSessionsResponse.json();
+    strengthHistory = await strengthSessionsResponse.json();
     
     // Φόρτωση exercises για να πάρουμε τα ονόματα
     const exercisesResponse = await fetch(
