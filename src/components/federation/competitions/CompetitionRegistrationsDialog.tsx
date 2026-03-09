@@ -202,7 +202,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
                 <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
                   Άνδρες
                 </div>
-                {renderCategoryList(maleCats, 'male', 'male')}
+                {renderCategoryList(maleCats, 'male')}
               </div>
               {/* Γυναίκες - Δεξιά */}
               <div className="flex-1 min-w-0">
