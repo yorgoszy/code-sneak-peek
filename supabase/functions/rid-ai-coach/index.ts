@@ -572,6 +572,116 @@ serve(async (req) => {
       }
     }
 
+    // 🏆 FEDERATION COMPETITIONS & RANKING DATA
+    let federationCompetitionsContext = '';
+    if (isFederation && !targetUserId) {
+      console.log('🏆 Federation mode: Loading competitions and ranking data...');
+      try {
+        // Φόρτωση αγώνων ομοσπονδίας
+        const compsRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/federation_competitions?federation_id=eq.${userId}&select=*&order=competition_date.desc&limit=20`,
+          { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+        );
+        const compsData = await compsRes.json();
+        
+        if (Array.isArray(compsData) && compsData.length > 0) {
+          federationCompetitionsContext = `\n\n🏆 ΑΓΩΝΕΣ ΟΜΟΣΠΟΝΔΙΑΣ (${compsData.length}):\n`;
+          
+          for (const comp of compsData) {
+            const isRanking = comp.counts_for_ranking ? ' [RANKING]' : '';
+            federationCompetitionsContext += `\n🥊 ${comp.name}${isRanking}\n  📅 Ημ/νία: ${comp.competition_date}\n  📍 Τοποθεσία: ${comp.location || '-'}\n  📋 Προθεσμία δηλώσεων: ${comp.registration_deadline || '-'}\n  Status: ${comp.status}\n`;
+            
+            // Φόρτωση κατηγοριών αγώνα
+            try {
+              const catsRes = await fetch(
+                `${SUPABASE_URL}/rest/v1/federation_competition_categories?competition_id=eq.${comp.id}&select=*`,
+                { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+              );
+              const catsData = await catsRes.json();
+              if (Array.isArray(catsData) && catsData.length > 0) {
+                federationCompetitionsContext += `  📊 Κατηγορίες (${catsData.length}): ${catsData.map((c: any) => `${c.gender === 'male' ? '♂' : '♀'} ${c.age_group} ${c.weight_min}-${c.weight_max}kg`).join(', ')}\n`;
+              }
+            } catch(e) {}
+            
+            // Φόρτωση δηλώσεων
+            try {
+              const regsRes = await fetch(
+                `${SUPABASE_URL}/rest/v1/federation_competition_registrations?competition_id=eq.${comp.id}&select=*,app_users!federation_competition_registrations_athlete_id_fkey(name,email,coach_id)&order=created_at.desc`,
+                { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+              );
+              const regsData = await regsRes.json();
+              if (Array.isArray(regsData) && regsData.length > 0) {
+                federationCompetitionsContext += `  👥 Δηλώσεις (${regsData.length}): ${regsData.map((r: any) => r.app_users?.name || '?').join(', ')}\n`;
+              }
+            } catch(e) {}
+            
+            // Φόρτωση αποτελεσμάτων αγώνα (ranking results)
+            if (comp.counts_for_ranking) {
+              try {
+                const resultsRes = await fetch(
+                  `${SUPABASE_URL}/rest/v1/federation_competition_results?competition_id=eq.${comp.id}&select=*,app_users!federation_competition_results_athlete_id_fkey(name)&order=placement.asc`,
+                  { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+                );
+                const resultsData = await resultsRes.json();
+                if (Array.isArray(resultsData) && resultsData.length > 0) {
+                  federationCompetitionsContext += `  🏅 Αποτελέσματα:\n`;
+                  resultsData.forEach((r: any) => {
+                    const medal = r.placement === 1 ? '🥇' : r.placement === 2 ? '🥈' : r.placement === 3 ? '🥉' : `#${r.placement}`;
+                    federationCompetitionsContext += `    ${medal} ${r.app_users?.name || '?'} (${r.gender === 'male' ? '♂' : '♀'} ${r.age_group} ${r.weight_category}) - ${r.points || 0} πόντοι\n`;
+                  });
+                }
+              } catch(e) {}
+            }
+          }
+        }
+        
+        // Φόρτωση ranking points configuration
+        try {
+          const rpRes = await fetch(
+            `${SUPABASE_URL}/rest/v1/federation_ranking_points?federation_id=eq.${userId}&select=*&order=placement.asc`,
+            { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+          );
+          const rpData = await rpRes.json();
+          if (Array.isArray(rpData) && rpData.length > 0) {
+            federationCompetitionsContext += `\n📊 ΣΥΣΤΗΜΑ ΒΑΘΜΟΛΟΓΙΑΣ RANKING:\n`;
+            rpData.forEach((rp: any) => {
+              const medal = rp.placement === 1 ? '🥇' : rp.placement === 2 ? '🥈' : rp.placement === 3 ? '🥉' : `#${rp.placement}`;
+              federationCompetitionsContext += `  ${medal} ${rp.placement}η θέση: ${rp.points} πόντοι\n`;
+            });
+          }
+        } catch(e) {}
+        
+        // Φόρτωση γενικού ranking (top αθλητές)
+        try {
+          const allResultsRes = await fetch(
+            `${SUPABASE_URL}/rest/v1/federation_competition_results?select=athlete_id,points,placement,gender,age_group,weight_category,app_users!federation_competition_results_athlete_id_fkey(name),federation_competitions!inner(federation_id,counts_for_ranking)&federation_competitions.federation_id=eq.${userId}&federation_competitions.counts_for_ranking=eq.true`,
+            { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+          );
+          const allResultsData = await allResultsRes.json();
+          if (Array.isArray(allResultsData) && allResultsData.length > 0) {
+            // Aggregate by athlete
+            const athleteMap = new Map<string, { name: string; totalPoints: number; golds: number; silvers: number; bronzes: number }>();
+            allResultsData.forEach((r: any) => {
+              const existing = athleteMap.get(r.athlete_id) || { name: r.app_users?.name || '?', totalPoints: 0, golds: 0, silvers: 0, bronzes: 0 };
+              existing.totalPoints += r.points || 0;
+              if (r.placement === 1) existing.golds++;
+              if (r.placement === 2) existing.silvers++;
+              if (r.placement === 3) existing.bronzes++;
+              athleteMap.set(r.athlete_id, existing);
+            });
+            
+            const sorted = Array.from(athleteMap.values()).sort((a, b) => b.totalPoints - a.totalPoints);
+            federationCompetitionsContext += `\n🏆 ΓΕΝΙΚΟ RANKING (Top ${Math.min(sorted.length, 20)}):\n`;
+            sorted.slice(0, 20).forEach((a, i) => {
+              federationCompetitionsContext += `  ${i + 1}. ${a.name}: ${a.totalPoints} πόντοι (🥇${a.golds} 🥈${a.silvers} 🥉${a.bronzes})\n`;
+            });
+          }
+        } catch(e) {}
+        
+        console.log(`✅ Federation competitions context: ${federationCompetitionsContext.length} chars`);
+      } catch(e) { console.log('⚠️ Error loading federation competitions:', e); }
+    }
+
     // 🏛️ FEDERATION SUBSCRIPTIONS & RECEIPTS
     let federationSubscriptionsContext = '';
     let federationReceiptsContext = '';
@@ -1955,6 +2065,7 @@ ${drafts.map((p: any, i: number) => {
     let allDaysContext = '';
     let overviewStatsContext = '';
     let adminProgressContext = '';
+    let strengthHistory: any[] = [];
     
     if (!(isAdmin && !targetUserId)) {
       console.log(`📊 Loading personal data for userId: ${effectiveUserId}`);
@@ -2388,6 +2499,18 @@ ${drafts.map((p: any, i: number) => {
       }
     );
     const strengthAttemptsData = await strengthAttemptsResponse.json();
+    
+    // Φόρτωση strength test sessions με nested attempts (για strengthHistory context)
+    const strengthSessionsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/strength_test_sessions?user_id=eq.${effectiveUserId}&select=id,test_date,strength_test_attempts(id,weight_kg,velocity_ms,exercise_id,is_1rm,exercises(name))&order=test_date.desc&limit=20`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    strengthHistory = await strengthSessionsResponse.json();
     
     // Φόρτωση exercises για να πάρουμε τα ονόματα
     const exercisesResponse = await fetch(
@@ -4466,6 +4589,8 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 ✅ 1RM δεδομένα αθλητών
 ✅ Συνδρομές της ομοσπονδίας (δικοί της τύποι, κατάσταση, πληρωμές)
 ✅ Αποδείξεις της ομοσπονδίας (ποσά, ημερομηνίες, σωματεία)
+✅ 🏆 ΑΓΩΝΕΣ ομοσπονδίας (ημερομηνίες, κατηγορίες, δηλώσεις, αποτελέσματα)
+✅ 🏅 RANKING αθλητών (πόντοι, μετάλλια, κατάταξη ανά κατηγορία)
 
 ΣΗΜΑΝΤΙΚΟ: Μπορείς να απαντήσεις ερωτήσεις όπως:
 - "Πόσους συλλόγους έχω;"
@@ -4477,11 +4602,18 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 - "Σύνοψη εσόδων/εξόδων"
 - "Πόσα έσοδα είχα αυτόν τον μήνα;"
 - "Δείξε μου τις αποδείξεις"
+- "Ποιοι αγώνες μετράνε για ranking;"
+- "Ποιος είναι πρώτος στο ranking;"
+- "Δείξε μου τα αποτελέσματα του αγώνα Χ"
+- "Πόσες δηλώσεις έχει ο αγώνας;"
+- "Ποιοι αθλητές δήλωσαν στον αγώνα;"
 
 Το context που έχεις περιλαμβάνει:
 - 🏛️ ΟΜΟΣΠΟΝΔΙΑ - ΔΕΔΟΜΕΝΑ με λίστα συλλόγων, αθλητών και αναλυτικά τεστ
 - 💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ με στατιστικά, οικονομικά και λίστα
-- 🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ με ποσά και λεπτομέρειες` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
+- 🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ με ποσά και λεπτομέρειες
+- 🏆 ΑΓΩΝΕΣ ΟΜΟΣΠΟΝΔΙΑΣ με κατηγορίες, δηλώσεις και αποτελέσματα
+- 🏅 RANKING αθλητών με πόντους και μετάλλια` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
@@ -4527,7 +4659,7 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${coachAthletesContext}${coachSubscriptionsContext}${coachProgressContext}${federationContext}${federationSubscriptionsContext}${federationReceiptsContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${coachAthletesContext}${coachSubscriptionsContext}${coachProgressContext}${federationContext}${federationSubscriptionsContext}${federationReceiptsContext}${federationCompetitionsContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
