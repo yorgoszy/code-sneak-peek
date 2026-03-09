@@ -638,62 +638,65 @@ const CoachCompetitionsContent: React.FC = () => {
 
       {/* Register Dialog - Two column men/women layout */}
       <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-none">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[85vh] rounded-none flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-3">
             <DialogTitle>Δήλωση Αθλητών - {selectedComp?.name}</DialogTitle>
           </DialogHeader>
 
-          {categories.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">Δεν υπάρχουν κατηγορίες</p>
-          ) : (
-            <div className="flex gap-4">
-              {/* Άνδρες */}
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
-                  Άνδρες
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto px-6">
+            {categories.length === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">Δεν υπάρχουν κατηγορίες</p>
+            ) : (
+              <div className="flex gap-4">
+                {/* Άνδρες */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                    Άνδρες
+                  </div>
+                  {maleGroups.map(g => (
+                    <CoachAgeGroup
+                      key={`male-${g.age}`}
+                      age={g.age}
+                      cats={g.cats}
+                      myRegistrations={myRegistrations}
+                      coachId={coachId || ''}
+                      addingToCategoryId={addingToCategoryId}
+                      setAddingToCategoryId={setAddingToCategoryId}
+                      selectedAthleteId={selectedAthleteId}
+                      setSelectedAthleteId={setSelectedAthleteId}
+                      onQuickRegister={handleQuickRegister}
+                      onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
+                    />
+                  ))}
                 </div>
-                {maleGroups.map(g => (
-                  <CoachAgeGroup
-                    key={`male-${g.age}`}
-                    age={g.age}
-                    cats={g.cats}
-                    myRegistrations={myRegistrations}
-                    coachId={coachId || ''}
-                    addingToCategoryId={addingToCategoryId}
-                    setAddingToCategoryId={setAddingToCategoryId}
-                    selectedAthleteId={selectedAthleteId}
-                    setSelectedAthleteId={setSelectedAthleteId}
-                    onQuickRegister={handleQuickRegister}
-                    onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
-                  />
-                ))}
-              </div>
-              {/* Γυναίκες */}
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
-                  Γυναίκες
+                {/* Γυναίκες */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                    Γυναίκες
+                  </div>
+                  {femaleGroups.map(g => (
+                    <CoachAgeGroup
+                      key={`female-${g.age}`}
+                      age={g.age}
+                      cats={g.cats}
+                      myRegistrations={myRegistrations}
+                      coachId={coachId || ''}
+                      addingToCategoryId={addingToCategoryId}
+                      setAddingToCategoryId={setAddingToCategoryId}
+                      selectedAthleteId={selectedAthleteId}
+                      setSelectedAthleteId={setSelectedAthleteId}
+                      onQuickRegister={handleQuickRegister}
+                      onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
+                    />
+                  ))}
                 </div>
-                {femaleGroups.map(g => (
-                  <CoachAgeGroup
-                    key={`female-${g.age}`}
-                    age={g.age}
-                    cats={g.cats}
-                    myRegistrations={myRegistrations}
-                    coachId={coachId || ''}
-                    addingToCategoryId={addingToCategoryId}
-                    setAddingToCategoryId={setAddingToCategoryId}
-                    selectedAthleteId={selectedAthleteId}
-                    setSelectedAthleteId={setSelectedAthleteId}
-                    onQuickRegister={handleQuickRegister}
-                    onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
-                  />
-                ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
+          {/* Fixed payment summary at bottom */}
           {(() => {
-            // Calculate total cost for unpaid registrations
             const unpaidRegs = myRegistrations.filter(r => !r.is_paid);
             const totalCost = unpaidRegs.reduce((sum, reg) => {
               const cat = categories.find(c => c.id === reg.category_id);
@@ -706,7 +709,7 @@ const CoachCompetitionsContent: React.FC = () => {
             const paidCount = myRegistrations.filter(r => r.is_paid).length;
 
             return (
-              <div className="border-t border-border pt-3 space-y-2">
+              <div className="border-t border-border px-6 py-4 bg-background space-y-2 shrink-0">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
                     Σύνολο: {myRegistrations.length} δηλώσεις
