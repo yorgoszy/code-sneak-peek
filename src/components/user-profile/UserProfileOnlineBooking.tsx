@@ -32,6 +32,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
   const { sections } = useBookingSections();
   const navigate = useNavigate();
+  const { syncBookingToCalendar } = useGoogleCalendar();
 
   useEffect(() => {
     if (userProfile?.id) {
