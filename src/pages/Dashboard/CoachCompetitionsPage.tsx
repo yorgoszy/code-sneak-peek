@@ -49,6 +49,7 @@ interface Registration {
   athlete_id: string;
   category_id: string;
   registration_status: string;
+  is_paid: boolean;
   athlete?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
   category?: { name: string } | null;
 }
