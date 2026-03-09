@@ -399,7 +399,14 @@ const FederationCompetitions = () => {
                   <Card key={comp.id} className="rounded-none hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
-                        <CardTitle className="text-base">{comp.name}</CardTitle>
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-base">{comp.name}</CardTitle>
+                          {(comp as any).counts_for_ranking && (
+                            <Badge className="rounded-none bg-[#cb8954] text-white text-[9px] px-1.5 h-5 gap-1">
+                              <Trophy className="h-3 w-3" /> Ranking
+                            </Badge>
+                          )}
+                        </div>
                         {getStatusBadge(comp.status)}
                       </div>
                     </CardHeader>
