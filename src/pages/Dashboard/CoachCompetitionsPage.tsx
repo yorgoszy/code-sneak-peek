@@ -308,8 +308,78 @@ const CoachCompetitionsContent: React.FC = () => {
     setRegisterDialogOpen(true);
   };
 
+  // Helper: calculate age from birth_date relative to competition date
+  const calculateAge = (birthDate: string, referenceDate: string): number => {
+    const birth = new Date(birthDate);
+    const ref = new Date(referenceDate);
+    let age = ref.getFullYear() - birth.getFullYear();
+    const monthDiff = ref.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && ref.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Helper: get expected age range from age group label
+  const getAgeRange = (ageLabel: string): { min: number; max: number } | null => {
+    if (ageLabel === '18-40') return { min: 18, max: 40 };
+    if (ageLabel === 'U23') return { min: 18, max: 22 };
+    const match = ageLabel.match(/^(\d+)-(\d+)$/);
+    if (match) return { min: parseInt(match[1]), max: parseInt(match[2]) };
+    return null;
+  };
+
   const handleQuickRegister = async (categoryId: string, athleteId: string) => {
     if (!selectedComp || !coachId) return;
+
+    // Fetch athlete profile to validate gender & age
+    const { data: athlete, error: athleteError } = await supabase
+      .from('app_users')
+      .select('name, gender, birth_date')
+      .eq('id', athleteId)
+      .single();
+
+    if (athleteError || !athlete) {
+      toast.error('Σφάλμα ανάκτησης στοιχείων αθλητή');
+      return;
+    }
+
+    // Check mandatory fields
+    if (!athlete.gender || !athlete.birth_date) {
+      toast.error(`Ο/Η ${athlete.name} δεν έχει συμπληρωμένο φύλο ή ημερομηνία γέννησης. Συμπληρώστε τα στο προφίλ του πριν τη δήλωση.`);
+      return;
+    }
+
+    // Find the category
+    const category = categories.find(c => c.id === categoryId);
+    if (!category) {
+      toast.error('Δεν βρέθηκε η κατηγορία');
+      return;
+    }
+
+    // Gender validation
+    const categoryGender = category.gender;
+    if (categoryGender) {
+      if (athlete.gender === 'female' && categoryGender === 'male') {
+        toast.error(`Η ${athlete.name} είναι γυναίκα και δεν μπορεί να δηλωθεί σε ανδρική κατηγορία. Δηλώστε την στις γυναικείες κατηγορίες.`);
+        return;
+      }
+      if (athlete.gender === 'male' && categoryGender === 'female') {
+        toast.error(`Ο ${athlete.name} είναι άνδρας και δεν μπορεί να δηλωθεί σε γυναικεία κατηγορία. Δηλώστε τον στις ανδρικές κατηγορίες.`);
+        return;
+      }
+    }
+
+    // Age validation
+    const ageLabel = getAgeLabel(category.name);
+    const ageRange = getAgeRange(ageLabel);
+    if (ageRange && athlete.birth_date) {
+      const athleteAge = calculateAge(athlete.birth_date, selectedComp.competition_date);
+      if (athleteAge < ageRange.min || athleteAge > ageRange.max) {
+        toast.error(`Ο/Η ${athlete.name} είναι ${athleteAge} ετών και δεν ανήκει στην ηλικιακή κατηγορία ${ageLabel} (${ageRange.min}-${ageRange.max} ετών).`);
+        return;
+      }
+    }
     
     const { data: existing } = await supabase
       .from('federation_competition_registrations')
