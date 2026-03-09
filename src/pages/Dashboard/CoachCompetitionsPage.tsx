@@ -774,6 +774,7 @@ const CoachCompetitionsContent: React.FC = () => {
                       setSelectedAthleteId={setSelectedAthleteId}
                       onQuickRegister={handleQuickRegister}
                       onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
+                      isLatePeriod={selectedComp ? isInLatePeriod(selectedComp) : false}
                     />
                   ))}
                 </div>
