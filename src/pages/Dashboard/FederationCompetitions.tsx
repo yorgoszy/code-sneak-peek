@@ -30,13 +30,16 @@ interface Competition {
   name: string;
   description: string | null;
   location: string | null;
+  location_url: string | null;
   competition_date: string;
   registration_deadline: string | null;
+  late_registration_deadline: string | null;
   regulations_pdf_url: string | null;
   status: string;
   created_at: string;
   categories_count?: number;
   registrations_count?: number;
+  counts_for_ranking?: boolean;
 }
 
 const FederationCompetitions = () => {
