@@ -341,7 +341,13 @@ html, body {
   }
 }
 
-/* Google Places Autocomplete dropdown - above dialogs */
+/* Google Places Autocomplete dropdown - above dialogs & clickable */
 .pac-container {
   z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure Google Places dropdown is not blocked by Radix Dialog overlay */
+[data-radix-popper-content-wrapper] {
+  pointer-events: auto !important;
 }
