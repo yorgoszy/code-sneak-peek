@@ -621,9 +621,81 @@ const CoachCompetitionsContent: React.FC = () => {
             </div>
           )}
 
-          <div className="text-xs text-muted-foreground text-right">
-            Σύνολο: {myRegistrations.length} δηλώσεις
-          </div>
+          {(() => {
+            // Calculate total cost for unpaid registrations
+            const unpaidRegs = myRegistrations.filter(r => !r.is_paid);
+            const totalCost = unpaidRegs.reduce((sum, reg) => {
+              const cat = categories.find(c => c.id === reg.category_id);
+              return sum + (cat?.registration_fee || 0);
+            }, 0);
+            const totalAll = myRegistrations.reduce((sum, reg) => {
+              const cat = categories.find(c => c.id === reg.category_id);
+              return sum + (cat?.registration_fee || 0);
+            }, 0);
+            const paidCount = myRegistrations.filter(r => r.is_paid).length;
+
+            return (
+              <div className="border-t border-border pt-3 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Σύνολο: {myRegistrations.length} δηλώσεις
+                    {paidCount > 0 && <span className="text-[#00ffba] ml-1">({paidCount} πληρωμένες)</span>}
+                  </span>
+                  <span className="font-bold text-lg">{totalAll.toFixed(2)}€</span>
+                </div>
+                {unpaidRegs.length > 0 && totalCost > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      Προς πληρωμή: {unpaidRegs.length} × δηλώσεις
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-foreground">{totalCost.toFixed(2)}€</span>
+                      <Button
+                        className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black font-semibold"
+                        onClick={async () => {
+                          try {
+                            setPaymentLoading(true);
+                            const { data: { session } } = await supabase.auth.getSession();
+                            if (!session) {
+                              toast.error('Πρέπει να είστε συνδεδεμένοι');
+                              return;
+                            }
+                            const { data, error } = await supabase.functions.invoke('create-competition-checkout', {
+                              body: {
+                                competition_id: selectedComp?.id,
+                                club_id: coachId,
+                                registration_ids: unpaidRegs.map(r => r.id),
+                                total_amount: totalCost,
+                                currency: 'eur',
+                                competition_name: selectedComp?.name,
+                              },
+                            });
+                            if (error) throw error;
+                            if (data?.url) {
+                              window.location.href = data.url;
+                            }
+                          } catch (err) {
+                            console.error(err);
+                            toast.error('Σφάλμα πληρωμής');
+                          } finally {
+                            setPaymentLoading(false);
+                          }
+                        }}
+                        disabled={paymentLoading}
+                      >
+                        {paymentLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <CreditCard className="h-4 w-4 mr-2" />
+                        )}
+                        Πληρωμή μέσω Stripe
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
