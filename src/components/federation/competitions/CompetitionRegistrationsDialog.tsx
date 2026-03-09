@@ -127,34 +127,37 @@ const AgeGroup: React.FC<{
                             </Avatar>
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-56 p-3 rounded-none text-xs space-y-2" side="top">
-                          <div className="flex items-center gap-2 font-semibold text-sm">
-                            <User className="h-3.5 w-3.5 text-muted-foreground" />
-                            {reg.athlete?.name || '-'}
-                          </div>
-                          {reg.athlete?.phone && (
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Phone className="h-3 w-3 shrink-0" />
-                              <span>{reg.athlete.phone}</span>
+                        <PopoverContent className="w-64 p-3 rounded-none text-xs space-y-2" side="top">
+                          {/* Αθλητής */}
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-7 w-7 rounded-full shrink-0">
+                              <AvatarImage src={avatar} />
+                              <AvatarFallback className="text-[10px] rounded-full">{name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <div className="font-semibold text-sm truncate">{reg.athlete?.name || '-'}</div>
+                              <div className="text-muted-foreground truncate">{reg.athlete?.email || '-'}</div>
                             </div>
-                          )}
-                          <div className="border-t border-border pt-2 mt-2">
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Phone className="h-3 w-3 shrink-0" />
+                            <span>{reg.athlete?.phone || '-'}</span>
+                          </div>
+
+                          {/* Σύλλογος */}
+                          <div className="border-t border-border pt-2">
                             <div className="flex items-center gap-2 font-medium">
-                              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                              <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                               {reg.club?.name || '-'}
                             </div>
-                            {reg.club?.email && (
-                              <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                                <Mail className="h-3 w-3 shrink-0" />
-                                <span className="truncate">{reg.club.email}</span>
-                              </div>
-                            )}
-                            {reg.club?.phone && (
-                              <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                                <Phone className="h-3 w-3 shrink-0" />
-                                <span>{reg.club.phone}</span>
-                              </div>
-                            )}
+                            <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                              <Mail className="h-3 w-3 shrink-0" />
+                              <span className="truncate">{reg.club?.email || '-'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                              <Phone className="h-3 w-3 shrink-0" />
+                              <span>{reg.club?.phone || '-'}</span>
+                            </div>
                           </div>
                         </PopoverContent>
                       </Popover>
