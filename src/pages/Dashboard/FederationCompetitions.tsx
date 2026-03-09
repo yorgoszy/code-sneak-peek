@@ -272,7 +272,7 @@ const FederationCompetitions = () => {
         <Label>Περιγραφή</Label>
         <Textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} placeholder="Περιγραφή αγώνα..." className="rounded-none" />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label>Ημερομηνία *</Label>
           <Input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} className="rounded-none" />
@@ -282,7 +282,7 @@ const FederationCompetitions = () => {
           <Input value={formLocation} onChange={e => setFormLocation(e.target.value)} placeholder="π.χ. Αθήνα" className="rounded-none" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label>Deadline Δηλώσεων</Label>
           <Input type="date" value={formDeadline} onChange={e => setFormDeadline(e.target.value)} className="rounded-none" />
