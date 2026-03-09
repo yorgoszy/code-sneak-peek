@@ -136,7 +136,11 @@ const AgeGroup: React.FC<{
                             </Avatar>
                             <div className="min-w-0">
                               <div className="font-semibold text-sm truncate">{reg.athlete?.name || '-'}</div>
-                              <div className="text-muted-foreground truncate">{reg.athlete?.email || '-'}</div>
+                              {reg.athlete?.email ? (
+                                <a href={`mailto:${reg.athlete.email}`} className="text-muted-foreground truncate hover:text-foreground hover:underline transition-colors">{reg.athlete.email}</a>
+                              ) : (
+                                <div className="text-muted-foreground truncate">-</div>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-2 text-muted-foreground">
