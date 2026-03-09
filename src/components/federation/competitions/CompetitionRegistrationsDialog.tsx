@@ -187,6 +187,10 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   const maleGroups = groupByAge(maleCats);
   const femaleGroups = groupByAge(femaleCats);
 
+  console.log('DEBUG categories:', categories.length, categories.map(c => ({ name: c.name, gender: c.gender, ageLabel: getAgeLabel(c.name) })));
+  console.log('DEBUG maleGroups:', maleGroups.length, maleGroups.map(g => g.age));
+  console.log('DEBUG femaleGroups:', femaleGroups.length, femaleGroups.map(g => g.age));
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-none">
