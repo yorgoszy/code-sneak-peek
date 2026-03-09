@@ -229,6 +229,7 @@ function App() {
                       <Route path="/dashboard/federation-subscriptions" element={<ProtectedRoute><FederationSubscriptions /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-competitions" element={<ProtectedRoute><FederationCompetitions /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
+                      <Route path="/dashboard/ranking" element={<ProtectedRoute><RankingPage /></ProtectedRoute>} />
 
                       {/* Protected user routes */}
                       <Route path="/meeting/:roomId" element={<ProtectedRoute><MeetingRoom /></ProtectedRoute>} />
