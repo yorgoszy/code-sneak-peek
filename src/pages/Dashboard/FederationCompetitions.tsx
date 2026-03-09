@@ -569,7 +569,17 @@ const FederationCompetitions = () => {
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-lg rounded-none">
+        <DialogContent className="max-w-lg rounded-none" onPointerDownOutside={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest('.pac-container')) {
+              e.preventDefault();
+            }
+          }} onInteractOutside={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest('.pac-container')) {
+              e.preventDefault();
+            }
+          }}>
           <DialogHeader>
             <DialogTitle>Επεξεργασία Αγώνα</DialogTitle>
           </DialogHeader>
