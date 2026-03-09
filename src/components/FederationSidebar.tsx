@@ -9,6 +9,7 @@ import {
   Brain,
   CreditCard,
   Swords,
+  Trophy,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";

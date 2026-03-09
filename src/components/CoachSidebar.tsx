@@ -261,6 +261,13 @@ export const CoachSidebar = ({
       requiresSubscription: true,
     },
     {
+      icon: Trophy,
+      label: "Ranking",
+      path: "/dashboard/ranking",
+      badge: null,
+      requiresSubscription: false,
+    },
+    {
       icon: BookOpen,
       label: "Knowledge",
       path: effectiveCoachId ? `/dashboard/knowledge?coachId=${effectiveCoachId}` : "/dashboard/knowledge",
