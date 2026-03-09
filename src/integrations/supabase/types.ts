@@ -3039,6 +3039,7 @@ export type Database = {
       federation_competitions: {
         Row: {
           competition_date: string
+          counts_for_ranking: boolean
           created_at: string
           description: string | null
           federation_id: string
@@ -3052,6 +3053,7 @@ export type Database = {
         }
         Insert: {
           competition_date: string
+          counts_for_ranking?: boolean
           created_at?: string
           description?: string | null
           federation_id: string
@@ -3065,6 +3067,7 @@ export type Database = {
         }
         Update: {
           competition_date?: string
+          counts_for_ranking?: boolean
           created_at?: string
           description?: string | null
           federation_id?: string
