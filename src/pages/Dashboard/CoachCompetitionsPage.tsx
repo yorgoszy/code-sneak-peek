@@ -160,8 +160,45 @@ const CoachCompetitionsContent: React.FC = () => {
     setSelectedComp(comp);
     setSelectedAthleteId('');
     setSelectedCategoryId('');
-    await fetchCategories(comp.id);
+    setAddingToCategoryId(null);
+    await Promise.all([fetchCategories(comp.id), fetchMyRegistrations(comp.id)]);
     setRegisterDialogOpen(true);
+  };
+
+  const handleQuickRegister = async (categoryId: string, athleteId: string) => {
+    if (!selectedComp || !coachId) return;
+    
+    const { data: existing } = await supabase
+      .from('federation_competition_registrations')
+      .select('id')
+      .eq('competition_id', selectedComp.id)
+      .eq('athlete_id', athleteId)
+      .eq('category_id', categoryId)
+      .maybeSingle();
+
+    if (existing) {
+      toast.error('Ο αθλητής είναι ήδη δηλωμένος σε αυτή την κατηγορία');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from('federation_competition_registrations').insert({
+        competition_id: selectedComp.id,
+        athlete_id: athleteId,
+        category_id: categoryId,
+        club_id: coachId,
+        registration_status: 'registered',
+      });
+      if (error) throw error;
+      toast.success('Ο αθλητής δηλώθηκε επιτυχώς');
+      setAddingToCategoryId(null);
+      setSelectedAthleteId('');
+      await fetchMyRegistrations(selectedComp.id);
+      fetchCompetitions();
+    } catch (error) {
+      console.error(error);
+      toast.error('Σφάλμα δήλωσης');
+    }
   };
 
   const handleRegister = async () => {
