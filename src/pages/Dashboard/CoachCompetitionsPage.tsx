@@ -23,8 +23,10 @@ interface Competition {
   name: string;
   description: string | null;
   location: string | null;
+  location_url: string | null;
   competition_date: string;
   registration_deadline: string | null;
+  late_registration_deadline: string | null;
   regulations_pdf_url: string | null;
   status: string;
   federation_id: string;
