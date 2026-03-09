@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Search, ChevronDown, ChevronRight } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Search, ChevronDown, ChevronRight, Phone, Mail, Building2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { matchesSearchTerm } from "@/lib/utils";
@@ -19,8 +20,8 @@ interface Registration {
   registration_status: string;
   notes: string | null;
   category?: { name: string } | null;
-  club?: { name: string; avatar_url: string | null } | null;
-  athlete?: { name: string; avatar_url: string | null; photo_url: string | null } | null;
+  club?: { name: string; avatar_url: string | null; email: string | null; phone: string | null } | null;
+  athlete?: { name: string; avatar_url: string | null; photo_url: string | null; phone: string | null } | null;
 }
 
 interface Category {
@@ -117,10 +118,46 @@ const AgeGroup: React.FC<{
                     const name = reg.athlete?.name || 'Ά';
                     const avatar = reg.athlete?.photo_url || reg.athlete?.avatar_url || '';
                     return (
-                      <Avatar key={reg.id} className="h-5 w-5 rounded-full">
-                        <AvatarImage src={avatar} />
-                        <AvatarFallback className="text-[8px] rounded-full">{name.charAt(0)}</AvatarFallback>
-                      </Avatar>
+                      <Popover key={reg.id}>
+                        <PopoverTrigger asChild>
+                          <button className="focus:outline-none">
+                            <Avatar className="h-5 w-5 rounded-full cursor-pointer hover:ring-2 hover:ring-foreground/30 transition-all">
+                              <AvatarImage src={avatar} />
+                              <AvatarFallback className="text-[8px] rounded-full">{name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-56 p-3 rounded-none text-xs space-y-2" side="top">
+                          <div className="flex items-center gap-2 font-semibold text-sm">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            {reg.athlete?.name || '-'}
+                          </div>
+                          {reg.athlete?.phone && (
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Phone className="h-3 w-3 shrink-0" />
+                              <span>{reg.athlete.phone}</span>
+                            </div>
+                          )}
+                          <div className="border-t border-border pt-2 mt-2">
+                            <div className="flex items-center gap-2 font-medium">
+                              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                              {reg.club?.name || '-'}
+                            </div>
+                            {reg.club?.email && (
+                              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                                <Mail className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{reg.club.email}</span>
+                              </div>
+                            )}
+                            {reg.club?.phone && (
+                              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                                <Phone className="h-3 w-3 shrink-0" />
+                                <span>{reg.club.phone}</span>
+                              </div>
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     );
                   })}
                 </div>
@@ -165,8 +202,8 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
         .select(`
           *,
           category:federation_competition_categories(name),
-          club:app_users!federation_competition_registrations_club_id_fkey(name, avatar_url),
-          athlete:app_users!federation_competition_registrations_athlete_id_fkey(name, avatar_url, photo_url)
+          club:app_users!federation_competition_registrations_club_id_fkey(name, avatar_url, email, phone),
+          athlete:app_users!federation_competition_registrations_athlete_id_fkey(name, avatar_url, photo_url, phone)
         `)
         .eq('competition_id', competitionId)
         .order('created_at', { ascending: false });
