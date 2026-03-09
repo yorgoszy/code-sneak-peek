@@ -14,6 +14,7 @@ import { SectionBookingCalendar } from "./bookings/SectionBookingCalendar";
 import { useBookingSections } from "@/hooks/useBookingSections";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 
 interface UserProfileOnlineBookingProps {
   userProfile: any;
@@ -31,6 +32,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
   const { sections } = useBookingSections();
   const navigate = useNavigate();
+  const { syncBookingToCalendar } = useGoogleCalendar();
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -52,7 +54,19 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const handleCreateBooking = async (sectionId: string, date: string, time: string, type: string) => {
     try {
       const bookingData = await createBooking(sectionId, date, time, type);
-      toast.success(t('onlineBooking.bookingCreated'));
+      const sectionInfo = sections.find(s => s.id === sectionId);
+      
+      toast.success(t('onlineBooking.bookingCreated'), {
+        action: {
+          label: '📅 Google Calendar',
+          onClick: () => syncBookingToCalendar({
+            booking_date: date,
+            booking_time: time,
+            booking_type: type,
+            section_name: sectionInfo?.name,
+          }),
+        },
+      });
     } catch (error: any) {
       toast.error(error.message || t('onlineBooking.bookingError'));
     }
