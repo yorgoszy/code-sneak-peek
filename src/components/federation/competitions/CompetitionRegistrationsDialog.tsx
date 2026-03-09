@@ -214,12 +214,12 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
                                   const athleteName = reg.athlete?.name || 'Άγνωστος';
                                   const athleteAvatar = reg.athlete?.photo_url || reg.athlete?.avatar_url || '';
                                   return (
-                                    <div key={reg.id} className="flex items-center gap-1.5 bg-accent/50 px-1.5 py-0.5 rounded-sm">
+                                    <div key={reg.id} className="flex items-center">
                                       <Avatar className="h-5 w-5 rounded-full">
                                         <AvatarImage src={athleteAvatar} />
                                         <AvatarFallback className="text-[8px] rounded-full">{athleteName.charAt(0)}</AvatarFallback>
                                       </Avatar>
-                                      <span className="text-[10px] truncate max-w-[80px]">{athleteName}</span>
+                                    </div>
                                     </div>
                                   );
                                 })}
