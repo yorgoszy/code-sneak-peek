@@ -107,7 +107,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   const maleCats = categories.filter(c => c.gender === 'male');
   const femaleCats = categories.filter(c => c.gender === 'female');
 
-  const renderCategoryList = (cats: Category[]) => {
+  const renderCategoryList = (cats: Category[], gender: string) => {
     // Group by age
     const AGE_ORDER = ['18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
     const grouped = new Map<string, Category[]>();
