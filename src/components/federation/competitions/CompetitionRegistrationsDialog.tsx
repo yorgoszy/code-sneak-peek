@@ -143,10 +143,16 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   // Group categories by age group (remove weight suffix)
   const grouped = new Map<string, Category[]>();
   categories.forEach(cat => {
-    const groupName = cat.name
+    let groupName = cat.name
       .replace(/\s+[-+±(].*$/, '')
       .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
       .trim() || 'Άλλα';
+    // Replace "Ενήλικοι" with age range
+    if (groupName === 'Ενήλικοι') groupName = '18-40';
+    // Remove "Νέοι" prefix (e.g. "Νέοι 16-17" → "16-17")  
+    groupName = groupName.replace(/^Νέοι\s+/, '');
+    // Also handle "Νέες" for female categories
+    groupName = groupName.replace(/^Νέες\s+/, '');
     if (!grouped.has(groupName)) grouped.set(groupName, []);
     grouped.get(groupName)!.push(cat);
   });
