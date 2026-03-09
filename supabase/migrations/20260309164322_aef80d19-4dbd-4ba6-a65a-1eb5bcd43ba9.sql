@@ -1,0 +1,1 @@
+ALTER TABLE public.federation_competitions ADD COLUMN counts_for_ranking boolean NOT NULL DEFAULT false;
