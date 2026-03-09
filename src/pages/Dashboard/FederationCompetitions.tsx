@@ -169,6 +169,7 @@ const FederationCompetitions = () => {
         registration_deadline: formDeadline || null,
         regulations_pdf_url: formPdfUrl || null,
         status: formStatus,
+        counts_for_ranking: formCountsForRanking,
       });
       if (error) throw error;
       toast.success('Ο αγώνας δημιουργήθηκε');
