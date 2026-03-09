@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Search, ChevronDown, ChevronRight } from "lucide-react";
+import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { matchesSearchTerm } from "@/lib/utils";
@@ -42,13 +42,11 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (isOpen) {
       fetchRegistrations();
       fetchCategories();
-      setOpenGroups(new Set());
     }
   }, [isOpen, competitionId]);
 
@@ -74,7 +72,6 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
         `)
         .eq('competition_id', competitionId)
         .order('created_at', { ascending: false });
-
       if (error) throw error;
       setRegistrations((data as unknown as Registration[]) || []);
     } catch (error) {
@@ -85,47 +82,21 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
     }
   };
 
-  const toggleGroup = (key: string) => {
-    setOpenGroups(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  };
-
-  const getAgeGroupKey = (name: string): string => {
-    if (name.startsWith('Ενήλικοι')) return 'Ενήλικοι';
-    if (name.startsWith('U23')) return 'U23';
-    const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
-    if (match) return match[1];
-    return 'Άλλα';
-  };
-
-  const getAgeGroupLabel = (key: string): string => {
-    if (key === 'Ενήλικοι') return '18-40';
-    if (key === 'U23') return 'U23';
-    return key;
-  };
-
   const isMale = (name: string) => /Άνδρ|Ανδρ|Αντρ|Άντρ/i.test(name);
   const isFemale = (name: string) => /Γυναίκ|Γυναικ/i.test(name);
 
-  const getWeight = (name: string): string => {
+  const getWeightLabel = (name: string): string => {
     const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
     return m ? m[1] : name;
   };
 
-  const AGE_ORDER = ['Ενήλικοι', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7', 'Άλλα'];
-
-  const ageGroups = new Map<string, Category[]>();
-  categories.forEach(cat => {
-    const key = getAgeGroupKey(cat.name);
-    if (!ageGroups.has(key)) ageGroups.set(key, []);
-    ageGroups.get(key)!.push(cat);
-  });
-
-  const sortedAgeKeys = AGE_ORDER.filter(k => ageGroups.has(k));
+  const getAgeLabel = (name: string): string => {
+    if (name.startsWith('Ενήλικοι')) return '18-40';
+    if (name.startsWith('U23')) return 'U23';
+    const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
+    if (match) return match[1];
+    return '';
+  };
 
   const filtered = registrations.filter(r => {
     if (!searchTerm) return true;
@@ -134,35 +105,56 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
       matchesSearchTerm(r.category?.name || '', searchTerm);
   });
 
-  const renderColumn = (columnCats: Category[], gender: string) => (
-    <div className="flex-1 min-w-0">
-      <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1 border-b border-border/50">
-        {gender}
-      </div>
-      {columnCats.map(cat => {
-        const catRegs = filtered.filter(r => r.category_id === cat.id);
-        return (
-          <div key={cat.id} className="border-b border-border/30">
-            <div className="flex items-center gap-1.5 px-2 py-1 text-xs">
-              <span className="font-medium">{getWeight(cat.name)}</span>
-              <div className="flex items-center gap-0.5 flex-1 justify-end">
-                {catRegs.map(reg => {
-                  const athleteName = reg.athlete?.name || 'Ά';
-                  const athleteAvatar = reg.athlete?.photo_url || reg.athlete?.avatar_url || '';
-                  return (
-                    <Avatar key={reg.id} className="h-5 w-5 rounded-full">
-                      <AvatarImage src={athleteAvatar} />
-                      <AvatarFallback className="text-[8px] rounded-full">{athleteName.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                  );
-                })}
-              </div>
-            </div>
+  const maleCats = categories.filter(c => isMale(c.name));
+  const femaleCats = categories.filter(c => isFemale(c.name));
+
+  const renderCategoryList = (cats: Category[]) => {
+    // Group by age
+    const AGE_ORDER = ['18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
+    const grouped = new Map<string, Category[]>();
+    cats.forEach(cat => {
+      const age = getAgeLabel(cat.name);
+      if (!grouped.has(age)) grouped.set(age, []);
+      grouped.get(age)!.push(cat);
+    });
+
+    return AGE_ORDER.filter(a => grouped.has(a)).map(age => {
+      const ageCats = grouped.get(age)!;
+      const ageRegs = filtered.filter(r => ageCats.some(c => c.id === r.category_id));
+      return (
+        <div key={age} className="mb-3">
+          <div className="text-[11px] font-bold text-foreground bg-muted px-2 py-1 border-b border-border flex items-center justify-between">
+            <span>{age}</span>
+            {ageRegs.length > 0 && (
+              <Badge className="rounded-none text-[9px] bg-foreground text-background h-4 px-1">
+                {ageRegs.length}
+              </Badge>
+            )}
           </div>
-        );
-      })}
-    </div>
-  );
+          {ageCats.map(cat => {
+            const catRegs = filtered.filter(r => r.category_id === cat.id);
+            return (
+              <div key={cat.id} className="flex items-center gap-1.5 px-2 py-1 text-xs border-b border-border/30">
+                <span className="font-medium min-w-[60px]">{getWeightLabel(cat.name)}</span>
+                <div className="flex items-center gap-0.5 flex-1 justify-end">
+                  {catRegs.map(reg => {
+                    const name = reg.athlete?.name || 'Ά';
+                    const avatar = reg.athlete?.photo_url || reg.athlete?.avatar_url || '';
+                    return (
+                      <Avatar key={reg.id} className="h-5 w-5 rounded-full">
+                        <AvatarImage src={avatar} />
+                        <AvatarFallback className="text-[8px] rounded-full">{name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    });
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -187,40 +179,21 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
           ) : categories.length === 0 ? (
             <p className="text-center py-8 text-muted-foreground">Δεν υπάρχουν κατηγορίες</p>
           ) : (
-            <div className="space-y-0">
-              {sortedAgeKeys.map(ageKey => {
-                const cats = ageGroups.get(ageKey)!;
-                const maleCats = cats.filter(c => isMale(c.name));
-                const femaleCats = cats.filter(c => isFemale(c.name));
-                const groupRegs = filtered.filter(r => cats.some(c => c.id === r.category_id));
-                const isOpen = openGroups.has(ageKey);
-
-                return (
-                  <div key={ageKey}>
-                    <button
-                      type="button"
-                      onClick={() => toggleGroup(ageKey)}
-                      className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer"
-                    >
-                      <span>{getAgeGroupLabel(ageKey)} ({cats.length})</span>
-                      <div className="flex items-center gap-2">
-                        {groupRegs.length > 0 && (
-                          <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">
-                            {groupRegs.length} αθλ.
-                          </Badge>
-                        )}
-                        {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                      </div>
-                    </button>
-                    {isOpen && (
-                      <div className="flex gap-0 divide-x divide-border">
-                        {maleCats.length > 0 && renderColumn(maleCats, 'Άνδρες')}
-                        {femaleCats.length > 0 && renderColumn(femaleCats, 'Γυναίκες')}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            <div className="flex gap-4">
+              {/* Άνδρες - Αριστερά */}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                  Άνδρες
+                </div>
+                {renderCategoryList(maleCats)}
+              </div>
+              {/* Γυναίκες - Δεξιά */}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                  Γυναίκες
+                </div>
+                {renderCategoryList(femaleCats)}
+              </div>
             </div>
           )}
 
