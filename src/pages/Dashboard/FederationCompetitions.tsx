@@ -287,18 +287,8 @@ const FederationCompetitions = () => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label>Ημερομηνία *</Label>
+          <Label>Ημερομηνία Αγώνα *</Label>
           <Input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} className="rounded-none" />
-        </div>
-        <div>
-          <Label>Τοποθεσία</Label>
-          <Input value={formLocation} onChange={e => setFormLocation(e.target.value)} placeholder="π.χ. Αθήνα" className="rounded-none" />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <Label>Deadline Δηλώσεων</Label>
-          <Input type="date" value={formDeadline} onChange={e => setFormDeadline(e.target.value)} className="rounded-none" />
         </div>
         <div>
           <Label>Κατάσταση</Label>
@@ -313,6 +303,36 @@ const FederationCompetitions = () => {
           </Select>
         </div>
       </div>
+      
+      {/* Τοποθεσία */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Τοποθεσία</Label>
+          <Input value={formLocation} onChange={e => setFormLocation(e.target.value)} placeholder="π.χ. Κλειστό Γυμναστήριο Αθήνας" className="rounded-none" />
+        </div>
+        <div>
+          <Label>Google Maps Link</Label>
+          <Input value={formLocationUrl} onChange={e => setFormLocationUrl(e.target.value)} placeholder="https://maps.google.com/..." className="rounded-none" />
+        </div>
+      </div>
+
+      {/* Deadlines */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Λήξη Εμπρόθεσμων Δηλώσεων</Label>
+          <Input type="date" value={formDeadline} onChange={e => setFormDeadline(e.target.value)} className="rounded-none" />
+        </div>
+        <div>
+          <Label>Λήξη Εκπρόθεσμων Δηλώσεων</Label>
+          <Input type="date" value={formLateDeadline} onChange={e => setFormLateDeadline(e.target.value)} className="rounded-none" />
+        </div>
+      </div>
+      {formDeadline && formLateDeadline && (
+        <p className="text-xs text-muted-foreground">
+          Εμπρόθεσμες έως {formDeadline} • Εκπρόθεσμες έως {formLateDeadline}
+        </p>
+      )}
+
       <div>
         <Label>Κανονισμοί (PDF)</Label>
         <div className="flex items-center gap-2">
