@@ -26,6 +26,7 @@ interface Registration {
 interface Category {
   id: string;
   name: string;
+  gender: string;
 }
 
 interface CompetitionRegistrationsDialogProps {
@@ -53,7 +54,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   const fetchCategories = async () => {
     const { data } = await supabase
       .from('federation_competition_categories')
-      .select('id, name')
+      .select('id, name, gender')
       .eq('competition_id', competitionId)
       .order('sort_order', { ascending: true });
     setCategories((data as Category[]) || []);
@@ -82,20 +83,17 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
     }
   };
 
-  const isMale = (name: string) => /Άνδρ|Ανδρ|Αντρ|Άντρ/i.test(name);
-  const isFemale = (name: string) => /Γυναίκ|Γυναικ/i.test(name);
-
   const getWeightLabel = (name: string): string => {
     const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
     return m ? m[1] : name;
   };
 
   const getAgeLabel = (name: string): string => {
-    if (name.startsWith('Ενήλικοι')) return '18-40';
-    if (name.startsWith('U23')) return 'U23';
+    if (/^Ενήλικοι/i.test(name)) return '18-40';
+    if (/^U23/i.test(name)) return 'U23';
     const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
     if (match) return match[1];
-    return '';
+    return name.replace(/([-+±]\s*\d+[\d.,]*\s*kg)/i, '').trim();
   };
 
   const filtered = registrations.filter(r => {
@@ -105,8 +103,8 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
       matchesSearchTerm(r.category?.name || '', searchTerm);
   });
 
-  const maleCats = categories.filter(c => isMale(c.name));
-  const femaleCats = categories.filter(c => isFemale(c.name));
+  const maleCats = categories.filter(c => c.gender === 'male');
+  const femaleCats = categories.filter(c => c.gender === 'female');
 
   const renderCategoryList = (cats: Category[]) => {
     // Group by age
