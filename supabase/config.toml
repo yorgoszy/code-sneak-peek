@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.create-competition-checkout]
 verify_jwt = false
+
+[functions.verify-competition-payment]
+verify_jwt = false
