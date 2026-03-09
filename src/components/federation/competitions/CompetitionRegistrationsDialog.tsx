@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Scale } from "lucide-react";
+import { Search, Scale, ChevronDown } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { matchesSearchTerm } from "@/lib/utils";
@@ -24,6 +25,11 @@ interface Registration {
   athlete?: { name: string; avatar_url: string | null; photo_url: string | null } | null;
 }
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface CompetitionRegistrationsDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,13 +41,26 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   isOpen, onClose, competitionId, competitionName,
 }) => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [weighInEdit, setWeighInEdit] = useState<{ id: string; weight: string } | null>(null);
 
   useEffect(() => {
-    if (isOpen) fetchRegistrations();
+    if (isOpen) {
+      fetchRegistrations();
+      fetchCategories();
+    }
   }, [isOpen, competitionId]);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('federation_competition_categories')
+      .select('id, name')
+      .eq('competition_id', competitionId)
+      .order('sort_order', { ascending: true });
+    setCategories((data as Category[]) || []);
+  };
 
   const fetchRegistrations = async () => {
     setLoading(true);
@@ -121,6 +140,18 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
     return <Badge className={`rounded-none text-xs ${styles[status] || ''}`}>{labels[status] || status}</Badge>;
   };
 
+  // Group categories by age group (remove weight suffix)
+  const grouped = new Map<string, Category[]>();
+  categories.forEach(cat => {
+    const groupName = cat.name
+      .replace(/\s+[-+±(].*$/, '')
+      .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
+      .trim() || 'Άλλα';
+    if (!grouped.has(groupName)) grouped.set(groupName, []);
+    grouped.get(groupName)!.push(cat);
+  });
+
+  // Filter registrations by search
   const filtered = registrations.filter(r => {
     if (!searchTerm) return true;
     return matchesSearchTerm(r.athlete?.name || '', searchTerm) ||
@@ -130,12 +161,12 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto rounded-none">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-none">
         <DialogHeader>
           <DialogTitle>Δηλώσεις - {competitionName}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -148,64 +179,85 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
 
           {loading ? (
             <p className="text-center py-8 text-muted-foreground">Φόρτωση...</p>
-          ) : filtered.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">
-              {registrations.length === 0 ? 'Δεν υπάρχουν δηλώσεις ακόμα' : 'Δεν βρέθηκαν αποτελέσματα'}
-            </p>
+          ) : categories.length === 0 ? (
+            <p className="text-center py-8 text-muted-foreground">Δεν υπάρχουν κατηγορίες</p>
           ) : (
-            <div className="space-y-2">
-              {filtered.map(reg => (
-                <div key={reg.id} className="flex items-center justify-between p-3 border rounded-none">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
-                      <AvatarFallback className="text-xs">
-                        {reg.athlete?.name?.charAt(0) || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{reg.athlete?.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{reg.club?.name}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="rounded-none text-xs">{reg.category?.name}</Badge>
-                    {getStatusBadge(reg.registration_status)}
-                    {getWeighInBadge(reg.weigh_in_status)}
-
-                    {reg.weigh_in_weight && (
-                      <span className="text-xs font-medium">{reg.weigh_in_weight} kg</span>
-                    )}
-
-                    {weighInEdit?.id === reg.id ? (
-                      <div className="flex items-center gap-1">
-                        <Input
-                          type="number"
-                          step="0.1"
-                          value={weighInEdit.weight}
-                          onChange={e => setWeighInEdit({ ...weighInEdit, weight: e.target.value })}
-                          className="w-20 h-8 rounded-none text-xs"
-                          placeholder="kg"
-                        />
-                        <Button size="sm" className="h-8 rounded-none bg-foreground text-background" onClick={() => handleWeighIn(reg.id, weighInEdit.weight)}>
-                          OK
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-8 rounded-none" onClick={() => setWeighInEdit(null)}>✕</Button>
+            <div className="space-y-1">
+              {Array.from(grouped.entries()).map(([group, cats]) => {
+                const groupRegs = filtered.filter(r => cats.some(c => c.id === r.category_id));
+                
+                return (
+                  <Collapsible key={group}>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
+                      <span>{group} ({cats.length})</span>
+                      <div className="flex items-center gap-2">
+                        {groupRegs.length > 0 && (
+                          <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">
+                            {groupRegs.length} αθλ.
+                          </Badge>
+                        )}
+                        <ChevronDown className="h-3 w-3" />
                       </div>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-none h-8"
-                        onClick={() => setWeighInEdit({ id: reg.id, weight: reg.weigh_in_weight?.toString() || '' })}
-                      >
-                        <Scale className="h-3 w-3 mr-1" /> Ζύγιση
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      {cats.map(cat => {
+                        const catRegs = filtered.filter(r => r.category_id === cat.id);
+                        
+                        return (
+                          <div key={cat.id} className="border-b border-border/50">
+                            <div className="flex items-center gap-2 px-3 py-1.5 text-xs">
+                              <span className="min-w-0 truncate font-medium">{cat.name}</span>
+                              
+                              {/* Athlete avatars */}
+                              <div className="flex items-center gap-1 flex-1 justify-end">
+                                {catRegs.map(reg => (
+                                  <div key={reg.id} className="flex items-center gap-1.5 bg-accent/50 px-1.5 py-0.5 rounded-sm">
+                                    <Avatar className="h-5 w-5">
+                                      <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
+                                      <AvatarFallback className="text-[8px]">{reg.athlete?.name?.charAt(0) || '?'}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-[10px] truncate max-w-[80px]">{reg.athlete?.name}</span>
+                                    {getStatusBadge(reg.registration_status)}
+                                    {getWeighInBadge(reg.weigh_in_status)}
+                                    {reg.weigh_in_weight && (
+                                      <span className="text-[10px] font-medium">{reg.weigh_in_weight}kg</span>
+                                    )}
+                                    {weighInEdit?.id === reg.id ? (
+                                      <div className="flex items-center gap-0.5">
+                                        <Input
+                                          type="number"
+                                          step="0.1"
+                                          value={weighInEdit.weight}
+                                          onChange={e => setWeighInEdit({ ...weighInEdit, weight: e.target.value })}
+                                          className="w-16 h-6 rounded-none text-[10px]"
+                                          placeholder="kg"
+                                        />
+                                        <Button size="sm" className="h-6 px-1.5 rounded-none bg-foreground text-background text-[10px]" onClick={() => handleWeighIn(reg.id, weighInEdit.weight)}>
+                                          OK
+                                        </Button>
+                                        <Button size="sm" variant="outline" className="h-6 px-1 rounded-none text-[10px]" onClick={() => setWeighInEdit(null)}>✕</Button>
+                                      </div>
+                                    ) : (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="rounded-none h-5 px-1.5 text-[10px]"
+                                        onClick={() => setWeighInEdit({ id: reg.id, weight: reg.weigh_in_weight?.toString() || '' })}
+                                      >
+                                        <Scale className="h-2.5 w-2.5 mr-0.5" /> Ζύγιση
+                                      </Button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              })}
             </div>
           )}
 
