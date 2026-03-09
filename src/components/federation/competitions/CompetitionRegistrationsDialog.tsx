@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, ChevronDown, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { matchesSearchTerm } from "@/lib/utils";
@@ -43,6 +43,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (isOpen) {
@@ -106,7 +107,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   const maleCats = categories.filter(c => c.gender === 'male');
   const femaleCats = categories.filter(c => c.gender === 'female');
 
-  const renderCategoryList = (cats: Category[]) => {
+  const renderCategoryList = (cats: Category[], gender: string) => {
     // Group by age
     const AGE_ORDER = ['18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
     const grouped = new Map<string, Category[]>();
@@ -116,20 +117,38 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
       grouped.get(age)!.push(cat);
     });
 
+    const toggleGroup = (key: string) => {
+      setOpenGroups(prev => {
+        const next = new Set(prev);
+        if (next.has(key)) next.delete(key);
+        else next.add(key);
+        return next;
+      });
+    };
+
     return AGE_ORDER.filter(a => grouped.has(a)).map(age => {
       const ageCats = grouped.get(age)!;
       const ageRegs = filtered.filter(r => ageCats.some(c => c.id === r.category_id));
+      const groupKey = `${gender}-${age}`;
+      const isOpen = openGroups.has(groupKey);
       return (
-        <div key={age} className="mb-3">
-          <div className="text-[11px] font-bold text-foreground bg-muted px-2 py-1 border-b border-border flex items-center justify-between">
-            <span>{age}</span>
+        <div key={age} className="mb-1">
+          <button
+            type="button"
+            onClick={() => toggleGroup(groupKey)}
+            className="w-full text-[11px] font-bold text-foreground bg-muted px-2 py-1.5 border-b border-border flex items-center justify-between cursor-pointer hover:bg-muted/80"
+          >
+            <span className="flex items-center gap-1">
+              {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              {age}
+            </span>
             {ageRegs.length > 0 && (
               <Badge className="rounded-none text-[9px] bg-foreground text-background h-4 px-1">
                 {ageRegs.length}
               </Badge>
             )}
-          </div>
-          {ageCats.map(cat => {
+          </button>
+          {isOpen && ageCats.map(cat => {
             const catRegs = filtered.filter(r => r.category_id === cat.id);
             return (
               <div key={cat.id} className="flex items-center gap-1.5 px-2 py-1 text-xs border-b border-border/30">
@@ -183,14 +202,14 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
                 <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
                   Άνδρες
                 </div>
-                {renderCategoryList(maleCats)}
+                {renderCategoryList(maleCats, 'male')}
               </div>
               {/* Γυναίκες - Δεξιά */}
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
                   Γυναίκες
                 </div>
-                {renderCategoryList(femaleCats)}
+                {renderCategoryList(femaleCats, 'female')}
               </div>
             </div>
           )}
