@@ -210,45 +210,19 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
                               
                               {/* Athlete avatars */}
                               <div className="flex items-center gap-1 flex-1 justify-end">
-                                {catRegs.map(reg => (
-                                  <div key={reg.id} className="flex items-center gap-1.5 bg-accent/50 px-1.5 py-0.5 rounded-sm">
-                                    <Avatar className="h-5 w-5">
-                                      <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
-                                      <AvatarFallback className="text-[8px]">{reg.athlete?.name?.charAt(0) || '?'}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-[10px] truncate max-w-[80px]">{reg.athlete?.name}</span>
-                                    {getStatusBadge(reg.registration_status)}
-                                    {getWeighInBadge(reg.weigh_in_status)}
-                                    {reg.weigh_in_weight && (
-                                      <span className="text-[10px] font-medium">{reg.weigh_in_weight}kg</span>
-                                    )}
-                                    {weighInEdit?.id === reg.id ? (
-                                      <div className="flex items-center gap-0.5">
-                                        <Input
-                                          type="number"
-                                          step="0.1"
-                                          value={weighInEdit.weight}
-                                          onChange={e => setWeighInEdit({ ...weighInEdit, weight: e.target.value })}
-                                          className="w-16 h-6 rounded-none text-[10px]"
-                                          placeholder="kg"
-                                        />
-                                        <Button size="sm" className="h-6 px-1.5 rounded-none bg-foreground text-background text-[10px]" onClick={() => handleWeighIn(reg.id, weighInEdit.weight)}>
-                                          OK
-                                        </Button>
-                                        <Button size="sm" variant="outline" className="h-6 px-1 rounded-none text-[10px]" onClick={() => setWeighInEdit(null)}>✕</Button>
-                                      </div>
-                                    ) : (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="rounded-none h-5 px-1.5 text-[10px]"
-                                        onClick={() => setWeighInEdit({ id: reg.id, weight: reg.weigh_in_weight?.toString() || '' })}
-                                      >
-                                        <Scale className="h-2.5 w-2.5 mr-0.5" /> Ζύγιση
-                                      </Button>
-                                    )}
-                                  </div>
-                                ))}
+                                {catRegs.map(reg => {
+                                  const athleteName = reg.athlete?.name || 'Άγνωστος';
+                                  const athleteAvatar = reg.athlete?.photo_url || reg.athlete?.avatar_url || '';
+                                  return (
+                                    <div key={reg.id} className="flex items-center gap-1.5 bg-accent/50 px-1.5 py-0.5 rounded-sm">
+                                      <Avatar className="h-5 w-5 rounded-full">
+                                        <AvatarImage src={athleteAvatar} />
+                                        <AvatarFallback className="text-[8px] rounded-full">{athleteName.charAt(0)}</AvatarFallback>
+                                      </Avatar>
+                                      <span className="text-[10px] truncate max-w-[80px]">{athleteName}</span>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
                           </div>
