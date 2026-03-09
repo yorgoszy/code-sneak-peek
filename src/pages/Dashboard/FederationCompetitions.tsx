@@ -63,8 +63,10 @@ const FederationCompetitions = () => {
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formLocation, setFormLocation] = useState('');
+  const [formLocationUrl, setFormLocationUrl] = useState('');
   const [formDate, setFormDate] = useState('');
   const [formDeadline, setFormDeadline] = useState('');
+  const [formLateDeadline, setFormLateDeadline] = useState('');
   const [formStatus, setFormStatus] = useState('upcoming');
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [formPdfUrl, setFormPdfUrl] = useState('');
