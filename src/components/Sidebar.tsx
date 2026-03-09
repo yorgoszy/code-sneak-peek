@@ -577,6 +577,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: Trophy,
+      label: "Ranking",
+      path: "/dashboard/ranking",
+      badge: null
+    },
+    {
       icon: MonitorPlay,
       label: "Video Analysis",
       path: "/dashboard/video-analysis",
