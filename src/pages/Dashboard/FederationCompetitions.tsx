@@ -436,35 +436,41 @@ const FederationCompetitions = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1 pt-2 border-t">
-                        <Button variant="outline" size="sm" className="rounded-none flex-1" onClick={() => {
+                      <div className="flex flex-wrap items-center gap-1 pt-2 border-t">
+                        <Button variant="outline" size="sm" className="rounded-none flex-1 min-w-[80px] text-xs" onClick={() => {
                           setSelectedCompetition(comp);
                           setCategoriesDialogOpen(true);
                         }}>
-                          <Swords className="h-3 w-3 mr-1" /> Κατηγορίες
+                          <Swords className="h-3 w-3 mr-1 shrink-0" />
+                          <span className="hidden sm:inline">Κατηγορίες</span>
+                          <span className="sm:hidden">Κατ.</span>
                         </Button>
-                        <Button variant="outline" size="sm" className="rounded-none flex-1" onClick={() => {
+                        <Button variant="outline" size="sm" className="rounded-none flex-1 min-w-[80px] text-xs" onClick={() => {
                           setSelectedCompetition(comp);
                           setRegistrationsDialogOpen(true);
                         }}>
-                          <Users className="h-3 w-3 mr-1" /> Δηλώσεις
+                          <Users className="h-3 w-3 mr-1 shrink-0" />
+                          <span className="hidden sm:inline">Δηλώσεις</span>
+                          <span className="sm:hidden">Δηλ.</span>
                         </Button>
-                        {comp.regulations_pdf_url && (
-                          <a href={comp.regulations_pdf_url} target="_blank" rel="noopener noreferrer">
-                            <Button variant="outline" size="sm" className="rounded-none">
-                              <FileText className="h-3 w-3" />
-                            </Button>
-                          </a>
-                        )}
-                        <Button variant="outline" size="sm" className="rounded-none" onClick={() => openEditDialog(comp)}>
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="rounded-none text-destructive" onClick={() => {
-                          setCompetitionToDelete(comp.id);
-                          setDeleteDialogOpen(true);
-                        }}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          {comp.regulations_pdf_url && (
+                            <a href={comp.regulations_pdf_url} target="_blank" rel="noopener noreferrer">
+                              <Button variant="outline" size="sm" className="rounded-none h-8 w-8 p-0">
+                                <FileText className="h-3 w-3" />
+                              </Button>
+                            </a>
+                          )}
+                          <Button variant="outline" size="sm" className="rounded-none h-8 w-8 p-0" onClick={() => openEditDialog(comp)}>
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button variant="outline" size="sm" className="rounded-none h-8 w-8 p-0 text-destructive" onClick={() => {
+                            setCompetitionToDelete(comp.id);
+                            setDeleteDialogOpen(true);
+                          }}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
