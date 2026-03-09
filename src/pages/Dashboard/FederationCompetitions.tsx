@@ -238,6 +238,7 @@ const FederationCompetitions = () => {
     setFormDeadline(comp.registration_deadline || '');
     setFormStatus(comp.status);
     setFormPdfUrl(comp.regulations_pdf_url || '');
+    setFormCountsForRanking((comp as any).counts_for_ranking || false);
     setEditDialogOpen(true);
   };
 
