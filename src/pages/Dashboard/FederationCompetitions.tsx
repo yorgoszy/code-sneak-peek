@@ -160,6 +160,7 @@ const FederationCompetitions = () => {
     setFormDescription('');
     setFormLocation('');
     setFormLocationUrl('');
+    setMapCoords(null);
     setFormDate('');
     setFormDeadline('');
     setFormLateDeadline('');
