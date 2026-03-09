@@ -14,6 +14,7 @@ import { SectionBookingCalendar } from "./bookings/SectionBookingCalendar";
 import { useBookingSections } from "@/hooks/useBookingSections";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 
 interface UserProfileOnlineBookingProps {
   userProfile: any;
