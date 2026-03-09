@@ -340,3 +340,8 @@ html, body {
     background: #b07843;
   }
 }
+
+/* Google Places Autocomplete dropdown - above dialogs */
+.pac-container {
+  z-index: 99999 !important;
+}
