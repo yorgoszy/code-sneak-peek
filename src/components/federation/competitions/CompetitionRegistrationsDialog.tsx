@@ -266,8 +266,6 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
               })}
             </div>
           )}
-            </div>
-          )}
 
           <div className="text-xs text-muted-foreground text-right">
             Σύνολο: {filtered.length} δηλώσεις
