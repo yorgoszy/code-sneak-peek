@@ -2924,6 +2924,7 @@ export type Database = {
           min_age: number | null
           min_weight: number | null
           name: string
+          registration_fee: number | null
           sort_order: number | null
         }
         Insert: {
@@ -2937,6 +2938,7 @@ export type Database = {
           min_age?: number | null
           min_weight?: number | null
           name: string
+          registration_fee?: number | null
           sort_order?: number | null
         }
         Update: {
@@ -2950,6 +2952,7 @@ export type Database = {
           min_age?: number | null
           min_weight?: number | null
           name?: string
+          registration_fee?: number | null
           sort_order?: number | null
         }
         Relationships: [

@@ -5,8 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Swords, Calendar, MapPin, Users, FileText, UserPlus, Trash2, ChevronDown, ChevronUp, DollarSign, Check } from "lucide-react";
+import { Swords, Calendar, MapPin, Users, FileText, UserPlus, Trash2, ChevronDown, ChevronUp, ChevronRight, DollarSign, Check, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCoachContext } from '@/contexts/CoachContext';
 import { toast } from "sonner";
@@ -31,6 +30,7 @@ interface Competition {
   federation_name?: string;
   categories_count?: number;
   my_registrations_count?: number;
+  counts_for_ranking?: boolean;
 }
 
 interface Category {
@@ -42,6 +42,7 @@ interface Category {
   max_weight: number | null;
   min_age: number | null;
   max_age: number | null;
+  registration_fee: number | null;
 }
 
 interface Registration {
@@ -54,6 +55,152 @@ interface Registration {
   category?: { name: string } | null;
 }
 
+// --- Age group helpers (same as federation view) ---
+const AGE_ORDER = ['18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
+
+const getWeightLabel = (name: string): string => {
+  const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
+  return m ? m[1] : name;
+};
+
+const getAgeLabel = (name: string): string => {
+  if (/^Ενήλικοι/i.test(name)) return '18-40';
+  if (/^U23/i.test(name)) return 'U23';
+  const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
+  if (match) return match[1];
+  return name.replace(/([-+±]\s*\d+[\d.,]*\s*kg)/i, '').trim();
+};
+
+const groupByAge = (cats: Category[]) => {
+  const grouped = new Map<string, Category[]>();
+  cats.forEach(cat => {
+    const age = getAgeLabel(cat.name);
+    if (!grouped.has(age)) grouped.set(age, []);
+    grouped.get(age)!.push(cat);
+  });
+  const orderedKeys = AGE_ORDER.filter(a => grouped.has(a));
+  const remainingKeys = [...grouped.keys()].filter(k => !AGE_ORDER.includes(k));
+  return [...orderedKeys, ...remainingKeys].map(age => ({
+    age,
+    cats: grouped.get(age)!,
+  }));
+};
+
+// --- Coach Age Group component for registration dialog ---
+const CoachAgeGroup: React.FC<{
+  age: string;
+  cats: Category[];
+  myRegistrations: Registration[];
+  coachId: string;
+  addingToCategoryId: string | null;
+  setAddingToCategoryId: (id: string | null) => void;
+  selectedAthleteId: string;
+  setSelectedAthleteId: (id: string) => void;
+  onQuickRegister: (categoryId: string, athleteId: string) => void;
+  onDeleteReg: (regId: string) => void;
+}> = ({ age, cats, myRegistrations, coachId, addingToCategoryId, setAddingToCategoryId, selectedAthleteId, setSelectedAthleteId, onQuickRegister, onDeleteReg }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const ageRegs = myRegistrations.filter(r => cats.some(c => c.id === r.category_id));
+  const fee = cats[0]?.registration_fee;
+
+  return (
+    <div className="mb-1 border border-border">
+      <button
+        type="button"
+        onClick={() => setIsOpen(prev => !prev)}
+        className="w-full text-[11px] font-bold text-foreground bg-muted px-2 py-2.5 flex items-center justify-between cursor-pointer hover:bg-accent/50 transition-colors select-none"
+      >
+        <span className="flex items-center gap-2">
+          {isOpen
+            ? <ChevronDown className="h-4 w-4 shrink-0 text-foreground" />
+            : <ChevronRight className="h-4 w-4 shrink-0 text-foreground" />
+          }
+          {age}
+        </span>
+        <div className="flex items-center gap-1.5">
+          {fee != null && fee > 0 && (
+            <Badge variant="outline" className="rounded-none text-[9px] h-4 px-1">
+              {fee}€
+            </Badge>
+          )}
+          {ageRegs.length > 0 && (
+            <Badge className="rounded-none text-[9px] bg-foreground text-background h-4 px-1">
+              {ageRegs.length} δηλ.
+            </Badge>
+          )}
+          <span className="text-[9px] text-muted-foreground">{cats.length} κατ.</span>
+        </div>
+      </button>
+      {isOpen && (
+        <div>
+          {cats.map(cat => {
+            const catRegs = myRegistrations.filter(r => r.category_id === cat.id);
+            const isAdding = addingToCategoryId === cat.id;
+
+            return (
+              <div key={cat.id} className="flex items-center gap-1.5 px-2 py-1 text-xs border-t border-border/30">
+                <span className="font-medium min-w-[60px]">{getWeightLabel(cat.name)}</span>
+                <div className="flex items-center gap-0.5 flex-1 justify-end">
+                  {catRegs.map(reg => (
+                    <div key={reg.id} className="group relative">
+                      <Avatar className={`h-5 w-5 rounded-full border ${reg.is_paid ? 'border-[#00ffba]' : 'border-border'}`}>
+                        <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
+                        <AvatarFallback className="text-[8px] rounded-full">{reg.athlete?.name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      {reg.is_paid && (
+                        <span className="absolute -bottom-0.5 -right-0.5 bg-[#00ffba] rounded-full h-2.5 w-2.5 flex items-center justify-center">
+                          <Check className="h-1.5 w-1.5 text-black" />
+                        </span>
+                      )}
+                      <button
+                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full h-3.5 w-3.5 text-[8px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => onDeleteReg(reg.id)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {isAdding ? (
+                  <div className="flex items-center gap-1 shrink-0 w-48">
+                    <UserSearchCombobox
+                      value={selectedAthleteId}
+                      onValueChange={(id) => {
+                        if (id) onQuickRegister(cat.id, id);
+                      }}
+                      placeholder="Αθλητής..."
+                      coachId={coachId}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 rounded-none shrink-0"
+                      onClick={() => { setAddingToCategoryId(null); setSelectedAthleteId(''); }}
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 rounded-none shrink-0 text-muted-foreground hover:text-foreground"
+                    onClick={() => { setAddingToCategoryId(cat.id); setSelectedAthleteId(''); }}
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const CoachCompetitionsContent: React.FC = () => {
   const { coachId } = useCoachContext();
   const [competitions, setCompetitions] = useState<Competition[]>([]);
@@ -64,8 +211,6 @@ const CoachCompetitionsContent: React.FC = () => {
   const [myRegistrations, setMyRegistrations] = useState<Registration[]>([]);
   const [addingToCategoryId, setAddingToCategoryId] = useState<string | null>(null);
   const [selectedAthleteId, setSelectedAthleteId] = useState('');
-  const [selectedCategoryId, setSelectedCategoryId] = useState('');
-  const [saving, setSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [regToDelete, setRegToDelete] = useState<string | null>(null);
   const [expandedComp, setExpandedComp] = useState<string | null>(null);
@@ -79,7 +224,6 @@ const CoachCompetitionsContent: React.FC = () => {
     if (!coachId) return;
     setLoading(true);
     try {
-      // Get federations this coach belongs to
       const { data: clubs, error: clubsError } = await supabase
         .from('federation_clubs')
         .select('federation_id, federation:app_users!federation_clubs_federation_id_fkey(name)')
@@ -94,7 +238,6 @@ const CoachCompetitionsContent: React.FC = () => {
 
       const federationIds = clubs.map(c => c.federation_id);
 
-      // Get competitions from those federations
       const { data: comps, error: compsError } = await supabase
         .from('federation_competitions')
         .select('*')
@@ -104,7 +247,6 @@ const CoachCompetitionsContent: React.FC = () => {
 
       if (compsError) throw compsError;
 
-      // Enrich with federation name, categories count and my registrations count
       const enriched = await Promise.all((comps || []).map(async (comp) => {
         const federation = clubs.find(c => c.federation_id === comp.federation_id);
         const [catRes, regRes] = await Promise.all([
@@ -116,6 +258,7 @@ const CoachCompetitionsContent: React.FC = () => {
           federation_name: (federation?.federation as any)?.name || 'Ομοσπονδία',
           categories_count: catRes.count || 0,
           my_registrations_count: regRes.count || 0,
+          counts_for_ranking: comp.counts_for_ranking,
         };
       }));
 
@@ -159,7 +302,6 @@ const CoachCompetitionsContent: React.FC = () => {
   const handleOpenRegister = async (comp: Competition) => {
     setSelectedComp(comp);
     setSelectedAthleteId('');
-    setSelectedCategoryId('');
     setAddingToCategoryId(null);
     await Promise.all([fetchCategories(comp.id), fetchMyRegistrations(comp.id)]);
     setRegisterDialogOpen(true);
@@ -198,49 +340,6 @@ const CoachCompetitionsContent: React.FC = () => {
     } catch (error) {
       console.error(error);
       toast.error('Σφάλμα δήλωσης');
-    }
-  };
-
-  const handleRegister = async () => {
-    if (!selectedComp || !selectedAthleteId || !selectedCategoryId || !coachId) {
-      toast.error('Επιλέξτε αθλητή και κατηγορία');
-      return;
-    }
-
-    // Check if already registered
-    const { data: existing } = await supabase
-      .from('federation_competition_registrations')
-      .select('id')
-      .eq('competition_id', selectedComp.id)
-      .eq('athlete_id', selectedAthleteId)
-      .eq('category_id', selectedCategoryId)
-      .maybeSingle();
-
-    if (existing) {
-      toast.error('Ο αθλητής είναι ήδη δηλωμένος σε αυτή την κατηγορία');
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const { error } = await supabase.from('federation_competition_registrations').insert({
-        competition_id: selectedComp.id,
-        athlete_id: selectedAthleteId,
-        category_id: selectedCategoryId,
-        club_id: coachId,
-        registration_status: 'registered',
-      });
-      if (error) throw error;
-      toast.success('Ο αθλητής δηλώθηκε επιτυχώς');
-      setSelectedAthleteId('');
-      setSelectedCategoryId('');
-      await fetchMyRegistrations(selectedComp.id);
-      fetchCompetitions();
-    } catch (error) {
-      console.error(error);
-      toast.error('Σφάλμα δήλωσης');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -307,6 +406,12 @@ const CoachCompetitionsContent: React.FC = () => {
     return new Date(deadline) < new Date();
   };
 
+  // Group categories by gender for the registration dialog
+  const maleCats = categories.filter(c => c.gender === 'male');
+  const femaleCats = categories.filter(c => c.gender === 'female');
+  const maleGroups = groupByAge(maleCats);
+  const femaleGroups = groupByAge(femaleCats);
+
   return (
     <div>
       {/* Desktop Header */}
@@ -330,54 +435,55 @@ const CoachCompetitionsContent: React.FC = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {competitions.map(comp => (
-            <Card key={comp.id} className="rounded-none flex flex-col">
-              <CardHeader className="pb-2 px-3 md:px-6 pt-3 md:pt-6">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <CardTitle className="text-sm md:text-base truncate">{comp.name}</CardTitle>
-                    <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5 truncate">{comp.federation_name}</p>
+            <Card key={comp.id} className="rounded-none hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <CardTitle className="text-base truncate">{comp.name}</CardTitle>
+                    {comp.counts_for_ranking && (
+                      <Badge className="rounded-none bg-[#cb8954] text-white text-[9px] px-1.5 h-5 gap-1 shrink-0">
+                        <Trophy className="h-3 w-3" /> Ranking
+                      </Badge>
+                    )}
                   </div>
                   {getStatusBadge(comp.status)}
                 </div>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{comp.federation_name}</p>
               </CardHeader>
-              <CardContent className="space-y-2 md:space-y-3 px-3 md:px-6 pb-3 md:pb-6 flex-1 flex flex-col">
-                {/* Info rows */}
-                <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs md:text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">{format(new Date(comp.competition_date), 'd MMM yyyy', { locale: el })}</span>
-                  </span>
-                  {comp.location && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{comp.location}</span>
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Swords className="h-3 w-3 shrink-0" />
-                    {comp.categories_count} κατηγορίες
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3 shrink-0" />
-                    {comp.my_registrations_count} δηλώσεις
-                  </span>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>{format(new Date(comp.competition_date), 'd MMMM yyyy', { locale: el })}</span>
                 </div>
-
+                {comp.location && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    <span>{comp.location}</span>
+                  </div>
+                )}
                 {comp.registration_deadline && (
-                  <p className={`text-[11px] md:text-xs ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                  <p className={`text-xs ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
                     Deadline: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
                     {isDeadlinePassed(comp.registration_deadline) && ' (Έληξε)'}
                   </p>
                 )}
-
                 {comp.description && (
                   <p className="text-xs text-muted-foreground line-clamp-2">{comp.description}</p>
                 )}
 
+                <div className="flex items-center gap-4 text-sm">
+                  <span className="flex items-center gap-1">
+                    <Swords className="h-3 w-3" /> {comp.categories_count} κατηγορίες
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3 w-3" /> {comp.my_registrations_count} δηλώσεις
+                  </span>
+                </div>
+
                 {/* Actions */}
-                <div className="flex flex-wrap items-center gap-1.5 md:gap-2 pt-2 border-t mt-auto">
+                <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t mt-auto">
                   {!isDeadlinePassed(comp.registration_deadline) && (
                     <Button
                       variant="outline"
@@ -459,116 +565,64 @@ const CoachCompetitionsContent: React.FC = () => {
         </div>
       )}
 
-      {/* Register Dialog - Category-centric view */}
+      {/* Register Dialog - Two column men/women layout */}
       <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-none">
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-none">
           <DialogHeader>
             <DialogTitle>Δήλωση Αθλητών - {selectedComp?.name}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-1">
-            {(() => {
-              const grouped = new Map<string, Category[]>();
-              categories.forEach(cat => {
-                const groupName = cat.name
-                  .replace(/\s+[-+±(].*$/, '')
-                  .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
-                  .trim() || 'Άλλα';
-                if (!grouped.has(groupName)) grouped.set(groupName, []);
-                grouped.get(groupName)!.push(cat);
-              });
 
-              return Array.from(grouped.entries()).map(([group, cats]) => {
-                const groupRegCount = cats.reduce((sum, cat) => 
-                  sum + myRegistrations.filter(r => r.category_id === cat.id).length, 0
-                );
-                return (
-                  <Collapsible key={group}>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
-                      <span>{group} ({cats.length})</span>
-                      <div className="flex items-center gap-2">
-                        {groupRegCount > 0 && (
-                          <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">{groupRegCount} δηλ.</Badge>
-                        )}
-                        <ChevronDown className="h-3 w-3" />
-                      </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      {cats.map(cat => {
-                        const catRegs = myRegistrations.filter(r => r.category_id === cat.id);
-                        const isAdding = addingToCategoryId === cat.id;
-                        
-                        return (
-                          <div key={cat.id} className="flex items-center gap-2 px-3 py-1.5 border-b border-border/50 hover:bg-accent/30 text-xs">
-                            <span className="flex-1 min-w-0 truncate">{cat.name}</span>
-                            
-                            {/* Registered athletes avatars */}
-                            <div className="flex items-center gap-1 shrink-0">
-                              {catRegs.map(reg => (
-                                <div key={reg.id} className="group relative">
-                                  <Avatar className={`h-6 w-6 border ${reg.is_paid ? 'border-[#00ffba]' : 'border-border'}`}>
-                                    <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
-                                    <AvatarFallback className="text-[9px]">{reg.athlete?.name?.charAt(0)}</AvatarFallback>
-                                  </Avatar>
-                                  {/* Payment indicator */}
-                                  {reg.is_paid && (
-                                    <span className="absolute -bottom-0.5 -right-0.5 bg-[#00ffba] rounded-full h-2.5 w-2.5 flex items-center justify-center">
-                                      <Check className="h-1.5 w-1.5 text-black" />
-                                    </span>
-                                  )}
-                                  {/* Remove on hover */}
-                                  <button
-                                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full h-3.5 w-3.5 text-[8px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={() => {
-                                      setRegToDelete(reg.id);
-                                      setDeleteDialogOpen(true);
-                                    }}
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
+          {categories.length === 0 ? (
+            <p className="text-center py-8 text-muted-foreground">Δεν υπάρχουν κατηγορίες</p>
+          ) : (
+            <div className="flex gap-4">
+              {/* Άνδρες */}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                  Άνδρες
+                </div>
+                {maleGroups.map(g => (
+                  <CoachAgeGroup
+                    key={`male-${g.age}`}
+                    age={g.age}
+                    cats={g.cats}
+                    myRegistrations={myRegistrations}
+                    coachId={coachId || ''}
+                    addingToCategoryId={addingToCategoryId}
+                    setAddingToCategoryId={setAddingToCategoryId}
+                    selectedAthleteId={selectedAthleteId}
+                    setSelectedAthleteId={setSelectedAthleteId}
+                    onQuickRegister={handleQuickRegister}
+                    onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
+                  />
+                ))}
+              </div>
+              {/* Γυναίκες */}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                  Γυναίκες
+                </div>
+                {femaleGroups.map(g => (
+                  <CoachAgeGroup
+                    key={`female-${g.age}`}
+                    age={g.age}
+                    cats={g.cats}
+                    myRegistrations={myRegistrations}
+                    coachId={coachId || ''}
+                    addingToCategoryId={addingToCategoryId}
+                    setAddingToCategoryId={setAddingToCategoryId}
+                    selectedAthleteId={selectedAthleteId}
+                    setSelectedAthleteId={setSelectedAthleteId}
+                    onQuickRegister={handleQuickRegister}
+                    onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-                            {/* Add athlete */}
-                            {isAdding ? (
-                              <div className="flex items-center gap-1 shrink-0 w-48">
-                                <UserSearchCombobox
-                                  value={selectedAthleteId}
-                                  onValueChange={(id) => {
-                                    if (id) {
-                                      handleQuickRegister(cat.id, id);
-                                    }
-                                  }}
-                                  placeholder="Αθλητής..."
-                                  coachId={coachId || undefined}
-                                />
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0 rounded-none shrink-0"
-                                  onClick={() => { setAddingToCategoryId(null); setSelectedAthleteId(''); }}
-                                >
-                                  ✕
-                                </Button>
-                              </div>
-                            ) : (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 rounded-none shrink-0 text-muted-foreground hover:text-foreground"
-                                onClick={() => { setAddingToCategoryId(cat.id); setSelectedAthleteId(''); }}
-                              >
-                                <UserPlus className="h-3.5 w-3.5" />
-                              </Button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </CollapsibleContent>
-                  </Collapsible>
-                );
-              });
-            })()}
+          <div className="text-xs text-muted-foreground text-right">
+            Σύνολο: {myRegistrations.length} δηλώσεις
           </div>
         </DialogContent>
       </Dialog>
