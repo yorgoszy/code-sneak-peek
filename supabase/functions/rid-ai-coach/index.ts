@@ -2065,6 +2065,7 @@ ${drafts.map((p: any, i: number) => {
     let allDaysContext = '';
     let overviewStatsContext = '';
     let adminProgressContext = '';
+    let strengthHistory: any[] = [];
     
     if (!(isAdmin && !targetUserId)) {
       console.log(`📊 Loading personal data for userId: ${effectiveUserId}`);
