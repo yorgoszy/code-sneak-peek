@@ -433,102 +433,110 @@ const CoachCompetitionsContent: React.FC = () => {
         </div>
       )}
 
-      {/* Register Dialog */}
+      {/* Register Dialog - Category-centric view */}
       <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
-        <DialogContent className="max-w-lg rounded-none">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-none">
           <DialogHeader>
-            <DialogTitle>Δήλωση Αθλητή - {selectedComp?.name}</DialogTitle>
+            <DialogTitle>Δήλωση Αθλητών - {selectedComp?.name}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Χρήστης</label>
-              <UserSearchCombobox
-                value={selectedAthleteId}
-                onValueChange={setSelectedAthleteId}
-                placeholder="Επιλέξτε αθλητή..."
-                coachId={coachId || undefined}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Κατηγορία</label>
-              <Popover open={categoryPopoverOpen} onOpenChange={setCategoryPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between rounded-none text-sm font-normal">
-                    {selectedCategoryId 
-                      ? categories.find(c => c.id === selectedCategoryId)?.name || 'Επιλέξτε κατηγορία...'
-                      : 'Επιλέξτε κατηγορία...'}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-none" align="start">
-                  <div className="max-h-72 overflow-y-auto">
-                    {(() => {
-                      const grouped = new Map<string, Category[]>();
-                      categories.forEach(cat => {
-                        const groupName = cat.name
-                          .replace(/\s+[-+±(].*$/, '')
-                          .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
-                          .trim() || 'Άλλα';
-                        if (!grouped.has(groupName)) grouped.set(groupName, []);
-                        grouped.get(groupName)!.push(cat);
-                      });
-                      
-                      return Array.from(grouped.entries()).map(([group, cats]) => (
-                        <Collapsible key={group}>
-                          <CollapsibleTrigger className="flex items-center justify-between w-full text-[11px] font-bold text-foreground bg-muted px-2 py-1.5 border-b border-border hover:bg-muted/80 cursor-pointer">
-                            <span>{group} ({cats.length})</span>
-                            <ChevronDown className="h-3 w-3" />
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            {cats.map(cat => (
-                              <button
-                                key={cat.id}
-                                className={`w-full text-left text-xs px-4 py-1.5 hover:bg-accent cursor-pointer transition-colors ${selectedCategoryId === cat.id ? 'bg-accent font-medium' : ''}`}
-                                onClick={() => {
-                                  setSelectedCategoryId(cat.id);
-                                  setCategoryPopoverOpen(false);
-                                }}
-                              >
-                                {cat.name}
-                              </button>
-                            ))}
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ));
-                    })()}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
+          <div className="space-y-1">
+            {(() => {
+              const grouped = new Map<string, Category[]>();
+              categories.forEach(cat => {
+                const groupName = cat.name
+                  .replace(/\s+[-+±(].*$/, '')
+                  .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
+                  .trim() || 'Άλλα';
+                if (!grouped.has(groupName)) grouped.set(groupName, []);
+                grouped.get(groupName)!.push(cat);
+              });
 
-            {/* Show current registrations for this competition */}
-            {myRegistrations.length > 0 && (
-              <div>
-                <p className="text-sm font-medium mb-2">Ήδη δηλωμένοι ({myRegistrations.length})</p>
-                <div className="space-y-1 max-h-40 overflow-y-auto">
-                  {myRegistrations.map(reg => (
-                    <div key={reg.id} className="flex items-center justify-between text-xs p-2 border rounded-none">
+              return Array.from(grouped.entries()).map(([group, cats]) => {
+                const groupRegCount = cats.reduce((sum, cat) => 
+                  sum + myRegistrations.filter(r => r.category_id === cat.id).length, 0
+                );
+                return (
+                  <Collapsible key={group}>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
+                      <span>{group} ({cats.length})</span>
                       <div className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
-                          <AvatarFallback className="text-[10px]">{reg.athlete?.name?.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span>{reg.athlete?.name}</span>
+                        {groupRegCount > 0 && (
+                          <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">{groupRegCount} δηλ.</Badge>
+                        )}
+                        <ChevronDown className="h-3 w-3" />
                       </div>
-                      <Badge variant="outline" className="rounded-none text-[10px]">{reg.category?.name}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      {cats.map(cat => {
+                        const catRegs = myRegistrations.filter(r => r.category_id === cat.id);
+                        const isAdding = addingToCategoryId === cat.id;
+                        
+                        return (
+                          <div key={cat.id} className="flex items-center gap-2 px-3 py-1.5 border-b border-border/50 hover:bg-accent/30 text-xs">
+                            <span className="flex-1 min-w-0 truncate">{cat.name}</span>
+                            
+                            {/* Registered athletes avatars */}
+                            <div className="flex items-center gap-1 shrink-0">
+                              {catRegs.map(reg => (
+                                <div key={reg.id} className="group relative">
+                                  <Avatar className="h-6 w-6 border border-border">
+                                    <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
+                                    <AvatarFallback className="text-[9px]">{reg.athlete?.name?.charAt(0)}</AvatarFallback>
+                                  </Avatar>
+                                  {/* Remove on click */}
+                                  <button
+                                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full h-3.5 w-3.5 text-[8px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => {
+                                      setRegToDelete(reg.id);
+                                      setDeleteDialogOpen(true);
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
 
-            <Button
-              onClick={handleRegister}
-              disabled={!selectedAthleteId || !selectedCategoryId || saving}
-              className="w-full rounded-none bg-foreground text-background hover:bg-foreground/90"
-            >
-              {saving ? 'Αποθήκευση...' : 'Δήλωση'}
-            </Button>
+                            {/* Add athlete */}
+                            {isAdding ? (
+                              <div className="flex items-center gap-1 shrink-0 w-48">
+                                <UserSearchCombobox
+                                  value={selectedAthleteId}
+                                  onValueChange={(id) => {
+                                    if (id) {
+                                      handleQuickRegister(cat.id, id);
+                                    }
+                                  }}
+                                  placeholder="Αθλητής..."
+                                  coachId={coachId || undefined}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0 rounded-none shrink-0"
+                                  onClick={() => { setAddingToCategoryId(null); setSelectedAthleteId(''); }}
+                                >
+                                  ✕
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 rounded-none shrink-0 text-muted-foreground hover:text-foreground"
+                                onClick={() => { setAddingToCategoryId(cat.id); setSelectedAthleteId(''); }}
+                              >
+                                <UserPlus className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              });
+            })()}
           </div>
         </DialogContent>
       </Dialog>
