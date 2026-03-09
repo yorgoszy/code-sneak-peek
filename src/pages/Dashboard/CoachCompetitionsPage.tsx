@@ -592,14 +592,32 @@ const CoachCompetitionsContent: React.FC = () => {
                 {comp.location && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4" />
-                    <span>{comp.location}</span>
+                    {comp.location_url ? (
+                      <a href={comp.location_url} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
+                        {comp.location}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    ) : (
+                      <span>{comp.location}</span>
+                    )}
                   </div>
                 )}
-                {comp.registration_deadline && (
-                  <p className={`text-xs ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
-                    Deadline: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
-                    {isDeadlinePassed(comp.registration_deadline) && ' (Έληξε)'}
-                  </p>
+                {(comp.registration_deadline || comp.late_registration_deadline) && (
+                  <div className="space-y-0.5">
+                    {comp.registration_deadline && (
+                      <p className={`text-xs ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                        Εμπρόθεσμες: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
+                        {isDeadlinePassed(comp.registration_deadline) && ' (Έληξε)'}
+                      </p>
+                    )}
+                    {comp.late_registration_deadline && (
+                      <p className={`text-xs ${isDeadlinePassed(comp.late_registration_deadline) ? 'text-destructive font-medium' : 'text-[#cb8954] font-medium'}`}>
+                        Εκπρόθεσμες: {format(new Date(comp.late_registration_deadline), 'd MMM yyyy', { locale: el })}
+                        {isDeadlinePassed(comp.late_registration_deadline) && ' (Έληξε)'}
+                        {isInLatePeriod(comp) && ' ⚠️'}
+                      </p>
+                    )}
+                  </div>
                 )}
                 {comp.description && (
                   <p className="text-xs text-muted-foreground line-clamp-2">{comp.description}</p>
