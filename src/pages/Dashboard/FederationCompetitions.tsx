@@ -23,6 +23,7 @@ import {
 import { CompetitionCategoriesDialog } from "@/components/federation/competitions/CompetitionCategoriesDialog";
 import { CompetitionRegistrationsDialog } from "@/components/federation/competitions/CompetitionRegistrationsDialog";
 import { CategoryTemplatesDialog } from "@/components/federation/competitions/CategoryTemplatesDialog";
+import { GooglePlacesAutocomplete } from "@/components/ui/google-places-autocomplete";
 
 
 interface Competition {
