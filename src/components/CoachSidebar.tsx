@@ -29,6 +29,9 @@ import {
   Heart,
   HeartPulse,
   Trophy,
+  ChevronDown,
+  AppWindow,
+  GraduationCap,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -46,10 +49,6 @@ import { useExpiringHealthCards } from "@/hooks/useExpiringHealthCards";
 interface CoachSidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
-  /**
-   * When an admin is viewing a coach profile, we want sidebar actions
-   * (like "Οι Αθλητές μου") to act "as that coach".
-   */
   contextCoachId?: string;
 }
 
@@ -64,6 +63,7 @@ export const CoachSidebar = ({
   const { signOut } = useAuth();
   const { t } = useTranslation();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [isAppMenuOpen, setIsAppMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const effectiveCoachId =
@@ -71,13 +71,10 @@ export const CoachSidebar = ({
 
   const { expiringCount: expiringHealthCards } = useExpiringHealthCards(effectiveCoachId);
 
-  // Check coach subscription status
   const { isActive: isCoachActive, isLoading: isSubscriptionLoading } = useCoachSubscriptionStatus(effectiveCoachId);
 
-  // Admins always have full access
   const hasFullAccess = isAdmin() || isCoachActive;
 
-  // Menu items that require active subscription
   const restrictedPaths = [
     '/dashboard/coach-subscriptions',
     '/dashboard/coach-programs',
@@ -89,6 +86,26 @@ export const CoachSidebar = ({
     '/dashboard/coach-athletes-progress',
     '/dashboard/coach-goals-awards',
   ];
+
+  // App submenu items
+  const appMenuItems = [
+    { icon: MonitorPlay, label: "Video Analysis", path: effectiveCoachId ? `/dashboard/video-analysis?coachId=${effectiveCoachId}` : "/dashboard/video-analysis", requiresSubscription: true },
+    { icon: Timer, label: "Sprint Timer", path: effectiveCoachId ? `/dashboard/sprint-timer?coachId=${effectiveCoachId}` : "/dashboard/sprint-timer", requiresSubscription: true },
+    { icon: Compass, label: "Change Direction", path: effectiveCoachId ? `/dashboard/change-direction?coachId=${effectiveCoachId}` : "/dashboard/change-direction", requiresSubscription: true },
+    { icon: Brain, label: "Cognitive", path: effectiveCoachId ? `/dashboard/cognitive?coachId=${effectiveCoachId}` : "/dashboard/cognitive", requiresSubscription: true },
+    { icon: ArrowUp, label: "Jump", path: effectiveCoachId ? `/dashboard/jump?coachId=${effectiveCoachId}` : "/dashboard/jump", requiresSubscription: true },
+    { icon: Gauge, label: "Bar Velocity", path: effectiveCoachId ? `/dashboard/bar-velocity?coachId=${effectiveCoachId}` : "/dashboard/bar-velocity", requiresSubscription: true },
+    { icon: Heart, label: "HRV", path: effectiveCoachId ? `/dashboard/hrv?coachId=${effectiveCoachId}` : "/dashboard/hrv", requiresSubscription: true },
+  ];
+
+  // Check if any app submenu item is active
+  const isAppMenuActive = appMenuItems.some(item => {
+    const pathWithoutQuery = item.path.split("?")[0];
+    return location.pathname === pathWithoutQuery;
+  });
+
+  // Auto-open app menu if an item inside is active
+  const appMenuExpanded = isAppMenuOpen || isAppMenuActive;
 
   const menuItems = [
     {
@@ -130,6 +147,13 @@ export const CoachSidebar = ({
       icon: ShoppingBag,
       label: "Shop",
       path: effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop",
+      badge: null,
+      requiresSubscription: false,
+    },
+    {
+      icon: GraduationCap,
+      label: "Online Courses",
+      path: effectiveCoachId ? `/dashboard/knowledge?coachId=${effectiveCoachId}` : "/dashboard/knowledge",
       badge: null,
       requiresSubscription: false,
     },
@@ -205,55 +229,8 @@ export const CoachSidebar = ({
       badge: null,
       requiresSubscription: true,
     },
-    {
-      icon: MonitorPlay,
-      label: "Video Analysis",
-      path: effectiveCoachId ? `/dashboard/video-analysis?coachId=${effectiveCoachId}` : "/dashboard/video-analysis",
-      badge: null,
-      requiresSubscription: true,
-    },
-    {
-      icon: Timer,
-      label: "Sprint Timer",
-      path: effectiveCoachId ? `/dashboard/sprint-timer?coachId=${effectiveCoachId}` : "/dashboard/sprint-timer",
-      badge: null,
-      requiresSubscription: true,
-    },
-    {
-      icon: Compass,
-      label: "Change Direction",
-      path: effectiveCoachId ? `/dashboard/change-direction?coachId=${effectiveCoachId}` : "/dashboard/change-direction",
-      badge: null,
-      requiresSubscription: true,
-    },
-    {
-      icon: Brain,
-      label: "Cognitive",
-      path: effectiveCoachId ? `/dashboard/cognitive?coachId=${effectiveCoachId}` : "/dashboard/cognitive",
-      badge: null,
-      requiresSubscription: true,
-    },
-    {
-      icon: ArrowUp,
-      label: "Jump",
-      path: effectiveCoachId ? `/dashboard/jump?coachId=${effectiveCoachId}` : "/dashboard/jump",
-      badge: null,
-      requiresSubscription: true,
-    },
-    {
-      icon: Gauge,
-      label: "Bar Velocity",
-      path: effectiveCoachId ? `/dashboard/bar-velocity?coachId=${effectiveCoachId}` : "/dashboard/bar-velocity",
-      badge: null,
-      requiresSubscription: true,
-    },
-    {
-      icon: Heart,
-      label: "HRV",
-      path: effectiveCoachId ? `/dashboard/hrv?coachId=${effectiveCoachId}` : "/dashboard/hrv",
-      badge: null,
-      requiresSubscription: true,
-    },
+    // App submenu placeholder
+    { type: "app-menu" },
     {
       icon: Swords,
       label: "Αγώνες",
@@ -265,13 +242,6 @@ export const CoachSidebar = ({
       icon: Trophy,
       label: "Ranking",
       path: "/dashboard/ranking",
-      badge: null,
-      requiresSubscription: false,
-    },
-    {
-      icon: BookOpen,
-      label: "Knowledge",
-      path: effectiveCoachId ? `/dashboard/knowledge?coachId=${effectiveCoachId}` : "/dashboard/knowledge",
       badge: null,
       requiresSubscription: false,
     },
@@ -307,7 +277,6 @@ export const CoachSidebar = ({
   ];
 
   const handleMenuClick = async (item: any) => {
-    // Check if item requires subscription and coach is not active
     if (item.requiresSubscription && !hasFullAccess) {
       toast.error('Απαιτείται ενεργή συνδρομή HYPERsync για πρόσβαση σε αυτή τη λειτουργία');
       navigate(effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop");
@@ -328,6 +297,51 @@ export const CoachSidebar = ({
 
   const handleAIChatClick = () => {
     setIsAIChatOpen(true);
+  };
+
+  const renderMenuItem = (item: any, index: number) => {
+    const pathWithoutQuery = typeof item.path === "string" ? item.path.split("?")[0] : "";
+    const isActive =
+      location.pathname === pathWithoutQuery ||
+      (pathWithoutQuery.startsWith("/dashboard/my-athletes") && location.pathname === "/dashboard/my-athletes") ||
+      (pathWithoutQuery.startsWith("/dashboard/coach-subscriptions") &&
+        location.pathname === "/dashboard/coach-subscriptions") ||
+      (pathWithoutQuery.startsWith("/dashboard/coach-progress") && location.pathname === "/dashboard/coach-progress") ||
+      (pathWithoutQuery.startsWith("/dashboard/coach-athletes-progress") &&
+        location.pathname === "/dashboard/coach-athletes-progress");
+
+    const isDisabled = item.requiresSubscription && !hasFullAccess;
+
+    return (
+      <button
+        key={item.path || index}
+        onClick={() => handleMenuClick(item)}
+        disabled={isDisabled}
+        className={
+          "w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors rounded-none " +
+          (isDisabled
+            ? "text-muted-foreground/50 cursor-not-allowed opacity-50"
+            : isActive
+              ? "bg-black/10 text-black border-r-2 border-black"
+              : "text-sidebar-foreground hover:bg-sidebar-accent")
+        }
+      >
+        <div className="flex items-center space-x-3 min-w-0">
+          {isDisabled ? (
+            <Lock className="h-5 w-5 flex-shrink-0 text-muted-foreground/50" />
+          ) : (
+            <item.icon className="h-5 w-5 flex-shrink-0" />
+          )}
+          {(!isCollapsed || isMobile) && <span className="truncate">{item.label}</span>}
+        </div>
+
+        {(!isCollapsed || isMobile) && item.badge && (
+          <span className="text-xs px-2 py-1 rounded-none flex-shrink-0 bg-destructive text-destructive-foreground">
+            {item.badge}
+          </span>
+        )}
+      </button>
+    );
   };
 
   const headerContent = (
@@ -353,48 +367,69 @@ export const CoachSidebar = ({
           return <div key={`separator-${index}`} className="my-2 h-px bg-border" />;
         }
 
-        const pathWithoutQuery = typeof item.path === "string" ? item.path.split("?")[0] : "";
-        const isActive =
-          location.pathname === pathWithoutQuery ||
-          (pathWithoutQuery.startsWith("/dashboard/my-athletes") && location.pathname === "/dashboard/my-athletes") ||
-          (pathWithoutQuery.startsWith("/dashboard/coach-subscriptions") &&
-            location.pathname === "/dashboard/coach-subscriptions") ||
-          (pathWithoutQuery.startsWith("/dashboard/coach-progress") && location.pathname === "/dashboard/coach-progress") ||
-          (pathWithoutQuery.startsWith("/dashboard/coach-athletes-progress") &&
-            location.pathname === "/dashboard/coach-athletes-progress");
-
-        const isDisabled = item.requiresSubscription && !hasFullAccess;
-
-        return (
-          <button
-            key={item.path}
-            onClick={() => handleMenuClick(item)}
-            disabled={isDisabled}
-            className={
-              "w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors rounded-none " +
-              (isDisabled
-                ? "text-muted-foreground/50 cursor-not-allowed opacity-50"
-                : isActive
-                  ? "bg-black/10 text-black border-r-2 border-black"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent")
-            }
-          >
-            <div className="flex items-center space-x-3 min-w-0">
-              {isDisabled ? (
-                <Lock className="h-5 w-5 flex-shrink-0 text-muted-foreground/50" />
-              ) : (
-                <item.icon className="h-5 w-5 flex-shrink-0" />
+        // Render App submenu
+        if (item.type === "app-menu") {
+          const isAppDisabled = !hasFullAccess;
+          return (
+            <div key="app-menu">
+              <button
+                onClick={() => {
+                  if (isAppDisabled) {
+                    toast.error('Απαιτείται ενεργή συνδρομή HYPERsync για πρόσβαση σε αυτή τη λειτουργία');
+                    navigate(effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop");
+                    return;
+                  }
+                  setIsAppMenuOpen(!appMenuExpanded);
+                }}
+                className={
+                  "w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors rounded-none " +
+                  (isAppDisabled
+                    ? "text-muted-foreground/50 cursor-not-allowed opacity-50"
+                    : isAppMenuActive
+                      ? "bg-black/10 text-black border-r-2 border-black"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent")
+                }
+              >
+                <div className="flex items-center space-x-3 min-w-0">
+                  {isAppDisabled ? (
+                    <Lock className="h-5 w-5 flex-shrink-0 text-muted-foreground/50" />
+                  ) : (
+                    <AppWindow className="h-5 w-5 flex-shrink-0" />
+                  )}
+                  {(!isCollapsed || isMobile) && <span className="truncate">App</span>}
+                </div>
+                {(!isCollapsed || isMobile) && !isAppDisabled && (
+                  <ChevronDown className={`h-4 w-4 flex-shrink-0 transition-transform ${appMenuExpanded ? 'rotate-180' : ''}`} />
+                )}
+              </button>
+              {appMenuExpanded && (!isCollapsed || isMobile) && !isAppDisabled && (
+                <div className="ml-4 border-l border-border pl-2 space-y-0.5 mt-0.5">
+                  {appMenuItems.map((subItem, subIndex) => {
+                    const subPath = subItem.path.split("?")[0];
+                    const isSubActive = location.pathname === subPath;
+                    return (
+                      <button
+                        key={subItem.path}
+                        onClick={() => handleMenuClick(subItem)}
+                        className={
+                          "w-full flex items-center space-x-3 px-2 py-1.5 text-xs font-medium transition-colors rounded-none " +
+                          (isSubActive
+                            ? "bg-black/10 text-black"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent")
+                        }
+                      >
+                        <subItem.icon className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">{subItem.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               )}
-              {(!isCollapsed || isMobile) && <span className="truncate">{item.label}</span>}
             </div>
+          );
+        }
 
-            {(!isCollapsed || isMobile) && item.badge && (
-              <span className="text-xs px-2 py-1 rounded-none flex-shrink-0 bg-destructive text-destructive-foreground">
-                {item.badge}
-              </span>
-            )}
-          </button>
-        );
+        return renderMenuItem(item, index);
       })}
 
       {/* RidAI Προπονητής Button */}
