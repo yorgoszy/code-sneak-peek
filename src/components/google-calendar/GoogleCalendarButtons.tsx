@@ -73,10 +73,20 @@ export const GoogleCalendarProgramButton: React.FC<GoogleCalendarProgramButtonPr
       return dayInWeek?.name || `Ημέρα ${(index % programDays.length) + 1}`;
     });
 
+    const dayFlags = assignment.training_dates.map((_, index) => {
+      const dayInWeek = programDays[index % programDays.length];
+      return {
+        is_competition_day: dayInWeek?.is_competition_day || false,
+        is_test_day: dayInWeek?.is_test_day || false,
+        test_types: dayInWeek?.test_types || [],
+      };
+    });
+
     syncTrainingToCalendar({
       dates: assignment.training_dates,
       program_name: assignment.programs.name,
       day_names: dayNames,
+      day_flags: dayFlags,
     });
   };
 
