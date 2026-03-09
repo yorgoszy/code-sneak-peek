@@ -64,6 +64,7 @@ const CoachCompetitionsContent: React.FC = () => {
   const [myRegistrations, setMyRegistrations] = useState<Registration[]>([]);
   const [selectedAthleteId, setSelectedAthleteId] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [categoryPopoverOpen, setCategoryPopoverOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [regToDelete, setRegToDelete] = useState<string | null>(null);
