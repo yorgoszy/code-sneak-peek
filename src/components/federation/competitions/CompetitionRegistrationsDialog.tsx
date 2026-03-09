@@ -58,7 +58,10 @@ const groupByAge = (cats: Category[]) => {
     if (!grouped.has(age)) grouped.set(age, []);
     grouped.get(age)!.push(cat);
   });
-  return AGE_ORDER.filter(a => grouped.has(a)).map(age => ({
+  // Show ordered groups first, then any remaining groups not in AGE_ORDER
+  const orderedKeys = AGE_ORDER.filter(a => grouped.has(a));
+  const remainingKeys = [...grouped.keys()].filter(k => !AGE_ORDER.includes(k));
+  return [...orderedKeys, ...remainingKeys].map(age => ({
     age,
     cats: grouped.get(age)!,
   }));
