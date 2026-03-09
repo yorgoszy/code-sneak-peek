@@ -1,0 +1,1 @@
+ALTER TABLE federation_competition_categories ADD COLUMN registration_fee numeric DEFAULT NULL;
