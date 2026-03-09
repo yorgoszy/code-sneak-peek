@@ -505,11 +505,17 @@ const CoachCompetitionsContent: React.FC = () => {
                             <div className="flex items-center gap-1 shrink-0">
                               {catRegs.map(reg => (
                                 <div key={reg.id} className="group relative">
-                                  <Avatar className="h-6 w-6 border border-border">
+                                  <Avatar className={`h-6 w-6 border ${reg.is_paid ? 'border-[#00ffba]' : 'border-border'}`}>
                                     <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
                                     <AvatarFallback className="text-[9px]">{reg.athlete?.name?.charAt(0)}</AvatarFallback>
                                   </Avatar>
-                                  {/* Remove on click */}
+                                  {/* Payment indicator */}
+                                  {reg.is_paid && (
+                                    <span className="absolute -bottom-0.5 -right-0.5 bg-[#00ffba] rounded-full h-2.5 w-2.5 flex items-center justify-center">
+                                      <Check className="h-1.5 w-1.5 text-black" />
+                                    </span>
+                                  )}
+                                  {/* Remove on hover */}
                                   <button
                                     className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full h-3.5 w-3.5 text-[8px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                     onClick={() => {
