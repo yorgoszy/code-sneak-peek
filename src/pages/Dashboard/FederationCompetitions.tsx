@@ -197,6 +197,7 @@ const FederationCompetitions = () => {
           registration_deadline: formDeadline || null,
           regulations_pdf_url: formPdfUrl || null,
           status: formStatus,
+          counts_for_ranking: formCountsForRanking,
         })
         .eq('id', selectedCompetition.id);
       if (error) throw error;
