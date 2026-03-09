@@ -155,8 +155,8 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
     return key;
   };
 
-  const isMale = (name: string) => name.includes('Άνδρ') || name.includes('Ανδρ');
-  const isFemale = (name: string) => name.includes('Γυναίκ') || name.includes('Γυναικ');
+  const isMale = (name: string) => /Άνδρ|Ανδρ|Αντρ|Άντρ/i.test(name);
+  const isFemale = (name: string) => /Γυναίκ|Γυναικ/i.test(name);
 
   const getWeight = (name: string): string => {
     const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
