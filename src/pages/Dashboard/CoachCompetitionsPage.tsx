@@ -264,6 +264,21 @@ const CoachCompetitionsContent: React.FC = () => {
     }
   };
 
+  const togglePayment = async (regId: string, currentStatus: boolean, competitionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('federation_competition_registrations')
+        .update({ is_paid: !currentStatus })
+        .eq('id', regId);
+      if (error) throw error;
+      toast.success(!currentStatus ? 'Σημειώθηκε ως πληρωμένη' : 'Σημειώθηκε ως μη πληρωμένη');
+      await fetchMyRegistrations(competitionId);
+    } catch (error) {
+      console.error(error);
+      toast.error('Σφάλμα ενημέρωσης πληρωμής');
+    }
+  };
+
   const toggleExpand = async (compId: string) => {
     if (expandedComp === compId) {
       setExpandedComp(null);
