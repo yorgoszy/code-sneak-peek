@@ -43,7 +43,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [weighInEdit, setWeighInEdit] = useState<{ id: string; weight: string } | null>(null);
+  
 
   useEffect(() => {
     if (isOpen) {
