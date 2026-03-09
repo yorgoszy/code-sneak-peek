@@ -89,7 +89,7 @@ const FederationCompetitions = () => {
       const enriched = await Promise.all(comps.map(async (comp) => {
         const [catRes, regRes] = await Promise.all([
           supabase.from('federation_competition_categories').select('id', { count: 'exact', head: true }).eq('competition_id', comp.id),
-          supabase.from('federation_competition_registrations').select('id', { count: 'exact', head: true }).eq('competition_id', comp.id),
+          supabase.from('federation_competition_registrations').select('id', { count: 'exact', head: true }).eq('competition_id', comp.id).eq('is_paid', true),
         ]);
         return {
           ...comp,
