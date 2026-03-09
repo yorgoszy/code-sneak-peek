@@ -73,9 +73,14 @@ const FederationCompetitions = () => {
   const [formPdfUrl, setFormPdfUrl] = useState('');
   const [formCountsForRanking, setFormCountsForRanking] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savedVenues, setSavedVenues] = useState<Array<{ id: string; name: string; location_url: string | null }>>([]);
+  const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
-    if (userProfile?.id) fetchCompetitions();
+    if (userProfile?.id) {
+      fetchCompetitions();
+      fetchSavedVenues();
+    }
   }, [userProfile?.id]);
 
   const fetchCompetitions = async () => {
