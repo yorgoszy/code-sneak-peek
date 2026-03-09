@@ -65,6 +65,7 @@ const FederationCompetitions = () => {
   const [formStatus, setFormStatus] = useState('upcoming');
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [formPdfUrl, setFormPdfUrl] = useState('');
+  const [formCountsForRanking, setFormCountsForRanking] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
