@@ -102,7 +102,8 @@ const CoachAgeGroup: React.FC<{
   setSelectedAthleteId: (id: string) => void;
   onQuickRegister: (categoryId: string, athleteId: string) => void;
   onDeleteReg: (regId: string) => void;
-}> = ({ age, cats, myRegistrations, coachId, addingToCategoryId, setAddingToCategoryId, selectedAthleteId, setSelectedAthleteId, onQuickRegister, onDeleteReg }) => {
+  isLatePeriod?: boolean;
+}> = ({ age, cats, myRegistrations, coachId, addingToCategoryId, setAddingToCategoryId, selectedAthleteId, setSelectedAthleteId, onQuickRegister, onDeleteReg, isLatePeriod }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const ageRegs = myRegistrations.filter(r => cats.some(c => c.id === r.category_id));
