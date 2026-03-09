@@ -21,7 +21,7 @@ interface Registration {
   notes: string | null;
   category?: { name: string } | null;
   club?: { name: string; avatar_url: string | null; email: string | null; phone: string | null } | null;
-  athlete?: { name: string; avatar_url: string | null; photo_url: string | null; phone: string | null } | null;
+  athlete?: { name: string; avatar_url: string | null; photo_url: string | null; phone: string | null; email: string | null } | null;
 }
 
 interface Category {
