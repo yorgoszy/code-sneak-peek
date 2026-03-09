@@ -69,6 +69,7 @@ export const EditableProgramDialogHeader: React.FC<EditableProgramDialogHeaderPr
                 )}
               </>
             )}
+            <GoogleCalendarProgramButton assignment={assignment} size="sm" />
             <Badge variant="outline" className="rounded-none text-xs h-6 sm:h-7 order-first">
               {assignment?.status}
             </Badge>
