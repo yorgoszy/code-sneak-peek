@@ -46,6 +46,9 @@ interface GoogleCalendarProgramButtonProps {
         program_days?: Array<{
           name?: string;
           day_number: number;
+          is_competition_day?: boolean;
+          is_test_day?: boolean;
+          test_types?: string[];
         }>;
       }>;
     };
