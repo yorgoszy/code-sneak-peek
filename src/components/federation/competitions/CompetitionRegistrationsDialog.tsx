@@ -141,14 +141,21 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   };
 
   // Group categories by age group (remove weight suffix)
-  const grouped = new Map<string, Category[]>();
+  const formatGroupLabel = (raw: string): string => {
+    let label = raw;
+    if (label.startsWith('Ενήλικοι')) label = label.replace('Ενήλικοι', '18-40');
+    label = label.replace(/^Νέοι\s*/, '').replace(/^Νέες\s*/, '');
+    return label;
+  };
+
+  const grouped = new Map<string, { label: string; cats: Category[] }>();
   categories.forEach(cat => {
-    const groupName = cat.name
+    const rawGroup = cat.name
       .replace(/\s+[-+±(].*$/, '')
       .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
       .trim() || 'Άλλα';
-    if (!grouped.has(groupName)) grouped.set(groupName, []);
-    grouped.get(groupName)!.push(cat);
+    if (!grouped.has(rawGroup)) grouped.set(rawGroup, { label: formatGroupLabel(rawGroup), cats: [] });
+    grouped.get(rawGroup)!.cats.push(cat);
   });
 
   // Filter registrations by search
