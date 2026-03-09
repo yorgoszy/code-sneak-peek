@@ -155,8 +155,8 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
     return key;
   };
 
-  const isMale = (name: string) => name.includes('Άνδρ') || name.includes('Ανδρ');
-  const isFemale = (name: string) => name.includes('Γυναίκ') || name.includes('Γυναικ');
+  const isMale = (name: string) => /Άνδρ|Ανδρ|Αντρ|Άντρ/i.test(name);
+  const isFemale = (name: string) => /Γυναίκ|Γυναικ/i.test(name);
 
   const getWeight = (name: string): string => {
     const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
@@ -244,16 +244,18 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
 
                 return (
                   <Collapsible key={ageKey}>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
-                      <span>{getAgeGroupLabel(ageKey)} ({cats.length})</span>
-                      <div className="flex items-center gap-2">
-                        {groupRegs.length > 0 && (
-                          <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">
-                            {groupRegs.length} αθλ.
-                          </Badge>
-                        )}
-                        <ChevronDown className="h-3 w-3" />
-                      </div>
+                    <CollapsibleTrigger asChild>
+                      <button className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
+                        <span>{getAgeGroupLabel(ageKey)} ({cats.length})</span>
+                        <div className="flex items-center gap-2">
+                          {groupRegs.length > 0 && (
+                            <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">
+                              {groupRegs.length} αθλ.
+                            </Badge>
+                          )}
+                          <ChevronDown className="h-3 w-3" />
+                        </div>
+                      </button>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <div className="flex gap-0 divide-x divide-border">
