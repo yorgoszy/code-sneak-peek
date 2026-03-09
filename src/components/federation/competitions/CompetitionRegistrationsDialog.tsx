@@ -78,19 +78,21 @@ const AgeGroup: React.FC<{
 
   const ageRegs = filtered.filter(r => cats.some(c => c.id === r.category_id));
 
+  const handleToggle = () => {
+    setIsOpen(prev => !prev);
+  };
+
   return (
-    <div className="mb-1">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => setIsOpen(!isOpen)}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsOpen(!isOpen); }}
-        className="w-full text-[11px] font-bold text-foreground bg-muted px-2 py-2 border-b border-border flex items-center justify-between cursor-pointer hover:bg-accent/50 transition-colors select-none"
+    <div className="mb-1 border border-border">
+      <button
+        type="button"
+        onClick={handleToggle}
+        className="w-full text-[11px] font-bold text-foreground bg-muted px-2 py-2.5 flex items-center justify-between cursor-pointer hover:bg-accent/50 transition-colors select-none"
       >
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center gap-2">
           {isOpen
-            ? <ChevronDown className="h-4 w-4 shrink-0" />
-            : <ChevronRight className="h-4 w-4 shrink-0" />
+            ? <ChevronDown className="h-4 w-4 shrink-0 text-foreground" />
+            : <ChevronRight className="h-4 w-4 shrink-0 text-foreground" />
           }
           {age}
         </span>
@@ -102,13 +104,13 @@ const AgeGroup: React.FC<{
           )}
           <span className="text-[9px] text-muted-foreground">{cats.length} κατ.</span>
         </div>
-      </div>
+      </button>
       {isOpen && (
         <div>
           {cats.map(cat => {
             const catRegs = filtered.filter(r => r.category_id === cat.id);
             return (
-              <div key={cat.id} className="flex items-center gap-1.5 px-2 py-1 text-xs border-b border-border/30">
+              <div key={cat.id} className="flex items-center gap-1.5 px-2 py-1 text-xs border-t border-border/30">
                 <span className="font-medium min-w-[60px]">{getWeightLabel(cat.name)}</span>
                 <div className="flex items-center gap-0.5 flex-1 justify-end">
                   {catRegs.map(reg => {
