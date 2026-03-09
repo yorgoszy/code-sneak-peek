@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Swords, Calendar, MapPin, Users, FileText, UserPlus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Swords, Calendar, MapPin, Users, FileText, UserPlus, Trash2, ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCoachContext } from '@/contexts/CoachContext';
 import { toast } from "sonner";
@@ -63,6 +64,7 @@ const CoachCompetitionsContent: React.FC = () => {
   const [myRegistrations, setMyRegistrations] = useState<Registration[]>([]);
   const [selectedAthleteId, setSelectedAthleteId] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [categoryPopoverOpen, setCategoryPopoverOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [regToDelete, setRegToDelete] = useState<string | null>(null);
@@ -412,39 +414,54 @@ const CoachCompetitionsContent: React.FC = () => {
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Κατηγορία</label>
-              <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
-                <SelectTrigger className="rounded-none">
-                  <SelectValue placeholder="Επιλέξτε κατηγορία..." />
-                </SelectTrigger>
-                <SelectContent className="rounded-none max-h-72">
-                  {(() => {
-                    // Group categories by age group + gender prefix (remove weight suffix)
-                    const grouped = new Map<string, Category[]>();
-                    categories.forEach(cat => {
-                      // Remove weight part at the end: "-45", "+91", "(±) 75", "-45kg" etc.
-                      const groupName = cat.name
-                        .replace(/\s+[-+±(].*$/, '')
-                        .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
-                        .trim() || 'Άλλα';
-                      if (!grouped.has(groupName)) grouped.set(groupName, []);
-                      grouped.get(groupName)!.push(cat);
-                    });
-                    
-                    return Array.from(grouped.entries()).map(([group, cats]) => (
-                      <SelectGroup key={group}>
-                        <SelectLabel className="text-[11px] font-bold text-foreground bg-muted pl-2 pr-2 py-1.5 border-b border-border">
-                          {group} ({cats.length})
-                        </SelectLabel>
-                        {cats.map(cat => (
-                          <SelectItem key={cat.id} value={cat.id} className="text-xs pl-4">
-                            {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ));
-                  })()}
-                </SelectContent>
-              </Select>
+              <Popover open={categoryPopoverOpen} onOpenChange={setCategoryPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between rounded-none text-sm font-normal">
+                    {selectedCategoryId 
+                      ? categories.find(c => c.id === selectedCategoryId)?.name || 'Επιλέξτε κατηγορία...'
+                      : 'Επιλέξτε κατηγορία...'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-none" align="start">
+                  <div className="max-h-72 overflow-y-auto">
+                    {(() => {
+                      const grouped = new Map<string, Category[]>();
+                      categories.forEach(cat => {
+                        const groupName = cat.name
+                          .replace(/\s+[-+±(].*$/, '')
+                          .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
+                          .trim() || 'Άλλα';
+                        if (!grouped.has(groupName)) grouped.set(groupName, []);
+                        grouped.get(groupName)!.push(cat);
+                      });
+                      
+                      return Array.from(grouped.entries()).map(([group, cats]) => (
+                        <Collapsible key={group}>
+                          <CollapsibleTrigger className="flex items-center justify-between w-full text-[11px] font-bold text-foreground bg-muted px-2 py-1.5 border-b border-border hover:bg-muted/80 cursor-pointer">
+                            <span>{group} ({cats.length})</span>
+                            <ChevronDown className="h-3 w-3" />
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            {cats.map(cat => (
+                              <button
+                                key={cat.id}
+                                className={`w-full text-left text-xs px-4 py-1.5 hover:bg-accent cursor-pointer transition-colors ${selectedCategoryId === cat.id ? 'bg-accent font-medium' : ''}`}
+                                onClick={() => {
+                                  setSelectedCategoryId(cat.id);
+                                  setCategoryPopoverOpen(false);
+                                }}
+                              >
+                                {cat.name}
+                              </button>
+                            ))}
+                          </CollapsibleContent>
+                        </Collapsible>
+                      ));
+                    })()}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Show current registrations for this competition */}
