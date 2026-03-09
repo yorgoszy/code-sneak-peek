@@ -135,18 +135,21 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
         <div key={age} className="mb-1">
           <button
             type="button"
-            onClick={() => toggleGroup(groupKey)}
-            className="w-full text-[11px] font-bold text-foreground bg-muted px-2 py-1.5 border-b border-border flex items-center justify-between cursor-pointer hover:bg-muted/80"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleGroup(groupKey); }}
+            className="w-full text-[11px] font-bold text-foreground bg-muted px-2 py-2 border-b border-border flex items-center justify-between cursor-pointer hover:bg-accent/50 transition-colors"
           >
-            <span className="flex items-center gap-1">
-              {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+            <span className="flex items-center gap-1.5">
+              {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
               {age}
             </span>
-            {ageRegs.length > 0 && (
-              <Badge className="rounded-none text-[9px] bg-foreground text-background h-4 px-1">
-                {ageRegs.length}
-              </Badge>
-            )}
+            <div className="flex items-center gap-1.5">
+              {ageRegs.length > 0 && (
+                <Badge className="rounded-none text-[9px] bg-foreground text-background h-4 px-1">
+                  {ageRegs.length}
+                </Badge>
+              )}
+              <span className="text-[9px] text-muted-foreground">{ageCats.length} κατ.</span>
+            </div>
           </button>
           {isOpen && ageCats.map(cat => {
             const catRegs = filtered.filter(r => r.category_id === cat.id);
