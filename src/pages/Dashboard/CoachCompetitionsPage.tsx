@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Swords, Calendar, MapPin, Users, FileText, UserPlus, Trash2, ChevronDown, ChevronUp, ChevronRight, DollarSign, Check, Trophy, CreditCard, Loader2 } from "lucide-react";
+import { Swords, Calendar, MapPin, Users, FileText, UserPlus, Trash2, ChevronDown, ChevronUp, ChevronRight, DollarSign, Check, Trophy, CreditCard, Loader2, ExternalLink, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCoachContext } from '@/contexts/CoachContext';
 import { toast } from "sonner";
@@ -23,8 +23,10 @@ interface Competition {
   name: string;
   description: string | null;
   location: string | null;
+  location_url: string | null;
   competition_date: string;
   registration_deadline: string | null;
+  late_registration_deadline: string | null;
   regulations_pdf_url: string | null;
   status: string;
   federation_id: string;
@@ -44,6 +46,7 @@ interface Category {
   min_age: number | null;
   max_age: number | null;
   registration_fee: number | null;
+  late_registration_fee: number | null;
 }
 
 interface Registration {
@@ -99,11 +102,12 @@ const CoachAgeGroup: React.FC<{
   setSelectedAthleteId: (id: string) => void;
   onQuickRegister: (categoryId: string, athleteId: string) => void;
   onDeleteReg: (regId: string) => void;
-}> = ({ age, cats, myRegistrations, coachId, addingToCategoryId, setAddingToCategoryId, selectedAthleteId, setSelectedAthleteId, onQuickRegister, onDeleteReg }) => {
+  isLatePeriod?: boolean;
+}> = ({ age, cats, myRegistrations, coachId, addingToCategoryId, setAddingToCategoryId, selectedAthleteId, setSelectedAthleteId, onQuickRegister, onDeleteReg, isLatePeriod }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const ageRegs = myRegistrations.filter(r => cats.some(c => c.id === r.category_id));
-  const fee = cats[0]?.registration_fee;
+  const fee = isLatePeriod ? (cats[0]?.late_registration_fee ?? cats[0]?.registration_fee) : cats[0]?.registration_fee;
 
   return (
     <div className="mb-1 border border-border">
@@ -513,6 +517,28 @@ const CoachCompetitionsContent: React.FC = () => {
     return new Date(deadline) < new Date();
   };
 
+  // Check if ALL deadlines (including late) have passed
+  const isAllDeadlinesPassed = (comp: Competition) => {
+    const lateDl = comp.late_registration_deadline;
+    const normalDl = comp.registration_deadline;
+    // If late deadline exists, use that as the final cutoff
+    if (lateDl) return isDeadlinePassed(lateDl);
+    return isDeadlinePassed(normalDl);
+  };
+
+  // Check if we're in the late registration period
+  const isInLatePeriod = (comp: Competition) => {
+    return isDeadlinePassed(comp.registration_deadline) && !isDeadlinePassed(comp.late_registration_deadline);
+  };
+
+  // Get the correct fee for a category based on timing
+  const getCategoryFee = (cat: Category, comp: Competition | null) => {
+    if (comp && isInLatePeriod(comp)) {
+      return cat.late_registration_fee ?? cat.registration_fee ?? 0;
+    }
+    return cat.registration_fee ?? 0;
+  };
+
   // Group categories by gender for the registration dialog
   const maleCats = categories.filter(c => c.gender === 'male');
   const femaleCats = categories.filter(c => c.gender === 'female');
@@ -567,14 +593,32 @@ const CoachCompetitionsContent: React.FC = () => {
                 {comp.location && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4" />
-                    <span>{comp.location}</span>
+                    {comp.location_url ? (
+                      <a href={comp.location_url} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
+                        {comp.location}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    ) : (
+                      <span>{comp.location}</span>
+                    )}
                   </div>
                 )}
-                {comp.registration_deadline && (
-                  <p className={`text-xs ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
-                    Deadline: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
-                    {isDeadlinePassed(comp.registration_deadline) && ' (Έληξε)'}
-                  </p>
+                {(comp.registration_deadline || comp.late_registration_deadline) && (
+                  <div className="space-y-0.5">
+                    {comp.registration_deadline && (
+                      <p className={`text-xs ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                        Εμπρόθεσμες: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
+                        {isDeadlinePassed(comp.registration_deadline) && ' (Έληξε)'}
+                      </p>
+                    )}
+                    {comp.late_registration_deadline && (
+                      <p className={`text-xs ${isDeadlinePassed(comp.late_registration_deadline) ? 'text-destructive font-medium' : 'text-[#cb8954] font-medium'}`}>
+                        Εκπρόθεσμες: {format(new Date(comp.late_registration_deadline), 'd MMM yyyy', { locale: el })}
+                        {isDeadlinePassed(comp.late_registration_deadline) && ' (Έληξε)'}
+                        {isInLatePeriod(comp) && ' ⚠️'}
+                      </p>
+                    )}
+                  </div>
                 )}
                 {comp.description && (
                   <p className="text-xs text-muted-foreground line-clamp-2">{comp.description}</p>
@@ -591,7 +635,7 @@ const CoachCompetitionsContent: React.FC = () => {
 
                 {/* Actions */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t mt-auto">
-                  {!isDeadlinePassed(comp.registration_deadline) && (
+                  {!isAllDeadlinesPassed(comp) && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -650,7 +694,7 @@ const CoachCompetitionsContent: React.FC = () => {
                             >
                               <DollarSign className="h-3 w-3" />
                             </button>
-                            {!isDeadlinePassed(competitions.find(c => c.id === comp.id)?.registration_deadline || null) && (
+                            {(() => { const c = competitions.find(c => c.id === comp.id); return c && !isAllDeadlinesPassed(c); })() && (
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -681,7 +725,12 @@ const CoachCompetitionsContent: React.FC = () => {
       }}>
         <DialogContent className="max-w-4xl max-h-[85vh] rounded-none flex flex-col p-0">
           <DialogHeader className="px-6 pt-6 pb-3">
-            <DialogTitle>Δήλωση Αθλητών - {selectedComp?.name}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              Δήλωση Αθλητών - {selectedComp?.name}
+              {selectedComp && isInLatePeriod(selectedComp) && (
+                <Badge className="rounded-none bg-[#cb8954] text-white text-xs">Εκπρόθεσμη περίοδος</Badge>
+              )}
+            </DialogTitle>
           </DialogHeader>
 
           {/* Scrollable content */}
@@ -708,6 +757,7 @@ const CoachCompetitionsContent: React.FC = () => {
                       setSelectedAthleteId={setSelectedAthleteId}
                       onQuickRegister={handleQuickRegister}
                       onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
+                      isLatePeriod={selectedComp ? isInLatePeriod(selectedComp) : false}
                     />
                   ))}
                 </div>
@@ -729,6 +779,7 @@ const CoachCompetitionsContent: React.FC = () => {
                       setSelectedAthleteId={setSelectedAthleteId}
                       onQuickRegister={handleQuickRegister}
                       onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
+                      isLatePeriod={selectedComp ? isInLatePeriod(selectedComp) : false}
                     />
                   ))}
                 </div>
@@ -741,11 +792,11 @@ const CoachCompetitionsContent: React.FC = () => {
             const unpaidRegs = myRegistrations.filter(r => !r.is_paid);
             const totalCost = unpaidRegs.reduce((sum, reg) => {
               const cat = categories.find(c => c.id === reg.category_id);
-              return sum + (cat?.registration_fee || 0);
+              return sum + (cat ? getCategoryFee(cat, selectedComp) : 0);
             }, 0);
             const totalAll = myRegistrations.reduce((sum, reg) => {
               const cat = categories.find(c => c.id === reg.category_id);
-              return sum + (cat?.registration_fee || 0);
+              return sum + (cat ? getCategoryFee(cat, selectedComp) : 0);
             }, 0);
             const paidCount = myRegistrations.filter(r => r.is_paid).length;
 

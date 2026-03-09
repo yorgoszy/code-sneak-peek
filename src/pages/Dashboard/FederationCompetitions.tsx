@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Plus, Swords, Calendar, MapPin, Users, Upload, Trash2, Edit, Eye, FileText, Settings, Trophy } from "lucide-react";
+import { Menu, Plus, Swords, Calendar, MapPin, Users, Upload, Trash2, Edit, Eye, FileText, Settings, Trophy, ExternalLink, Clock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,13 +30,16 @@ interface Competition {
   name: string;
   description: string | null;
   location: string | null;
+  location_url: string | null;
   competition_date: string;
   registration_deadline: string | null;
+  late_registration_deadline: string | null;
   regulations_pdf_url: string | null;
   status: string;
   created_at: string;
   categories_count?: number;
   registrations_count?: number;
+  counts_for_ranking?: boolean;
 }
 
 const FederationCompetitions = () => {
@@ -60,8 +63,10 @@ const FederationCompetitions = () => {
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formLocation, setFormLocation] = useState('');
+  const [formLocationUrl, setFormLocationUrl] = useState('');
   const [formDate, setFormDate] = useState('');
   const [formDeadline, setFormDeadline] = useState('');
+  const [formLateDeadline, setFormLateDeadline] = useState('');
   const [formStatus, setFormStatus] = useState('upcoming');
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [formPdfUrl, setFormPdfUrl] = useState('');
@@ -111,8 +116,10 @@ const FederationCompetitions = () => {
     setFormName('');
     setFormDescription('');
     setFormLocation('');
+    setFormLocationUrl('');
     setFormDate('');
     setFormDeadline('');
+    setFormLateDeadline('');
     setFormStatus('upcoming');
     setFormPdfUrl('');
     setFormCountsForRanking(false);
@@ -165,8 +172,10 @@ const FederationCompetitions = () => {
         name: formName,
         description: formDescription || null,
         location: formLocation || null,
+        location_url: formLocationUrl || null,
         competition_date: formDate,
         registration_deadline: formDeadline || null,
+        late_registration_deadline: formLateDeadline || null,
         regulations_pdf_url: formPdfUrl || null,
         status: formStatus,
         counts_for_ranking: formCountsForRanking,
@@ -193,8 +202,10 @@ const FederationCompetitions = () => {
           name: formName,
           description: formDescription || null,
           location: formLocation || null,
+          location_url: formLocationUrl || null,
           competition_date: formDate,
           registration_deadline: formDeadline || null,
+          late_registration_deadline: formLateDeadline || null,
           regulations_pdf_url: formPdfUrl || null,
           status: formStatus,
           counts_for_ranking: formCountsForRanking,
@@ -234,11 +245,13 @@ const FederationCompetitions = () => {
     setFormName(comp.name);
     setFormDescription(comp.description || '');
     setFormLocation(comp.location || '');
+    setFormLocationUrl(comp.location_url || '');
     setFormDate(comp.competition_date);
     setFormDeadline(comp.registration_deadline || '');
+    setFormLateDeadline(comp.late_registration_deadline || '');
     setFormStatus(comp.status);
     setFormPdfUrl(comp.regulations_pdf_url || '');
-    setFormCountsForRanking((comp as any).counts_for_ranking || false);
+    setFormCountsForRanking(comp.counts_for_ranking || false);
     setEditDialogOpen(true);
   };
 
@@ -274,18 +287,8 @@ const FederationCompetitions = () => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label>Ημερομηνία *</Label>
+          <Label>Ημερομηνία Αγώνα *</Label>
           <Input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} className="rounded-none" />
-        </div>
-        <div>
-          <Label>Τοποθεσία</Label>
-          <Input value={formLocation} onChange={e => setFormLocation(e.target.value)} placeholder="π.χ. Αθήνα" className="rounded-none" />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <Label>Deadline Δηλώσεων</Label>
-          <Input type="date" value={formDeadline} onChange={e => setFormDeadline(e.target.value)} className="rounded-none" />
         </div>
         <div>
           <Label>Κατάσταση</Label>
@@ -300,6 +303,36 @@ const FederationCompetitions = () => {
           </Select>
         </div>
       </div>
+      
+      {/* Τοποθεσία */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Τοποθεσία</Label>
+          <Input value={formLocation} onChange={e => setFormLocation(e.target.value)} placeholder="π.χ. Κλειστό Γυμναστήριο Αθήνας" className="rounded-none" />
+        </div>
+        <div>
+          <Label>Google Maps Link</Label>
+          <Input value={formLocationUrl} onChange={e => setFormLocationUrl(e.target.value)} placeholder="https://maps.google.com/..." className="rounded-none" />
+        </div>
+      </div>
+
+      {/* Deadlines */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Λήξη Εμπρόθεσμων Δηλώσεων</Label>
+          <Input type="date" value={formDeadline} onChange={e => setFormDeadline(e.target.value)} className="rounded-none" />
+        </div>
+        <div>
+          <Label>Λήξη Εκπρόθεσμων Δηλώσεων</Label>
+          <Input type="date" value={formLateDeadline} onChange={e => setFormLateDeadline(e.target.value)} className="rounded-none" />
+        </div>
+      </div>
+      {formDeadline && formLateDeadline && (
+        <p className="text-xs text-muted-foreground">
+          Εμπρόθεσμες έως {formDeadline} • Εκπρόθεσμες έως {formLateDeadline}
+        </p>
+      )}
+
       <div>
         <Label>Κανονισμοί (PDF)</Label>
         <div className="flex items-center gap-2">
@@ -418,12 +451,30 @@ const FederationCompetitions = () => {
                       {comp.location && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4" />
-                          <span>{comp.location}</span>
+                          {comp.location_url ? (
+                            <a href={comp.location_url} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
+                              {comp.location}
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          ) : (
+                            <span>{comp.location}</span>
+                          )}
                         </div>
                       )}
-                      {comp.registration_deadline && (
-                        <div className="text-xs text-muted-foreground">
-                          Deadline: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
+                      {(comp.registration_deadline || comp.late_registration_deadline) && (
+                        <div className="space-y-0.5">
+                          {comp.registration_deadline && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              Εμπρόθεσμες: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
+                            </div>
+                          )}
+                          {comp.late_registration_deadline && (
+                            <div className="flex items-center gap-1 text-xs text-[#cb8954]">
+                              <Clock className="h-3 w-3" />
+                              Εκπρόθεσμες: {format(new Date(comp.late_registration_deadline), 'd MMM yyyy', { locale: el })}
+                            </div>
+                          )}
                         </div>
                       )}
 
