@@ -117,20 +117,38 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
       grouped.get(age)!.push(cat);
     });
 
+    const toggleGroup = (key: string) => {
+      setOpenGroups(prev => {
+        const next = new Set(prev);
+        if (next.has(key)) next.delete(key);
+        else next.add(key);
+        return next;
+      });
+    };
+
     return AGE_ORDER.filter(a => grouped.has(a)).map(age => {
       const ageCats = grouped.get(age)!;
       const ageRegs = filtered.filter(r => ageCats.some(c => c.id === r.category_id));
+      const groupKey = `${gender}-${age}`;
+      const isOpen = openGroups.has(groupKey);
       return (
-        <div key={age} className="mb-3">
-          <div className="text-[11px] font-bold text-foreground bg-muted px-2 py-1 border-b border-border flex items-center justify-between">
-            <span>{age}</span>
+        <div key={age} className="mb-1">
+          <button
+            type="button"
+            onClick={() => toggleGroup(groupKey)}
+            className="w-full text-[11px] font-bold text-foreground bg-muted px-2 py-1.5 border-b border-border flex items-center justify-between cursor-pointer hover:bg-muted/80"
+          >
+            <span className="flex items-center gap-1">
+              {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              {age}
+            </span>
             {ageRegs.length > 0 && (
               <Badge className="rounded-none text-[9px] bg-foreground text-background h-4 px-1">
                 {ageRegs.length}
               </Badge>
             )}
-          </div>
-          {ageCats.map(cat => {
+          </button>
+          {isOpen && ageCats.map(cat => {
             const catRegs = filtered.filter(r => r.category_id === cat.id);
             return (
               <div key={cat.id} className="flex items-center gap-1.5 px-2 py-1 text-xs border-b border-border/30">
