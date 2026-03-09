@@ -3,8 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Scale, ChevronDown } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -44,7 +43,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [weighInEdit, setWeighInEdit] = useState<{ id: string; weight: string } | null>(null);
+  
 
   useEffect(() => {
     if (isOpen) {
@@ -86,59 +85,6 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
     }
   };
 
-  const handleWeighIn = async (regId: string, weight: string) => {
-    const w = parseFloat(weight);
-    if (isNaN(w) || w <= 0) { toast.error('Μη έγκυρο βάρος'); return; }
-    try {
-      const { error } = await supabase
-        .from('federation_competition_registrations')
-        .update({
-          weigh_in_weight: w,
-          weigh_in_status: 'passed',
-          weigh_in_date: new Date().toISOString(),
-        })
-        .eq('id', regId);
-      if (error) throw error;
-      toast.success('Ζύγιση καταχωρήθηκε');
-      setWeighInEdit(null);
-      fetchRegistrations();
-    } catch (error) {
-      console.error(error);
-      toast.error('Σφάλμα');
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      registered: 'bg-blue-100 text-blue-800',
-      confirmed: 'bg-green-100 text-green-800',
-      withdrawn: 'bg-gray-100 text-gray-800',
-      disqualified: 'bg-red-100 text-red-800',
-    };
-    const labels: Record<string, string> = {
-      registered: 'Δηλωμένος',
-      confirmed: 'Επιβεβαιωμένος',
-      withdrawn: 'Αποσύρθηκε',
-      disqualified: 'Αποκλείστηκε',
-    };
-    return <Badge className={`rounded-none text-xs ${styles[status] || ''}`}>{labels[status] || status}</Badge>;
-  };
-
-  const getWeighInBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      passed: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
-      no_show: 'bg-gray-100 text-gray-800',
-    };
-    const labels: Record<string, string> = {
-      pending: 'Εκκρεμεί',
-      passed: 'Επιτυχής',
-      failed: 'Αποτυχία',
-      no_show: 'Απών',
-    };
-    return <Badge className={`rounded-none text-xs ${styles[status] || ''}`}>{labels[status] || status}</Badge>;
-  };
 
   // Group categories by age group (remove weight suffix)
   const grouped = new Map<string, Category[]>();
