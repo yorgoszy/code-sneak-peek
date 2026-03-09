@@ -634,7 +634,7 @@ const CoachCompetitionsContent: React.FC = () => {
 
                 {/* Actions */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t mt-auto">
-                  {!isDeadlinePassed(comp.registration_deadline) && (
+                  {!isAllDeadlinesPassed(comp) && (
                     <Button
                       variant="outline"
                       size="sm"
