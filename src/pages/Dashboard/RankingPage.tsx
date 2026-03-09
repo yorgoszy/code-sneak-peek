@@ -288,10 +288,10 @@ const RankingPage = () => {
               <div className="text-center py-12 text-muted-foreground">Φόρτωση...</div>
             ) : (
               <div className="space-y-4">
-                {/* Filters */}
-                <div className="flex flex-wrap gap-3">
+                {/* Filters - stack on mobile */}
+                <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
                   <Select value={selectedGender} onValueChange={v => { setSelectedGender(v); setSelectedAge('all'); setSelectedCategory('all'); }}>
-                    <SelectTrigger className="w-[140px] rounded-none">
+                    <SelectTrigger className="w-full sm:w-[140px] rounded-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-none">
@@ -302,7 +302,7 @@ const RankingPage = () => {
                   </Select>
 
                   <Select value={selectedAge} onValueChange={v => { setSelectedAge(v); setSelectedCategory('all'); }}>
-                    <SelectTrigger className="w-[160px] rounded-none">
+                    <SelectTrigger className="w-full sm:w-[160px] rounded-none">
                       <SelectValue placeholder="Ηλικιακή ομάδα" />
                     </SelectTrigger>
                     <SelectContent className="rounded-none">
@@ -314,7 +314,7 @@ const RankingPage = () => {
                   </Select>
 
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-[180px] rounded-none">
+                    <SelectTrigger className="w-full sm:w-[180px] rounded-none">
                       <SelectValue placeholder="Κατηγορία" />
                     </SelectTrigger>
                     <SelectContent className="rounded-none">
@@ -334,59 +334,80 @@ const RankingPage = () => {
                     <p className="text-xs mt-1">Τα αποτελέσματα θα εμφανιστούν μετά την καταχώρηση τοποθετήσεων στους αγώνες</p>
                   </div>
                 ) : (
-                  <div className="border border-border">
-                    {/* Header */}
-                    <div className="grid grid-cols-[40px_1fr_80px_100px_80px] lg:grid-cols-[50px_1fr_120px_120px_100px] bg-muted text-xs font-bold text-foreground px-3 py-2">
-                      <span>#</span>
-                      <span>Αθλητής</span>
-                      <span className="text-center">Μετάλλια</span>
-                      <span className="text-center hidden lg:block">Αγώνες</span>
-                      <span className="text-right">Πόντοι</span>
+                  <>
+                    {/* Desktop Table */}
+                    <div className="border border-border hidden md:block">
+                      <div className="grid grid-cols-[50px_1fr_120px_120px_100px] bg-muted text-xs font-bold text-foreground px-3 py-2">
+                        <span>#</span>
+                        <span>Αθλητής</span>
+                        <span className="text-center">Μετάλλια</span>
+                        <span className="text-center">Αγώνες</span>
+                        <span className="text-right">Πόντοι</span>
+                      </div>
+                      {ranking.map((entry, index) => (
+                        <div
+                          key={entry.athlete_id}
+                          className={`grid grid-cols-[50px_1fr_120px_120px_100px] items-center px-3 py-2 text-sm border-t border-border/50 ${
+                            index < 3 ? 'bg-[#cb8954]/5' : ''
+                          }`}
+                        >
+                          <div className="flex items-center">{getMedalIcon(index + 1)}</div>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Avatar className="h-7 w-7 rounded-full shrink-0">
+                              <AvatarImage src={entry.athlete_avatar || ''} />
+                              <AvatarFallback className="text-[10px] rounded-full">{entry.athlete_name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <div className="font-medium truncate">{entry.athlete_name}</div>
+                              {entry.club_name && <div className="text-[10px] text-muted-foreground truncate">{entry.club_name}</div>}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-center gap-1">
+                            {entry.golds > 0 && <span className="text-xs">🥇{entry.golds}</span>}
+                            {entry.silvers > 0 && <span className="text-xs">🥈{entry.silvers}</span>}
+                            {entry.bronzes > 0 && <span className="text-xs">🥉{entry.bronzes}</span>}
+                          </div>
+                          <div className="text-center text-muted-foreground">{entry.competitions_count}</div>
+                          <div className="text-right font-bold text-[#cb8954]">{entry.total_points}</div>
+                        </div>
+                      ))}
                     </div>
 
-                    {/* Rows */}
-                    {ranking.map((entry, index) => (
-                      <div
-                        key={entry.athlete_id}
-                        className={`grid grid-cols-[40px_1fr_80px_100px_80px] lg:grid-cols-[50px_1fr_120px_120px_100px] items-center px-3 py-2 text-sm border-t border-border/50 ${
-                          index < 3 ? 'bg-[#cb8954]/5' : ''
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          {getMedalIcon(index + 1)}
-                        </div>
-
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Avatar className="h-7 w-7 rounded-full shrink-0">
-                            <AvatarImage src={entry.athlete_avatar || ''} />
-                            <AvatarFallback className="text-[10px] rounded-full">
-                              {entry.athlete_name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0">
-                            <div className="font-medium truncate">{entry.athlete_name}</div>
-                            {entry.club_name && (
-                              <div className="text-[10px] text-muted-foreground truncate">{entry.club_name}</div>
-                            )}
+                    {/* Mobile Cards */}
+                    <div className="md:hidden space-y-2">
+                      {ranking.map((entry, index) => (
+                        <div
+                          key={entry.athlete_id}
+                          className={`border border-border p-3 ${index < 3 ? 'bg-[#cb8954]/5' : ''}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center shrink-0 w-8">{getMedalIcon(index + 1)}</div>
+                            <Avatar className="h-8 w-8 rounded-full shrink-0">
+                              <AvatarImage src={entry.athlete_avatar || ''} />
+                              <AvatarFallback className="text-[10px] rounded-full">{entry.athlete_name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate">{entry.athlete_name}</div>
+                              {entry.club_name && <div className="text-[10px] text-muted-foreground truncate">{entry.club_name}</div>}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <div className="font-bold text-[#cb8954] text-lg">{entry.total_points}</div>
+                              <div className="text-[10px] text-muted-foreground">πόντοι</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              {entry.golds > 0 && <span>🥇{entry.golds}</span>}
+                              {entry.silvers > 0 && <span>🥈{entry.silvers}</span>}
+                              {entry.bronzes > 0 && <span>🥉{entry.bronzes}</span>}
+                              {entry.golds === 0 && entry.silvers === 0 && entry.bronzes === 0 && <span>—</span>}
+                            </div>
+                            <span>{entry.competitions_count} αγώνες</span>
                           </div>
                         </div>
-
-                        <div className="flex items-center justify-center gap-1">
-                          {entry.golds > 0 && <span className="text-xs">🥇{entry.golds}</span>}
-                          {entry.silvers > 0 && <span className="text-xs">🥈{entry.silvers}</span>}
-                          {entry.bronzes > 0 && <span className="text-xs">🥉{entry.bronzes}</span>}
-                        </div>
-
-                        <div className="text-center text-muted-foreground hidden lg:block">
-                          {entry.competitions_count}
-                        </div>
-
-                        <div className="text-right font-bold text-[#cb8954]">
-                          {entry.total_points}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  </>
                 )}
 
                 <div className="text-xs text-muted-foreground text-right">
