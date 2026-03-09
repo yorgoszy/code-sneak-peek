@@ -637,7 +637,12 @@ const CoachCompetitionsContent: React.FC = () => {
       )}
 
       {/* Register Dialog - Two column men/women layout */}
-      <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
+      <Dialog open={registerDialogOpen} onOpenChange={(open) => {
+        if (!open && myRegistrations.some(r => !r.is_paid)) {
+          toast.info('Οι δηλώσεις αποθηκεύτηκαν στο πρόχειρο. Χωρίς πληρωμή δεν αποστέλλονται στην ομοσπονδία.', { duration: 5000 });
+        }
+        setRegisterDialogOpen(open);
+      }}>
         <DialogContent className="max-w-4xl max-h-[85vh] rounded-none flex flex-col p-0">
           <DialogHeader className="px-6 pt-6 pb-3">
             <DialogTitle>Δήλωση Αθλητών - {selectedComp?.name}</DialogTitle>
