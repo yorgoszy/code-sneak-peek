@@ -209,6 +209,7 @@ const CoachAgeGroup: React.FC<{
 
 const CoachCompetitionsContent: React.FC = () => {
   const { coachId } = useCoachContext();
+  const { isSyncing, syncBookingToCalendar } = useGoogleCalendar();
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedComp, setSelectedComp] = useState<Competition | null>(null);
