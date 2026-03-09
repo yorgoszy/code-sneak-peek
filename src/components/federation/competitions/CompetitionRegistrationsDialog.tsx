@@ -213,7 +213,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
                         return (
                           <div key={cat.id} className="border-b border-border/50">
                             <div className="flex items-center gap-2 px-3 py-1.5 text-xs">
-                              <span className="min-w-0 truncate font-medium">{cat.name}</span>
+                              <span className="min-w-0 truncate font-medium">{cat.name.replace(/^Ενήλικοι\s*/, '').replace(/^Νέοι\s*\d+-\d+\s*/, '').replace(/^Νέες\s*\d+-\d+\s*/, '').replace(/^U23\s*/, '')}</span>
                               
                               {/* Athlete avatars */}
                               <div className="flex items-center gap-1 flex-1 justify-end">
