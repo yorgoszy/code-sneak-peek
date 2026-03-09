@@ -118,10 +118,46 @@ const AgeGroup: React.FC<{
                     const name = reg.athlete?.name || 'Ά';
                     const avatar = reg.athlete?.photo_url || reg.athlete?.avatar_url || '';
                     return (
-                      <Avatar key={reg.id} className="h-5 w-5 rounded-full">
-                        <AvatarImage src={avatar} />
-                        <AvatarFallback className="text-[8px] rounded-full">{name.charAt(0)}</AvatarFallback>
-                      </Avatar>
+                      <Popover key={reg.id}>
+                        <PopoverTrigger asChild>
+                          <button className="focus:outline-none">
+                            <Avatar className="h-5 w-5 rounded-full cursor-pointer hover:ring-2 hover:ring-foreground/30 transition-all">
+                              <AvatarImage src={avatar} />
+                              <AvatarFallback className="text-[8px] rounded-full">{name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-56 p-3 rounded-none text-xs space-y-2" side="top">
+                          <div className="flex items-center gap-2 font-semibold text-sm">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            {reg.athlete?.name || '-'}
+                          </div>
+                          {reg.athlete?.phone && (
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Phone className="h-3 w-3 shrink-0" />
+                              <span>{reg.athlete.phone}</span>
+                            </div>
+                          )}
+                          <div className="border-t border-border pt-2 mt-2">
+                            <div className="flex items-center gap-2 font-medium">
+                              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                              {reg.club?.name || '-'}
+                            </div>
+                            {reg.club?.email && (
+                              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                                <Mail className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{reg.club.email}</span>
+                              </div>
+                            )}
+                            {reg.club?.phone && (
+                              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                                <Phone className="h-3 w-3 shrink-0" />
+                                <span>{reg.club.phone}</span>
+                              </div>
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     );
                   })}
                 </div>
