@@ -217,6 +217,41 @@ const CoachCompetitionsContent: React.FC = () => {
   const [expandedComp, setExpandedComp] = useState<string | null>(null);
   const [compRegistrations, setCompRegistrations] = useState<Record<string, Registration[]>>({});
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle Stripe payment callback
+  useEffect(() => {
+    const payment = searchParams.get('payment');
+    const sessionId = searchParams.get('session_id');
+
+    if (payment === 'success' && sessionId) {
+      // Verify payment with Stripe and mark registrations as paid
+      const verifyPayment = async () => {
+        try {
+          toast.info('Επαλήθευση πληρωμής...');
+          const { data, error } = await supabase.functions.invoke('verify-competition-payment', {
+            body: { session_id: sessionId },
+          });
+          if (error) throw error;
+          if (data?.success) {
+            toast.success(`Η πληρωμή ολοκληρώθηκε! ${data.paid_count} δηλώσεις επιβεβαιώθηκαν.`);
+            fetchCompetitions();
+          } else {
+            toast.error(data?.message || 'Η πληρωμή δεν επιβεβαιώθηκε');
+          }
+        } catch (err) {
+          console.error('Payment verification error:', err);
+          toast.error('Σφάλμα επαλήθευσης πληρωμής');
+        }
+      };
+      verifyPayment();
+      // Clean URL params
+      setSearchParams({});
+    } else if (payment === 'cancelled') {
+      toast.info('Η πληρωμή ακυρώθηκε');
+      setSearchParams({});
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (coachId) fetchCompetitions();
