@@ -426,6 +426,17 @@ const CoachCompetitionsContent: React.FC = () => {
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             <Badge variant="outline" className="rounded-none text-[10px] md:text-xs max-w-[100px] truncate">{reg.category?.name}</Badge>
+                            <button
+                              onClick={() => togglePayment(reg.id, reg.is_paid, comp.id)}
+                              className={`h-6 w-6 flex items-center justify-center rounded-none border transition-colors ${
+                                reg.is_paid 
+                                  ? 'bg-[#00ffba]/20 border-[#00ffba] text-[#00ffba]' 
+                                  : 'border-border text-muted-foreground hover:text-foreground'
+                              }`}
+                              title={reg.is_paid ? 'Πληρωμένη' : 'Μη πληρωμένη'}
+                            >
+                              <DollarSign className="h-3 w-3" />
+                            </button>
                             {!isDeadlinePassed(competitions.find(c => c.id === comp.id)?.registration_deadline || null) && (
                               <Button
                                 variant="ghost"
