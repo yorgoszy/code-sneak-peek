@@ -140,23 +140,39 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
     return <Badge className={`rounded-none text-xs ${styles[status] || ''}`}>{labels[status] || status}</Badge>;
   };
 
-  // Group categories by age group (remove weight suffix)
-  const formatGroupLabel = (raw: string): string => {
-    let label = raw;
-    if (label.startsWith('Ενήλικοι')) label = label.replace('Ενήλικοι', '18-40');
-    label = label.replace(/^Νέοι\s*/, '').replace(/^Νέες\s*/, '');
-    return label;
+  // Extract age group (without gender or weight)
+  const getAgeGroupKey = (name: string): string => {
+    if (name.startsWith('Ενήλικοι')) return 'Ενήλικοι';
+    if (name.startsWith('U23')) return 'U23';
+    const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
+    if (match) return match[1];
+    return 'Άλλα';
   };
 
-  const grouped = new Map<string, { label: string; cats: Category[] }>();
+  const getAgeGroupLabel = (key: string): string => {
+    if (key === 'Ενήλικοι') return '18-40';
+    if (key === 'U23') return 'U23';
+    return key;
+  };
+
+  const isMale = (name: string) => name.includes('Άνδρ') || name.includes('Ανδρ');
+  const isFemale = (name: string) => name.includes('Γυναίκ') || name.includes('Γυναικ');
+
+  const getWeight = (name: string): string => {
+    const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
+    return m ? m[1] : name;
+  };
+
+  const AGE_ORDER = ['Ενήλικοι', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7', 'Άλλα'];
+
+  const ageGroups = new Map<string, Category[]>();
   categories.forEach(cat => {
-    const rawGroup = cat.name
-      .replace(/\s+[-+±(].*$/, '')
-      .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
-      .trim() || 'Άλλα';
-    if (!grouped.has(rawGroup)) grouped.set(rawGroup, { label: formatGroupLabel(rawGroup), cats: [] });
-    grouped.get(rawGroup)!.cats.push(cat);
+    const key = getAgeGroupKey(cat.name);
+    if (!ageGroups.has(key)) ageGroups.set(key, []);
+    ageGroups.get(key)!.push(cat);
   });
+
+  const sortedAgeKeys = AGE_ORDER.filter(k => ageGroups.has(k));
 
   // Filter registrations by search
   const filtered = registrations.filter(r => {
@@ -190,13 +206,46 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
             <p className="text-center py-8 text-muted-foreground">Δεν υπάρχουν κατηγορίες</p>
           ) : (
             <div className="space-y-1">
-              {Array.from(grouped.entries()).map(([group, { label, cats }]) => {
+              {sortedAgeKeys.map(ageKey => {
+                const cats = ageGroups.get(ageKey)!;
+                const maleCats = cats.filter(c => isMale(c.name));
+                const femaleCats = cats.filter(c => isFemale(c.name));
                 const groupRegs = filtered.filter(r => cats.some(c => c.id === r.category_id));
-                
+
+                const renderColumn = (columnCats: Category[], gender: string) => (
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1 border-b border-border/50">
+                      {gender}
+                    </div>
+                    {columnCats.map(cat => {
+                      const catRegs = filtered.filter(r => r.category_id === cat.id);
+                      return (
+                        <div key={cat.id} className="border-b border-border/30">
+                          <div className="flex items-center gap-1.5 px-2 py-1 text-xs">
+                            <span className="font-medium">{getWeight(cat.name)}</span>
+                            <div className="flex items-center gap-0.5 flex-1 justify-end">
+                              {catRegs.map(reg => {
+                                const athleteName = reg.athlete?.name || 'Ά';
+                                const athleteAvatar = reg.athlete?.photo_url || reg.athlete?.avatar_url || '';
+                                return (
+                                  <Avatar key={reg.id} className="h-5 w-5 rounded-full">
+                                    <AvatarImage src={athleteAvatar} />
+                                    <AvatarFallback className="text-[8px] rounded-full">{athleteName.charAt(0)}</AvatarFallback>
+                                  </Avatar>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+
                 return (
-                  <Collapsible key={group}>
+                  <Collapsible key={ageKey}>
                     <CollapsibleTrigger className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
-                      <span>{label} ({cats.length})</span>
+                      <span>{getAgeGroupLabel(ageKey)} ({cats.length})</span>
                       <div className="flex items-center gap-2">
                         {groupRegs.length > 0 && (
                           <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">
@@ -207,33 +256,10 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
                       </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                      {cats.map(cat => {
-                        const catRegs = filtered.filter(r => r.category_id === cat.id);
-                        
-                        return (
-                          <div key={cat.id} className="border-b border-border/50">
-                            <div className="flex items-center gap-2 px-3 py-1.5 text-xs">
-                              <span className="min-w-0 truncate font-medium">{cat.name.replace(/^Ενήλικοι\s*/, '').replace(/^Νέοι\s*\d+-\d+\s*/, '').replace(/^Νέες\s*\d+-\d+\s*/, '').replace(/^U23\s*/, '')}</span>
-                              
-                              {/* Athlete avatars */}
-                              <div className="flex items-center gap-1 flex-1 justify-end">
-                                {catRegs.map(reg => {
-                                  const athleteName = reg.athlete?.name || 'Άγνωστος';
-                                  const athleteAvatar = reg.athlete?.photo_url || reg.athlete?.avatar_url || '';
-                                  return (
-                                    <div key={reg.id} className="flex items-center">
-                                      <Avatar className="h-5 w-5 rounded-full">
-                                        <AvatarImage src={athleteAvatar} />
-                                        <AvatarFallback className="text-[8px] rounded-full">{athleteName.charAt(0)}</AvatarFallback>
-                                      </Avatar>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                      <div className="flex gap-0 divide-x divide-border">
+                        {maleCats.length > 0 && renderColumn(maleCats, 'Άνδρες')}
+                        {femaleCats.length > 0 && renderColumn(femaleCats, 'Γυναίκες')}
+                      </div>
                     </CollapsibleContent>
                   </Collapsible>
                 );
