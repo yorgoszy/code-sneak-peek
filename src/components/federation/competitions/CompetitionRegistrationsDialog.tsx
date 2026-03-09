@@ -67,7 +67,7 @@ const groupByAge = (cats: Category[]) => {
   }));
 };
 
-// Separate component so each group manages its own open state independently
+// Separate component - each group manages its own open/close state
 const AgeGroup: React.FC<{
   age: string;
   cats: Category[];
