@@ -693,7 +693,7 @@ const CoachCompetitionsContent: React.FC = () => {
                             >
                               <DollarSign className="h-3 w-3" />
                             </button>
-                            {!isDeadlinePassed(competitions.find(c => c.id === comp.id)?.registration_deadline || null) && (
+                            {(() => { const c = competitions.find(c => c.id === comp.id); return c && !isAllDeadlinesPassed(c); })() && (
                               <Button
                                 variant="ghost"
                                 size="sm"
