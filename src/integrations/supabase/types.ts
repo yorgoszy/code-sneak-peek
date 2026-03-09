@@ -3204,6 +3204,38 @@ export type Database = {
           },
         ]
       }
+      federation_saved_venues: {
+        Row: {
+          created_at: string | null
+          federation_id: string
+          id: string
+          location_url: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          federation_id: string
+          id?: string
+          location_url?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          federation_id?: string
+          id?: string
+          location_url?: string | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_saved_venues_federation_id_fkey"
+            columns: ["federation_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fms_exercise_alternatives: {
         Row: {
           alternative_exercise_id: string
