@@ -2389,6 +2389,18 @@ ${drafts.map((p: any, i: number) => {
     );
     const strengthAttemptsData = await strengthAttemptsResponse.json();
     
+    // Φόρτωση strength test sessions με nested attempts (για strengthHistory context)
+    const strengthSessionsResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/strength_test_sessions?user_id=eq.${effectiveUserId}&select=id,test_date,strength_test_attempts(id,weight_kg,velocity_ms,exercise_id,is_1rm,exercises(name))&order=test_date.desc&limit=20`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    const strengthHistory = await strengthSessionsResponse.json();
+    
     // Φόρτωση exercises για να πάρουμε τα ονόματα
     const exercisesResponse = await fetch(
       `${SUPABASE_URL}/rest/v1/exercises?select=id,name`,
