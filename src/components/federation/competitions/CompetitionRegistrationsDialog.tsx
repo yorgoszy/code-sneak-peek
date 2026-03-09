@@ -220,7 +220,6 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
                                         <AvatarFallback className="text-[8px] rounded-full">{athleteName.charAt(0)}</AvatarFallback>
                                       </Avatar>
                                     </div>
-                                    </div>
                                   );
                                 })}
                               </div>
