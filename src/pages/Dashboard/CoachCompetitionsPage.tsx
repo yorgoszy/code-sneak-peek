@@ -516,6 +516,28 @@ const CoachCompetitionsContent: React.FC = () => {
     return new Date(deadline) < new Date();
   };
 
+  // Check if ALL deadlines (including late) have passed
+  const isAllDeadlinesPassed = (comp: Competition) => {
+    const lateDl = comp.late_registration_deadline;
+    const normalDl = comp.registration_deadline;
+    // If late deadline exists, use that as the final cutoff
+    if (lateDl) return isDeadlinePassed(lateDl);
+    return isDeadlinePassed(normalDl);
+  };
+
+  // Check if we're in the late registration period
+  const isInLatePeriod = (comp: Competition) => {
+    return isDeadlinePassed(comp.registration_deadline) && !isDeadlinePassed(comp.late_registration_deadline);
+  };
+
+  // Get the correct fee for a category based on timing
+  const getCategoryFee = (cat: Category, comp: Competition | null) => {
+    if (comp && isInLatePeriod(comp)) {
+      return cat.late_registration_fee ?? cat.registration_fee ?? 0;
+    }
+    return cat.registration_fee ?? 0;
+  };
+
   // Group categories by gender for the registration dialog
   const maleCats = categories.filter(c => c.gender === 'male');
   const femaleCats = categories.filter(c => c.gender === 'female');
