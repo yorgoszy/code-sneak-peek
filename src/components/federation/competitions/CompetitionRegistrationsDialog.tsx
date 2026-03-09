@@ -195,7 +195,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
                 return (
                   <Collapsible key={group}>
                     <CollapsibleTrigger className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
-                      <span>{group} ({cats.length})</span>
+                      <span>{group}</span>
                       <div className="flex items-center gap-2">
                         {groupRegs.length > 0 && (
                           <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">
