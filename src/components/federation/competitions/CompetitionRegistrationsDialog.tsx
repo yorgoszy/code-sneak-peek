@@ -197,7 +197,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle>Δηλώσεις (v2) - {competitionName}</DialogTitle>
+          <DialogTitle>Δηλώσεις - {competitionName}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3">

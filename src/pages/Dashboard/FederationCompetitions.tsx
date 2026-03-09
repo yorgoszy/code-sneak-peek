@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // force rebuild v2
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from "react-i18next";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
