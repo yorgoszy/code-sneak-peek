@@ -203,7 +203,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
           *,
           category:federation_competition_categories(name),
           club:app_users!federation_competition_registrations_club_id_fkey(name, avatar_url, email, phone),
-          athlete:app_users!federation_competition_registrations_athlete_id_fkey(name, avatar_url, photo_url, phone)
+          athlete:app_users!federation_competition_registrations_athlete_id_fkey(name, avatar_url, photo_url, phone, email)
         `)
         .eq('competition_id', competitionId)
         .order('created_at', { ascending: false });
