@@ -143,10 +143,16 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   // Group categories by age group (remove weight suffix)
   const grouped = new Map<string, Category[]>();
   categories.forEach(cat => {
-    const groupName = cat.name
+    let groupName = cat.name
       .replace(/\s+[-+±(].*$/, '')
       .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
       .trim() || 'Άλλα';
+    // Replace "Ενήλικοι" with age range
+    if (groupName === 'Ενήλικοι') groupName = '18-40';
+    // Remove "Νέοι" prefix (e.g. "Νέοι 16-17" → "16-17")  
+    groupName = groupName.replace(/^Νέοι\s+/, '');
+    // Also handle "Νέες" for female categories
+    groupName = groupName.replace(/^Νέες\s+/, '');
     if (!grouped.has(groupName)) grouped.set(groupName, []);
     grouped.get(groupName)!.push(cat);
   });
@@ -189,7 +195,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
                 return (
                   <Collapsible key={group}>
                     <CollapsibleTrigger className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
-                      <span>{group} ({cats.length})</span>
+                      <span>{group}</span>
                       <div className="flex items-center gap-2">
                         {groupRegs.length > 0 && (
                           <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">
