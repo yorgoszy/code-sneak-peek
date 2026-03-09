@@ -314,6 +314,18 @@ const FederationCompetitions = () => {
         </div>
         {uploadingPdf && <p className="text-xs text-muted-foreground mt-1">Ανέβασμα...</p>}
       </div>
+      <div
+        className="flex items-center gap-3 p-3 border border-border cursor-pointer hover:bg-accent/50 transition-colors select-none"
+        onClick={() => setFormCountsForRanking(!formCountsForRanking)}
+      >
+        <div className={`w-5 h-5 border-2 flex items-center justify-center ${formCountsForRanking ? 'bg-foreground border-foreground' : 'border-muted-foreground'}`}>
+          {formCountsForRanking && <span className="text-background text-xs font-bold">✓</span>}
+        </div>
+        <div>
+          <span className="text-sm font-medium">Μετράει για Ranking</span>
+          <p className="text-xs text-muted-foreground">Η διοργάνωση θα συμβάλει στην κατάταξη των αθλητών</p>
+        </div>
+      </div>
     </div>
   );
 
