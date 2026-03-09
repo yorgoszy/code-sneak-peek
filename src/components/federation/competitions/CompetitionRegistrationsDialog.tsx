@@ -26,6 +26,7 @@ interface Registration {
 interface Category {
   id: string;
   name: string;
+  gender: string;
 }
 
 interface CompetitionRegistrationsDialogProps {
