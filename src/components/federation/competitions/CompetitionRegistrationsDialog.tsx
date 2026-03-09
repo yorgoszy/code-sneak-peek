@@ -76,12 +76,9 @@ const AgeGroup: React.FC<{
 }> = ({ age, cats, filtered, gender }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  console.log(`🔥 AgeGroup "${age}" rendered, isOpen=${isOpen}, cats=${cats.length}`);
-
   const ageRegs = filtered.filter(r => cats.some(c => c.id === r.category_id));
 
   const handleToggle = () => {
-    console.log(`🔥 Toggle clicked for "${age}", current isOpen=${isOpen}`);
     setIsOpen(prev => !prev);
   };
 
