@@ -56,9 +56,14 @@ export const useGoogleCalendar = () => {
       const endTime = `${endHour.toString().padStart(2, '0')}:${booking.booking_time.split(':')[1]}`;
       const endDateTime = `${booking.booking_date}T${endTime}:00`;
 
-      const summary = booking.booking_type === 'videocall' 
-        ? `📹 Βιντεοκλήση - ${booking.section_name || 'HyperKids'}`
-        : `🏋️ Γυμναστήριο - ${booking.section_name || 'HyperKids'}`;
+      let summary: string;
+      if (booking.booking_type === 'competition') {
+        summary = `🥊 Αγώνας - ${booking.section_name || ''}`;
+      } else if (booking.booking_type === 'videocall') {
+        summary = `📹 Βιντεοκλήση - ${booking.section_name || 'HyperKids'}`;
+      } else {
+        summary = `🏋️ Γυμναστήριο - ${booking.section_name || 'HyperKids'}`;
+      }
 
       const { data, error } = await supabase.functions.invoke('google-calendar-sync', {
         body: {
