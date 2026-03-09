@@ -46,6 +46,7 @@ interface Category {
   min_age: number | null;
   max_age: number | null;
   registration_fee: number | null;
+  late_registration_fee: number | null;
 }
 
 interface Registration {
