@@ -155,3 +155,53 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
       );
     });
   };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-none">
+        <DialogHeader>
+          <DialogTitle>Δηλώσεις - {competitionName}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Αναζήτηση αθλητή, σωματείου..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-none"
+            />
+          </div>
+
+          {loading ? (
+            <p className="text-center py-8 text-muted-foreground">Φόρτωση...</p>
+          ) : categories.length === 0 ? (
+            <p className="text-center py-8 text-muted-foreground">Δεν υπάρχουν κατηγορίες</p>
+          ) : (
+            <div className="flex gap-4">
+              {/* Άνδρες - Αριστερά */}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                  Άνδρες
+                </div>
+                {renderCategoryList(maleCats)}
+              </div>
+              {/* Γυναίκες - Δεξιά */}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                  Γυναίκες
+                </div>
+                {renderCategoryList(femaleCats)}
+              </div>
+            </div>
+          )}
+
+          <div className="text-xs text-muted-foreground text-right">
+            Σύνολο: {filtered.length} δηλώσεις
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
