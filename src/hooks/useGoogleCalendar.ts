@@ -99,6 +99,11 @@ export const useGoogleCalendar = () => {
     dates: string[];
     program_name: string;
     day_names?: string[];
+    day_flags?: Array<{
+      is_competition_day?: boolean;
+      is_test_day?: boolean;
+      test_types?: string[];
+    }>;
   }) => {
     setIsSyncing(true);
     try {
@@ -108,12 +113,38 @@ export const useGoogleCalendar = () => {
         return null;
       }
 
-      const events = training.dates.map((date, index) => ({
-        summary: `💪 ${training.program_name} - ${training.day_names?.[index] || `Ημέρα ${index + 1}`}`,
-        description: `Πρόγραμμα προπόνησης: ${training.program_name}`,
-        start_datetime: `${date}T09:00:00`,
-        end_datetime: `${date}T10:00:00`,
-      }));
+      const events = training.dates.map((date, index) => {
+        const flags = training.day_flags?.[index];
+        const dayName = training.day_names?.[index] || `Ημέρα ${index + 1}`;
+        
+        let summary: string;
+        let description: string;
+        let startTime = '09:00:00';
+        let endTime = '10:00:00';
+
+        if (flags?.is_competition_day) {
+          summary = `🥊 Αγώνας - ${training.program_name}`;
+          description = `Ημέρα αγώνα: ${dayName}\nΠρόγραμμα: ${training.program_name}`;
+          startTime = '09:00:00';
+          endTime = '18:00:00';
+        } else if (flags?.is_test_day) {
+          const testTypesStr = flags.test_types?.length 
+            ? flags.test_types.join(', ') 
+            : 'Γενικό τεστ';
+          summary = `📋 Τεστ - ${training.program_name}`;
+          description = `Ημέρα τεστ: ${dayName}\nΤύποι: ${testTypesStr}\nΠρόγραμμα: ${training.program_name}`;
+        } else {
+          summary = `💪 ${training.program_name} - ${dayName}`;
+          description = `Πρόγραμμα προπόνησης: ${training.program_name}`;
+        }
+
+        return {
+          summary,
+          description,
+          start_datetime: `${date}T${startTime}`,
+          end_datetime: `${date}T${endTime}`,
+        };
+      });
 
       const { data, error } = await supabase.functions.invoke('google-calendar-sync', {
         body: {
