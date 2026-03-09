@@ -2919,6 +2919,7 @@ export type Database = {
           created_at: string
           gender: string | null
           id: string
+          late_registration_fee: number | null
           max_age: number | null
           max_weight: number | null
           min_age: number | null
@@ -2933,6 +2934,7 @@ export type Database = {
           created_at?: string
           gender?: string | null
           id?: string
+          late_registration_fee?: number | null
           max_age?: number | null
           max_weight?: number | null
           min_age?: number | null
@@ -2947,6 +2949,7 @@ export type Database = {
           created_at?: string
           gender?: string | null
           id?: string
+          late_registration_fee?: number | null
           max_age?: number | null
           max_weight?: number | null
           min_age?: number | null
@@ -3118,7 +3121,9 @@ export type Database = {
           description: string | null
           federation_id: string
           id: string
+          late_registration_deadline: string | null
           location: string | null
+          location_url: string | null
           name: string
           registration_deadline: string | null
           regulations_pdf_url: string | null
@@ -3132,7 +3137,9 @@ export type Database = {
           description?: string | null
           federation_id: string
           id?: string
+          late_registration_deadline?: string | null
           location?: string | null
+          location_url?: string | null
           name: string
           registration_deadline?: string | null
           regulations_pdf_url?: string | null
@@ -3146,7 +3153,9 @@ export type Database = {
           description?: string | null
           federation_id?: string
           id?: string
+          late_registration_deadline?: string | null
           location?: string | null
+          location_url?: string | null
           name?: string
           registration_deadline?: string | null
           regulations_pdf_url?: string | null
