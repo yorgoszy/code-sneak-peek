@@ -116,8 +116,10 @@ const FederationCompetitions = () => {
     setFormName('');
     setFormDescription('');
     setFormLocation('');
+    setFormLocationUrl('');
     setFormDate('');
     setFormDeadline('');
+    setFormLateDeadline('');
     setFormStatus('upcoming');
     setFormPdfUrl('');
     setFormCountsForRanking(false);
