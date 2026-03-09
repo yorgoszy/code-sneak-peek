@@ -73,19 +73,7 @@ serve(async (req) => {
       },
     });
 
-    // Mark registrations as paid using service role
-    const supabaseService = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
-
-    await supabaseService
-      .from("federation_competition_registrations")
-      .update({ is_paid: true })
-      .in("id", registration_ids);
-
-    console.log("Checkout session created:", session.id);
+    console.log("Checkout session created:", session.id, "- registrations NOT marked as paid yet");
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
