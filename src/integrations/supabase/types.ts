@@ -2970,6 +2970,7 @@ export type Database = {
           competition_id: string
           created_at: string
           id: string
+          is_paid: boolean | null
           notes: string | null
           registration_status: string
           updated_at: string
@@ -2984,6 +2985,7 @@ export type Database = {
           competition_id: string
           created_at?: string
           id?: string
+          is_paid?: boolean | null
           notes?: string | null
           registration_status?: string
           updated_at?: string
@@ -2998,6 +3000,7 @@ export type Database = {
           competition_id?: string
           created_at?: string
           id?: string
+          is_paid?: boolean | null
           notes?: string | null
           registration_status?: string
           updated_at?: string

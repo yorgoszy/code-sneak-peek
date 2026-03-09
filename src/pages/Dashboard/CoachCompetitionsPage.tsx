@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Swords, Calendar, MapPin, Users, FileText, UserPlus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Swords, Calendar, MapPin, Users, FileText, UserPlus, Trash2, ChevronDown, ChevronUp, DollarSign, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCoachContext } from '@/contexts/CoachContext';
 import { toast } from "sonner";
@@ -49,6 +49,7 @@ interface Registration {
   athlete_id: string;
   category_id: string;
   registration_status: string;
+  is_paid: boolean;
   athlete?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
   category?: { name: string } | null;
 }
@@ -263,6 +264,21 @@ const CoachCompetitionsContent: React.FC = () => {
     }
   };
 
+  const togglePayment = async (regId: string, currentStatus: boolean, competitionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('federation_competition_registrations')
+        .update({ is_paid: !currentStatus })
+        .eq('id', regId);
+      if (error) throw error;
+      toast.success(!currentStatus ? 'Σημειώθηκε ως πληρωμένη' : 'Σημειώθηκε ως μη πληρωμένη');
+      await fetchMyRegistrations(competitionId);
+    } catch (error) {
+      console.error(error);
+      toast.error('Σφάλμα ενημέρωσης πληρωμής');
+    }
+  };
+
   const toggleExpand = async (compId: string) => {
     if (expandedComp === compId) {
       setExpandedComp(null);
@@ -410,6 +426,17 @@ const CoachCompetitionsContent: React.FC = () => {
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             <Badge variant="outline" className="rounded-none text-[10px] md:text-xs max-w-[100px] truncate">{reg.category?.name}</Badge>
+                            <button
+                              onClick={() => togglePayment(reg.id, reg.is_paid, comp.id)}
+                              className={`h-6 w-6 flex items-center justify-center rounded-none border transition-colors ${
+                                reg.is_paid 
+                                  ? 'bg-[#00ffba]/20 border-[#00ffba] text-[#00ffba]' 
+                                  : 'border-border text-muted-foreground hover:text-foreground'
+                              }`}
+                              title={reg.is_paid ? 'Πληρωμένη' : 'Μη πληρωμένη'}
+                            >
+                              <DollarSign className="h-3 w-3" />
+                            </button>
                             {!isDeadlinePassed(competitions.find(c => c.id === comp.id)?.registration_deadline || null) && (
                               <Button
                                 variant="ghost"
@@ -478,11 +505,17 @@ const CoachCompetitionsContent: React.FC = () => {
                             <div className="flex items-center gap-1 shrink-0">
                               {catRegs.map(reg => (
                                 <div key={reg.id} className="group relative">
-                                  <Avatar className="h-6 w-6 border border-border">
+                                  <Avatar className={`h-6 w-6 border ${reg.is_paid ? 'border-[#00ffba]' : 'border-border'}`}>
                                     <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
                                     <AvatarFallback className="text-[9px]">{reg.athlete?.name?.charAt(0)}</AvatarFallback>
                                   </Avatar>
-                                  {/* Remove on click */}
+                                  {/* Payment indicator */}
+                                  {reg.is_paid && (
+                                    <span className="absolute -bottom-0.5 -right-0.5 bg-[#00ffba] rounded-full h-2.5 w-2.5 flex items-center justify-center">
+                                      <Check className="h-1.5 w-1.5 text-black" />
+                                    </span>
+                                  )}
+                                  {/* Remove on hover */}
                                   <button
                                     className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full h-3.5 w-3.5 text-[8px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                     onClick={() => {
