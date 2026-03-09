@@ -118,6 +118,43 @@ const FederationCompetitions = () => {
     }
   };
 
+  const fetchSavedVenues = async () => {
+    if (!userProfile?.id) return;
+    const { data } = await supabase
+      .from('federation_saved_venues')
+      .select('*')
+      .eq('federation_id', userProfile.id)
+      .order('name');
+    setSavedVenues(data || []);
+  };
+
+  const saveVenue = async () => {
+    if (!userProfile?.id || !formLocation) return;
+    const { error } = await supabase
+      .from('federation_saved_venues')
+      .upsert({
+        federation_id: userProfile.id,
+        name: formLocation,
+        location_url: formLocationUrl || null,
+      }, { onConflict: 'federation_id,name' });
+    if (error) {
+      toast.error('Σφάλμα αποθήκευσης τοποθεσίας');
+    } else {
+      toast.success('Τοποθεσία αποθηκεύτηκε');
+      fetchSavedVenues();
+    }
+  };
+
+  const deleteVenue = async (id: string) => {
+    await supabase.from('federation_saved_venues').delete().eq('id', id);
+    fetchSavedVenues();
+  };
+
+  const selectSavedVenue = (venue: { name: string; location_url: string | null }) => {
+    setFormLocation(venue.name);
+    setFormLocationUrl(venue.location_url || '');
+  };
+
   const resetForm = () => {
     setFormName('');
     setFormDescription('');
