@@ -217,6 +217,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
           athlete:app_users!federation_competition_registrations_athlete_id_fkey(name, avatar_url, photo_url, phone, email)
         `)
         .eq('competition_id', competitionId)
+        .eq('is_paid', true)
         .order('created_at', { ascending: false });
       if (error) throw error;
       setRegistrations((data as unknown as Registration[]) || []);
