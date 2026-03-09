@@ -141,14 +141,21 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   };
 
   // Group categories by age group (remove weight suffix)
-  const grouped = new Map<string, Category[]>();
+  const formatGroupLabel = (raw: string): string => {
+    let label = raw;
+    if (label.startsWith('Ενήλικοι')) label = label.replace('Ενήλικοι', '18-40');
+    label = label.replace(/^Νέοι\s*/, '').replace(/^Νέες\s*/, '');
+    return label;
+  };
+
+  const grouped = new Map<string, { label: string; cats: Category[] }>();
   categories.forEach(cat => {
-    const groupName = cat.name
+    const rawGroup = cat.name
       .replace(/\s+[-+±(].*$/, '')
       .replace(/\s+\d+[\d.,]*\s*(kg)?$/i, '')
       .trim() || 'Άλλα';
-    if (!grouped.has(groupName)) grouped.set(groupName, []);
-    grouped.get(groupName)!.push(cat);
+    if (!grouped.has(rawGroup)) grouped.set(rawGroup, { label: formatGroupLabel(rawGroup), cats: [] });
+    grouped.get(rawGroup)!.cats.push(cat);
   });
 
   // Filter registrations by search
@@ -183,13 +190,13 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
             <p className="text-center py-8 text-muted-foreground">Δεν υπάρχουν κατηγορίες</p>
           ) : (
             <div className="space-y-1">
-              {Array.from(grouped.entries()).map(([group, cats]) => {
+              {Array.from(grouped.entries()).map(([group, { label, cats }]) => {
                 const groupRegs = filtered.filter(r => cats.some(c => c.id === r.category_id));
                 
                 return (
                   <Collapsible key={group}>
                     <CollapsibleTrigger className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
-                      <span>{group} ({cats.length})</span>
+                      <span>{label} ({cats.length})</span>
                       <div className="flex items-center gap-2">
                         {groupRegs.length > 0 && (
                           <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">
