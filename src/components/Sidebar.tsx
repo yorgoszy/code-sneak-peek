@@ -28,6 +28,7 @@ import {
   Utensils,
   Award,
   Swords,
+  Trophy,
   Compass,
   Heart,
   HeartPulse
