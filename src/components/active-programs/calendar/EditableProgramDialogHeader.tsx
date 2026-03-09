@@ -4,6 +4,7 @@ import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Play, Edit, Save, X } from "lucide-react";
+import { GoogleCalendarProgramButton } from "@/components/google-calendar/GoogleCalendarButtons";
 
 interface EditableProgramDialogHeaderProps {
   programData: any;
