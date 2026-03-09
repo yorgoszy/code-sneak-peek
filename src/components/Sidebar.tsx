@@ -28,6 +28,7 @@ import {
   Utensils,
   Award,
   Swords,
+  Trophy,
   Compass,
   Heart,
   HeartPulse
@@ -574,6 +575,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Award,
       label: "Στόχοι & Βραβεία",
       path: "/dashboard/goals-awards",
+      badge: null
+    },
+    {
+      icon: Trophy,
+      label: "Ranking",
+      path: "/dashboard/ranking",
       badge: null
     },
     {

@@ -3036,6 +3036,74 @@ export type Database = {
           },
         ]
       }
+      federation_competition_results: {
+        Row: {
+          athlete_id: string
+          category_id: string
+          club_id: string | null
+          competition_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          placement: number
+          points: number
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          category_id: string
+          club_id?: string | null
+          competition_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          placement: number
+          points?: number
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          category_id?: string
+          club_id?: string | null
+          competition_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          placement?: number
+          points?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_competition_results_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_competition_results_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competition_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_competition_results_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_competition_results_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       federation_competitions: {
         Row: {
           competition_date: string
@@ -3082,6 +3150,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "federation_competitions_federation_id_fkey"
+            columns: ["federation_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      federation_ranking_points: {
+        Row: {
+          created_at: string
+          federation_id: string
+          id: string
+          placement: number
+          points: number
+        }
+        Insert: {
+          created_at?: string
+          federation_id: string
+          id?: string
+          placement: number
+          points: number
+        }
+        Update: {
+          created_at?: string
+          federation_id?: string
+          id?: string
+          placement?: number
+          points?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_ranking_points_federation_id_fkey"
             columns: ["federation_id"]
             isOneToOne: false
             referencedRelation: "app_users"

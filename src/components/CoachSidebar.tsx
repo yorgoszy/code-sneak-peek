@@ -28,6 +28,7 @@ import {
   Gauge,
   Heart,
   HeartPulse,
+  Trophy,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -259,6 +260,13 @@ export const CoachSidebar = ({
       path: effectiveCoachId ? `/dashboard/coach-competitions?coachId=${effectiveCoachId}` : "/dashboard/coach-competitions",
       badge: null,
       requiresSubscription: true,
+    },
+    {
+      icon: Trophy,
+      label: "Ranking",
+      path: "/dashboard/ranking",
+      badge: null,
+      requiresSubscription: false,
     },
     {
       icon: BookOpen,

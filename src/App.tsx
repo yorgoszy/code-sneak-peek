@@ -103,6 +103,7 @@ import FederationEditProfile from "@/pages/Dashboard/FederationEditProfile";
 import FederationVideoAnalysis from "@/pages/Dashboard/FederationVideoAnalysis";
 import FederationSubscriptions from "@/pages/Dashboard/FederationSubscriptions";
 import FederationCompetitions from "@/pages/Dashboard/FederationCompetitions";
+import RankingPage from "@/pages/Dashboard/RankingPage";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -228,6 +229,7 @@ function App() {
                       <Route path="/dashboard/federation-subscriptions" element={<ProtectedRoute><FederationSubscriptions /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-competitions" element={<ProtectedRoute><FederationCompetitions /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
+                      <Route path="/dashboard/ranking" element={<ProtectedRoute><RankingPage /></ProtectedRoute>} />
 
                       {/* Protected user routes */}
                       <Route path="/meeting/:roomId" element={<ProtectedRoute><MeetingRoom /></ProtectedRoute>} />
