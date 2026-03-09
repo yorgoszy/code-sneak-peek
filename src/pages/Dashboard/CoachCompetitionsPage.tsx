@@ -725,7 +725,12 @@ const CoachCompetitionsContent: React.FC = () => {
       }}>
         <DialogContent className="max-w-4xl max-h-[85vh] rounded-none flex flex-col p-0">
           <DialogHeader className="px-6 pt-6 pb-3">
-            <DialogTitle>Δήλωση Αθλητών - {selectedComp?.name}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              Δήλωση Αθλητών - {selectedComp?.name}
+              {selectedComp && isInLatePeriod(selectedComp) && (
+                <Badge className="rounded-none bg-[#cb8954] text-white text-xs">Εκπρόθεσμη περίοδος</Badge>
+              )}
+            </DialogTitle>
           </DialogHeader>
 
           {/* Scrollable content */}
