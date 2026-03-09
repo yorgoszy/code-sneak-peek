@@ -54,7 +54,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
   const fetchCategories = async () => {
     const { data } = await supabase
       .from('federation_competition_categories')
-      .select('id, name')
+      .select('id, name, gender')
       .eq('competition_id', competitionId)
       .order('sort_order', { ascending: true });
     setCategories((data as Category[]) || []);
