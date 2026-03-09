@@ -1,13 +1,14 @@
 /// <reference types="google.maps" />
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 
 interface GooglePlacesAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
-  onPlaceSelect?: (place: { name: string; url: string }) => void;
+  onPlaceSelect?: (place: { name: string; url: string; lat?: number; lng?: number }) => void;
   placeholder?: string;
   className?: string;
+  showMap?: boolean;
 }
 
 let googleMapsLoaded = false;
@@ -45,10 +46,15 @@ export const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> =
   onPlaceSelect,
   placeholder = 'Αναζήτηση τοποθεσίας...',
   className = '',
+  showMap = false,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
   const [isLoaded, setIsLoaded] = useState(googleMapsLoaded);
+  const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     loadGoogleMaps()
@@ -70,8 +76,15 @@ export const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> =
       if (place) {
         const name = place.name || place.formatted_address || '';
         const url = place.url || `https://www.google.com/maps/place/?q=place_id:${place.place_id}`;
+        const lat = place.geometry?.location?.lat();
+        const lng = place.geometry?.location?.lng();
+        
         onChange(name);
-        onPlaceSelect?.({ name, url });
+        onPlaceSelect?.({ name, url, lat, lng });
+        
+        if (lat && lng) {
+          setSelectedCoords({ lat, lng });
+        }
       }
     });
 
@@ -85,13 +98,48 @@ export const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> =
     };
   }, [isLoaded]);
 
+  // Initialize & update map
+  useEffect(() => {
+    if (!showMap || !isLoaded || !mapRef.current || !selectedCoords) return;
+
+    if (!mapInstanceRef.current) {
+      mapInstanceRef.current = new google.maps.Map(mapRef.current, {
+        center: selectedCoords,
+        zoom: 15,
+        disableDefaultUI: true,
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+      });
+    } else {
+      mapInstanceRef.current.setCenter(selectedCoords);
+    }
+
+    if (markerRef.current) {
+      markerRef.current.setMap(null);
+    }
+    markerRef.current = new google.maps.Marker({
+      position: selectedCoords,
+      map: mapInstanceRef.current,
+      title: value,
+    });
+  }, [showMap, isLoaded, selectedCoords]);
+
   return (
-    <Input
-      ref={inputRef}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className={`rounded-none ${className}`}
-    />
+    <div className="space-y-2">
+      <Input
+        ref={inputRef}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`rounded-none ${className}`}
+      />
+      {showMap && selectedCoords && (
+        <div
+          ref={mapRef}
+          className="w-full h-[180px] border border-border rounded-none"
+        />
+      )}
+    </div>
   );
 };

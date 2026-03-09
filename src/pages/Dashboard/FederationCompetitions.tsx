@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Plus, Swords, Calendar, MapPin, Users, Upload, Trash2, Edit, Eye, FileText, Settings, Trophy, ExternalLink, Clock } from "lucide-react";
+import { Menu, Plus, Swords, Calendar, MapPin, Users, Upload, Trash2, Edit, Eye, FileText, Settings, Trophy, ExternalLink, Clock, Star, BookmarkPlus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,9 +73,14 @@ const FederationCompetitions = () => {
   const [formPdfUrl, setFormPdfUrl] = useState('');
   const [formCountsForRanking, setFormCountsForRanking] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savedVenues, setSavedVenues] = useState<Array<{ id: string; name: string; location_url: string | null }>>([]);
+  const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
-    if (userProfile?.id) fetchCompetitions();
+    if (userProfile?.id) {
+      fetchCompetitions();
+      fetchSavedVenues();
+    }
   }, [userProfile?.id]);
 
   const fetchCompetitions = async () => {
@@ -113,11 +118,49 @@ const FederationCompetitions = () => {
     }
   };
 
+  const fetchSavedVenues = async () => {
+    if (!userProfile?.id) return;
+    const { data } = await supabase
+      .from('federation_saved_venues')
+      .select('*')
+      .eq('federation_id', userProfile.id)
+      .order('name');
+    setSavedVenues(data || []);
+  };
+
+  const saveVenue = async () => {
+    if (!userProfile?.id || !formLocation) return;
+    const { error } = await supabase
+      .from('federation_saved_venues')
+      .upsert({
+        federation_id: userProfile.id,
+        name: formLocation,
+        location_url: formLocationUrl || null,
+      }, { onConflict: 'federation_id,name' });
+    if (error) {
+      toast.error('Σφάλμα αποθήκευσης τοποθεσίας');
+    } else {
+      toast.success('Τοποθεσία αποθηκεύτηκε');
+      fetchSavedVenues();
+    }
+  };
+
+  const deleteVenue = async (id: string) => {
+    await supabase.from('federation_saved_venues').delete().eq('id', id);
+    fetchSavedVenues();
+  };
+
+  const selectSavedVenue = (venue: { name: string; location_url: string | null }) => {
+    setFormLocation(venue.name);
+    setFormLocationUrl(venue.location_url || '');
+  };
+
   const resetForm = () => {
     setFormName('');
     setFormDescription('');
     setFormLocation('');
     setFormLocationUrl('');
+    setMapCoords(null);
     setFormDate('');
     setFormDeadline('');
     setFormLateDeadline('');
@@ -306,22 +349,63 @@ const FederationCompetitions = () => {
       </div>
       
       {/* Τοποθεσία */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
           <Label>Τοποθεσία</Label>
-          <GooglePlacesAutocomplete
-            value={formLocation}
-            onChange={setFormLocation}
-            onPlaceSelect={(place) => {
-              setFormLocation(place.name);
-              setFormLocationUrl(place.url);
-            }}
-            placeholder="π.χ. Κλειστό Γυμναστήριο Αθήνας"
-          />
+          {formLocation && (
+            <Button type="button" variant="ghost" size="sm" onClick={saveVenue} className="rounded-none text-xs gap-1 h-6 px-2">
+              <BookmarkPlus className="w-3 h-3" />
+              Αποθήκευση
+            </Button>
+          )}
         </div>
+        
+        {/* Αποθηκευμένες τοποθεσίες */}
+        {savedVenues.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {savedVenues.map(venue => (
+              <div key={venue.id} className="flex items-center gap-0.5">
+                <Button
+                  type="button"
+                  variant={formLocation === venue.name ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => selectSavedVenue(venue)}
+                  className="rounded-none text-xs h-7 gap-1"
+                >
+                  <Star className="w-3 h-3" />
+                  {venue.name}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteVenue(venue.id)}
+                  className="rounded-none h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <GooglePlacesAutocomplete
+          value={formLocation}
+          onChange={setFormLocation}
+          onPlaceSelect={(place) => {
+            setFormLocation(place.name);
+            setFormLocationUrl(place.url);
+            if (place.lat && place.lng) {
+              setMapCoords({ lat: place.lat, lng: place.lng });
+            }
+          }}
+          placeholder="Αναζήτηση τοποθεσίας..."
+          showMap={!!mapCoords}
+        />
+
         <div>
-          <Label>Google Maps Link</Label>
-          <Input value={formLocationUrl} onChange={e => setFormLocationUrl(e.target.value)} placeholder="https://maps.google.com/..." className="rounded-none" />
+          <Label className="text-xs text-muted-foreground">Google Maps Link</Label>
+          <Input value={formLocationUrl} onChange={e => setFormLocationUrl(e.target.value)} placeholder="https://maps.google.com/..." className="rounded-none text-xs" />
         </div>
       </div>
 
