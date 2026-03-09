@@ -107,7 +107,7 @@ const CoachAgeGroup: React.FC<{
   const [isOpen, setIsOpen] = useState(false);
 
   const ageRegs = myRegistrations.filter(r => cats.some(c => c.id === r.category_id));
-  const fee = cats[0]?.registration_fee;
+  const fee = isLatePeriod ? (cats[0]?.late_registration_fee ?? cats[0]?.registration_fee) : cats[0]?.registration_fee;
 
   return (
     <div className="mb-1 border border-border">
