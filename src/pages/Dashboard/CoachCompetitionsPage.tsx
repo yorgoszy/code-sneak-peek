@@ -308,8 +308,78 @@ const CoachCompetitionsContent: React.FC = () => {
     setRegisterDialogOpen(true);
   };
 
+  // Helper: calculate age from birth_date relative to competition date
+  const calculateAge = (birthDate: string, referenceDate: string): number => {
+    const birth = new Date(birthDate);
+    const ref = new Date(referenceDate);
+    let age = ref.getFullYear() - birth.getFullYear();
+    const monthDiff = ref.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && ref.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Helper: get expected age range from age group label
+  const getAgeRange = (ageLabel: string): { min: number; max: number } | null => {
+    if (ageLabel === '18-40') return { min: 18, max: 40 };
+    if (ageLabel === 'U23') return { min: 18, max: 22 };
+    const match = ageLabel.match(/^(\d+)-(\d+)$/);
+    if (match) return { min: parseInt(match[1]), max: parseInt(match[2]) };
+    return null;
+  };
+
   const handleQuickRegister = async (categoryId: string, athleteId: string) => {
     if (!selectedComp || !coachId) return;
+
+    // Fetch athlete profile to validate gender & age
+    const { data: athlete, error: athleteError } = await supabase
+      .from('app_users')
+      .select('name, gender, birth_date')
+      .eq('id', athleteId)
+      .single();
+
+    if (athleteError || !athlete) {
+      toast.error('Σφάλμα ανάκτησης στοιχείων αθλητή');
+      return;
+    }
+
+    // Check mandatory fields
+    if (!athlete.gender || !athlete.birth_date) {
+      toast.error(`Ο/Η ${athlete.name} δεν έχει συμπληρωμένο φύλο ή ημερομηνία γέννησης. Συμπληρώστε τα στο προφίλ του πριν τη δήλωση.`);
+      return;
+    }
+
+    // Find the category
+    const category = categories.find(c => c.id === categoryId);
+    if (!category) {
+      toast.error('Δεν βρέθηκε η κατηγορία');
+      return;
+    }
+
+    // Gender validation
+    const categoryGender = category.gender;
+    if (categoryGender) {
+      if (athlete.gender === 'female' && categoryGender === 'male') {
+        toast.error(`Η ${athlete.name} είναι γυναίκα και δεν μπορεί να δηλωθεί σε ανδρική κατηγορία. Δηλώστε την στις γυναικείες κατηγορίες.`);
+        return;
+      }
+      if (athlete.gender === 'male' && categoryGender === 'female') {
+        toast.error(`Ο ${athlete.name} είναι άνδρας και δεν μπορεί να δηλωθεί σε γυναικεία κατηγορία. Δηλώστε τον στις ανδρικές κατηγορίες.`);
+        return;
+      }
+    }
+
+    // Age validation
+    const ageLabel = getAgeLabel(category.name);
+    const ageRange = getAgeRange(ageLabel);
+    if (ageRange && athlete.birth_date) {
+      const athleteAge = calculateAge(athlete.birth_date, selectedComp.competition_date);
+      if (athleteAge < ageRange.min || athleteAge > ageRange.max) {
+        toast.error(`Ο/Η ${athlete.name} είναι ${athleteAge} ετών και δεν ανήκει στην ηλικιακή κατηγορία ${ageLabel} (${ageRange.min}-${ageRange.max} ετών).`);
+        return;
+      }
+    }
     
     const { data: existing } = await supabase
       .from('federation_competition_registrations')
@@ -568,62 +638,65 @@ const CoachCompetitionsContent: React.FC = () => {
 
       {/* Register Dialog - Two column men/women layout */}
       <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-none">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[85vh] rounded-none flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-3">
             <DialogTitle>Δήλωση Αθλητών - {selectedComp?.name}</DialogTitle>
           </DialogHeader>
 
-          {categories.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">Δεν υπάρχουν κατηγορίες</p>
-          ) : (
-            <div className="flex gap-4">
-              {/* Άνδρες */}
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
-                  Άνδρες
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto px-6">
+            {categories.length === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">Δεν υπάρχουν κατηγορίες</p>
+            ) : (
+              <div className="flex gap-4">
+                {/* Άνδρες */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                    Άνδρες
+                  </div>
+                  {maleGroups.map(g => (
+                    <CoachAgeGroup
+                      key={`male-${g.age}`}
+                      age={g.age}
+                      cats={g.cats}
+                      myRegistrations={myRegistrations}
+                      coachId={coachId || ''}
+                      addingToCategoryId={addingToCategoryId}
+                      setAddingToCategoryId={setAddingToCategoryId}
+                      selectedAthleteId={selectedAthleteId}
+                      setSelectedAthleteId={setSelectedAthleteId}
+                      onQuickRegister={handleQuickRegister}
+                      onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
+                    />
+                  ))}
                 </div>
-                {maleGroups.map(g => (
-                  <CoachAgeGroup
-                    key={`male-${g.age}`}
-                    age={g.age}
-                    cats={g.cats}
-                    myRegistrations={myRegistrations}
-                    coachId={coachId || ''}
-                    addingToCategoryId={addingToCategoryId}
-                    setAddingToCategoryId={setAddingToCategoryId}
-                    selectedAthleteId={selectedAthleteId}
-                    setSelectedAthleteId={setSelectedAthleteId}
-                    onQuickRegister={handleQuickRegister}
-                    onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
-                  />
-                ))}
-              </div>
-              {/* Γυναίκες */}
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
-                  Γυναίκες
+                {/* Γυναίκες */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                    Γυναίκες
+                  </div>
+                  {femaleGroups.map(g => (
+                    <CoachAgeGroup
+                      key={`female-${g.age}`}
+                      age={g.age}
+                      cats={g.cats}
+                      myRegistrations={myRegistrations}
+                      coachId={coachId || ''}
+                      addingToCategoryId={addingToCategoryId}
+                      setAddingToCategoryId={setAddingToCategoryId}
+                      selectedAthleteId={selectedAthleteId}
+                      setSelectedAthleteId={setSelectedAthleteId}
+                      onQuickRegister={handleQuickRegister}
+                      onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
+                    />
+                  ))}
                 </div>
-                {femaleGroups.map(g => (
-                  <CoachAgeGroup
-                    key={`female-${g.age}`}
-                    age={g.age}
-                    cats={g.cats}
-                    myRegistrations={myRegistrations}
-                    coachId={coachId || ''}
-                    addingToCategoryId={addingToCategoryId}
-                    setAddingToCategoryId={setAddingToCategoryId}
-                    selectedAthleteId={selectedAthleteId}
-                    setSelectedAthleteId={setSelectedAthleteId}
-                    onQuickRegister={handleQuickRegister}
-                    onDeleteReg={(regId) => { setRegToDelete(regId); setDeleteDialogOpen(true); }}
-                  />
-                ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
+          {/* Fixed payment summary at bottom */}
           {(() => {
-            // Calculate total cost for unpaid registrations
             const unpaidRegs = myRegistrations.filter(r => !r.is_paid);
             const totalCost = unpaidRegs.reduce((sum, reg) => {
               const cat = categories.find(c => c.id === reg.category_id);
@@ -636,7 +709,7 @@ const CoachCompetitionsContent: React.FC = () => {
             const paidCount = myRegistrations.filter(r => r.is_paid).length;
 
             return (
-              <div className="border-t border-border pt-3 space-y-2">
+              <div className="border-t border-border px-6 py-4 bg-background space-y-2 shrink-0">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
                     Σύνολο: {myRegistrations.length} δηλώσεις
