@@ -243,19 +243,17 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
                 );
 
                 return (
-                  <Collapsible key={ageKey}>
-                    <CollapsibleTrigger asChild>
-                      <button className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
-                        <span>{getAgeGroupLabel(ageKey)} ({cats.length})</span>
-                        <div className="flex items-center gap-2">
-                          {groupRegs.length > 0 && (
-                            <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">
-                              {groupRegs.length} αθλ.
-                            </Badge>
-                          )}
-                          <ChevronDown className="h-3 w-3" />
-                        </div>
-                      </button>
+                  <Collapsible key={ageKey} defaultOpen={false}>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-xs font-bold text-foreground bg-muted px-3 py-2 border-b border-border hover:bg-muted/80 cursor-pointer">
+                      <span>{getAgeGroupLabel(ageKey)} ({cats.length})</span>
+                      <div className="flex items-center gap-2">
+                        {groupRegs.length > 0 && (
+                          <Badge className="rounded-none text-[10px] bg-foreground text-background h-5">
+                            {groupRegs.length} αθλ.
+                          </Badge>
+                        )}
+                        <ChevronDown className="h-3 w-3" />
+                      </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <div className="flex gap-0 divide-x divide-border">
