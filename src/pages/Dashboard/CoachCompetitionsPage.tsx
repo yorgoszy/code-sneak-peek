@@ -215,6 +215,7 @@ const CoachCompetitionsContent: React.FC = () => {
   const [regToDelete, setRegToDelete] = useState<string | null>(null);
   const [expandedComp, setExpandedComp] = useState<string | null>(null);
   const [compRegistrations, setCompRegistrations] = useState<Record<string, Registration[]>>({});
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     if (coachId) fetchCompetitions();
