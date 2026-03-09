@@ -20,8 +20,8 @@ interface Registration {
   registration_status: string;
   notes: string | null;
   category?: { name: string } | null;
-  club?: { name: string; avatar_url: string | null } | null;
-  athlete?: { name: string; avatar_url: string | null; photo_url: string | null } | null;
+  club?: { name: string; avatar_url: string | null; email: string | null; phone: string | null } | null;
+  athlete?: { name: string; avatar_url: string | null; photo_url: string | null; phone: string | null } | null;
 }
 
 interface Category {
