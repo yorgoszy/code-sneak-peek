@@ -17,6 +17,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useGoogleCalendar } from '@/hooks/useGoogleCalendar';
 
 interface Competition {
   id: string;
@@ -208,6 +209,7 @@ const CoachAgeGroup: React.FC<{
 
 const CoachCompetitionsContent: React.FC = () => {
   const { coachId } = useCoachContext();
+  const { isSyncing, syncBookingToCalendar } = useGoogleCalendar();
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedComp, setSelectedComp] = useState<Competition | null>(null);
@@ -655,6 +657,34 @@ const CoachCompetitionsContent: React.FC = () => {
                       </Button>
                     </a>
                   )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-none text-xs h-8"
+                    disabled={isSyncing}
+                    onClick={() => {
+                      const startDateTime = `${comp.competition_date}T09:00:00`;
+                      const endDateTime = `${comp.competition_date}T18:00:00`;
+                      const description = [
+                        comp.description || '',
+                        comp.location ? `📍 ${comp.location}` : '',
+                        comp.location_url ? `🗺️ Διαδρομή: ${comp.location_url}` : '',
+                        `🏆 ${comp.federation_name}`,
+                      ].filter(Boolean).join('\n');
+                      
+                      syncBookingToCalendar({
+                        booking_date: comp.competition_date,
+                        booking_time: '09:00',
+                        booking_type: 'competition',
+                        section_name: comp.name,
+                        notes: description,
+                      });
+                    }}
+                    title="Προσθήκη στο Google Calendar"
+                  >
+                    <Calendar className="h-3.5 w-3.5 sm:mr-1" />
+                    <span className="hidden sm:inline">{isSyncing ? 'Sync...' : 'Google Cal'}</span>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
