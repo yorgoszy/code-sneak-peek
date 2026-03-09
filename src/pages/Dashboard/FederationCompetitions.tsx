@@ -245,11 +245,13 @@ const FederationCompetitions = () => {
     setFormName(comp.name);
     setFormDescription(comp.description || '');
     setFormLocation(comp.location || '');
+    setFormLocationUrl(comp.location_url || '');
     setFormDate(comp.competition_date);
     setFormDeadline(comp.registration_deadline || '');
+    setFormLateDeadline(comp.late_registration_deadline || '');
     setFormStatus(comp.status);
     setFormPdfUrl(comp.regulations_pdf_url || '');
-    setFormCountsForRanking((comp as any).counts_for_ranking || false);
+    setFormCountsForRanking(comp.counts_for_ranking || false);
     setEditDialogOpen(true);
   };
 
