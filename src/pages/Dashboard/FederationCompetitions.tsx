@@ -23,6 +23,7 @@ import {
 import { CompetitionCategoriesDialog } from "@/components/federation/competitions/CompetitionCategoriesDialog";
 import { CompetitionRegistrationsDialog } from "@/components/federation/competitions/CompetitionRegistrationsDialog";
 import { CategoryTemplatesDialog } from "@/components/federation/competitions/CategoryTemplatesDialog";
+import { GooglePlacesAutocomplete } from "@/components/ui/google-places-autocomplete";
 
 
 interface Competition {
@@ -308,7 +309,15 @@ const FederationCompetitions = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label>Τοποθεσία</Label>
-          <Input value={formLocation} onChange={e => setFormLocation(e.target.value)} placeholder="π.χ. Κλειστό Γυμναστήριο Αθήνας" className="rounded-none" />
+          <GooglePlacesAutocomplete
+            value={formLocation}
+            onChange={setFormLocation}
+            onPlaceSelect={(place) => {
+              setFormLocation(place.name);
+              setFormLocationUrl(place.url);
+            }}
+            placeholder="π.χ. Κλειστό Γυμναστήριο Αθήνας"
+          />
         </div>
         <div>
           <Label>Google Maps Link</Label>
