@@ -76,12 +76,9 @@ const AgeGroup: React.FC<{
 }> = ({ age, cats, filtered, gender }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  console.log(`🔥 AgeGroup "${age}" rendered, isOpen=${isOpen}, cats=${cats.length}`);
-
   const ageRegs = filtered.filter(r => cats.some(c => c.id === r.category_id));
 
   const handleToggle = () => {
-    console.log(`🔥 Toggle clicked for "${age}", current isOpen=${isOpen}`);
     setIsOpen(prev => !prev);
   };
 
@@ -200,7 +197,7 @@ export const CompetitionRegistrationsDialog: React.FC<CompetitionRegistrationsDi
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle>Δηλώσεις (v2) - {competitionName}</DialogTitle>
+          <DialogTitle>Δηλώσεις - {competitionName}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3">
