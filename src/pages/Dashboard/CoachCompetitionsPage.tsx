@@ -784,11 +784,11 @@ const CoachCompetitionsContent: React.FC = () => {
             const unpaidRegs = myRegistrations.filter(r => !r.is_paid);
             const totalCost = unpaidRegs.reduce((sum, reg) => {
               const cat = categories.find(c => c.id === reg.category_id);
-              return sum + (cat?.registration_fee || 0);
+              return sum + (cat ? getCategoryFee(cat, selectedComp) : 0);
             }, 0);
             const totalAll = myRegistrations.reduce((sum, reg) => {
               const cat = categories.find(c => c.id === reg.category_id);
-              return sum + (cat?.registration_fee || 0);
+              return sum + (cat ? getCategoryFee(cat, selectedComp) : 0);
             }, 0);
             const paidCount = myRegistrations.filter(r => r.is_paid).length;
 
