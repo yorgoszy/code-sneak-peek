@@ -34,8 +34,22 @@ interface Competition {
   federation_name?: string;
   categories_count?: number;
   my_registrations_count?: number;
+  my_unpaid_count?: number;
   counts_for_ranking?: boolean;
 }
+
+// Countdown helper
+const getCountdownText = (deadline: string): string => {
+  const now = new Date();
+  const dl = new Date(deadline);
+  const diff = dl.getTime() - now.getTime();
+  if (diff <= 0) return '';
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  if (days > 0) return `${days}ημ ${hours}ω`;
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  return `${hours}ω ${minutes}λ`;
+};
 
 interface Category {
   id: string;
@@ -223,7 +237,15 @@ const CoachCompetitionsContent: React.FC = () => {
   const [expandedComp, setExpandedComp] = useState<string | null>(null);
   const [compRegistrations, setCompRegistrations] = useState<Record<string, Registration[]>>({});
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [, setTick] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Refresh countdown every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
 
   // Handle Stripe payment callback
   useEffect(() => {
@@ -292,15 +314,17 @@ const CoachCompetitionsContent: React.FC = () => {
 
       const enriched = await Promise.all((comps || []).map(async (comp) => {
         const federation = clubs.find(c => c.federation_id === comp.federation_id);
-        const [catRes, regRes] = await Promise.all([
+        const [catRes, regRes, unpaidRes] = await Promise.all([
           supabase.from('federation_competition_categories').select('id', { count: 'exact', head: true }).eq('competition_id', comp.id),
           supabase.from('federation_competition_registrations').select('id', { count: 'exact', head: true }).eq('competition_id', comp.id).eq('club_id', coachId),
+          supabase.from('federation_competition_registrations').select('id', { count: 'exact', head: true }).eq('competition_id', comp.id).eq('club_id', coachId).eq('is_paid', false),
         ]);
         return {
           ...comp,
           federation_name: (federation?.federation as any)?.name || 'Ομοσπονδία',
           categories_count: catRes.count || 0,
           my_registrations_count: regRes.count || 0,
+          my_unpaid_count: unpaidRes.count || 0,
           counts_for_ranking: comp.counts_for_ranking,
         };
       }));
@@ -608,16 +632,31 @@ const CoachCompetitionsContent: React.FC = () => {
                 {(comp.registration_deadline || comp.late_registration_deadline) && (
                   <div className="space-y-0.5">
                     {comp.registration_deadline && (
-                      <p className={`text-xs ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                      <p className={`text-xs flex items-center gap-1 ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
                         Εμπρόθεσμες: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
-                        {isDeadlinePassed(comp.registration_deadline) && ' (Έληξε)'}
+                        {isDeadlinePassed(comp.registration_deadline) 
+                          ? ' (Έληξε)' 
+                          : !isDeadlinePassed(comp.registration_deadline) && (
+                            <span className="inline-flex items-center gap-0.5 text-[#00ffba] font-medium">
+                              <Clock className="h-3 w-3" />
+                              {getCountdownText(comp.registration_deadline)}
+                            </span>
+                          )
+                        }
                       </p>
                     )}
                     {comp.late_registration_deadline && (
-                      <p className={`text-xs ${isDeadlinePassed(comp.late_registration_deadline) ? 'text-destructive font-medium' : 'text-[#cb8954] font-medium'}`}>
+                      <p className={`text-xs flex items-center gap-1 ${isDeadlinePassed(comp.late_registration_deadline) ? 'text-destructive font-medium' : 'text-[#cb8954] font-medium'}`}>
                         Εκπρόθεσμες: {format(new Date(comp.late_registration_deadline), 'd MMM yyyy', { locale: el })}
-                        {isDeadlinePassed(comp.late_registration_deadline) && ' (Έληξε)'}
-                        {isInLatePeriod(comp) && ' ⚠️'}
+                        {isDeadlinePassed(comp.late_registration_deadline) 
+                          ? ' (Έληξε)'
+                          : isInLatePeriod(comp) && (
+                            <span className="inline-flex items-center gap-0.5">
+                              <Clock className="h-3 w-3" />
+                              {getCountdownText(comp.late_registration_deadline)}
+                            </span>
+                          )
+                        }
                       </p>
                     )}
                   </div>
@@ -628,11 +667,13 @@ const CoachCompetitionsContent: React.FC = () => {
 
                 <div className="flex items-center gap-4 text-sm">
                   <span className="flex items-center gap-1">
-                    <Swords className="h-3 w-3" /> {comp.categories_count} κατηγορίες
+                    <Users className="h-3 w-3" /> {comp.my_registrations_count} αθλητές
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" /> {comp.my_registrations_count} δηλώσεις
-                  </span>
+                  {(comp.my_unpaid_count || 0) > 0 && (
+                    <span className="flex items-center gap-1 text-[#cb8954]">
+                      <CreditCard className="h-3 w-3" /> {comp.my_unpaid_count} εκκρεμείς
+                    </span>
+                  )}
                 </div>
 
                 {/* Actions */}
