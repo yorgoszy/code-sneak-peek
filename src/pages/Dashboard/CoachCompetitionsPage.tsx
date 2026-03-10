@@ -34,8 +34,22 @@ interface Competition {
   federation_name?: string;
   categories_count?: number;
   my_registrations_count?: number;
+  my_unpaid_count?: number;
   counts_for_ranking?: boolean;
 }
+
+// Countdown helper
+const getCountdownText = (deadline: string): string => {
+  const now = new Date();
+  const dl = new Date(deadline);
+  const diff = dl.getTime() - now.getTime();
+  if (diff <= 0) return '';
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  if (days > 0) return `${days}ημ ${hours}ω`;
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  return `${hours}ω ${minutes}λ`;
+};
 
 interface Category {
   id: string;
