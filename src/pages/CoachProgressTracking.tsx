@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
@@ -29,6 +30,7 @@ type CoachAthlete = {
 
 export default function CoachProgressTracking({ contextCoachId }: CoachProgressTrackingProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { userProfile, isAdmin } = useRoleCheck();
 
@@ -72,8 +74,8 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
     } catch (error) {
       console.error('Error fetching coach athletes:', error);
       toast({
-        title: 'Σφάλμα',
-        description: 'Αποτυχία φόρτωσης αθλητών.',
+        title: t('progress.errorTitle'),
+        description: t('progress.errorLoadingAthletes'),
         variant: 'destructive'
       });
     }
@@ -146,18 +148,18 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
   if (!effectiveCoachId) {
     return (
       <div className="p-6 text-center text-muted-foreground">
-        Δεν βρέθηκε coachId.
+        {t('progress.noCoachId')}
       </div>
     );
   }
 
   return (
     <div className="p-2 sm:p-3 md:p-4 lg:p-6 space-y-3 sm:space-y-4 md:space-y-6 max-w-full overflow-x-hidden">
-      <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Καταγραφή Προόδου Αθλητών</h1>
+      <h1 className="text-lg sm:text-xl md:text-2xl font-bold">{t('progress.athleteTitle')}</h1>
 
       {users.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          Δεν έχετε αθλητές ακόμα. Προσθέστε αθλητές από τη σελίδα "Οι Αθλητές μου".
+          {t('progress.noAthletes')}
         </div>
       ) : (
         <Tabs defaultValue="force-velocity" className="w-full">
@@ -172,10 +174,10 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
               Jump Profile
             </TabsTrigger>
             <TabsTrigger value="anthropometric" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
-              Σωματομετρικά
+              {t('progress.anthropometricTab')}
             </TabsTrigger>
             <TabsTrigger value="functional" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
-              Λειτουργικά
+              {t('progress.functionalTab')}
             </TabsTrigger>
           </TabsList>
 
@@ -183,10 +185,10 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
             <Tabs defaultValue="new" className="w-full">
               <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
                 <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Νέα Καταγραφή
+                  {t('progress.newRecord')}
                 </TabsTrigger>
                 <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Ιστορικό
+                  {t('progress.historyTab')}
                 </TabsTrigger>
               </TabsList>
 
@@ -209,10 +211,10 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
             <Tabs defaultValue="new" className="w-full">
               <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
                 <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Νέα Καταγραφή
+                  {t('progress.newRecord')}
                 </TabsTrigger>
                 <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Ιστορικό
+                  {t('progress.historyTab')}
                 </TabsTrigger>
               </TabsList>
 
@@ -235,10 +237,10 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
             <Tabs defaultValue="new" className="w-full">
               <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
                 <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Νέα Καταγραφή
+                  {t('progress.newRecord')}
                 </TabsTrigger>
                 <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Ιστορικό
+                  {t('progress.historyTab')}
                 </TabsTrigger>
               </TabsList>
 
@@ -260,10 +262,10 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
             <Tabs defaultValue="new" className="w-full">
               <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
                 <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Νέα Καταγραφή
+                  {t('progress.newRecord')}
                 </TabsTrigger>
                 <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Ιστορικό
+                  {t('progress.historyTab')}
                 </TabsTrigger>
               </TabsList>
 
@@ -285,10 +287,10 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
             <Tabs defaultValue="new" className="w-full">
               <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
                 <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Νέα Καταγραφή
+                  {t('progress.newRecord')}
                 </TabsTrigger>
                 <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Ιστορικό
+                  {t('progress.historyTab')}
                 </TabsTrigger>
               </TabsList>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewRecordTab } from "@/components/progress/NewRecordTab";
@@ -14,6 +15,7 @@ import { FunctionalHistoryTab } from "@/components/progress/FunctionalHistoryTab
 
 
 export default function ProgressTracking() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<any[]>([]);
   const [exercises, setExercises] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -115,7 +117,7 @@ export default function ProgressTracking() {
 
   return (
     <div className="p-2 sm:p-3 md:p-4 lg:p-6 space-y-3 sm:space-y-4 md:space-y-6 max-w-full overflow-x-hidden">
-      <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Καταγραφή Προόδου</h1>
+      <h1 className="text-lg sm:text-xl md:text-2xl font-bold">{t('progress.title')}</h1>
 
       <Tabs defaultValue="force-velocity" className="w-full">
         <TabsList className="rounded-none w-full grid grid-cols-3 lg:grid-cols-5 gap-0.5 sm:gap-1 p-0.5 sm:p-1 h-auto">
@@ -129,10 +131,10 @@ export default function ProgressTracking() {
             Jump Profile
           </TabsTrigger>
           <TabsTrigger value="anthropometric" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
-            Σωματομετρικά
+            {t('progress.anthropometricTab')}
           </TabsTrigger>
           <TabsTrigger value="functional" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
-            Λειτουργικά
+            {t('progress.functionalTab')}
           </TabsTrigger>
         </TabsList>
 
@@ -140,10 +142,10 @@ export default function ProgressTracking() {
           <Tabs defaultValue="new" className="w-full">
             <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
               <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Νέα Καταγραφή
+                {t('progress.newRecord')}
               </TabsTrigger>
               <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Ιστορικό
+                {t('progress.historyTab')}
               </TabsTrigger>
             </TabsList>
 
@@ -165,10 +167,10 @@ export default function ProgressTracking() {
           <Tabs defaultValue="new" className="w-full">
             <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
               <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Νέα Καταγραφή
+                {t('progress.newRecord')}
               </TabsTrigger>
               <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Ιστορικό
+                {t('progress.historyTab')}
               </TabsTrigger>
             </TabsList>
 
@@ -190,10 +192,10 @@ export default function ProgressTracking() {
           <Tabs defaultValue="new" className="w-full">
             <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
               <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Νέα Καταγραφή
+                {t('progress.newRecord')}
               </TabsTrigger>
               <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Ιστορικό
+                {t('progress.historyTab')}
               </TabsTrigger>
             </TabsList>
 
@@ -214,10 +216,10 @@ export default function ProgressTracking() {
           <Tabs defaultValue="new" className="w-full">
             <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
               <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Νέα Καταγραφή
+                {t('progress.newRecord')}
               </TabsTrigger>
               <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Ιστορικό
+                {t('progress.historyTab')}
               </TabsTrigger>
             </TabsList>
 
@@ -238,10 +240,10 @@ export default function ProgressTracking() {
           <Tabs defaultValue="new" className="w-full">
             <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
               <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Νέα Καταγραφή
+                {t('progress.newRecord')}
               </TabsTrigger>
               <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Ιστορικό
+                {t('progress.historyTab')}
               </TabsTrigger>
             </TabsList>
 
