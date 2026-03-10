@@ -39,16 +39,25 @@ interface Competition {
 }
 
 // Countdown helper
-const getCountdownText = (deadline: string): string => {
+const getCountdownInfo = (deadline: string): { text: string; urgency: 'normal' | 'warning' | 'critical' } => {
   const now = new Date();
   const dl = new Date(deadline);
   const diff = dl.getTime() - now.getTime();
-  if (diff <= 0) return '';
+  if (diff <= 0) return { text: '', urgency: 'normal' };
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  if (days > 0) return `${days}ημ ${hours}ω`;
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  return `${hours}ω ${minutes}λ`;
+
+  // Less than 1 day → critical (red), show hours & minutes
+  if (days < 1) {
+    return { text: `${hours}ω ${minutes}λ`, urgency: 'critical' };
+  }
+  // Less than 3 days → warning (orange)
+  if (days < 3) {
+    return { text: `${days}ημ ${hours}ω`, urgency: 'warning' };
+  }
+  // Normal (green)
+  return { text: `${days}ημ ${hours}ω`, urgency: 'normal' };
 };
 
 interface Category {
@@ -636,12 +645,16 @@ const CoachCompetitionsContent: React.FC = () => {
                         Εμπρόθεσμες: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
                         {isDeadlinePassed(comp.registration_deadline) 
                           ? ' (Έληξε)' 
-                          : !isDeadlinePassed(comp.registration_deadline) && (
-                            <span className="inline-flex items-center gap-0.5 text-[#00ffba] font-medium">
-                              <Clock className="h-3 w-3" />
-                              {getCountdownText(comp.registration_deadline)}
-                            </span>
-                          )
+                          : !isDeadlinePassed(comp.registration_deadline) && (() => {
+                            const info = getCountdownInfo(comp.registration_deadline);
+                            const colorClass = info.urgency === 'critical' ? 'text-destructive' : info.urgency === 'warning' ? 'text-[#cb8954]' : 'text-[#00ffba]';
+                            return (
+                              <span className={`inline-flex items-center gap-0.5 ${colorClass} font-medium`}>
+                                <Clock className="h-3 w-3" />
+                                {info.text}
+                              </span>
+                            );
+                          })()
                         }
                       </p>
                     )}
@@ -650,12 +663,16 @@ const CoachCompetitionsContent: React.FC = () => {
                         Εκπρόθεσμες: {format(new Date(comp.late_registration_deadline), 'd MMM yyyy', { locale: el })}
                         {isDeadlinePassed(comp.late_registration_deadline) 
                           ? ' (Έληξε)'
-                          : isInLatePeriod(comp) && (
-                            <span className="inline-flex items-center gap-0.5">
-                              <Clock className="h-3 w-3" />
-                              {getCountdownText(comp.late_registration_deadline)}
-                            </span>
-                          )
+                          : isInLatePeriod(comp) && (() => {
+                            const info = getCountdownInfo(comp.late_registration_deadline);
+                            const colorClass = info.urgency === 'critical' ? 'text-destructive' : info.urgency === 'warning' ? 'text-[#cb8954]' : 'text-[#cb8954]';
+                            return (
+                              <span className={`inline-flex items-center gap-0.5 ${colorClass} font-medium`}>
+                                <Clock className="h-3 w-3" />
+                                {info.text}
+                              </span>
+                            );
+                          })()
                         }
                       </p>
                     )}
