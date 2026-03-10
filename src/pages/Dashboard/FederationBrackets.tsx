@@ -347,17 +347,33 @@ const FederationBrackets = () => {
     load();
   }, [federationId]);
 
-  // Load categories when competition changes
+  // Load categories and registration counts when competition changes
   useEffect(() => {
-    if (!selectedCompId) { setCategories([]); setSelectedCategoryId(''); return; }
+    if (!selectedCompId) { setCategories([]); setSelectedCategoryId(''); setRegistrationCounts(new Map()); return; }
     const load = async () => {
-      const { data } = await supabase
-        .from('federation_competition_categories')
-        .select('id, name, competition_id, gender')
-        .eq('competition_id', selectedCompId)
-        .order('name');
-      setCategories(data || []);
+      const [catRes, regRes] = await Promise.all([
+        supabase
+          .from('federation_competition_categories')
+          .select('id, name, competition_id, gender')
+          .eq('competition_id', selectedCompId)
+          .order('name'),
+        supabase
+          .from('federation_competition_registrations')
+          .select('category_id')
+          .eq('competition_id', selectedCompId)
+          .eq('is_paid', true)
+      ]);
+      setCategories(catRes.data || []);
       setSelectedCategoryId('');
+      
+      // Count registrations per category
+      const counts = new Map<string, number>();
+      (regRes.data || []).forEach((r: any) => {
+        if (r.category_id) {
+          counts.set(r.category_id, (counts.get(r.category_id) || 0) + 1);
+        }
+      });
+      setRegistrationCounts(counts);
     };
     load();
   }, [selectedCompId]);
