@@ -729,15 +729,15 @@ const FederationBrackets = () => {
       <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
         <AlertDialogContent className="rounded-none">
           <AlertDialogHeader>
-            <AlertDialogTitle>Επανάληψη Κλήρωσης;</AlertDialogTitle>
+            <AlertDialogTitle>{t('federation.brackets.resetConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Αυτή η ενέργεια θα διαγράψει όλα τα ζευγαρώματα και τα αποτελέσματα αυτής της κατηγορίας. Δεν μπορεί να αναιρεθεί.
+              {t('federation.brackets.resetConfirmDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-none">{t('federation.common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleResetBracket} className="bg-destructive hover:bg-destructive/90 rounded-none">
-              Διαγραφή & Επανάληψη
+              {t('federation.brackets.deleteAndReset')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
