@@ -374,6 +374,27 @@ export const UserProfileSidebar = forwardRef<
         );
       })}
       
+      {/* Κλήρωση & Live - for athletes belonging to a federation club */}
+      {userProfile?.coach_id && (
+        <>
+          <div className="my-2 h-px bg-border" />
+          <button
+            onClick={() => navigate('/dashboard/coach-brackets')}
+            className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-foreground/70 transition-colors hover:bg-muted rounded-none"
+          >
+            <Shuffle className="h-5 w-5 flex-shrink-0" />
+            {(!isCollapsed || isMobile) && <span className="truncate">Κλήρωση</span>}
+          </button>
+          <button
+            onClick={() => navigate('/dashboard/coach-live')}
+            className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-foreground/70 transition-colors hover:bg-muted rounded-none"
+          >
+            <Radio className="h-5 w-5 flex-shrink-0" />
+            {(!isCollapsed || isMobile) && <span className="truncate">Live</span>}
+          </button>
+        </>
+      )}
+
       {/* Κατέβασε την Εφαρμογή Button */}
       <button
         onClick={() => navigate('/install')}
