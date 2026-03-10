@@ -28,6 +28,7 @@ const CoachBracketsPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
+  const { t } = useTranslation();
 
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [selectedCompId, setSelectedCompId] = useState('');
