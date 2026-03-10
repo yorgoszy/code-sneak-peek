@@ -648,30 +648,32 @@ const FederationBrackets = () => {
 
   const sortedRoundNumbers = Object.keys(rounds).map(Number).sort((a, b) => b - a);
 
-  const getSlotDisplayName = (match: Match, slot: 'athlete1' | 'athlete2'): string => {
+  const getSlotDisplayName = (match: Match, slot: 'athlete1' | 'athlete2'): { name: string; isConfirmed: boolean } => {
+    // If the actual athlete is set in this match, show their name
+    const athleteId = slot === 'athlete1' ? match.athlete1_id : match.athlete2_id;
     const athlete = slot === 'athlete1' ? match.athlete1 : match.athlete2;
-    if (athlete?.name) return athlete.name;
+    if (athleteId && athlete?.name) return { name: athlete.name, isConfirmed: true };
 
+    // Otherwise, find the feeder match from previous round
     const feederRound = match.round_number * 2;
     const feederMatchNumber = slot === 'athlete1'
       ? (match.match_number * 2) - 1
       : match.match_number * 2;
     const feederMatch = rounds[feederRound]?.find((m) => m.match_number === feederMatchNumber);
 
-    if (!feederMatch) return 'TBD';
+    if (!feederMatch) return { name: 'TBD', isConfirmed: false };
 
+    // If feeder match is completed, show winner name
     if (feederMatch.winner_id) {
       const winnerName = feederMatch.athlete1_id === feederMatch.winner_id
         ? feederMatch.athlete1?.name
         : feederMatch.athlete2?.name;
-      return winnerName || 'TBD';
+      return { name: winnerName || 'TBD', isConfirmed: true };
     }
 
-    const feederNames = [feederMatch.athlete1?.name, feederMatch.athlete2?.name].filter(Boolean) as string[];
-    if (feederNames.length === 2) return `${feederNames[0]} / ${feederNames[1]}`;
-    if (feederNames.length === 1) return feederNames[0];
-
-    return 'TBD';
+    // Feeder match NOT completed - show "Νικητής [round] αγ. X"
+    const feederRoundName = getRoundName(feederRound, t);
+    return { name: `Νικητής ${feederRoundName} αγ. ${feederMatchNumber}`, isConfirmed: false };
   };
 
   const renderSidebar = () => (
