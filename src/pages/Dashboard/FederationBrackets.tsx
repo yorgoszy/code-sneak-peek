@@ -818,62 +818,76 @@ const FederationBrackets = () => {
 
             {/* Bracket Display */}
             {matches.length > 0 && (() => {
-              const CARD_H = 62;
-              const CARD_GAP = 12;
-              const COL_W = 240;
-              const CONNECTOR_W = 40;
-              const HEADER_H = 32;
+              const CARD_H = 64;
+              const CARD_GAP = 16;
+              const COL_W = 230;
+              const CONNECTOR_W = 44;
+              const HEADER_H = 36;
 
-              // Build per-round non-bye match arrays
-              const roundMatchArrays = sortedRoundNumbers.map(rn => rounds[rn].filter(m => !m.is_bye));
+              // Non-bye matches per round, sorted by match_number
+              const roundMatchArrays = sortedRoundNumbers.map(rn =>
+                rounds[rn].filter(m => !m.is_bye).sort((a, b) => a.match_number - b.match_number)
+              );
               const firstRoundCount = roundMatchArrays[0]?.length || 1;
 
-              // Total height based on first round
               const totalH = HEADER_H + firstRoundCount * CARD_H + (firstRoundCount - 1) * CARD_GAP;
 
-              // Calculate Y-center for each match per round
-              const matchPositions: Map<string, number>[] = sortedRoundNumbers.map(() => new Map());
-
-              // First round: evenly distributed
-              roundMatchArrays[0]?.forEach((m, i) => {
-                const y = HEADER_H + i * (CARD_H + CARD_GAP) + CARD_H / 2;
-                matchPositions[0].set(m.id, y);
+              // Build a lookup: roundNumber -> match_number -> Match
+              const matchByRoundAndNum = new Map<string, Match>();
+              sortedRoundNumbers.forEach(rn => {
+                rounds[rn].forEach(m => {
+                  matchByRoundAndNum.set(`${rn}-${m.match_number}`, m);
+                });
               });
 
-              // Subsequent rounds: center between feeder matches
-              for (let ri = 1; ri < sortedRoundNumbers.length; ri++) {
-                const currentRoundMatches = roundMatchArrays[ri];
-                const prevRoundMatches = roundMatchArrays[ri - 1];
+              // Y-center positions keyed by match id
+              const yPositions = new Map<string, number>();
 
-                currentRoundMatches.forEach((m, mi) => {
-                  // This match's feeders are at indices mi*2 and mi*2+1 in the previous round
-                  const feeder1Idx = mi * 2;
-                  const feeder2Idx = mi * 2 + 1;
-                  const feeder1 = prevRoundMatches[feeder1Idx];
-                  const feeder2 = prevRoundMatches[feeder2Idx];
+              // First round: evenly spaced
+              roundMatchArrays[0]?.forEach((m, i) => {
+                yPositions.set(m.id, HEADER_H + i * (CARD_H + CARD_GAP) + CARD_H / 2);
+              });
+
+              // Subsequent rounds: position at midpoint of feeder matches
+              for (let ri = 1; ri < sortedRoundNumbers.length; ri++) {
+                const currentRound = sortedRoundNumbers[ri];
+                const prevRound = sortedRoundNumbers[ri - 1];
+
+                roundMatchArrays[ri].forEach((m, mi) => {
+                  // Feeders: prev round, match_numbers (m.match_number*2 - 1) and (m.match_number*2)
+                  const feederNum1 = m.match_number * 2 - 1;
+                  const feederNum2 = m.match_number * 2;
+
+                  // Find feeder matches (could be bye-filtered, so look for actual non-bye or propagate)
+                  const feeder1 = matchByRoundAndNum.get(`${prevRound}-${feederNum1}`);
+                  const feeder2 = matchByRoundAndNum.get(`${prevRound}-${feederNum2}`);
+
+                  const y1 = feeder1 && !feeder1.is_bye ? yPositions.get(feeder1.id) : undefined;
+                  const y2 = feeder2 && !feeder2.is_bye ? yPositions.get(feeder2.id) : undefined;
 
                   let yCenter: number;
-                  if (feeder1 && feeder2) {
-                    const y1 = matchPositions[ri - 1].get(feeder1.id) || 0;
-                    const y2 = matchPositions[ri - 1].get(feeder2.id) || 0;
+                  if (y1 !== undefined && y2 !== undefined) {
                     yCenter = (y1 + y2) / 2;
-                  } else if (feeder1) {
-                    yCenter = matchPositions[ri - 1].get(feeder1.id) || 0;
+                  } else if (y1 !== undefined) {
+                    yCenter = y1;
+                  } else if (y2 !== undefined) {
+                    yCenter = y2;
                   } else {
-                    // Fallback: distribute evenly
-                    const spacing = totalH / (currentRoundMatches.length + 1);
+                    // Fallback
+                    const spacing = totalH / (roundMatchArrays[ri].length + 1);
                     yCenter = spacing * (mi + 1);
                   }
-                  matchPositions[ri].set(m.id, yCenter);
+                  yPositions.set(m.id, yCenter);
                 });
               }
 
-              // Global match numbering
-              const globalOffsets: number[] = [];
-              let offset = 0;
-              sortedRoundNumbers.forEach((_, ri) => {
-                globalOffsets.push(offset);
-                offset += roundMatchArrays[ri].length;
+              // Global match numbering across all rounds
+              let globalCounter = 1;
+              const globalMatchNumbers = new Map<string, number>();
+              sortedRoundNumbers.forEach(rn => {
+                roundMatchArrays[sortedRoundNumbers.indexOf(rn)].forEach(m => {
+                  globalMatchNumbers.set(m.id, globalCounter++);
+                });
               });
 
               return (
@@ -887,7 +901,7 @@ const FederationBrackets = () => {
                         <React.Fragment key={roundNum}>
                           {/* Round header */}
                           <div
-                            className="absolute bg-muted px-3 py-1 border border-border"
+                            className="absolute bg-muted px-3 py-1.5 border border-border"
                             style={{ left: xOffset, top: 0, width: COL_W }}
                           >
                             <h3 className="font-semibold text-xs text-foreground">
@@ -897,10 +911,10 @@ const FederationBrackets = () => {
                           </div>
 
                           {/* Match cards */}
-                          {rMatches.map((match, mi) => {
-                            const yCenter = matchPositions[ri].get(match.id) || 0;
+                          {rMatches.map((match) => {
+                            const yCenter = yPositions.get(match.id) || 0;
                             const yTop = yCenter - CARD_H / 2;
-                            const globalMatchNum = globalOffsets[ri] + mi + 1;
+                            const globalMatchNum = globalMatchNumbers.get(match.id) || 0;
                             const slot1 = getSlotDisplayName(match, 'athlete1');
                             const slot2 = getSlotDisplayName(match, 'athlete2');
 
@@ -988,30 +1002,39 @@ const FederationBrackets = () => {
                                 height: totalH + 20,
                               }}
                             >
-                              {rMatches.map((m, mi) => {
-                                if (mi % 2 === 1) return null;
-                                const nextRoundMatches = roundMatchArrays[ri + 1];
-                                const nextMatchIdx = Math.floor(mi / 2);
-                                const nextMatch = nextRoundMatches[nextMatchIdx];
-                                if (!nextMatch) return null;
+                              {roundMatchArrays[ri + 1].map((nextMatch) => {
+                                // Find the two feeder matches for this next-round match
+                                const prevRound = sortedRoundNumbers[ri];
+                                const feederNum1 = nextMatch.match_number * 2 - 1;
+                                const feederNum2 = nextMatch.match_number * 2;
 
-                                const y1 = matchPositions[ri].get(m.id) || 0;
-                                const m2 = rMatches[mi + 1];
-                                const y2 = m2 ? (matchPositions[ri].get(m2.id) || 0) : y1;
-                                const yNext = matchPositions[ri + 1].get(nextMatch.id) || 0;
+                                const feeder1 = matchByRoundAndNum.get(`${prevRound}-${feederNum1}`);
+                                const feeder2 = matchByRoundAndNum.get(`${prevRound}-${feederNum2}`);
+
+                                const y1 = feeder1 && !feeder1.is_bye ? yPositions.get(feeder1.id) : undefined;
+                                const y2 = feeder2 && !feeder2.is_bye ? yPositions.get(feeder2.id) : undefined;
+                                const yNext = yPositions.get(nextMatch.id) || 0;
+
+                                if (y1 === undefined && y2 === undefined) return null;
+
+                                const halfW = CONNECTOR_W / 2;
 
                                 return (
-                                  <g key={mi}>
-                                    {/* Horizontal from match 1 */}
-                                    <line x1="0" y1={y1} x2={CONNECTOR_W / 2} y2={y1} stroke="hsl(var(--border))" strokeWidth="1.5" />
-                                    {/* Horizontal from match 2 */}
-                                    {m2 && (
-                                      <line x1="0" y1={y2} x2={CONNECTOR_W / 2} y2={y2} stroke="hsl(var(--border))" strokeWidth="1.5" />
+                                  <g key={nextMatch.id}>
+                                    {/* Horizontal from feeder 1 */}
+                                    {y1 !== undefined && (
+                                      <line x1="0" y1={y1} x2={halfW} y2={y1} stroke="hsl(var(--border))" strokeWidth="1.5" />
                                     )}
-                                    {/* Vertical connector */}
-                                    <line x1={CONNECTOR_W / 2} y1={y1} x2={CONNECTOR_W / 2} y2={y2} stroke="hsl(var(--border))" strokeWidth="1.5" />
-                                    {/* Horizontal to next round match */}
-                                    <line x1={CONNECTOR_W / 2} y1={yNext} x2={CONNECTOR_W} y2={yNext} stroke="hsl(var(--border))" strokeWidth="1.5" />
+                                    {/* Horizontal from feeder 2 */}
+                                    {y2 !== undefined && (
+                                      <line x1="0" y1={y2} x2={halfW} y2={y2} stroke="hsl(var(--border))" strokeWidth="1.5" />
+                                    )}
+                                    {/* Vertical connector between feeders */}
+                                    {y1 !== undefined && y2 !== undefined && (
+                                      <line x1={halfW} y1={y1} x2={halfW} y2={y2} stroke="hsl(var(--border))" strokeWidth="1.5" />
+                                    )}
+                                    {/* Horizontal to next round */}
+                                    <line x1={halfW} y1={yNext} x2={CONNECTOR_W} y2={yNext} stroke="hsl(var(--border))" strokeWidth="1.5" />
                                   </g>
                                 );
                               })}
