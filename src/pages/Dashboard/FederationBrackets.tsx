@@ -320,6 +320,7 @@ const FederationBrackets = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(false);
+  const [registrationCounts, setRegistrationCounts] = useState<Map<string, number>>(new Map());
 
   // Winner selection dialog
   const [winnerDialog, setWinnerDialog] = useState<{ match: Match; open: boolean } | null>(null);
