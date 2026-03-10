@@ -98,6 +98,8 @@ import BarVelocityPage from "@/pages/Dashboard/BarVelocityPage";
 import HRVPage from "@/pages/Dashboard/HRVPage";
 import HealthCardsPage from "@/pages/Dashboard/HealthCardsPage";
 import CoachCompetitionsPage from "@/pages/Dashboard/CoachCompetitionsPage";
+import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
+import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
 import FederationOverview from "@/pages/Dashboard/FederationOverview";
 import FederationUsers from "@/pages/Dashboard/FederationUsers";
 import FederationProgress from "@/pages/Dashboard/FederationProgress";
