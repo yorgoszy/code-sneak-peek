@@ -46,6 +46,7 @@ export const useGoogleCalendar = () => {
     try {
       const providerToken = await getGoogleToken();
       if (!providerToken) {
+        toast.info('🔗 Σύνδεση με Google Calendar... Θα ανακατευθυνθείτε στο Google.');
         await connectGoogle();
         return null;
       }
