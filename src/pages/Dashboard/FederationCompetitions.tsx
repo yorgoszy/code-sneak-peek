@@ -627,7 +627,7 @@ const FederationCompetitions = () => {
 
       {/* Create Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-lg rounded-none" onPointerDownOutside={(e) => {
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto rounded-none" onPointerDownOutside={(e) => {
             const target = e.target as HTMLElement;
             if (target.closest('.pac-container')) {
               e.preventDefault();
