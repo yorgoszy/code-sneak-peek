@@ -43,6 +43,8 @@ export const FederationSidebar = ({
     { icon: Users, label: t("federation.sidebar.users"), path: "/dashboard/federation-users" },
     { icon: CreditCard, label: t("federation.sidebar.subscriptions"), path: "/dashboard/federation-subscriptions" },
     { icon: Swords, label: t("federation.sidebar.competitions"), path: "/dashboard/federation-competitions" },
+    { icon: Shuffle, label: "Κλήρωση", path: "/dashboard/federation-brackets" },
+    { icon: Radio, label: "Live", path: "/dashboard/federation-live" },
     { icon: Trophy, label: "Ranking", path: "/dashboard/ranking" },
     { icon: TrendingUp, label: t("federation.sidebar.progress"), path: "/dashboard/federation-progress" },
     { icon: MonitorPlay, label: t("federation.sidebar.videoAnalysis"), path: "/dashboard/federation-video-analysis" },
