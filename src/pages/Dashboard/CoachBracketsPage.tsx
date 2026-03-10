@@ -148,7 +148,7 @@ const CoachBracketsPage = () => {
     const load = async () => {
       const { data } = await supabase
         .from('federation_competition_categories')
-        .select('id, name')
+        .select('id, name, gender')
         .eq('competition_id', selectedCompId)
         .order('name');
       setCategories(data || []);
