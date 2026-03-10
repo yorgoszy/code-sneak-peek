@@ -2051,6 +2051,185 @@ export type Database = {
           },
         ]
       }
+      competition_matches: {
+        Row: {
+          athlete1_club_id: string | null
+          athlete1_id: string | null
+          athlete1_score: string | null
+          athlete2_club_id: string | null
+          athlete2_id: string | null
+          athlete2_score: string | null
+          category_id: string
+          competition_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          is_bye: boolean | null
+          match_number: number
+          match_order: number | null
+          result_type: string | null
+          ring_number: number | null
+          round_number: number
+          scheduled_time: string | null
+          status: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          athlete1_club_id?: string | null
+          athlete1_id?: string | null
+          athlete1_score?: string | null
+          athlete2_club_id?: string | null
+          athlete2_id?: string | null
+          athlete2_score?: string | null
+          category_id: string
+          competition_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_bye?: boolean | null
+          match_number: number
+          match_order?: number | null
+          result_type?: string | null
+          ring_number?: number | null
+          round_number: number
+          scheduled_time?: string | null
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          athlete1_club_id?: string | null
+          athlete1_id?: string | null
+          athlete1_score?: string | null
+          athlete2_club_id?: string | null
+          athlete2_id?: string | null
+          athlete2_score?: string | null
+          category_id?: string
+          competition_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_bye?: boolean | null
+          match_number?: number
+          match_order?: number | null
+          result_type?: string | null
+          ring_number?: number | null
+          round_number?: number
+          scheduled_time?: string | null
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_matches_athlete1_club_id_fkey"
+            columns: ["athlete1_club_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_matches_athlete1_id_fkey"
+            columns: ["athlete1_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_matches_athlete2_club_id_fkey"
+            columns: ["athlete2_club_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_matches_athlete2_id_fkey"
+            columns: ["athlete2_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_matches_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competition_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_matches_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competition_rings: {
+        Row: {
+          competition_id: string
+          created_at: string
+          current_match_id: string | null
+          id: string
+          is_active: boolean | null
+          match_range_end: number | null
+          match_range_start: number | null
+          ring_name: string | null
+          ring_number: number
+          updated_at: string
+          youtube_live_url: string | null
+        }
+        Insert: {
+          competition_id: string
+          created_at?: string
+          current_match_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          match_range_end?: number | null
+          match_range_start?: number | null
+          ring_name?: string | null
+          ring_number: number
+          updated_at?: string
+          youtube_live_url?: string | null
+        }
+        Update: {
+          competition_id?: string
+          created_at?: string
+          current_match_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          match_range_end?: number | null
+          match_range_start?: number | null
+          ring_name?: string | null
+          ring_number?: number
+          updated_at?: string
+          youtube_live_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_rings_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_rings_current_match_id_fkey"
+            columns: ["current_match_id"]
+            isOneToOne: false
+            referencedRelation: "competition_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitions: {
         Row: {
           competition_date: string

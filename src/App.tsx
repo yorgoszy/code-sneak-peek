@@ -106,6 +106,8 @@ import FederationVideoAnalysis from "@/pages/Dashboard/FederationVideoAnalysis";
 import FederationSubscriptions from "@/pages/Dashboard/FederationSubscriptions";
 import FederationCompetitions from "@/pages/Dashboard/FederationCompetitions";
 import RankingPage from "@/pages/Dashboard/RankingPage";
+import FederationBrackets from "@/pages/Dashboard/FederationBrackets";
+import FederationLive from "@/pages/Dashboard/FederationLive";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -232,6 +234,8 @@ function App() {
                       <Route path="/dashboard/federation-video-analysis" element={<ProtectedRoute><FederationVideoAnalysis /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-subscriptions" element={<ProtectedRoute><FederationSubscriptions /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-competitions" element={<ProtectedRoute><FederationCompetitions /></ProtectedRoute>} />
+                      <Route path="/dashboard/federation-brackets" element={<ProtectedRoute><FederationBrackets /></ProtectedRoute>} />
+                      <Route path="/dashboard/federation-live" element={<ProtectedRoute><FederationLive /></ProtectedRoute>} />
                       <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
                       <Route path="/dashboard/ranking" element={<ProtectedRoute><RankingPage /></ProtectedRoute>} />
 
