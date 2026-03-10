@@ -39,7 +39,7 @@ export const RollingTimeInput: React.FC<RollingTimeInputProps> = React.memo(({
 
   const [localValue, setLocalValue] = useState(formatDigits(getDigitsFromValue(value)));
   const [digits, setDigits] = useState(getDigitsFromValue(value));
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Sync with external value changes

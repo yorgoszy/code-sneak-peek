@@ -71,7 +71,7 @@ const BlockTimerContext = createContext<BlockTimerContextType | null>(null);
 
 export const BlockTimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [blockStates, setBlockStates] = useState<Record<string, BlockTimerState>>({});
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Global timer that runs in the context - continues even when components unmount
   useEffect(() => {

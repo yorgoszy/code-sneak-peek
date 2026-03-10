@@ -29,7 +29,7 @@ export const DebouncedInput: React.FC<DebouncedInputProps> = React.memo(({
 }) => {
   // Local state for immediate UI updates
   const [localValue, setLocalValue] = useState(String(value ?? ''));
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
 
   // Sync local state when prop value changes (but not on first render)
