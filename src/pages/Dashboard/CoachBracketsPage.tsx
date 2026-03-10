@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
+import { FederationSidebar } from "@/components/FederationSidebar";
+import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Menu, Trophy } from "lucide-react";
@@ -33,30 +35,33 @@ const CoachBracketsPage = () => {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const coachId = userProfile?.id;
+  // Determine the club_id to find the federation
+  // For coaches: their own id. For athletes: their coach_id
+  const clubId = userProfile?.role === 'coach' ? userProfile?.id : userProfile?.coach_id;
 
-  // Load competitions where this coach has registrations
+  // Load ALL competitions from the user's federation
   useEffect(() => {
-    if (!coachId) return;
+    if (!clubId) return;
     const load = async () => {
-      const { data: regs } = await supabase
-        .from('federation_competition_registrations')
-        .select('competition_id')
-        .eq('club_id', coachId);
+      // Find the federation(s) this club belongs to
+      const { data: fedLinks } = await supabase
+        .from('federation_clubs')
+        .select('federation_id')
+        .eq('club_id', clubId);
 
-      if (!regs?.length) return;
-      const compIds = [...new Set(regs.map(r => r.competition_id))];
+      if (!fedLinks?.length) return;
+      const federationIds = [...new Set(fedLinks.map(f => f.federation_id))];
 
       const { data } = await supabase
         .from('federation_competitions')
         .select('id, name, competition_date, status')
-        .in('id', compIds)
+        .in('federation_id', federationIds)
         .order('competition_date', { ascending: false });
 
       setCompetitions(data || []);
     };
     load();
-  }, [coachId]);
+  }, [clubId]);
 
   useEffect(() => {
     if (!selectedCompId) { setCategories([]); setSelectedCategoryId(''); return; }
@@ -118,9 +123,13 @@ const CoachBracketsPage = () => {
 
   const getAvatar = (a: any) => a?.photo_url || a?.avatar_url || undefined;
 
-  const renderSidebar = () => (
-    <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-  );
+  const role = userProfile?.role;
+
+  const renderSidebar = () => {
+    if (role === 'federation') return <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
+    if (role === 'coach') return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
+    return <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
+  };
 
   return (
     <SidebarProvider>
