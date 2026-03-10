@@ -896,8 +896,8 @@ const FederationBrackets = () => {
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium truncate">
-                                        {getSlotDisplayName(match, 'athlete2')}
+                                      <p className={`text-sm truncate ${getSlotDisplayName(match, 'athlete2').isConfirmed ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                                        {getSlotDisplayName(match, 'athlete2').name}
                                       </p>
                                       {match.athlete2_club && (
                                         <p className="text-xs text-muted-foreground truncate">{match.athlete2_club.name}</p>
