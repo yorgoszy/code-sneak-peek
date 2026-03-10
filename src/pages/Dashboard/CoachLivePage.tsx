@@ -112,9 +112,13 @@ const CoachLivePage = () => {
 
   const getAvatar = (a: any) => a?.photo_url || a?.avatar_url || undefined;
 
-  const renderSidebar = () => (
-    <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-  );
+  const role = userProfile?.role;
+
+  const renderSidebar = () => {
+    if (role === 'federation') return <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
+    if (role === 'coach') return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
+    return <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
+  };
 
   return (
     <SidebarProvider>
