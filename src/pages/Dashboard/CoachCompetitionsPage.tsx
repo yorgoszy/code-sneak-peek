@@ -687,7 +687,7 @@ const CoachCompetitionsContent: React.FC = () => {
                     <Users className="h-3 w-3" /> {comp.my_registrations_count} αθλητές
                   </span>
                   {(comp.my_unpaid_count || 0) > 0 && (
-                    <span className="flex items-center gap-1 text-[#cb8954]">
+                    <span className="flex items-center gap-1 text-destructive">
                       <CreditCard className="h-3 w-3" /> {comp.my_unpaid_count} εκκρεμείς
                     </span>
                   )}
