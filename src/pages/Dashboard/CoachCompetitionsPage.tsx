@@ -39,16 +39,25 @@ interface Competition {
 }
 
 // Countdown helper
-const getCountdownText = (deadline: string): string => {
+const getCountdownInfo = (deadline: string): { text: string; urgency: 'normal' | 'warning' | 'critical' } => {
   const now = new Date();
   const dl = new Date(deadline);
   const diff = dl.getTime() - now.getTime();
-  if (diff <= 0) return '';
+  if (diff <= 0) return { text: '', urgency: 'normal' };
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  if (days > 0) return `${days}ημ ${hours}ω`;
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  return `${hours}ω ${minutes}λ`;
+
+  // Less than 1 day → critical (red), show hours & minutes
+  if (days < 1) {
+    return { text: `${hours}ω ${minutes}λ`, urgency: 'critical' };
+  }
+  // Less than 3 days → warning (orange)
+  if (days < 3) {
+    return { text: `${days}ημ ${hours}ω`, urgency: 'warning' };
+  }
+  // Normal (green)
+  return { text: `${days}ημ ${hours}ω`, urgency: 'normal' };
 };
 
 interface Category {
