@@ -209,6 +209,104 @@ function getRoundName(roundNumber: number, t: any): string {
   return `${t('federation.brackets.round')} ${roundNumber}`;
 }
 
+// Category grouping utilities (same logic as CompetitionRegistrationsDialog)
+const AGE_ORDER = ['18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
+
+const getWeightLabel = (name: string): string => {
+  const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
+  return m ? m[1] : name;
+};
+
+const getAgeLabel = (name: string): string => {
+  if (/^Ενήλικοι/i.test(name)) return '18-40';
+  if (/^U23/i.test(name)) return 'U23';
+  const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
+  if (match) return match[1];
+  return name.replace(/([-+±]\s*\d+[\d.,]*\s*kg)/i, '').trim();
+};
+
+const groupByAge = (cats: Category[]) => {
+  const grouped = new Map<string, Category[]>();
+  cats.forEach(cat => {
+    const age = getAgeLabel(cat.name);
+    if (!grouped.has(age)) grouped.set(age, []);
+    grouped.get(age)!.push(cat);
+  });
+  const orderedKeys = AGE_ORDER.filter(a => grouped.has(a));
+  const remainingKeys = [...grouped.keys()].filter(k => !AGE_ORDER.includes(k));
+  return [...orderedKeys, ...remainingKeys].map(age => ({
+    age,
+    cats: grouped.get(age)!,
+  }));
+};
+
+// Collapsible age group component for category selection
+const BracketAgeGroup: React.FC<{
+  age: string;
+  cats: Category[];
+  selectedCategoryId: string;
+  onSelectCategory: (id: string) => void;
+  registrationCounts: Map<string, number>;
+}> = ({ age, cats, selectedCategoryId, onSelectCategory, registrationCounts }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const totalRegs = cats.reduce((sum, c) => sum + (registrationCounts.get(c.id) || 0), 0);
+  const hasSelected = cats.some(c => c.id === selectedCategoryId);
+  
+  return (
+    <div className="mb-1 border border-border">
+      <button
+        type="button"
+        onClick={() => setIsOpen(prev => !prev)}
+        className={`w-full text-[11px] font-bold px-2 py-2.5 flex items-center justify-between cursor-pointer hover:bg-accent/50 transition-colors select-none ${
+          hasSelected ? 'bg-foreground text-background' : 'text-foreground bg-muted'
+        }`}
+      >
+        <span className="flex items-center gap-2">
+          {isOpen
+            ? <ChevronDown className="h-4 w-4 shrink-0" />
+            : <ChevronRight className="h-4 w-4 shrink-0" />
+          }
+          {age}
+        </span>
+        <div className="flex items-center gap-1.5">
+          {totalRegs > 0 && (
+            <Badge className={`rounded-none text-[9px] h-4 px-1 ${hasSelected ? 'bg-background text-foreground' : 'bg-foreground text-background'}`}>
+              {totalRegs}
+            </Badge>
+          )}
+          <span className={`text-[9px] ${hasSelected ? 'text-background/70' : 'text-muted-foreground'}`}>{cats.length} κατ.</span>
+        </div>
+      </button>
+      {isOpen && (
+        <div>
+          {cats.map(cat => {
+            const count = registrationCounts.get(cat.id) || 0;
+            const isSelected = cat.id === selectedCategoryId;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => onSelectCategory(cat.id)}
+                className={`w-full flex items-center justify-between px-3 py-1.5 text-xs border-t border-border/30 cursor-pointer transition-colors ${
+                  isSelected ? 'bg-foreground text-background font-bold' : 'hover:bg-accent/30'
+                }`}
+              >
+                <span className="font-medium">{getWeightLabel(cat.name)}</span>
+                {count > 0 && (
+                  <Badge className={`rounded-none text-[9px] h-4 px-1 ${isSelected ? 'bg-background text-foreground' : 'bg-muted text-foreground'}`}>
+                    {count}
+                  </Badge>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const FederationBrackets = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
