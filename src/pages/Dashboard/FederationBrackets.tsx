@@ -712,13 +712,13 @@ const FederationBrackets = () => {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setWinnerDialog(null)} className="rounded-none">Ακύρωση</Button>
+              <Button variant="outline" onClick={() => setWinnerDialog(null)} className="rounded-none">{t('federation.common.cancel')}</Button>
               <Button
                 onClick={handleSelectWinner}
                 disabled={!selectedWinnerId}
                 className="rounded-none bg-foreground text-background hover:bg-foreground/90"
               >
-                Καταχώρηση
+                {t('federation.brackets.submit')}
               </Button>
             </DialogFooter>
           </DialogContent>
