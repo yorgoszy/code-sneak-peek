@@ -237,7 +237,14 @@ const CoachCompetitionsContent: React.FC = () => {
   const [expandedComp, setExpandedComp] = useState<string | null>(null);
   const [compRegistrations, setCompRegistrations] = useState<Record<string, Registration[]>>({});
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [, setTick] = useState(0); // For countdown refresh
+
+  // Refresh countdown every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
 
   // Handle Stripe payment callback
   useEffect(() => {
