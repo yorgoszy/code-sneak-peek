@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from "react-i18next";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
@@ -24,12 +25,6 @@ interface RankingEntry {
   bronzes: number;
 }
 
-interface CategoryGroup {
-  age: string;
-  gender: string;
-  categories: { id: string; name: string }[];
-}
-
 const AGE_ORDER = ['18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
 
 const getAgeLabel = (name: string): string => {
@@ -49,6 +44,7 @@ const RankingPage = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { userProfile } = useRoleCheck();
+  const { t } = useTranslation();
 
   const [federationId, setFederationId] = useState<string | null>(null);
   const [federationName, setFederationName] = useState('');
@@ -58,7 +54,6 @@ const RankingPage = () => {
   const [selectedGender, setSelectedGender] = useState<string>('male');
   const [selectedAge, setSelectedAge] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   const role = userProfile?.role;
 
@@ -77,7 +72,6 @@ const RankingPage = () => {
       return;
     }
 
-    // For coach: find federation via federation_clubs
     if (userProfile.role === 'coach') {
       const { data } = await supabase
         .from('federation_clubs')
@@ -92,7 +86,6 @@ const RankingPage = () => {
       return;
     }
 
-    // For general users: find coach -> federation
     if (userProfile.coach_id) {
       const { data } = await supabase
         .from('federation_clubs')
@@ -117,7 +110,6 @@ const RankingPage = () => {
     if (!federationId) return;
     setLoading(true);
     try {
-      // Fetch all competitions with counts_for_ranking for this federation
       const { data: comps } = await supabase
         .from('federation_competitions')
         .select('id')
@@ -133,7 +125,6 @@ const RankingPage = () => {
         return;
       }
 
-      // Fetch all categories from these competitions
       const { data: cats } = await supabase
         .from('federation_competition_categories')
         .select('id, name, gender, competition_id')
@@ -141,7 +132,6 @@ const RankingPage = () => {
 
       setCategories(cats || []);
 
-      // Fetch all results
       const { data: res } = await supabase
         .from('federation_competition_results')
         .select(`
@@ -155,22 +145,19 @@ const RankingPage = () => {
       setResults(res || []);
     } catch (error) {
       console.error('Error fetching ranking data:', error);
-      toast.error('Σφάλμα φόρτωσης ranking');
+      toast.error(t('federation.common.error'));
     } finally {
       setLoading(false);
     }
   };
 
-  // Build ranking from results
   const buildRanking = (): RankingEntry[] => {
     let filteredResults = results;
 
-    // Filter by gender
     if (selectedGender !== 'all') {
       filteredResults = filteredResults.filter(r => r.category?.gender === selectedGender);
     }
 
-    // Filter by age group
     if (selectedAge !== 'all') {
       filteredResults = filteredResults.filter(r => {
         const age = getAgeLabel(r.category?.name || '');
@@ -178,12 +165,10 @@ const RankingPage = () => {
       });
     }
 
-    // Filter by specific category
     if (selectedCategory !== 'all') {
       filteredResults = filteredResults.filter(r => r.category_id === selectedCategory);
     }
 
-    // Aggregate by athlete
     const athleteMap = new Map<string, RankingEntry>();
     filteredResults.forEach(r => {
       const key = r.athlete_id;
@@ -211,7 +196,6 @@ const RankingPage = () => {
     return Array.from(athleteMap.values()).sort((a, b) => b.total_points - a.total_points);
   };
 
-  // Get unique age groups from categories
   const getAgeGroups = (): string[] => {
     const ages = new Set<string>();
     categories
@@ -220,7 +204,6 @@ const RankingPage = () => {
     return AGE_ORDER.filter(a => ages.has(a)).concat([...ages].filter(a => !AGE_ORDER.includes(a)));
   };
 
-  // Get categories for selected gender + age
   const getFilteredCategories = () => {
     return categories
       .filter(c => selectedGender === 'all' || c.gender === selectedGender)
@@ -261,7 +244,7 @@ const RankingPage = () => {
                 <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-lg font-semibold">Ranking</h1>
+                <h1 className="text-lg font-semibold">{t('federation.ranking.title')}</h1>
               </div>
             </div>
           </div>
@@ -271,7 +254,7 @@ const RankingPage = () => {
             <div className="hidden lg:flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <Trophy className="h-6 w-6 text-[#cb8954]" /> Ranking
+                  <Trophy className="h-6 w-6 text-[#cb8954]" /> {t('federation.ranking.title')}
                 </h1>
                 {federationName && (
                   <p className="text-sm text-muted-foreground">{federationName}</p>
@@ -282,31 +265,31 @@ const RankingPage = () => {
             {!federationId ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Trophy className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p>Δεν βρέθηκε συνδεδεμένη ομοσπονδία</p>
+                <p>{t('federation.ranking.noFederation')}</p>
               </div>
             ) : loading ? (
-              <div className="text-center py-12 text-muted-foreground">Φόρτωση...</div>
+              <div className="text-center py-12 text-muted-foreground">{t('federation.common.loading')}</div>
             ) : (
               <div className="space-y-4">
-                {/* Filters - stack on mobile */}
+                {/* Filters */}
                 <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
                   <Select value={selectedGender} onValueChange={v => { setSelectedGender(v); setSelectedAge('all'); setSelectedCategory('all'); }}>
                     <SelectTrigger className="w-full sm:w-[140px] rounded-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-none">
-                      <SelectItem value="all">Όλα</SelectItem>
-                      <SelectItem value="male">Άνδρες</SelectItem>
-                      <SelectItem value="female">Γυναίκες</SelectItem>
+                      <SelectItem value="all">{t('federation.ranking.all')}</SelectItem>
+                      <SelectItem value="male">{t('federation.ranking.male')}</SelectItem>
+                      <SelectItem value="female">{t('federation.ranking.female')}</SelectItem>
                     </SelectContent>
                   </Select>
 
                   <Select value={selectedAge} onValueChange={v => { setSelectedAge(v); setSelectedCategory('all'); }}>
                     <SelectTrigger className="w-full sm:w-[160px] rounded-none">
-                      <SelectValue placeholder="Ηλικιακή ομάδα" />
+                      <SelectValue placeholder={t('federation.ranking.allAges')} />
                     </SelectTrigger>
                     <SelectContent className="rounded-none">
-                      <SelectItem value="all">Όλες οι ηλικίες</SelectItem>
+                      <SelectItem value="all">{t('federation.ranking.allAges')}</SelectItem>
                       {getAgeGroups().map(age => (
                         <SelectItem key={age} value={age}>{age}</SelectItem>
                       ))}
@@ -315,10 +298,10 @@ const RankingPage = () => {
 
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger className="w-full sm:w-[180px] rounded-none">
-                      <SelectValue placeholder="Κατηγορία" />
+                      <SelectValue placeholder={t('federation.ranking.allCategories')} />
                     </SelectTrigger>
                     <SelectContent className="rounded-none">
-                      <SelectItem value="all">Όλες οι κατηγορίες</SelectItem>
+                      <SelectItem value="all">{t('federation.ranking.allCategories')}</SelectItem>
                       {getFilteredCategories().map(cat => (
                         <SelectItem key={cat.id} value={cat.id}>{getWeightLabel(cat.name)}</SelectItem>
                       ))}
@@ -330,8 +313,8 @@ const RankingPage = () => {
                 {ranking.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground border border-border">
                     <Trophy className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                    <p>Δεν υπάρχουν αποτελέσματα ranking</p>
-                    <p className="text-xs mt-1">Τα αποτελέσματα θα εμφανιστούν μετά την καταχώρηση τοποθετήσεων στους αγώνες</p>
+                    <p>{t('federation.ranking.noResults')}</p>
+                    <p className="text-xs mt-1">{t('federation.ranking.noResultsDesc')}</p>
                   </div>
                 ) : (
                   <>
@@ -339,10 +322,10 @@ const RankingPage = () => {
                     <div className="border border-border hidden md:block">
                       <div className="grid grid-cols-[50px_1fr_120px_120px_100px] bg-muted text-xs font-bold text-foreground px-3 py-2">
                         <span>#</span>
-                        <span>Αθλητής</span>
-                        <span className="text-center">Μετάλλια</span>
-                        <span className="text-center">Αγώνες</span>
-                        <span className="text-right">Πόντοι</span>
+                        <span>{t('federation.ranking.athlete')}</span>
+                        <span className="text-center">{t('federation.ranking.medals')}</span>
+                        <span className="text-center">{t('federation.ranking.competitions')}</span>
+                        <span className="text-right">{t('federation.ranking.points')}</span>
                       </div>
                       {ranking.map((entry, index) => (
                         <div
@@ -392,7 +375,7 @@ const RankingPage = () => {
                             </div>
                             <div className="text-right shrink-0">
                               <div className="font-bold text-[#cb8954] text-lg">{entry.total_points}</div>
-                              <div className="text-[10px] text-muted-foreground">πόντοι</div>
+                              <div className="text-[10px] text-muted-foreground">{t('federation.ranking.points')}</div>
                             </div>
                           </div>
                           <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground">
@@ -402,7 +385,7 @@ const RankingPage = () => {
                               {entry.bronzes > 0 && <span>🥉{entry.bronzes}</span>}
                               {entry.golds === 0 && entry.silvers === 0 && entry.bronzes === 0 && <span>—</span>}
                             </div>
-                            <span>{entry.competitions_count} αγώνες</span>
+                            <span>{entry.competitions_count} {t('federation.ranking.competitions')}</span>
                           </div>
                         </div>
                       ))}
@@ -411,7 +394,7 @@ const RankingPage = () => {
                 )}
 
                 <div className="text-xs text-muted-foreground text-right">
-                  {ranking.length} αθλητές
+                  {ranking.length} {t('federation.ranking.athletes')}
                 </div>
               </div>
             )}
