@@ -15,7 +15,9 @@ import {
   History,
   BookOpen,
   Download,
-  Utensils
+  Utensils,
+  Shuffle,
+  Radio
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
