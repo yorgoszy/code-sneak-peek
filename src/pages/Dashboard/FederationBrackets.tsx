@@ -794,7 +794,7 @@ const FederationBrackets = () => {
                         <h3 className="font-semibold text-sm text-foreground">
                           {getRoundName(roundNum, t)}
                         </h3>
-                        <span className="text-xs text-muted-foreground">{rounds[roundNum].length} {t('federation.brackets.matches')}</span>
+                        <span className="text-xs text-muted-foreground">{rounds[roundNum].filter(m => !m.is_bye).length} {t('federation.brackets.matches')}</span>
                       </div>
 
                       <div className="space-y-3" style={{
@@ -802,7 +802,7 @@ const FederationBrackets = () => {
                           ? `${(sortedRoundNumbers[0] / roundNum - 1) * 40}px`
                           : '0px'
                       }}>
-                        {rounds[roundNum].map((match) => (
+                        {rounds[roundNum].filter(m => !m.is_bye).map((match) => (
                           <Card
                             key={match.id}
                             className={`rounded-none cursor-pointer transition-all hover:shadow-md ${
