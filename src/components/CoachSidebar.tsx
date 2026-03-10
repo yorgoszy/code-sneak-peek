@@ -248,6 +248,20 @@ export const CoachSidebar = ({
       requiresSubscription: false,
     },
     {
+      icon: Shuffle,
+      label: "Κλήρωση",
+      path: effectiveCoachId ? `/dashboard/coach-brackets?coachId=${effectiveCoachId}` : "/dashboard/coach-brackets",
+      badge: null,
+      requiresSubscription: false,
+    },
+    {
+      icon: Radio,
+      label: "Live",
+      path: effectiveCoachId ? `/dashboard/coach-live?coachId=${effectiveCoachId}` : "/dashboard/coach-live",
+      badge: null,
+      requiresSubscription: false,
+    },
+    {
       icon: Settings,
       label: "Ρυθμίσεις Προφίλ",
       path: effectiveCoachId ? `/dashboard/coach-profile?coachId=${effectiveCoachId}` : "/dashboard/coach-profile",
