@@ -885,6 +885,20 @@ const FederationBrackets = () => {
                   }
                   yPositions.set(m.id, yCenter);
                 });
+
+                // Collision resolution: ensure minimum spacing between matches in same round
+                const minSpacing = CARD_H + CARD_GAP;
+                const roundMatches = roundMatchArrays[ri];
+                const sortedByY = [...roundMatches].sort((a, b) => (yPositions.get(a.id) || 0) - (yPositions.get(b.id) || 0));
+                
+                for (let j = 1; j < sortedByY.length; j++) {
+                  const prevY = yPositions.get(sortedByY[j - 1].id) || 0;
+                  const currY = yPositions.get(sortedByY[j].id) || 0;
+                  if (currY - prevY < minSpacing) {
+                    // Push this match down
+                    yPositions.set(sortedByY[j].id, prevY + minSpacing);
+                  }
+                }
               }
 
               // Global match numbering across all rounds
