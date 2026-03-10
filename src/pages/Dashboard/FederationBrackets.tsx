@@ -240,13 +240,17 @@ function seedAvoidingSameClub(
     if (!placed) break;
   }
 
-  // Now place into bracket: athletes in odd positions (0,2,4,...), byes at end
-  // But we want byes spread at the bottom, so place athletes first, nulls after
-  // Then do a swap pass to fix same-club pairs
-  for (let i = 0; i < allAthletes.length; i++) {
-    positions[i] = allAthletes[i];
+  // Distribute athletes: one per pair at even indices first, then remaining at odd indices
+  // This ensures byes are spread evenly across pairs instead of grouped at the end
+  // With 9 athletes in 16-bracket: 8 get even positions (one per pair), 1 gets odd position
+  // Result: 1 real match + 7 byes, so all quarterfinal slots are filled
+  for (let i = 0; i < Math.min(allAthletes.length, totalPairs); i++) {
+    positions[i * 2] = allAthletes[i];
   }
-  // Remaining positions are null (byes)
+  // Remaining athletes fill odd positions (creating real matches in those pairs)
+  for (let i = totalPairs; i < allAthletes.length; i++) {
+    positions[(i - totalPairs) * 2 + 1] = allAthletes[i];
+  }
 
   // Swap pass: ensure no pair (i*2, i*2+1) has same club
   for (let attempt = 0; attempt < 200; attempt++) {
