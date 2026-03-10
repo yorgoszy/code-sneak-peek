@@ -9,8 +9,7 @@ export const useGoogleCalendar = () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session?.provider_token) {
-      // Need to re-auth with Google to get calendar access
-      toast.error('Πρέπει να συνδεθείτε με Google για sync ημερολογίου');
+      // No Google token - user needs to connect via Google OAuth
       return null;
     }
     
