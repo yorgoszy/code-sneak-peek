@@ -666,7 +666,6 @@ const CoachCompetitionsContent: React.FC = () => {
                       <CreditCard className="h-3 w-3" /> {comp.my_unpaid_count} εκκρεμείς
                     </span>
                   )}
-                  </span>
                 </div>
 
                 {/* Actions */}
