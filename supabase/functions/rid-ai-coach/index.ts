@@ -679,6 +679,40 @@ serve(async (req) => {
         } catch(e) {}
         
         console.log(`✅ Federation competitions context: ${federationCompetitionsContext.length} chars`);
+        
+        // 🥊 BRACKETS & LIVE DATA (competition_matches + competition_rings)
+        for (const comp of compsData) {
+          try {
+            const matchesRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/competition_matches?competition_id=eq.${comp.id}&select=*,athlete1:app_users!competition_matches_athlete1_id_fkey(name),athlete2:app_users!competition_matches_athlete2_id_fkey(name),category:federation_competition_categories!competition_matches_category_id_fkey(name)&order=round_number.desc,match_number.asc`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const matchesData = await matchesRes.json();
+            if (Array.isArray(matchesData) && matchesData.length > 0) {
+              federationCompetitionsContext += `\n  🥊 ΖΕΥΓΑΡΩΜΑΤΑ/BRACKETS (${matchesData.length} αγώνες):\n`;
+              matchesData.forEach((m: any) => {
+                const winner = m.winner_id ? (m.winner_id === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name) : null;
+                const status = m.status === 'completed' ? '✅' : m.is_bye ? '⏭️ BYE' : '⏳';
+                federationCompetitionsContext += `    ${status} R${m.round_number} #${m.match_number}: ${m.athlete1?.name || 'TBD'} vs ${m.athlete2?.name || 'TBD'}${winner ? ` → Νικητής: ${winner}` : ''} ${m.result_type ? `(${m.result_type})` : ''} [${m.category?.name || ''}]\n`;
+              });
+            }
+          } catch(e) {}
+
+          try {
+            const ringsRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/competition_rings?competition_id=eq.${comp.id}&select=*&order=ring_number.asc`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const ringsData = await ringsRes.json();
+            if (Array.isArray(ringsData) && ringsData.length > 0) {
+              federationCompetitionsContext += `\n  📺 LIVE RINGS (${ringsData.length}):\n`;
+              ringsData.forEach((r: any) => {
+                federationCompetitionsContext += `    Ring ${r.ring_number} (${r.ring_name || '-'}): ${r.is_active ? '🔴 LIVE' : '⚪ OFF'} | YouTube: ${r.youtube_live_url || '-'} | Αγώνες: ${r.match_range_start || '?'}-${r.match_range_end || '?'}\n`;
+              });
+            }
+          } catch(e) {}
+        }
+        
       } catch(e) { console.log('⚠️ Error loading federation competitions:', e); }
     }
 
